@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Poland — The E-Invoicing Compliance Corner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0f1a2b; --ink-2:#152238; --ink-3:#1c2c48; --line:#2b3c5a;
+    --paper:#efe9db; --paper-2:#e4dcc6; --paper-line:#c9bd9e;
+    --text-lo:#f2f0e8; --muted:#93a3c0;
+    --stamp:#b5432f; --stamp-dim:#7c3628;
+    --live:#3f7d5c; --live-dim:#274a38;
+    --soon:#c98a3a; --soon-dim:#6e4c22;
+    --upcoming:#6b7a95; --upcoming-dim:#3a4864;
+    --radius:10px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{background:var(--ink); color:var(--text-lo); font-family:'IBM Plex Sans',sans-serif; line-height:1.55;}
+  .display{font-family:'Big Shoulders Display',sans-serif; font-weight:800;}
+  .mono{font-family:'IBM Plex Mono',monospace;}
+  a{color:inherit;}
+  .wrap{max-width:980px; margin:0 auto; padding:0 5vw 60px;}
+  .back-link{display:inline-flex; align-items:center; gap:6px; margin:24px 0 0; font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:var(--muted); text-decoration:none;}
+  .back-link:hover{color:var(--soon);}
+  .country-head{display:flex; flex-wrap:wrap; gap:18px; align-items:flex-start; justify-content:space-between; padding:18px 0 26px; border-bottom:1px solid var(--line); margin-bottom:28px;}
+  .country-head-left{display:flex; gap:16px; align-items:center;}
+  .country-flag{font-size:46px; line-height:1;}
+  .country-eyebrow{font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.16em; text-transform:uppercase; color:var(--soon); margin:0 0 4px;}
+  .country-title{font-size:clamp(28px,4.5vw,42px); margin:0; text-transform:uppercase; line-height:0.95;}
+  .country-region{font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--muted); margin-top:6px;}
+  .country-meta{font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--muted); text-align:right;}
+  .stat-strip{display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:1px; background:var(--line); border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; margin-bottom:36px;}
+  .stat-strip .stat{background:var(--ink-2); padding:16px 18px;}
+  .stat-strip .stat .num{font-family:'Big Shoulders Display',sans-serif; font-weight:800; font-size:22px; line-height:1.15;}
+  .stat-strip .stat .lbl{font-size:10.8px; color:var(--muted); text-transform:uppercase; letter-spacing:0.07em; margin-top:5px;}
+  .section{margin-bottom:44px;}
+  .section-head{display:flex; align-items:baseline; gap:12px; margin-bottom:18px;}
+  .section-head h2{font-size:22px; margin:0; text-transform:uppercase;}
+  .section-head .num{font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--soon);}
+  .section-intro{color:var(--muted); font-size:13.8px; max-width:680px; margin:-8px 0 20px;}
+  .rtimeline{position:relative; padding-left:26px; border-left:2px solid var(--line);}
+  .rmonth-marker{font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--soon); text-transform:uppercase; letter-spacing:0.1em; margin:22px 0 12px -26px; padding-left:26px; position:relative;}
+  .rmonth-marker::before{content:""; position:absolute; left:-6px; top:6px; width:10px; height:10px; border-radius:50%; background:var(--soon); border:2px solid var(--ink);}
+  .rmonth-marker:first-child{margin-top:0;}
+  .rcard{background:var(--paper); color:#241d10; border-radius:var(--radius); margin-bottom:14px; padding:16px 20px 18px; border:1px solid var(--paper-line);}
+  .rcard-top{display:flex; flex-wrap:wrap; justify-content:space-between; gap:8px 16px; align-items:flex-start;}
+  .rcard-date{font-family:'IBM Plex Mono',monospace; font-size:12.5px; font-weight:600; color:#4a3f22;}
+  .rbadge{font-family:'IBM Plex Mono',monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:0.06em; padding:4px 9px; border-radius:5px; font-weight:600; white-space:nowrap;}
+  .rbadge.inforce{background:var(--live-dim); color:#bfe6cf;}
+  .rbadge.soon{background:var(--soon-dim); color:#ffe0b3;}
+  .rbadge.upcoming{background:var(--upcoming-dim); color:#dbe2ee;}
+  .rcard-title{font-size:15px; font-weight:600; margin:10px 0 4px;}
+  .rcard-desc{font-size:13.3px; color:#4a4030; margin:0;}
+  .spec-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:14px;}
+  .spec-card{background:var(--paper); color:#241d10; border-radius:var(--radius); border:1px solid var(--paper-line); padding:16px 18px 18px;}
+  .spec-card h3{font-family:'IBM Plex Mono',monospace; font-size:11px; text-transform:uppercase; letter-spacing:0.09em; color:#6b5f3f; margin:0 0 10px; display:flex; align-items:center; gap:8px;}
+  .spec-card h3::after{content:""; flex:1; height:1px; background:var(--paper-line);}
+  .spec-row{display:flex; justify-content:space-between; gap:12px; padding:6px 0; border-top:1px dashed var(--paper-line); font-size:13px;}
+  .spec-row:first-of-type{border-top:none;}
+  .spec-row .k{color:#6b5f3f; flex:0 0 42%;}
+  .spec-row .v{color:#241d10; text-align:right; font-weight:500;}
+  .spec-card p.note{font-size:12.6px; color:#5a5138; margin:10px 0 0; padding-top:10px; border-top:1px dashed var(--paper-line);}
+  .mode-grid{display:flex; flex-wrap:wrap; gap:8px; margin-top:4px;}
+  .mode-grid span{font-family:'IBM Plex Mono',monospace; font-size:11px; background:var(--soon-dim); color:#ffe0b3; padding:5px 11px; border-radius:999px; white-space:nowrap;}
+  .steps{counter-reset:step; display:flex; flex-direction:column; gap:0;}
+  .step{display:flex; gap:16px; padding:16px 0; border-top:1px dashed var(--line);}
+  .step:first-child{border-top:none;}
+  .step-num{counter-increment:step; flex:0 0 auto; width:30px; height:30px; border-radius:50%; background:var(--soon-dim); color:#ffe0b3; display:flex; align-items:center; justify-content:center; font-family:'Big Shoulders Display',sans-serif; font-weight:800; font-size:14px;}
+  .step-num::before{content:counter(step);}
+  .step-body h4{margin:2px 0 4px; font-size:14.5px;}
+  .step-body p{margin:0; font-size:13.3px; color:var(--muted);}
+  .related-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:14px;}
+  .related-card{background:var(--ink-2); border:1px solid var(--line); border-radius:var(--radius); padding:16px 18px;}
+  .related-card h4{margin:0 0 6px; font-size:14.5px; display:flex; align-items:center; gap:8px;}
+  .related-card p{margin:0; font-size:13px; color:var(--muted);}
+  .penalty-table{width:100%; border-collapse:collapse; font-size:13px;}
+  .penalty-table th, .penalty-table td{text-align:left; padding:9px 10px; border-bottom:1px dashed var(--paper-line);}
+  .penalty-table th{font-family:'IBM Plex Mono',monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:0.06em; color:#6b5f3f;}
+  .penalty-table td{color:#241d10;}
+  .penalty-card{background:var(--paper); color:#241d10; border-radius:var(--radius); border:1px solid var(--paper-line); padding:16px 18px;}
+  .portal-row{display:flex; flex-wrap:wrap; gap:8px; margin-top:6px;}
+  .portal-btn{display:inline-flex; align-items:center; gap:6px; background:var(--ink); color:var(--text-lo); text-decoration:none; font-family:'IBM Plex Mono',monospace; font-size:12px; padding:8px 14px; border-radius:6px; border:1px solid var(--line);}
+  .portal-btn:hover{background:var(--stamp);}
+  .portal-btn::before{content:"↗";}
+  footer{margin:40px 0 0; padding:22px 0 10px; border-top:1px solid var(--line); color:var(--muted); font-size:12.3px;}
+  footer p{max-width:820px; margin:0 0 8px;}
+  @media (max-width:640px){ .country-head{flex-direction:column;} .country-meta{text-align:left;} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <a class="back-link" href="einvoicing-compliance-tracker.html">← Back to global tracker</a>
+
+  <div class="country-head">
+    <div class="country-head-left">
+      <div class="country-flag">🇵🇱</div>
+      <div>
+        <p class="country-eyebrow">Country deep dive</p>
+        <h1 class="country-title display">Poland</h1>
+        <div class="country-region">Europe · PL · VAT area: EU</div>
+      </div>
+    </div>
+    <div class="country-meta">
+      Last updated: 21 July 2026<br>
+      Compliance model: Centralised clearance (KSeF)
+    </div>
+  </div>
+
+  <div class="stat-strip">
+    <div class="stat"><div class="num display">FA(3)</div><div class="lbl">Current invoice schema</div></div>
+    <div class="stat"><div class="num display">10 yrs</div><div class="lbl">KSeF central retention</div></div>
+    <div class="stat"><div class="num display">4 modes</div><div class="lbl">Offline issuance modes</div></div>
+    <div class="stat"><div class="num display">100%</div><div class="lbl">Max penalty (% of VAT)</div></div>
+    <div class="stat"><div class="num display">2027</div><div class="lbl">Full enforcement begins</div></div>
+  </div>
+
+  <!-- ================= TIMELINE ================= -->
+  <div class="section">
+    <div class="section-head"><span class="num mono">01</span><h2 class="display">Compliance timeline</h2></div>
+    <p class="section-intro">KSeF has been rebuilt once already — Poland paused an earlier version after a technical audit found the architecture needed strengthening. KSeF 2.0 is the version that actually went live.</p>
+
+    <div class="rtimeline">
+      <div class="rmonth-marker">2019</div>
+      <div class="rcard">
+        <div class="rcard-top"><span class="rcard-date">2019</span><span class="rbadge inforce">In effect</span></div>
+        <div class="rcard-title">B2G e-invoicing mandatory via Peppol</div>
+        <p class="rcard-desc">Public-sector invoicing runs on Peppol, entirely separate from the KSeF platform that would later handle B2B — the two systems don't share infrastructure.</p>
+      </div>
+
+      <div class="rmonth-marker">June–November 2025</div>
+      <div class="rcard">
+        <div class="rcard-top"><span class="rcard-date">30 Jun 2025</span><span class="rbadge inforce">In effect</span></div>
+        <div class="rcard-title">Final KSeF 2.0 API documentation and FA(3) schema published</div>
+        <p class="rcard-desc">The Ministry of Finance released the OpenAPI 3.0.4 specification, integration guides with C#/Java examples, .NET and Java SDKs, and the final FA(3) logical structure — replacing FA(2) and shaped by public consultation with businesses, accountants, and IT vendors.</p>
+      </div>
+      <div class="rcard">
+        <div class="rcard-top"><span class="rcard-date">30 Sep 2025</span><span class="rbadge inforce">In effect</span></div>
+        <div class="rcard-title">KSeF 2.0 test environment opens</div>
+        <p class="rcard-desc">Integrators and businesses gain access to a sandbox for architectural planning and prototype development ahead of the mandatory rollout.</p>
+      </div>
+      <div class="rcard">
+        <div class="rcard-top"><span class="rcard-date">1 Nov 2025</span><span class="rbadge inforce">In effect</span></div>
+        <div class="rcard-title">KSeF certificates become available</div>
+        <p class="rcard-desc">Taxpayers can begin applying for KSeF certificates via the Certificates and Authorizations Module (MCU) — the credential that will fully replace token-based authentication from January 2027.</p>
+      </div>
+
+      <div class="rmonth-marker">February 2026</div>
+      <div class="rcard">
+        <div class="rcard-top"><span class="rcard-date">1 Feb 2026</span><span class="rbadge inforce">In effect</span></div>
+        <div class="rcard-title">Mandatory for large taxpayers (2024 sales &gt; PLN 200 million)</div>
+        <p class="rcard-desc">The first wave of businesses must issue every domestic B2B invoice through KSeF using the FA(3) schema — the same date the FA(3) format formally replaced FA(2) for everyone still using the old structure voluntarily.</p>
+      </div>
+
+      <div class="rmonth-marker">April 2026</div>
+      <div class="rcard">
+        <div class="rcard-top"><span class="rcard-date">1 Apr 2026</span><span class="rbadge inforce">In effect</span></div>
+        <div class="rcard-title">Mandatory for all other VAT-registered businesses; Trusted Profile eliminated</div>
+        <p class="rcard-desc">Coverage extends to every remaining VAT-registered business, including foreign companies registered for Polish VAT without a fixed establishment. The Trusted Profile authentication method is withdrawn on the same date — plan around the remaining three methods below.</p>
+      </div>
+
+      <div class="rmonth-marker">December 2026 – January 2027</div>
+      <div class="rcard">
+        <div class="rcard-top"><span class="rcard-date">31 Dec 2026</span><span class="rbadge soon">Due soon</span></div>
+        <div class="rcard-title">2026 grace period and small-invoice exception both end</div>
+        <p class="rcard-desc">The full-year 2026 grace period (no financial penalties for KSeF errors, regardless of a business's mandatory start date) expires, along with the exception letting the smallest sellers (≤PLN 10,000 gross monthly invoicing) issue outside KSeF.</p>
+      </div>
+      <div class="rcard">
+        <div class="rcard-top"><span class="rcard-date">1 Jan 2027</span><span class="rbadge soon">Due soon</span></div>
+        <div class="rcard-title">Micro-taxpayers join the mandate; financial penalties begin</div>
+        <p class="rcard-desc">The smallest remaining sellers enter KSeF, KSeF certificates fully replace tokens for authentication, and Article 106ni penalties (up to 100% of invoice VAT) take effect for everyone.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= FILE FORMAT ================= -->
+  <div class="section">
+    <div class="section-head"><span class="num mono">02</span><h2 class="display">File format &amp; data specification</h2></div>
+    <p class="section-intro">FA(3) is the third generation of Poland's national schema — each revision has tightened validation and added more structured detail than the last.</p>
+
+    <div class="spec-grid">
+      <div class="spec-card">
+        <h3>Schema</h3>
+        <div class="spec-row"><span class="k">Current version</span><span class="v">FA(3) (replaced FA(2), 1 Feb 2026)</span></div>
+        <div class="spec-row"><span class="k">Alignment</span><span class="v">EN 16931 semantic model, Peppol BIS conventions</span></div>
+        <div class="spec-row"><span class="k">New in FA(3)</span><span class="v">New VAT rate codes, attachment support, dates from 1990</span></div>
+        <p class="note">FA(3) was shaped directly by tax consultations with entrepreneurs, accountants, auditors, and IT vendors — the attachment support in particular was a direct response to feedback that FA(2) was too rigid for real-world invoicing scenarios.</p>
+      </div>
+
+      <div class="spec-card">
+        <h3>Mandatory content</h3>
+        <div class="spec-row"><span class="k">Identifiers</span><span class="v">Supplier &amp; customer NIP</span></div>
+        <div class="spec-row"><span class="k">Transaction detail</span><span class="v">Itemised lines, VAT rates and amounts, totals, currency</span></div>
+        <div class="spec-row"><span class="k">Legal remarks</span><span class="v">Reverse-charge and other required indicators</span></div>
+        <div class="spec-row"><span class="k">Digital signature</span><span class="v">Not required from suppliers</span></div>
+        <p class="note">Suppliers don't apply their own qualified signature — KSeF's own clearance process (validation, sealing, and reference number assignment) is what gives the invoice legal force, similar in spirit to Italy's SDI model.</p>
+      </div>
+
+      <div class="spec-card">
+        <h3>Clearance output</h3>
+        <div class="spec-row"><span class="k">Reference number</span><span class="v">Unique KSeF number, assigned on validation</span></div>
+        <div class="spec-row"><span class="k">Receipt</span><span class="v">UPO (Urzędowe Poświadczenie Odbioru) confirmation</span></div>
+        <div class="spec-row"><span class="k">Verification</span><span class="v">QR code linking to the central system</span></div>
+        <p class="note">An invoice without a valid KSeF number is not valid for tax purposes — this is the sharpest practical difference from decentralised models like Germany's, where the file itself carries legal weight without a central clearance step.</p>
+      </div>
+
+      <div class="spec-card">
+        <h3>Archiving</h3>
+        <div class="spec-row"><span class="k">Central retention</span><span class="v">10 years from year-end of issuance</span></div>
+        <div class="spec-row"><span class="k">Standard PL retention</span><span class="v">5 years (KSeF doubles this)</span></div>
+        <p class="note">Because KSeF stores every validated invoice centrally for 10 years, businesses don't need to independently archive invoice XML files for compliance purposes — a genuine operational simplification compared to decentralised regimes.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= TRANSMISSION PROTOCOL ================= -->
+  <div class="section">
+    <div class="section-head"><span class="num mono">03</span><h2 class="display">Transmission protocol</h2></div>
+    <p class="section-intro">KSeF is a true clearance model: the buyer retrieves the invoice from the central system rather than receiving it directly from the seller.</p>
+
+    <div class="spec-grid">
+      <div class="spec-card">
+        <h3>API</h3>
+        <div class="spec-row"><span class="k">Specification</span><span class="v">OpenAPI 3.0.4</span></div>
+        <div class="spec-row"><span class="k">SDKs</span><span class="v">.NET and Java, with sample code</span></div>
+        <div class="spec-row"><span class="k">Submission modes</span><span class="v">Interactive and batch</span></div>
+        <p class="note">Test thoroughly in the sandbox environment before connecting to production — the API documentation includes full endpoint, parameter, and response-code references specifically to support this.</p>
+      </div>
+
+      <div class="spec-card">
+        <h3>Authentication methods</h3>
+        <div class="spec-row"><span class="k">Qualified electronic seal</span><span class="v">Containing the taxpayer's NIP</span></div>
+        <div class="spec-row"><span class="k">KSeF certificate</span><span class="v">Via the Certificates and Authorizations Module (MCU)</span></div>
+        <div class="spec-row"><span class="k">Token</span><span class="v">Available until end of 2026 only</span></div>
+        <div class="spec-row"><span class="k">Trusted Profile</span><span class="v">Eliminated from 1 Apr 2026</span></div>
+        <p class="note">Plan your long-term authentication approach around qualified seals or KSeF certificates — tokens and the Trusted Profile route are both being phased out on different timelines.</p>
+      </div>
+
+      <div class="spec-card">
+        <h3>Offline modes &amp; QR codes</h3>
+        <p class="note" style="margin-top:0; padding-top:0; border-top:none;">Four offline modes exist for when KSeF itself is unavailable or unreachable:</p>
+        <div class="mode-grid">
+          <span>Offline24</span><span>Standard offline</span><span>Failure mode</span><span>Emergency mode</span>
+        </div>
+        <p class="note">Invoices issued offline or in failure mode need a QR code for verification, and must be submitted to KSeF by the next working day. Domestic NIP-holders no longer need a QR code on the printout itself — they retrieve the legally valid invoice through KSeF directly, except in failure mode.</p>
+      </div>
+
+      <div class="spec-card">
+        <h3>Buyer workflow</h3>
+        <div class="spec-row"><span class="k">Delivery model</span><span class="v">Retrieval from KSeF, not direct send</span></div>
+        <div class="spec-row"><span class="k">Domestic NIP recipients</span><span class="v">Receive exclusively through KSeF post-clearance</span></div>
+        <div class="spec-row"><span class="k">Non-KSeF recipients (offline delivery)</span><span class="v">Require dual QR codes before submission</span></div>
+        <p class="note">This buyer-retrieves-rather-than-receives model is the key structural difference from Peppol-based countries — there's no "delivery" step in the conventional sense once an invoice clears KSeF.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= REGISTRATION ================= -->
+  <div class="section">
+    <div class="section-head"><span class="num mono">04</span><h2 class="display">Getting access to KSeF</h2></div>
+    <p class="section-intro">Access setup is a one-time process centred on a single authorisation form and your choice of authentication credential.</p>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">
+          <h4>Assess your system's FA(3) and API compatibility</h4>
+          <p>Check your invoicing or ERP software against the FA(3) logical structure and KSeF 2.0 API documentation, or plan to use the Ministry's free tools if you don't have in-house development capacity.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">
+          <h4>File the ZAW-FA authorisation form</h4>
+          <p>This names the person authorised to operate KSeF on your entity's behalf. It's not required if you hold a qualified electronic seal containing your NIP — in that case you can use KSeF directly. The person named in ZAW-FA can then grant further authorisations to others directly within the platform.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">
+          <h4>Obtain your authentication credential</h4>
+          <p>Apply for a KSeF certificate via the Certificates and Authorizations Module, or use a token during the transitional period (available only until the end of 2026). Every authorised person needs a NIP or PESEL, or a qualified electronic signature if they have neither.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">
+          <h4>Test in the sandbox before going live</h4>
+          <p>Use the KSeF 2.0 test environment to pilot invoice submission, receipt retrieval, and error handling — this is where most integration problems surface, well before they hit production.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">
+          <h4>Set up delegation for third-party providers</h4>
+          <p>If an accountant or external service handles invoicing for you, configure their authorisation and delegation rules explicitly rather than sharing your own credentials.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">
+          <h4>Build offline24 handling into your pipeline</h4>
+          <p>Implement the ability to issue structured invoices outside KSeF during downtime, generate the required QR code, and submit to KSeF no later than the next business day.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= PENALTIES & RELATED ================= -->
+  <div class="section">
+    <div class="section-head"><span class="num mono">05</span><h2 class="display">Penalties &amp; enforcement</h2></div>
+    <p class="section-intro">Poland's penalty regime is among the strictest in Europe on paper — but a full-year grace period and a planned legislative clarification soften the picture considerably.</p>
+
+    <div class="related-grid">
+      <div class="penalty-card" style="grid-column:1 / -1;">
+        <table class="penalty-table">
+          <tr><th>Failure (Article 106ni, VAT Act)</th><th>Maximum fine</th></tr>
+          <tr><td>Invoice with VAT shown, issued outside KSeF</td><td>Up to 100% of the VAT amount on the invoice</td></tr>
+          <tr><td>Invoice with no VAT shown, issued outside KSeF</td><td>Up to 18.7% of the total amount due</td></tr>
+          <tr><td>Payment deadline once a decision is issued</td><td>14 days, no summons required</td></tr>
+        </table>
+      </div>
+      <div class="related-card">
+        <h4>🕊️ Full 2026 grace period</h4>
+        <p>No financial penalties apply for KSeF errors throughout the entirety of 2026, regardless of when a given business's mandatory start date falls — enforcement genuinely begins on 1 January 2027, not before.</p>
+      </div>
+      <div class="related-card">
+        <h4>⚖️ Planned legislative fix</h4>
+        <p>The Ministry of Finance has acknowledged a "redundant reference" in Article 106ni and plans to amend the VAT Act before the January 2027 deadline, so that penalties apply only to deliberate KSeF avoidance — not incidental errors during a functioning system.</p>
+      </div>
+      <div class="related-card">
+        <h4>🧾 Narrow ongoing exceptions</h4>
+        <p>"Digitally excluded" taxpayers — those genuinely unable to access digital infrastructure, with transactions under PLN 450 per invoice and PLN 10,000 total monthly sales — retain an exception even after January 2027.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="portal-row">
+    <a class="portal-btn" href="https://ksef.mf.gov.pl/" target="_blank" rel="noopener">KSeF — Ministry of Finance</a>
+  </div>
+
+  <footer>
+    <p>This deep-dive page reflects publicly available technical guidance as of July 2026 and is provided for general awareness, not legal or tax advice. KSeF 2.0 API details, authentication requirements, and the pending Article 106ni amendment continue to evolve — confirm current requirements directly on the Ministry of Finance's KSeF portal before building an integration.</p>
+  </footer>
+
+</div>
+</body>
+</html>
