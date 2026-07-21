@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Slovakia — The E-Invoicing Compliance Corner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0f1a2b; --ink-2:#152238; --ink-3:#1c2c48; --line:#2b3c5a;
+    --paper:#efe9db; --paper-2:#e4dcc6; --paper-line:#c9bd9e;
+    --text-lo:#f2f0e8; --muted:#93a3c0;
+    --stamp:#b5432f; --stamp-dim:#7c3628;
+    --live:#3f7d5c; --live-dim:#274a38;
+    --soon:#c98a3a; --soon-dim:#6e4c22;
+    --upcoming:#6b7a95; --upcoming-dim:#3a4864;
+    --radius:10px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{background:var(--ink); color:var(--text-lo); font-family:'IBM Plex Sans',sans-serif; line-height:1.55;}
+  .display{font-family:'Big Shoulders Display',sans-serif; font-weight:800;}
+  .mono{font-family:'IBM Plex Mono',monospace;}
+  a{color:inherit;}
+  .wrap{max-width:980px; margin:0 auto; padding:0 5vw 60px;}
+  .back-link{display:inline-flex; align-items:center; gap:6px; margin:24px 0 0; font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:var(--muted); text-decoration:none;}
+  .back-link:hover{color:var(--soon);}
+  .country-head{display:flex; flex-wrap:wrap; gap:18px; align-items:flex-start; justify-content:space-between; padding:18px 0 26px; border-bottom:1px solid var(--line); margin-bottom:28px;}
+  .country-head-left{display:flex; gap:16px; align-items:center;}
+  .country-flag{font-size:46px; line-height:1;}
+  .country-eyebrow{font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.16em; text-transform:uppercase; color:var(--soon); margin:0 0 4px;}
+  .country-title{font-size:clamp(28px,4.5vw,42px); margin:0; text-transform:uppercase; line-height:0.95;}
+  .country-region{font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--muted); margin-top:6px;}
+  .country-meta{font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--muted); text-align:right;}
+  .stat-strip{display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:1px; background:var(--line); border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; margin-bottom:36px;}
+  .stat-strip .stat{background:var(--ink-2); padding:16px 18px;}
+  .stat-strip .stat .num{font-family:'Big Shoulders Display',sans-serif; font-weight:800; font-size:22px; line-height:1.15;}
+  .stat-strip .stat .lbl{font-size:10.8px; color:var(--muted); text-transform:uppercase; letter-spacing:0.07em; margin-top:5px;}
+  .section{margin-bottom:44px;}
+  .section-head{display:flex; align-items:baseline; gap:12px; margin-bottom:18px;}
+  .section-head h2{font-size:22px; margin:0; text-transform:uppercase;}
+  .section-head .num{font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--soon);}
+  .section-intro{color:var(--muted); font-size:13.8px; max-width:680px; margin:-8px 0 20px;}
+  .rtimeline{position:relative; padding-left:26px; border-left:2px solid var(--line);}
+  .rmonth-marker{font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--soon); text-transform:uppercase; letter-spacing:0.1em; margin:22px 0 12px -26px; padding-left:26px; position:relative;}
+  .rmonth-marker::before{content:""; position:absolute; left:-6px; top:6px; width:10px; height:10px; border-radius:50%; background:var(--soon); border:2px solid var(--ink);}
+  .rmonth-marker:first-child{margin-top:0;}
+  .rcard{background:var(--paper); color:#241d10; border-radius:var(--radius); margin-bottom:14px; padding:16px 20px 18px; border:1px solid var(--paper-line);}
+  .rcard-top{display:flex; flex-wrap:wrap; justify-content:space-between; gap:8px 16px; align-items:flex-start;}
+  .rcard-date{font-family:'IBM Plex Mono',monospace; font-size:12.5px; font-weight:600; color:#4a3f22;}
+  .rbadge{font-family:'IBM Plex Mono',monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:0.06em; padding:4px 9px; border-radius:5px; font-weight:600; white-space:nowrap;}
+  .rbadge.inforce{background:var(--live-dim); color:#bfe6cf;}
+  .rbadge.soon{background:var(--soon-dim); color:#ffe0b3;}
+  .rbadge.upcoming{background:var(--upcoming-dim); color:#dbe2ee;}
+  .rcard-title{font-size:15px; font-weight:600; margin:10px 0 4px;}
+  .rcard-desc{font-size:13.3px; color:#4a4030; margin:0;}
+  .spec-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:14px;}
+  .spec-card{background:var(--paper); color:#241d10; border-radius:var(--radius); border:1px solid var(--paper-line); padding:16px 18px 18px;}
+  .spec-card h3{font-family:'IBM Plex Mono',monospace; font-size:11px; text-transform:uppercase; letter-spacing:0.09em; color:#6b5f3f; margin:0 0 10px; display:flex; align-items:center; gap:8px;}
+  .spec-card h3::after{content:""; flex:1; height:1px; background:var(--paper-line);}
+  .spec-row{display:flex; justify-content:space-between; gap:12px; padding:6px 0; border-top:1px dashed var(--paper-line); font-size:13px;}
+  .spec-row:first-of-type{border-top:none;}
+  .spec-row .k{color:#6b5f3f; flex:0 0 42%;}
+  .spec-row .v{color:#241d10; text-align:right; font-weight:500;}
+  .spec-card p.note{font-size:12.6px; color:#5a5138; margin:10px 0 0; padding-top:10px; border-top:1px dashed var(--paper-line);}
+  .steps{counter-reset:step; display:flex; flex-direction:column; gap:0;}
+  .step{display:flex; gap:16px; padding:16px 0; border-top:1px dashed var(--line);}
+  .step:first-child{border-top:none;}
+  .step-num{counter-increment:step; flex:0 0 auto; width:30px; height:30px; border-radius:50%; background:var(--soon-dim); color:#ffe0b3; display:flex; align-items:center; justify-content:center; font-family:'Big Shoulders Display',sans-serif; font-weight:800; font-size:14px;}
+  .step-num::before{content:counter(step);}
+  .step-body h4{margin:2px 0 4px; font-size:14.5px;}
+  .step-body p{margin:0; font-size:13.3px; color:var(--muted);}
+  .related-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:14px;}
+  .related-card{background:var(--ink-2); border:1px solid var(--line); border-radius:var(--radius); padding:16px 18px;}
+  .related-card h4{margin:0 0 6px; font-size:14.5px; display:flex; align-items:center; gap:8px;}
+  .related-card p{margin:0; font-size:13px; color:var(--muted);}
+  .penalty-table{width:100%; border-collapse:collapse; font-size:13px;}
+  .penalty-table th, .penalty-table td{text-align:left; padding:9px 10px; border-bottom:1px dashed var(--paper-line);}
+  .penalty-table th{font-family:'IBM Plex Mono',monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:0.06em; color:#6b5f3f;}
+  .penalty-table td{color:#241d10;}
+  .penalty-card{background:var(--paper); color:#241d10; border-radius:var(--radius); border:1px solid var(--paper-line); padding:16px 18px;}
+  .portal-row{display:flex; flex-wrap:wrap; gap:8px; margin-top:6px;}
+  .portal-btn{display:inline-flex; align-items:center; gap:6px; background:var(--ink); color:var(--text-lo); text-decoration:none; font-family:'IBM Plex Mono',monospace; font-size:12px; padding:8px 14px; border-radius:6px; border:1px solid var(--line);}
+  .portal-btn:hover{background:var(--stamp);}
+  .portal-btn::before{content:"↗";}
+  footer{margin:40px 0 0; padding:22px 0 10px; border-top:1px solid var(--line); color:var(--muted); font-size:12.3px;}
+  footer p{max-width:820px; margin:0 0 8px;}
+  @media (max-width:640px){ .country-head{flex-direction:column;} .country-meta{text-align:left;} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <a class="back-link" href="einvoicing-compliance-tracker.html">← Back to global tracker</a>
+
+  <div class="country-head">
+    <div class="country-head-left">
+      <div class="country-flag">🇸🇰</div>
+      <div>
+        <p class="country-eyebrow">Country deep dive</p>
+        <h1 class="country-title display">Slovakia</h1>
+        <div class="country-region">Europe · SK · VAT area: EU</div>
+      </div>
+    </div>
+    <div class="country-meta">
+      Last updated: 21 July 2026<br>
+      Compliance model: Peppol 5-corner ("Digital Postman")
+    </div>
+  </div>
+
+  <div class="stat-strip">
+    <div class="stat"><div class="num display">EN 16931</div><div class="lbl">UBL 2.1 / CII syntax</div></div>
+    <div class="stat"><div class="num display">5-corner</div><div class="lbl">Peppol + real-time reporting</div></div>
+    <div class="stat"><div class="num display">10 yrs</div><div class="lbl">Archive requirement</div></div>
+    <div class="stat"><div class="num display">€100k</div><div class="lbl">Max penalty (repeated breach)</div></div>
+    <div class="stat"><div class="num display">2030</div><div class="lbl">Cross-border extension</div></div>
+  </div>
+
+  <!-- ================= TIMELINE ================= -->
+  <div class="section">
+    <div class="section-head"><span class="num mono">01</span><h2 class="display">Compliance timeline</h2></div>
+    <p class="section-intro">Slovakia has been here before — a voluntary B2B framework was planned for 2022 and quietly shelved. This time the mandate is legislated with a firm date.</p>
+
+    <div class="rtimeline">
+      <div class="rmonth-marker">April 2023</div>
+      <div class="rcard">
+        <div class="rcard-top"><span class="rcard-date">Apr 2023</span><span class="rbadge inforce">In effect</span></div>
+        <div class="rcard-title">B2G/G2G e-invoicing mandatory via IS EFA</div>
+        <p class="rcard-desc">Slovakia introduces mandatory structured e-invoicing for business-to-government and government-to-government transactions through the IS EFA (Informačný Systém Elektronickej Fakturácie) platform, aligned with EN 16931 — the foundation the 2027 B2B mandate extends.</p>
+      </div>
+
+      <div class="rmonth-marker">2022–2024</div>
+      <div class="rcard">
+        <div class="rcard-top"><span class="rcard-date">By early 2024</span><span class="rbadge inforce">In effect</span></div>
+        <div class="rcard-title">Earlier voluntary B2B plan quietly postponed</div>
+        <p class="rcard-desc">A voluntary B2B framework originally planned for January 2022 was postponed indefinitely, reflecting the genuine complexity of getting this right — worth remembering when reading today's confirmed dates.</p>
+      </div>
+
+      <div class="rmonth-marker">December 2025</div>
+      <div class="rcard">
+        <div class="rcard-top"><span class="rcard-date">23 Dec 2025</span><span class="rbadge inforce">In effect</span></div>
+        <div class="rcard-title">Peppol Code Lists v9.5 defines Slovak identifier scheme</div>
+        <p class="rcard-desc">Scheme 0245 (SG:DIC) is formalised for the 10-digit Slovak Tax Identification Number (DIČ), the identifier Slovak end users will register under on the Peppol network.</p>
+      </div>
+
+      <div class="rmonth-marker">2026</div>
+      <div class="rcard">
+        <div class="rcard-top"><span class="rcard-date">Jan – Dec 2026</span><span class="rbadge inforce">In effect</span></div>
+        <div class="rcard-title">Voluntary phase — testing Digital Postman integrations</div>
+        <p class="rcard-desc">Businesses can register voluntarily to familiarise themselves with the system and test integrations with an accredited Digital Postman ahead of the mandatory go-live.</p>
+      </div>
+
+      <div class="rmonth-marker">January 2027</div>
+      <div class="rcard">
+        <div class="rcard-top"><span class="rcard-date">1 Jan 2027</span><span class="rbadge soon">Due soon</span></div>
+        <div class="rcard-title">Mandatory domestic B2B e-invoicing and near-real-time reporting</div>
+        <p class="rcard-desc">All Slovak VAT payers must issue and receive structured e-invoices for domestic B2B transactions, with data reported to the Financial Administration in near real time. B2C remains explicitly excluded.</p>
+      </div>
+
+      <div class="rmonth-marker">July 2027</div>
+      <div class="rcard">
+        <div class="rcard-top"><span class="rcard-date">1 Jul 2027</span><span class="rbadge upcoming">Upcoming</span></div>
+        <div class="rcard-title">Certified Digital Postman transmission becomes mandatory</div>
+        <p class="rcard-desc">Using only certified Digital Postman service providers for transmission and reception becomes a firm requirement — the educational grace period built into the first half of 2027 ends here.</p>
+      </div>
+
+      <div class="rmonth-marker">July 2030</div>
+      <div class="rcard">
+        <div class="rcard-top"><span class="rcard-date">1 Jul 2030</span><span class="rbadge upcoming">Upcoming</span></div>
+        <div class="rcard-title">Cross-border extension; legacy reporting phased out</div>
+        <p class="rcard-desc">The mandate extends to intra-EU B2B transactions and foreign entities with Slovak VAT registrations. The domestic "Kontrolný výkaz" (VAT control statement) and EU "súhrnný výkaz" (EC Sales List) are fully retired, and the invoice issuance deadline shortens from 15 to 10 days.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= FILE FORMAT ================= -->
+  <div class="section">
+    <div class="section-head"><span class="num mono">02</span><h2 class="display">File format &amp; data specification</h2></div>
+    <p class="section-intro">Slovakia hasn't published a national CIUS — it's relying on the base EN 16931 standard rather than adding a distinctly Slovak layer on top.</p>
+
+    <div class="spec-grid">
+      <div class="spec-card">
+        <h3>Syntax &amp; standard</h3>
+        <div class="spec-row"><span class="k">Standard</span><span class="v">EN 16931</span></div>
+        <div class="spec-row"><span class="k">Accepted syntaxes</span><span class="v">UBL 2.1 or UN/CEFACT CII</span></div>
+        <div class="spec-row"><span class="k">National CIUS</span><span class="v">Not yet implemented — under evaluation</span></div>
+        <p class="note">Unlike Romania's RO_CIUS or Croatia's HR-FISK, Slovakia is currently building on the plain European base standard — watch for a national CIUS to be defined as the rollout matures.</p>
+      </div>
+
+      <div class="spec-card">
+        <h3>Identifiers</h3>
+        <div class="spec-row"><span class="k">Peppol scheme</span><span class="v">0245 — SG:DIC</span></div>
+        <div class="spec-row"><span class="k">Identifier</span><span class="v">10-digit Slovak Tax ID (DIČ)</span></div>
+        <div class="spec-row"><span class="k">Issued by</span><span class="v">Financial Administration of the Slovak Republic</span></div>
+        <p class="note">Use scheme 0245 when registering Slovak end users on the Peppol network — this is the identifier that resolves to a specific recipient's DIČ for routing purposes.</p>
+      </div>
+
+      <div class="spec-card">
+        <h3>What's explicitly excluded</h3>
+        <div class="spec-row"><span class="k">PDFs / scanned images</span><span class="v">Not treated as e-invoices</span></div>
+        <div class="spec-row"><span class="k">B2C transactions</span><span class="v">Out of scope</span></div>
+        <div class="spec-row"><span class="k">Other exemptions</span><span class="v">Classified information; certain government bodies</span></div>
+        <p class="note">The FAQ document (9/DPH/2025) is explicit: an e-invoice is defined as a machine-readable structured XML file, full stop — nothing that merely looks like an invoice qualifies.</p>
+      </div>
+
+      <div class="spec-card">
+        <h3>Archiving &amp; timing</h3>
+        <div class="spec-row"><span class="k">Retention</span><span class="v">10 years, original XML format</span></div>
+        <div class="spec-row"><span class="k">Issuance deadline (until 2030)</span><span class="v">15 days from the tax point</span></div>
+        <div class="spec-row"><span class="k">Issuance deadline (from 2030)</span><span class="v">Shortens to 10 days</span></div>
+        <p class="note">Sending the invoice through a Digital Postman within the deadline is what fulfils the issuance obligation — the clock is on transmission, not just generation.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= TRANSMISSION PROTOCOL ================= -->
+  <div class="section">
+    <div class="section-head"><span class="num mono">03</span><h2 class="display">Transmission protocol</h2></div>
+    <p class="section-intro">The "5-corner" label matters here: Digital Postmen don't just move invoices between trading partners, they report the data to the tax authority in the same step.</p>
+
+    <div class="spec-grid">
+      <div class="spec-card">
+        <h3>The 5-corner model</h3>
+        <div class="spec-row"><span class="k">Corners 1–4</span><span class="v">Standard Peppol exchange (supplier → AP → AP → buyer)</span></div>
+        <div class="spec-row"><span class="k">Corner 5</span><span class="v">Real-time reporting to the Financial Administration</span></div>
+        <div class="spec-row"><span class="k">Service provider term</span><span class="v">"Digitálni poštári" (Digital Postmen)</span></div>
+        <p class="note">This is a genuine architectural step beyond Belgium's or the UK's plain 4-corner models — the reporting leg is built into the same transmission, not a separate filing.</p>
+      </div>
+
+      <div class="spec-card">
+        <h3>IS EFA vs. the B2B network</h3>
+        <div class="spec-row"><span class="k">IS EFA</span><span class="v">Central B2G/G2G platform, live since 2023</span></div>
+        <div class="spec-row"><span class="k">B2B</span><span class="v">Peppol-based Digital Postman network, extending the same principles</span></div>
+        <p class="note">Don't confuse the two — B2G invoices to IS EFA use UBL 2.1 or CII D16B directly; B2B invoices move via accredited Digital Postmen over Peppol, with IS eFaktúra receiving the reported data.</p>
+      </div>
+
+      <div class="spec-card">
+        <h3>Validation &amp; error handling</h3>
+        <div class="spec-row"><span class="k">Pre-send validation</span><span class="v">Digital Postman flags format/data errors before transmission</span></div>
+        <div class="spec-row"><span class="k">Post-transmission correction</span><span class="v">Formal credit note + new corrected invoice</span></div>
+        <div class="spec-row"><span class="k">Direct modification</span><span class="v">Not possible once transmitted</span></div>
+        <p class="note">Rejection by the recipient must be handled bilaterally between supplier and buyer — there's no reject function within the Peppol network itself for this purpose.</p>
+      </div>
+
+      <div class="spec-card">
+        <h3>Foreign companies (B2G context)</h3>
+        <div class="spec-row"><span class="k">Channel</span><span class="v">Email-based submission</span></div>
+        <div class="spec-row"><span class="k">Confirmation</span><span class="v">Confirmed or rejected via email by the government</span></div>
+        <p class="note">This lighter-touch email path applies specifically to B2G scenarios for foreign entities — B2B still requires a Digital Postman relationship once the 2027 mandate applies.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= REGISTRATION ================= -->
+  <div class="section">
+    <div class="section-head"><span class="num mono">04</span><h2 class="display">Getting ready</h2></div>
+    <p class="section-intro">The 2026 voluntary phase exists specifically so businesses can iron out integration problems before the mandate has teeth.</p>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">
+          <h4>Assess your current invoicing systems</h4>
+          <p>Check compatibility with EN 16931 / UBL XML output and identify any necessary upgrades before the mandatory go-live.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">
+          <h4>Select and contract an accredited Digital Postman</h4>
+          <p>Do this well ahead of 1 January 2027 — and be aware that from 1 July 2027, only certified Digital Postmen may be used at all.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">
+          <h4>Use the 2026 voluntary phase to test end-to-end</h4>
+          <p>Register voluntarily to pilot invoice submission, validation, and correction workflows before the mandate carries real consequences.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">
+          <h4>Confirm your Peppol participant ID uses scheme 0245</h4>
+          <p>Make sure your 10-digit DIČ is correctly registered under the Slovak identifier scheme — this is what makes you routable on the network.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">
+          <h4>Train staff on the correction workflow</h4>
+          <p>Since direct modification of a transmitted invoice isn't possible, make sure your team understands the credit-note-plus-reissue process before they need it under pressure.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">
+          <h4>Build the 15-day (soon 10-day) issuance deadline into your process</h4>
+          <p>Automate submission close to the tax point rather than batching — the deadline runs from the chargeable event, not from when someone gets around to generating the file.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= PENALTIES & RELATED ================= -->
+  <div class="section">
+    <div class="section-head"><span class="num mono">05</span><h2 class="display">Penalties &amp; enforcement</h2></div>
+    <p class="section-intro">Slovakia is explicitly taking an educational approach through the first half of 2027 — but the fines behind that grace period are real.</p>
+
+    <div class="related-grid">
+      <div class="penalty-card" style="grid-column:1 / -1;">
+        <table class="penalty-table">
+          <tr><th>Breach</th><th>Fine</th></tr>
+          <tr><td>Initial breach</td><td>Up to €10,000</td></tr>
+          <tr><td>Repeated offences</td><td>Up to €100,000</td></tr>
+        </table>
+      </div>
+      <div class="related-card">
+        <h4>🎓 Educational approach through mid-2027</h4>
+        <p>2026 and the first half of 2027 serve as grace periods with an emphasis on education rather than punishment — though penalties can technically still apply post-go-live for egregious cases.</p>
+      </div>
+      <div class="related-card">
+        <h4>📖 Where to check the fine print</h4>
+        <p>The Financial Directorate's official FAQ ("Najčastejšie otázky a odpovede k eFaktúre", document 9/DPH/2025) and detailed technical standards (schemas, code lists, Peppol API specifications) are being issued via a generally binding regulation of the Ministry of Finance — check info-efaktura.sk and financnasprava.sk for updates.</p>
+      </div>
+      <div class="related-card">
+        <h4>🔁 A mandate that's been delayed before</h4>
+        <p>Given the earlier 2022 voluntary framework was shelved, it's worth treating the 2027 date with appropriate confidence but staying alert for any further schedule changes as the deadline approaches.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="portal-row">
+    <a class="portal-btn" href="https://www.financnasprava.sk/en/homepage" target="_blank" rel="noopener">Financial Administration of the Slovak Republic</a>
+  </div>
+
+  <footer>
+    <p>This deep-dive page reflects publicly available technical guidance as of July 2026 and is provided for general awareness, not legal or tax advice. Slovakia's national CIUS, API specifications, and Ministry of Finance regulations are still being finalised — confirm current requirements directly with the Financial Directorate before building an integration.</p>
+  </footer>
+
+</div>
+</body>
+</html>

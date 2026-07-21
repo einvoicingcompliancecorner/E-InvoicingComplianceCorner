@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sweden — The E-Invoicing Compliance Corner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0f1a2b; --ink-2:#152238; --ink-3:#1c2c48; --line:#2b3c5a;
+    --paper:#efe9db; --paper-2:#e4dcc6; --paper-line:#c9bd9e;
+    --text-lo:#f2f0e8; --muted:#93a3c0;
+    --stamp:#b5432f; --stamp-dim:#7c3628;
+    --live:#3f7d5c; --live-dim:#274a38;
+    --soon:#c98a3a; --soon-dim:#6e4c22;
+    --upcoming:#6b7a95; --upcoming-dim:#3a4864;
+    --radius:10px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{background:var(--ink); color:var(--text-lo); font-family:'IBM Plex Sans',sans-serif; line-height:1.55;}
+  .display{font-family:'Big Shoulders Display',sans-serif; font-weight:800;}
+  .mono{font-family:'IBM Plex Mono',monospace;}
+  a{color:inherit;}
+  .wrap{max-width:980px; margin:0 auto; padding:0 5vw 60px;}
+  .back-link{display:inline-flex; align-items:center; gap:6px; margin:24px 0 0; font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:var(--muted); text-decoration:none;}
+  .back-link:hover{color:var(--soon);}
+  .country-head{display:flex; flex-wrap:wrap; gap:18px; align-items:flex-start; justify-content:space-between; padding:18px 0 26px; border-bottom:1px solid var(--line); margin-bottom:28px;}
+  .country-head-left{display:flex; gap:16px; align-items:center;}
+  .country-flag{font-size:46px; line-height:1;}
+  .country-eyebrow{font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.16em; text-transform:uppercase; color:var(--soon); margin:0 0 4px;}
+  .country-title{font-size:clamp(28px,4.5vw,42px); margin:0; text-transform:uppercase; line-height:0.95;}
+  .country-region{font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--muted); margin-top:6px;}
+  .country-meta{font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--muted); text-align:right;}
+  .status-banner{
+    background:var(--soon-dim); border:1px solid var(--soon); color:#ffe9c7; border-radius:var(--radius);
+    padding:14px 18px; margin-bottom:32px; font-size:13.3px; display:flex; gap:12px; align-items:flex-start;
+  }
+  .status-banner .icon{font-size:18px; line-height:1;}
+  .stat-strip{display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:1px; background:var(--line); border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; margin-bottom:36px;}
+  .stat-strip .stat{background:var(--ink-2); padding:16px 18px;}
+  .stat-strip .stat .num{font-family:'Big Shoulders Display',sans-serif; font-weight:800; font-size:22px; line-height:1.15;}
+  .stat-strip .stat .lbl{font-size:10.8px; color:var(--muted); text-transform:uppercase; letter-spacing:0.07em; margin-top:5px;}
+  .section{margin-bottom:44px;}
+  .section-head{display:flex; align-items:baseline; gap:12px; margin-bottom:18px;}
+  .section-head h2{font-size:22px; margin:0; text-transform:uppercase;}
+  .section-head .num{font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--soon);}
+  .section-intro{color:var(--muted); font-size:13.8px; max-width:680px; margin:-8px 0 20px;}
+  .rtimeline{position:relative; padding-left:26px; border-left:2px solid var(--line);}
+  .rmonth-marker{font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--soon); text-transform:uppercase; letter-spacing:0.1em; margin:22px 0 12px -26px; padding-left:26px; position:relative;}
+  .rmonth-marker::before{content:""; position:absolute; left:-6px; top:6px; width:10px; height:10px; border-radius:50%; background:var(--soon); border:2px solid var(--ink);}
+  .rmonth-marker:first-child{margin-top:0;}
+  .rcard{background:var(--paper); color:#241d10; border-radius:var(--radius); margin-bottom:14px; padding:16px 20px 18px; border:1px solid var(--paper-line);}
+  .rcard-top{display:flex; flex-wrap:wrap; justify-content:space-between; gap:8px 16px; align-items:flex-start;}
+  .rcard-date{font-family:'IBM Plex Mono',monospace; font-size:12.5px; font-weight:600; color:#4a3f22;}
+  .rbadge{font-family:'IBM Plex Mono',monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:0.06em; padding:4px 9px; border-radius:5px; font-weight:600; white-space:nowrap;}
+  .rbadge.inforce{background:var(--live-dim); color:#bfe6cf;}
+  .rbadge.soon{background:var(--soon-dim); color:#ffe0b3;}
+  .rbadge.upcoming{background:var(--upcoming-dim); color:#dbe2ee;}
+  .rcard-title{font-size:15px; font-weight:600; margin:10px 0 4px;}
+  .rcard-desc{font-size:13.3px; color:#4a4030; margin:0;}
+  .spec-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:14px;}
+  .spec-card{background:var(--paper); color:#241d10; border-radius:var(--radius); border:1px solid var(--paper-line); padding:16px 18px 18px;}
+  .spec-card h3{font-family:'IBM Plex Mono',monospace; font-size:11px; text-transform:uppercase; letter-spacing:0.09em; color:#6b5f3f; margin:0 0 10px; display:flex; align-items:center; gap:8px;}
+  .spec-card h3::after{content:""; flex:1; height:1px; background:var(--paper-line);}
+  .spec-row{display:flex; justify-content:space-between; gap:12px; padding:6px 0; border-top:1px dashed var(--paper-line); font-size:13px;}
+  .spec-row:first-of-type{border-top:none;}
+  .spec-row .k{color:#6b5f3f; flex:0 0 42%;}
+  .spec-row .v{color:#241d10; text-align:right; font-weight:500;}
+  .spec-card p.note{font-size:12.6px; color:#5a5138; margin:10px 0 0; padding-top:10px; border-top:1px dashed var(--paper-line);}
+  .steps{counter-reset:step; display:flex; flex-direction:column; gap:0;}
+  .step{display:flex; gap:16px; padding:16px 0; border-top:1px dashed var(--line);}
+  .step:first-child{border-top:none;}
+  .step-num{counter-increment:step; flex:0 0 auto; width:30px; height:30px; border-radius:50%; background:var(--soon-dim); color:#ffe0b3; display:flex; align-items:center; justify-content:center; font-family:'Big Shoulders Display',sans-serif; font-weight:800; font-size:14px;}
+  .step-num::before{content:counter(step);}
+  .step-body h4{margin:2px 0 4px; font-size:14.5px;}
+  .step-body p{margin:0; font-size:13.3px; color:var(--muted);}
+  .related-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:14px;}
+  .related-card{background:var(--ink-2); border:1px solid var(--line); border-radius:var(--radius); padding:16px 18px;}
+  .related-card h4{margin:0 0 6px; font-size:14.5px; display:flex; align-items:center; gap:8px;}
+  .related-card p{margin:0; font-size:13px; color:var(--muted);}
+  .portal-row{display:flex; flex-wrap:wrap; gap:8px; margin-top:6px;}
+  .portal-btn{display:inline-flex; align-items:center; gap:6px; background:var(--ink); color:var(--text-lo); text-decoration:none; font-family:'IBM Plex Mono',monospace; font-size:12px; padding:8px 14px; border-radius:6px; border:1px solid var(--line);}
+  .portal-btn:hover{background:var(--stamp);}
+  .portal-btn::before{content:"↗";}
+  footer{margin:40px 0 0; padding:22px 0 10px; border-top:1px solid var(--line); color:var(--muted); font-size:12.3px;}
+  footer p{max-width:820px; margin:0 0 8px;}
+  @media (max-width:640px){ .country-head{flex-direction:column;} .country-meta{text-align:left;} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <a class="back-link" href="einvoicing-compliance-tracker.html">← Back to global tracker</a>
+
+  <div class="country-head">
+    <div class="country-head-left">
+      <div class="country-flag">🇸🇪</div>
+      <div>
+        <p class="country-eyebrow">Country deep dive</p>
+        <h1 class="country-title display">Sweden</h1>
+        <div class="country-region">Europe · SE · VAT area: EU</div>
+      </div>
+    </div>
+    <div class="country-meta">
+      Last updated: 21 July 2026<br>
+      Compliance model: Fully decentralised — no domestic B2B mandate
+    </div>
+  </div>
+
+  <div class="status-banner">
+    <span class="icon">🔎</span>
+    <span>Sweden has <strong>no legislated domestic B2B mandate</strong>. What's genuinely new: a national inquiry into ViDA implementation launched <strong>5 February 2026</strong>, explicitly tasked with assessing whether to mandate domestic B2B/G2B e-invoicing, with findings due <strong>no later than 30 November 2027</strong>.</span>
+  </div>
+
+  <div class="stat-strip">
+    <div class="stat"><div class="num display">2008</div><div class="lbl">First partial B2G mandate</div></div>
+    <div class="stat"><div class="num display">Peppol BIS 3.0</div><div class="lbl">Preferred format</div></div>
+    <div class="stat"><div class="num display">No B2B</div><div class="lbl">Domestic mandate — none yet</div></div>
+    <div class="stat"><div class="num display">7 yrs</div><div class="lbl">Archive requirement</div></div>
+    <div class="stat"><div class="num display">Nov 2027</div><div class="lbl">National ViDA inquiry due</div></div>
+  </div>
+
+  <!-- ================= TIMELINE ================= -->
+  <div class="section">
+    <div class="section-head"><span class="num mono">01</span><h2 class="display">Compliance timeline</h2></div>
+    <p class="section-intro">Sweden has one of Europe's longest e-invoicing track records in the public sector — and one of its more open questions about whether that ever extends to private business.</p>
+
+    <div class="rtimeline">
+      <div class="rmonth-marker">2008</div>
+      <div class="rcard">
+        <div class="rcard-top"><span class="rcard-date">2008</span><span class="rbadge inforce">In effect</span></div>
+        <div class="rcard-title">First partial B2G mandate — central government agencies</div>
+        <p class="rcard-desc">All invoices sent to central public administrations must be electronic, alongside the creation of DIGG's predecessor functions to steer public-sector digitalisation.</p>
+      </div>
+
+      <div class="rmonth-marker">2018–2019</div>
+      <div class="rcard">
+        <div class="rcard-top"><span class="rcard-date">2018 (Act 2018:1277)</span><span class="rbadge inforce">In effect</span></div>
+        <div class="rcard-title">Act on Electronic Invoicing in Public Procurement</div>
+        <p class="rcard-desc">Transposes EU Directive 2014/55/EU into Swedish law, setting the legal foundation for the full public-sector mandate that follows.</p>
+      </div>
+      <div class="rcard">
+        <div class="rcard-top"><span class="rcard-date">1 Apr 2019</span><span class="rbadge inforce">In effect</span></div>
+        <div class="rcard-title">Full EN 16931 mandate for all public procurement</div>
+        <p class="rcard-desc">All central and sub-central public procurement contracting authorities and suppliers — above and below EU thresholds, including direct procurement — must comply using the Peppol BIS Billing 3.0 CIUS.</p>
+      </div>
+      <div class="rcard">
+        <div class="rcard-top"><span class="rcard-date">1 Dec 2019</span><span class="rbadge inforce">In effect</span></div>
+        <div class="rcard-title">Extended to all regional and municipal administrations</div>
+        <p class="rcard-desc">Full public-sector coverage achieved — every entity wishing to trade with public authorities must be connected to the Peppol network.</p>
+      </div>
+
+      <div class="rmonth-marker">February 2023</div>
+      <div class="rcard">
+        <div class="rcard-top"><span class="rcard-date">Feb 2023</span><span class="rbadge inforce">In effect</span></div>
+        <div class="rcard-title">DIGG, Skatteverket and Bolagsverket jointly request a B2B/G2B assessment</div>
+        <p class="rcard-desc">The three agencies formally ask the government to evaluate introducing a domestic B2B and G2B e-invoicing mandate — the first concrete institutional push beyond the existing voluntary approach.</p>
+      </div>
+
+      <div class="rmonth-marker">2025</div>
+      <div class="rcard">
+        <div class="rcard-top"><span class="rcard-date">1 Mar 2025</span><span class="rbadge inforce">In effect</span></div>
+        <div class="rcard-title">Tullverket (Swedish Customs) adopts Peppol BIS Billing 3</div>
+        <p class="rcard-desc">Sweden's customs authority begins using Peppol BIS for invoicing customs duties, taxes, and fees — a sign of the format's continued spread even without a general legal mandate.</p>
+      </div>
+      <div class="rcard">
+        <div class="rcard-top"><span class="rcard-date">1 Jul 2025</span><span class="rbadge inforce">In effect</span></div>
+        <div class="rcard-title">SFTI phases out legacy formats as "recommended" standards</div>
+        <p class="rcard-desc">Svefaktura and SFTI ESAP 6 Fulltextfaktura are no longer recommended for new public procurement projects — Peppol BIS becomes the preferred format, though legacy formats remain technically accepted for now.</p>
+      </div>
+
+      <div class="rmonth-marker">February 2026</div>
+      <div class="rcard">
+        <div class="rcard-top"><span class="rcard-date">5 Feb 2026</span><span class="rbadge soon">Due soon</span></div>
+        <div class="rcard-title">National ViDA implementation inquiry launched</div>
+        <p class="rcard-desc">The Ministry of Finance formally launches an inquiry into how ViDA should be implemented in Swedish law. A commissioner is appointed to examine necessary legislative changes, assess whether domestic B2B e-invoicing should be mandated, and consider how Skatteverket might use e-invoicing data for VAT administration and fraud prevention.</p>
+      </div>
+
+      <div class="rmonth-marker">November 2027</div>
+      <div class="rcard">
+        <div class="rcard-top"><span class="rcard-date">By 30 Nov 2027</span><span class="rbadge upcoming">Upcoming</span></div>
+        <div class="rcard-title">Inquiry findings due</div>
+        <p class="rcard-desc">This is the concrete date to watch — it will determine whether Sweden follows its Nordic neighbours into a legislated domestic B2B mandate, or continues with the current voluntary, high-adoption approach.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= FILE FORMAT ================= -->
+  <div class="section">
+    <div class="section-head"><span class="num mono">02</span><h2 class="display">File format &amp; data specification</h2></div>
+    <p class="section-intro">Sweden has never operated a single mandated national schema the way Norway (EHF) or Denmark (OIOUBL) do — it went straight to the European standard.</p>
+
+    <div class="spec-grid">
+      <div class="spec-card">
+        <h3>Current formats</h3>
+        <div class="spec-row"><span class="k">Preferred</span><span class="v">Peppol BIS Billing 3.0 (UBL, EN 16931)</span></div>
+        <div class="spec-row"><span class="k">Legacy, still accepted</span><span class="v">Svefaktura 1.0 / 2.0</span></div>
+        <div class="spec-row"><span class="k">Legacy, being phased out</span><span class="v">SFTI ESAP 6 Fulltextfaktura, EDIFACT</span></div>
+        <p class="note">Many Swedish businesses still use Svefaktura for B2B trading — if you're integrating with Swedish partners, be ready to support both Peppol BIS and the older national formats for a while yet.</p>
+      </div>
+
+      <div class="spec-card">
+        <h3>Signature &amp; archiving</h3>
+        <div class="spec-row"><span class="k">Digital signature</span><span class="v">Not required</span></div>
+        <div class="spec-row"><span class="k">Retention period</span><span class="v">7 years</span></div>
+        <p class="note">No electronic signature requirement applies to either public- or private-sector invoices — a genuinely lighter-touch requirement than Italy's mandatory XAdES/CAdES.</p>
+      </div>
+
+      <div class="spec-card">
+        <h3>No national CIUS beyond Peppol BIS</h3>
+        <div class="spec-row"><span class="k">National extensions</span><span class="v">None beyond the Peppol BIS Billing CIUS itself</span></div>
+        <p class="note">Unlike Croatia's HR-FISK or Romania's RO_CIUS, there's no additional Swedish-specific layer of mandatory fields to learn — the standard European profile is what applies.</p>
+      </div>
+
+      <div class="spec-card">
+        <h3>Standard VAT invoice content</h3>
+        <div class="spec-row"><span class="k">Requirement</span><span class="v">Standard Swedish VAT invoice content rules apply regardless of format</span></div>
+        <p class="note">Whichever format you use, the underlying legal content requirements for a valid Swedish VAT invoice remain the same — the format question is about structure, not substance.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= TRANSMISSION PROTOCOL ================= -->
+  <div class="section">
+    <div class="section-head"><span class="num mono">03</span><h2 class="display">Transmission protocol</h2></div>
+    <p class="section-intro">There is genuinely no central Swedish platform — this is one of the purest decentralised models in this tracker.</p>
+
+    <div class="spec-grid">
+      <div class="spec-card">
+        <h3>No central platform</h3>
+        <div class="spec-row"><span class="k">Government portal</span><span class="v">None exists</span></div>
+        <div class="spec-row"><span class="k">Everything routes via</span><span class="v">The Peppol network</span></div>
+        <p class="note">Every invoice moves through Peppol Access Points — there's nothing resembling Croatia's AMS, Poland's KSeF, or even Norway's ELMA as a distinct government-run directory layer.</p>
+      </div>
+
+      <div class="spec-card">
+        <h3>Governance</h3>
+        <div class="spec-row"><span class="k">DIGG</span><span class="v">Swedish Peppol Authority (currently being merged into PTS)</span></div>
+        <div class="spec-row"><span class="k">SFTI</span><span class="v">Standards body — Single Face to Industry — not a transmission platform</span></div>
+        <div class="spec-row"><span class="k">Skatteverket</span><span class="v">Tax Agency; a co-sponsor of the B2B mandate assessment</span></div>
+        <p class="note">DIGG's ongoing merger with the Post and Telecom Authority (PTS) may shift the day-to-day contact point for Peppol Authority matters — watch for updated guidance during the transition.</p>
+      </div>
+
+      <div class="spec-card">
+        <h3>Finding a trading partner</h3>
+        <div class="spec-row"><span class="k">Tool</span><span class="v">Peppol Online Directory</span></div>
+        <div class="spec-row"><span class="k">What it shows</span><span class="v">Connection status, accepted formats, business identifiers (GLN or VAT number)</span></div>
+        <p class="note">Use the directory to check whether a specific Swedish counterparty is Peppol-connected and which formats/identifiers it accepts before you build an integration around assumptions.</p>
+      </div>
+
+      <div class="spec-card">
+        <h3>B2B today: voluntary but common</h3>
+        <div class="spec-row"><span class="k">Legal requirement</span><span class="v">None</span></div>
+        <div class="spec-row"><span class="k">Practical reality</span><span class="v">High adoption, increasingly expected by larger buyers</span></div>
+        <p class="note">Nothing stops two Swedish businesses from exchanging structured e-invoices today by mutual agreement — many already do, well ahead of any legal requirement to.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= REGISTRATION ================= -->
+  <div class="section">
+    <div class="section-head"><span class="num mono">04</span><h2 class="display">Getting ready</h2></div>
+    <p class="section-intro">With no domestic B2B mandate, "getting ready" here means positioning sensibly rather than meeting a hard deadline.</p>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">
+          <h4>If you supply Swedish public bodies, confirm Peppol BIS Billing 3.0 capability</h4>
+          <p>Connect via a certified Access Point or approved e-invoicing service provider — this remains firmly mandatory for the public sector.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">
+          <h4>Check the Peppol Online Directory before building integrations</h4>
+          <p>Confirm your Swedish counterparty's connection status and which formats/identifiers they accept — don't assume Peppol BIS 3.0 universally, given legacy format persistence.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">
+          <h4>Migrate off Svefaktura and SFTI ESAP 6 where practical</h4>
+          <p>These formats are being actively discouraged, even though still technically accepted — moving to Peppol BIS 3.0 now avoids a scramble later.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">
+          <h4>For B2B, there's nothing to register for — just monitor the inquiry</h4>
+          <p>Track the national ViDA implementation inquiry, due by 30 November 2027, since its findings will determine whether and how a domestic mandate emerges.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">
+          <h4>Set up standard 7-year archiving</h4>
+          <p>Ensure your e-invoice records meet the retention period regardless of which format you're using.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= RELATED / OPEN QUESTIONS ================= -->
+  <div class="section">
+    <div class="section-head"><span class="num mono">05</span><h2 class="display">Related context &amp; open questions</h2></div>
+    <p class="section-intro">No penalty framework exists for B2B because no mandate exists yet — the real story here is what the 2026 inquiry might produce.</p>
+
+    <div class="related-grid">
+      <div class="related-card">
+        <h4>🔮 What the inquiry is actually assessing</h4>
+        <p>Beyond the binary "mandate or not" question, the commissioner is specifically examining whether Skatteverket could use e-invoicing data for VAT administration and fraud prevention — a hint that any eventual mandate could carry a reporting component, not just a format requirement.</p>
+      </div>
+      <div class="related-card">
+        <h4>🏛️ DIGG's merger into PTS</h4>
+        <p>Watch for how Sweden's Peppol Authority function is preserved (or restructured) as DIGG merges with the Post and Telecom Authority — this is an institutional change worth tracking separately from the policy question.</p>
+      </div>
+      <div class="related-card">
+        <h4>🇪🇺 The only firm deadline: ViDA itself</h4>
+        <p>Regardless of what the domestic inquiry concludes, Sweden still faces the EU-wide ViDA cross-border e-invoicing requirement from 1 July 2030 — cross-border-trading Swedish businesses should prepare for that date independently of the domestic question.</p>
+      </div>
+      <div class="related-card">
+        <h4>📈 High voluntary adoption as a hedge</h4>
+        <p>Because B2B Peppol/Svefaktura adoption is already widespread, a future mandate — if legislated — would likely formalise existing practice for many businesses rather than force a from-scratch build, similar to how Norway's 2027 mandate largely does today.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="portal-row">
+    <a class="portal-btn" href="https://www.digg.se" target="_blank" rel="noopener">DIGG — Swedish Peppol Authority</a>
+  </div>
+
+  <footer>
+    <p>This deep-dive page reflects publicly available technical guidance as of July 2026 and is provided for general awareness, not legal or tax advice. Sweden's domestic B2B mandate question remains genuinely open pending the national inquiry due November 2027 — confirm current developments directly with DIGG or Skatteverket before making long-term compliance decisions.</p>
+  </footer>
+
+</div>
+</body>
+</html>
