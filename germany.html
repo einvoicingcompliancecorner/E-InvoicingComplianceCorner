@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Germany — The E-Invoicing Compliance Corner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0f1a2b; --ink-2:#152238; --ink-3:#1c2c48; --line:#2b3c5a;
+    --paper:#efe9db; --paper-2:#e4dcc6; --paper-line:#c9bd9e;
+    --text-lo:#f2f0e8; --muted:#93a3c0;
+    --stamp:#b5432f; --stamp-dim:#7c3628;
+    --live:#3f7d5c; --live-dim:#274a38;
+    --soon:#c98a3a; --soon-dim:#6e4c22;
+    --upcoming:#6b7a95; --upcoming-dim:#3a4864;
+    --radius:10px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{background:var(--ink); color:var(--text-lo); font-family:'IBM Plex Sans',sans-serif; line-height:1.55;}
+  .display{font-family:'Big Shoulders Display',sans-serif; font-weight:800;}
+  .mono{font-family:'IBM Plex Mono',monospace;}
+  a{color:inherit;}
+  .wrap{max-width:980px; margin:0 auto; padding:0 5vw 60px;}
+  .back-link{display:inline-flex; align-items:center; gap:6px; margin:24px 0 0; font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:var(--muted); text-decoration:none;}
+  .back-link:hover{color:var(--soon);}
+  .country-head{display:flex; flex-wrap:wrap; gap:18px; align-items:flex-start; justify-content:space-between; padding:18px 0 26px; border-bottom:1px solid var(--line); margin-bottom:28px;}
+  .country-head-left{display:flex; gap:16px; align-items:center;}
+  .country-flag{font-size:46px; line-height:1;}
+  .country-eyebrow{font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.16em; text-transform:uppercase; color:var(--soon); margin:0 0 4px;}
+  .country-title{font-size:clamp(28px,4.5vw,42px); margin:0; text-transform:uppercase; line-height:0.95;}
+  .country-region{font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--muted); margin-top:6px;}
+  .country-meta{font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--muted); text-align:right;}
+  .stat-strip{display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:1px; background:var(--line); border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; margin-bottom:36px;}
+  .stat-strip .stat{background:var(--ink-2); padding:16px 18px;}
+  .stat-strip .stat .num{font-family:'Big Shoulders Display',sans-serif; font-weight:800; font-size:22px; line-height:1.15;}
+  .stat-strip .stat .lbl{font-size:10.8px; color:var(--muted); text-transform:uppercase; letter-spacing:0.07em; margin-top:5px;}
+  .section{margin-bottom:44px;}
+  .section-head{display:flex; align-items:baseline; gap:12px; margin-bottom:18px;}
+  .section-head h2{font-size:22px; margin:0; text-transform:uppercase;}
+  .section-head .num{font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--soon);}
+  .section-intro{color:var(--muted); font-size:13.8px; max-width:680px; margin:-8px 0 20px;}
+  .rtimeline{position:relative; padding-left:26px; border-left:2px solid var(--line);}
+  .rmonth-marker{font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--soon); text-transform:uppercase; letter-spacing:0.1em; margin:22px 0 12px -26px; padding-left:26px; position:relative;}
+  .rmonth-marker::before{content:""; position:absolute; left:-6px; top:6px; width:10px; height:10px; border-radius:50%; background:var(--soon); border:2px solid var(--ink);}
+  .rmonth-marker:first-child{margin-top:0;}
+  .rcard{background:var(--paper); color:#241d10; border-radius:var(--radius); margin-bottom:14px; padding:16px 20px 18px; border:1px solid var(--paper-line);}
+  .rcard-top{display:flex; flex-wrap:wrap; justify-content:space-between; gap:8px 16px; align-items:flex-start;}
+  .rcard-date{font-family:'IBM Plex Mono',monospace; font-size:12.5px; font-weight:600; color:#4a3f22;}
+  .rbadge{font-family:'IBM Plex Mono',monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:0.06em; padding:4px 9px; border-radius:5px; font-weight:600; white-space:nowrap;}
+  .rbadge.inforce{background:var(--live-dim); color:#bfe6cf;}
+  .rbadge.soon{background:var(--soon-dim); color:#ffe0b3;}
+  .rbadge.upcoming{background:var(--upcoming-dim); color:#dbe2ee;}
+  .rcard-title{font-size:15px; font-weight:600; margin:10px 0 4px;}
+  .rcard-desc{font-size:13.3px; color:#4a4030; margin:0;}
+  .spec-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:14px;}
+  .spec-card{background:var(--paper); color:#241d10; border-radius:var(--radius); border:1px solid var(--paper-line); padding:16px 18px 18px;}
+  .spec-card h3{font-family:'IBM Plex Mono',monospace; font-size:11px; text-transform:uppercase; letter-spacing:0.09em; color:#6b5f3f; margin:0 0 10px; display:flex; align-items:center; gap:8px;}
+  .spec-card h3::after{content:""; flex:1; height:1px; background:var(--paper-line);}
+  .spec-row{display:flex; justify-content:space-between; gap:12px; padding:6px 0; border-top:1px dashed var(--paper-line); font-size:13px;}
+  .spec-row:first-of-type{border-top:none;}
+  .spec-row .k{color:#6b5f3f; flex:0 0 42%;}
+  .spec-row .v{color:#241d10; text-align:right; font-weight:500;}
+  .spec-card p.note{font-size:12.6px; color:#5a5138; margin:10px 0 0; padding-top:10px; border-top:1px dashed var(--paper-line);}
+  .steps{counter-reset:step; display:flex; flex-direction:column; gap:0;}
+  .step{display:flex; gap:16px; padding:16px 0; border-top:1px dashed var(--line);}
+  .step:first-child{border-top:none;}
+  .step-num{counter-increment:step; flex:0 0 auto; width:30px; height:30px; border-radius:50%; background:var(--soon-dim); color:#ffe0b3; display:flex; align-items:center; justify-content:center; font-family:'Big Shoulders Display',sans-serif; font-weight:800; font-size:14px;}
+  .step-num::before{content:counter(step);}
+  .step-body h4{margin:2px 0 4px; font-size:14.5px;}
+  .step-body p{margin:0; font-size:13.3px; color:var(--muted);}
+  .related-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:14px;}
+  .related-card{background:var(--ink-2); border:1px solid var(--line); border-radius:var(--radius); padding:16px 18px;}
+  .related-card h4{margin:0 0 6px; font-size:14.5px; display:flex; align-items:center; gap:8px;}
+  .related-card p{margin:0; font-size:13px; color:var(--muted);}
+  .penalty-table{width:100%; border-collapse:collapse; font-size:13px;}
+  .penalty-table th, .penalty-table td{text-align:left; padding:9px 10px; border-bottom:1px dashed var(--paper-line);}
+  .penalty-table th{font-family:'IBM Plex Mono',monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:0.06em; color:#6b5f3f;}
+  .penalty-table td{color:#241d10;}
+  .penalty-card{background:var(--paper); color:#241d10; border-radius:var(--radius); border:1px solid var(--paper-line); padding:16px 18px;}
+  .portal-row{display:flex; flex-wrap:wrap; gap:8px; margin-top:6px;}
+  .portal-btn{display:inline-flex; align-items:center; gap:6px; background:var(--ink); color:var(--text-lo); text-decoration:none; font-family:'IBM Plex Mono',monospace; font-size:12px; padding:8px 14px; border-radius:6px; border:1px solid var(--line);}
+  .portal-btn:hover{background:var(--stamp);}
+  .portal-btn::before{content:"↗";}
+  footer{margin:40px 0 0; padding:22px 0 10px; border-top:1px solid var(--line); color:var(--muted); font-size:12.3px;}
+  footer p{max-width:820px; margin:0 0 8px;}
+  @media (max-width:640px){ .country-head{flex-direction:column;} .country-meta{text-align:left;} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <a class="back-link" href="einvoicing-compliance-tracker.html">← Back to global tracker</a>
+
+  <div class="country-head">
+    <div class="country-head-left">
+      <div class="country-flag">🇩🇪</div>
+      <div>
+        <p class="country-eyebrow">Country deep dive</p>
+        <h1 class="country-title display">Germany</h1>
+        <div class="country-region">Europe · DE · VAT area: EU</div>
+      </div>
+    </div>
+    <div class="country-meta">
+      Last updated: 21 July 2026<br>
+      Compliance model: Fully decentralised — no clearance
+    </div>
+  </div>
+
+  <div class="stat-strip">
+    <div class="stat"><div class="num display">2 formats</div><div class="lbl">XRechnung / ZUGFeRD</div></div>
+    <div class="stat"><div class="num display">No CTC</div><div class="lbl">No central platform (B2B)</div></div>
+    <div class="stat"><div class="num display">8 yrs</div><div class="lbl">Archive requirement</div></div>
+    <div class="stat"><div class="num display">€5,000</div><div class="lbl">Max fine per offence</div></div>
+    <div class="stat"><div class="num display">2028</div><div class="lbl">Full B2B issuance mandate</div></div>
+  </div>
+
+  <!-- ================= TIMELINE ================= -->
+  <div class="section">
+    <div class="section-head"><span class="num mono">01</span><h2 class="display">Compliance timeline</h2></div>
+    <p class="section-intro">Germany's reform is unusually gradual by design — a pure receiving mandate first, then issuance phased in strictly by company turnover, with no domestic reporting obligation attached (yet).</p>
+
+    <div class="rtimeline">
+      <div class="rmonth-marker">November 2020</div>
+      <div class="rcard">
+        <div class="rcard-top"><span class="rcard-date">27 Nov 2020</span><span class="rbadge inforce">In effect</span></div>
+        <div class="rcard-title">XRechnung mandatory for federal public authorities (B2G)</div>
+        <p class="rcard-desc">Every invoice sent to a German federal ministry, state authority, or municipal body in scope must comply with XRechnung or an equivalent EN 16931-conformant format — years ahead of any B2B obligation.</p>
+      </div>
+
+      <div class="rmonth-marker">March 2024</div>
+      <div class="rcard">
+        <div class="rcard-top"><span class="rcard-date">22 Mar 2024</span><span class="rbadge inforce">In effect</span></div>
+        <div class="rcard-title">Wachstumschancengesetz (Growth Opportunities Act) passes the Bundesrat</div>
+        <p class="rcard-desc">The law establishing Germany's B2B e-invoicing mandate clears its final legislative hurdle, setting the phased 2025–2028 timeline described below.</p>
+      </div>
+
+      <div class="rmonth-marker">January 2025</div>
+      <div class="rcard">
+        <div class="rcard-top"><span class="rcard-date">1 Jan 2025</span><span class="rbadge inforce">In effect</span></div>
+        <div class="rcard-title">All businesses must be able to receive structured e-invoices</div>
+        <p class="rcard-desc">A pure reception obligation — every VAT-registered business, regardless of size, must be technically capable of receiving an EN 16931-compliant structured e-invoice. Sending paper or PDF invoices remains fine during the transition, provided the recipient agrees.</p>
+      </div>
+
+      <div class="rmonth-marker">January 2027</div>
+      <div class="rcard">
+        <div class="rcard-top"><span class="rcard-date">1 Jan 2027</span><span class="rbadge soon">Due soon</span></div>
+        <div class="rcard-title">Issuing mandatory — businesses over €800,000 prior-year turnover</div>
+        <p class="rcard-desc">Businesses crossing this threshold must issue structured e-invoices (XRechnung, ZUGFeRD 2.1+, or another EN 16931-compliant format) for domestic B2B sales. Kleinunternehmer under §19 UStG (turnover ≤€25,000 prior year, ≤€100,000 current year) remain exempt from issuing but must still be able to receive.</p>
+      </div>
+
+      <div class="rmonth-marker">January 2028</div>
+      <div class="rcard">
+        <div class="rcard-top"><span class="rcard-date">1 Jan 2028</span><span class="rbadge upcoming">Upcoming</span></div>
+        <div class="rcard-title">Issuing mandatory for all remaining businesses</div>
+        <p class="rcard-desc">The obligation extends to every domestic B2B business below the €800,000 threshold, completing the phased rollout. No real-time VAT reporting system is attached to this mandate — unlike France or Poland, Germany treats e-invoicing purely as a format requirement, not a data-reporting one, for now.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= FILE FORMAT ================= -->
+  <div class="section">
+    <div class="section-head"><span class="num mono">02</span><h2 class="display">File format &amp; data specification</h2></div>
+    <p class="section-intro">Germany accepts two genuinely different national formats side by side, plus Peppol BIS as a third option — there's real choice here, unlike most CTC countries.</p>
+
+    <div class="spec-grid">
+      <div class="spec-card">
+        <h3>XRechnung</h3>
+        <div class="spec-row"><span class="k">Type</span><span class="v">Pure XML — no visual layer</span></div>
+        <div class="spec-row"><span class="k">Syntax</span><span class="v">UBL 2.1 or UN/CEFACT CII</span></div>
+        <div class="spec-row"><span class="k">Current version</span><span class="v">XRechnung 3.0.2 (moving to 4.0)</span></div>
+        <div class="spec-row"><span class="k">Mandatory for</span><span class="v">All B2G invoices; increasingly used for B2B</span></div>
+        <p class="note">Because XRechnung has no human-readable rendering built in, recipients need software that can actually display or process the XML — this is part of why ZUGFeRD is often preferred for B2B.</p>
+      </div>
+
+      <div class="spec-card">
+        <h3>ZUGFeRD</h3>
+        <div class="spec-row"><span class="k">Type</span><span class="v">Hybrid — PDF/A-3 + embedded XML</span></div>
+        <div class="spec-row"><span class="k">Current version</span><span class="v">ZUGFeRD 2.3.x (2.1+ required)</span></div>
+        <div class="spec-row"><span class="k">Cross-compatible with</span><span class="v">Factur-X (France) since v2.1</span></div>
+        <div class="spec-row"><span class="k">Preferred for</span><span class="v">B2B — readable without specialist software</span></div>
+        <p class="note">The embedded XML follows the same CII syntax family as XRechnung's CII option — so a well-built pipeline can often generate both formats from the same underlying data model.</p>
+      </div>
+
+      <div class="spec-card">
+        <h3>Mandatory content (§14 UStG)</h3>
+        <div class="spec-row"><span class="k">Party data</span><span class="v">Name, address, VAT ID for supplier &amp; customer</span></div>
+        <div class="spec-row"><span class="k">Transaction detail</span><span class="v">Description, quantity, unit price, date of supply</span></div>
+        <div class="spec-row"><span class="k">Tax detail</span><span class="v">Net amount, VAT rate, VAT amount, gross total, reverse-charge/exemption flags</span></div>
+        <div class="spec-row"><span class="k">Digital signature</span><span class="v">Not required</span></div>
+        <p class="note">All of this must live in the structured data itself — attaching a compliant-looking PDF alongside a non-compliant XML doesn't satisfy the mandate. "XML" alone isn't a compliance indicator either; it must be a recognised EN 16931 implementation.</p>
+      </div>
+
+      <div class="spec-card">
+        <h3>German CIUS quirks</h3>
+        <div class="spec-row"><span class="k">BT-72 (actual delivery date)</span><span class="v">Optional in EN 16931 → mandatory in German CIUS</span></div>
+        <div class="spec-row"><span class="k">B2G payment means codes</span><span class="v">Restricted list (e.g. 30 = transfer, 58 = SEPA)</span></div>
+        <div class="spec-row"><span class="k">Archiving</span><span class="v">8 years, GoBD-compliant, original structured format</span></div>
+        <p class="note">Saving only a printed copy of a ZUGFeRD invoice instead of the original file violates GoBD record-keeping rules — the embedded XML is the part that must survive, not just the PDF rendering.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= TRANSMISSION PROTOCOL ================= -->
+  <div class="section">
+    <div class="section-head"><span class="num mono">03</span><h2 class="display">Transmission protocol</h2></div>
+    <p class="section-intro">This is the biggest structural difference from France, Italy, or Poland: Germany has no clearance authority and no mandated channel for B2B at all.</p>
+
+    <div class="spec-grid">
+      <div class="spec-card">
+        <h3>B2B: fully decentralised</h3>
+        <div class="spec-row"><span class="k">Clearance authority</span><span class="v">None</span></div>
+        <div class="spec-row"><span class="k">Mandated channel</span><span class="v">None — any agreed method</span></div>
+        <div class="spec-row"><span class="k">Accepted channels</span><span class="v">Email, portal/download link, EDI, FTP/FTPS, web services, Peppol</span></div>
+        <p class="note">The mandate governs the format of the invoice, not how it travels. Two trading partners are free to agree on whatever transmission method suits them, as long as the file itself is a compliant structured invoice.</p>
+      </div>
+
+      <div class="spec-card">
+        <h3>B2G: two federal portals</h3>
+        <div class="spec-row"><span class="k">ZRE</span><span class="v">Direct federal administration (ministries + directly subordinate bodies)</span></div>
+        <div class="spec-row"><span class="k">OZG-RE</span><span class="v">Indirect federal administration + several federal states</span></div>
+        <div class="spec-row"><span class="k">Routing identifier</span><span class="v">Leitweg-ID (format XX-XXXXXXXXXX-XX)</span></div>
+        <p class="note">Your contracting authority tells you which platform and Leitweg-ID to use — check your contract or procurement terms if unsure. Authorities must also offer Peppol as a transmission option where automated exchange is possible.</p>
+      </div>
+
+      <div class="spec-card">
+        <h3>Common B2G rejection causes</h3>
+        <div class="spec-row"><span class="k">Missing/wrong Leitweg-ID</span><span class="v">Must appear in BT-10 (BuyerReference)</span></div>
+        <div class="spec-row"><span class="k">Invalid VAT breakdown</span><span class="v">Each VAT category needs a separate breakdown</span></div>
+        <div class="spec-row"><span class="k">Attachment size</span><span class="v">ZRE caps embedded attachments at 5 MB</span></div>
+        <div class="spec-row"><span class="k">Profile mismatch</span><span class="v">Using XRechnung 2.x where 3.x is required</span></div>
+        <p class="note">If your invoice bounces from ZRE or OZG-RE, these four causes cover the large majority of real-world rejections — check the Leitweg-ID and profile version first.</p>
+      </div>
+
+      <div class="spec-card">
+        <h3>Audit access</h3>
+        <div class="spec-row"><span class="k">Z1 / Z2 access</span><span class="v">Direct read-only access to your accounting system</span></div>
+        <div class="spec-row"><span class="k">Z3 access</span><span class="v">Structured data export of e-invoice records</span></div>
+        <div class="spec-row"><span class="k">Submission channel</span><span class="v">ELSTER (where applicable)</span></div>
+        <p class="note">German tax authorities can request any of these three access modes during an audit — keeping invoices systematically archived in a standard, exportable format materially reduces audit friction.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= REGISTRATION ================= -->
+  <div class="section">
+    <div class="section-head"><span class="num mono">04</span><h2 class="display">Getting set up (there's no central registration)</h2></div>
+    <p class="section-intro">Unlike Romania, France, or Belgium, there's no directory to join or account to open for B2B — Germany's decentralised model means "registration" is really about internal readiness and, where relevant, your specific government customer's portal.</p>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">
+          <h4>Work out which phase applies to you</h4>
+          <p>Check your prior-year turnover against the €800,000 threshold to know whether your issuing obligation starts in 2027 or 2028 — and confirm whether Kleinunternehmer status (§19 UStG) exempts you from issuing altogether.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">
+          <h4>Choose your format: XRechnung, ZUGFeRD, or Peppol BIS</h4>
+          <p>XRechnung suits high-volume automated B2B flows; ZUGFeRD suits relationships where a human still needs to open and read the invoice; Peppol BIS suits businesses already active on that network for other European trade.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">
+          <h4>Confirm §14 UStG data lives in the structured file itself</h4>
+          <p>Validate that supplier/customer details, transaction detail, and full tax breakdown are embedded in the XML — not just present in an accompanying human-readable PDF.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">
+          <h4>For B2G: create your ZRE or OZG-RE account</h4>
+          <p>Register on whichever platform your public-sector customer directs you to, and confirm the correct Leitweg-ID for that specific contracting authority before your first submission.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">
+          <h4>Agree a transmission channel with each B2B partner</h4>
+          <p>Since there's no mandated channel, settle this explicitly with your trading partners — email, a shared portal, EDI, or Peppol are all valid as long as the underlying file is compliant.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">
+          <h4>Set up GoBD-compliant archiving</h4>
+          <p>Store the original structured file (not a printed copy) for the required retention period, and confirm you can produce Z1/Z2/Z3-style audit access if the tax office asks.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= PENALTIES & RELATED ================= -->
+  <div class="section">
+    <div class="section-head"><span class="num mono">05</span><h2 class="display">Penalties &amp; enforcement posture</h2></div>
+    <p class="section-intro">Germany has no dedicated e-invoicing fine — non-compliance is folded into existing VAT and bookkeeping law, and the sharpest risk isn't a government fine at all.</p>
+
+    <div class="related-grid">
+      <div class="penalty-card" style="grid-column:1 / -1;">
+        <table class="penalty-table">
+          <tr><th>Issue</th><th>Legal basis</th><th>Maximum fine</th></tr>
+          <tr><td>Failure to issue a required e-invoice</td><td>§26a UStG (administrative offence)</td><td>€5,000 per offence</td></tr>
+          <tr><td>Specific record-retention violations</td><td>§26a UStG</td><td>€1,000</td></tr>
+          <tr><td>More serious cases under §26a(1)</td><td>§26a UStG</td><td>Up to €30,000</td></tr>
+        </table>
+      </div>
+      <div class="related-card">
+        <h4>💸 The real risk is your buyer's VAT deduction</h4>
+        <p>A non-compliant invoice is treated as not properly issued — your customer can't deduct input VAT until you reissue a valid one. In practice, this commercial pressure from buyers is a stronger compliance driver than the statutory fine itself.</p>
+      </div>
+      <div class="related-card">
+        <h4>🕊️ No penalties during 2025–2026 transition</h4>
+        <p>While paper and PDF invoices remain permitted by mutual agreement during the transition period, no fines apply for using them — enforcement is expected to ramp up once each business's mandatory phase actually begins.</p>
+      </div>
+      <div class="related-card">
+        <h4>📁 GoBD archiving risk</h4>
+        <p>Failing to preserve the original structured file (e.g. keeping only a printed copy) can trigger fines or, in serious cases, allow tax authorities to estimate your tax base rather than rely on your records.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="portal-row">
+    <a class="portal-btn" href="https://ec.europa.eu/digital-building-blocks/sites/spaces/DIGITAL/pages/467108886/eInvoicing+in+Germany" target="_blank" rel="noopener">EU Digital Building Blocks — Germany</a>
+  </div>
+
+  <footer>
+    <p>This deep-dive page reflects publicly available technical guidance as of July 2026 and is provided for general awareness, not legal or tax advice. Format specifications, ZRE/OZG-RE technical requirements, and enforcement posture continue to evolve as the 2027 and 2028 phases approach — confirm current requirements directly with the BMF or your ERP/e-invoicing provider before building an integration.</p>
+  </footer>
+
+</div>
+</body>
+</html>
