@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Romania — The E-Invoicing Compliance Corner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0f1a2b; --ink-2:#152238; --ink-3:#1c2c48; --line:#2b3c5a;
+    --paper:#efe9db; --paper-2:#e4dcc6; --paper-line:#c9bd9e;
+    --text-lo:#f2f0e8; --muted:#93a3c0;
+    --stamp:#b5432f; --stamp-dim:#7c3628;
+    --live:#3f7d5c; --live-dim:#274a38;
+    --soon:#c98a3a; --soon-dim:#6e4c22;
+    --upcoming:#6b7a95; --upcoming-dim:#3a4864;
+    --radius:10px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{background:var(--ink); color:var(--text-lo); font-family:'IBM Plex Sans',sans-serif; line-height:1.55;}
+  .display{font-family:'Big Shoulders Display',sans-serif; font-weight:800;}
+  .mono{font-family:'IBM Plex Mono',monospace;}
+  a{color:inherit;}
+
+  .wrap{max-width:980px; margin:0 auto; padding:0 5vw 60px;}
+
+  .back-link{
+    display:inline-flex; align-items:center; gap:6px; margin:24px 0 0;
+    font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:var(--muted); text-decoration:none;
+  }
+  .back-link:hover{color:var(--soon);}
+
+  .country-head{
+    display:flex; flex-wrap:wrap; gap:18px; align-items:flex-start; justify-content:space-between;
+    padding:18px 0 26px; border-bottom:1px solid var(--line); margin-bottom:28px;
+  }
+  .country-head-left{display:flex; gap:16px; align-items:center;}
+  .country-flag{font-size:46px; line-height:1;}
+  .country-eyebrow{font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.16em; text-transform:uppercase; color:var(--soon); margin:0 0 4px;}
+  .country-title{font-size:clamp(28px,4.5vw,42px); margin:0; text-transform:uppercase; line-height:0.95;}
+  .country-region{font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--muted); margin-top:6px;}
+  .country-meta{font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--muted); text-align:right;}
+
+  .stat-strip{
+    display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+    gap:1px; background:var(--line); border:1px solid var(--line); border-radius:var(--radius);
+    overflow:hidden; margin-bottom:36px;
+  }
+  .stat-strip .stat{background:var(--ink-2); padding:16px 18px;}
+  .stat-strip .stat .num{font-family:'Big Shoulders Display',sans-serif; font-weight:800; font-size:22px; line-height:1.15;}
+  .stat-strip .stat .lbl{font-size:10.8px; color:var(--muted); text-transform:uppercase; letter-spacing:0.07em; margin-top:5px;}
+
+  .section{margin-bottom:44px;}
+  .section-head{display:flex; align-items:baseline; gap:12px; margin-bottom:18px;}
+  .section-head h2{font-size:22px; margin:0; text-transform:uppercase;}
+  .section-head .num{font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--soon);}
+  .section-intro{color:var(--muted); font-size:13.8px; max-width:680px; margin:-8px 0 20px;}
+
+  /* Timeline (reuses main page pattern) */
+  .rtimeline{position:relative; padding-left:26px; border-left:2px solid var(--line);}
+  .rmonth-marker{
+    font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--soon); text-transform:uppercase;
+    letter-spacing:0.1em; margin:22px 0 12px -26px; padding-left:26px; position:relative;
+  }
+  .rmonth-marker::before{content:""; position:absolute; left:-6px; top:6px; width:10px; height:10px; border-radius:50%; background:var(--soon); border:2px solid var(--ink);}
+  .rmonth-marker:first-child{margin-top:0;}
+  .rcard{
+    background:var(--paper); color:#241d10; border-radius:var(--radius);
+    margin-bottom:14px; padding:16px 20px 18px; border:1px solid var(--paper-line);
+  }
+  .rcard-top{display:flex; flex-wrap:wrap; justify-content:space-between; gap:8px 16px; align-items:flex-start;}
+  .rcard-date{font-family:'IBM Plex Mono',monospace; font-size:12.5px; font-weight:600; color:#4a3f22;}
+  .rbadge{
+    font-family:'IBM Plex Mono',monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:0.06em;
+    padding:4px 9px; border-radius:5px; font-weight:600; white-space:nowrap;
+  }
+  .rbadge.inforce{background:var(--live-dim); color:#bfe6cf;}
+  .rbadge.soon{background:var(--soon-dim); color:#ffe0b3;}
+  .rbadge.upcoming{background:var(--upcoming-dim); color:#dbe2ee;}
+  .rcard-title{font-size:15px; font-weight:600; margin:10px 0 4px;}
+  .rcard-desc{font-size:13.3px; color:#4a4030; margin:0;}
+
+  /* Spec cards grid */
+  .spec-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:14px;}
+  .spec-card{
+    background:var(--paper); color:#241d10; border-radius:var(--radius); border:1px solid var(--paper-line);
+    padding:16px 18px 18px;
+  }
+  .spec-card h3{
+    font-family:'IBM Plex Mono',monospace; font-size:11px; text-transform:uppercase; letter-spacing:0.09em;
+    color:#6b5f3f; margin:0 0 10px; display:flex; align-items:center; gap:8px;
+  }
+  .spec-card h3::after{content:""; flex:1; height:1px; background:var(--paper-line);}
+  .spec-row{display:flex; justify-content:space-between; gap:12px; padding:6px 0; border-top:1px dashed var(--paper-line); font-size:13px;}
+  .spec-row:first-of-type{border-top:none;}
+  .spec-row .k{color:#6b5f3f; flex:0 0 40%;}
+  .spec-row .v{color:#241d10; text-align:right; font-weight:500;}
+  .spec-card p.note{font-size:12.6px; color:#5a5138; margin:10px 0 0; padding-top:10px; border-top:1px dashed var(--paper-line);}
+
+  /* Steps */
+  .steps{counter-reset:step; display:flex; flex-direction:column; gap:0;}
+  .step{
+    display:flex; gap:16px; padding:16px 0; border-top:1px dashed var(--line);
+  }
+  .step:first-child{border-top:none;}
+  .step-num{
+    counter-increment:step; flex:0 0 auto; width:30px; height:30px; border-radius:50%;
+    background:var(--soon-dim); color:#ffe0b3; display:flex; align-items:center; justify-content:center;
+    font-family:'Big Shoulders Display',sans-serif; font-weight:800; font-size:14px;
+  }
+  .step-num::before{content:counter(step);}
+  .step-body h4{margin:2px 0 4px; font-size:14.5px;}
+  .step-body p{margin:0; font-size:13.3px; color:var(--muted);}
+
+  /* Related obligations */
+  .related-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:14px;}
+  .related-card{
+    background:var(--ink-2); border:1px solid var(--line); border-radius:var(--radius); padding:16px 18px;
+  }
+  .related-card h4{margin:0 0 6px; font-size:14.5px; display:flex; align-items:center; gap:8px;}
+  .related-card p{margin:0; font-size:13px; color:var(--muted);}
+
+  .portal-row{display:flex; flex-wrap:wrap; gap:8px; margin-top:6px;}
+  .portal-btn{
+    display:inline-flex; align-items:center; gap:6px;
+    background:var(--ink); color:var(--text-lo); text-decoration:none;
+    font-family:'IBM Plex Mono',monospace; font-size:12px; padding:8px 14px; border-radius:6px; border:1px solid var(--line);
+  }
+  .portal-btn:hover{background:var(--stamp);}
+  .portal-btn::before{content:"↗";}
+
+  footer{margin:40px 0 0; padding:22px 0 10px; border-top:1px solid var(--line); color:var(--muted); font-size:12.3px;}
+  footer p{max-width:820px; margin:0 0 8px;}
+
+  @media (max-width:640px){
+    .country-head{flex-direction:column;}
+    .country-meta{text-align:left;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <a class="back-link" href="einvoicing-compliance-tracker.html">← Back to global tracker</a>
+
+  <div class="country-head">
+    <div class="country-head-left">
+      <div class="country-flag">🇷🇴</div>
+      <div>
+        <p class="country-eyebrow">Country deep dive</p>
+        <h1 class="country-title display">Romania</h1>
+        <div class="country-region">Europe · RO · VAT area: EU</div>
+      </div>
+    </div>
+    <div class="country-meta">
+      Last updated: 20 July 2026<br>
+      Clearance model: Continuous Transaction Control (CTC)
+    </div>
+  </div>
+
+  <div class="stat-strip">
+    <div class="stat"><div class="num display">CTC</div><div class="lbl">Compliance model</div></div>
+    <div class="stat"><div class="num display">UBL 2.1</div><div class="lbl">Invoice syntax</div></div>
+    <div class="stat"><div class="num display">5 days</div><div class="lbl">Submission window</div></div>
+    <div class="stat"><div class="num display">10 yrs</div><div class="lbl">Archive requirement</div></div>
+    <div class="stat"><div class="num display">15%</div><div class="lbl">Max non-compliance penalty</div></div>
+  </div>
+
+  <!-- ================= TIMELINE ================= -->
+  <div class="section">
+    <div class="section-head"><span class="num mono">01</span><h2 class="display">Compliance timeline</h2></div>
+    <p class="section-intro">Romania rolled out RO e-Factura in stages — starting as a voluntary channel, then becoming mandatory transaction type by transaction type. This is the full sequence, past and upcoming.</p>
+
+    <div class="rtimeline">
+      <div class="rmonth-marker">November 2021</div>
+      <div class="rcard">
+        <div class="rcard-top">
+          <span class="rcard-date">1 Nov 2021</span>
+          <span class="rbadge inforce">In effect</span>
+        </div>
+        <div class="rcard-title">RO e-Factura opens for voluntary use</div>
+        <p class="rcard-desc">The platform opened for voluntary registration ahead of any legal mandate, giving early-adopting businesses and public bodies time to test integration.</p>
+      </div>
+
+      <div class="rmonth-marker">July 2022</div>
+      <div class="rcard">
+        <div class="rcard-top">
+          <span class="rcard-date">1 Jul 2022</span>
+          <span class="rbadge inforce">In effect</span>
+        </div>
+        <div class="rcard-title">B2G e-invoicing becomes mandatory</div>
+        <p class="rcard-desc">Public contracting authorities in scope of Law 199/2020 (transposing EU Directive 2014/55/EU) must accept and process EN 16931-compliant structured invoices for public procurement above EU thresholds.</p>
+      </div>
+
+      <div class="rmonth-marker">January 2024</div>
+      <div class="rcard">
+        <div class="rcard-top">
+          <span class="rcard-date">1 Jan 2024</span>
+          <span class="rbadge inforce">In effect</span>
+        </div>
+        <div class="rcard-title">Law 296/2023 establishes mandatory B2B e-invoicing</div>
+        <p class="rcard-desc">B2B e-reporting obligations begin for taxable persons established in Romania (and non-established VAT-registered entities), operating under the Government Ordinance 120/2021 framework and RO_CIUS technical specification (MF Order 1366/2021).</p>
+      </div>
+
+      <div class="rmonth-marker">July 2024</div>
+      <div class="rcard">
+        <div class="rcard-top">
+          <span class="rcard-date">1 Jul 2024</span>
+          <span class="rbadge inforce">In effect</span>
+        </div>
+        <div class="rcard-title">B2B e-invoicing becomes fully mandatory (clearance model)</div>
+        <p class="rcard-desc">Domestic B2B invoices must be validated and digitally sealed by ANAF via RO e-Factura before they carry legal effect — Romania's shift to a full continuous transaction control (CTC) model for business-to-business trade.</p>
+      </div>
+
+      <div class="rmonth-marker">January 2025</div>
+      <div class="rcard">
+        <div class="rcard-top">
+          <span class="rcard-date">1 Jan 2025</span>
+          <span class="rbadge inforce">In effect</span>
+        </div>
+        <div class="rcard-title">B2C reporting joins the mandate</div>
+        <p class="rcard-desc">Regular B2C invoices must also be reported via RO e-Factura in RO_CIUS XML format. Point-of-sale tax receipts and one-off individual transactions remain exempt.</p>
+      </div>
+
+      <div class="rmonth-marker">July 2026</div>
+      <div class="rcard">
+        <div class="rcard-top">
+          <span class="rcard-date">1 Jul 2026</span>
+          <span class="rbadge inforce">In effect</span>
+        </div>
+        <div class="rcard-title">Full enforcement extends to small taxpayers (&lt;€500,000 turnover)</div>
+        <p class="rcard-desc">Following a confirmed delay, small taxpayers below €500,000 turnover become fully subject to e-Factura enforcement and penalties — the same footing as larger businesses.</p>
+      </div>
+      <div class="rcard">
+        <div class="rcard-top">
+          <span class="rcard-date">2026 (ANAF Order 378/2026)</span>
+          <span class="rbadge soon">Due soon</span>
+        </div>
+        <div class="rcard-title">Register extended to non-VAT-registered entities</div>
+        <p class="rcard-desc">The mandatory RO e-Invoice Register now also covers associations, foundations and non-profits not registered for VAT, individual farmers under the special agricultural regime, and sole traders identified by personal ID number (CNP).</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= FILE FORMAT ================= -->
+  <div class="section">
+    <div class="section-head"><span class="num mono">02</span><h2 class="display">File format &amp; data specification</h2></div>
+    <p class="section-intro">Every invoice is a structured XML file — there's no PDF or paper equivalent that carries legal weight once you're in scope.</p>
+
+    <div class="spec-grid">
+      <div class="spec-card">
+        <h3>Syntax &amp; standard</h3>
+        <div class="spec-row"><span class="k">Base syntax</span><span class="v">UBL 2.1 (ISO/IEC 19845)</span></div>
+        <div class="spec-row"><span class="k">European semantic model</span><span class="v">EN 16931</span></div>
+        <div class="spec-row"><span class="k">National extension (CIUS)</span><span class="v">RO_CIUS 1.0.1</span></div>
+        <div class="spec-row"><span class="k">Legal basis for CIUS</span><span class="v">MF Order 1366/2021</span></div>
+        <p class="note">CII XML is technically permitted by the EN 16931 standard, but UBL 2.1 is what ANAF's platform actually validates in practice — use UBL unless you have a specific reason not to.</p>
+      </div>
+
+      <div class="spec-card">
+        <h3>Validation pipeline</h3>
+        <div class="spec-row"><span class="k">Step 1</span><span class="v">XSD structural validation</span></div>
+        <div class="spec-row"><span class="k">Step 2</span><span class="v">Schematron business rules</span></div>
+        <div class="spec-row"><span class="k">Rule count</span><span class="v">~118 RO_CIUS rules</span></div>
+        <div class="spec-row"><span class="k">Tax ID check</span><span class="v">Real-time CUI/CIF lookup</span></div>
+        <p class="note">Invalid or inactive CUI/CIF tax IDs cause immediate rejection — the system cross-references ANAF's live taxpayer database as part of validation, not just a formatting check.</p>
+      </div>
+
+      <div class="spec-card">
+        <h3>Key mandatory fields</h3>
+        <div class="spec-row"><span class="k">Invoice type code</span><span class="v">380 (standard), 381 (credit note)</span></div>
+        <div class="spec-row"><span class="k">Supplier / buyer ID</span><span class="v">CUI / CIF</span></div>
+        <div class="spec-row"><span class="k">VAT rate codes</span><span class="v">19% / 9% / 5%</span></div>
+        <div class="spec-row"><span class="k">Special codes</span><span class="v">Reverse charge, simplified invoice</span></div>
+        <p class="note">Romanian-specific tax category codes are required for reverse-charge and simplified invoice scenarios — generic EN 16931 codes alone won't pass Schematron validation.</p>
+      </div>
+
+      <div class="spec-card">
+        <h3>Archiving</h3>
+        <div class="spec-row"><span class="k">Retention period</span><span class="v">10 years</span></div>
+        <div class="spec-row"><span class="k">Format to retain</span><span class="v">Original signed XML + ANAF response</span></div>
+        <div class="spec-row"><span class="k">Buyer retrieval window</span><span class="v">60 days from SPV</span></div>
+        <p class="note">Retain both the XML you submitted and ANAF's signed response/downloadId — the government's digital seal (not your own signature) is what makes the invoice legally valid.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= TRANSMISSION PROTOCOL ================= -->
+  <div class="section">
+    <div class="section-head"><span class="num mono">03</span><h2 class="display">Transmission protocol</h2></div>
+    <p class="section-intro">Romania runs a centralised clearance (CTC) model: nothing is legally an invoice until ANAF has validated and sealed it.</p>
+
+    <div class="spec-grid">
+      <div class="spec-card">
+        <h3>Platform &amp; API</h3>
+        <div class="spec-row"><span class="k">Platform</span><span class="v">SPV (Spațiul Privat Virtual)</span></div>
+        <div class="spec-row"><span class="k">REST API host</span><span class="v">efactura.mfinante.gov.ro</span></div>
+        <div class="spec-row"><span class="k">Authentication (human)</span><span class="v">Qualified digital certificate</span></div>
+        <div class="spec-row"><span class="k">Authentication (M2M)</span><span class="v">OAuth 2.0</span></div>
+      </div>
+
+      <div class="spec-card">
+        <h3>Clearance workflow</h3>
+        <div class="spec-row"><span class="k">1. Submit</span><span class="v">XML uploaded to ANAF</span></div>
+        <div class="spec-row"><span class="k">2. Validate</span><span class="v">Structural + semantic checks</span></div>
+        <div class="spec-row"><span class="k">3. Seal</span><span class="v">Ministry of Finance digital signature</span></div>
+        <div class="spec-row"><span class="k">4. Reference</span><span class="v">Unique downloadId issued</span></div>
+        <p class="note">Track submission status through pending → validated → rejected. Build retry/backoff logic — ANAF's infrastructure has known reliability issues during peak filing periods.</p>
+      </div>
+
+      <div class="spec-card">
+        <h3>Timing rules</h3>
+        <div class="spec-row"><span class="k">Submission deadline</span><span class="v">5 calendar days from issuance</span></div>
+        <div class="spec-row"><span class="k">Buyer download window</span><span class="v">60 days</span></div>
+        <div class="spec-row"><span class="k">Late submission</span><span class="v">Compliance violation</span></div>
+        <p class="note">The 5-day clock starts from the tax point (chargeable event), not the date you get around to generating the XML — automate submission immediately upon issuance rather than batching.</p>
+      </div>
+
+      <div class="spec-card">
+        <h3>Buyer-side obligations</h3>
+        <div class="spec-row"><span class="k">Registration</span><span class="v">Must also register in SPV</span></div>
+        <div class="spec-row"><span class="k">Retrieval</span><span class="v">Poll API for invoices by CUI</span></div>
+        <div class="spec-row"><span class="k">Verification</span><span class="v">Confirm valid MoF seal present</span></div>
+        <p class="note">Buyers aren't passive recipients — you're expected to actively retrieve invoices addressed to your CUI and can raise a compliance complaint if a supplier fails to issue correctly.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= REGISTRATION ================= -->
+  <div class="section">
+    <div class="section-head"><span class="num mono">04</span><h2 class="display">Registering with ANAF</h2></div>
+    <p class="section-intro">Before you can send or receive a single invoice, there's a one-time setup process with the central tax authority.</p>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">
+          <h4>Obtain a qualified digital certificate</h4>
+          <p>Get a qualified electronic signature certificate from an accredited Romanian provider. This is the credential ANAF uses to identify you — budget time for this, as certificate issuance isn't instant.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">
+          <h4>Register for SPV access</h4>
+          <p>Create your Spațiul Privat Virtual (Virtual Private Space) account — ANAF's secure taxpayer portal — using your digital certificate to authenticate.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">
+          <h4>Submit Form 084</h4>
+          <p>File Form 084 to formally activate RO e-Factura access for your CUI/CIF. This is the specific registration step that switches on e-invoicing capability within SPV.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">
+          <h4>Set up certificate delegation (if using a service provider)</h4>
+          <p>If a third-party platform or accountant submits on your behalf, delegate certificate authority to them per entity. This is commonly the trickiest part of integration — delegations must be configured individually and certificates expire, so track renewal dates.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">
+          <h4>Connect your ERP or invoicing software</h4>
+          <p>Integrate via ANAF's REST API using OAuth 2.0 for machine-to-machine submission, or use the SPV web interface directly for lower volumes. Test thoroughly — RO_CIUS validation is strict, and invalid CUI/CIF references cause instant rejection.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">
+          <h4>Build monitoring into your pipeline</h4>
+          <p>Poll for clearance status (pending/validated/rejected), track the 5-day submission clock per invoice, and maintain retry/backoff logic so invoices are submitted exactly once even if ANAF's endpoint is temporarily unavailable.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= RELATED OBLIGATIONS ================= -->
+  <div class="section">
+    <div class="section-head"><span class="num mono">05</span><h2 class="display">Related obligations</h2></div>
+    <p class="section-intro">E-Factura doesn't sit alone — two adjacent Romanian reporting regimes commonly trip up new entrants.</p>
+
+    <div class="related-grid">
+      <div class="related-card">
+        <h4>📊 SAF-T reporting</h4>
+        <p>Standard Audit File for Tax reporting runs alongside e-Factura, covering broader accounting data beyond individual invoices. It was phased in separately, starting with large taxpayers in 2022 and extending progressively to smaller businesses (ANAF Order 1783/2021).</p>
+      </div>
+      <div class="related-card">
+        <h4>🚚 RO e-Transport</h4>
+        <p>If you ship high-risk goods within Romania, logistics declarations must cross-reference the e-Factura clearance ID (downloadId) before shipping. Treat e-Factura and e-Transport as one connected compliance workflow, not two separate systems.</p>
+      </div>
+      <div class="related-card">
+        <h4>⚠️ Penalties</h4>
+        <p>Late or missing submissions trigger fines of RON 1,000–5,000 for small/medium entities, and non-compliance can be penalised at up to 15% of invoice value — one of the stricter enforcement regimes in the EU.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="portal-row">
+    <a class="portal-btn" href="https://mfinante.gov.ro/en/web/efactura/informatii-tehnice" target="_blank" rel="noopener">ANAF / Ministry of Finance — e-Factura</a>
+  </div>
+
+  <footer>
+    <p>This deep-dive page reflects publicly available technical guidance as of July 2026 and is provided for general awareness, not legal or tax advice. RO_CIUS validation rules, API endpoints, and penalty amounts change — confirm current specifications directly on ANAF's e-Factura portal before building an integration.</p>
+  </footer>
+
+</div>
+</body>
+</html>

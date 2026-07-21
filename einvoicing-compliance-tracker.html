@@ -1283,6 +1283,12 @@ const DATA = [
   },
 ];
 
+// Countries with a dedicated deep-dive subpage (timeline + technical specs + registration steps)
+const DEEP_DIVES = {
+  'Romania': 'romania.html',
+  'France': 'france.html',
+};
+
 // ---------- helpers ----------
 const MS_DAY = 86400000;
 function today(){ return new Date(); }
@@ -1452,6 +1458,7 @@ function renderTimeline(){
       </ul>
       <div class="portal-row">
         ${e.portals.map(p=>`<a class="portal-btn" href="${p.url}" target="_blank" rel="noopener">${p.label}</a>`).join('')}
+        ${DEEP_DIVES[e.country] ? `<a class="portal-btn" style="background:var(--stamp); border-color:var(--stamp);" href="${DEEP_DIVES[e.country]}">Country deep dive →</a>` : ''}
       </div>
     </div>`;
   });
@@ -1490,6 +1497,7 @@ function renderSidebar(){
       html += `<div class="sidebar-country">
         <div class="c-name"><span class="flag">${info.flag}</span>${country}</div>
         ${info.portals.map(p=>`<a class="sidebar-portal-link" href="${p.url}" target="_blank" rel="noopener">${p.label}</a>`).join('')}
+        ${DEEP_DIVES[country] ? `<a class="sidebar-portal-link" style="color:var(--soon);" href="${DEEP_DIVES[country]}">Country deep dive →</a>` : ''}
       </div>`;
     });
     html += `</div>`;
