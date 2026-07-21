@@ -1,0 +1,1668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The E-Invoicing Compliance Corner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0f1a2b;
+    --ink-2:#152238;
+    --ink-3:#1c2c48;
+    --line:#2b3c5a;
+    --paper:#efe9db;
+    --paper-2:#e4dcc6;
+    --paper-line:#c9bd9e;
+    --text-lo:#f2f0e8;
+    --muted:#93a3c0;
+    --stamp:#b5432f;
+    --stamp-dim:#7c3628;
+    --live:#3f7d5c;
+    --live-dim:#274a38;
+    --soon:#c98a3a;
+    --soon-dim:#6e4c22;
+    --upcoming:#6b7a95;
+    --upcoming-dim:#3a4864;
+    --radius:10px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--ink);
+    color:var(--text-lo);
+    font-family:'IBM Plex Sans',sans-serif;
+    line-height:1.5;
+  }
+  .display{font-family:'Big Shoulders Display',sans-serif; font-weight:800; letter-spacing:0.01em;}
+  .mono{font-family:'IBM Plex Mono',monospace;}
+
+  a{color:inherit;}
+
+  /* ===== Topbar ===== */
+  .topbar{
+    padding:28px 5vw 20px;
+    border-bottom:1px solid var(--line);
+    display:flex; flex-wrap:wrap; gap:16px 32px; align-items:flex-start; justify-content:space-between;
+  }
+  .topbar-brand{flex:1 1 320px; min-width:0;}
+  .brand-eyebrow{
+    font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.18em; text-transform:uppercase;
+    color:var(--soon); margin:0 0 6px;
+  }
+  .brand-title{
+    font-size:clamp(28px,4vw,44px);
+    margin:0; text-transform:uppercase; line-height:0.95;
+  }
+  .brand-sub{color:var(--muted); font-size:14.5px; max-width:640px; margin:8px 0 0;}
+  .topbar-right{font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--muted); text-align:right; display:flex; flex-direction:column; align-items:flex-end; flex:0 0 auto; margin-left:auto;}
+  .topbar-right strong{color:var(--text-lo); display:block; font-size:13px;}
+
+  /* ===== Hero / split-flap board ===== */
+  .hero{
+    padding:26px 5vw 8px;
+  }
+  .hero-label{
+    font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.16em; text-transform:uppercase;
+    color:var(--muted); margin:0 0 14px; display:flex; align-items:center; gap:10px;
+  }
+  .hero-label::after{content:""; flex:1; height:1px; background:var(--line);}
+  .board{
+    background:var(--ink-2);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    overflow:hidden;
+  }
+  .board-row{
+    display:grid;
+    grid-template-columns: 100px 130px 1fr 108px;
+    gap:14px;
+    align-items:center;
+    padding:12px 18px;
+    border-bottom:1px solid var(--line);
+    font-family:'IBM Plex Mono',monospace;
+    font-size:13.5px;
+    transform-origin: top center;
+    animation: flap 0.6s ease-out both;
+  }
+  .board-row:last-child{border-bottom:none;}
+  @keyframes flap{
+    0%{transform:rotateX(-90deg); opacity:0;}
+    60%{transform:rotateX(8deg); opacity:1;}
+    100%{transform:rotateX(0deg); opacity:1;}
+  }
+  @media (prefers-reduced-motion: reduce){
+    .board-row{animation:none;}
+  }
+  .board-date{color:var(--soon); font-weight:600;}
+  .board-country{color:var(--text-lo); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .board-system{color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .board-days{text-align:right; color:var(--muted);}
+  .board-days b{color:var(--text-lo);}
+  .board-empty{padding:18px; color:var(--muted); font-family:'IBM Plex Mono',monospace; font-size:13px;}
+
+  /* ===== Stats strip ===== */
+  .stats{
+    display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+    gap:1px; background:var(--line);
+    margin:22px 5vw 0; border:1px solid var(--line); border-radius:var(--radius); overflow:hidden;
+  }
+  .stat{background:var(--ink-2); padding:16px 18px;}
+  .stat .num{font-family:'Big Shoulders Display',sans-serif; font-weight:800; font-size:30px; line-height:1;}
+  .stat .lbl{font-size:11.5px; color:var(--muted); text-transform:uppercase; letter-spacing:0.08em; margin-top:4px;}
+
+  /* ===== Filters ===== */
+  .filters{
+    margin:26px 5vw 0;
+    display:flex; flex-wrap:wrap; gap:10px 26px; align-items:center;
+  }
+  .filter-group{display:flex; flex-wrap:wrap; gap:6px; align-items:center;}
+  .filter-group .fg-label{font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:0.1em; margin-right:4px;}
+  .pill{
+    background:transparent; border:1px solid var(--line); color:var(--muted);
+    padding:6px 13px; border-radius:999px; font-size:12.5px; cursor:pointer;
+    font-family:'IBM Plex Sans',sans-serif; transition:all .15s ease;
+  }
+  .pill:hover{border-color:var(--soon); color:var(--text-lo);}
+  .pill.active{background:var(--soon); border-color:var(--soon); color:#1a1207; font-weight:600;}
+  .search-wrap{margin-left:auto; position:relative;}
+  .search-wrap input{
+    background:var(--ink-2); border:1px solid var(--line); color:var(--text-lo);
+    padding:8px 14px; border-radius:999px; font-size:13px; width:230px; font-family:'IBM Plex Sans',sans-serif;
+  }
+  .search-wrap input:focus{outline:2px solid var(--soon); outline-offset:1px;}
+  .search-wrap input::placeholder{color:var(--muted);}
+
+  /* ===== Timeline ===== */
+  .timeline-section{margin:34px 5vw 10px;}
+  .section-heading{
+    display:flex; align-items:baseline; gap:12px; margin:0 0 16px;
+  }
+  .section-heading h2{
+    font-family:'Big Shoulders Display',sans-serif; font-weight:800; text-transform:uppercase;
+    font-size:22px; margin:0;
+  }
+  .section-heading span{font-size:12px; color:var(--muted); font-family:'IBM Plex Mono',monospace;}
+
+  .timeline{position:relative; padding-left:26px; border-left:2px solid var(--line);}
+  .month-marker{
+    font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--soon); text-transform:uppercase;
+    letter-spacing:0.1em; margin:26px 0 12px -26px; padding-left:26px; position:relative;
+  }
+  .month-marker::before{
+    content:""; position:absolute; left:-6px; top:6px; width:10px; height:10px; border-radius:50%;
+    background:var(--soon); border:2px solid var(--ink);
+  }
+  .month-marker:first-child{margin-top:0;}
+
+  .card{
+    background:var(--paper); color:#241d10; border-radius:var(--radius);
+    margin-bottom:16px; padding:18px 20px 20px;
+    box-shadow:0 1px 0 rgba(0,0,0,0.3);
+    border:1px solid var(--paper-line);
+  }
+  .card-top{display:flex; flex-wrap:wrap; justify-content:space-between; gap:10px 16px; align-items:flex-start;}
+  .card-country{display:flex; align-items:center; gap:10px;}
+  .flag{font-size:22px; line-height:1;}
+  .card-country h3{
+    font-family:'Big Shoulders Display',sans-serif; font-weight:700; font-size:19px; margin:0; text-transform:uppercase;
+  }
+  .region-tag{font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#6b5f3f; text-transform:uppercase; letter-spacing:0.08em;}
+  .badge-row{display:flex; gap:8px; align-items:center; flex-wrap:wrap;}
+  .badge{
+    font-family:'IBM Plex Mono',monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:0.06em;
+    padding:4px 9px; border-radius:5px; font-weight:600; white-space:nowrap;
+  }
+  .badge.inforce{background:var(--live-dim); color:#bfe6cf;}
+  .badge.soon{background:var(--soon-dim); color:#ffe0b3;}
+  .badge.upcoming{background:var(--upcoming-dim); color:#dbe2ee;}
+  .badge.expected{background:transparent; border:1px dashed #6b5f3f; color:#6b5f3f;}
+  .card-date{font-family:'IBM Plex Mono',monospace; font-size:12.5px; font-weight:600; color:#4a3f22;}
+
+  .card-system{font-size:15px; font-weight:600; margin:12px 0 3px;}
+  .card-desc{font-size:13.8px; color:#4a4030; margin:0 0 12px;}
+
+  .actions-label{
+    font-family:'IBM Plex Mono',monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:0.1em;
+    color:#6b5f3f; margin:0 0 6px;
+  }
+  .actions{margin:0 0 14px; padding:0; list-style:none;}
+  .actions li{
+    font-size:13.3px; padding:5px 0 5px 22px; position:relative; border-top:1px dashed var(--paper-line);
+  }
+  .actions li:first-child{border-top:none;}
+  .actions li::before{
+    content:"›"; position:absolute; left:2px; top:5px; color:var(--stamp); font-weight:700; font-size:15px;
+  }
+
+  .portal-row{display:flex; flex-wrap:wrap; gap:8px;}
+  .portal-btn{
+    display:inline-flex; align-items:center; gap:6px;
+    background:var(--ink); color:var(--text-lo); text-decoration:none;
+    font-family:'IBM Plex Mono',monospace; font-size:12px; padding:7px 13px; border-radius:6px;
+    border:1px solid #241d10;
+  }
+  .portal-btn:hover{background:var(--stamp);}
+  .portal-btn::before{content:"↗";}
+
+  .no-results{padding:40px 0; text-align:center; color:var(--muted); font-family:'IBM Plex Mono',monospace;}
+
+  footer{
+    margin:40px 0 0; padding:22px 5vw 34px; border-top:1px solid var(--line);
+    color:var(--muted); font-size:12.5px;
+  }
+  footer p{max-width:820px; margin:0 0 8px;}
+  footer .fine{font-family:'IBM Plex Mono',monospace; font-size:11px;}
+
+  @media (max-width:640px){
+    .board-row{grid-template-columns:78px 1fr; grid-template-rows:auto auto; row-gap:4px;}
+    .board-system{grid-column:1/3;}
+    .board-days{display:none;}
+    .search-wrap{margin-left:0; width:100%;}
+    .search-wrap input{width:100%;}
+  }
+
+  /* ===== Side menu ===== */
+  body{padding-left:270px;}
+  .sidebar{
+    position:fixed; top:0; left:0; height:100vh; width:270px;
+    background:var(--ink-2); border-right:1px solid var(--line);
+    overflow-y:auto; z-index:40; padding:22px 0 30px;
+  }
+  .sidebar-head{padding:0 20px 16px; border-bottom:1px solid var(--line); margin-bottom:6px;}
+  .sidebar-eyebrow{
+    font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:0.16em; text-transform:uppercase;
+    color:var(--soon); margin:0 0 4px;
+  }
+  .sidebar-head h2{font-family:'Big Shoulders Display',sans-serif; font-weight:700; font-size:18px; margin:0; text-transform:uppercase;}
+  .sidebar-continent{padding:14px 20px 4px;}
+  .sidebar-continent h3{
+    font-family:'IBM Plex Mono',monospace; font-size:11px; text-transform:uppercase; letter-spacing:0.1em;
+    color:var(--muted); margin:0 0 8px; display:flex; align-items:center; gap:8px;
+  }
+  .sidebar-continent h3::after{content:""; flex:1; height:1px; background:var(--line);}
+  .sidebar-country{margin-bottom:10px;}
+  .sidebar-country .c-name{
+    font-size:13.5px; font-weight:600; display:flex; align-items:center; gap:7px; margin-bottom:3px; color:var(--text-lo);
+  }
+  .sidebar-country .c-name .flag{font-size:15px;}
+  .sidebar-portal-link{
+    display:flex; align-items:center; gap:6px;
+    font-size:12px; color:var(--muted); text-decoration:none; padding:3px 0 3px 22px;
+  }
+  .sidebar-portal-link:hover{color:var(--soon);}
+  .sidebar-portal-link::before{content:"↗"; font-size:11px;}
+
+  .menu-toggle{
+    display:none; position:fixed; top:16px; left:16px; z-index:60;
+    background:var(--soon); color:#1a1207; border:none; border-radius:8px;
+    font-family:'IBM Plex Mono',monospace; font-size:12px; font-weight:700;
+    padding:9px 13px; cursor:pointer; letter-spacing:0.04em;
+  }
+  .sidebar-overlay{display:none; position:fixed; inset:0; background:rgba(6,10,18,0.6); z-index:35;}
+
+  @media (max-width:900px){
+    body{padding-left:0;}
+    .sidebar{transform:translateX(-100%); transition:transform .25s ease; box-shadow:2px 0 18px rgba(0,0,0,0.4);}
+    .sidebar.open{transform:translateX(0);}
+    .menu-toggle{display:block;}
+    .sidebar-overlay.open{display:block;}
+  }
+
+  /* ===== Top-right actions menu ===== */
+  .actions-menu{position:relative;}
+  .menu-trigger{
+    display:inline-flex; align-items:center; gap:8px;
+    background:var(--stamp); color:#fbe9e4; border:none; border-radius:8px;
+    font-family:'IBM Plex Mono',monospace; font-size:12.5px; font-weight:600; letter-spacing:0.03em;
+    padding:10px 16px; cursor:pointer; white-space:nowrap;
+  }
+  .menu-trigger:hover{background:#c94a34;}
+  .menu-trigger::after{content:"▾"; font-size:10px; margin-left:2px;}
+  .dropdown-panel{
+    display:none; position:absolute; top:calc(100% + 8px); right:0; z-index:70;
+    background:var(--paper); border:1px solid var(--paper-line); border-radius:8px;
+    min-width:220px; overflow:hidden; box-shadow:0 8px 24px rgba(0,0,0,0.35);
+  }
+  .dropdown-panel.open{display:block;}
+  .dropdown-item{
+    width:100%; text-align:left; background:none; border:none; cursor:pointer;
+    padding:12px 16px; font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:#241d10;
+    display:flex; align-items:center; gap:9px;
+  }
+  .dropdown-item:hover{background:var(--paper-2);}
+  .dropdown-item + .dropdown-item{border-top:1px dashed var(--paper-line);}
+  .dropdown-item .dd-icon{font-size:14px;}
+
+  /* ===== Subscribe modal ===== */
+  .modal-overlay{
+    display:none; position:fixed; inset:0; background:rgba(6,10,18,0.72); z-index:80;
+    align-items:center; justify-content:center; padding:20px;
+  }
+  .modal-overlay.open{display:flex;}
+  .modal-card{
+    background:var(--paper); color:#241d10; border-radius:var(--radius);
+    width:100%; max-width:440px; max-height:90vh; overflow-y:auto;
+    padding:26px 26px 24px; position:relative; border:1px solid var(--paper-line);
+  }
+  .modal-close{
+    position:absolute; top:14px; right:16px; background:none; border:none; cursor:pointer;
+    font-size:20px; color:#6b5f3f; line-height:1; padding:4px;
+  }
+  .modal-close:hover{color:var(--stamp);}
+  .modal-eyebrow{
+    font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:0.14em; text-transform:uppercase;
+    color:var(--stamp); margin:0 0 6px;
+  }
+  .modal-title{font-family:'Big Shoulders Display',sans-serif; font-weight:800; font-size:23px; text-transform:uppercase; margin:0 0 8px;}
+  .modal-sub{font-size:13.3px; color:#4a4030; margin:0 0 20px; line-height:1.5;}
+  .form-row{display:flex; gap:10px; margin-bottom:12px;}
+  .form-field{flex:1; display:flex; flex-direction:column; gap:5px;}
+  .form-field label{
+    font-family:'IBM Plex Mono',monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:0.08em; color:#6b5f3f;
+  }
+  .form-field input, .form-field textarea{
+    background:#fff; border:1px solid var(--paper-line); border-radius:6px;
+    padding:9px 11px; font-size:13.5px; font-family:'IBM Plex Sans',sans-serif; color:#241d10;
+  }
+  .form-field textarea{resize:vertical; min-height:90px; font-family:'IBM Plex Sans',sans-serif;}
+  .form-field input:focus, .form-field textarea:focus{outline:2px solid var(--stamp); outline-offset:0;}
+  .form-field.error input, .form-field.error textarea{border-color:var(--stamp);}
+  .form-error-msg{font-size:11px; color:var(--stamp); display:none;}
+  .form-field.error .form-error-msg{display:block;}
+  .form-submit{
+    width:100%; background:var(--ink); color:var(--text-lo); border:none; border-radius:8px;
+    padding:12px; font-family:'IBM Plex Mono',monospace; font-size:13px; font-weight:600;
+    cursor:pointer; margin-top:6px; letter-spacing:0.03em;
+  }
+  .form-submit:hover{background:var(--stamp);}
+  .form-fineprint{font-size:11px; color:#7a6f52; margin-top:12px; line-height:1.5;}
+
+  .success-view{text-align:center; padding:10px 0 4px;}
+  .success-stamp{
+    font-family:'Big Shoulders Display',sans-serif; font-weight:800; font-size:15px;
+    display:inline-block; border:2px solid var(--stamp); color:var(--stamp);
+    padding:6px 14px; border-radius:6px; transform:rotate(-3deg); text-transform:uppercase; letter-spacing:0.08em;
+    margin-bottom:16px;
+  }
+  .success-view p{font-size:13.8px; color:#4a4030; margin:0 0 6px;}
+  .success-view .success-email{font-family:'IBM Plex Mono',monospace; font-weight:600; color:#241d10;}
+
+  @media (max-width:480px){
+    .form-row{flex-direction:column; gap:12px;}
+  }
+</style>
+</head>
+<body>
+
+<button class="menu-toggle" id="menuToggle">☰ Portals</button>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-head">
+    <p class="sidebar-eyebrow">Jump to portal</p>
+    <h2>Government portals</h2>
+  </div>
+  <nav id="sidebarNav"></nav>
+</aside>
+
+<div class="modal-overlay" id="subscribeOverlay">
+  <div class="modal-card">
+    <button class="modal-close" id="modalClose" aria-label="Close">&times;</button>
+    <div id="formView">
+      <p class="modal-eyebrow">Stay ahead of the deadlines</p>
+      <h2 class="modal-title">Monthly compliance digest</h2>
+      <p class="modal-sub">One email a month covering everything that changed — new mandates, shifted dates, and anything newly due.</p>
+      <form id="subscribeForm" novalidate>
+        <div class="form-row">
+          <div class="form-field" id="field-firstName">
+            <label for="firstName">First name</label>
+            <input type="text" id="firstName" name="firstName" autocomplete="given-name">
+            <span class="form-error-msg">First name is required</span>
+          </div>
+          <div class="form-field" id="field-lastName">
+            <label for="lastName">Last name</label>
+            <input type="text" id="lastName" name="lastName" autocomplete="family-name">
+            <span class="form-error-msg">Last name is required</span>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-field" id="field-email">
+            <label for="email">Email address</label>
+            <input type="email" id="email" name="email" autocomplete="email">
+            <span class="form-error-msg">A valid email address is required</span>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-field" id="field-title">
+            <label for="jobTitle">Title</label>
+            <input type="text" id="jobTitle" name="jobTitle" autocomplete="organization-title">
+            <span class="form-error-msg">Title is required</span>
+          </div>
+          <div class="form-field" id="field-company">
+            <label for="company">Company name</label>
+            <input type="text" id="company" name="company" autocomplete="organization">
+            <span class="form-error-msg">Company name is required</span>
+          </div>
+        </div>
+        <button type="submit" class="form-submit">Subscribe</button>
+        <p class="form-fineprint">Sent once a month. Unsubscribe anytime. This demo form runs entirely in your browser — connect it to a mailing list provider (e.g. Mailchimp, HubSpot) to go live.</p>
+      </form>
+    </div>
+    <div id="successView" class="success-view" style="display:none;">
+      <div class="success-stamp">Subscribed</div>
+      <p>You're on the list, <span id="successName"></span>.</p>
+      <p>Monthly updates will be sent to <span class="success-email" id="successEmail"></span>.</p>
+      <button type="button" class="form-submit" id="modalDone" style="margin-top:14px;">Done</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="feedbackOverlay">
+  <div class="modal-card">
+    <button class="modal-close" id="feedbackModalClose" aria-label="Close">&times;</button>
+    <div id="feedbackFormView">
+      <p class="modal-eyebrow">Spot a gap or an error?</p>
+      <h2 class="modal-title">Send feedback</h2>
+      <p class="modal-sub">Missing a country, an outdated date, or a broken portal link? Let us know.</p>
+      <form id="feedbackForm" novalidate>
+        <div class="form-row">
+          <div class="form-field" id="field-fb-email">
+            <label for="fbEmail">Email address</label>
+            <input type="email" id="fbEmail" name="fbEmail" autocomplete="email">
+            <span class="form-error-msg">A valid email address is required</span>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-field" id="field-fb-subject">
+            <label for="fbSubject">Subject</label>
+            <input type="text" id="fbSubject" name="fbSubject">
+            <span class="form-error-msg">Subject is required</span>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-field" id="field-fb-comments">
+            <label for="fbComments">Comments</label>
+            <textarea id="fbComments" name="fbComments"></textarea>
+            <span class="form-error-msg">Please add a comment</span>
+          </div>
+        </div>
+        <button type="submit" class="form-submit">Send feedback</button>
+        <p class="form-fineprint">This demo form runs entirely in your browser — connect it to a real inbox, helpdesk, or webhook to go live.</p>
+      </form>
+    </div>
+    <div id="feedbackSuccessView" class="success-view" style="display:none;">
+      <div class="success-stamp">Received</div>
+      <p>Thanks — your feedback has been noted.</p>
+      <p>We'll follow up at <span class="success-email" id="fbSuccessEmail"></span> if needed.</p>
+      <button type="button" class="form-submit" id="feedbackModalDone" style="margin-top:14px;">Done</button>
+    </div>
+  </div>
+</div>
+
+<div class="topbar">
+  <div class="topbar-brand">
+    <p class="brand-eyebrow">Compliance clearance board</p>
+    <h1 class="brand-title display">The E-Invoicing<br>Compliance Corner</h1>
+    <p class="brand-sub">EU-wide ViDA rules plus national mandates across Europe, the Middle East, Asia-Pacific and the Americas — deadlines, required actions and the official portal for each one.</p>
+  </div>
+  <div class="topbar-right">
+    <div class="actions-menu" id="actionsMenu">
+      <button class="menu-trigger" id="menuTrigger">Menu</button>
+      <div class="dropdown-panel" id="dropdownPanel">
+        <button class="dropdown-item" id="ddSubscribe"><span class="dd-icon">✉</span>Subscribe to monthly updates</button>
+        <button class="dropdown-item" id="ddFeedback"><span class="dd-icon">💬</span>Give feedback</button>
+      </div>
+    </div>
+    <div style="margin-top:10px;">
+      <strong>Last updated:</strong> <span id="todayLabel">—</span>
+    </div>
+  </div>
+</div>
+
+<div class="hero">
+  <p class="hero-label">Next clearance dates</p>
+  <div class="board" id="board"></div>
+</div>
+
+<div class="stats" id="stats"></div>
+
+<div class="filters">
+  <div class="filter-group" id="regionFilters">
+    <span class="fg-label">Region</span>
+  </div>
+  <div class="filter-group" id="statusFilters">
+    <span class="fg-label">Status</span>
+  </div>
+  <div class="search-wrap">
+    <input type="text" id="searchBox" placeholder="Search country or system…">
+  </div>
+</div>
+
+<div class="timeline-section">
+  <div class="section-heading">
+    <h2 class="display">Timeline</h2>
+    <span id="resultCount"></span>
+  </div>
+  <div class="timeline" id="timeline"></div>
+  <div class="no-results" id="noResults" style="display:none;">No milestones match these filters.</div>
+</div>
+
+<footer>
+  <p>This tracker reflects publicly available guidance as of July 2026 and is provided for general awareness, not legal or tax advice. E-invoicing thresholds, wave numbers and go-live dates change frequently — confirm your obligations directly on the official government portal linked in each entry, or with your tax advisor, before making compliance decisions.</p>
+  <p class="fine">Data compiled from official tax-authority and EU Commission sources. "Days remaining" and status badges are calculated automatically from today's date.</p>
+</footer>
+
+<script>
+const DATA = [
+  // ---------------- EUROPEAN UNION (ViDA) ----------------
+  {
+    id:'eu-transpose', country:'European Union', flag:'🇪🇺', code:'EU', region:'Europe',
+    system:'ViDA — national transposition', date:'2026-12-31',
+    desc:'Every EU member state must transpose the VAT in the Digital Age (ViDA) Directive into national law, clearing the way for domestic e-invoicing mandates to align with the EU framework.',
+    actions:[
+      "Track your national tax authority's transposition timeline and any new domestic rules it introduces",
+      'Confirm your ERP/AP systems can issue EN 16931-compliant structured e-invoices',
+      "Watch for country-specific derogations that may set an earlier or later domestic deadline"
+    ],
+    portals:[{label:'EU Taxation & Customs Union — ViDA', url:'https://taxation-customs.ec.europa.eu/taxation/vat/vat-digital-age-vida_en'}]
+  },
+  {
+    id:'eu-drr', country:'European Union', flag:'🇪🇺', code:'EU', region:'Europe',
+    system:'ViDA — cross-border Digital Reporting Requirements', date:'2030-07-01',
+    desc:'Structured e-invoicing and near-real-time Digital Reporting Requirements (DRR) become mandatory EU-wide for cross-border B2B transactions. The EC Sales List is abolished and replaced by DRR.',
+    actions:[
+      'Be able to issue EN 16931-compliant e-invoices within 10 days of the chargeable event for intra-EU B2B sales',
+      'Build near-real-time reporting into your invoicing pipeline ahead of go-live',
+      'Retire EC Sales List (recapitulative statement) processes once DRR replaces them'
+    ],
+    portals:[{label:'EU Taxation & Customs Union — ViDA', url:'https://taxation-customs.ec.europa.eu/taxation/vat/vat-digital-age-vida_en'}]
+  },
+  {
+    id:'eu-align', country:'European Union', flag:'🇪🇺', code:'EU', region:'Europe',
+    system:'ViDA — domestic system harmonisation', date:'2035-01-01',
+    desc:'All pre-existing domestic e-invoicing and reporting systems (including established clearance models like Italy\'s SDI) must be aligned with the harmonised EU ViDA standard.',
+    actions:[
+      "If you operate in a country with its own clearance system, confirm its EN 16931/ViDA alignment plan",
+      'Plan for a single reporting model across all EU markets you operate in'
+    ],
+    portals:[{label:'EU Taxation & Customs Union — ViDA', url:'https://taxation-customs.ec.europa.eu/taxation/vat/vat-digital-age-vida_en'}]
+  },
+
+  // ---------------- BELGIUM ----------------
+  {
+    id:'be-mandate', country:'Belgium', flag:'🇧🇪', code:'BE', region:'Europe',
+    system:'Mandatory B2B e-invoicing via Peppol', date:'2026-01-01',
+    desc:'Structured e-invoicing became mandatory for domestic B2B transactions between Belgian VAT-registered businesses, using the Peppol BIS Billing 3.0 / EN 16931 standard.',
+    actions:[
+      'Connect through a certified Peppol Access Point (or confirm your provider is one)',
+      'Issue and receive Peppol BIS Billing 3.0 UBL invoices for all domestic B2B sales',
+      'PDF and paper invoices no longer qualify — structured format only'
+    ],
+    portals:[{label:'EU Digital Building Blocks — Belgium', url:'https://ec.europa.eu/digital-building-blocks/sites/spaces/DIGITAL/pages/467108877/eInvoicing+in+Belgium'}]
+  },
+  {
+    id:'be-penalty', country:'Belgium', flag:'🇧🇪', code:'BE', region:'Europe',
+    system:'Tolerance period ends — penalties enforced', date:'2026-04-01',
+    desc:'The three-month administrative tolerance period ended; a progressive penalty regime (€1,500 / €3,000 / €5,000) now applies to non-compliant invoicing.',
+    actions:[
+      'Resolve any outstanding Peppol onboarding gaps immediately — fines apply per infraction',
+      'Audit recent invoices for structured-format compliance'
+    ],
+    portals:[{label:'EU Digital Building Blocks — Belgium', url:'https://ec.europa.eu/digital-building-blocks/sites/spaces/DIGITAL/pages/467108877/eInvoicing+in+Belgium'}]
+  },
+  {
+    id:'be-ereport', country:'Belgium', flag:'🇧🇪', code:'BE', region:'Europe',
+    system:'Near-real-time e-reporting (5-corner Peppol model)', date:'2028-01-01',
+    desc:'Belgium plans to introduce near-real-time digital VAT reporting through a five-corner Peppol model, reporting invoice data to the tax authority automatically.',
+    actions:[
+      'Begin scoping five-corner Peppol reporting capability with your Access Point provider',
+      'Confirm this remains on schedule closer to the date — final implementing rules are still pending'
+    ],
+    confidence:'expected',
+    portals:[{label:'EU Digital Building Blocks — Belgium', url:'https://ec.europa.eu/digital-building-blocks/sites/spaces/DIGITAL/pages/467108877/eInvoicing+in+Belgium'}]
+  },
+
+  // ---------------- GERMANY ----------------
+  {
+    id:'de-receive', country:'Germany', flag:'🇩🇪', code:'DE', region:'Europe',
+    system:'Mandatory receipt of structured e-invoices', date:'2025-01-01',
+    desc:'All German businesses, regardless of size, must be able to receive EN 16931-compliant structured e-invoices (XRechnung or ZUGFeRD) for domestic B2B transactions.',
+    actions:[
+      'Confirm your accounts-payable process can accept XRechnung XML or ZUGFeRD hybrid PDFs',
+      'A structured-invoice-capable email inbox meets the current minimum bar'
+    ],
+    portals:[{label:'EU Digital Building Blocks — Germany', url:'https://ec.europa.eu/digital-building-blocks/sites/spaces/DIGITAL/pages/467108886/eInvoicing+in+Germany'}]
+  },
+  {
+    id:'de-issue-large', country:'Germany', flag:'🇩🇪', code:'DE', region:'Europe',
+    system:'Issuing mandate — businesses over €800k turnover', date:'2027-01-01',
+    desc:'Businesses with prior-year turnover above €800,000 must issue structured e-invoices for domestic B2B transactions; PDF-only invoices no longer qualify for this group.',
+    actions:[
+      'Confirm your ERP can generate XRechnung or ZUGFeRD 2.1+ output',
+      'Existing EDI arrangements must become EN 16931-compliant or transition by end of 2027'
+    ],
+    portals:[{label:'EU Digital Building Blocks — Germany', url:'https://ec.europa.eu/digital-building-blocks/sites/spaces/DIGITAL/pages/467108886/eInvoicing+in+Germany'}]
+  },
+  {
+    id:'de-issue-all', country:'Germany', flag:'🇩🇪', code:'DE', region:'Europe',
+    system:'Issuing mandate — all domestic B2B businesses', date:'2028-01-01',
+    desc:'The issuing obligation extends to every domestic B2B business regardless of turnover, completing Germany\'s phased rollout under the Growth Opportunities Act.',
+    actions:[
+      'Complete rollout to any remaining domestic B2B invoicing flows',
+      'No further transitional arrangements will apply after this date'
+    ],
+    portals:[{label:'EU Digital Building Blocks — Germany', url:'https://ec.europa.eu/digital-building-blocks/sites/spaces/DIGITAL/pages/467108886/eInvoicing+in+Germany'}]
+  },
+
+  // ---------------- FRANCE ----------------
+  {
+    id:'fr-receive', country:'France', flag:'🇫🇷', code:'FR', region:'Europe',
+    system:'Receiving mandate + issuing for large/medium businesses', date:'2026-09-01',
+    desc:'All VAT-registered businesses in France must be able to receive e-invoices; large and medium-sized businesses must also issue them via the public portal (PPF) or an accredited platform (PA, formerly PDP).',
+    actions:[
+      "Register your business directory entry with the PPF (Portail Public de Facturation)",
+      'Choose an accredited Plateforme Agréée or use the free public portal',
+      'Set up e-reporting for B2C and cross-border transactions alongside e-invoicing'
+    ],
+    portals:[{label:'Chorus Pro / PPF', url:'https://chorus-pro.gouv.fr'}]
+  },
+  {
+    id:'fr-issue-all', country:'France', flag:'🇫🇷', code:'FR', region:'Europe',
+    system:'Issuing mandate extends to all remaining businesses', date:'2027-09-01',
+    desc:'Small and micro-enterprises, including freelancers, must issue e-invoices, completing France\'s phased B2B e-invoicing and e-reporting reform.',
+    actions:[
+      'Finalize invoicing software or PA integration well ahead of the deadline',
+      'Confirm your software supports Factur-X, UBL, or CII format'
+    ],
+    portals:[{label:'Chorus Pro / PPF', url:'https://chorus-pro.gouv.fr'}]
+  },
+
+  // ---------------- POLAND ----------------
+  {
+    id:'pl-large', country:'Poland', flag:'🇵🇱', code:'PL', region:'Europe',
+    system:'KSeF mandatory — large taxpayers (>PLN 200m)', date:'2026-02-01',
+    desc:'Large taxpayers with turnover above PLN 200 million became the first group required to issue B2B invoices through the Krajowy System e-Faktur (KSeF) clearance platform.',
+    actions:[
+      'Integrate with KSeF via API using the FA(3) XML schema',
+      'Set up KSeF authorisations for staff and any third-party issuers'
+    ],
+    portals:[{label:'KSeF — Ministry of Finance', url:'https://ksef.mf.gov.pl/'}]
+  },
+  {
+    id:'pl-all', country:'Poland', flag:'🇵🇱', code:'PL', region:'Europe',
+    system:'KSeF mandatory — all other VAT-registered businesses', date:'2026-04-01',
+    desc:'The KSeF mandate extended to all remaining VAT-registered businesses in Poland (excluding micro-entrepreneurs); an invoice only carries legal force once KSeF has cleared it.',
+    actions:[
+      'Confirm your invoicing system generates valid FA(3) structured invoices',
+      'Correction notes (noty korygujące) are no longer valid — use KSeF\'s structured correction process instead',
+      'Add the KSeF invoice number to bank transfer references once that requirement takes effect (1 Aug 2026)'
+    ],
+    portals:[{label:'KSeF — Ministry of Finance', url:'https://ksef.mf.gov.pl/'}]
+  },
+  {
+    id:'pl-micro', country:'Poland', flag:'🇵🇱', code:'PL', region:'Europe',
+    system:'KSeF mandatory — micro-entrepreneurs; penalties begin', date:'2027-01-01',
+    desc:'Micro-entrepreneurs join the KSeF mandate, and the grace period on financial penalties (up to 100% of invoice VAT for non-compliance) ends for everyone.',
+    actions:[
+      'Micro-businesses: confirm KSeF integration is live well before this date',
+      'All businesses: resolve any lingering compliance gaps before penalties apply'
+    ],
+    portals:[{label:'KSeF — Ministry of Finance', url:'https://ksef.mf.gov.pl/'}]
+  },
+
+  // ---------------- ITALY (anchor / already in force) ----------------
+  {
+    id:'it-sdi', country:'Italy', flag:'🇮🇹', code:'IT', region:'Europe',
+    system:'Mandatory B2B/B2C e-invoicing via SDI (in force since 2019)', date:'2019-01-01', anchor:true,
+    desc:'Italy was the first EU member state to mandate clearance-model e-invoicing for essentially all domestic transactions — B2B, B2C and B2G — through the Sistema di Interscambio (SDI), using the FatturaPA XML format.',
+    actions:[
+      'Confirm your FatturaPA generation and SDI transmission channel (PEC, FTP, or web service) remain active',
+      "Monitor for EN 16931/ViDA alignment changes ahead of Italy's SDI derogation renewal (through 2027) and the 2035 EU-wide harmonisation deadline"
+    ],
+    portals:[
+      {label:'Agenzia delle Entrate — e-invoicing', url:'https://www.agenziaentrate.gov.it/portale/web/english/electronic-invoicing'},
+      {label:'FatturaPA / Sistema di Interscambio', url:'https://www.fatturapa.gov.it'}
+    ]
+  },
+
+  // ---------------- SAUDI ARABIA ----------------
+  {
+    id:'sa-wave23', country:'Saudi Arabia', flag:'🇸🇦', code:'SA', region:'Middle East',
+    system:'ZATCA Fatoora — Wave 23 (turnover > SAR 750,000)', date:'2026-03-31',
+    desc:'Businesses with VAT-taxable turnover above SAR 750,000 in 2022, 2023 or 2024 were required to complete Phase 2 integration with the Fatoora platform for real-time clearance.',
+    actions:[
+      "Confirm ZATCA's direct notification and integration deadline for your entity",
+      'Integrate your invoicing system with the Fatoora API for real-time B2B/B2G clearance',
+      'Ensure invoices carry a UUID, QR code and cryptographic stamp'
+    ],
+    portals:[{label:'ZATCA — Fatoora', url:'https://zatca.gov.sa'}]
+  },
+  {
+    id:'sa-wave24', country:'Saudi Arabia', flag:'🇸🇦', code:'SA', region:'Middle East',
+    system:'ZATCA Fatoora — Wave 24 (turnover > SAR 375,000)', date:'2026-06-30',
+    desc:'The threshold dropped to SAR 375,000 — effectively matching the mandatory VAT-registration threshold, bringing nearly every VAT-registered business into Phase 2 clearance.',
+    actions:[
+      'Assume you are in scope if VAT-registered; ZATCA notifies affected taxpayers roughly six months ahead',
+      'Issue Standard invoices (clearance, input-VAT claimable) for B2B/B2G and Simplified invoices for B2C, reported within 24 hours'
+    ],
+    portals:[{label:'ZATCA — Fatoora', url:'https://zatca.gov.sa'}]
+  },
+
+  // ---------------- MALAYSIA ----------------
+  {
+    id:'my-phase4', country:'Malaysia', flag:'🇲🇾', code:'MY', region:'Asia-Pacific',
+    system:'MyInvois Phase 4 — turnover RM1m–5m', date:'2026-01-01',
+    desc:'Businesses with annual turnover between RM1 million and RM5 million entered the mandate, with a relaxation period (no penalties for submission errors) extended to 31 December 2027.',
+    actions:[
+      'Register for MyInvois portal or API access with LHDN',
+      'Determine your phase using your FY2022 audited accounts or first available tax return',
+      'Individual e-invoices are mandatory above RM10,000 — consolidated invoicing is no longer allowed for those amounts'
+    ],
+    portals:[{label:'LHDN — MyInvois / e-Invoice', url:'https://www.hasil.gov.my/en/e-invoice'}]
+  },
+  {
+    id:'my-related', country:'Malaysia', flag:'🇲🇾', code:'MY', region:'Asia-Pacific',
+    system:'Related/subsidiary companies of RM1m+ groups', date:'2026-07-01',
+    desc:'Businesses below RM1 million turnover that are subsidiaries or related companies of an RM1 million+ group must still comply, regardless of their own individual revenue.',
+    actions:[
+      'Check group structure — related-company status can trigger the mandate even for small entities',
+      'Register and test MyInvois integration well before the deadline'
+    ],
+    portals:[{label:'LHDN — MyInvois / e-Invoice', url:'https://www.hasil.gov.my/en/e-invoice'}]
+  },
+
+  // ---------------- INDIA ----------------
+  {
+    id:'in-threshold', country:'India', flag:'🇮🇳', code:'IN', region:'Asia-Pacific',
+    system:'GST e-invoicing mandatory above ₹5 crore turnover (in force since Aug 2023)', date:'2023-08-01', anchor:true,
+    desc:'Any GST-registered business with aggregate annual turnover (AATO) exceeding ₹5 crore in any financial year since 2017–18 must generate e-invoices with a valid IRN for B2B and export transactions.',
+    actions:[
+      'Confirm aggregate turnover across all GSTINs under your PAN — it only needs to exceed ₹5 crore once',
+      'Register with an Invoice Registration Portal (IRP) — NIC\'s einvoice1.gst.gov.in or an authorised private IRP',
+      'Watch for a possible threshold reduction to ₹2 crore, discussed but not yet notified'
+    ],
+    portals:[{label:'e-Invoice / IRP (NIC)', url:'https://einvoice1.gst.gov.in'}]
+  },
+  {
+    id:'in-30day', country:'India', flag:'🇮🇳', code:'IN', region:'Asia-Pacific',
+    system:'30-day IRN reporting window (AATO ≥ ₹10 crore)', date:'2025-04-01',
+    desc:'Invoices, credit notes and debit notes older than 30 days can no longer be reported to the IRP for IRN generation — they will be rejected outright for taxpayers with AATO of ₹10 crore or more.',
+    actions:[
+      'Build the 30-day reporting window into your AP/AR workflow',
+      'Enable multi-factor authentication on the GST portal — mandatory since April 2025'
+    ],
+    portals:[{label:'e-Invoice / IRP (NIC)', url:'https://einvoice1.gst.gov.in'}]
+  },
+
+  // ---------------- BRAZIL ----------------
+  {
+    id:'br-fields', country:'Brazil', flag:'🇧🇷', code:'BR', region:'Americas',
+    system:'CBS/IBS fields required on NF-e/NFC-e/NFS-e (test rates)', date:'2026-01-01',
+    desc:'As Brazil\'s dual-VAT tax reform begins, electronic tax documents must include the new CBS and IBS fields at test rates (0.9% / 0.1%) — no financial impact yet, but the legal obligation to include the data already applies.',
+    actions:[
+      'Update invoicing layouts to Technical Note 2025.002-RTC (latest version)',
+      'Test in SEFAZ\'s homologation environment before go-live',
+      'Simples Nacional / MEI taxpayers have an extended timeline to 2027'
+    ],
+    portals:[{label:'Portal Nacional da NF-e (SEFAZ)', url:'https://www.nfe.fazenda.gov.br/portal/principal.aspx'}]
+  },
+  {
+    id:'br-validate', country:'Brazil', flag:'🇧🇷', code:'BR', region:'Americas',
+    system:'CBS/IBS field validation begins — rejection risk', date:'2026-04-01',
+    desc:'Authorization systems start rigorously validating CBS/IBS fields; invoices with missing or inconsistent data risk automatic rejection.',
+    actions:[
+      'Audit invoice output for complete, consistent CBS/IBS/IS data groups',
+      'Resolve any rejections quickly — blocked invoices halt the movement of goods'
+    ],
+    portals:[{label:'Portal Nacional da NF-e (SEFAZ)', url:'https://www.nfe.fazenda.gov.br/portal/principal.aspx'}]
+  },
+  {
+    id:'br-mandatory', country:'Brazil', flag:'🇧🇷', code:'BR', region:'Americas',
+    system:'Full legal reporting obligation for General Tax Regime', date:'2026-08-03',
+    desc:'Under Technical Note 2025.002-RTC v1.40, General Tax Regime taxpayers must report IBS and CBS groups in NF-e and NFC-e with full legal effect.',
+    actions:[
+      'Confirm your ERP/e-invoicing provider has completed the required schema updates',
+      'Reconcile reported CBS/IBS data against your accounting records ahead of full enforcement'
+    ],
+    portals:[{label:'Portal Nacional da NF-e (SEFAZ)', url:'https://www.nfe.fazenda.gov.br/portal/principal.aspx'}]
+  },
+
+  // ---------------- SPAIN ----------------
+  {
+    id:'es-verifactu-corp', country:'Spain', flag:'🇪🇸', code:'ES', region:'Europe',
+    system:'VeriFactu certified billing software — corporate taxpayers', date:'2027-01-01',
+    desc:'Businesses subject to Corporate Income Tax must use VeriFactu-certified invoicing software (RRSIF) that guarantees the integrity, traceability and immutability of billing records sent to the Agencia Tributaria (AEAT).',
+    actions:[
+      'Confirm your invoicing software is VeriFactu-certified and generates the required hash-chain and QR code',
+      'This is a separate obligation from the broader Crea y Crece B2B e-invoicing mandate below'
+    ],
+    portals:[{label:'Agencia Tributaria — VeriFactu', url:'https://sede.agenciatributaria.gob.es/Sede/iva/sistemas-informaticos-facturacion-verifactu.html'}]
+  },
+  {
+    id:'es-verifactu-rest', country:'Spain', flag:'🇪🇸', code:'ES', region:'Europe',
+    system:'VeriFactu mandatory — all other taxpayers', date:'2027-07-01',
+    desc:'The VeriFactu obligation extends to all remaining taxpayers required to keep billing records, including the self-employed and other professionals subject to Personal Income Tax.',
+    actions:[
+      'Self-employed / freelancers: confirm certified billing software is in place well before this date',
+      'Businesses already using the SII real-time reporting system are exempt from VeriFactu'
+    ],
+    portals:[{label:'Agencia Tributaria — VeriFactu', url:'https://sede.agenciatributaria.gob.es/Sede/iva/sistemas-informaticos-facturacion-verifactu.html'}]
+  },
+  {
+    id:'es-b2b-large', country:'Spain', flag:'🇪🇸', code:'ES', region:'Europe',
+    system:'Crea y Crece B2B e-invoicing — large businesses (>€8m turnover)', date:'2027-10-01',
+    desc:'Structured B2B e-invoicing becomes mandatory for large businesses under the Crea y Crece law, exchanged via private platforms (with a mandatory copy to the state platform) or the free public solution (SPFE), running alongside VeriFactu.',
+    actions:[
+      'Choose a private e-invoicing platform (must forward a copy to the SPFE) or use the public platform directly',
+      'Confirm EN 16931-compliant formats (UBL, Facturae, CII)',
+      'Report invoice status — accepted, rejected, or paid — to AEAT within 4 calendar days'
+    ],
+    confidence:'expected',
+    portals:[{label:'Agencia Tributaria — VeriFactu / e-invoicing', url:'https://sede.agenciatributaria.gob.es/Sede/iva/sistemas-informaticos-facturacion-verifactu.html'}]
+  },
+  {
+    id:'es-b2b-all', country:'Spain', flag:'🇪🇸', code:'ES', region:'Europe',
+    system:'Crea y Crece B2B e-invoicing — all remaining businesses', date:'2028-10-01',
+    desc:'The B2B e-invoicing mandate extends to SMEs, sole traders and all other VAT-registered businesses, completing Spain\'s dual-track e-invoicing reform.',
+    actions:[
+      'Finalize platform choice and integration well ahead of the deadline',
+      'The final Ministerial Order was still pending as of mid-2026 — confirm this date closer to the time'
+    ],
+    confidence:'expected',
+    portals:[{label:'Agencia Tributaria — VeriFactu / e-invoicing', url:'https://sede.agenciatributaria.gob.es/Sede/iva/sistemas-informaticos-facturacion-verifactu.html'}]
+  },
+
+  // ---------------- UNITED KINGDOM ----------------
+  {
+    id:'uk-mandate', country:'United Kingdom', flag:'🇬🇧', code:'GB', region:'Europe',
+    system:'Mandatory e-invoicing for all VAT invoices (B2B and B2G)', date:'2029-04-01',
+    desc:'Confirmed at Budget 2025, all VAT-registered businesses must issue and receive structured e-invoices for B2B and B2G transactions, using a decentralised four-corner Peppol model. Real-time reporting to HMRC is not part of this initial mandate.',
+    actions:[
+      'Confirm your accounting software has a route to Peppol-based e-invoicing',
+      'Watch for the full implementation roadmap and technical standards expected at Budget 2026',
+      'Northern Ireland businesses: note a possible earlier, additional EU-aligned obligation for goods trade from July 2030'
+    ],
+    confidence:'expected',
+    portals:[{label:'GOV.UK — e-invoicing consultation & policy', url:'https://www.gov.uk/government/consultations/promoting-electronic-invoicing-across-uk-businesses-and-the-public-sector/electronic-invoicing-promoting-e-invoicing-across-uk-businesses-and-the-public-sector'}]
+  },
+
+  // ---------------- ROMANIA ----------------
+  {
+    id:'ro-established', country:'Romania', flag:'🇷🇴', code:'RO', region:'Europe',
+    system:'RO e-Factura clearance model mandatory for B2B/B2G (in force since Jul 2024)', date:'2024-07-01', anchor:true,
+    desc:'Romania runs a centralised clearance (CTC) model: B2B and B2G invoices must be validated and digitally sealed by ANAF via RO e-Factura before they carry legal effect. B2C reporting followed from January 2025.',
+    actions:[
+      'Confirm registration on RO e-Factura and generation of RO_CIUS-compliant XML invoices',
+      'Transmission deadline is 5 working days from issuance (tightened from 5 calendar days in Jan 2026)'
+    ],
+    portals:[{label:'ANAF / Ministry of Finance — e-Factura', url:'https://mfinante.gov.ro/en/web/efactura/informatii-tehnice'}]
+  },
+  {
+    id:'ro-sme', country:'Romania', flag:'🇷🇴', code:'RO', region:'Europe',
+    system:'Full enforcement extends to small taxpayers (<€500,000 turnover)', date:'2026-07-01',
+    desc:'Following a confirmed delay, small taxpayers with turnover below €500,000 become fully subject to e-Factura enforcement and penalties, on the same footing as larger businesses.',
+    actions:[
+      'Standardise client addresses and country/ISO codes ahead of the deadline',
+      'Confirm your invoicing tool applies the 5-working-day transmission rule'
+    ],
+    portals:[{label:'ANAF / Ministry of Finance — e-Factura', url:'https://mfinante.gov.ro/en/web/efactura/informatii-tehnice'}]
+  },
+
+  // ---------------- UNITED ARAB EMIRATES ----------------
+  {
+    id:'uae-pilot', country:'United Arab Emirates', flag:'🇦🇪', code:'AE', region:'Middle East',
+    system:'Voluntary e-invoicing pilot phase begins', date:'2026-07-01',
+    desc:'Voluntary participation opened ahead of the mandate, letting businesses test Accredited Service Provider (ASP) connectivity and the PINT AE invoice format risk-free before penalties apply.',
+    actions:[
+      'Consider joining the voluntary pilot to resolve ASP integration issues before the mandatory phase',
+      'Monitor Federal Tax Authority (FTA) technical guidance updates'
+    ],
+    portals:[{label:'UAE Ministry of Finance — eInvoicing', url:'https://mof.gov.ae/en/about-ministry/mof-initiatives/einvoicing/'}]
+  },
+  {
+    id:'uae-asp', country:'United Arab Emirates', flag:'🇦🇪', code:'AE', region:'Middle East',
+    system:'ASP appointment deadline — businesses ≥ AED 50 million revenue', date:'2026-10-30',
+    desc:'Businesses with revenue of AED 50 million or more must have appointed an Accredited Service Provider (ASP) ahead of the January 2027 go-live (deadline extended from 31 July 2026).',
+    actions:[
+      'Select and contract an FTA-accredited Accredited Service Provider',
+      'Begin PINT AE (UBL 2.1) integration testing with your ASP'
+    ],
+    portals:[{label:'UAE Ministry of Finance — eInvoicing', url:'https://mof.gov.ae/en/about-ministry/mof-initiatives/einvoicing/'}]
+  },
+  {
+    id:'uae-phase1', country:'United Arab Emirates', flag:'🇦🇪', code:'AE', region:'Middle East',
+    system:'Phase 1 mandatory go-live — revenue ≥ AED 50 million', date:'2027-01-01',
+    desc:'Structured e-invoicing becomes mandatory for large businesses, transmitted through an ASP over the Peppol network in PINT AE format, with a real-time copy reported to the FTA.',
+    actions:[
+      'Complete ASP integration and end-to-end testing before go-live',
+      'Ensure invoices carry all FTA-mandated data fields — PDFs and paper no longer qualify'
+    ],
+    portals:[{label:'UAE Ministry of Finance — eInvoicing', url:'https://mof.gov.ae/en/about-ministry/mof-initiatives/einvoicing/'}]
+  },
+  {
+    id:'uae-phase2', country:'United Arab Emirates', flag:'🇦🇪', code:'AE', region:'Middle East',
+    system:'Mandate extends to all other VAT-registered businesses', date:'2027-07-01',
+    desc:'The e-invoicing mandate broadens to cover all remaining VAT-registered businesses for B2B/B2G transactions, with G2B/B2G-specific obligations following from October 2027.',
+    actions:[
+      'Confirm VAT registration status and appoint an ASP well ahead of this date',
+      'Intra-group transactions within a single UAE VAT group have an extended transition to 1 January 2029'
+    ],
+    portals:[{label:'UAE Ministry of Finance — eInvoicing', url:'https://mof.gov.ae/en/about-ministry/mof-initiatives/einvoicing/'}]
+  },
+
+  // ---------------- MEXICO ----------------
+  {
+    id:'mx-cfdi', country:'Mexico', flag:'🇲🇽', code:'MX', region:'Americas',
+    system:'Mandatory CFDI clearance model (CFDI 4.0 current version)', date:'2014-01-01', anchor:true,
+    desc:'Mexico runs one of the world\'s most mature e-invoicing clearance systems: every invoice must be validated and digitally stamped (timbrado) by an authorised PAC before it is legally valid, in the CFDI 4.0 XML format.',
+    actions:[
+      'Ensure PAC connectivity and CFDI 4.0 (Anexo 20) field mapping are current — recipient RFC/name/Regimen Fiscal must match SAT records exactly',
+      'Attach required complementos where applicable (Carta Porte for goods transport, Pagos for instalment payments, Comercio Exterior for exports)',
+      'Retain XML invoices and PAC acknowledgements for at least 5 years'
+    ],
+    portals:[{label:'SAT — Servicio de Administración Tributaria', url:'https://www.sat.gob.mx'}]
+  },
+  {
+    id:'mx-reform', country:'Mexico', flag:'🇲🇽', code:'MX', region:'Americas',
+    system:'2026 tax reform — stricter authenticity requirements and enforcement', date:'2026-01-01',
+    desc:'A tax reform effective January 2026 strengthened SAT\'s enforcement powers, adding stricter authenticity checks and criminal liability for false or simulated CFDIs.',
+    actions:[
+      'Maintain evidence supporting the authenticity of transactions — contracts, proof of delivery, payment records — as SAT can request these within 5 business days',
+      'Review CFDI defense documentation and cancellation procedures given the new criminal liability provisions'
+    ],
+    portals:[{label:'SAT — Servicio de Administración Tributaria', url:'https://www.sat.gob.mx'}]
+  },
+
+  // ---------------- AUSTRALIA ----------------
+  {
+    id:'au-ncereceive', country:'Australia', flag:'🇦🇺', code:'AU', region:'Asia-Pacific',
+    system:'Federal agencies mandatory to receive Peppol e-invoices (in force since Jul 2022)', date:'2022-07-01', anchor:true,
+    desc:'All Non-Corporate Commonwealth Entities (federal agencies) have been required to receive Peppol e-invoices since 1 July 2022. There is no general B2B mandate, but government adoption continues to accelerate.',
+    actions:[
+      'Suppliers to federal agencies: connect via an ATO-accredited Peppol Access Point',
+      'Invoices delivered via Peppol may be paid within 5 days rather than the standard 20'
+    ],
+    portals:[{label:'ATO — About eInvoicing', url:'https://www.ato.gov.au/businesses-and-organisations/einvoicing/what-is-einvoicing'}]
+  },
+  {
+    id:'au-30pct', country:'Australia', flag:'🇦🇺', code:'AU', region:'Asia-Pacific',
+    system:'30% of federal agency invoices must be processed via Peppol', date:'2026-07-01',
+    desc:'Non-Corporate Commonwealth Entities must have at least 30% of received supplier invoices flowing through the Peppol network, en route to full automation by December 2026.',
+    actions:[
+      'If you supply Australian federal agencies, confirm your invoicing is Peppol-enabled',
+      'Use the PINT A-NZ format — the only supported standard since 15 May 2025'
+    ],
+    portals:[{label:'ATO — About eInvoicing', url:'https://www.ato.gov.au/businesses-and-organisations/einvoicing/what-is-einvoicing'}]
+  },
+  {
+    id:'au-automate', country:'Australia', flag:'🇦🇺', code:'AU', region:'Asia-Pacific',
+    system:'Federal agencies must automate e-invoice sending and processing', date:'2026-12-01',
+    desc:'Non-Corporate Commonwealth Entities must be able to automatically process received e-invoices and send e-invoices, with quarterly progress reporting to the Australian Peppol Authority.',
+    actions:[
+      'Confirm your e-invoicing setup supports fully automated, touchless processing',
+      'Government suppliers should expect faster payment cycles as automation lands'
+    ],
+    portals:[{label:'ATO — About eInvoicing', url:'https://www.ato.gov.au/businesses-and-organisations/einvoicing/what-is-einvoicing'}]
+  },
+
+  // ---------------- NEW ZEALAND ----------------
+  {
+    id:'nz-central', country:'New Zealand', flag:'🇳🇿', code:'NZ', region:'Asia-Pacific',
+    system:'Central government agencies mandatory to receive e-invoices (in force since Mar 2022)', date:'2022-03-31', anchor:true,
+    desc:'All central public agencies have been required to receive Peppol e-invoices since March 2022, administered by MBIE as New Zealand\'s Peppol Authority.',
+    actions:[
+      'Suppliers to central agencies: set up Peppol invoicing capability via an accredited Access Point'
+    ],
+    portals:[{label:'einvoicing.govt.nz — MBIE', url:'https://www.einvoicing.govt.nz'}]
+  },
+  {
+    id:'nz-2000', country:'New Zealand', flag:'🇳🇿', code:'NZ', region:'Asia-Pacific',
+    system:'Agencies handling 2,000+ invoices/year must send & receive e-invoices', date:'2026-01-01',
+    desc:'Government agencies processing more than 2,000 domestic trade invoices annually must be fully capable of both sending and receiving structured e-invoices, and pay 95% of them within 5 business days.',
+    actions:[
+      'Confirm PINT A-NZ format compliance — mandatory for government e-invoicing since May 2025',
+      'Check whether your government customer falls within this volume threshold'
+    ],
+    portals:[{label:'einvoicing.govt.nz — MBIE', url:'https://www.einvoicing.govt.nz'}]
+  },
+  {
+    id:'nz-largesupplier', country:'New Zealand', flag:'🇳🇿', code:'NZ', region:'Asia-Pacific',
+    system:'Large suppliers (>NZD 33m revenue) must submit e-invoices to government', date:'2027-01-01',
+    desc:'Suppliers with revenue exceeding NZD 33 million in each of the previous two accounting years must submit e-invoices via Peppol for domestic trade invoices to government buyers.',
+    actions:[
+      'Assess whether your revenue crosses the NZD 33 million threshold',
+      'Integrate with a Peppol Access Point well ahead of the deadline'
+    ],
+    portals:[{label:'einvoicing.govt.nz — MBIE', url:'https://www.einvoicing.govt.nz'}]
+  },
+
+  // ---------------- SINGAPORE ----------------
+  {
+    id:'sg-voluntary2025', country:'Singapore', flag:'🇸🇬', code:'SG', region:'Asia-Pacific',
+    system:'GST InvoiceNow mandatory — new voluntary GST registrants (within 6mo of incorporation)', date:'2025-11-01', anchor:true,
+    desc:'The first mandatory phase of GST InvoiceNow required companies voluntarily registering for GST within six months of incorporation to transmit invoice data to IRAS via the Peppol-based InvoiceNow network.',
+    actions:[
+      'New qualifying GST registrants: set up an InvoiceNow-Ready Solution and Peppol ID at the point of registration'
+    ],
+    portals:[{label:'IRAS — GST InvoiceNow Requirement', url:'https://www.iras.gov.sg/taxes/goods-services-tax-(gst)/gst-invoicenow-requirement'}]
+  },
+  {
+    id:'sg-allvoluntary', country:'Singapore', flag:'🇸🇬', code:'SG', region:'Asia-Pacific',
+    system:'Mandate extends to all new voluntary GST registrants', date:'2026-04-01',
+    desc:'All new voluntary GST registrants, regardless of incorporation date or business structure, must adopt InvoiceNow as a condition of GST registration.',
+    actions:[
+      'Factor InvoiceNow setup into your GST registration application from this date',
+      'Use IRAS\'s implementation date calculator if unsure which phase applies to you'
+    ],
+    portals:[{label:'IRAS — GST InvoiceNow Requirement', url:'https://www.iras.gov.sg/taxes/goods-services-tax-(gst)/gst-invoicenow-requirement'}]
+  },
+  {
+    id:'sg-existing2028', country:'Singapore', flag:'🇸🇬', code:'SG', region:'Asia-Pacific',
+    system:'Phased rollout begins for existing GST-registered businesses', date:'2028-04-01',
+    desc:'Existing GST-registered businesses begin to be brought into GST InvoiceNow on a phased schedule running through to full adoption in 2031. IRAS is notifying affected businesses of their specific date during 2026.',
+    actions:[
+      'Use IRAS\'s GST InvoiceNow Implementation Date Calculator to determine your applicable date',
+      'Watch for direct notification from IRAS (expected by mid-2026)'
+    ],
+    confidence:'expected',
+    portals:[{label:'IRAS — GST InvoiceNow Requirement', url:'https://www.iras.gov.sg/taxes/goods-services-tax-(gst)/gst-invoicenow-requirement'}]
+  },
+  {
+    id:'sg-full2031', country:'Singapore', flag:'🇸🇬', code:'SG', region:'Asia-Pacific',
+    system:'Full adoption — all GST-registered businesses', date:'2031-04-01',
+    desc:'By this date, every GST-registered business in Singapore, including large multinational enterprises, must transmit invoice data via InvoiceNow.',
+    actions:[
+      'Plan integration well in advance — transitional government grants are available to support adoption'
+    ],
+    confidence:'expected',
+    portals:[{label:'IRAS — GST InvoiceNow Requirement', url:'https://www.iras.gov.sg/taxes/goods-services-tax-(gst)/gst-invoicenow-requirement'}]
+  },
+
+  // ---------------- SLOVAKIA ----------------
+  {
+    id:'sk-voluntary', country:'Slovakia', flag:'🇸🇰', code:'SK', region:'Europe',
+    system:'Voluntary e-invoicing / e-reporting transition period begins', date:'2026-05-01',
+    desc:'Businesses can voluntarily register to test structured e-invoicing and reporting ahead of the January 2027 mandate, using a decentralised Peppol-based "5-corner" model.',
+    actions:[
+      'Register for voluntary participation with the Financial Administration to test integrations early',
+      'Confirm your accounting software can generate Peppol BIS 3.0 UBL XML'
+    ],
+    portals:[{label:'Financial Administration of the Slovak Republic', url:'https://www.financnasprava.sk/en/homepage'}]
+  },
+  {
+    id:'sk-mandate', country:'Slovakia', flag:'🇸🇰', code:'SK', region:'Europe',
+    system:'Mandatory domestic B2B/B2G e-invoicing and near-real-time reporting', date:'2027-01-01',
+    desc:'Structured e-invoicing and real-time reporting become mandatory for domestic B2B and B2G transactions between Slovak VAT taxpayers, using certified "Digital Postman" access points on a Peppol-based network.',
+    actions:[
+      'Select an approved Digital Postman (certified access point) provider',
+      'From 2027, input VAT deductions cannot be claimed on non-compliant incoming invoices',
+      'Note: cross-border e-invoicing follows later, under the EU ViDA timeline from July 2030'
+    ],
+    portals:[{label:'Financial Administration of the Slovak Republic', url:'https://www.financnasprava.sk/en/homepage'}]
+  },
+
+  // ---------------- PERU ----------------
+  {
+    id:'pe-established', country:'Peru', flag:'🇵🇪', code:'PE', region:'Americas',
+    system:'E-invoicing (CPE) mandatory for all taxpayers (in force since Jun 2022)', date:'2022-06-01', anchor:true,
+    desc:'Peru operates one of Latin America\'s most mature e-invoicing systems. Electronic Payment Receipts (CPE) must be issued in UBL 2.1 XML, digitally signed, and validated by SUNAT or an authorised Electronic Services Operator (OSE) before they are legally valid.',
+    actions:[
+      'Use an approved Electronic Service Provider (PSE) to generate and sign CPEs',
+      'Send e-invoices to SUNAT within 3 calendar days of issuance',
+      'Archive XML invoices and CDR receipt confirmations for at least 5 years'
+    ],
+    portals:[{label:'SUNAT', url:'https://www.sunat.gob.pe'}]
+  },
+
+  // ---------------- CHILE ----------------
+  {
+    id:'cl-established', country:'Chile', flag:'🇨🇱', code:'CL', region:'Americas',
+    system:'Electronic Tax Documents (DTE) mandatory for all businesses (in force since 2018)', date:'2018-01-01', anchor:true,
+    desc:'All Chilean businesses must issue Documentos Tributarios Electrónicos (DTE) — including facturas (B2B) and boletas (B2C) — validated by the Servicio de Impuestos Internos (SII).',
+    actions:[
+      'Confirm your DTE issuance system is authorised and connected to the SII',
+      'For sales above 135 UF, boleta electrónica must identify the buyer by RUT and name'
+    ],
+    portals:[{label:'Servicio de Impuestos Internos (SII)', url:'https://www.sii.cl'}]
+  },
+  {
+    id:'cl-digital-delivery', country:'Chile', flag:'🇨🇱', code:'CL', region:'Americas',
+    system:'Digital delivery of boleta electrónica required where no printer is available', date:'2026-03-01',
+    desc:'Businesses without printing capability must deliver the boleta electrónica digitally — by email, SMS, WhatsApp, QR code, or another equivalent electronic channel — rather than skip delivery altogether.',
+    actions:[
+      'If you lack point-of-sale printing, set up an electronic delivery channel now (email/SMS/QR)',
+      'Businesses with printers must still generally deliver the printed representation'
+    ],
+    portals:[{label:'Servicio de Impuestos Internos (SII)', url:'https://www.sii.cl'}]
+  },
+
+  // ---------------- IRELAND ----------------
+  {
+    id:'ie-phase1', country:'Ireland', flag:'🇮🇪', code:'IE', region:'Europe',
+    system:'Phase 1 — large corporates must issue e-invoices; all businesses must receive', date:'2028-11-01',
+    desc:'VAT-registered large corporates managed by Revenue\'s Large Corporates Division must issue structured e-invoices and report a subset of transaction data for domestic B2B sales. All businesses must be technically able to receive structured e-invoices from this date.',
+    actions:[
+      'Large corporates: assess ERP readiness for EN 16931 structured invoicing over Peppol now',
+      'All businesses: confirm your systems can receive structured e-invoices — PDFs will no longer be accepted from in-scope suppliers'
+    ],
+    confidence:'expected',
+    portals:[{label:'Revenue — VAT Modernisation / eInvoicing', url:'https://www.revenue.ie/en/vat/documents/implementation-einvoicing.pdf'}]
+  },
+  {
+    id:'ie-phase2', country:'Ireland', flag:'🇮🇪', code:'IE', region:'Europe',
+    system:'Phase 2 — mandate extends to all VAT-registered businesses in intra-EU trade', date:'2029-11-01',
+    desc:'The domestic e-invoicing and reporting obligation extends to all remaining VAT-registered businesses engaged in cross-border EU B2B trade, ahead of full EU ViDA compliance in July 2030.',
+    actions:[
+      'Businesses trading cross-border within the EU should begin Peppol integration planning',
+      'Watch for detailed Revenue guidance, expected well in advance of each phase'
+    ],
+    confidence:'expected',
+    portals:[{label:'Revenue — VAT Modernisation / eInvoicing', url:'https://www.revenue.ie/en/vat/documents/implementation-einvoicing.pdf'}]
+  },
+
+  // ---------------- NORWAY ----------------
+  {
+    id:'no-issue', country:'Norway', flag:'🇳🇴', code:'NO', region:'Europe',
+    system:'Mandatory B2B e-invoice issuance (EHF 3.0 / Peppol BIS)', date:'2027-01-01',
+    desc:'Following the enactment of amendments to the Bookkeeping Act, all businesses with Norwegian bookkeeping obligations must issue structured e-invoices (EHF format) to other businesses registered in the ELMA directory.',
+    actions:[
+      'Register in ELMA (the Norwegian Peppol recipient directory) if not already listed',
+      'Confirm your invoicing software supports EHF 3.0 / Peppol BIS output',
+      'PDF and paper B2B invoices will no longer be valid for in-scope transactions'
+    ],
+    portals:[{label:'Skatteetaten (Norwegian Tax Administration)', url:'https://www.skatteetaten.no'}]
+  },
+  {
+    id:'no-receive', country:'Norway', flag:'🇳🇴', code:'NO', region:'Europe',
+    system:'Mandatory e-invoice reception and fully digital bookkeeping', date:'2030-01-01',
+    desc:'The mandate extends to receiving structured e-invoices and maintaining fully digital bookkeeping records, completing Norway\'s two-phase reform.',
+    actions:[
+      'Plan migration to an approved digital bookkeeping system well ahead of this date',
+      'Confirm AP systems can receive and process EHF/Peppol invoices automatically'
+    ],
+    portals:[{label:'Skatteetaten (Norwegian Tax Administration)', url:'https://www.skatteetaten.no'}]
+  },
+
+  // ---------------- DENMARK ----------------
+  {
+    id:'dk-established', country:'Denmark', flag:'🇩🇰', code:'DK', region:'Europe',
+    system:'Digital Bookkeeping Act enforced — medium/large companies (in force since Jul 2024)', date:'2024-07-01', anchor:true,
+    desc:'Medium and large companies filing annual reports must use a certified digital bookkeeping system capable of sending and receiving structured e-invoices (OIOUBL or Peppol BIS 3.0) and generating SAF-T files on request.',
+    actions:[
+      'Confirm your bookkeeping system is on the Danish Business Authority\'s certified list, or ensure compliance yourself if using a custom system',
+      'Maintain 5-year digital records with automated off-site backup'
+    ],
+    portals:[{label:'Erhvervsstyrelsen (Danish Business Authority)', url:'https://erhvervsstyrelsen.dk'}]
+  },
+  {
+    id:'dk-small', country:'Denmark', flag:'🇩🇰', code:'DK', region:'Europe',
+    system:'Small businesses (>DKK 300,000 turnover) with custom systems must comply', date:'2026-07-01',
+    desc:'Small businesses and sole proprietorships exceeding DKK 300,000 turnover in two consecutive years, using non-registered ("custom") accounting systems, become fully subject to the Bookkeeping Act\'s digital requirements.',
+    actions:[
+      'Check whether your turnover has crossed the DKK 300,000 threshold in the last two fiscal years',
+      'Businesses on registered/certified systems already needed to comply from January 2026'
+    ],
+    portals:[{label:'Erhvervsstyrelsen (Danish Business Authority)', url:'https://erhvervsstyrelsen.dk'}]
+  },
+
+  // ---------------- SWEDEN ----------------
+  {
+    id:'se-b2g', country:'Sweden', flag:'🇸🇪', code:'SE', region:'Europe',
+    system:'B2G e-invoicing mandatory for all public entities (in force since 2019)', date:'2019-04-01', anchor:true,
+    desc:'All contracting authorities and public entities in Sweden must be able to receive e-invoices compliant with EN 16931, with Peppol BIS Billing 3.0 the recommended (and increasingly required) format as legacy formats like Svefaktura are phased out.',
+    actions:[
+      'Suppliers to Swedish public entities: use Peppol BIS Billing 3.0 where possible — legacy SFTI/EDIFACT formats are being retired',
+      'No domestic B2B mandate exists yet — see the entry below on expected EU alignment'
+    ],
+    portals:[{label:'DIGG — Swedish Peppol Authority', url:'https://www.digg.se'}]
+  },
+  {
+    id:'se-b2b-expected', country:'Sweden', flag:'🇸🇪', code:'SE', region:'Europe',
+    system:'Cross-border B2B e-invoicing expected under EU ViDA', date:'2030-07-01',
+    desc:'Sweden has not yet legislated a domestic B2B e-invoicing mandate; Skatteverket, DIGG and Bolagsverket have asked the government to evaluate one, but the only firm deadline currently on the table is the EU-wide ViDA cross-border requirement.',
+    actions:[
+      'Monitor for a domestic mandate announcement — a formal government proposal is still pending',
+      'Cross-border traders should still plan for EN 16931/Peppol readiness ahead of the EU-wide 2030 deadline'
+    ],
+    confidence:'expected',
+    portals:[{label:'DIGG — Swedish Peppol Authority', url:'https://www.digg.se'}]
+  },
+
+  // ---------------- CHINA ----------------
+  {
+    id:'cn-nationwide', country:'China', flag:'🇨🇳', code:'CN', region:'Asia-Pacific',
+    system:'Fully digitalized e-invoice (e-fapiao) rolled out nationwide (in force since Dec 2024)', date:'2024-12-01', anchor:true,
+    desc:'The State Taxation Administration (STA) completed the nationwide rollout of fully digitalized electronic invoices (e-fapiao), giving them the same legal validity as paper invoices and superseding the earlier Golden Tax System pilot phases.',
+    actions:[
+      'Set up a digital tax account with the STA to issue and receive e-fapiao',
+      'Confirm ERP/invoicing systems can produce e-fapiao with the mandatory simplified-Chinese fields and OFD/XML rendering',
+      'Retain the STA invoice code, digital signature, dynamic QR code, and clearance timestamp for each invoice'
+    ],
+    portals:[{label:'State Taxation Administration (STA)', url:'https://www.chinatax.gov.cn/eng/home.html'}]
+  },
+  {
+    id:'cn-paper-phaseout', country:'China', flag:'🇨🇳', code:'CN', region:'Asia-Pacific',
+    system:'Regional discontinuation of paper invoices accelerates', date:'2026-07-01',
+    desc:'Local tax authorities across multiple regions (e.g. Dalian, effective 1 July 2026) have begun discontinuing specific tax-supervised paper invoice types in favor of e-fapiao, with more regions expected to follow through 2026.',
+    actions:[
+      'Check your local STA branch\'s announcements for paper-invoice discontinuation dates specific to your region and sector',
+      'Invoices issued before a region\'s cutoff date remain valid, but new paper issuance may be blocked from that date'
+    ],
+    portals:[{label:'State Taxation Administration (STA)', url:'https://www.chinatax.gov.cn/eng/home.html'}]
+  },
+
+  // ---------------- CROATIA ----------------
+  {
+    id:'hr-b2b', country:'Croatia', flag:'🇭🇷', code:'HR', region:'Europe',
+    system:'Fiskalizacija 2.0 — mandatory e-invoicing & e-reporting for VAT-registered businesses', date:'2026-01-01', anchor:true,
+    desc:'Croatia\'s "Fiscalization 2.0" reform made structured e-invoicing (issuance and receipt) and real-time e-reporting mandatory for all VAT-registered, Croatian-established taxpayers, on top of the B2G e-invoicing mandate already in force since 2019.',
+    actions:[
+      'Register an AMS address and contract a certified information intermediary or access point',
+      'Ensure ERP systems produce valid UBL 2.1 XML aligned with the HR-FISK 2.0 CIUS (including 6-digit KPD codes and OIBs)',
+      'Build in the 5-day buyer-side fiscalization workflow and monthly e-reporting by the 20th',
+      'Archive original XML invoices for 11 years'
+    ],
+    portals:[{label:'Porezna uprava (Croatian Tax Administration)', url:'https://porezna-uprava.gov.hr/en'}]
+  },
+  {
+    id:'hr-nonvat', country:'Croatia', flag:'🇭🇷', code:'HR', region:'Europe',
+    system:'Mandate extends to non-VAT-registered entities and public bodies', date:'2027-01-01',
+    desc:'The obligation to issue (not just receive) structured e-invoices and e-reporting data extends to non-VAT-registered entities — small companies, freelancers, and certain public/budgetary bodies.',
+    actions:[
+      'Non-VAT-registered businesses and sole traders: confirm e-invoicing issuance capability well ahead of this date',
+      'Public bodies not registered for VAT should complete access-point integration during 2026'
+    ],
+    portals:[{label:'Porezna uprava (Croatian Tax Administration)', url:'https://porezna-uprava.gov.hr/en'}]
+  },
+
+  // ---------------- UNITED STATES ----------------
+  {
+    id:'us-federal-b2g', country:'United States', flag:'🇺🇸', code:'US', region:'Americas',
+    system:'Federal agencies required to manage invoices electronically (B2G, in force since 2018)', date:'2018-12-01', anchor:true,
+    desc:'The Office of Management and Budget directed federal agencies to move to electronic invoicing for appropriate procurements. Most now use the Treasury\'s Invoice Processing Platform (IPP) — but there is no single mandated format, and no domestic B2B mandate of any kind.',
+    actions:[
+      'If you sell to federal agencies, confirm you\'re set up on the IPP or your agency\'s designated e-invoicing channel',
+      'Retain electronic invoice records so they remain accessible, accurate, and legible per IRS guidance (Publication 583)'
+    ],
+    portals:[{label:'Invoice Processing Platform (U.S. Treasury)', url:'https://www.ipp.gov'}]
+  },
+  {
+    id:'us-dbnalliance', country:'United States', flag:'🇺🇸', code:'US', region:'Americas',
+    system:'DBNAlliance B2B e-invoice exchange network live (voluntary, market-led)', date:'2024-01-01', anchor:true,
+    desc:'The Digital Business Networks Alliance (DBNAlliance) — a nonprofit that grew out of a Federal Reserve / Business Payments Coalition pilot — now operates a Peppol-style four-corner network for voluntary structured B2B e-invoice exchange across the US and Canada. No federal or state law requires adoption.',
+    actions:[
+      'Consider connecting via a DBNAlliance-certified service provider ahead of any future mandate',
+      'If trading with partners in countries that already mandate e-invoicing (EU, Mexico, Brazil, etc.), ensure your systems can still produce their required formats'
+    ],
+    portals:[{label:'DBNAlliance', url:'https://dbnalliance.org'}]
+  },
+
+  // ---------------- CANADA ----------------
+  {
+    id:'ca-federal-b2g', country:'Canada', flag:'🇨🇦', code:'CA', region:'Americas',
+    system:'All federal government suppliers must invoice electronically (B2G, in force since 2022)', date:'2022-04-01', anchor:true,
+    desc:'Since April 2022, Public Services and Procurement Canada (PSPC) has required suppliers to submit invoices electronically through its SAP Ariba-based electronic procurement solution. There is no federal B2B e-invoicing mandate.',
+    actions:[
+      'If you supply the Government of Canada, register in SAP Ariba via CanadaBuys',
+      'Retain electronic invoices for at least 6 years per CRA record-keeping requirements'
+    ],
+    portals:[{label:'Canada.ca — Electronic procurement (PSPC)', url:'https://www.canada.ca/en/public-services-procurement/services/acquisitions/support-for-businesses/electronic-procurement-transition.html'}]
+  },
+  {
+    id:'ca-watch', country:'Canada', flag:'🇨🇦', code:'CA', region:'Americas',
+    system:'CRA studies a potential B2B e-invoicing mandate (no mandate enacted)', date:'2021-06-01', anchor:true,
+    desc:'The Canada Revenue Agency conducted stakeholder research into a possible domestic B2B e-invoicing mandate. No legislation or firm timeline has followed — GST/HST rules remain format-neutral, and paper, PDF, and EDI invoices are all currently acceptable provided they carry the required tax information.',
+    actions:[
+      'No action required today beyond good record-keeping practice',
+      'Monitor for future CRA / Finance Canada announcements, particularly as DBNAlliance network adoption grows in Canada'
+    ],
+    portals:[{label:'Canada Revenue Agency', url:'https://www.canada.ca/en/revenue-agency.html'}]
+  },
+];
+
+// ---------- helpers ----------
+const MS_DAY = 86400000;
+function today(){ return new Date(); }
+function daysBetween(a,b){ return Math.round((b-a)/MS_DAY); }
+
+function computeStatus(entry, now){
+  const d = new Date(entry.date+'T00:00:00');
+  const diff = daysBetween(now, d);
+  if(diff <= 0) return 'inforce';
+  if(diff <= 90) return 'soon';
+  return 'upcoming';
+}
+function statusLabel(s){
+  return s==='inforce' ? 'In effect' : s==='soon' ? 'Due soon' : 'Upcoming';
+}
+function fmtDate(iso){
+  const d = new Date(iso+'T00:00:00');
+  return d.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+}
+function monthKey(iso){
+  const d = new Date(iso+'T00:00:00');
+  return d.toLocaleDateString('en-GB',{month:'long',year:'numeric'});
+}
+
+// ---------- state ----------
+let state = { region:'All', status:'All', q:'' };
+const NOW = today();
+
+// ---------- render: topbar ----------
+document.getElementById('todayLabel').textContent = '20 July 2026';
+
+// ---------- render: split-flap board ----------
+function renderBoard(){
+  const board = document.getElementById('board');
+  const upcoming = DATA
+    .filter(e => new Date(e.date+'T00:00:00') > NOW)
+    .sort((a,b)=> new Date(a.date) - new Date(b.date))
+    .slice(0,6);
+  if(upcoming.length===0){
+    board.innerHTML = '<div class="board-empty">No upcoming milestones in the tracked dataset.</div>';
+    return;
+  }
+  board.innerHTML = upcoming.map((e,i)=>{
+    const d = new Date(e.date+'T00:00:00');
+    const days = daysBetween(NOW,d);
+    return `<div class="board-row" style="animation-delay:${i*0.08}s">
+      <span class="board-date">${fmtDate(e.date)}</span>
+      <span class="board-country">${e.flag} ${e.country}</span>
+      <span class="board-system">${e.system}</span>
+      <span class="board-days"><b>${days}</b> days</span>
+    </div>`;
+  }).join('');
+}
+
+// ---------- render: stats ----------
+function renderStats(){
+  const countries = new Set(DATA.map(e=>e.country)).size;
+  const inforce = DATA.filter(e=>computeStatus(e,NOW)==='inforce').length;
+  const soon = DATA.filter(e=>computeStatus(e,NOW)==='soon').length;
+  const upcoming = DATA.filter(e=>computeStatus(e,NOW)==='upcoming').length;
+  const stats = [
+    {num:countries, lbl:'Jurisdictions tracked'},
+    {num:DATA.length, lbl:'Milestones tracked'},
+    {num:inforce, lbl:'Already in effect'},
+    {num:soon, lbl:'Due within 90 days'},
+    {num:upcoming, lbl:'Further out'},
+  ];
+  document.getElementById('stats').innerHTML = stats.map(s=>
+    `<div class="stat"><div class="num display">${s.num}</div><div class="lbl">${s.lbl}</div></div>`
+  ).join('');
+}
+
+// ---------- filters ----------
+function renderFilterButtons(){
+  const regions = ['All', ...Array.from(new Set(DATA.map(e=>e.region)))];
+  const statuses = ['All','In effect','Due soon','Upcoming'];
+  const rg = document.getElementById('regionFilters');
+  const sg = document.getElementById('statusFilters');
+
+  regions.forEach(r=>{
+    const btn = document.createElement('button');
+    btn.className = 'pill' + (state.region===r ? ' active':'');
+    btn.textContent = r;
+    btn.onclick = ()=>{ state.region = r; refreshAll(); };
+    rg.appendChild(btn);
+  });
+  statuses.forEach(s=>{
+    const btn = document.createElement('button');
+    btn.className = 'pill' + (state.status===s ? ' active':'');
+    btn.textContent = s;
+    btn.onclick = ()=>{ state.status = s; refreshAll(); };
+    sg.appendChild(btn);
+  });
+}
+function refreshFilterButtonStyles(){
+  document.querySelectorAll('#regionFilters .pill').forEach(b=>{
+    b.classList.toggle('active', b.textContent===state.region);
+  });
+  document.querySelectorAll('#statusFilters .pill').forEach(b=>{
+    b.classList.toggle('active', b.textContent===state.status);
+  });
+}
+
+document.getElementById('searchBox').addEventListener('input', (e)=>{
+  state.q = e.target.value.trim().toLowerCase();
+  renderTimeline();
+});
+
+const STATUS_MAP = {'In effect':'inforce','Due soon':'soon','Upcoming':'upcoming'};
+
+function renderTimeline(){
+  const timeline = document.getElementById('timeline');
+  const noResults = document.getElementById('noResults');
+
+  let filtered = DATA.filter(e=>{
+    if(state.region!=='All' && e.region!==state.region) return false;
+    if(state.status!=='All' && computeStatus(e,NOW)!==STATUS_MAP[state.status]) return false;
+    if(state.q){
+      const hay = (e.country+' '+e.system+' '+e.desc).toLowerCase();
+      if(!hay.includes(state.q)) return false;
+    }
+    return true;
+  }).sort((a,b)=> new Date(a.date) - new Date(b.date));
+
+  document.getElementById('resultCount').textContent = filtered.length + ' milestone' + (filtered.length===1?'':'s');
+
+  if(filtered.length===0){
+    timeline.innerHTML='';
+    noResults.style.display='block';
+    return;
+  }
+  noResults.style.display='none';
+
+  let html = '';
+  let lastMonth = null;
+  filtered.forEach(e=>{
+    const mk = monthKey(e.date);
+    if(mk !== lastMonth){
+      html += `<div class="month-marker">${mk}</div>`;
+      lastMonth = mk;
+    }
+    const status = computeStatus(e,NOW);
+    const badgeClass = status;
+    const badgeText = e.anchor ? 'In effect since ' + fmtDate(e.date) : statusLabel(status);
+    const expectedBadge = e.confidence==='expected' ? '<span class="badge expected">Expected — not final</span>' : '';
+    html += `
+    <div class="card">
+      <div class="card-top">
+        <div class="card-country">
+          <span class="flag">${e.flag}</span>
+          <div>
+            <h3>${e.country}</h3>
+            <div class="region-tag">${e.region} · ${e.code}</div>
+          </div>
+        </div>
+        <div class="badge-row">
+          <span class="card-date">${e.anchor ? '' : fmtDate(e.date)}</span>
+          <span class="badge ${badgeClass}">${badgeText}</span>
+          ${expectedBadge}
+        </div>
+      </div>
+      <div class="card-system">${e.system}</div>
+      <p class="card-desc">${e.desc}</p>
+      <p class="actions-label">Action checklist</p>
+      <ul class="actions">
+        ${e.actions.map(a=>`<li>${a}</li>`).join('')}
+      </ul>
+      <div class="portal-row">
+        ${e.portals.map(p=>`<a class="portal-btn" href="${p.url}" target="_blank" rel="noopener">${p.label}</a>`).join('')}
+      </div>
+    </div>`;
+  });
+  timeline.innerHTML = html;
+}
+
+function refreshAll(){
+  refreshFilterButtonStyles();
+  renderTimeline();
+}
+
+// ---------- render: sidebar ----------
+const REGION_ORDER = ['Europe','Middle East','Asia-Pacific','Americas'];
+
+function renderSidebar(){
+  // Group by region -> country, merging unique portals per country
+  const grouped = {};
+  DATA.forEach(e=>{
+    grouped[e.region] = grouped[e.region] || {};
+    const g = grouped[e.region];
+    if(!g[e.country]) g[e.country] = { flag:e.flag, portals:[] };
+    e.portals.forEach(p=>{
+      if(!g[e.country].portals.some(existing=>existing.url===p.url)){
+        g[e.country].portals.push(p);
+      }
+    });
+  });
+
+  const regions = REGION_ORDER.filter(r=>grouped[r]);
+  let html = '';
+  regions.forEach(region=>{
+    html += `<div class="sidebar-continent"><h3>${region}</h3>`;
+    const countries = Object.keys(grouped[region]).sort();
+    countries.forEach(country=>{
+      const info = grouped[region][country];
+      html += `<div class="sidebar-country">
+        <div class="c-name"><span class="flag">${info.flag}</span>${country}</div>
+        ${info.portals.map(p=>`<a class="sidebar-portal-link" href="${p.url}" target="_blank" rel="noopener">${p.label}</a>`).join('')}
+      </div>`;
+    });
+    html += `</div>`;
+  });
+  document.getElementById('sidebarNav').innerHTML = html;
+}
+
+// ---------- mobile menu toggle ----------
+function wireMenuToggle(){
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebarOverlay');
+  const btn = document.getElementById('menuToggle');
+  function close(){ sidebar.classList.remove('open'); overlay.classList.remove('open'); }
+  function open(){ sidebar.classList.add('open'); overlay.classList.add('open'); }
+  btn.addEventListener('click', ()=>{
+    sidebar.classList.contains('open') ? close() : open();
+  });
+  overlay.addEventListener('click', close);
+}
+
+// ---------- actions dropdown menu ----------
+function wireActionsMenu(){
+  const menu = document.getElementById('actionsMenu');
+  const trigger = document.getElementById('menuTrigger');
+  const panel = document.getElementById('dropdownPanel');
+
+  function toggle(){ panel.classList.toggle('open'); }
+  function close(){ panel.classList.remove('open'); }
+
+  trigger.addEventListener('click', (e)=>{ e.stopPropagation(); toggle(); });
+  document.addEventListener('click', (e)=>{
+    if(!menu.contains(e.target)) close();
+  });
+  document.getElementById('ddSubscribe').addEventListener('click', ()=>{
+    close();
+    document.getElementById('subscribeOverlay').classList.add('open');
+  });
+  document.getElementById('ddFeedback').addEventListener('click', ()=>{
+    close();
+    document.getElementById('feedbackOverlay').classList.add('open');
+  });
+}
+
+// ---------- subscribe modal ----------
+function wireSubscribeModal(){
+  const overlay = document.getElementById('subscribeOverlay');
+  const closeBtn = document.getElementById('modalClose');
+  const doneBtn = document.getElementById('modalDone');
+  const form = document.getElementById('subscribeForm');
+  const formView = document.getElementById('formView');
+  const successView = document.getElementById('successView');
+
+  function resetModal(){
+    form.reset();
+    ['firstName','lastName','email','jobTitle','company'].forEach(id=>{
+      document.getElementById('field-'+ (id==='jobTitle'?'title':id)).classList.remove('error');
+    });
+    formView.style.display='block';
+    successView.style.display='none';
+  }
+  function close(){ overlay.classList.remove('open'); setTimeout(resetModal, 200); }
+
+  closeBtn.addEventListener('click', close);
+  doneBtn.addEventListener('click', close);
+  overlay.addEventListener('click', (e)=>{ if(e.target===overlay) close(); });
+
+  function isValidEmail(v){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); }
+
+  form.addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    const values = {
+      firstName: document.getElementById('firstName').value.trim(),
+      lastName: document.getElementById('lastName').value.trim(),
+      email: document.getElementById('email').value.trim(),
+      jobTitle: document.getElementById('jobTitle').value.trim(),
+      company: document.getElementById('company').value.trim(),
+    };
+    const checks = [
+      ['firstName', values.firstName.length>0],
+      ['lastName', values.lastName.length>0],
+      ['email', isValidEmail(values.email)],
+      ['title', values.jobTitle.length>0],
+      ['company', values.company.length>0],
+    ];
+    let allValid = true;
+    checks.forEach(([key, ok])=>{
+      const el = document.getElementById('field-'+key);
+      el.classList.toggle('error', !ok);
+      if(!ok) allValid = false;
+    });
+    if(!allValid) return;
+
+    // Best-effort persistence if artifact storage is available; safe no-op otherwise
+    try{
+      if(window.storage && typeof window.storage.set === 'function'){
+        await window.storage.set('subscriber:'+Date.now(), JSON.stringify(values));
+      }
+    }catch(err){ /* no storage available — form still "succeeds" for demo purposes */ }
+
+    document.getElementById('successName').textContent = values.firstName + ' ' + values.lastName;
+    document.getElementById('successEmail').textContent = values.email;
+    formView.style.display='none';
+    successView.style.display='block';
+  });
+}
+
+// ---------- feedback modal ----------
+function wireFeedbackModal(){
+  const overlay = document.getElementById('feedbackOverlay');
+  const closeBtn = document.getElementById('feedbackModalClose');
+  const doneBtn = document.getElementById('feedbackModalDone');
+  const form = document.getElementById('feedbackForm');
+  const formView = document.getElementById('feedbackFormView');
+  const successView = document.getElementById('feedbackSuccessView');
+
+  function resetModal(){
+    form.reset();
+    ['fb-email','fb-subject','fb-comments'].forEach(id=>{
+      document.getElementById('field-'+id).classList.remove('error');
+    });
+    formView.style.display='block';
+    successView.style.display='none';
+  }
+  function close(){ overlay.classList.remove('open'); setTimeout(resetModal, 200); }
+
+  closeBtn.addEventListener('click', close);
+  doneBtn.addEventListener('click', close);
+  overlay.addEventListener('click', (e)=>{ if(e.target===overlay) close(); });
+
+  function isValidEmail(v){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); }
+
+  form.addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    const values = {
+      email: document.getElementById('fbEmail').value.trim(),
+      subject: document.getElementById('fbSubject').value.trim(),
+      comments: document.getElementById('fbComments').value.trim(),
+    };
+    const checks = [
+      ['fb-email', isValidEmail(values.email)],
+      ['fb-subject', values.subject.length>0],
+      ['fb-comments', values.comments.length>0],
+    ];
+    let allValid = true;
+    checks.forEach(([key, ok])=>{
+      const el = document.getElementById('field-'+key);
+      el.classList.toggle('error', !ok);
+      if(!ok) allValid = false;
+    });
+    if(!allValid) return;
+
+    try{
+      if(window.storage && typeof window.storage.set === 'function'){
+        await window.storage.set('feedback:'+Date.now(), JSON.stringify(values));
+      }
+    }catch(err){ /* no storage available — form still "succeeds" for demo purposes */ }
+
+    document.getElementById('fbSuccessEmail').textContent = values.email;
+    formView.style.display='none';
+    successView.style.display='block';
+  });
+}
+
+// ---------- init ----------
+renderBoard();
+renderStats();
+renderFilterButtons();
+renderTimeline();
+renderSidebar();
+wireMenuToggle();
+wireActionsMenu();
+wireSubscribeModal();
+wireFeedbackModal();
+</script>
+</body>
+</html>
