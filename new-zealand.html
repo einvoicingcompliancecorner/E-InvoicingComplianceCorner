@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>New Zealand — The E-Invoicing Compliance Corner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0f1a2b; --ink-2:#152238; --ink-3:#1c2c48; --line:#2b3c5a;
+    --paper:#efe9db; --paper-2:#e4dcc6; --paper-line:#c9bd9e;
+    --text-lo:#f2f0e8; --muted:#93a3c0;
+    --stamp:#b5432f; --stamp-dim:#7c3628;
+    --live:#3f7d5c; --live-dim:#274a38;
+    --soon:#c98a3a; --soon-dim:#6e4c22;
+    --upcoming:#6b7a95; --upcoming-dim:#3a4864;
+    --radius:10px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{background:var(--ink); color:var(--text-lo); font-family:'IBM Plex Sans',sans-serif; line-height:1.55;}
+  .display{font-family:'Big Shoulders Display',sans-serif; font-weight:800;}
+  .mono{font-family:'IBM Plex Mono',monospace;}
+  a{color:inherit;}
+  .wrap{max-width:980px; margin:0 auto; padding:0 5vw 60px;}
+  .back-link{display:inline-flex; align-items:center; gap:6px; margin:24px 0 0; font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:var(--muted); text-decoration:none;}
+  .back-link:hover{color:var(--soon);}
+  .country-head{display:flex; flex-wrap:wrap; gap:18px; align-items:flex-start; justify-content:space-between; padding:18px 0 26px; border-bottom:1px solid var(--line); margin-bottom:28px;}
+  .country-head-left{display:flex; gap:16px; align-items:center;}
+  .country-flag{font-size:46px; line-height:1;}
+  .country-eyebrow{font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.16em; text-transform:uppercase; color:var(--soon); margin:0 0 4px;}
+  .country-title{font-size:clamp(28px,4.5vw,42px); margin:0; text-transform:uppercase; line-height:0.95;}
+  .country-region{font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--muted); margin-top:6px;}
+  .country-meta{font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--muted); text-align:right;}
+  .stat-strip{display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:1px; background:var(--line); border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; margin-bottom:36px;}
+  .stat-strip .stat{background:var(--ink-2); padding:16px 18px;}
+  .stat-strip .stat .num{font-family:'Big Shoulders Display',sans-serif; font-weight:800; font-size:22px; line-height:1.15;}
+  .stat-strip .stat .lbl{font-size:10.8px; color:var(--muted); text-transform:uppercase; letter-spacing:0.07em; margin-top:5px;}
+  .section{margin-bottom:44px;}
+  .section-head{display:flex; align-items:baseline; gap:12px; margin-bottom:18px;}
+  .section-head h2{font-size:22px; margin:0; text-transform:uppercase;}
+  .section-head .num{font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--soon);}
+  .section-intro{color:var(--muted); font-size:13.8px; max-width:680px; margin:-8px 0 20px;}
+  .rtimeline{position:relative; padding-left:26px; border-left:2px solid var(--line);}
+  .rmonth-marker{font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--soon); text-transform:uppercase; letter-spacing:0.1em; margin:22px 0 12px -26px; padding-left:26px; position:relative;}
+  .rmonth-marker::before{content:""; position:absolute; left:-6px; top:6px; width:10px; height:10px; border-radius:50%; background:var(--soon); border:2px solid var(--ink);}
+  .rmonth-marker:first-child{margin-top:0;}
+  .rcard{background:var(--paper); color:#241d10; border-radius:var(--radius); margin-bottom:14px; padding:16px 20px 18px; border:1px solid var(--paper-line);}
+  .rcard-top{display:flex; flex-wrap:wrap; justify-content:space-between; gap:8px 16px; align-items:flex-start;}
+  .rcard-date{font-family:'IBM Plex Mono',monospace; font-size:12.5px; font-weight:600; color:#4a3f22;}
+  .rbadge{font-family:'IBM Plex Mono',monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:0.06em; padding:4px 9px; border-radius:5px; font-weight:600; white-space:nowrap;}
+  .rbadge.inforce{background:var(--live-dim); color:#bfe6cf;}
+  .rbadge.soon{background:var(--soon-dim); color:#ffe0b3;}
+  .rbadge.upcoming{background:var(--upcoming-dim); color:#dbe2ee;}
+  .rcard-title{font-size:15px; font-weight:600; margin:10px 0 4px;}
+  .rcard-desc{font-size:13.3px; color:#4a4030; margin:0;}
+  .spec-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:14px;}
+  .spec-card{background:var(--paper); color:#241d10; border-radius:var(--radius); border:1px solid var(--paper-line); padding:16px 18px 18px;}
+  .spec-card h3{font-family:'IBM Plex Mono',monospace; font-size:11px; text-transform:uppercase; letter-spacing:0.09em; color:#6b5f3f; margin:0 0 10px; display:flex; align-items:center; gap:8px;}
+  .spec-card h3::after{content:""; flex:1; height:1px; background:var(--paper-line);}
+  .spec-row{display:flex; justify-content:space-between; gap:12px; padding:6px 0; border-top:1px dashed var(--paper-line); font-size:13px;}
+  .spec-row:first-of-type{border-top:none;}
+  .spec-row .k{color:#6b5f3f; flex:0 0 42%;}
+  .spec-row .v{color:#241d10; text-align:right; font-weight:500;}
+  .spec-card p.note{font-size:12.6px; color:#5a5138; margin:10px 0 0; padding-top:10px; border-top:1px dashed var(--paper-line);}
+  .steps{counter-reset:step; display:flex; flex-direction:column; gap:0;}
+  .step{display:flex; gap:16px; padding:16px 0; border-top:1px dashed var(--line);}
+  .step:first-child{border-top:none;}
+  .step-num{counter-increment:step; flex:0 0 auto; width:30px; height:30px; border-radius:50%; background:var(--soon-dim); color:#ffe0b3; display:flex; align-items:center; justify-content:center; font-family:'Big Shoulders Display',sans-serif; font-weight:800; font-size:14px;}
+  .step-num::before{content:counter(step);}
+  .step-body h4{margin:2px 0 4px; font-size:14.5px;}
+  .step-body p{margin:0; font-size:13.3px; color:var(--muted);}
+  .related-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:14px;}
+  .related-card{background:var(--ink-2); border:1px solid var(--line); border-radius:var(--radius); padding:16px 18px;}
+  .related-card h4{margin:0 0 6px; font-size:14.5px; display:flex; align-items:center; gap:8px;}
+  .related-card p{margin:0; font-size:13px; color:var(--muted);}
+  .portal-row{display:flex; flex-wrap:wrap; gap:8px; margin-top:6px;}
+  .portal-btn{display:inline-flex; align-items:center; gap:6px; background:var(--ink); color:var(--text-lo); text-decoration:none; font-family:'IBM Plex Mono',monospace; font-size:12px; padding:8px 14px; border-radius:6px; border:1px solid var(--line);}
+  .portal-btn:hover{background:var(--stamp);}
+  .portal-btn::before{content:"↗";}
+  footer{margin:40px 0 0; padding:22px 0 10px; border-top:1px solid var(--line); color:var(--muted); font-size:12.3px;}
+  footer p{max-width:820px; margin:0 0 8px;}
+  @media (max-width:640px){ .country-head{flex-direction:column;} .country-meta{text-align:left;} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <a class="back-link" href="einvoicing-compliance-tracker.html">← Back to global tracker</a>
+
+  <div class="country-head">
+    <div class="country-head-left">
+      <div class="country-flag">🇳🇿</div>
+      <div>
+        <p class="country-eyebrow">Country deep dive</p>
+        <h1 class="country-title display">New Zealand</h1>
+        <div class="country-region">Asia-Pacific · NZ · Non-EU</div>
+      </div>
+    </div>
+    <div class="country-meta">
+      Last updated: 21 July 2026<br>
+      Compliance model: Decentralised 4-corner Peppol
+    </div>
+  </div>
+
+  <div class="stat-strip">
+    <div class="stat"><div class="num display">PINT A-NZ</div><div class="lbl">Only supported spec since May 2025</div></div>
+    <div class="stat"><div class="num display">NZD 33m</div><div class="lbl">Large-supplier revenue threshold</div></div>
+    <div class="stat"><div class="num display">2,000</div><div class="lbl">Invoice/year agency capability trigger</div></div>
+    <div class="stat"><div class="num display">7 yrs</div><div class="lbl">Record retention</div></div>
+    <div class="stat"><div class="num display">No fines</div><div class="lbl">Administrative consequences only</div></div>
+  </div>
+
+  <!-- ================= TIMELINE ================= -->
+  <div class="section">
+    <div class="section-head"><span class="num mono">01</span><h2 class="display">Compliance timeline</h2></div>
+    <p class="section-intro">New Zealand's approach is procurement-rule-driven rather than tax-law-driven — the obligations live in Government Procurement Rules, not VAT/GST legislation.</p>
+
+    <div class="rtimeline">
+      <div class="rmonth-marker">2018–2019</div>
+      <div class="rcard">
+        <div class="rcard-top"><span class="rcard-date">2018</span><span class="rbadge inforce">In effect</span></div>
+        <div class="rcard-title">Australia–New Zealand Government Electronic Invoicing Arrangement</div>
+        <p class="rcard-desc">Both governments commit to a shared approach — the basis for the PINT A-NZ specification both countries now use.</p>
+      </div>
+      <div class="rcard">
+        <div class="rcard-top"><span class="rcard-date">2019</span><span class="rbadge inforce">In effect</span></div>
+        <div class="rcard-title">E-invoicing framework launches, alongside Australia</div>
+        <p class="rcard-desc">New Zealand's Peppol-based e-invoicing infrastructure goes live, with MBIE established as the national Peppol Authority.</p>
+      </div>
+
+      <div class="rmonth-marker">March 2022</div>
+      <div class="rcard">
+        <div class="rcard-top"><span class="rcard-date">31 Mar 2022</span><span class="rbadge inforce">In effect</span></div>
+        <div class="rcard-title">Central government agencies required to receive e-invoices</div>
+        <p class="rcard-desc">A working precedent for the wider obligations that follow — central agencies have processed structured Peppol invoices for several years already.</p>
+      </div>
+
+      <div class="rmonth-marker">May 2025</div>
+      <div class="rcard">
+        <div class="rcard-top"><span class="rcard-date">15 May 2025</span><span class="rbadge inforce">In effect</span></div>
+        <div class="rcard-title">PINT A-NZ becomes the only accepted specification</div>
+        <p class="rcard-desc">The legacy A-NZ Peppol BIS Billing 3.0 extension is fully removed from the network used by MBIE-accredited Access Points.</p>
+      </div>
+
+      <div class="rmonth-marker">October–December 2025</div>
+      <div class="rcard">
+        <div class="rcard-top"><span class="rcard-date">9 Oct 2025</span><span class="rbadge inforce">In effect</span></div>
+        <div class="rcard-title">Fifth Edition Government Procurement Rules announced</div>
+        <p class="rcard-desc">MBIE publishes updated rules expanding e-invoicing obligations for both agencies and large suppliers, alongside new prompt-payment standards.</p>
+      </div>
+      <div class="rcard">
+        <div class="rcard-top"><span class="rcard-date">1 Dec 2025</span><span class="rbadge inforce">In effect</span></div>
+        <div class="rcard-title">Fifth Edition rules take effect</div>
+        <p class="rcard-desc">The new B2G e-invoicing expectations are formally baked into public sector procurement practice.</p>
+      </div>
+
+      <div class="rmonth-marker">January 2026</div>
+      <div class="rcard">
+        <div class="rcard-top"><span class="rcard-date">1 Jan 2026</span><span class="rbadge inforce">In effect</span></div>
+        <div class="rcard-title">Agencies handling 2,000+ invoices/year must send &amp; receive; faster payment begins</div>
+        <p class="rcard-desc">Government agencies processing more than 2,000 domestic trade invoices annually must be capable of both sending and receiving structured e-invoices, and must pay 95% of domestic e-invoices within 5 business days.</p>
+      </div>
+
+      <div class="rmonth-marker">January 2027</div>
+      <div class="rcard">
+        <div class="rcard-top"><span class="rcard-date">1 Jan 2027</span><span class="rbadge soon">Due soon</span></div>
+        <div class="rcard-title">Large suppliers must submit e-invoices to government buyers</div>
+        <p class="rcard-desc">Suppliers with total revenue — including subsidiaries — exceeding NZD 33 million in each of the two preceding accounting periods must submit e-invoices for domestic trade to government agencies via Peppol. Applies only to NZD-denominated domestic transactions — international and cross-border invoicing is excluded.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= FILE FORMAT ================= -->
+  <div class="section">
+    <div class="section-head"><span class="num mono">02</span><h2 class="display">File format &amp; data specification</h2></div>
+    <p class="section-intro">Identical specification to Australia — a genuine trans-Tasman standard, not a lookalike national variant.</p>
+
+    <div class="spec-grid">
+      <div class="spec-card">
+        <h3>Specification</h3>
+        <div class="spec-row"><span class="k">Format</span><span class="v">PINT A-NZ (New Zealand's tailored version of EN 16931)</span></div>
+        <div class="spec-row"><span class="k">Syntax</span><span class="v">UBL-based XML</span></div>
+        <div class="spec-row"><span class="k">Superseded</span><span class="v">Peppol BIS Billing 3.0 (deprecated May 2025)</span></div>
+        <p class="note">Because Australia and New Zealand share this exact specification, a business trading across both markets can reuse the same mappings and validations rather than building twice.</p>
+      </div>
+
+      <div class="spec-card">
+        <h3>Identifiers</h3>
+        <div class="spec-row"><span class="k">Routing identifier</span><span class="v">New Zealand Business Number (NZBN)</span></div>
+        <div class="spec-row"><span class="k">Role</span><span class="v">Peppol Participant Identifier</span></div>
+        <p class="note">Every New Zealand business already has an NZBN — this makes onboarding materially simpler than jurisdictions requiring a separate registration number just for e-invoicing.</p>
+      </div>
+
+      <div class="spec-card">
+        <h3>Scope of the 2027 mandate</h3>
+        <div class="spec-row"><span class="k">Applies to</span><span class="v">Domestic trade invoices in NZD only</span></div>
+        <div class="spec-row"><span class="k">Excludes</span><span class="v">International suppliers, cross-border invoicing</span></div>
+        <p class="note">If your New Zealand government contract involves any cross-border element, check carefully whether the specific invoice line actually falls inside or outside this mandate's scope.</p>
+      </div>
+
+      <div class="spec-card">
+        <h3>No real-time reporting</h3>
+        <div class="spec-row"><span class="k">Tax reporting</span><span class="v">GST continues via periodic returns</span></div>
+        <div class="spec-row"><span class="k">Retention</span><span class="v">7 years</span></div>
+        <p class="note">Unlike Ireland or France, there's no data-reporting layer bolted onto this mandate — it's purely about the exchange format, not tax administration modernisation.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= TRANSMISSION PROTOCOL ================= -->
+  <div class="section">
+    <div class="section-head"><span class="num mono">03</span><h2 class="display">Transmission protocol</h2></div>
+    <p class="section-intro">A pure four-corner Peppol model — no central government platform, no clearance step, identical in structure to Australia's.</p>
+
+    <div class="spec-grid">
+      <div class="spec-card">
+        <h3>Governance</h3>
+        <div class="spec-row"><span class="k">National Peppol Authority</span><span class="v">Ministry of Business, Innovation and Employment (MBIE)</span></div>
+        <div class="spec-row"><span class="k">Role</span><span class="v">Oversees the framework, accredits Access Points</span></div>
+        <p class="note">MBIE doesn't operate a clearance or exchange platform itself — invoices move directly between accredited Access Points on the Peppol network.</p>
+      </div>
+
+      <div class="spec-card">
+        <h3>Determining "large supplier" status</h3>
+        <div class="spec-row"><span class="k">Threshold</span><span class="v">NZD 33 million total revenue</span></div>
+        <div class="spec-row"><span class="k">Includes</span><span class="v">Subsidiary revenue combined with parent</span></div>
+        <div class="spec-row"><span class="k">Measurement period</span><span class="v">Each of the two preceding accounting periods</span></div>
+        <p class="note">Check this on a consolidated group basis, not just your standalone entity's revenue — a smaller subsidiary of a large group can still be caught by the threshold.</p>
+      </div>
+
+      <div class="spec-card">
+        <h3>Agency-side obligations</h3>
+        <div class="spec-row"><span class="k">2,000+ invoice threshold</span><span class="v">Must send AND receive structured e-invoices</span></div>
+        <div class="spec-row"><span class="k">Payment standard</span><span class="v">95% of e-invoices paid within 5 business days</span></div>
+        <p class="note">Fast payment is the tangible incentive for suppliers here — agencies covered by these rules are contractually motivated to prefer e-invoiced suppliers.</p>
+      </div>
+
+      <div class="spec-card">
+        <h3>Enforcement style</h3>
+        <div class="spec-row"><span class="k">Statutory financial penalties</span><span class="v">None</span></div>
+        <div class="spec-row"><span class="k">Mechanism</span><span class="v">Administrative, under the Government Procurement Rules</span></div>
+        <div class="spec-row"><span class="k">Transparency</span><span class="v">Agencies report quarterly to MBIE; results published publicly</span></div>
+        <p class="note">There's no fine for non-compliance — but public quarterly reporting on prompt-payment performance creates its own reputational pressure on agencies to comply.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= REGISTRATION ================= -->
+  <div class="section">
+    <div class="section-head"><span class="num mono">04</span><h2 class="display">Getting ready</h2></div>
+    <p class="section-intro">If you're a large supplier to government, the 2027 deadline is closer than it looks once you factor in testing time with individual agencies.</p>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">
+          <h4>Evaluate your size status</h4>
+          <p>Confirm whether your combined group revenue (including subsidiaries) exceeds NZD 33 million in each of the last two accounting periods — this determines whether the January 2027 mandate applies to you.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">
+          <h4>Choose a Peppol-compliant solution</h4>
+          <p>Confirm your invoicing software can send and receive Peppol e-invoices natively, or explore integration options with a certified Access Point if it can't.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">
+          <h4>Validate against PINT A-NZ specifically</h4>
+          <p>Ensure your invoicing templates meet the current standard's mandatory fields and data formats — the legacy Peppol BIS 3.0 profile is no longer accepted anywhere on the network.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">
+          <h4>Test with government agencies during 2026</h4>
+          <p>Participate in testing well ahead of the January 2027 deadline to catch onboarding issues before they become deadline pressure.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">
+          <h4>Confirm your NZBN is correctly registered</h4>
+          <p>This is your Peppol routing identifier — make sure it's accurately linked to your Access Point registration.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= RELATED ================= -->
+  <div class="section">
+    <div class="section-head"><span class="num mono">05</span><h2 class="display">Related context</h2></div>
+    <p class="section-intro">New Zealand's B2B economy remains voluntary — but the government supply chain increasingly won't be.</p>
+
+    <div class="related-grid">
+      <div class="related-card">
+        <h4>🇦🇺 Trans-Tasman consistency</h4>
+        <p>Organisations operating in both New Zealand and Australia can align on PINT A-NZ to reuse mappings and validations — a genuinely practical benefit of the two countries' shared specification choice.</p>
+      </div>
+      <div class="related-card">
+        <h4>🏛️ Procurement rules, not tax law</h4>
+        <p>Because this entire framework sits inside Government Procurement Rules rather than GST legislation, enforcement is administrative and contractual — there's no equivalent to a tax authority penalty regime here.</p>
+      </div>
+      <div class="related-card">
+        <h4>📈 Voluntary B2B remains encouraged</h4>
+        <p>Outside the government supply chain, e-invoicing adoption is voluntary but actively encouraged — many businesses adopt it anyway for the reduced errors and faster processing it brings.</p>
+      </div>
+      <div class="related-card">
+        <h4>💰 A narrower domestic-only scope</h4>
+        <p>The large-supplier mandate applies only to NZD-denominated domestic trade invoices — a deliberately narrow scope compared to more ambitious mandates elsewhere in this tracker.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="portal-row">
+    <a class="portal-btn" href="https://www.einvoicing.govt.nz" target="_blank" rel="noopener">einvoicing.govt.nz — MBIE</a>
+  </div>
+
+  <footer>
+    <p>This deep-dive page reflects publicly available technical guidance as of July 2026 and is provided for general awareness, not legal or tax advice. Government Procurement Rules, large-supplier thresholds, and any future extension to broader B2B remain subject to change — confirm current requirements directly with MBIE before building an integration.</p>
+  </footer>
+
+</div>
+</body>
+</html>

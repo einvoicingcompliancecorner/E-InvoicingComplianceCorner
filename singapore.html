@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Singapore — The E-Invoicing Compliance Corner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0f1a2b; --ink-2:#152238; --ink-3:#1c2c48; --line:#2b3c5a;
+    --paper:#efe9db; --paper-2:#e4dcc6; --paper-line:#c9bd9e;
+    --text-lo:#f2f0e8; --muted:#93a3c0;
+    --stamp:#b5432f; --stamp-dim:#7c3628;
+    --live:#3f7d5c; --live-dim:#274a38;
+    --soon:#c98a3a; --soon-dim:#6e4c22;
+    --upcoming:#6b7a95; --upcoming-dim:#3a4864;
+    --radius:10px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{background:var(--ink); color:var(--text-lo); font-family:'IBM Plex Sans',sans-serif; line-height:1.55;}
+  .display{font-family:'Big Shoulders Display',sans-serif; font-weight:800;}
+  .mono{font-family:'IBM Plex Mono',monospace;}
+  a{color:inherit;}
+  .wrap{max-width:980px; margin:0 auto; padding:0 5vw 60px;}
+  .back-link{display:inline-flex; align-items:center; gap:6px; margin:24px 0 0; font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:var(--muted); text-decoration:none;}
+  .back-link:hover{color:var(--soon);}
+  .country-head{display:flex; flex-wrap:wrap; gap:18px; align-items:flex-start; justify-content:space-between; padding:18px 0 26px; border-bottom:1px solid var(--line); margin-bottom:28px;}
+  .country-head-left{display:flex; gap:16px; align-items:center;}
+  .country-flag{font-size:46px; line-height:1;}
+  .country-eyebrow{font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.16em; text-transform:uppercase; color:var(--soon); margin:0 0 4px;}
+  .country-title{font-size:clamp(28px,4.5vw,42px); margin:0; text-transform:uppercase; line-height:0.95;}
+  .country-region{font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--muted); margin-top:6px;}
+  .country-meta{font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--muted); text-align:right;}
+  .stat-strip{display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:1px; background:var(--line); border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; margin-bottom:36px;}
+  .stat-strip .stat{background:var(--ink-2); padding:16px 18px;}
+  .stat-strip .stat .num{font-family:'Big Shoulders Display',sans-serif; font-weight:800; font-size:22px; line-height:1.15;}
+  .stat-strip .stat .lbl{font-size:10.8px; color:var(--muted); text-transform:uppercase; letter-spacing:0.07em; margin-top:5px;}
+  .section{margin-bottom:44px;}
+  .section-head{display:flex; align-items:baseline; gap:12px; margin-bottom:18px;}
+  .section-head h2{font-size:22px; margin:0; text-transform:uppercase;}
+  .section-head .num{font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--soon);}
+  .section-intro{color:var(--muted); font-size:13.8px; max-width:680px; margin:-8px 0 20px;}
+  .rtimeline{position:relative; padding-left:26px; border-left:2px solid var(--line);}
+  .rmonth-marker{font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--soon); text-transform:uppercase; letter-spacing:0.1em; margin:22px 0 12px -26px; padding-left:26px; position:relative;}
+  .rmonth-marker::before{content:""; position:absolute; left:-6px; top:6px; width:10px; height:10px; border-radius:50%; background:var(--soon); border:2px solid var(--ink);}
+  .rmonth-marker:first-child{margin-top:0;}
+  .rcard{background:var(--paper); color:#241d10; border-radius:var(--radius); margin-bottom:14px; padding:16px 20px 18px; border:1px solid var(--paper-line);}
+  .rcard-top{display:flex; flex-wrap:wrap; justify-content:space-between; gap:8px 16px; align-items:flex-start;}
+  .rcard-date{font-family:'IBM Plex Mono',monospace; font-size:12.5px; font-weight:600; color:#4a3f22;}
+  .rbadge{font-family:'IBM Plex Mono',monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:0.06em; padding:4px 9px; border-radius:5px; font-weight:600; white-space:nowrap;}
+  .rbadge.inforce{background:var(--live-dim); color:#bfe6cf;}
+  .rbadge.soon{background:var(--soon-dim); color:#ffe0b3;}
+  .rbadge.upcoming{background:var(--upcoming-dim); color:#dbe2ee;}
+  .rcard-title{font-size:15px; font-weight:600; margin:10px 0 4px;}
+  .rcard-desc{font-size:13.3px; color:#4a4030; margin:0;}
+  .spec-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:14px;}
+  .spec-card{background:var(--paper); color:#241d10; border-radius:var(--radius); border:1px solid var(--paper-line); padding:16px 18px 18px;}
+  .spec-card h3{font-family:'IBM Plex Mono',monospace; font-size:11px; text-transform:uppercase; letter-spacing:0.09em; color:#6b5f3f; margin:0 0 10px; display:flex; align-items:center; gap:8px;}
+  .spec-card h3::after{content:""; flex:1; height:1px; background:var(--paper-line);}
+  .spec-row{display:flex; justify-content:space-between; gap:12px; padding:6px 0; border-top:1px dashed var(--paper-line); font-size:13px;}
+  .spec-row:first-of-type{border-top:none;}
+  .spec-row .k{color:#6b5f3f; flex:0 0 42%;}
+  .spec-row .v{color:#241d10; text-align:right; font-weight:500;}
+  .spec-card p.note{font-size:12.6px; color:#5a5138; margin:10px 0 0; padding-top:10px; border-top:1px dashed var(--paper-line);}
+  .flow-grid{display:flex; flex-wrap:wrap; gap:8px; margin-top:4px;}
+  .flow-grid span{font-family:'IBM Plex Mono',monospace; font-size:11px; background:var(--soon-dim); color:#ffe0b3; padding:5px 11px; border-radius:999px; white-space:nowrap;}
+  .steps{counter-reset:step; display:flex; flex-direction:column; gap:0;}
+  .step{display:flex; gap:16px; padding:16px 0; border-top:1px dashed var(--line);}
+  .step:first-child{border-top:none;}
+  .step-num{counter-increment:step; flex:0 0 auto; width:30px; height:30px; border-radius:50%; background:var(--soon-dim); color:#ffe0b3; display:flex; align-items:center; justify-content:center; font-family:'Big Shoulders Display',sans-serif; font-weight:800; font-size:14px;}
+  .step-num::before{content:counter(step);}
+  .step-body h4{margin:2px 0 4px; font-size:14.5px;}
+  .step-body p{margin:0; font-size:13.3px; color:var(--muted);}
+  .related-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:14px;}
+  .related-card{background:var(--ink-2); border:1px solid var(--line); border-radius:var(--radius); padding:16px 18px;}
+  .related-card h4{margin:0 0 6px; font-size:14.5px; display:flex; align-items:center; gap:8px;}
+  .related-card p{margin:0; font-size:13px; color:var(--muted);}
+  .portal-row{display:flex; flex-wrap:wrap; gap:8px; margin-top:6px;}
+  .portal-btn{display:inline-flex; align-items:center; gap:6px; background:var(--ink); color:var(--text-lo); text-decoration:none; font-family:'IBM Plex Mono',monospace; font-size:12px; padding:8px 14px; border-radius:6px; border:1px solid var(--line);}
+  .portal-btn:hover{background:var(--stamp);}
+  .portal-btn::before{content:"↗";}
+  footer{margin:40px 0 0; padding:22px 0 10px; border-top:1px solid var(--line); color:var(--muted); font-size:12.3px;}
+  footer p{max-width:820px; margin:0 0 8px;}
+  @media (max-width:640px){ .country-head{flex-direction:column;} .country-meta{text-align:left;} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <a class="back-link" href="einvoicing-compliance-tracker.html">← Back to global tracker</a>
+
+  <div class="country-head">
+    <div class="country-head-left">
+      <div class="country-flag">🇸🇬</div>
+      <div>
+        <p class="country-eyebrow">Country deep dive</p>
+        <h1 class="country-title display">Singapore</h1>
+        <div class="country-region">Asia-Pacific · SG · Non-EU</div>
+      </div>
+    </div>
+    <div class="country-meta">
+      Last updated: 21 July 2026<br>
+      Compliance model: Peppol, transitioning 4-corner → 5-corner
+    </div>
+  </div>
+
+  <div class="stat-strip">
+    <div class="stat"><div class="num display">SG Peppol BIS 3.0</div><div class="lbl">Format standard</div></div>
+    <div class="stat"><div class="num display">UEN</div><div class="lbl">Peppol ID base identifier</div></div>
+    <div class="stat"><div class="num display">2018</div><div class="lbl">First Peppol Authority outside Europe</div></div>
+    <div class="stat"><div class="num display">5-corner</div><div class="lbl">Model being adopted for GST reporting</div></div>
+    <div class="stat"><div class="num display">2031</div><div class="lbl">Full rollout complete</div></div>
+  </div>
+
+  <!-- ================= TIMELINE ================= -->
+  <div class="section">
+    <div class="section-head"><span class="num mono">01</span><h2 class="display">Compliance timeline</h2></div>
+    <p class="section-intro">Singapore is running one of the longest, most granular phase-in schedules in this tracker — six years, sliced by both incorporation status and revenue band.</p>
+
+    <div class="rtimeline">
+      <div class="rmonth-marker">2018–2020</div>
+      <div class="rcard">
+        <div class="rcard-top"><span class="rcard-date">May 2018</span><span class="rbadge inforce">In effect</span></div>
+        <div class="rcard-title">Singapore becomes first Peppol Authority outside Europe</div>
+        <p class="rcard-desc">A significant early milestone establishing Singapore's role in the Peppol ecosystem well ahead of any GST mandate.</p>
+      </div>
+      <div class="rcard">
+        <div class="rcard-top"><span class="rcard-date">2019</span><span class="rbadge inforce">In effect</span></div>
+        <div class="rcard-title">InvoiceNow launches</div>
+        <p class="rcard-desc">IMDA introduces Singapore's national e-invoicing network, based on Peppol, for voluntary structured invoice exchange in both B2B and B2G.</p>
+      </div>
+      <div class="rcard">
+        <div class="rcard-top"><span class="rcard-date">2020</span><span class="rbadge inforce">In effect</span></div>
+        <div class="rcard-title">InvoiceNow added as a B2G channel</div>
+        <p class="rcard-desc">Government procurement gains InvoiceNow as a preferred submission channel for suppliers.</p>
+      </div>
+
+      <div class="rmonth-marker">May 2025</div>
+      <div class="rcard">
+        <div class="rcard-top"><span class="rcard-date">1 May 2025</span><span class="rbadge inforce">In effect</span></div>
+        <div class="rcard-title">Voluntary phase of GST InvoiceNow Requirement begins</div>
+        <p class="rcard-desc">Existing GST-registered businesses can voluntarily submit invoice data to IRAS through InvoiceNow, ahead of any mandatory obligation.</p>
+      </div>
+
+      <div class="rmonth-marker">November 2025</div>
+      <div class="rcard">
+        <div class="rcard-top"><span class="rcard-date">1 Nov 2025</span><span class="rbadge inforce">In effect</span></div>
+        <div class="rcard-title">Mandatory for new voluntary registrants within 6 months of incorporation</div>
+        <p class="rcard-desc">Companies newly incorporated within six months of applying for voluntary GST registration must obtain a Peppol ID as a mandatory precondition before applying to IRAS.</p>
+      </div>
+
+      <div class="rmonth-marker">April 2026</div>
+      <div class="rcard">
+        <div class="rcard-top"><span class="rcard-date">1 Apr 2026</span><span class="rbadge soon">Due soon</span></div>
+        <div class="rcard-title">Mandate extends to all new voluntary GST registrants</div>
+        <p class="rcard-desc">Regardless of incorporation date or business structure, all new voluntary GST registrants must adopt InvoiceNow as a condition of registration.</p>
+      </div>
+
+      <div class="rmonth-marker">2028–2031</div>
+      <div class="rcard">
+        <div class="rcard-top"><span class="rcard-date">1 Apr 2028</span><span class="rbadge upcoming">Upcoming</span></div>
+        <div class="rcard-title">New GST taxpayers, annual sales ≤ S$200,000</div>
+        <p class="rcard-desc">The phased extension to existing/new GST-registered businesses begins with the smallest revenue band.</p>
+      </div>
+      <div class="rcard">
+        <div class="rcard-top"><span class="rcard-date">1 Apr 2029</span><span class="rbadge upcoming">Upcoming</span></div>
+        <div class="rcard-title">Existing taxpayers, annual sales ≤ S$1 million</div>
+      </div>
+      <div class="rcard">
+        <div class="rcard-top"><span class="rcard-date">1 Apr 2030</span><span class="rbadge upcoming">Upcoming</span></div>
+        <div class="rcard-title">Existing taxpayers, annual sales ≤ S$4 million</div>
+      </div>
+      <div class="rcard">
+        <div class="rcard-top"><span class="rcard-date">1 Apr 2031</span><span class="rbadge upcoming">Upcoming</span></div>
+        <div class="rcard-title">Existing taxpayers, annual sales ≥ S$4 million — full rollout complete</div>
+        <p class="rcard-desc">By this date, every GST-registered business in Singapore, including large multinationals, transmits invoice data via InvoiceNow.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= FILE FORMAT ================= -->
+  <div class="section">
+    <div class="section-head"><span class="num mono">02</span><h2 class="display">File format &amp; data specification</h2></div>
+    <p class="section-intro">SG Peppol BIS Billing 3.0 is a genuine national extension of the European standard — not a from-scratch local format.</p>
+
+    <div class="spec-grid">
+      <div class="spec-card">
+        <h3>Format</h3>
+        <div class="spec-row"><span class="k">Current standard</span><span class="v">SG Peppol BIS Billing 3.0</span></div>
+        <div class="spec-row"><span class="k">Base</span><span class="v">European Peppol BIS 3.0, extended for Singapore-specific requirements</span></div>
+        <div class="spec-row"><span class="k">Digital signature</span><span class="v">Not required from the taxpayer</span></div>
+        <p class="note">Unlike clearance-model countries, InvoiceNow doesn't require the taxpayer to digitally sign invoices — security, integrity, and authenticity are safeguarded by the Peppol network and accredited Access Point providers instead.</p>
+      </div>
+
+      <div class="spec-card">
+        <h3>Mandatory Data Elements</h3>
+        <div class="spec-row"><span class="k">Party identifiers</span><span class="v">Supplier/customer UEN and GST registration numbers (GSTN)</span></div>
+        <div class="spec-row"><span class="k">Tax codes</span><span class="v">Mapped to IRAS-approved GST category codes (Annex E, e-Tax Guide)</span></div>
+        <div class="spec-row"><span class="k">Aggregated entries</span><span class="v">Special "POS" or "PCP" indicators for point-of-sale/petty-cash purchases</span></div>
+        <p class="note">Mapping your internal tax codes correctly to IRAS's standardised GST category list is one of the highest-friction technical steps — get this wrong and your submissions will be flagged.</p>
+      </div>
+
+      <div class="spec-card">
+        <h3>Identifiers</h3>
+        <div class="spec-row"><span class="k">Peppol ID base</span><span class="v">Unique Entity Number (UEN)</span></div>
+        <div class="spec-row"><span class="k">Also underlies</span><span class="v">PayNow Corporate (Singapore's e-payment scheme)</span></div>
+        <div class="spec-row"><span class="k">Multi-entity businesses</span><span class="v">Each GST-registered entity needs its own Peppol ID</span></div>
+        <p class="note">For groups with multiple operating entities, design for a separate Peppol ID and Access Point configuration per entity from the start — retrofitting this after go-live is genuinely disruptive.</p>
+      </div>
+
+      <div class="spec-card">
+        <h3>Evolving format: PINT SG</h3>
+        <div class="spec-row"><span class="k">Fields not in older templates</span><span class="v">Supply type codes, line-level GST amounts, UEN-linked Peppol IDs</span></div>
+        <p class="note">If your invoice templates were built before InvoiceNow's GST requirement, expect meaningful gaps against the newer PINT-SG-aligned field requirements — audit rather than assume compatibility.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= TRANSMISSION PROTOCOL ================= -->
+  <div class="section">
+    <div class="section-head"><span class="num mono">03</span><h2 class="display">Transmission protocol</h2></div>
+    <p class="section-intro">InvoiceNow is deliberately transitioning from a pure exchange network into a tax-reporting one — the "5-corner" upgrade adds IRAS as a genuine participant, not just an observer.</p>
+
+    <div class="spec-grid">
+      <div class="spec-card">
+        <h3>The exchange flow</h3>
+        <div class="flow-grid">
+          <span>Supplier's ERP</span><span>Supplier's Access Point</span><span>Buyer's Access Point (via UEN)</span><span>Buyer's ERP</span><span>Copy to IRAS</span>
+        </div>
+        <p class="note">The invoice reaches the customer, and a copy is transmitted to IRAS simultaneously or shortly after — through the same InvoiceNow network, not a separate filing channel.</p>
+      </div>
+
+      <div class="spec-card">
+        <h3>Governance</h3>
+        <div class="spec-row"><span class="k">IMDA</span><span class="v">Singapore's Peppol Authority; defines Peppol Authority Specific Requirements (PASR)</span></div>
+        <div class="spec-row"><span class="k">IRAS</span><span class="v">Receives the reported invoice data for GST administration</span></div>
+        <p class="note">IMDA accredits the Access Point/SMP service providers; IRAS is the tax authority consuming the data those providers transmit — two distinct roles worth keeping separate in your mental model.</p>
+      </div>
+
+      <div class="spec-card">
+        <h3>Submission timing</h3>
+        <div class="spec-row"><span class="k">Deadline</span><span class="v">Earlier of the GST return filing date or the statutory deadline for that return</span></div>
+        <p class="note">This ties your InvoiceNow transmission cadence directly to your existing GST filing calendar rather than requiring a separate real-time deadline to track.</p>
+      </div>
+
+      <div class="spec-card">
+        <h3>Roles: IRSP vs. AP</h3>
+        <div class="spec-row"><span class="k">IRSP</span><span class="v">InvoiceNow-Ready Solution Provider — provides the accounting software</span></div>
+        <div class="spec-row"><span class="k">AP</span><span class="v">Access Point — enables network connectivity</span></div>
+        <p class="note">These are often the same commercial provider in practice, but they're conceptually distinct roles — worth clarifying with your vendor which function they're actually performing for you.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= REGISTRATION ================= -->
+  <div class="section">
+    <div class="section-head"><span class="num mono">04</span><h2 class="display">Getting set up</h2></div>
+    <p class="section-intro">Registration hinges on getting a Peppol ID before you ever touch IRAS — treat it as the true first step, not a formality.</p>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">
+          <h4>Obtain your Peppol ID</h4>
+          <p>Work with your chosen IRSP or AP provider to register in the SG Peppol Directory using your UEN — this is a prerequisite for any InvoiceNow transmission, separate from your ACRA registration or GST registration number itself.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">
+          <h4>Engage an IMDA-accredited Access Point (if using custom/in-house software)</h4>
+          <p>If you're not using an off-the-shelf InvoiceNow-Ready Solution, you'll need an accredited AP provider specifically to establish secure network connectivity.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">
+          <h4>Map your internal tax codes to IRAS's GST category codes</h4>
+          <p>Use Annex E of the IRAS e-Tax Guide as your reference — every transaction needs accurate categorisation before submission.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">
+          <h4>Confirm your InvoiceNow-Ready Solution is IRAS-integrated</h4>
+          <p>Make sure it connects via API technology through IMDA-accredited Access Points, enabling real-time or regular automated transmission of invoice data to IRAS.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">
+          <h4>Plan for multi-entity Peppol ID architecture early</h4>
+          <p>If you operate multiple GST-registered entities, design your Peppol ID and Access Point configuration per entity from the outset rather than discovering the requirement during testing.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">
+          <h4>Check where you land on the phased rollout</h4>
+          <p>If you're not yet mandatorily in scope, use the voluntary phase to build institutional familiarity ahead of your specific 2028–2031 milestone.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= RELATED ================= -->
+  <div class="section">
+    <div class="section-head"><span class="num mono">05</span><h2 class="display">Related context</h2></div>
+    <p class="section-intro">Singapore's approach is notably gradual and consultative — a genuinely different posture from the faster-moving mandates elsewhere in this tracker.</p>
+
+    <div class="related-grid">
+      <div class="related-card">
+        <h4>🐢 A deliberately long runway</h4>
+        <p>Six years between the first mandatory cohort (Nov 2025) and full rollout (Apr 2031) is among the longest phase-in periods in this tracker — Singapore appears to be prioritising smooth adoption over speed.</p>
+      </div>
+      <div class="related-card">
+        <h4>🔄 4-corner to 5-corner is a genuine architecture shift</h4>
+        <p>The addition of IRAS as a "5th corner" wasn't in InvoiceNow's original 2019 design — it represents Singapore evolving a voluntary exchange network into a tax-reporting one over time, rather than building a clearance system from scratch.</p>
+      </div>
+      <div class="related-card">
+        <h4>💰 Transitional support available</h4>
+        <p>Government grants have historically supported InvoiceNow adoption costs — worth checking current IMDA/IRAS schemes if cost is a barrier to early adoption.</p>
+      </div>
+      <div class="related-card">
+        <h4>🌏 Regional Peppol leadership</h4>
+        <p>As the first Peppol Authority outside Europe, Singapore's InvoiceNow experience has directly informed how newer Asia-Pacific Peppol markets like Malaysia and Japan have approached their own rollouts.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="portal-row">
+    <a class="portal-btn" href="https://www.iras.gov.sg/taxes/goods-services-tax-(gst)/gst-invoicenow-requirement" target="_blank" rel="noopener">IRAS — GST InvoiceNow Requirement</a>
+  </div>
+
+  <footer>
+    <p>This deep-dive page reflects publicly available technical guidance as of July 2026 and is provided for general awareness, not legal or tax advice. PINT-SG technical detail, phased rollout dates, and IRAS reporting requirements continue to evolve — confirm current requirements directly with IRAS or IMDA before building an integration.</p>
+  </footer>
+
+</div>
+</body>
+</html>
