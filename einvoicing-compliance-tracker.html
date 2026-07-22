@@ -321,64 +321,6 @@
   .dropdown-item:hover{background:var(--paper-2);}
   .dropdown-item + .dropdown-item{border-top:1px dashed var(--paper-line);}
   .dropdown-item .dd-icon{font-size:14px;}
-
-  /* ===== Subscribe modal ===== */
-  .modal-overlay{
-    display:none; position:fixed; inset:0; background:rgba(6,10,18,0.72); z-index:80;
-    align-items:center; justify-content:center; padding:20px;
-  }
-  .modal-overlay.open{display:flex;}
-  .modal-card{
-    background:var(--paper); color:#241d10; border-radius:var(--radius);
-    width:100%; max-width:440px; max-height:90vh; overflow-y:auto;
-    padding:26px 26px 24px; position:relative; border:1px solid var(--paper-line);
-  }
-  .modal-close{
-    position:absolute; top:14px; right:16px; background:none; border:none; cursor:pointer;
-    font-size:20px; color:#6b5f3f; line-height:1; padding:4px;
-  }
-  .modal-close:hover{color:var(--stamp);}
-  .modal-eyebrow{
-    font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:0.14em; text-transform:uppercase;
-    color:var(--stamp); margin:0 0 6px;
-  }
-  .modal-title{font-family:'Big Shoulders Display',sans-serif; font-weight:800; font-size:23px; text-transform:uppercase; margin:0 0 8px;}
-  .modal-sub{font-size:13.3px; color:#4a4030; margin:0 0 20px; line-height:1.5;}
-  .form-row{display:flex; gap:10px; margin-bottom:12px;}
-  .form-field{flex:1; display:flex; flex-direction:column; gap:5px;}
-  .form-field label{
-    font-family:'IBM Plex Mono',monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:0.08em; color:#6b5f3f;
-  }
-  .form-field input, .form-field textarea{
-    background:#fff; border:1px solid var(--paper-line); border-radius:6px;
-    padding:9px 11px; font-size:13.5px; font-family:'IBM Plex Sans',sans-serif; color:#241d10;
-  }
-  .form-field textarea{resize:vertical; min-height:90px; font-family:'IBM Plex Sans',sans-serif;}
-  .form-field input:focus, .form-field textarea:focus{outline:2px solid var(--stamp); outline-offset:0;}
-  .form-field.error input, .form-field.error textarea{border-color:var(--stamp);}
-  .form-error-msg{font-size:11px; color:var(--stamp); display:none;}
-  .form-field.error .form-error-msg{display:block;}
-  .form-submit{
-    width:100%; background:var(--ink); color:var(--text-lo); border:none; border-radius:8px;
-    padding:12px; font-family:'IBM Plex Mono',monospace; font-size:13px; font-weight:600;
-    cursor:pointer; margin-top:6px; letter-spacing:0.03em;
-  }
-  .form-submit:hover{background:var(--stamp);}
-  .form-fineprint{font-size:11px; color:#7a6f52; margin-top:12px; line-height:1.5;}
-
-  .success-view{text-align:center; padding:10px 0 4px;}
-  .success-stamp{
-    font-family:'Big Shoulders Display',sans-serif; font-weight:800; font-size:15px;
-    display:inline-block; border:2px solid var(--stamp); color:var(--stamp);
-    padding:6px 14px; border-radius:6px; transform:rotate(-3deg); text-transform:uppercase; letter-spacing:0.08em;
-    margin-bottom:16px;
-  }
-  .success-view p{font-size:13.8px; color:#4a4030; margin:0 0 6px;}
-  .success-view .success-email{font-family:'IBM Plex Mono',monospace; font-weight:600; color:#241d10;}
-
-  @media (max-width:480px){
-    .form-row{flex-direction:column; gap:12px;}
-  }
 </style>
 </head>
 <body>
@@ -393,100 +335,6 @@
   </div>
   <nav id="sidebarNav"></nav>
 </aside>
-
-<div class="modal-overlay" id="subscribeOverlay">
-  <div class="modal-card">
-    <button class="modal-close" id="modalClose" aria-label="Close">&times;</button>
-    <div id="formView">
-      <p class="modal-eyebrow">Stay ahead of the deadlines</p>
-      <h2 class="modal-title">Monthly compliance digest</h2>
-      <p class="modal-sub">One email a month covering everything that changed — new mandates, shifted dates, and anything newly due.</p>
-      <form id="subscribeForm" novalidate>
-        <div class="form-row">
-          <div class="form-field" id="field-firstName">
-            <label for="firstName">First name</label>
-            <input type="text" id="firstName" name="firstName" autocomplete="given-name">
-            <span class="form-error-msg">First name is required</span>
-          </div>
-          <div class="form-field" id="field-lastName">
-            <label for="lastName">Last name</label>
-            <input type="text" id="lastName" name="lastName" autocomplete="family-name">
-            <span class="form-error-msg">Last name is required</span>
-          </div>
-        </div>
-        <div class="form-row">
-          <div class="form-field" id="field-email">
-            <label for="email">Email address</label>
-            <input type="email" id="email" name="email" autocomplete="email">
-            <span class="form-error-msg">A valid email address is required</span>
-          </div>
-        </div>
-        <div class="form-row">
-          <div class="form-field" id="field-title">
-            <label for="jobTitle">Title</label>
-            <input type="text" id="jobTitle" name="jobTitle" autocomplete="organization-title">
-            <span class="form-error-msg">Title is required</span>
-          </div>
-          <div class="form-field" id="field-company">
-            <label for="company">Company name</label>
-            <input type="text" id="company" name="company" autocomplete="organization">
-            <span class="form-error-msg">Company name is required</span>
-          </div>
-        </div>
-        <button type="submit" class="form-submit">Subscribe</button>
-        <p class="form-fineprint">Sent once a month. Unsubscribe anytime. This demo form runs entirely in your browser — connect it to a mailing list provider (e.g. Mailchimp, HubSpot) to go live.</p>
-      </form>
-    </div>
-    <div id="successView" class="success-view" style="display:none;">
-      <div class="success-stamp">Subscribed</div>
-      <p>You're on the list, <span id="successName"></span>.</p>
-      <p>Monthly updates will be sent to <span class="success-email" id="successEmail"></span>.</p>
-      <button type="button" class="form-submit" id="modalDone" style="margin-top:14px;">Done</button>
-    </div>
-  </div>
-</div>
-
-<div class="modal-overlay" id="feedbackOverlay">
-  <div class="modal-card">
-    <button class="modal-close" id="feedbackModalClose" aria-label="Close">&times;</button>
-    <div id="feedbackFormView">
-      <p class="modal-eyebrow">Spot a gap or an error?</p>
-      <h2 class="modal-title">Send feedback</h2>
-      <p class="modal-sub">Missing a country, an outdated date, or a broken portal link? Let us know.</p>
-      <form id="feedbackForm" novalidate>
-        <div class="form-row">
-          <div class="form-field" id="field-fb-email">
-            <label for="fbEmail">Email address</label>
-            <input type="email" id="fbEmail" name="fbEmail" autocomplete="email">
-            <span class="form-error-msg">A valid email address is required</span>
-          </div>
-        </div>
-        <div class="form-row">
-          <div class="form-field" id="field-fb-subject">
-            <label for="fbSubject">Subject</label>
-            <input type="text" id="fbSubject" name="fbSubject">
-            <span class="form-error-msg">Subject is required</span>
-          </div>
-        </div>
-        <div class="form-row">
-          <div class="form-field" id="field-fb-comments">
-            <label for="fbComments">Comments</label>
-            <textarea id="fbComments" name="fbComments"></textarea>
-            <span class="form-error-msg">Please add a comment</span>
-          </div>
-        </div>
-        <button type="submit" class="form-submit">Send feedback</button>
-        <p class="form-fineprint">This demo form runs entirely in your browser — connect it to a real inbox, helpdesk, or webhook to go live.</p>
-      </form>
-    </div>
-    <div id="feedbackSuccessView" class="success-view" style="display:none;">
-      <div class="success-stamp">Received</div>
-      <p>Thanks — your feedback has been noted.</p>
-      <p>We'll follow up at <span class="success-email" id="fbSuccessEmail"></span> if needed.</p>
-      <button type="button" class="form-submit" id="feedbackModalDone" style="margin-top:14px;">Done</button>
-    </div>
-  </div>
-</div>
 
 <div class="topbar">
   <div class="topbar-brand">
@@ -503,8 +351,8 @@
       <div class="actions-menu" id="actionsMenu">
         <button class="menu-trigger" id="menuTrigger">Menu</button>
         <div class="dropdown-panel" id="dropdownPanel">
-          <button class="dropdown-item" id="ddSubscribe"><span class="dd-icon">✉</span>Subscribe to monthly updates</button>
-          <button class="dropdown-item" id="ddFeedback"><span class="dd-icon">💬</span>Give feedback</button>
+          <a class="dropdown-item" href="subscribe.html"><span class="dd-icon">✉</span>Subscribe to monthly updates</a>
+          <a class="dropdown-item" href="feedback.html"><span class="dd-icon">💬</span>Give feedback</a>
         </div>
       </div>
     </div>
@@ -1685,134 +1533,6 @@ function wireActionsMenu(){
   document.addEventListener('click', (e)=>{
     if(!menu.contains(e.target)) close();
   });
-  document.getElementById('ddSubscribe').addEventListener('click', ()=>{
-    close();
-    document.getElementById('subscribeOverlay').classList.add('open');
-  });
-  document.getElementById('ddFeedback').addEventListener('click', ()=>{
-    close();
-    document.getElementById('feedbackOverlay').classList.add('open');
-  });
-}
-
-// ---------- subscribe modal ----------
-function wireSubscribeModal(){
-  const overlay = document.getElementById('subscribeOverlay');
-  const closeBtn = document.getElementById('modalClose');
-  const doneBtn = document.getElementById('modalDone');
-  const form = document.getElementById('subscribeForm');
-  const formView = document.getElementById('formView');
-  const successView = document.getElementById('successView');
-
-  function resetModal(){
-    form.reset();
-    ['firstName','lastName','email','jobTitle','company'].forEach(id=>{
-      document.getElementById('field-'+ (id==='jobTitle'?'title':id)).classList.remove('error');
-    });
-    formView.style.display='block';
-    successView.style.display='none';
-  }
-  function close(){ overlay.classList.remove('open'); setTimeout(resetModal, 200); }
-
-  closeBtn.addEventListener('click', close);
-  doneBtn.addEventListener('click', close);
-  overlay.addEventListener('click', (e)=>{ if(e.target===overlay) close(); });
-
-  function isValidEmail(v){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); }
-
-  form.addEventListener('submit', async (e)=>{
-    e.preventDefault();
-    const values = {
-      firstName: document.getElementById('firstName').value.trim(),
-      lastName: document.getElementById('lastName').value.trim(),
-      email: document.getElementById('email').value.trim(),
-      jobTitle: document.getElementById('jobTitle').value.trim(),
-      company: document.getElementById('company').value.trim(),
-    };
-    const checks = [
-      ['firstName', values.firstName.length>0],
-      ['lastName', values.lastName.length>0],
-      ['email', isValidEmail(values.email)],
-      ['title', values.jobTitle.length>0],
-      ['company', values.company.length>0],
-    ];
-    let allValid = true;
-    checks.forEach(([key, ok])=>{
-      const el = document.getElementById('field-'+key);
-      el.classList.toggle('error', !ok);
-      if(!ok) allValid = false;
-    });
-    if(!allValid) return;
-
-    // Best-effort persistence if artifact storage is available; safe no-op otherwise
-    try{
-      if(window.storage && typeof window.storage.set === 'function'){
-        await window.storage.set('subscriber:'+Date.now(), JSON.stringify(values));
-      }
-    }catch(err){ /* no storage available — form still "succeeds" for demo purposes */ }
-
-    document.getElementById('successName').textContent = values.firstName + ' ' + values.lastName;
-    document.getElementById('successEmail').textContent = values.email;
-    formView.style.display='none';
-    successView.style.display='block';
-  });
-}
-
-// ---------- feedback modal ----------
-function wireFeedbackModal(){
-  const overlay = document.getElementById('feedbackOverlay');
-  const closeBtn = document.getElementById('feedbackModalClose');
-  const doneBtn = document.getElementById('feedbackModalDone');
-  const form = document.getElementById('feedbackForm');
-  const formView = document.getElementById('feedbackFormView');
-  const successView = document.getElementById('feedbackSuccessView');
-
-  function resetModal(){
-    form.reset();
-    ['fb-email','fb-subject','fb-comments'].forEach(id=>{
-      document.getElementById('field-'+id).classList.remove('error');
-    });
-    formView.style.display='block';
-    successView.style.display='none';
-  }
-  function close(){ overlay.classList.remove('open'); setTimeout(resetModal, 200); }
-
-  closeBtn.addEventListener('click', close);
-  doneBtn.addEventListener('click', close);
-  overlay.addEventListener('click', (e)=>{ if(e.target===overlay) close(); });
-
-  function isValidEmail(v){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); }
-
-  form.addEventListener('submit', async (e)=>{
-    e.preventDefault();
-    const values = {
-      email: document.getElementById('fbEmail').value.trim(),
-      subject: document.getElementById('fbSubject').value.trim(),
-      comments: document.getElementById('fbComments').value.trim(),
-    };
-    const checks = [
-      ['fb-email', isValidEmail(values.email)],
-      ['fb-subject', values.subject.length>0],
-      ['fb-comments', values.comments.length>0],
-    ];
-    let allValid = true;
-    checks.forEach(([key, ok])=>{
-      const el = document.getElementById('field-'+key);
-      el.classList.toggle('error', !ok);
-      if(!ok) allValid = false;
-    });
-    if(!allValid) return;
-
-    try{
-      if(window.storage && typeof window.storage.set === 'function'){
-        await window.storage.set('feedback:'+Date.now(), JSON.stringify(values));
-      }
-    }catch(err){ /* no storage available — form still "succeeds" for demo purposes */ }
-
-    document.getElementById('fbSuccessEmail').textContent = values.email;
-    formView.style.display='none';
-    successView.style.display='block';
-  });
 }
 
 // ---------- init ----------
@@ -1826,8 +1546,6 @@ renderDeepDiveMenu();
 wireMenuToggle();
 wireDeepDiveMenu();
 wireActionsMenu();
-wireSubscribeModal();
-wireFeedbackModal();
 </script>
 </body>
 </html>
