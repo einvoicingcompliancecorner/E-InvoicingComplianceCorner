@@ -1,0 +1,43 @@
+name = "eicc-members"
+main = "src/index.js"
+compatibility_date = "2026-07-01"
+
+# ----------------------------------------------------------------
+# Non-secret configuration. Fill these in before deploying.
+# ----------------------------------------------------------------
+[vars]
+# The public URL this Worker will be reachable at once deployed —
+# e.g. a workers.dev subdomain to start, or your own custom domain
+# once you route it (Cloudflare Dashboard → Workers → Triggers).
+SITE_URL = "https://eicc-members.YOUR-SUBDOMAIN.workers.dev"
+
+# The "from" address for magic-link emails. Must be a domain you've
+# verified with your email provider (see README, Step 4).
+FROM_EMAIL = "newsletter@yourdomain.com"
+
+# The Lemon Squeezy variant ID for your ONE-TIME (non-recurring)
+# product — find this in Lemon Squeezy: Products → your one-time
+# product → the variant's ID shown in the URL or via the API.
+# Leave as-is if you haven't set up the one-time tier yet.
+ONE_TIME_VARIANT_ID = "YOUR-ONE-TIME-VARIANT-ID"
+
+# ----------------------------------------------------------------
+# KV namespaces — create these with `wrangler kv namespace create`
+# (see README, Step 2) and paste the IDs it gives you back here.
+# ----------------------------------------------------------------
+[[kv_namespaces]]
+binding = "SUBSCRIBERS"
+id = "REPLACE_WITH_SUBSCRIBERS_KV_ID"
+
+[[kv_namespaces]]
+binding = "ISSUES"
+id = "REPLACE_WITH_ISSUES_KV_ID"
+
+# ----------------------------------------------------------------
+# Secrets are NOT set here — never put real secrets in this file,
+# since it may end up in version control. Set them with:
+#   wrangler secret put LEMONSQUEEZY_WEBHOOK_SECRET
+#   wrangler secret put SESSION_SECRET
+#   wrangler secret put RESEND_API_KEY
+# (see README, Step 3)
+# ----------------------------------------------------------------
