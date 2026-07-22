@@ -145,6 +145,23 @@
     font-size:22px; margin:0;
   }
   .section-heading span{font-size:12px; color:var(--muted); font-family:'IBM Plex Mono',monospace;}
+  .sort-toggle{
+    margin-left:auto; background:transparent; border:1px solid var(--line); color:var(--muted);
+    font-family:'IBM Plex Mono',monospace; font-size:11.5px; padding:6px 12px; border-radius:999px;
+    cursor:pointer; display:flex; align-items:center; gap:6px; white-space:nowrap;
+  }
+  .sort-toggle:hover{border-color:var(--soon); color:var(--text-lo);}
+
+  .established-wrap{margin-top:8px; border:1px solid var(--line); border-radius:var(--radius); overflow:hidden;}
+  .established-wrap summary{
+    list-style:none; cursor:pointer; padding:14px 18px; background:var(--ink-2);
+    display:flex; align-items:center; gap:10px; font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:var(--text-lo);
+  }
+  .established-wrap summary::-webkit-details-marker{display:none;}
+  .established-wrap summary .chev{transition:transform .15s ease; color:var(--soon); font-size:11px;}
+  .established-wrap[open] summary .chev{transform:rotate(90deg);}
+  .established-wrap summary .est-label{color:var(--muted); font-weight:400;}
+  .established-body{padding:18px; background:var(--ink);}
 
   .timeline{position:relative; padding-left:26px; border-left:2px solid var(--line);}
   .month-marker{
@@ -503,11 +520,24 @@
 
 <div class="timeline-section">
   <div class="section-heading">
-    <h2 class="display">Timeline</h2>
+    <h2 class="display">Recent &amp; Upcoming</h2>
     <span id="resultCount"></span>
+    <button class="sort-toggle" id="sortToggle">↕ <span id="sortToggleLabel">Soonest first</span></button>
   </div>
+  <p style="color:var(--muted); font-size:13.5px; max-width:640px; margin:-8px 0 20px;">Milestones from the last few months through the furthest confirmed deadline. Already-settled regulations live in the collapsed section below so this list stays focused on what's actually changing.</p>
   <div class="timeline" id="timeline"></div>
   <div class="no-results" id="noResults" style="display:none;">No milestones match these filters.</div>
+
+  <details class="established-wrap" id="establishedWrap">
+    <summary>
+      <span class="chev">▶</span>
+      <span id="establishedSummary">Established regulations</span>
+      <span class="est-label">— already in force for a while, rarely changing</span>
+    </summary>
+    <div class="established-body">
+      <div class="timeline" id="establishedTimeline"></div>
+    </div>
+  </details>
 </div>
 
 <footer>
@@ -1307,6 +1337,7 @@ const DEEP_DIVES = {
   'India': 'india.html',
   'Malaysia': 'malaysia.html',
   'Singapore': 'singapore.html',
+  'Brazil': 'brazil.html',
 };
 
 // ---------- helpers ----------
@@ -1419,42 +1450,16 @@ document.getElementById('searchBox').addEventListener('input', (e)=>{
 
 const STATUS_MAP = {'In effect':'inforce','Due soon':'soon','Upcoming':'upcoming'};
 
-function renderTimeline(){
-  const timeline = document.getElementById('timeline');
-  const noResults = document.getElementById('noResults');
+// Cutoff: anything older than this many days is considered "established" (settled, rarely changing)
+const ESTABLISHED_CUTOFF_DAYS = 120;
+let sortDir = 'asc'; // 'asc' = soonest first, 'desc' = furthest first
 
-  let filtered = DATA.filter(e=>{
-    if(state.region!=='All' && e.region!==state.region) return false;
-    if(state.status!=='All' && computeStatus(e,NOW)!==STATUS_MAP[state.status]) return false;
-    if(state.q){
-      const hay = (e.country+' '+e.system+' '+e.desc).toLowerCase();
-      if(!hay.includes(state.q)) return false;
-    }
-    return true;
-  }).sort((a,b)=> new Date(a.date) - new Date(b.date));
-
-  document.getElementById('resultCount').textContent = filtered.length + ' milestone' + (filtered.length===1?'':'s');
-
-  if(filtered.length===0){
-    timeline.innerHTML='';
-    noResults.style.display='block';
-    return;
-  }
-  noResults.style.display='none';
-
-  let html = '';
-  let lastMonth = null;
-  filtered.forEach(e=>{
-    const mk = monthKey(e.date);
-    if(mk !== lastMonth){
-      html += `<div class="month-marker">${mk}</div>`;
-      lastMonth = mk;
-    }
-    const status = computeStatus(e,NOW);
-    const badgeClass = status;
-    const badgeText = e.anchor ? 'In effect since ' + fmtDate(e.date) : statusLabel(status);
-    const expectedBadge = e.confidence==='expected' ? '<span class="badge expected">Expected — not final</span>' : '';
-    html += `
+function renderCard(e){
+  const status = computeStatus(e,NOW);
+  const badgeClass = status;
+  const badgeText = e.anchor ? 'In effect since ' + fmtDate(e.date) : statusLabel(status);
+  const expectedBadge = e.confidence==='expected' ? '<span class="badge expected">Expected — not final</span>' : '';
+  return `
     <div class="card">
       <div class="card-top">
         <div class="card-country">
@@ -1481,8 +1486,76 @@ function renderTimeline(){
         ${DEEP_DIVES[e.country] ? `<a class="portal-btn" style="background:var(--stamp); border-color:var(--stamp);" href="${DEEP_DIVES[e.country]}">Country deep dive →</a>` : ''}
       </div>
     </div>`;
+}
+
+function renderCardList(list){
+  let html = '';
+  let lastMonth = null;
+  list.forEach(e=>{
+    const mk = monthKey(e.date);
+    if(mk !== lastMonth){
+      html += `<div class="month-marker">${mk}</div>`;
+      lastMonth = mk;
+    }
+    html += renderCard(e);
   });
-  timeline.innerHTML = html;
+  return html;
+}
+
+function renderTimeline(){
+  const timeline = document.getElementById('timeline');
+  const establishedTimeline = document.getElementById('establishedTimeline');
+  const noResults = document.getElementById('noResults');
+  const establishedWrap = document.getElementById('establishedWrap');
+
+  const filtered = DATA.filter(e=>{
+    if(state.region!=='All' && e.region!==state.region) return false;
+    if(state.status!=='All' && computeStatus(e,NOW)!==STATUS_MAP[state.status]) return false;
+    if(state.q){
+      const hay = (e.country+' '+e.system+' '+e.desc).toLowerCase();
+      if(!hay.includes(state.q)) return false;
+    }
+    return true;
+  });
+
+  const cutoffMs = NOW.getTime() - ESTABLISHED_CUTOFF_DAYS*MS_DAY;
+  const recent = [];
+  const established = [];
+  filtered.forEach(e=>{
+    const t = new Date(e.date+'T00:00:00').getTime();
+    if(t < cutoffMs) established.push(e); else recent.push(e);
+  });
+
+  recent.sort((a,b)=> sortDir==='asc' ? new Date(a.date)-new Date(b.date) : new Date(b.date)-new Date(a.date));
+  established.sort((a,b)=> new Date(a.date) - new Date(b.date));
+
+  document.getElementById('resultCount').textContent = filtered.length + ' milestone' + (filtered.length===1?'':'s') + ' total';
+
+  if(recent.length===0){
+    timeline.innerHTML='';
+    noResults.style.display='block';
+  } else {
+    noResults.style.display='none';
+    timeline.innerHTML = renderCardList(recent);
+  }
+
+  if(established.length===0){
+    establishedWrap.style.display='none';
+  } else {
+    establishedWrap.style.display='block';
+    document.getElementById('establishedSummary').textContent = `Established regulations (${established.length})`;
+    establishedTimeline.innerHTML = renderCardList(established);
+  }
+}
+
+function wireSortToggle(){
+  const btn = document.getElementById('sortToggle');
+  const label = document.getElementById('sortToggleLabel');
+  btn.addEventListener('click', ()=>{
+    sortDir = sortDir==='asc' ? 'desc' : 'asc';
+    label.textContent = sortDir==='asc' ? 'Soonest first' : 'Furthest first';
+    renderTimeline();
+  });
 }
 
 function refreshAll(){
@@ -1686,6 +1759,7 @@ renderBoard();
 renderStats();
 renderFilterButtons();
 renderTimeline();
+wireSortToggle();
 renderSidebar();
 wireMenuToggle();
 wireActionsMenu();
