@@ -7,12 +7,60 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<!--
+  ================================================================
+  SETUP NEEDED before this page can take real payments:
+
+  This page offers TWO billing options, which means you need TWO
+  separate products in Lemon Squeezy:
+
+  1a. "Compliance Digest — Recurring" — create this as a
+      SUBSCRIPTION product (billing interval: yearly). It renews
+      automatically each year until the customer cancels.
+
+  1b. "Compliance Digest — One-time" — create this as a
+      SINGLE PAYMENT product. It charges once and does not renew;
+      if you want it to functionally "expire" after 12 months
+      (e.g. stop sending the newsletter), that's something you
+      handle on your side when you process the sale, since Lemon
+      Squeezy has no built-in concept of a single payment "lapsing."
+
+  Both can be priced the same or differently — entirely up to you.
+
+  Why annual (for the recurring option), not monthly: Lemon
+  Squeezy's fee is 5.5% + $0.50 PER CHARGE. On a $1/month plan
+  billed monthly, that flat $0.50 eats more than half of every
+  payment (12 charges/year). Billing the same low price once a
+  year instead nets you noticeably more, for the same
+  monthly-equivalent price the subscriber sees.
+
+  2. Grab EACH product's checkout URL from Lemon Squeezy
+     (Products → your product → Copy checkout link). Looks like:
+     https://YOUR-STORE.lemonsqueezy.com/buy/XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
+
+  3. Replace LSQ_CHECKOUT_URL_RECURRING and LSQ_CHECKOUT_URL_ONETIME
+     below with those two real URLs.
+
+  4. Replace LSQ_PRICE_RECURRING and LSQ_PRICE_ONETIME below with
+     your actual prices (plain numbers, e.g. 12 for $12).
+
+  5. Optional, in the Lemon Squeezy dashboard (Settings → Checkout)
+     for each product:
+     - Set a "Redirect URL" back to this site so buyers land
+       somewhere branded after paying.
+     - Add custom checkout fields if you want to capture Title /
+       Company inside Lemon Squeezy itself, not just in the form below.
+  ================================================================
+-->
+
 <style>
   :root{
     --ink:#0f1a2b; --ink-2:#152238; --line:#2b3c5a;
     --paper:#efe9db; --paper-2:#e4dcc6; --paper-line:#c9bd9e;
     --text-lo:#f2f0e8; --muted:#93a3c0;
-    --stamp:#b5432f;
+    --stamp:#b5432f; --live:#3f7d5c; --live-dim:#274a38;
+    --soon:#c98a3a; --soon-dim:#6e4c22;
     --radius:10px;
   }
   *{box-sizing:border-box;}
@@ -25,12 +73,12 @@
   .mono{font-family:'IBM Plex Mono',monospace;}
   a{color:inherit;}
 
-  .wrap{width:100%; max-width:520px; padding:0 5vw 60px;}
+  .wrap{width:100%; max-width:560px; padding:0 5vw 60px;}
   .back-link{
     display:inline-flex; align-items:center; gap:6px; margin:24px 0 28px;
     font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:var(--muted); text-decoration:none;
   }
-  .back-link:hover{color:#c98a3a;}
+  .back-link:hover{color:var(--soon);}
 
   .card{
     background:var(--paper); color:#241d10; border-radius:var(--radius);
@@ -41,7 +89,35 @@
     color:var(--stamp); margin:0 0 8px;
   }
   .title{font-family:'Big Shoulders Display',sans-serif; font-weight:800; font-size:27px; text-transform:uppercase; margin:0 0 10px;}
-  .sub{font-size:13.8px; color:#4a4030; margin:0 0 26px; line-height:1.55;}
+  .sub{font-size:13.8px; color:#4a4030; margin:0 0 22px; line-height:1.55;}
+
+  /* Billing option selector */
+  .plan-label{
+    font-family:'IBM Plex Mono',monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:0.08em;
+    color:#6b5f3f; margin:0 0 10px;
+  }
+  .plan-options{display:flex; gap:10px; margin-bottom:22px;}
+  .plan-option{
+    flex:1; border:2px solid var(--paper-line); border-radius:8px; padding:14px 14px 12px;
+    cursor:pointer; background:#fff; transition:border-color .12s ease;
+  }
+  .plan-option.selected{border-color:var(--stamp); background:#fdf6f0;}
+  .plan-option input{display:none;}
+  .plan-option .po-name{font-family:'IBM Plex Mono',monospace; font-size:11px; text-transform:uppercase; letter-spacing:0.05em; color:#6b5f3f; display:flex; align-items:center; gap:6px;}
+  .plan-option.selected .po-name{color:var(--stamp);}
+  .plan-option .po-radio{
+    width:14px; height:14px; border-radius:50%; border:2px solid var(--paper-line); flex:0 0 auto;
+  }
+  .plan-option.selected .po-radio{border-color:var(--stamp); background:radial-gradient(circle, var(--stamp) 0 5px, transparent 5px);}
+  .plan-option .po-price{font-family:'Big Shoulders Display',sans-serif; font-weight:800; font-size:21px; margin:8px 0 4px;}
+  .plan-option .po-desc{font-size:11.8px; color:#5a5138; line-height:1.4;}
+
+  .includes{margin:0 0 22px; padding:0; list-style:none;}
+  .includes li{
+    font-size:13.3px; padding:7px 0 7px 24px; position:relative; border-top:1px dashed var(--paper-line);
+  }
+  .includes li:first-child{border-top:none;}
+  .includes li::before{content:"✓"; position:absolute; left:2px; color:var(--live); font-weight:700;}
 
   .form-row{display:flex; gap:12px; margin-bottom:14px;}
   .form-field{flex:1; display:flex; flex-direction:column; gap:6px;}
@@ -60,33 +136,32 @@
   .form-submit{
     width:100%; background:var(--ink); color:var(--text-lo); border:none; border-radius:8px;
     padding:13px; font-family:'IBM Plex Mono',monospace; font-size:13.5px; font-weight:600;
-    cursor:pointer; margin-top:8px; letter-spacing:0.03em;
+    cursor:pointer; margin-top:8px; letter-spacing:0.03em; text-decoration:none; text-align:center; display:block;
   }
   .form-submit:hover{background:var(--stamp);}
   .form-fineprint{font-size:11.5px; color:#7a6f52; margin-top:16px; line-height:1.55;}
 
-  .success-view{text-align:center; padding:6px 0 4px;}
-  .success-stamp{
-    font-family:'Big Shoulders Display',sans-serif; font-weight:800; font-size:15px;
-    display:inline-block; border:2px solid var(--stamp); color:var(--stamp);
-    padding:6px 14px; border-radius:6px; transform:rotate(-3deg); text-transform:uppercase; letter-spacing:0.08em;
-    margin-bottom:18px;
+  .checkout-step{display:none;}
+  .checkout-step.visible{display:block;}
+  .edit-link{
+    display:block; text-align:center; font-family:'IBM Plex Mono',monospace; font-size:11.5px;
+    color:#6b5f3f; margin-top:12px; cursor:pointer; text-decoration:underline;
   }
-  .success-view p{font-size:14px; color:#4a4030; margin:0 0 8px;}
-  .success-view .success-email{font-family:'IBM Plex Mono',monospace; font-weight:600; color:#241d10;}
-  .success-actions{display:flex; gap:10px; margin-top:20px;}
-  .success-actions .form-submit{margin-top:0;}
-  .btn-secondary{
-    flex:1; background:transparent; border:1px solid var(--paper-line); color:#4a4030;
-    padding:13px; border-radius:8px; font-family:'IBM Plex Mono',monospace; font-size:13px;
-    text-align:center; text-decoration:none; cursor:pointer;
+  .confirm-plan-badge{
+    display:inline-block; font-family:'IBM Plex Mono',monospace; font-size:10.5px; text-transform:uppercase;
+    letter-spacing:0.06em; background:var(--soon-dim); color:#ffe0b3; padding:4px 10px; border-radius:999px;
+    margin-bottom:14px;
   }
-  .btn-secondary:hover{border-color:var(--stamp); color:var(--stamp);}
 
   @media (max-width:480px){
     .form-row{flex-direction:column; gap:14px;}
+    .plan-options{flex-direction:column;}
   }
 </style>
+
+<!-- Lemon Squeezy overlay checkout script — turns links with class
+     "lemonsqueezy-button" into an in-page checkout overlay on click. -->
+<script src="https://assets.lemonsqueezy.com/lemon.js" defer></script>
 </head>
 <body>
 <div class="wrap">
@@ -94,11 +169,37 @@
   <a class="back-link" href="einvoicing-compliance-tracker.html">← Back to global tracker</a>
 
   <div class="card">
-    <div id="formView">
+
+    <!-- STEP 1: choose plan + lead capture -->
+    <div id="detailsStep" class="checkout-step visible">
       <p class="eyebrow">Stay ahead of the deadlines</p>
       <h1 class="title">Monthly compliance digest</h1>
-      <p class="sub">One email a month covering everything that changed — new mandates, shifted dates, and anything newly due across the 29 jurisdictions we track.</p>
-      <form id="subscribeForm" novalidate>
+      <p class="sub">One email a month covering everything that changed across the 29 jurisdictions we track — new mandates, shifted dates, and anything newly due.</p>
+
+      <p class="plan-label">Choose how you'd like to pay</p>
+      <div class="plan-options">
+        <label class="plan-option selected" id="planRecurringLabel">
+          <input type="radio" name="plan" value="recurring" id="planRecurring" checked>
+          <div class="po-name"><span class="po-radio"></span>Recurring</div>
+          <div class="po-price" id="priceRecurring">$10/yr</div>
+          <div class="po-desc">Renews automatically each year. Cancel anytime — no need to remember to resubscribe.</div>
+        </label>
+        <label class="plan-option" id="planOnetimeLabel">
+          <input type="radio" name="plan" value="onetime" id="planOnetime">
+          <div class="po-name"><span class="po-radio"></span>One-time</div>
+          <div class="po-price" id="priceOnetime">$12</div>
+          <div class="po-desc">Covers 12 months, then simply ends. No auto-renewal, no card kept on file.</div>
+        </label>
+      </div>
+
+      <ul class="includes">
+        <li>One email per month, no spam between issues</li>
+        <li>Every new mandate, deadline change, and penalty update we track</li>
+        <li>Plain-language "what this means for your team" summaries</li>
+        <li>Priority access to new country deep dives as we publish them</li>
+      </ul>
+
+      <form id="detailsForm" novalidate>
         <div class="form-row">
           <div class="form-field" id="field-firstName">
             <label for="firstName">First name</label>
@@ -130,31 +231,61 @@
             <span class="form-error-msg">Company name is required</span>
           </div>
         </div>
-        <button type="submit" class="form-submit">Subscribe</button>
-        <p class="form-fineprint">Sent once a month. Unsubscribe anytime. This page runs entirely in your browser — connect the form to a mailing list provider (e.g. Mailchimp, HubSpot) to go live.</p>
+        <button type="submit" class="form-submit">Continue to secure payment</button>
+        <p class="form-fineprint">Payment is handled by Lemon Squeezy, our merchant of record — they collect and remit any applicable VAT/GST on this sale, so you're never charged tax separately. We never see or store your card details.</p>
       </form>
     </div>
 
-    <div id="successView" class="success-view" style="display:none;">
-      <div class="success-stamp">Subscribed</div>
-      <p>You're on the list, <span id="successName"></span>.</p>
-      <p>Monthly updates will be sent to <span class="success-email" id="successEmail"></span>.</p>
-      <div class="success-actions">
-        <a class="btn-secondary" href="einvoicing-compliance-tracker.html">Back to tracker</a>
-        <button type="button" class="form-submit" id="subscribeAnother" style="flex:1;">Subscribe another</button>
-      </div>
+    <!-- STEP 2: confirm + trigger checkout -->
+    <div id="checkoutStep" class="checkout-step">
+      <p class="eyebrow">One more step</p>
+      <h1 class="title">Confirm &amp; pay</h1>
+      <div class="confirm-plan-badge" id="confirmPlanBadge">Recurring — renews yearly</div>
+      <p class="sub">Subscribing as <strong id="confirmName"></strong> (<span id="confirmEmail"></span>) for <span id="confirmCompany"></span> — <span id="confirmPrice"></span>.</p>
+
+      <a href="#" id="checkoutButton" class="lemonsqueezy-button form-submit">Complete secure payment →</a>
+      <span class="edit-link" id="editDetails">← Edit my details or plan</span>
+      <p class="form-fineprint" id="confirmFineprint">You'll be taken to a secure Lemon Squeezy checkout window. This plan renews automatically each year until you cancel — you can cancel anytime from the link in your receipt email.</p>
     </div>
+
   </div>
 </div>
 
 <script>
-const form = document.getElementById('subscribeForm');
-const formView = document.getElementById('formView');
-const successView = document.getElementById('successView');
+// ================================================================
+// SETUP NEEDED: replace these four constants once your two Lemon
+// Squeezy products exist. See the SETUP NEEDED comment at the top
+// of this file for exactly where to find them.
+// ================================================================
+const LSQ_CHECKOUT_URL_RECURRING = "https://YOUR-STORE.lemonsqueezy.com/buy/YOUR-RECURRING-VARIANT-ID"; // TODO: replace
+const LSQ_CHECKOUT_URL_ONETIME   = "https://YOUR-STORE.lemonsqueezy.com/buy/YOUR-ONETIME-VARIANT-ID";   // TODO: replace
+const LSQ_PRICE_RECURRING = 10; // TODO: replace with your real recurring annual price
+const LSQ_PRICE_ONETIME   = 12; // TODO: replace with your real one-time price (can differ from recurring)
+
+document.getElementById('priceRecurring').textContent = '$' + LSQ_PRICE_RECURRING + '/yr';
+document.getElementById('priceOnetime').textContent = '$' + LSQ_PRICE_ONETIME;
+
+const detailsStep = document.getElementById('detailsStep');
+const checkoutStep = document.getElementById('checkoutStep');
+const detailsForm = document.getElementById('detailsForm');
+
+const planRecurring = document.getElementById('planRecurring');
+const planOnetime = document.getElementById('planOnetime');
+const planRecurringLabel = document.getElementById('planRecurringLabel');
+const planOnetimeLabel = document.getElementById('planOnetimeLabel');
+
+function updatePlanSelection(){
+  const recurringChosen = planRecurring.checked;
+  planRecurringLabel.classList.toggle('selected', recurringChosen);
+  planOnetimeLabel.classList.toggle('selected', !recurringChosen);
+}
+planRecurringLabel.addEventListener('click', ()=>{ planRecurring.checked = true; updatePlanSelection(); });
+planOnetimeLabel.addEventListener('click', ()=>{ planOnetime.checked = true; updatePlanSelection(); });
+updatePlanSelection();
 
 function isValidEmail(v){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); }
 
-form.addEventListener('submit', async (e)=>{
+detailsForm.addEventListener('submit', async (e)=>{
   e.preventDefault();
   const values = {
     firstName: document.getElementById('firstName').value.trim(),
@@ -178,25 +309,49 @@ form.addEventListener('submit', async (e)=>{
   });
   if(!allValid) return;
 
+  const isRecurring = planRecurring.checked;
+  const chosenUrl = isRecurring ? LSQ_CHECKOUT_URL_RECURRING : LSQ_CHECKOUT_URL_ONETIME;
+  const chosenPrice = isRecurring ? LSQ_PRICE_RECURRING : LSQ_PRICE_ONETIME;
+
+  // Best-effort local record of the lead, independent of the Lemon Squeezy sale record.
   try{
     if(window.storage && typeof window.storage.set === 'function'){
-      await window.storage.set('subscriber:'+Date.now(), JSON.stringify(values));
+      await window.storage.set('subscriber-lead:'+Date.now(), JSON.stringify({...values, plan: isRecurring ? 'recurring' : 'onetime'}));
     }
-  }catch(err){ /* no storage available — form still "succeeds" for demo purposes */ }
+  }catch(err){ /* no storage available — flow still proceeds */ }
 
-  document.getElementById('successName').textContent = values.firstName + ' ' + values.lastName;
-  document.getElementById('successEmail').textContent = values.email;
-  formView.style.display='none';
-  successView.style.display='block';
+  // Build the checkout URL, prefilling email and name for Lemon Squeezy's checkout form.
+  const url = new URL(chosenUrl);
+  url.searchParams.set('checkout[email]', values.email);
+  url.searchParams.set('checkout[name]', values.firstName + ' ' + values.lastName);
+
+  const checkoutBtn = document.getElementById('checkoutButton');
+  checkoutBtn.href = url.toString();
+
+  document.getElementById('confirmName').textContent = values.firstName + ' ' + values.lastName;
+  document.getElementById('confirmEmail').textContent = values.email;
+  document.getElementById('confirmCompany').textContent = values.company;
+  document.getElementById('confirmPrice').textContent = isRecurring
+    ? ('$' + chosenPrice + '/year, renewing automatically')
+    : ('$' + chosenPrice + ', one-time for 12 months');
+
+  const badge = document.getElementById('confirmPlanBadge');
+  const fineprint = document.getElementById('confirmFineprint');
+  if(isRecurring){
+    badge.textContent = 'Recurring — renews yearly';
+    fineprint.textContent = "You'll be taken to a secure Lemon Squeezy checkout window. This plan renews automatically each year until you cancel — you can cancel anytime from the link in your receipt email.";
+  } else {
+    badge.textContent = 'One-time — no auto-renewal';
+    fineprint.textContent = "You'll be taken to a secure Lemon Squeezy checkout window. This is a single payment covering the next 12 months — no card is kept on file and nothing renews automatically.";
+  }
+
+  detailsStep.classList.remove('visible');
+  checkoutStep.classList.add('visible');
 });
 
-document.getElementById('subscribeAnother').addEventListener('click', ()=>{
-  form.reset();
-  ['firstName','lastName','email','title','company'].forEach(key=>{
-    document.getElementById('field-'+key).classList.remove('error');
-  });
-  formView.style.display='block';
-  successView.style.display='none';
+document.getElementById('editDetails').addEventListener('click', ()=>{
+  checkoutStep.classList.remove('visible');
+  detailsStep.classList.add('visible');
 });
 </script>
 </body>
