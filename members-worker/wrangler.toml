@@ -11,9 +11,13 @@ compatibility_date = "2026-07-01"
 # once you route it (Cloudflare Dashboard → Workers → Triggers).
 SITE_URL = "https://eicc-members.YOUR-SUBDOMAIN.workers.dev"
 
-# The "from" address for magic-link emails. Must be a domain you've
-# verified with your email provider (see README, Step 4).
-FROM_EMAIL = "newsletter@yourdomain.com"
+# The "from" address for magic-link emails.
+# Using Resend's shared sandbox domain for now — this works without any
+# domain verification, but can only send TO the email address you signed
+# up to Resend with (fine for testing). Once you have a real domain,
+# verify it in Resend and change this to something like
+# "newsletter@yourdomain.com".
+FROM_EMAIL = "onboarding@resend.dev"
 
 # The Lemon Squeezy variant ID for your ONE-TIME (non-recurring)
 # product — find this in Lemon Squeezy: Products → your one-time
@@ -27,11 +31,11 @@ ONE_TIME_VARIANT_ID = "YOUR-ONE-TIME-VARIANT-ID"
 # ----------------------------------------------------------------
 [[kv_namespaces]]
 binding = "SUBSCRIBERS"
-id = "REPLACE_WITH_SUBSCRIBERS_KV_ID"
+id = "5a7d9f86169a4e16852e914346568a9a"
 
 [[kv_namespaces]]
 binding = "ISSUES"
-id = "REPLACE_WITH_ISSUES_KV_ID"
+id = "6142dc4affb945b487c4980c0b9b33bd"
 
 # ----------------------------------------------------------------
 # Secrets are NOT set here — never put real secrets in this file,
