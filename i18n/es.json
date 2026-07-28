@@ -1,0 +1,52 @@
+{
+  "_meta": {
+    "language": "es",
+    "label": "Español",
+    "reviewed": true,
+    "reviewedNote": "Traducción generada con asistencia de IA, aprobada para publicación (contenido de navegación, no datos de cumplimiento)."
+  },
+  "brand": {
+    "eyebrow": "Panel de cumplimiento normativo",
+    "title": "The E-Invoicing<br>Compliance Corner",
+    "description": "Un seguimiento actualizado de los mandatos de facturación electrónica y reporte digital en 29 países — normas de ViDA a nivel de la UE, sistemas nacionales de CTC, y todo lo demás. Cada entrada muestra la fecha límite, lo que debe hacer al respecto, y un enlace directo al portal oficial del gobierno, para que pueda pasar de \"¿esto nos afecta?\" a \"esto es lo que hay que hacer\" en una sola página."
+  },
+  "perks": {
+    "heading": "Los suscriptores también reciben",
+    "item1": "Un resumen mensual por correo electrónico — cada nuevo mandato o cambio de fecha límite, resumido",
+    "item2": "Acceso completo al archivo del boletín, no solo al número de este mes",
+    "item3": "Acceso prioritario a los nuevos análisis por país en cuanto se publican",
+    "item4": "Resúmenes en lenguaje sencillo sobre \"qué significa esto para su equipo\", no solo texto legal",
+    "cta": "Suscribirse →"
+  },
+  "navTips": {
+    "label": "Cómo navegar por este sitio",
+    "tip1Title": "Filtre lo que le interesa",
+    "tip1Desc": "Use los filtros de región y estado, o el cuadro de búsqueda, para acotar la línea de tiempo a sus mercados.",
+    "tip2Title": "Profundice en un país",
+    "tip2Desc": "El menú \"Deep Dives\" enlaza a un análisis técnico completo — formatos de archivo, protocolos de transmisión, pasos de registro y sanciones.",
+    "tip3Title": "Vaya directo a un portal",
+    "tip3Desc": "La barra lateral (☰ en móvil) enlaza directamente al portal oficial del gobierno de cada país que seguimos aquí.",
+    "tip4Title": "Lo antiguo queda guardado aparte",
+    "tip4Desc": "La línea de tiempo muestra los cambios recientes y próximos de forma predeterminada — las normativas ya asentadas desde hace tiempo están en la sección plegada de abajo."
+  },
+  "menu": {
+    "deepDives": "Análisis por país",
+    "education": "Educación",
+    "menu": "Menú",
+    "about": "Acerca de este sitio",
+    "subscribe": "Suscribirse — desde $10/año",
+    "archive": "Archivo del boletín (suscriptores)",
+    "feedback": "Enviar comentarios",
+    "lastUpdated": "Última actualización:"
+  },
+  "about": {
+    "eyebrow": "Acerca de",
+    "title": "The E-Invoicing Compliance Corner",
+    "p1": "The E-Invoicing Compliance Corner se creó en respuesta a la creciente complejidad y rápida expansión de los mandatos de facturación electrónica en todo el mundo. Ya sea una pequeña empresa o una multinacional, este puede ser un tema difícil y costoso de gestionar.",
+    "p2": "Este sitio tiene como objetivo ofrecer una forma sencilla y de bajo costo de acceder a información precisa con rapidez — y darle alertas continuas cada vez que cambian los mandatos o se introduce nueva legislación."
+  },
+  "languageSwitcher": {
+    "label": "Idioma",
+    "unreviewedBanner": "Esta traducción se generó con asistencia de inteligencia artificial y aún no ha sido revisada por un traductor humano. El texto puede ser impreciso — consulte la versión en inglés si algo no queda claro."
+  }
+}

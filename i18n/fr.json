@@ -1,0 +1,52 @@
+{
+  "_meta": {
+    "language": "fr",
+    "label": "Français",
+    "reviewed": true,
+    "reviewedNote": "Traduction générée avec assistance de l'IA, approuvée pour publication (contenu de navigation, pas de données de conformité)."
+  },
+  "brand": {
+    "eyebrow": "Tableau de suivi de conformité",
+    "title": "The E-Invoicing<br>Compliance Corner",
+    "description": "Un suivi actualisé en continu des obligations de facturation électronique et de télédéclaration dans 29 pays — règles ViDA à l'échelle de l'UE, systèmes nationaux de CTC, et tout ce qui se trouve entre les deux. Chaque entrée indique l'échéance, ce qu'il faut faire, et un lien direct vers le portail officiel du gouvernement, pour passer de \"est-ce que cela nous concerne ?\" à \"voici ce qu'il faut faire\" en une seule page."
+  },
+  "perks": {
+    "heading": "Les abonnés bénéficient également de",
+    "item1": "Une synthèse mensuelle par e-mail — chaque nouvelle obligation ou changement d'échéance, résumé",
+    "item2": "L'accès complet aux archives de la newsletter, pas seulement au numéro du mois",
+    "item3": "Un accès prioritaire aux nouvelles analyses par pays dès leur publication",
+    "item4": "Des synthèses en langage clair sur \"ce que cela signifie pour votre équipe\", pas seulement du texte juridique",
+    "cta": "S'abonner →"
+  },
+  "navTips": {
+    "label": "Comment naviguer sur ce site",
+    "tip1Title": "Filtrez selon vos besoins",
+    "tip1Desc": "Utilisez les filtres de région et de statut, ou la barre de recherche, pour cibler la chronologie sur vos marchés.",
+    "tip2Title": "Approfondissez un pays",
+    "tip2Desc": "Le menu \"Deep Dives\" renvoie vers une analyse technique complète — formats de fichier, protocoles de transmission, étapes d'inscription et sanctions.",
+    "tip3Title": "Accédez directement à un portail",
+    "tip3Desc": "La barre latérale (☰ sur mobile) renvoie directement au portail officiel du gouvernement de chaque pays suivi ici.",
+    "tip4Title": "Les informations anciennes sont rangées à part",
+    "tip4Desc": "La chronologie affiche par défaut les changements récents et à venir — les réglementations bien établies depuis longtemps se trouvent dans la section repliée ci-dessous."
+  },
+  "menu": {
+    "deepDives": "Analyses par pays",
+    "education": "Ressources",
+    "menu": "Menu",
+    "about": "À propos de ce site",
+    "subscribe": "S'abonner — à partir de 10 $/an",
+    "archive": "Archives de la newsletter (abonnés)",
+    "feedback": "Donner votre avis",
+    "lastUpdated": "Dernière mise à jour :"
+  },
+  "about": {
+    "eyebrow": "À propos",
+    "title": "The E-Invoicing Compliance Corner",
+    "p1": "The E-Invoicing Compliance Corner a été créé en réponse à la complexité croissante et à la diffusion rapide des obligations de facturation électronique dans le monde. Qu'il s'agisse d'une petite entreprise ou d'un grand groupe international, ce sujet peut être difficile et coûteux à maîtriser.",
+    "p2": "Ce site vise à offrir un accès simple et peu coûteux à une information fiable et rapide — ainsi que des alertes continues à chaque évolution des obligations ou nouvelle législation."
+  },
+  "languageSwitcher": {
+    "label": "Langue",
+    "unreviewedBanner": "Cette traduction a été générée avec l'assistance de l'IA et n'a pas encore été relue par un traducteur humain. Certaines formulations peuvent être imprécises — consultez la version anglaise en cas de doute."
+  }
+}

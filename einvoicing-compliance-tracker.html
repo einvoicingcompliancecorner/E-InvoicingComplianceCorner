@@ -379,6 +379,8 @@
   .modal-card p{font-size:13.8px; color:#4a4030; line-height:1.6; margin:0 0 12px;}
   .modal-card p:last-of-type{margin-bottom:0;}
 </style>
+<!-- i18n loader — see i18n/i18n.js for how this works and how to add a language -->
+<script src="i18n/i18n.js"></script>
 </head>
 <body>
 
@@ -396,39 +398,43 @@
 <div class="modal-overlay" id="aboutOverlay">
   <div class="modal-card">
     <button class="modal-close" id="aboutModalClose" aria-label="Close">&times;</button>
-    <p class="modal-eyebrow">About</p>
-    <h2 class="modal-title">The E-Invoicing Compliance Corner</h2>
-    <p>The E-Invoicing Compliance Corner was created in response to the growing complexity and rapid spread of e-invoicing mandates worldwide. Whether you're a small business or a global enterprise, this can be a difficult and costly subject to navigate.</p>
-    <p>This site aims to provide a low-cost, easy way to access accurate information quickly — and to give you ongoing alerts whenever mandates change or new legislation is introduced.</p>
+    <p class="modal-eyebrow" data-i18n="about.eyebrow">About</p>
+    <h2 class="modal-title" data-i18n="about.title">The E-Invoicing Compliance Corner</h2>
+    <p data-i18n="about.p1">The E-Invoicing Compliance Corner was created in response to the growing complexity and rapid spread of e-invoicing mandates worldwide. Whether you're a small business or a global enterprise, this can be a difficult and costly subject to navigate.</p>
+    <p data-i18n="about.p2">This site aims to provide a low-cost, easy way to access accurate information quickly — and to give you ongoing alerts whenever mandates change or new legislation is introduced.</p>
   </div>
 </div>
 
 <div class="topbar">
   <div class="topbar-brand">
-    <p class="brand-eyebrow">Compliance clearance board</p>
-    <h1 class="brand-title display">The E-Invoicing<br>Compliance Corner</h1>
+    <p class="brand-eyebrow" data-i18n="brand.eyebrow">Compliance clearance board</p>
+    <h1 class="brand-title display" data-i18n="brand.title">The E-Invoicing<br>Compliance Corner</h1>
     <div class="brand-row">
-      <p class="brand-sub">A living tracker of e-invoicing and digital reporting mandates across 29 countries — EU-wide ViDA rules, national CTC systems, and everything in between. Each entry shows the deadline, what you need to do about it, and a direct link to the official government portal, so you can go from "is this relevant to us?" to "here's what to action" in one page.</p>
+      <p class="brand-sub" data-i18n="brand.description">A living tracker of e-invoicing and digital reporting mandates across 29 countries — EU-wide ViDA rules, national CTC systems, and everything in between. Each entry shows the deadline, what you need to do about it, and a direct link to the official government portal, so you can go from "is this relevant to us?" to "here's what to action" in one page.</p>
       <div class="subscriber-perks">
-        <h4>Subscribers also get</h4>
+        <h4 data-i18n="perks.heading">Subscribers also get</h4>
         <ul>
-          <li>A monthly email digest — every new mandate or deadline change, summarised</li>
-          <li>Full access to the newsletter archive, not just this month's issue</li>
-          <li>Priority access to new country deep dives as they're published</li>
-          <li>Plain-language "what this means for your team" write-ups, not just legal text</li>
+          <li data-i18n="perks.item1">A monthly email digest — every new mandate or deadline change, summarised</li>
+          <li data-i18n="perks.item2">Full access to the newsletter archive, not just this month's issue</li>
+          <li data-i18n="perks.item3">Priority access to new country deep dives as they're published</li>
+          <li data-i18n="perks.item4">Plain-language "what this means for your team" write-ups, not just legal text</li>
         </ul>
-        <a class="perks-cta" href="subscribe.html">Subscribe →</a>
+        <a class="perks-cta" href="subscribe.html" data-i18n="perks.cta">Subscribe →</a>
       </div>
     </div>
   </div>
   <div class="topbar-right">
     <div class="topbar-menus">
+      <div class="actions-menu" id="languageMenu">
+        <button class="menu-trigger" id="languageTrigger">🌐 <span id="languageTriggerLabel">EN</span></button>
+        <div class="dropdown-panel" id="languagePanel"></div>
+      </div>
       <div class="actions-menu" id="deepDiveMenu">
-        <button class="menu-trigger" id="deepDiveTrigger">Deep Dives</button>
+        <button class="menu-trigger" id="deepDiveTrigger" data-i18n="menu.deepDives">Deep Dives</button>
         <div class="dropdown-panel wide" id="deepDivePanel"></div>
       </div>
       <div class="actions-menu" id="educationMenu">
-        <button class="menu-trigger" id="educationTrigger">Education</button>
+        <button class="menu-trigger" id="educationTrigger" data-i18n="menu.education">Education</button>
         <div class="dropdown-panel" id="educationPanel">
           <a class="dropdown-item" href="education-mandate-types.html"><span class="dd-icon">📘</span>Types of Mandate</a>
           <a class="dropdown-item" href="education-impact-of-mandate.html"><span class="dd-icon">🏗️</span>Impact of Mandate</a>
@@ -438,50 +444,50 @@
         </div>
       </div>
       <div class="actions-menu" id="actionsMenu">
-        <button class="menu-trigger" id="menuTrigger">Menu</button>
+        <button class="menu-trigger" id="menuTrigger" data-i18n="menu.menu">Menu</button>
         <div class="dropdown-panel" id="dropdownPanel">
-          <button class="dropdown-item" id="ddAbout"><span class="dd-icon">ℹ️</span>About this site</button>
-          <a class="dropdown-item" href="subscribe.html"><span class="dd-icon">✉</span>Subscribe — from $10/yr</a>
-          <a class="dropdown-item" href="https://eicc-members.einvcc.workers.dev/members"><span class="dd-icon">🔒</span>Newsletter archive (subscribers)</a>
-          <a class="dropdown-item" href="feedback.html"><span class="dd-icon">💬</span>Give feedback</a>
+          <button class="dropdown-item" id="ddAbout"><span class="dd-icon">ℹ️</span><span data-i18n="menu.about">About this site</span></button>
+          <a class="dropdown-item" href="subscribe.html"><span class="dd-icon">✉</span><span data-i18n="menu.subscribe">Subscribe — from $10/yr</span></a>
+          <a class="dropdown-item" href="https://eicc-members.einvcc.workers.dev/members"><span class="dd-icon">🔒</span><span data-i18n="menu.archive">Newsletter archive (subscribers)</span></a>
+          <a class="dropdown-item" href="feedback.html"><span class="dd-icon">💬</span><span data-i18n="menu.feedback">Give feedback</span></a>
         </div>
       </div>
     </div>
     <div style="margin-top:10px;">
-      <strong>Last updated:</strong> <span id="todayLabel">—</span>
+      <strong data-i18n="menu.lastUpdated">Last updated:</strong> <span id="todayLabel">—</span>
     </div>
   </div>
 </div>
 
 <div class="nav-tips-wrap">
-  <p class="nav-tips-label">Getting around this site</p>
+  <p class="nav-tips-label" data-i18n="navTips.label">Getting around this site</p>
   <div class="nav-tips">
     <div class="tip-card">
       <span class="tip-icon">🔎</span>
       <div>
-        <p class="tip-title">Filter to what matters to you</p>
-        <p class="tip-desc">Use the region and status pills, or the search box, to narrow the timeline down to your markets.</p>
+        <p class="tip-title" data-i18n="navTips.tip1Title">Filter to what matters to you</p>
+        <p class="tip-desc" data-i18n="navTips.tip1Desc">Use the region and status pills, or the search box, to narrow the timeline down to your markets.</p>
       </div>
     </div>
     <div class="tip-card">
       <span class="tip-icon">📖</span>
       <div>
-        <p class="tip-title">Go deep on a country</p>
-        <p class="tip-desc">The "Deep Dives" menu links to a full technical breakdown — file formats, transmission protocols, registration steps, and penalties.</p>
+        <p class="tip-title" data-i18n="navTips.tip2Title">Go deep on a country</p>
+        <p class="tip-desc" data-i18n="navTips.tip2Desc">The "Deep Dives" menu links to a full technical breakdown — file formats, transmission protocols, registration steps, and penalties.</p>
       </div>
     </div>
     <div class="tip-card">
       <span class="tip-icon">🗂️</span>
       <div>
-        <p class="tip-title">Jump straight to a portal</p>
-        <p class="tip-desc">The sidebar (☰ on mobile) links directly to the official government portal for every country tracked here.</p>
+        <p class="tip-title" data-i18n="navTips.tip3Title">Jump straight to a portal</p>
+        <p class="tip-desc" data-i18n="navTips.tip3Desc">The sidebar (☰ on mobile) links directly to the official government portal for every country tracked here.</p>
       </div>
     </div>
     <div class="tip-card">
       <span class="tip-icon">📜</span>
       <div>
-        <p class="tip-title">Old news is tucked away</p>
-        <p class="tip-desc">The timeline shows recent and upcoming changes by default — long-settled regulations live in the collapsed section below it.</p>
+        <p class="tip-title" data-i18n="navTips.tip4Title">Old news is tucked away</p>
+        <p class="tip-desc" data-i18n="navTips.tip4Desc">The timeline shows recent and upcoming changes by default — long-settled regulations live in the collapsed section below it.</p>
       </div>
     </div>
   </div>
@@ -1660,6 +1666,48 @@ function wireEducationMenu(){
   });
 }
 
+// ---------- language switcher ----------
+function renderLanguageMenu(){
+  const panel = document.getElementById('languagePanel');
+  const langs = window.EICC_SUPPORTED_LANGUAGES || [{code:'en', label:'English'}];
+  panel.innerHTML = langs.map(l =>
+    `<button class="dropdown-item" data-lang="${l.code}">${l.label}</button>`
+  ).join('');
+}
+
+function wireLanguageMenu(){
+  const menu = document.getElementById('languageMenu');
+  const trigger = document.getElementById('languageTrigger');
+  const panel = document.getElementById('languagePanel');
+  const label = document.getElementById('languageTriggerLabel');
+
+  function toggle(){ panel.classList.toggle('open'); }
+  function close(){ panel.classList.remove('open'); }
+
+  trigger.addEventListener('click', (e)=>{ e.stopPropagation(); toggle(); });
+  document.addEventListener('click', (e)=>{
+    if(!menu.contains(e.target)) close();
+  });
+
+  panel.addEventListener('click', async (e)=>{
+    const btn = e.target.closest('[data-lang]');
+    if(!btn) return;
+    const code = btn.getAttribute('data-lang');
+    label.textContent = code.toUpperCase();
+    close();
+    if(window.EICC_I18N) await window.EICC_I18N.setLanguage(code);
+  });
+
+  // Reflect whichever language actually loaded (e.g. after a page refresh
+  // with a saved preference) once i18n has finished its own initial load.
+  document.addEventListener('eicc:languageChanged', (e)=>{
+    label.textContent = e.detail.lang.toUpperCase();
+  });
+  if(window.EICC_I18N && window.EICC_I18N.currentLang){
+    label.textContent = window.EICC_I18N.currentLang.toUpperCase();
+  }
+}
+
 function wireActionsMenu(){
   const menu = document.getElementById('actionsMenu');
   const trigger = document.getElementById('menuTrigger');
@@ -1699,6 +1747,8 @@ renderTimeline();
 wireSortToggle();
 renderSidebar();
 renderDeepDiveMenu();
+renderLanguageMenu();
+wireLanguageMenu();
 wireMenuToggle();
 wireDeepDiveMenu();
 wireEducationMenu();
