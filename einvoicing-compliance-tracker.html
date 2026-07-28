@@ -57,11 +57,11 @@
     margin:0; text-transform:uppercase; line-height:0.95;
   }
   .brand-sub{color:var(--muted); font-size:14.5px; max-width:640px; margin:0;}
-  .brand-row{display:flex; gap:24px; flex-wrap:wrap; align-items:stretch; margin-top:10px;}
-  .brand-row .brand-sub{flex:1 1 340px;}
+  .brand-row{display:flex; flex-direction:column; gap:16px; margin-top:10px;}
+  .brand-row .brand-sub{flex:none; max-width:680px;}
 
   .subscriber-perks{
-    flex:0 1 250px; background:var(--ink-2); border:1px solid var(--line); border-radius:8px;
+    max-width:520px; background:var(--ink-2); border:1px solid var(--line); border-radius:8px;
     padding:14px 16px 16px;
   }
   .subscriber-perks h4{
@@ -417,7 +417,7 @@
           <li>Priority access to new country deep dives as they're published</li>
           <li>Plain-language "what this means for your team" write-ups, not just legal text</li>
         </ul>
-        <a class="perks-cta" href="subscribe.html">Subscribe from $10/yr →</a>
+        <a class="perks-cta" href="subscribe.html">Subscribe →</a>
       </div>
     </div>
   </div>
@@ -426,6 +426,16 @@
       <div class="actions-menu" id="deepDiveMenu">
         <button class="menu-trigger" id="deepDiveTrigger">Deep Dives</button>
         <div class="dropdown-panel wide" id="deepDivePanel"></div>
+      </div>
+      <div class="actions-menu" id="educationMenu">
+        <button class="menu-trigger" id="educationTrigger">Education</button>
+        <div class="dropdown-panel" id="educationPanel">
+          <a class="dropdown-item" href="education-mandate-types.html"><span class="dd-icon">📘</span>Types of Mandate</a>
+          <a class="dropdown-item" href="education-impact-of-mandate.html"><span class="dd-icon">🏗️</span>Impact of Mandate</a>
+          <a class="dropdown-item" href="education-preparing-for-mandate.html"><span class="dd-icon">🗓️</span>Preparing for a Mandate</a>
+          <a class="dropdown-item" href="education-types-of-provider.html"><span class="dd-icon">🏷️</span>Types of Provider</a>
+          <a class="dropdown-item" href="education-certified-providers.html"><span class="dd-icon">✅</span>Government Certified Providers</a>
+        </div>
       </div>
       <div class="actions-menu" id="actionsMenu">
         <button class="menu-trigger" id="menuTrigger">Menu</button>
@@ -1636,6 +1646,20 @@ function wireDeepDiveMenu(){
   });
 }
 
+function wireEducationMenu(){
+  const menu = document.getElementById('educationMenu');
+  const trigger = document.getElementById('educationTrigger');
+  const panel = document.getElementById('educationPanel');
+
+  function toggle(){ panel.classList.toggle('open'); }
+  function close(){ panel.classList.remove('open'); }
+
+  trigger.addEventListener('click', (e)=>{ e.stopPropagation(); toggle(); });
+  document.addEventListener('click', (e)=>{
+    if(!menu.contains(e.target)) close();
+  });
+}
+
 function wireActionsMenu(){
   const menu = document.getElementById('actionsMenu');
   const trigger = document.getElementById('menuTrigger');
@@ -1677,6 +1701,7 @@ renderSidebar();
 renderDeepDiveMenu();
 wireMenuToggle();
 wireDeepDiveMenu();
+wireEducationMenu();
 wireActionsMenu();
 wireAboutModal();
 </script>

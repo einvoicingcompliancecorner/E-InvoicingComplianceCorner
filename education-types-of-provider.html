@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Types of Provider — The E-Invoicing Compliance Corner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0f1a2b; --ink-2:#152238; --ink-3:#1c2c48; --line:#2b3c5a;
+    --paper:#efe9db; --paper-2:#e4dcc6; --paper-line:#c9bd9e;
+    --text-lo:#f2f0e8; --muted:#93a3c0;
+    --stamp:#b5432f; --stamp-dim:#7c3628;
+    --live:#3f7d5c; --live-dim:#274a38;
+    --soon:#c98a3a; --soon-dim:#6e4c22;
+    --upcoming:#6b7a95; --upcoming-dim:#3a4864;
+    --radius:10px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{background:var(--ink); color:var(--text-lo); font-family:'IBM Plex Sans',sans-serif; line-height:1.55;}
+  .display{font-family:'Big Shoulders Display',sans-serif; font-weight:800;}
+  .mono{font-family:'IBM Plex Mono',monospace;}
+  a{color:inherit;}
+  .wrap{max-width:980px; margin:0 auto; padding:0 5vw 60px;}
+  .back-link{display:inline-flex; align-items:center; gap:6px; margin:24px 0 0; font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:var(--muted); text-decoration:none;}
+  .back-link:hover{color:var(--soon);}
+  .page-head{
+    display:flex; flex-wrap:wrap; gap:18px; align-items:flex-start; justify-content:space-between;
+    padding:18px 0 26px; border-bottom:1px solid var(--line); margin-bottom:28px;
+  }
+  .eyebrow{font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.16em; text-transform:uppercase; color:var(--soon); margin:0 0 4px;}
+  .page-title{font-size:clamp(28px,4.5vw,42px); margin:0; text-transform:uppercase; line-height:0.95;}
+  .page-sub{font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--muted); margin-top:8px; max-width:640px; line-height:1.6;}
+  .meta{font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--muted); text-align:right;}
+
+  .status-banner{
+    background:var(--soon-dim); border:1px solid var(--soon); color:#ffe9c7; border-radius:var(--radius);
+    padding:14px 18px; margin-bottom:32px; font-size:13.3px; display:flex; gap:12px; align-items:flex-start;
+  }
+  .status-banner .icon{font-size:18px; line-height:1;}
+
+  .stat-strip{display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:1px; background:var(--line); border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; margin-bottom:36px;}
+  .stat-strip .stat{background:var(--ink-2); padding:16px 18px;}
+  .stat-strip .stat .num{font-family:'Big Shoulders Display',sans-serif; font-weight:800; font-size:22px; line-height:1.15;}
+  .stat-strip .stat .lbl{font-size:10.8px; color:var(--muted); text-transform:uppercase; letter-spacing:0.07em; margin-top:5px;}
+
+  .section{margin-bottom:44px;}
+  .section-head{display:flex; align-items:baseline; gap:12px; margin-bottom:18px;}
+  .section-head h2{font-size:22px; margin:0; text-transform:uppercase;}
+  .section-head .num{font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--soon);}
+  .section-intro{color:var(--muted); font-size:13.8px; max-width:680px; margin:-8px 0 20px;}
+
+  .provider-card{background:var(--paper); color:#241d10; border-radius:var(--radius); border:1px solid var(--paper-line); padding:20px 22px 20px; margin-bottom:16px;}
+  .provider-card h3{font-family:'Big Shoulders Display',sans-serif; font-weight:800; font-size:19px; text-transform:uppercase; margin:0 0 4px;}
+  .provider-card .pc-what{font-size:13.3px; color:#4a4030; margin:0 0 14px; line-height:1.55;}
+  .pc-cols{display:grid; grid-template-columns:1fr 1fr; gap:16px;}
+  .pc-col h4{font-family:'IBM Plex Mono',monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:0.07em; color:#6b5f3f; margin:0 0 8px;}
+  .pc-col ul{margin:0; padding-left:18px;}
+  .pc-col li{font-size:12.8px; color:#4a4030; margin-bottom:5px; line-height:1.4;}
+  .pc-examples{margin-top:14px; padding-top:12px; border-top:1px dashed var(--paper-line); font-size:12px; color:#6b5f3f;}
+  .pc-examples strong{color:#4a4030;}
+  @media (max-width:600px){ .pc-cols{grid-template-columns:1fr;} }
+
+  .compare-card{background:var(--paper); color:#241d10; border-radius:var(--radius); border:1px solid var(--paper-line); padding:8px 18px; overflow-x:auto;}
+  .compare-table{width:100%; border-collapse:collapse; font-size:12.8px; min-width:640px;}
+  .compare-table th, .compare-table td{text-align:left; padding:10px 12px; border-bottom:1px dashed var(--paper-line); vertical-align:top;}
+  .compare-table th{font-family:'IBM Plex Mono',monospace; font-size:10px; text-transform:uppercase; letter-spacing:0.05em; color:#6b5f3f;}
+  .compare-table td{color:#241d10;}
+
+  .scenario-card{background:var(--ink-2); border:1px solid var(--line); border-radius:var(--radius); padding:18px 20px;}
+  .scenario-card h4{margin:0 0 8px; font-size:15px;}
+  .scenario-card p{margin:0 0 8px; font-size:13.3px; color:var(--muted); line-height:1.6;}
+  .scenario-flow{display:flex; flex-wrap:wrap; gap:8px; margin-top:10px;}
+  .scenario-flow span{font-family:'IBM Plex Mono',monospace; font-size:11px; background:var(--soon-dim); color:#ffe0b3; padding:5px 11px; border-radius:999px; white-space:nowrap;}
+
+  .checklist{margin:0; padding:0; list-style:none;}
+  .checklist li{font-size:13.5px; color:#241d10; padding:10px 0 10px 26px; position:relative; border-top:1px dashed var(--paper-line);}
+  .checklist li:first-child{border-top:none;}
+  .checklist li::before{content:"?"; position:absolute; left:0; top:10px; color:var(--stamp); font-weight:800; font-family:'Big Shoulders Display',sans-serif;}
+  .checklist-card{background:var(--paper); border-radius:var(--radius); border:1px solid var(--paper-line); padding:6px 18px;}
+
+  .related-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:14px;}
+  .related-card{background:var(--ink-2); border:1px solid var(--line); border-radius:var(--radius); padding:16px 18px;}
+  .related-card h4{margin:0 0 6px; font-size:14.5px; display:flex; align-items:center; gap:8px;}
+  .related-card p{margin:0; font-size:13px; color:var(--muted);}
+
+  footer{margin:40px 0 0; padding:22px 0 10px; border-top:1px solid var(--line); color:var(--muted); font-size:12.3px;}
+  footer p{max-width:820px; margin:0 0 8px;}
+
+  @media (max-width:640px){ .page-head{flex-direction:column;} .meta{text-align:left;} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <a class="back-link" href="einvoicing-compliance-tracker.html">← Back to global tracker</a>
+
+  <div class="page-head">
+    <div>
+      <p class="eyebrow">Education</p>
+      <h1 class="page-title display">Types of Provider</h1>
+      <p class="page-sub">"Get a vendor" undersells how varied this market actually is. Five genuinely different categories of provider all sell into e-invoicing compliance — understanding which one you're talking to changes what you should expect from them.</p>
+    </div>
+    <div class="meta">Last updated: 28 July 2026</div>
+  </div>
+
+  <div class="status-banner">
+    <span class="icon">🏷️</span>
+    <span>Company names below are <strong>illustrative examples only</strong> — a small, non-exhaustive sample to make each category concrete, not a recommendation or ranking. Many real providers straddle more than one category.</span>
+  </div>
+
+  <div class="stat-strip">
+    <div class="stat"><div class="num display">5</div><div class="lbl">Distinct provider categories</div></div>
+    <div class="stat"><div class="num display">2–3</div><div class="lbl">Categories most programmes actually combine</div></div>
+    <div class="stat"><div class="num display">0</div><div class="lbl">Category that covers everything alone</div></div>
+  </div>
+
+  <!-- ================= WHY THIS MATTERS ================= -->
+  <div class="section">
+    <div class="section-head"><span class="num mono">01</span><h2 class="display">Why the category matters before the name does</h2></div>
+    <p class="section-intro">Two providers can both say "we do e-invoicing" and mean genuinely different things by it. Knowing which category you're evaluating tells you what questions to actually ask — and what gaps to expect and plan around.</p>
+  </div>
+
+  <!-- ================= THE FIVE CATEGORIES ================= -->
+  <div class="section">
+    <div class="section-head"><span class="num mono">02</span><h2 class="display">The five categories</h2></div>
+
+    <div class="provider-card">
+      <h3>1. ERP Providers</h3>
+      <p class="pc-what">Full enterprise resource planning suites — finance, supply chain, HR, and more — that have built e-invoicing compliance as a native or add-on module within their own platform.</p>
+      <div class="pc-cols">
+        <div class="pc-col">
+          <h4>Typical strengths</h4>
+          <ul>
+            <li>Native to your core system of record — no separate data extraction layer</li>
+            <li>Single vendor relationship if you're already a customer</li>
+            <li>Consistent master data, since it never leaves the ERP</li>
+          </ul>
+        </div>
+        <div class="pc-col">
+          <h4>Typical trade-offs</h4>
+          <ul>
+            <li>Country coverage and update speed can lag specialist providers, especially for newer or smaller markets</li>
+            <li>Often still needs a bolt-on module or partner for full global reach</li>
+            <li>Less flexible if you run more than one ERP across your group</li>
+          </ul>
+        </div>
+      </div>
+      <p class="pc-examples"><strong>Illustrative examples:</strong> SAP (Document and Reporting Compliance), Oracle, Microsoft Dynamics, NetSuite, Odoo.</p>
+    </div>
+
+    <div class="provider-card">
+      <h3>2. Solution Providers (AP/AR specialists)</h3>
+      <p class="pc-what">Providers focused specifically on accounts payable and accounts receivable automation, e-invoice exchange, and acting as the accredited intermediary (Access Point, PAC, OSE) a given country's mandate requires.</p>
+      <div class="pc-cols">
+        <div class="pc-col">
+          <h4>Typical strengths</h4>
+          <ul>
+            <li>Deep, often faster-moving country and format coverage — this is their whole business</li>
+            <li>ERP-agnostic — designed to plug into whatever system(s) you already run</li>
+            <li>Purpose-built for the exchange and validation layer specifically</li>
+          </ul>
+        </div>
+        <div class="pc-col">
+          <h4>Typical trade-offs</h4>
+          <ul>
+            <li>Another vendor relationship and contract to manage alongside your ERP</li>
+            <li>Integration effort still required to connect it to your core systems</li>
+          </ul>
+        </div>
+      </div>
+      <p class="pc-examples"><strong>Illustrative examples:</strong> Tradeshift, Basware, Tungsten Automation, Comarch, EDICOM, Storecove.</p>
+    </div>
+
+    <div class="provider-card">
+      <h3>3. Tax Compliance Providers</h3>
+      <p class="pc-what">Providers whose core business is broader indirect tax compliance — VAT/GST determination, returns, and reporting — who have extended into e-invoicing as part of that wider tax technology stack.</p>
+      <div class="pc-cols">
+        <div class="pc-col">
+          <h4>Typical strengths</h4>
+          <ul>
+            <li>One provider for both tax determination and e-invoicing, if you already use them for tax</li>
+            <li>Deep tax-technical expertise underpinning the compliance logic</li>
+          </ul>
+        </div>
+        <div class="pc-col">
+          <h4>Typical trade-offs</h4>
+          <ul>
+            <li>E-invoicing may be a newer part of their offering than their core tax product — check country coverage maturity specifically for this, not just their tax reputation generally</li>
+          </ul>
+        </div>
+      </div>
+      <p class="pc-examples"><strong>Illustrative examples:</strong> Avalara, Vertex, Sovos, Thomson Reuters ONESOURCE.</p>
+    </div>
+
+    <div class="provider-card">
+      <h3>4. Technology Providers (EDI / middleware)</h3>
+      <p class="pc-what">Providers whose core competency is broader B2B data exchange and integration middleware — often long-established in EDI — who have added structured e-invoice format support as an extension of that existing capability.</p>
+      <div class="pc-cols">
+        <div class="pc-col">
+          <h4>Typical strengths</h4>
+          <ul>
+            <li>If you already run significant EDI trading-partner volume, extends the same integration layer rather than adding a parallel system</li>
+            <li>Strong general-purpose data mapping and transformation capability</li>
+          </ul>
+        </div>
+        <div class="pc-col">
+          <h4>Typical trade-offs</h4>
+          <ul>
+            <li>CTC-specific nuances — real-time clearance, digital signatures, government reporting — are often a newer layer on top of EDI-first architecture rather than core DNA</li>
+          </ul>
+        </div>
+      </div>
+      <p class="pc-examples"><strong>Illustrative examples:</strong> OpenText, TrueCommerce, SPS Commerce.</p>
+    </div>
+
+    <div class="provider-card">
+      <h3>5. Consultancies</h3>
+      <p class="pc-what">Advisory and implementation firms — not a software product themselves — offering assessment, vendor selection support, and programme management for a mandate response.</p>
+      <div class="pc-cols">
+        <div class="pc-col">
+          <h4>Typical strengths</h4>
+          <ul>
+            <li>Independent of any one software vendor, which can mean more objective vendor selection support</li>
+            <li>Useful for complex, multi-country, multi-entity programmes needing dedicated programme management</li>
+          </ul>
+        </div>
+        <div class="pc-col">
+          <h4>Typical trade-offs</h4>
+          <ul>
+            <li>Doesn't replace the need for an actual software/service provider — this is a complementary layer</li>
+            <li>Typically time-and-materials cost rather than a predictable per-transaction fee</li>
+          </ul>
+        </div>
+      </div>
+      <p class="pc-examples"><strong>Illustrative examples:</strong> the Big Four (Deloitte, PwC, EY, KPMG), plus a range of smaller specialist boutiques.</p>
+    </div>
+  </div>
+
+  <!-- ================= COMPARISON ================= -->
+  <div class="section">
+    <div class="section-head"><span class="num mono">03</span><h2 class="display">Side by side</h2></div>
+    <p class="section-intro">A rough guide to how the categories typically differ — real providers vary, and several deliberately straddle more than one row.</p>
+
+    <div class="compare-card">
+      <table class="compare-table">
+        <tr><th>Category</th><th>Core business</th><th>Country coverage depth</th><th>Typical cost model</th></tr>
+        <tr><td>ERP Provider</td><td>Full business system, e-invoicing as a module</td><td>Varies — strong in home markets, can lag elsewhere</td><td>Licensing + module fees</td></tr>
+        <tr><td>Solution Provider</td><td>AP/AR automation &amp; e-invoice exchange</td><td>Usually broad — this is their specialism</td><td>Per-transaction or subscription</td></tr>
+        <tr><td>Tax Compliance Provider</td><td>Indirect tax determination &amp; filing</td><td>Strong where their tax product is established</td><td>Subscription, often bundled with tax</td></tr>
+        <tr><td>Technology Provider</td><td>B2B data exchange / EDI middleware</td><td>Strong where EDI trading is already established</td><td>Per-transaction or platform fee</td></tr>
+        <tr><td>Consultancy</td><td>Advisory &amp; implementation services</td><td>Advisory reach, not a technical platform itself</td><td>Time-and-materials or fixed-fee project</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- ================= HOW THEY COMBINE ================= -->
+  <div class="section">
+    <div class="section-head"><span class="num mono">04</span><h2 class="display">How these actually combine in practice</h2></div>
+    <p class="section-intro">Very few real mandate programmes use just one category — most combine two or three, each covering a different part of the problem.</p>
+
+    <div class="scenario-card">
+      <h4>A realistic multinational scenario</h4>
+      <p>A group running SAP globally uses its ERP's native compliance module for markets where coverage is mature, brings in a specialist Solution Provider specifically to cover a handful of countries the ERP module doesn't yet support well, and engages a consultancy for a few months to run programme management across the whole rollout and support vendor selection.</p>
+      <div class="scenario-flow">
+        <span>ERP module — mature markets</span><span>Solution Provider — coverage gaps</span><span>Consultancy — programme oversight</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= QUESTIONS TO ASK ================= -->
+  <div class="section">
+    <div class="section-head"><span class="num mono">05</span><h2 class="display">Questions worth asking, whichever category you're evaluating</h2></div>
+    <div class="checklist-card">
+      <ul class="checklist">
+        <li>Is e-invoicing genuinely core to this provider's business, or a bolt-on to something else they sell?</li>
+        <li>How quickly have they historically added support for newly announced mandates?</li>
+        <li>Do they hold accreditation directly, or do they rely on a third party underneath them for certain countries?</li>
+        <li>If they're a specialist in one category, who do they expect you to bring in to cover the others?</li>
+        <li>What does their roadmap look like for countries you don't need yet, but might in a year or two?</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ================= FURTHER READING ================= -->
+  <div class="section">
+    <div class="section-head"><span class="num mono">06</span><h2 class="display">Further reading: analyst research</h2></div>
+    <p class="section-intro">Five research firms actively cover this market and are worth knowing about if you want independent validation beyond any single vendor's own claims. Most full reports sit behind a subscription or a vendor-provided excerpt, but each firm below also publishes something genuinely accessible without one.</p>
+
+    <div class="provider-card">
+      <h3>Gartner</h3>
+      <p class="pc-what">Publishes an annual Magic Quadrant for Accounts Payable Applications, alongside a dedicated "E-invoicing Compliance Applications" category on Gartner Peer Insights — real, browsable user reviews, no subscription required.</p>
+      <p class="pc-examples"><a href="https://www.gartner.com/reviews/market/e-invoicing-compliance-applications" target="_blank" rel="noopener" style="color:var(--stamp); text-decoration:underline;">gartner.com — E-invoicing Compliance Applications reviews ↗</a></p>
+    </div>
+
+    <div class="provider-card">
+      <h3>Forrester</h3>
+      <p class="pc-what">Publishes The Forrester Wave™: Accounts Payable Invoice Automation Software periodically (most recently Q2 2026). The full Wave requires Forrester access, but their own blog announcement summarising each edition's findings is publicly readable.</p>
+      <p class="pc-examples"><a href="https://www.forrester.com/blogs/announcing-the-forrester-wave-accounts-payable-invoice-automation-software-q2-2026/" target="_blank" rel="noopener" style="color:var(--stamp); text-decoration:underline;">forrester.com — Forrester Wave announcement ↗</a></p>
+    </div>
+
+    <div class="provider-card">
+      <h3>IDC</h3>
+      <p class="pc-what">Publishes IDC MarketScape vendor assessments covering e-invoicing and VAT compliance software, both worldwide and Europe-specific editions. The full assessments are paywalled, but IDC's own blog series on e-invoicing is a genuinely useful, freely accessible starting point.</p>
+      <p class="pc-examples"><a href="https://www.idc.com/resource-center/blog/e-invoicing-from-necessary-evil-to-business-opportunity/" target="_blank" rel="noopener" style="color:var(--stamp); text-decoration:underline;">idc.com — e-Invoicing blog series ↗</a></p>
+    </div>
+
+    <div class="provider-card">
+      <h3>Spend Matters</h3>
+      <p class="pc-what">Runs SolutionMap, a rankings system covering procurement technology across 16 source-to-pay categories including AP automation. Worth knowing: Spend Matters is now a division of The Hackett Group following a merger, so the two are increasingly one research organisation rather than fully independent of each other.</p>
+      <p class="pc-examples"><a href="https://spendmatters.com" target="_blank" rel="noopener" style="color:var(--stamp); text-decoration:underline;">spendmatters.com ↗</a></p>
+    </div>
+
+    <div class="provider-card">
+      <h3>The Hackett Group</h3>
+      <p class="pc-what">Runs large-scale benchmarking studies across procure-to-pay and accounts payable performance, including specific research on how AI is changing AP solutions and global e-invoicing/CTC compliance capability.</p>
+      <p class="pc-examples"><a href="https://www.thehackettgroup.com/insights/procure-to-pay-solutions/" target="_blank" rel="noopener" style="color:var(--stamp); text-decoration:underline;">thehackettgroup.com — Procure-to-Pay Solutions research ↗</a></p>
+    </div>
+
+    <p style="color:var(--muted); font-size:12.3px; margin-top:6px;">Specific named editions (e.g., "Q2 2026") get superseded on a regular cycle — check each firm's own site for the current version rather than assuming any specific edition referenced here, or anywhere else, is still the latest by the time you read this.</p>
+  </div>
+
+  <!-- ================= RELATED ================= -->
+  <div class="section">
+    <div class="section-head"><span class="num mono">07</span><h2 class="display">Where to go next</h2></div>
+    <div class="related-grid">
+      <div class="related-card">
+        <h4>🗓️ Run the actual selection process</h4>
+        <p>"Preparing for a Mandate" (under Education) covers how to define requirements, run a proof of concept, and scrutinise a contract once you know which category fits.</p>
+      </div>
+      <div class="related-card">
+        <h4>✅ Check government-verified providers</h4>
+        <p>"Government Certified Providers" links directly to official registries where several countries publish accredited providers by name.</p>
+      </div>
+      <div class="related-card">
+        <h4>🌍 Check your specific country's requirements</h4>
+        <p>The Deep Dives menu covers exact technical specifications and registration steps for each of the 29 jurisdictions tracked here.</p>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <p>Company names in this page are illustrative examples only, included to make each category concrete — they are not endorsements, rankings, or a complete market map, and their inclusion does not imply any relationship with this site. Analyst research referenced above is linked for general awareness only; full reports may require a paid subscription or vendor-provided access, and any vendor positioning within them reflects that firm's own methodology and views, not ours. Verify any specific provider's current accreditation and fit for your needs directly before engaging them.</p>
+  </footer>
+
+</div>
+</body>
+</html>

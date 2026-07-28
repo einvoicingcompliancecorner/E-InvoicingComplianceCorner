@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Preparing for a Mandate — The E-Invoicing Compliance Corner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0f1a2b; --ink-2:#152238; --ink-3:#1c2c48; --line:#2b3c5a;
+    --paper:#efe9db; --paper-2:#e4dcc6; --paper-line:#c9bd9e;
+    --text-lo:#f2f0e8; --muted:#93a3c0;
+    --stamp:#b5432f; --stamp-dim:#7c3628;
+    --live:#3f7d5c; --live-dim:#274a38;
+    --soon:#c98a3a; --soon-dim:#6e4c22;
+    --upcoming:#6b7a95; --upcoming-dim:#3a4864;
+    --radius:10px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{background:var(--ink); color:var(--text-lo); font-family:'IBM Plex Sans',sans-serif; line-height:1.55;}
+  .display{font-family:'Big Shoulders Display',sans-serif; font-weight:800;}
+  .mono{font-family:'IBM Plex Mono',monospace;}
+  a{color:inherit;}
+  .wrap{max-width:980px; margin:0 auto; padding:0 5vw 60px;}
+  .back-link{display:inline-flex; align-items:center; gap:6px; margin:24px 0 0; font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:var(--muted); text-decoration:none;}
+  .back-link:hover{color:var(--soon);}
+  .page-head{
+    display:flex; flex-wrap:wrap; gap:18px; align-items:flex-start; justify-content:space-between;
+    padding:18px 0 26px; border-bottom:1px solid var(--line); margin-bottom:28px;
+  }
+  .eyebrow{font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.16em; text-transform:uppercase; color:var(--soon); margin:0 0 4px;}
+  .page-title{font-size:clamp(28px,4.5vw,42px); margin:0; text-transform:uppercase; line-height:0.95;}
+  .page-sub{font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--muted); margin-top:8px; max-width:640px; line-height:1.6;}
+  .meta{font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--muted); text-align:right;}
+
+  .stat-strip{display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:1px; background:var(--line); border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; margin-bottom:36px;}
+  .stat-strip .stat{background:var(--ink-2); padding:16px 18px;}
+  .stat-strip .stat .num{font-family:'Big Shoulders Display',sans-serif; font-weight:800; font-size:22px; line-height:1.15;}
+  .stat-strip .stat .lbl{font-size:10.8px; color:var(--muted); text-transform:uppercase; letter-spacing:0.07em; margin-top:5px;}
+
+  .section{margin-bottom:44px;}
+  .section-head{display:flex; align-items:baseline; gap:12px; margin-bottom:18px;}
+  .section-head h2{font-size:22px; margin:0; text-transform:uppercase;}
+  .section-head .num{font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--soon);}
+  .section-intro{color:var(--muted); font-size:13.8px; max-width:680px; margin:-8px 0 20px;}
+
+  .spec-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:14px;}
+  .spec-card{background:var(--paper); color:#241d10; border-radius:var(--radius); border:1px solid var(--paper-line); padding:16px 18px 18px;}
+  .spec-card h3{font-family:'IBM Plex Mono',monospace; font-size:11px; text-transform:uppercase; letter-spacing:0.09em; color:#6b5f3f; margin:0 0 10px; display:flex; align-items:center; gap:8px;}
+  .spec-card h3::after{content:""; flex:1; height:1px; background:var(--paper-line);}
+  .spec-row{display:flex; justify-content:space-between; gap:12px; padding:6px 0; border-top:1px dashed var(--paper-line); font-size:13px;}
+  .spec-row:first-of-type{border-top:none;}
+  .spec-row .k{color:#6b5f3f; flex:0 0 46%;}
+  .spec-row .v{color:#241d10; text-align:right; font-weight:500;}
+  .spec-card p.note{font-size:12.6px; color:#5a5138; margin:10px 0 0; padding-top:10px; border-top:1px dashed var(--paper-line);}
+  .spec-card p.body{font-size:13px; color:#4a4030; margin:0 0 10px; line-height:1.55;}
+
+  /* Timeline (reused pattern) */
+  .rtimeline{position:relative; padding-left:26px; border-left:2px solid var(--line);}
+  .rmonth-marker{font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--soon); text-transform:uppercase; letter-spacing:0.1em; margin:22px 0 12px -26px; padding-left:26px; position:relative;}
+  .rmonth-marker::before{content:""; position:absolute; left:-6px; top:6px; width:10px; height:10px; border-radius:50%; background:var(--soon); border:2px solid var(--ink);}
+  .rmonth-marker:first-child{margin-top:0;}
+  .rcard{background:var(--paper); color:#241d10; border-radius:var(--radius); margin-bottom:14px; padding:16px 20px 18px; border:1px solid var(--paper-line);}
+  .rcard-top{display:flex; flex-wrap:wrap; justify-content:space-between; gap:8px 16px; align-items:flex-start;}
+  .rcard-date{font-family:'IBM Plex Mono',monospace; font-size:12.5px; font-weight:600; color:#4a3f22;}
+  .rbadge{font-family:'IBM Plex Mono',monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:0.06em; padding:4px 9px; border-radius:5px; font-weight:600; white-space:nowrap; background:var(--soon-dim); color:#ffe0b3;}
+  .rcard-title{font-size:15px; font-weight:600; margin:10px 0 4px;}
+  .rcard-desc{font-size:13.3px; color:#4a4030; margin:0;}
+
+  .steps{counter-reset:step; display:flex; flex-direction:column; gap:0;}
+  .step{display:flex; gap:16px; padding:16px 0; border-top:1px dashed var(--line);}
+  .step:first-child{border-top:none;}
+  .step-num{counter-increment:step; flex:0 0 auto; width:30px; height:30px; border-radius:50%; background:var(--soon-dim); color:#ffe0b3; display:flex; align-items:center; justify-content:center; font-family:'Big Shoulders Display',sans-serif; font-weight:800; font-size:14px;}
+  .step-num::before{content:counter(step);}
+  .step-body h4{margin:2px 0 4px; font-size:14.5px;}
+  .step-body p{margin:0; font-size:13.3px; color:var(--muted);}
+
+  .checklist{margin:0; padding:0; list-style:none;}
+  .checklist li{font-size:13.5px; color:#241d10; padding:10px 0 10px 26px; position:relative; border-top:1px dashed var(--paper-line);}
+  .checklist li:first-child{border-top:none;}
+  .checklist li::before{content:"✓"; position:absolute; left:0; top:10px; color:var(--live); font-weight:800;}
+  .checklist-card{background:var(--paper); border-radius:var(--radius); border:1px solid var(--paper-line); padding:6px 18px;}
+
+  .pitfall-card{background:var(--ink-2); border:1px solid var(--stamp-dim); border-radius:var(--radius); padding:16px 18px;}
+  .pitfall-card h4{margin:0 0 6px; font-size:14px; color:#ffb9a3; display:flex; align-items:center; gap:8px;}
+  .pitfall-card p{margin:0; font-size:12.8px; color:var(--muted);}
+
+  .related-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:14px;}
+  .related-card{background:var(--ink-2); border:1px solid var(--line); border-radius:var(--radius); padding:16px 18px;}
+  .related-card h4{margin:0 0 6px; font-size:14.5px; display:flex; align-items:center; gap:8px;}
+  .related-card p{margin:0; font-size:13px; color:var(--muted);}
+
+  footer{margin:40px 0 0; padding:22px 0 10px; border-top:1px solid var(--line); color:var(--muted); font-size:12.3px;}
+  footer p{max-width:820px; margin:0 0 8px;}
+
+  @media (max-width:640px){ .page-head{flex-direction:column;} .meta{text-align:left;} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <a class="back-link" href="einvoicing-compliance-tracker.html">← Back to global tracker</a>
+
+  <div class="page-head">
+    <div>
+      <p class="eyebrow">Education</p>
+      <h1 class="page-title display">Preparing for a Mandate</h1>
+      <p class="page-sub">Once you understand the mandate model and its likely impact, the practical questions become: who should be in the room, how early should this start, and how do you approach choosing a vendor without regretting it a year later?</p>
+    </div>
+    <div class="meta">Last updated: 25 July 2026</div>
+  </div>
+
+  <div class="stat-strip">
+    <div class="stat"><div class="num display">12–18 mo</div><div class="lbl">Recommended lead time before go-live</div></div>
+    <div class="stat"><div class="num display">6–8</div><div class="lbl">Typical core working group size</div></div>
+    <div class="stat"><div class="num display">4 phases</div><div class="lbl">Of a well-run vendor selection</div></div>
+  </div>
+
+  <!-- ================= WHO TO INCLUDE ================= -->
+  <div class="section">
+    <div class="section-head"><span class="num mono">01</span><h2 class="display">Who to include</h2></div>
+    <p class="section-intro">A mandate response with no single accountable owner, or with the wrong functions missing from the room, is the most common cause of late surprises. Here's a working group that covers the ground without becoming unwieldy.</p>
+
+    <div class="spec-grid">
+      <div class="spec-card">
+        <h3>Programme sponsor</h3>
+        <p class="body">A senior Finance or Tax leader with the authority to commit budget and resolve cross-functional disagreements. Without this, the working group can identify problems but not always act on them quickly.</p>
+      </div>
+      <div class="spec-card">
+        <h3>Tax / compliance lead</h3>
+        <p class="body">Owns the interpretation of the actual legal requirement, tracks scope and deadlines across entities, and is usually the one relationship-managing any external advisors.</p>
+      </div>
+      <div class="spec-card">
+        <h3>IT / integration lead</h3>
+        <p class="body">Assesses what the current ERP/AP/AR systems can and can't do natively, and owns the technical relationship with whichever vendor or platform gets selected.</p>
+      </div>
+      <div class="spec-card">
+        <h3>Legal &amp; data protection</h3>
+        <p class="body">Reviews vendor contracts, data residency implications, and cross-border transfer questions — brought in from the start rather than at contract-signing, when it's too late to influence the shape of the deal.</p>
+      </div>
+      <div class="spec-card">
+        <h3>Business/entity owner(s)</h3>
+        <p class="body">Someone accountable for each affected country or business unit — particularly important in multinationals, where the same mandate can land differently depending on local entity structure and existing systems.</p>
+      </div>
+      <div class="spec-card">
+        <h3>Procurement / vendor management</h3>
+        <p class="body">Runs the formal RFP process if one is needed, and ensures contract terms (SLAs, exit clauses, liability) get proper commercial scrutiny rather than being accepted as vendor boilerplate.</p>
+      </div>
+    </div>
+    <p class="section-intro" style="margin-top:18px;">Keep this group to 6–8 people who meet regularly, with a wider circle (AP/AR team leads, key customers or vendors for testing, external advisors) consulted at specific milestones rather than in every meeting.</p>
+  </div>
+
+  <!-- ================= WHEN TO START ================= -->
+  <div class="section">
+    <div class="section-head"><span class="num mono">02</span><h2 class="display">When to start</h2></div>
+    <p class="section-intro">Grace periods and phased thresholds are common, and it's tempting to treat them as the real deadline. In practice, vendor lead times, testing cycles, and cross-functional coordination all take longer than expected — starting early is what actually determines whether go-live is calm or chaotic.</p>
+
+    <div class="rtimeline">
+      <div class="rmonth-marker">12–18 months before go-live</div>
+      <div class="rcard">
+        <div class="rcard-top"><span class="rcard-date">Assessment &amp; scoping</span><span class="rbadge">Start here</span></div>
+        <div class="rcard-title">Confirm scope, form the working group, assess current systems</div>
+        <p class="rcard-desc">Determine which entities are actually in scope and from when, form the core working group above, and get an honest read on what your current ERP/AP/AR systems can and can't do without help.</p>
+      </div>
+
+      <div class="rmonth-marker">9–12 months before go-live</div>
+      <div class="rcard">
+        <div class="rcard-top"><span class="rcard-date">Vendor selection &amp; solution design</span></div>
+        <div class="rcard-title">Run the vendor selection process (see below) and confirm the technical approach</div>
+        <p class="rcard-desc">This is usually the single most time-consuming phase — treat it as its own project with its own timeline, not a quick procurement exercise.</p>
+      </div>
+
+      <div class="rmonth-marker">6–9 months before go-live</div>
+      <div class="rcard">
+        <div class="rcard-top"><span class="rcard-date">Build &amp; integration</span></div>
+        <div class="rcard-title">Technical integration, master data cleansing, internal process design</div>
+        <p class="rcard-desc">Master data cleansing in particular benefits from a long runway — it's rarely a quick fix once you actually look at the state of customer/vendor records.</p>
+      </div>
+
+      <div class="rmonth-marker">3–6 months before go-live</div>
+      <div class="rcard">
+        <div class="rcard-top"><span class="rcard-date">Testing &amp; pilot</span></div>
+        <div class="rcard-title">Sandbox/certification testing, then a live pilot with a small transaction subset</div>
+        <p class="rcard-desc">Deliberately test failure paths — rejections, corrections, offline/contingency modes — not just the happy path where everything validates first time.</p>
+      </div>
+
+      <div class="rmonth-marker">1–3 months before go-live</div>
+      <div class="rcard">
+        <div class="rcard-top"><span class="rcard-date">Parallel run &amp; cutover prep</span></div>
+        <div class="rcard-title">Run old and new processes in parallel, train frontline staff, finalise contingency plans</div>
+        <p class="rcard-desc">This is also when to brief customers and key vendors on what's changing, if the mandate affects how they'll receive or send invoices to you.</p>
+      </div>
+
+      <div class="rmonth-marker">Go-live and beyond</div>
+      <div class="rcard">
+        <div class="rcard-top"><span class="rcard-date">Stabilisation</span></div>
+        <div class="rcard-title">Monitor rejection rates closely for the first few weeks</div>
+        <p class="rcard-desc">Rejection rates typically spike immediately after go-live as real-world data edge cases surface that testing didn't catch — budget attention for this rather than assuming go-live is the finish line.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= VENDOR SELECTION ================= -->
+  <div class="section">
+    <div class="section-head"><span class="num mono">03</span><h2 class="display">Planning a vendor selection process</h2></div>
+    <p class="section-intro">Whether you need a full-service compliance platform, a specific country intermediary (a PAC, OSE, or Access Point), or just a module within your existing ERP, the same disciplined process pays off.</p>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">
+          <h4>Define requirements before talking to any vendor</h4>
+          <p>Country/format coverage needed, expected transaction volume, required integration method (API vs. portal), and budget range. Going to market without this tends to produce proposals that are hard to compare fairly.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">
+          <h4>Map the realistic vendor landscape</h4>
+          <p>Options usually span full-service global compliance platforms, country-specific intermediaries, and native ERP add-on modules — each with different trade-offs on coverage breadth versus depth and cost.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">
+          <h4>Score on more than price</h4>
+          <p>Format/country coverage, uptime and support SLAs (including support hours relative to your time zone), security certifications, integration effort required on your side, and — critically — their track record of keeping pace with regulatory changes in the countries you need.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">
+          <h4>Insist on a proof of concept</h4>
+          <p>A sandbox test with your own real (or realistic) data surfaces integration friction that a sales demo never will. Treat this as non-negotiable before signing, not an optional nice-to-have.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">
+          <h4>Scrutinise the contract, not just the product</h4>
+          <p>Data residency commitments, liability for errors or missed deadlines, minimum continuity periods if you switch providers, and clear exit/data-portability terms — get Legal and Procurement involved in this stage directly, not as a final rubber stamp.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">
+          <h4>Plan for the next mandate, not just this one</h4>
+          <p>If you operate in multiple markets, ask how the vendor's roadmap covers countries you don't need yet but might soon — switching providers again in two years is a real cost worth avoiding if a single relationship can reasonably grow with you.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= PITFALLS ================= -->
+  <div class="section">
+    <div class="section-head"><span class="num mono">04</span><h2 class="display">Common pitfalls</h2></div>
+    <p class="section-intro">Patterns worth watching for, based on how these programmes typically go wrong.</p>
+
+    <div class="spec-grid">
+      <div class="pitfall-card">
+        <h4>⏳ Treating the grace period as the real deadline</h4>
+        <p>Enforcement holidays exist to ease the transition, not to signal there's no urgency — the underlying technical and process work still needs to happen on the original timeline.</p>
+      </div>
+      <div class="pitfall-card">
+        <h4>🗂️ Skipping master data cleansing</h4>
+        <p>The single most common cause of early rejections, and the easiest thing to deprioritise under time pressure — it rarely pays off to skip it.</p>
+      </div>
+      <div class="pitfall-card">
+        <h4>🙋 No single accountable owner</h4>
+        <p>When Finance, IT, and Legal each think someone else is driving, gaps surface late — usually right when there's no time left to fix them.</p>
+      </div>
+      <div class="pitfall-card">
+        <h4>🧪 Only testing the happy path</h4>
+        <p>Rejections, corrections, and contingency/offline modes are exactly where real operational pain shows up — test these deliberately, not just the case where everything works first time.</p>
+      </div>
+      <div class="pitfall-card">
+        <h4>🌍 Assuming one market's solution transfers to the next</h4>
+        <p>A vendor or approach that works well in one country's model doesn't automatically fit another's — re-verify fit market by market rather than assuming.</p>
+      </div>
+      <div class="pitfall-card">
+        <h4>💸 Comparing vendors on pilot-volume pricing</h4>
+        <p>Cost structures that look similar at low volume can diverge sharply at real production volume — always model pricing at your actual expected scale.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= QUICK CHECKLIST ================= -->
+  <div class="section">
+    <div class="section-head"><span class="num mono">05</span><h2 class="display">Quick-start checklist</h2></div>
+    <div class="checklist-card">
+      <ul class="checklist">
+        <li>Named programme sponsor with budget authority, confirmed</li>
+        <li>Core working group formed — Tax, IT, Legal, Procurement, and affected business units represented</li>
+        <li>Scope confirmed: which entities, from when, under which compliance model</li>
+        <li>Current system capability assessed honestly, gaps documented</li>
+        <li>Vendor requirements documented before any vendor conversations begin</li>
+        <li>Proof-of-concept testing scheduled before contract sign-off, not after</li>
+        <li>Master data cleansing plan in motion, not deferred to "later"</li>
+        <li>Rejection and correction workflows explicitly tested, not assumed</li>
+        <li>Frontline (AP/AR, sales order entry) training scheduled ahead of go-live</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ================= RELATED ================= -->
+  <div class="section">
+    <div class="section-head"><span class="num mono">06</span><h2 class="display">Where to go next</h2></div>
+    <div class="related-grid">
+      <div class="related-card">
+        <h4>📘 Not sure which model applies?</h4>
+        <p>"Types of Mandate" (under Education) explains the compliance models referenced throughout this page.</p>
+      </div>
+      <div class="related-card">
+        <h4>🏗️ Understand the full impact first</h4>
+        <p>"Impact of Mandate" goes deeper on the technical, process, and financial effects this planning work is ultimately responding to.</p>
+      </div>
+      <div class="related-card">
+        <h4>🌍 Check your specific country's requirements</h4>
+        <p>The Deep Dives menu covers the exact technical specification, registration steps, and penalties for each of the 29 jurisdictions tracked here.</p>
+      </div>
+      <div class="related-card">
+        <h4>🏷️ Understand the vendor landscape first</h4>
+        <p>"Types of Provider" (under Education) breaks down the five categories of vendor referenced in the selection process above — ERP, Solution Provider, Tax Compliance, Technology, and Consultancy.</p>
+      </div>
+      <div class="related-card">
+        <h4>✅ Find an accredited provider</h4>
+        <p>"Government Certified Providers" (under Education) links directly to the official registries referenced in the vendor selection section above.</p>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <p>This page provides general educational guidance based on common patterns in mandate readiness programmes, and is not legal, tax, or procurement advice. Specific timelines and requirements vary by country and by your own systems and organisation — consult the relevant country deep dive and appropriate advisors before committing to a plan.</p>
+  </footer>
+
+</div>
+</body>
+</html>
