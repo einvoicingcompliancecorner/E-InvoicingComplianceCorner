@@ -20,6 +20,26 @@ const SESSION_COOKIE = "eicc_session";
 const SESSION_TTL_SECONDS = 60 * 60 * 24 * 30; // 30 days
 const MAGIC_LINK_TTL_SECONDS = 60 * 15; // 15 minutes
 
+// Kept in sync with /countries.js on the static site — see the note at
+// the top of that file. This Worker runs in a separate JS environment
+// and can't load that file directly, so it keeps its own copy here.
+const COUNTRIES_BY_REGION = {
+  "Europe": [
+    "Belgium", "Croatia", "Denmark", "France", "Germany", "Ireland",
+    "Italy", "Norway", "Poland", "Romania", "Slovakia", "Spain",
+    "Sweden", "United Kingdom"
+  ],
+  "Middle East": [
+    "Saudi Arabia", "United Arab Emirates"
+  ],
+  "Asia-Pacific": [
+    "Australia", "China", "India", "Malaysia", "New Zealand", "Singapore"
+  ],
+  "Americas": [
+    "Brazil", "Canada", "Chile", "Mexico", "Peru", "United States"
+  ]
+};
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -42,6 +62,12 @@ export default {
       if (request.method === "GET" && url.pathname.startsWith("/members/archive/")) {
         const slug = decodeURIComponent(url.pathname.replace("/members/archive/", ""));
         return handleArchiveIssue(request, env, slug);
+      }
+      if (request.method === "GET" && url.pathname === "/members/preferences") {
+        return handlePreferencesGet(request, env);
+      }
+      if (request.method === "POST" && url.pathname === "/members/preferences") {
+        return handlePreferencesPost(request, env);
       }
       if (request.method === "POST" && url.pathname === "/members/logout") {
         return handleLogout();
@@ -68,6 +94,13 @@ async function handleWebhook(request, env) {
   const email = (attrs.user_email || attrs.customer_email || "").toLowerCase().trim();
   if (!email) return new Response("No email in payload — ignored", { status: 200 });
 
+  // Country-of-interest selection, passed through checkout as custom data
+  // (checkout[custom][countries]=A,B,C on the subscribe page). Empty string
+  // or missing means "no specific preference — send the full digest."
+  const customData = payload.meta?.custom_data || {};
+  const countriesRaw = (customData.countries || "").toString().trim();
+  const countries = countriesRaw ? countriesRaw.split(",").map((c) => c.trim()).filter(Boolean) : [];
+
   const RECURRING_ACTIVE_EVENTS = [
     "subscription_created",
     "subscription_updated",
@@ -89,7 +122,12 @@ async function handleWebhook(request, env) {
     const active = ["active", "on_trial", "cancelled", "past_due"].includes(status)
       ? (status !== "past_due") // treat past_due as temporarily inactive until it recovers or fails outright
       : false;
-    await putSubscriber(env, email, { active, plan: "recurring", updated: Date.now() });
+    const existing = await getSubscriber(env, email);
+    // Only overwrite `countries` if this event actually carried a selection —
+    // renewal/update events won't repeat the original checkout's custom data,
+    // so we preserve whatever was captured at signup unless a new value arrives.
+    const resolvedCountries = countriesRaw ? countries : (existing?.countries || []);
+    await putSubscriber(env, email, { active, plan: "recurring", countries: resolvedCountries, updated: Date.now() });
   } else if (RECURRING_INACTIVE_EVENTS.includes(eventName)) {
     const existing = await getSubscriber(env, email);
     await putSubscriber(env, email, { ...(existing || {}), active: false, updated: Date.now() });
@@ -100,7 +138,7 @@ async function handleWebhook(request, env) {
     if (env.ONE_TIME_VARIANT_ID && variantId === env.ONE_TIME_VARIANT_ID) {
       const purchasedAt = Date.now();
       const expiresAt = purchasedAt + 365 * 24 * 60 * 60 * 1000; // 12 months
-      await putSubscriber(env, email, { active: true, plan: "onetime", purchasedAt, expiresAt });
+      await putSubscriber(env, email, { active: true, plan: "onetime", countries, purchasedAt, expiresAt });
     }
   }
 
@@ -218,6 +256,34 @@ async function handleArchiveIssue(request, env, slug) {
 
 function redirectToLogin() {
   return new Response(null, { status: 302, headers: { Location: "/members" } });
+}
+
+// ================================================================
+// MANAGE ALERT PREFERENCES — lets a logged-in subscriber update
+// which countries they want alerts for, without going through
+// Lemon Squeezy checkout again (this is just a preference, not a
+// payment change).
+// ================================================================
+async function handlePreferencesGet(request, env) {
+  const email = await requireSession(request, env);
+  if (!email) return redirectToLogin();
+
+  const sub = await getSubscriber(env, email);
+  const currentCountries = sub?.countries || [];
+  return htmlResponse(renderPreferencesPage(email, currentCountries));
+}
+
+async function handlePreferencesPost(request, env) {
+  const email = await requireSession(request, env);
+  if (!email) return redirectToLogin();
+
+  const form = await request.formData();
+  const selected = form.getAll("countries"); // array of checked values
+
+  const existing = await getSubscriber(env, email);
+  await putSubscriber(env, email, { ...(existing || {}), countries: selected, updated: Date.now() });
+
+  return htmlResponse(renderPreferencesPage(email, selected, true));
 }
 
 // ================================================================
@@ -372,6 +438,17 @@ const BASE_STYLE = `
   .topbar{width:100%; max-width:640px; display:flex; justify-content:space-between; align-items:center; padding:0 5vw; margin-top:24px;}
   .logout-btn{background:none; border:1px solid var(--line); color:var(--muted); font-family:'IBM Plex Mono',monospace; font-size:11.5px; padding:6px 12px; border-radius:999px; cursor:pointer;}
   .logout-btn:hover{border-color:var(--stamp); color:var(--stamp);}
+
+  /* Preferences page */
+  .prefs-box{max-height:280px; overflow-y:auto; border:1px solid var(--paper-line); border-radius:8px; background:#fff; padding:4px 14px; margin:16px 0;}
+  .region-group{padding:10px 0; border-top:1px dashed var(--paper-line);}
+  .region-group:first-child{border-top:none;}
+  .region-group-label{font-family:'IBM Plex Mono',monospace; font-size:10px; text-transform:uppercase; letter-spacing:0.07em; color:#8a7d5a; margin:0 0 6px;}
+  .country-check{display:flex; align-items:center; gap:8px; padding:3px 0; font-size:12.8px; color:#241d10;}
+  .country-check input{width:auto; margin:0;}
+  .prefs-actions{display:flex; gap:14px; margin:10px 0;}
+  .prefs-actions a{font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--stamp); text-decoration:underline; cursor:pointer;}
+  .saved-banner{background:var(--live-dim); color:#bfe6cf; border-radius:6px; padding:10px 14px; font-size:12.8px; margin-bottom:16px;}
 `;
 
 function pageShell(bodyHtml, includeTopbar) {
@@ -451,10 +528,58 @@ function renderArchiveList(issues, email) {
       <p class="eyebrow">Signed in as ${escapeHtml(email)}</p>
       <h1 class="title">Newsletter archive</h1>
       <ul class="issue-list">${rows}</ul>
+      <p class="fineprint"><a href="/members/preferences" style="color:var(--stamp); text-decoration:underline;">Manage which countries you get alerts for →</a></p>
     </div>
   </div>`;
   return pageShell(body);
 }
+
+function renderPreferencesPage(email, selectedCountries, justSaved) {
+  const selectedSet = new Set(selectedCountries || []);
+  const regionGroups = Object.keys(COUNTRIES_BY_REGION)
+    .map((region) => {
+      const checks = COUNTRIES_BY_REGION[region]
+        .map((country) => {
+          const checked = selectedSet.has(country) ? "checked" : "";
+          return `<label class="country-check"><input type="checkbox" name="countries" value="${escapeHtml(country)}" ${checked}>${escapeHtml(country)}</label>`;
+        })
+        .join("");
+      return `<div class="region-group"><p class="region-group-label">${escapeHtml(region)}</p>${checks}</div>`;
+    })
+    .join("");
+
+  const body = `
+  <div class="topbar">
+    <a class="back-link" href="/members/archive" style="margin:0;">← Back to archive</a>
+    <form method="POST" action="/members/logout"><button type="submit" class="logout-btn">Log out</button></form>
+  </div>
+  <div class="wrap">
+    <div class="card">
+      <p class="eyebrow">Signed in as ${escapeHtml(email)}</p>
+      <h1 class="title">Alert preferences</h1>
+      <p class="sub">Choose which countries you want alerts for. Leave everything unchecked to receive the full monthly digest covering all tracked jurisdictions.</p>
+      ${justSaved ? `<div class="saved-banner">✓ Preferences saved.</div>` : ""}
+      <form method="POST" action="/members/preferences">
+        <div class="prefs-actions">
+          <a id="selectAllCountries">Select all</a>
+          <a id="clearAllCountries">Clear all</a>
+        </div>
+        <div class="prefs-box" id="prefsBox">${regionGroups}</div>
+        <button type="submit" class="btn">Save preferences</button>
+      </form>
+    </div>
+  </div>
+  <script>
+    document.getElementById('selectAllCountries').addEventListener('click', () => {
+      document.querySelectorAll('#prefsBox input[type=checkbox]').forEach(cb => cb.checked = true);
+    });
+    document.getElementById('clearAllCountries').addEventListener('click', () => {
+      document.querySelectorAll('#prefsBox input[type=checkbox]').forEach(cb => cb.checked = false);
+    });
+  </script>`;
+  return pageShell(body);
+}
+
 
 function renderIssue(issue) {
   const body = `

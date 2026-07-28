@@ -157,8 +157,59 @@ piece of infrastructure alongside it.
 4. Set `active` to `false` for that test record and confirm you're
    correctly locked out.
 
+## Letting subscribers update their own country preferences
+
+Subscribers can update their alert preferences any time without going
+through checkout again — from the archive page, there's a "Manage
+which countries you get alerts for" link that takes them to
+`/members/preferences`. It's gated by the same login session as the
+archive itself, shows their current selection pre-checked, and saves
+straight back to their KV record on submit.
+
+**Keeping the country list in sync**: both `countries.js` (loaded by
+the static subscribe page) and this Worker's `COUNTRIES_BY_REGION`
+constant (in `src/index.js`) list the same countries/regions, but live
+in two separate JavaScript environments that can't directly share a
+file. Whenever you add a country to the tracker, update both of these
+in the same step — otherwise the subscribe page and the preferences
+page could show different lists.
+
+## Segmenting subscribers by country of interest
+
+The subscribe page now asks new subscribers which countries they'd like
+alerts for (optional — leaving it blank means "send the full digest").
+This selection is passed through Lemon Squeezy checkout as custom data
+and lands automatically in each subscriber's KV record, e.g.:
+
+```json
+{"active": true, "plan": "recurring", "countries": ["Poland", "France"], "updated": 1721.....}
+```
+
+**To see one subscriber's interests:**
+```bash
+npx wrangler kv key get --binding=SUBSCRIBERS "someone@example.com" --remote
+```
+
+**To pull every active subscriber and their country preferences** (useful
+before sending a targeted alert — e.g. "everyone interested in Poland"):
+```bash
+npx wrangler kv key list --binding=SUBSCRIBERS --remote
+```
+Then fetch each one with `kv key get` as above. For a handful of
+subscribers this is fine to do manually; once your list grows, this is
+the natural point to write a small script that loops through the list
+automatically and exports a CSV — happy to build that when you're there.
+
+**One nuance worth knowing:** renewal and payment-status webhooks (e.g.
+`subscription_payment_success` on a renewal) don't repeat the original
+checkout's custom data, so the Worker deliberately preserves whichever
+country selection was captured at signup rather than wiping it on every
+event — you'll only see it change if someone goes through checkout again.
+
 ## Ongoing maintenance
 
 - Add a new KV entry each month when you publish an issue (Step 8).
-- Everything else — subscriber sync, login, access control — runs
-  automatically once deployed. There's no server to patch or restart.
+- Everything else — subscriber sync, login, access control, and country
+  preference capture — runs automatically once deployed. There's no
+  server to patch or restart.
+

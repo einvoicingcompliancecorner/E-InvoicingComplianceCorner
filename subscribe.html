@@ -83,23 +83,24 @@
   .card{
     background:var(--paper); color:#241d10; border-radius:var(--radius);
     padding:30px 30px 28px; border:1px solid var(--paper-line);
+    max-width:100%; overflow-wrap:break-word; word-wrap:break-word;
   }
   .eyebrow{
     font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.14em; text-transform:uppercase;
     color:var(--stamp); margin:0 0 8px;
   }
   .title{font-family:'Big Shoulders Display',sans-serif; font-weight:800; font-size:27px; text-transform:uppercase; margin:0 0 10px;}
-  .sub{font-size:13.8px; color:#4a4030; margin:0 0 22px; line-height:1.55;}
+  .sub{font-size:13.8px; color:#4a4030; margin:0 0 22px; line-height:1.55; overflow-wrap:break-word;}
 
   /* Billing option selector */
   .plan-label{
     font-family:'IBM Plex Mono',monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:0.08em;
     color:#6b5f3f; margin:0 0 10px;
   }
-  .plan-options{display:flex; gap:10px; margin-bottom:22px;}
+  .plan-options{display:flex; flex-wrap:wrap; gap:10px; margin-bottom:22px;}
   .plan-option{
-    flex:1; border:2px solid var(--paper-line); border-radius:8px; padding:14px 14px 12px;
-    cursor:pointer; background:#fff; transition:border-color .12s ease;
+    flex:1 1 200px; min-width:0; border:2px solid var(--paper-line); border-radius:8px; padding:14px 14px 12px;
+    cursor:pointer; background:#fff; transition:border-color .12s ease; box-sizing:border-box;
   }
   .plan-option.selected{border-color:var(--stamp); background:#fdf6f0;}
   .plan-option input{display:none;}
@@ -109,8 +110,8 @@
     width:14px; height:14px; border-radius:50%; border:2px solid var(--paper-line); flex:0 0 auto;
   }
   .plan-option.selected .po-radio{border-color:var(--stamp); background:radial-gradient(circle, var(--stamp) 0 5px, transparent 5px);}
-  .plan-option .po-price{font-family:'Big Shoulders Display',sans-serif; font-weight:800; font-size:21px; margin:8px 0 4px;}
-  .plan-option .po-desc{font-size:11.8px; color:#5a5138; line-height:1.4;}
+  .plan-option .po-price{font-family:'Big Shoulders Display',sans-serif; font-weight:800; font-size:21px; margin:8px 0 4px; word-break:break-word;}
+  .plan-option .po-desc{font-size:11.8px; color:#5a5138; line-height:1.4; word-break:break-word;}
 
   .includes{margin:0 0 22px; padding:0; list-style:none;}
   .includes li{
@@ -119,12 +120,13 @@
   .includes li:first-child{border-top:none;}
   .includes li::before{content:"✓"; position:absolute; left:2px; color:var(--live); font-weight:700;}
 
-  .form-row{display:flex; gap:12px; margin-bottom:14px;}
-  .form-field{flex:1; display:flex; flex-direction:column; gap:6px;}
+  .form-row{display:flex; flex-wrap:wrap; gap:12px; margin-bottom:14px;}
+  .form-field{flex:1 1 180px; min-width:0; display:flex; flex-direction:column; gap:6px;}
   .form-field label{
     font-family:'IBM Plex Mono',monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:0.08em; color:#6b5f3f;
   }
   .form-field input{
+    width:100%; max-width:100%; box-sizing:border-box;
     background:#fff; border:1px solid var(--paper-line); border-radius:6px;
     padding:10px 12px; font-size:14px; font-family:'IBM Plex Sans',sans-serif; color:#241d10;
   }
@@ -157,11 +159,36 @@
     .form-row{flex-direction:column; gap:14px;}
     .plan-options{flex-direction:column;}
   }
+
+  /* Country interest picker */
+  .countries-label{
+    font-family:'IBM Plex Mono',monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:0.08em;
+    color:#6b5f3f; margin:18px 0 4px;
+  }
+  .countries-hint{font-size:12px; color:#7a6f52; margin:0 0 10px;}
+  .countries-box{
+    max-height:190px; overflow-y:auto; border:1px solid var(--paper-line); border-radius:8px;
+    background:#fff; padding:4px 14px; margin-bottom:16px;
+  }
+  .region-group{padding:10px 0; border-top:1px dashed var(--paper-line);}
+  .region-group:first-child{border-top:none;}
+  .region-group-label{
+    font-family:'IBM Plex Mono',monospace; font-size:10px; text-transform:uppercase; letter-spacing:0.07em;
+    color:#8a7d5a; margin:0 0 6px;
+  }
+  .country-check{display:flex; align-items:center; gap:8px; padding:3px 0; font-size:12.8px; color:#241d10;}
+  .country-check input{width:auto; margin:0;}
+  .countries-actions{display:flex; gap:14px; margin-bottom:16px;}
+  .countries-actions a{
+    font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--stamp); text-decoration:underline; cursor:pointer;
+  }
 </style>
 
 <!-- Lemon Squeezy overlay checkout script — turns links with class
      "lemonsqueezy-button" into an in-page checkout overlay on click. -->
 <script src="https://assets.lemonsqueezy.com/lemon.js" defer></script>
+<!-- Shared country/region list — single source of truth, see countries.js -->
+<script src="countries.js"></script>
 </head>
 <body>
 <div class="wrap">
@@ -231,6 +258,17 @@
             <span class="form-error-msg">Company name is required</span>
           </div>
         </div>
+
+        <p class="countries-label">Which countries do you want alerts for?</p>
+        <p class="countries-hint">Optional — leave everything unchecked and we'll send the full monthly digest covering all 29 jurisdictions.</p>
+        <div class="countries-actions">
+          <a id="selectAllCountries">Select all</a>
+          <a id="clearAllCountries">Clear all</a>
+        </div>
+        <div class="countries-box" id="countriesBox">
+          <!-- Populated dynamically from countries.js — see the script at the bottom of this page -->
+        </div>
+
         <button type="submit" class="form-submit">Continue to secure payment</button>
         <p class="form-fineprint">Payment is handled by Lemon Squeezy, our merchant of record — they collect and remit any applicable VAT/GST on this sale, so you're never charged tax separately. We never see or store your card details. See our <a href="privacy-policy.html" style="color:var(--stamp); text-decoration:underline;">privacy policy</a> for how your data is handled.</p>
       </form>
@@ -242,6 +280,7 @@
       <h1 class="title">Confirm &amp; pay</h1>
       <div class="confirm-plan-badge" id="confirmPlanBadge">Recurring — renews yearly</div>
       <p class="sub">Subscribing as <strong id="confirmName"></strong> (<span id="confirmEmail"></span>) for <span id="confirmCompany"></span> — <span id="confirmPrice"></span>.</p>
+      <p class="sub" style="margin-top:-14px;">Alerts for: <strong id="confirmCountries"></strong></p>
 
       <a href="#" id="checkoutButton" class="lemonsqueezy-button form-submit">Complete secure payment →</a>
       <span class="edit-link" id="editDetails">← Edit my details or plan</span>
@@ -285,6 +324,42 @@ updatePlanSelection();
 
 function isValidEmail(v){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); }
 
+// ---------- build the country checklist from countries.js ----------
+(function renderCountryChecklist(){
+  const box = document.getElementById('countriesBox');
+
+  if (typeof EICC_COUNTRIES_BY_REGION === 'undefined') {
+    // countries.js didn't load — most likely it's missing from this
+    // deployment. Fail gracefully rather than throwing, and let the
+    // subscription still go through (just without per-country alerts).
+    box.innerHTML = '<p style="font-size:12px; color:#8a7d5a; padding:8px 0;">Country selection is temporarily unavailable — you\'ll still get the full monthly digest. (Missing file: countries.js)</p>';
+    return;
+  }
+
+  const regions = Object.keys(EICC_COUNTRIES_BY_REGION);
+  let html = '';
+  regions.forEach(region => {
+    html += `<div class="region-group"><p class="region-group-label">${region}</p>`;
+    EICC_COUNTRIES_BY_REGION[region].forEach(country => {
+      html += `<label class="country-check"><input type="checkbox" value="${country}">${country}</label>`;
+    });
+    html += `</div>`;
+  });
+  box.innerHTML = html;
+})();
+
+// ---------- country interest picker ----------
+const countryCheckboxes = () => Array.from(document.querySelectorAll('#countriesBox input[type="checkbox"]'));
+document.getElementById('selectAllCountries').addEventListener('click', ()=>{
+  countryCheckboxes().forEach(cb => cb.checked = true);
+});
+document.getElementById('clearAllCountries').addEventListener('click', ()=>{
+  countryCheckboxes().forEach(cb => cb.checked = false);
+});
+function getSelectedCountries(){
+  return countryCheckboxes().filter(cb => cb.checked).map(cb => cb.value);
+}
+
 detailsForm.addEventListener('submit', async (e)=>{
   e.preventDefault();
   const values = {
@@ -294,6 +369,8 @@ detailsForm.addEventListener('submit', async (e)=>{
     jobTitle: document.getElementById('jobTitle').value.trim(),
     company: document.getElementById('company').value.trim(),
   };
+  const selectedCountries = getSelectedCountries(); // [] means "send everything"
+
   const checks = [
     ['firstName', values.firstName.length>0],
     ['lastName', values.lastName.length>0],
@@ -316,14 +393,19 @@ detailsForm.addEventListener('submit', async (e)=>{
   // Best-effort local record of the lead, independent of the Lemon Squeezy sale record.
   try{
     if(window.storage && typeof window.storage.set === 'function'){
-      await window.storage.set('subscriber-lead:'+Date.now(), JSON.stringify({...values, plan: isRecurring ? 'recurring' : 'onetime'}));
+      await window.storage.set('subscriber-lead:'+Date.now(), JSON.stringify({...values, plan: isRecurring ? 'recurring' : 'onetime', countries: selectedCountries}));
     }
   }catch(err){ /* no storage available — flow still proceeds */ }
 
-  // Build the checkout URL, prefilling email and name for Lemon Squeezy's checkout form.
+  // Build the checkout URL, prefilling email/name and passing the country
+  // selection through as Lemon Squeezy "custom data" — this rides along
+  // inside every Order/Subscription webhook as meta.custom_data.countries,
+  // which the members-worker's webhook handler stores against this
+  // subscriber for future segmentation.
   const url = new URL(chosenUrl);
   url.searchParams.set('checkout[email]', values.email);
   url.searchParams.set('checkout[name]', values.firstName + ' ' + values.lastName);
+  url.searchParams.set('checkout[custom][countries]', selectedCountries.join(','));
 
   const checkoutBtn = document.getElementById('checkoutButton');
   checkoutBtn.href = url.toString();
@@ -331,6 +413,9 @@ detailsForm.addEventListener('submit', async (e)=>{
   document.getElementById('confirmName').textContent = values.firstName + ' ' + values.lastName;
   document.getElementById('confirmEmail').textContent = values.email;
   document.getElementById('confirmCompany').textContent = values.company;
+  document.getElementById('confirmCountries').textContent = selectedCountries.length
+    ? selectedCountries.join(', ')
+    : 'the full digest (all 29 jurisdictions)';
   document.getElementById('confirmPrice').textContent = isRecurring
     ? ('$' + chosenPrice + '/year, renewing automatically')
     : ('$' + chosenPrice + ', one-time for 12 months');
