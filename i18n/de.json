@@ -80,12 +80,20 @@
     "total": "insgesamt",
     "establishedRegulations": "Etablierte Vorschriften",
     "daySingular": "Tag",
-    "dayPlural": "Tage"
+    "dayPlural": "Tage",
+    "noUpcoming": "Keine bevorstehenden Meilensteine im erfassten Datensatz."
   },
   "cardLabels": {
     "actionChecklist": "Maßnahmen-Checkliste",
     "countryDeepDive": "Länderanalyse →",
     "inEffectSince": "In Kraft seit",
     "expectedNotFinal": "Erwartet — noch nicht endgültig"
+  },
+  "stats": {
+    "jurisdictionsTracked": "Erfasste Rechtsordnungen",
+    "milestonesTracked": "Erfasste Meilensteine",
+    "alreadyInEffect": "Bereits in Kraft",
+    "dueWithin90Days": "Fällig innerhalb von 90 Tagen",
+    "furtherOut": "Später fällig"
   }
 }

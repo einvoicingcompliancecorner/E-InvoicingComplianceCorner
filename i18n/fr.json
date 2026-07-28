@@ -80,12 +80,20 @@
     "total": "au total",
     "establishedRegulations": "Réglementations déjà établies",
     "daySingular": "jour",
-    "dayPlural": "jours"
+    "dayPlural": "jours",
+    "noUpcoming": "Aucun jalon à venir dans les données suivies."
   },
   "cardLabels": {
     "actionChecklist": "Liste d'actions",
     "countryDeepDive": "Analyse du pays →",
     "inEffectSince": "En vigueur depuis",
     "expectedNotFinal": "Attendu — non définitif"
+  },
+  "stats": {
+    "jurisdictionsTracked": "Juridictions suivies",
+    "milestonesTracked": "Jalons suivis",
+    "alreadyInEffect": "Déjà en vigueur",
+    "dueWithin90Days": "Échéance sous 90 jours",
+    "furtherOut": "Plus lointain"
   }
 }

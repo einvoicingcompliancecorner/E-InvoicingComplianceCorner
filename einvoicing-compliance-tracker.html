@@ -1378,7 +1378,11 @@ let state = { region:'All', status:'All', q:'' };
 const NOW = today();
 
 // ---------- render: topbar ----------
-document.getElementById('todayLabel').textContent = '20 July 2026';
+function renderTodayLabel(){
+  const d = new Date('2026-07-20T00:00:00');
+  document.getElementById('todayLabel').textContent = d.toLocaleDateString(currentLocale(),{day:'numeric',month:'long',year:'numeric'});
+}
+renderTodayLabel();
 
 // ---------- render: split-flap board ----------
 function renderBoard(){
@@ -1388,7 +1392,8 @@ function renderBoard(){
     .sort((a,b)=> new Date(a.date) - new Date(b.date))
     .slice(0,6);
   if(upcoming.length===0){
-    board.innerHTML = '<div class="board-empty">No upcoming milestones in the tracked dataset.</div>';
+    const emptyMsg = (i18n2 => (i18n2 && i18n2.t('filters.noUpcoming')) || 'No upcoming milestones in the tracked dataset.')(window.EICC_I18N);
+    board.innerHTML = `<div class="board-empty">${emptyMsg}</div>`;
     return;
   }
   board.innerHTML = upcoming.map((e,i)=>{
@@ -1414,12 +1419,14 @@ function renderStats(){
   const inforce = DATA.filter(e=>computeStatus(e,NOW)==='inforce').length;
   const soon = DATA.filter(e=>computeStatus(e,NOW)==='soon').length;
   const upcoming = DATA.filter(e=>computeStatus(e,NOW)==='upcoming').length;
+  const i18n = window.EICC_I18N;
+  const tt = (key, fallback) => (i18n && i18n.t(key)) || fallback;
   const stats = [
-    {num:countries, lbl:'Jurisdictions tracked'},
-    {num:DATA.length, lbl:'Milestones tracked'},
-    {num:inforce, lbl:'Already in effect'},
-    {num:soon, lbl:'Due within 90 days'},
-    {num:upcoming, lbl:'Further out'},
+    {num:countries, lbl:tt('stats.jurisdictionsTracked','Jurisdictions tracked')},
+    {num:DATA.length, lbl:tt('stats.milestonesTracked','Milestones tracked')},
+    {num:inforce, lbl:tt('stats.alreadyInEffect','Already in effect')},
+    {num:soon, lbl:tt('stats.dueWithin90Days','Due within 90 days')},
+    {num:upcoming, lbl:tt('stats.furtherOut','Further out')},
   ];
   document.getElementById('stats').innerHTML = stats.map(s=>
     `<div class="stat"><div class="num display">${s.num}</div><div class="lbl">${s.lbl}</div></div>`
@@ -1813,7 +1820,9 @@ wireAboutModal();
 // active language changes (country/region names, card system/desc/
 // actions, filter labels, sidebar, Deep Dives menu).
 document.addEventListener('eicc:languageChanged', ()=>{
+  renderTodayLabel();
   renderBoard();
+  renderStats();
   renderFilterButtons();
   renderTimeline();
   renderSidebar();

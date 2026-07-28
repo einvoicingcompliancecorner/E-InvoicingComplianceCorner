@@ -80,12 +80,20 @@
     "total": "total",
     "establishedRegulations": "Established regulations",
     "daySingular": "day",
-    "dayPlural": "days"
+    "dayPlural": "days",
+    "noUpcoming": "No upcoming milestones in the tracked dataset."
   },
   "cardLabels": {
     "actionChecklist": "Action checklist",
     "countryDeepDive": "Country deep dive →",
     "inEffectSince": "In effect since",
     "expectedNotFinal": "Expected — not final"
+  },
+  "stats": {
+    "jurisdictionsTracked": "Jurisdictions tracked",
+    "milestonesTracked": "Milestones tracked",
+    "alreadyInEffect": "Already in effect",
+    "dueWithin90Days": "Due within 90 days",
+    "furtherOut": "Further out"
   }
 }
