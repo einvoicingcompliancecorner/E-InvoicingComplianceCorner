@@ -78,7 +78,9 @@
     "milestoneSingular": "Meilenstein",
     "milestonePlural": "Meilensteine",
     "total": "insgesamt",
-    "establishedRegulations": "Etablierte Vorschriften"
+    "establishedRegulations": "Etablierte Vorschriften",
+    "daySingular": "Tag",
+    "dayPlural": "Tage"
   },
   "cardLabels": {
     "actionChecklist": "Maßnahmen-Checkliste",

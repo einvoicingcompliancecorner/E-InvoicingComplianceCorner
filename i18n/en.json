@@ -78,7 +78,9 @@
     "milestoneSingular": "milestone",
     "milestonePlural": "milestones",
     "total": "total",
-    "establishedRegulations": "Established regulations"
+    "establishedRegulations": "Established regulations",
+    "daySingular": "day",
+    "dayPlural": "days"
   },
   "cardLabels": {
     "actionChecklist": "Action checklist",

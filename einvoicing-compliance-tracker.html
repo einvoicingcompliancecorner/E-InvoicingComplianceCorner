@@ -1358,13 +1358,19 @@ function statusLabel(s){
   if(translated) return translated;
   return s==='inforce' ? 'In effect' : s==='soon' ? 'Due soon' : 'Upcoming';
 }
+const LOCALE_MAP = { en:'en-GB', es:'es-ES', de:'de-DE', fr:'fr-FR' };
+function currentLocale(){
+  const i18n = window.EICC_I18N;
+  const lang = (i18n && i18n.currentLang) || 'en';
+  return LOCALE_MAP[lang] || 'en-GB';
+}
 function fmtDate(iso){
   const d = new Date(iso+'T00:00:00');
-  return d.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+  return d.toLocaleDateString(currentLocale(),{day:'numeric',month:'short',year:'numeric'});
 }
 function monthKey(iso){
   const d = new Date(iso+'T00:00:00');
-  return d.toLocaleDateString('en-GB',{month:'long',year:'numeric'});
+  return d.toLocaleDateString(currentLocale(),{month:'long',year:'numeric'});
 }
 
 // ---------- state ----------
@@ -1391,11 +1397,13 @@ function renderBoard(){
     const i18n = window.EICC_I18N;
     const countryLabel = i18n ? i18n.translateCountry(e.country) : e.country;
     const systemLabel = i18n ? i18n.translateEntry(e).system : e.system;
+    const dayKey = days===1 ? 'filters.daySingular' : 'filters.dayPlural';
+    const daysLabel = (i18n && i18n.t(dayKey)) || (days===1 ? 'day' : 'days');
     return `<div class="board-row" style="animation-delay:${i*0.08}s">
       <span class="board-date">${fmtDate(e.date)}</span>
       <span class="board-country">${e.flag} ${countryLabel}</span>
       <span class="board-system">${systemLabel}</span>
-      <span class="board-days"><b>${days}</b> days</span>
+      <span class="board-days"><b>${days}</b> ${daysLabel}</span>
     </div>`;
   }).join('');
 }

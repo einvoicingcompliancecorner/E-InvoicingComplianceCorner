@@ -78,7 +78,9 @@
     "milestoneSingular": "hito",
     "milestonePlural": "hitos",
     "total": "en total",
-    "establishedRegulations": "Normativas ya establecidas"
+    "establishedRegulations": "Normativas ya establecidas",
+    "daySingular": "día",
+    "dayPlural": "días"
   },
   "cardLabels": {
     "actionChecklist": "Lista de acciones",

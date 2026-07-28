@@ -78,7 +78,9 @@
     "milestoneSingular": "jalon",
     "milestonePlural": "jalons",
     "total": "au total",
-    "establishedRegulations": "Réglementations déjà établies"
+    "establishedRegulations": "Réglementations déjà établies",
+    "daySingular": "jour",
+    "dayPlural": "jours"
   },
   "cardLabels": {
     "actionChecklist": "Liste d'actions",
