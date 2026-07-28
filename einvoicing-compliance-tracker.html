@@ -494,7 +494,7 @@
 </div>
 
 <div class="hero">
-  <p class="hero-label">Next clearance dates</p>
+  <p class="hero-label" data-i18n="filters.nextClearanceDates">Next clearance dates</p>
   <div class="board" id="board"></div>
 </div>
 
@@ -508,7 +508,7 @@
     <span class="fg-label">Status</span>
   </div>
   <div class="search-wrap">
-    <input type="text" id="searchBox" placeholder="Search country or system…">
+    <input type="text" id="searchBox" data-i18n-attr="placeholder:filters.searchPlaceholder" placeholder="Search country or system…">
   </div>
 </div>
 
@@ -520,7 +520,7 @@
   </div>
   <p style="color:var(--muted); font-size:13.5px; max-width:640px; margin:-8px 0 20px;">Milestones from the last few months through the furthest confirmed deadline. Already-settled regulations live in the collapsed section below so this list stays focused on what's actually changing.</p>
   <div class="timeline" id="timeline"></div>
-  <div class="no-results" id="noResults" style="display:none;">No milestones match these filters.</div>
+  <div class="no-results" id="noResults" style="display:none;" data-i18n="filters.noResults">No milestones match these filters.</div>
 
   <details class="established-wrap" id="establishedWrap">
     <summary>
@@ -536,7 +536,7 @@
 
 <footer>
   <p>This tracker reflects publicly available guidance as of July 2026 and is provided for general awareness, not legal or tax advice. E-invoicing thresholds, wave numbers and go-live dates change frequently — confirm your obligations directly on the official government portal linked in each entry, or with your tax advisor, before making compliance decisions.</p>
-  <p class="fine">Data compiled from official tax-authority and EU Commission sources. "Days remaining" and status badges are calculated automatically from today's date. <a href="privacy-policy.html" style="color:var(--soon);">Privacy Policy</a></p>
+  <p class="fine" data-i18n="filters.footerNote">Data compiled from official tax-authority and EU Commission sources. "Days remaining" and status badges are calculated automatically from today's date. <a href="privacy-policy.html" style="color:var(--soon);">Privacy Policy</a></p>
 </footer>
 
 <script>
@@ -1352,6 +1352,10 @@ function computeStatus(entry, now){
   return 'upcoming';
 }
 function statusLabel(s){
+  const i18n = window.EICC_I18N;
+  const key = s==='inforce' ? 'filters.inEffect' : s==='soon' ? 'filters.dueSoon' : 'filters.upcoming';
+  const translated = i18n ? i18n.t(key) : null;
+  if(translated) return translated;
   return s==='inforce' ? 'In effect' : s==='soon' ? 'Due soon' : 'Upcoming';
 }
 function fmtDate(iso){
@@ -1384,10 +1388,13 @@ function renderBoard(){
   board.innerHTML = upcoming.map((e,i)=>{
     const d = new Date(e.date+'T00:00:00');
     const days = daysBetween(NOW,d);
+    const i18n = window.EICC_I18N;
+    const countryLabel = i18n ? i18n.translateCountry(e.country) : e.country;
+    const systemLabel = i18n ? i18n.translateEntry(e).system : e.system;
     return `<div class="board-row" style="animation-delay:${i*0.08}s">
       <span class="board-date">${fmtDate(e.date)}</span>
-      <span class="board-country">${e.flag} ${e.country}</span>
-      <span class="board-system">${e.system}</span>
+      <span class="board-country">${e.flag} ${countryLabel}</span>
+      <span class="board-system">${systemLabel}</span>
       <span class="board-days"><b>${days}</b> days</span>
     </div>`;
   }).join('');
@@ -1412,33 +1419,49 @@ function renderStats(){
 }
 
 // ---------- filters ----------
+function statusDisplayLabel(key){
+  const i18n = window.EICC_I18N;
+  const map = { 'All': 'filters.all', 'In effect': 'filters.inEffect', 'Due soon': 'filters.dueSoon', 'Upcoming': 'filters.upcoming' };
+  const translated = i18n && map[key] ? i18n.t(map[key]) : null;
+  return translated || key;
+}
+function regionDisplayLabel(key){
+  const i18n = window.EICC_I18N;
+  if(key === 'All') return (i18n && i18n.t('filters.all')) || 'All';
+  return i18n ? i18n.translateRegion(key) : key;
+}
+
 function renderFilterButtons(){
   const regions = ['All', ...Array.from(new Set(DATA.map(e=>e.region)))];
   const statuses = ['All','In effect','Due soon','Upcoming'];
   const rg = document.getElementById('regionFilters');
   const sg = document.getElementById('statusFilters');
+  rg.innerHTML = '';
+  sg.innerHTML = '';
 
   regions.forEach(r=>{
     const btn = document.createElement('button');
     btn.className = 'pill' + (state.region===r ? ' active':'');
-    btn.textContent = r;
+    btn.textContent = regionDisplayLabel(r);
+    btn.dataset.key = r;
     btn.onclick = ()=>{ state.region = r; refreshAll(); };
     rg.appendChild(btn);
   });
   statuses.forEach(s=>{
     const btn = document.createElement('button');
     btn.className = 'pill' + (state.status===s ? ' active':'');
-    btn.textContent = s;
+    btn.textContent = statusDisplayLabel(s);
+    btn.dataset.key = s;
     btn.onclick = ()=>{ state.status = s; refreshAll(); };
     sg.appendChild(btn);
   });
 }
 function refreshFilterButtonStyles(){
   document.querySelectorAll('#regionFilters .pill').forEach(b=>{
-    b.classList.toggle('active', b.textContent===state.region);
+    b.classList.toggle('active', b.dataset.key===state.region);
   });
   document.querySelectorAll('#statusFilters .pill').forEach(b=>{
-    b.classList.toggle('active', b.textContent===state.status);
+    b.classList.toggle('active', b.dataset.key===state.status);
   });
 }
 
@@ -1456,16 +1479,22 @@ let sortDir = 'asc'; // 'asc' = soonest first, 'desc' = furthest first
 function renderCard(e){
   const status = computeStatus(e,NOW);
   const badgeClass = status;
-  const badgeText = e.anchor ? 'In effect since ' + fmtDate(e.date) : statusLabel(status);
-  const expectedBadge = e.confidence==='expected' ? '<span class="badge expected">Expected — not final</span>' : '';
+  const i18n = window.EICC_I18N;
+  const tr = i18n ? i18n.translateEntry(e) : { system: e.system, desc: e.desc, actions: e.actions };
+  const countryLabel = i18n ? i18n.translateCountry(e.country) : e.country;
+  const regionLabel = i18n ? i18n.translateRegion(e.region) : e.region;
+  const badgeText = e.anchor ? (i18n && i18n.t('cardLabels.inEffectSince') ? i18n.t('cardLabels.inEffectSince') + ' ' + fmtDate(e.date) : 'In effect since ' + fmtDate(e.date)) : statusLabel(status);
+  const expectedBadge = e.confidence==='expected' ? `<span class="badge expected">${(i18n && i18n.t('cardLabels.expectedNotFinal')) || 'Expected — not final'}</span>` : '';
+  const actionsLabel = (i18n && i18n.t('cardLabels.actionChecklist')) || 'Action checklist';
+  const deepDiveLabel = (i18n && i18n.t('cardLabels.countryDeepDive')) || 'Country deep dive →';
   return `
     <div class="card">
       <div class="card-top">
         <div class="card-country">
           <span class="flag">${e.flag}</span>
           <div>
-            <h3>${e.country}</h3>
-            <div class="region-tag">${e.region} · ${e.code}</div>
+            <h3>${countryLabel}</h3>
+            <div class="region-tag">${regionLabel} · ${e.code}</div>
           </div>
         </div>
         <div class="badge-row">
@@ -1474,15 +1503,15 @@ function renderCard(e){
           ${expectedBadge}
         </div>
       </div>
-      <div class="card-system">${e.system}</div>
-      <p class="card-desc">${e.desc}</p>
-      <p class="actions-label">Action checklist</p>
+      <div class="card-system">${tr.system}</div>
+      <p class="card-desc">${tr.desc}</p>
+      <p class="actions-label">${actionsLabel}</p>
       <ul class="actions">
-        ${e.actions.map(a=>`<li>${a}</li>`).join('')}
+        ${tr.actions.map(a=>`<li>${a}</li>`).join('')}
       </ul>
       <div class="portal-row">
         ${e.portals.map(p=>`<a class="portal-btn" href="${p.url}" target="_blank" rel="noopener">${p.label}</a>`).join('')}
-        ${DEEP_DIVES[e.country] ? `<a class="portal-btn" style="background:var(--stamp); border-color:var(--stamp);" href="${DEEP_DIVES[e.country]}">Country deep dive →</a>` : ''}
+        ${DEEP_DIVES[e.country] ? `<a class="portal-btn" style="background:var(--stamp); border-color:var(--stamp);" href="${DEEP_DIVES[e.country]}">${deepDiveLabel}</a>` : ''}
       </div>
     </div>`;
 }
@@ -1528,7 +1557,10 @@ function renderTimeline(){
   recent.sort((a,b)=> sortDir==='asc' ? new Date(a.date)-new Date(b.date) : new Date(b.date)-new Date(a.date));
   established.sort((a,b)=> new Date(a.date) - new Date(b.date));
 
-  document.getElementById('resultCount').textContent = filtered.length + ' milestone' + (filtered.length===1?'':'s') + ' total';
+  const i18n = window.EICC_I18N;
+  const milestoneWord = filtered.length===1 ? ((i18n && i18n.t('filters.milestoneSingular')) || 'milestone') : ((i18n && i18n.t('filters.milestonePlural')) || 'milestones');
+  const totalWord = (i18n && i18n.t('filters.total')) || 'total';
+  document.getElementById('resultCount').textContent = filtered.length + ' ' + milestoneWord + ' ' + totalWord;
 
   if(recent.length===0){
     timeline.innerHTML='';
@@ -1542,7 +1574,8 @@ function renderTimeline(){
     establishedWrap.style.display='none';
   } else {
     establishedWrap.style.display='block';
-    document.getElementById('establishedSummary').textContent = `Established regulations (${established.length})`;
+    const establishedLabel = (i18n && i18n.t('filters.establishedRegulations')) || 'Established regulations';
+    document.getElementById('establishedSummary').textContent = `${establishedLabel} (${established.length})`;
     establishedTimeline.innerHTML = renderCardList(established);
   }
 }
@@ -1550,11 +1583,17 @@ function renderTimeline(){
 function wireSortToggle(){
   const btn = document.getElementById('sortToggle');
   const label = document.getElementById('sortToggleLabel');
+  function updateLabel(){
+    const i18n = window.EICC_I18N;
+    const key = sortDir==='asc' ? 'filters.soonestFirst' : 'filters.furthestFirst';
+    label.textContent = (i18n && i18n.t(key)) || (sortDir==='asc' ? 'Soonest first' : 'Furthest first');
+  }
   btn.addEventListener('click', ()=>{
     sortDir = sortDir==='asc' ? 'desc' : 'asc';
-    label.textContent = sortDir==='asc' ? 'Soonest first' : 'Furthest first';
+    updateLabel();
     renderTimeline();
   });
+  document.addEventListener('eicc:languageChanged', updateLabel);
 }
 
 function refreshAll(){
@@ -1580,16 +1619,20 @@ function renderSidebar(){
   });
 
   const regions = REGION_ORDER.filter(r=>grouped[r]);
+  const i18n = window.EICC_I18N;
+  const deepDiveLabel = (i18n && i18n.t('cardLabels.countryDeepDive')) || 'Country deep dive →';
   let html = '';
   regions.forEach(region=>{
-    html += `<div class="sidebar-continent"><h3>${region}</h3>`;
+    const regionLabel = i18n ? i18n.translateRegion(region) : region;
+    html += `<div class="sidebar-continent"><h3>${regionLabel}</h3>`;
     const countries = Object.keys(grouped[region]).sort();
     countries.forEach(country=>{
       const info = grouped[region][country];
+      const countryLabel = i18n ? i18n.translateCountry(country) : country;
       html += `<div class="sidebar-country">
-        <div class="c-name"><span class="flag">${info.flag}</span>${country}</div>
+        <div class="c-name"><span class="flag">${info.flag}</span>${countryLabel}</div>
         ${info.portals.map(p=>`<a class="sidebar-portal-link" href="${p.url}" target="_blank" rel="noopener">${p.label}</a>`).join('')}
-        ${DEEP_DIVES[country] ? `<a class="sidebar-portal-link" style="color:var(--soon);" href="${DEEP_DIVES[country]}">Country deep dive →</a>` : ''}
+        ${DEEP_DIVES[country] ? `<a class="sidebar-portal-link" style="color:var(--soon);" href="${DEEP_DIVES[country]}">${deepDiveLabel}</a>` : ''}
       </div>`;
     });
     html += `</div>`;
@@ -1628,11 +1671,14 @@ function renderDeepDiveMenu(){
   });
 
   const regions = REGION_ORDER.filter(r=>grouped[r]);
+  const i18n = window.EICC_I18N;
   let html = '';
   regions.forEach(region=>{
-    html += `<div class="dd-region-label">${region}</div>`;
+    const regionLabel = i18n ? i18n.translateRegion(region) : region;
+    html += `<div class="dd-region-label">${regionLabel}</div>`;
     grouped[region].sort((a,b)=> a.country.localeCompare(b.country)).forEach(item=>{
-      html += `<a class="dropdown-item dd-country" href="${item.url}"><span class="flag">${item.flag}</span>${item.country}</a>`;
+      const countryLabel = i18n ? i18n.translateCountry(item.country) : item.country;
+      html += `<a class="dropdown-item dd-country" href="${item.url}"><span class="flag">${item.flag}</span>${countryLabel}</a>`;
     });
   });
   panel.innerHTML = html;
@@ -1754,6 +1800,17 @@ wireDeepDiveMenu();
 wireEducationMenu();
 wireActionsMenu();
 wireAboutModal();
+
+// Re-render everything that shows translated content whenever the
+// active language changes (country/region names, card system/desc/
+// actions, filter labels, sidebar, Deep Dives menu).
+document.addEventListener('eicc:languageChanged', ()=>{
+  renderBoard();
+  renderFilterButtons();
+  renderTimeline();
+  renderSidebar();
+  renderDeepDiveMenu();
+});
 </script>
 </body>
 </html>

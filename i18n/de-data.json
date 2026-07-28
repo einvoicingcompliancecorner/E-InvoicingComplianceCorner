@@ -1,0 +1,561 @@
+{
+  "eu-transpose": {
+    "system": "ViDA — nationale Umsetzung",
+    "desc": "Jeder EU-Mitgliedstaat muss die Richtlinie zur Mehrwertsteuer im digitalen Zeitalter (ViDA) in nationales Recht umsetzen und damit den Weg für nationale E-Invoicing-Vorgaben ebnen, die sich am EU-Rahmen orientieren.",
+    "actions": [
+      "Verfolgen Sie den Umsetzungszeitplan Ihrer nationalen Steuerbehörde und alle neuen nationalen Vorschriften",
+      "Stellen Sie sicher, dass Ihre ERP-/Kreditorensysteme EN-16931-konforme strukturierte E-Rechnungen ausstellen können",
+      "Achten Sie auf länderspezifische Abweichungen, die eine frühere oder spätere nationale Frist festlegen könnten"
+    ]
+  },
+  "eu-drr": {
+    "system": "ViDA — grenzüberschreitende digitale Meldepflichten",
+    "desc": "Strukturiertes E-Invoicing und nahezu Echtzeit-Meldepflichten (Digital Reporting Requirements, DRR) werden EU-weit für grenzüberschreitende B2B-Transaktionen verpflichtend. Die Zusammenfassende Meldung entfällt und wird durch DRR ersetzt.",
+    "actions": [
+      "Stellen Sie sicher, dass Sie EN-16931-konforme E-Rechnungen innerhalb von 10 Tagen nach dem Steuertatbestand für innergemeinschaftliche B2B-Verkäufe ausstellen können",
+      "Integrieren Sie die Nahezu-Echtzeit-Meldung frühzeitig in Ihre Rechnungsstellungsprozesse",
+      "Stellen Sie die Prozesse zur Zusammenfassenden Meldung ein, sobald DRR sie ersetzt"
+    ]
+  },
+  "eu-align": {
+    "system": "ViDA — Harmonisierung nationaler Systeme",
+    "desc": "Alle bereits bestehenden nationalen E-Invoicing- und Meldesysteme (einschließlich etablierter Clearing-Modelle wie Italiens SDI) müssen an den harmonisierten EU-ViDA-Standard angeglichen werden.",
+    "actions": [
+      "Falls Sie in einem Land mit eigenem Clearing-System tätig sind, prüfen Sie dessen Plan zur Angleichung an EN 16931/ViDA",
+      "Planen Sie ein einheitliches Meldemodell für alle EU-Märkte, in denen Sie tätig sind"
+    ]
+  },
+  "be-mandate": {
+    "system": "Verpflichtendes B2B-E-Invoicing über Peppol",
+    "desc": "Strukturiertes E-Invoicing wurde für inländische B2B-Transaktionen zwischen belgischen umsatzsteuerpflichtigen Unternehmen verpflichtend, unter Verwendung des Standards Peppol BIS Billing 3.0 / EN 16931.",
+    "actions": [
+      "Verbinden Sie sich über einen zertifizierten Peppol Access Point (oder bestätigen Sie, dass Ihr Anbieter dies ist)",
+      "Stellen Sie Peppol BIS Billing 3.0 UBL-Rechnungen für alle inländischen B2B-Verkäufe aus und empfangen Sie sie",
+      "PDF- und Papierrechnungen sind nicht mehr zulässig — nur strukturiertes Format"
+    ]
+  },
+  "be-penalty": {
+    "system": "Toleranzfrist endet — Sanktionen werden durchgesetzt",
+    "desc": "Die dreimonatige administrative Toleranzfrist endete; nun gilt ein progressives Sanktionssystem (1.500 € / 3.000 € / 5.000 €) bei nicht konformer Rechnungsstellung.",
+    "actions": [
+      "Beheben Sie ausstehende Lücken beim Peppol-Onboarding umgehend — Bußgelder gelten pro Verstoß",
+      "Prüfen Sie kürzlich ausgestellte Rechnungen auf Einhaltung des strukturierten Formats"
+    ]
+  },
+  "be-ereport": {
+    "system": "Nahezu-Echtzeit-Meldung (5-Corner-Peppol-Modell)",
+    "desc": "Belgien plant die Einführung einer digitalen Umsatzsteuermeldung nahezu in Echtzeit über ein Fünf-Ecken-Peppol-Modell, das Rechnungsdaten automatisch an die Steuerbehörde meldet.",
+    "actions": [
+      "Beginnen Sie mit Ihrem Access-Point-Anbieter, die Fähigkeit zur Fünf-Ecken-Peppol-Meldung zu planen",
+      "Bestätigen Sie näher am Termin, dass dies weiterhin im Zeitplan liegt — die endgültigen Durchführungsbestimmungen stehen noch aus"
+    ]
+  },
+  "de-receive": {
+    "system": "Verpflichtender Empfang strukturierter E-Rechnungen",
+    "desc": "Alle deutschen Unternehmen, unabhängig von ihrer Größe, müssen in der Lage sein, EN-16931-konforme strukturierte E-Rechnungen (XRechnung oder ZUGFeRD) für inländische B2B-Transaktionen zu empfangen.",
+    "actions": [
+      "Bestätigen Sie, dass Ihr Kreditorenprozess XRechnung-XML oder ZUGFeRD-Hybrid-PDFs akzeptieren kann",
+      "Ein E-Mail-Postfach mit Fähigkeit zum Empfang strukturierter Rechnungen erfüllt derzeit die Mindestanforderung"
+    ]
+  },
+  "de-issue-large": {
+    "system": "Ausstellungspflicht — Unternehmen mit Umsatz über 800.000 €",
+    "desc": "Unternehmen mit einem Vorjahresumsatz über 800.000 € müssen strukturierte E-Rechnungen für inländische B2B-Transaktionen ausstellen; reine PDF-Rechnungen erfüllen für diese Gruppe nicht mehr die Anforderungen.",
+    "actions": [
+      "Bestätigen Sie, dass Ihr ERP XRechnung- oder ZUGFeRD-2.1+-Ausgaben erzeugen kann",
+      "Bestehende EDI-Vereinbarungen müssen bis Ende 2027 EN-16931-konform werden oder umgestellt werden"
+    ]
+  },
+  "de-issue-all": {
+    "system": "Ausstellungspflicht — alle inländischen B2B-Unternehmen",
+    "desc": "Die Ausstellungspflicht gilt nun unabhängig vom Umsatz für jedes inländische B2B-Unternehmen und schließt Deutschlands stufenweise Einführung im Rahmen des Wachstumschancengesetzes ab.",
+    "actions": [
+      "Schließen Sie die Umstellung für alle verbleibenden inländischen B2B-Rechnungsprozesse ab",
+      "Nach diesem Datum gelten keine weiteren Übergangsregelungen"
+    ]
+  },
+  "fr-receive": {
+    "system": "Empfangspflicht + Ausstellungspflicht für große und mittlere Unternehmen",
+    "desc": "Alle umsatzsteuerpflichtigen Unternehmen in Frankreich müssen E-Rechnungen empfangen können; große und mittlere Unternehmen müssen sie zudem über das öffentliche Portal (PPF) oder eine akkreditierte Plattform (PA, ehemals PDP) ausstellen.",
+    "actions": [
+      "Registrieren Sie den Verzeichniseintrag Ihres Unternehmens beim PPF (Portail Public de Facturation)",
+      "Wählen Sie eine akkreditierte Plateforme Agréée oder nutzen Sie das kostenlose öffentliche Portal",
+      "Richten Sie E-Reporting für B2C- und grenzüberschreitende Transaktionen neben dem E-Invoicing ein"
+    ]
+  },
+  "fr-issue-all": {
+    "system": "Ausstellungspflicht gilt nun für alle verbleibenden Unternehmen",
+    "desc": "Klein- und Kleinstunternehmen, einschließlich Selbstständige, müssen E-Rechnungen ausstellen und schließen damit Frankreichs stufenweise B2B-E-Invoicing- und E-Reporting-Reform ab.",
+    "actions": [
+      "Schließen Sie die Rechnungssoftware oder PA-Integration rechtzeitig vor der Frist ab",
+      "Bestätigen Sie, dass Ihre Software Factur-X-, UBL- oder CII-Format unterstützt"
+    ]
+  },
+  "pl-large": {
+    "system": "KSeF verpflichtend — Großsteuerzahler (>200 Mio. PLN)",
+    "desc": "Großsteuerzahler mit einem Umsatz über 200 Millionen Zloty waren die erste Gruppe, die B2B-Rechnungen über die Clearing-Plattform Krajowy System e-Faktur (KSeF) ausstellen musste.",
+    "actions": [
+      "Integrieren Sie sich über die API mit KSeF unter Verwendung des XML-Schemas FA(3)",
+      "Richten Sie KSeF-Berechtigungen für Mitarbeiter und externe Aussteller ein"
+    ]
+  },
+  "pl-all": {
+    "system": "KSeF verpflichtend — alle übrigen umsatzsteuerpflichtigen Unternehmen",
+    "desc": "Die KSeF-Pflicht wurde auf alle verbleibenden umsatzsteuerpflichtigen Unternehmen in Polen (mit Ausnahme von Kleinstunternehmern) ausgeweitet; eine Rechnung ist erst rechtsverbindlich, nachdem KSeF sie freigegeben hat.",
+    "actions": [
+      "Bestätigen Sie, dass Ihr Rechnungssystem gültige strukturierte FA(3)-Rechnungen erzeugt",
+      "Korrekturnotizen (noty korygujące) sind nicht mehr gültig — nutzen Sie stattdessen den strukturierten Korrekturprozess von KSeF",
+      "Fügen Sie ab Inkrafttreten dieser Anforderung (1. August 2026) die KSeF-Rechnungsnummer den Überweisungsreferenzen hinzu"
+    ]
+  },
+  "pl-micro": {
+    "system": "KSeF verpflichtend — Kleinstunternehmer; Sanktionen beginnen",
+    "desc": "Kleinstunternehmer treten der KSeF-Pflicht bei, und die Übergangsfrist für finanzielle Sanktionen (bis zu 100 % der Rechnungs-Umsatzsteuer bei Nichteinhaltung) endet für alle.",
+    "actions": [
+      "Kleinstunternehmen: Bestätigen Sie, dass die KSeF-Integration weit vor diesem Datum aktiv ist",
+      "Alle Unternehmen: Beheben Sie verbleibende Compliance-Lücken, bevor Sanktionen greifen"
+    ]
+  },
+  "it-sdi": {
+    "system": "Verpflichtendes B2B-/B2C-E-Invoicing über SDI (seit 2019 in Kraft)",
+    "desc": "Italien war der erste EU-Mitgliedstaat, der ein Clearing-Modell für E-Invoicing für praktisch alle inländischen Transaktionen — B2B, B2C und B2G — über das Sistema di Interscambio (SDI) im FatturaPA-XML-Format vorschrieb.",
+    "actions": [
+      "Bestätigen Sie, dass Ihr FatturaPA-Erzeugungs- und SDI-Übertragungskanal (PEC, FTP oder Webservice) weiterhin aktiv ist",
+      "Beobachten Sie Änderungen zur Angleichung an EN 16931/ViDA vor der Verlängerung der SDI-Ausnahmeregelung Italiens (bis 2027) und der EU-weiten Harmonisierungsfrist 2035"
+    ]
+  },
+  "sa-wave23": {
+    "system": "ZATCA Fatoora — Welle 23 (Umsatz > 750.000 SAR)",
+    "desc": "Unternehmen mit umsatzsteuerpflichtigem Umsatz über 750.000 SAR in 2022, 2023 oder 2024 mussten die Phase-2-Integration mit der Fatoora-Plattform für die Echtzeit-Freigabe abschließen.",
+    "actions": [
+      "Bestätigen Sie die direkte Benachrichtigungs- und Integrationsfrist der ZATCA für Ihr Unternehmen",
+      "Integrieren Sie Ihr Rechnungssystem mit der Fatoora-API für Echtzeit-B2B-/B2G-Freigabe",
+      "Stellen Sie sicher, dass Rechnungen eine UUID, einen QR-Code und einen kryptografischen Stempel enthalten"
+    ]
+  },
+  "sa-wave24": {
+    "system": "ZATCA Fatoora — Welle 24 (Umsatz > 375.000 SAR)",
+    "desc": "Die Schwelle sank auf 375.000 SAR — was praktisch der verpflichtenden Umsatzsteuer-Registrierungsschwelle entspricht und nahezu jedes umsatzsteuerpflichtige Unternehmen in die Phase-2-Freigabe einbezieht.",
+    "actions": [
+      "Gehen Sie davon aus, dass Sie betroffen sind, wenn Sie umsatzsteuerpflichtig sind; die ZATCA benachrichtigt betroffene Steuerzahler etwa sechs Monate im Voraus",
+      "Stellen Sie Standardrechnungen (Freigabe, abzugsfähige Vorsteuer) für B2B/B2G und vereinfachte Rechnungen für B2C aus, gemeldet innerhalb von 24 Stunden"
+    ]
+  },
+  "my-phase4": {
+    "system": "MyInvois Phase 4 — Umsatz RM1–5 Mio.",
+    "desc": "Unternehmen mit einem Jahresumsatz zwischen RM1 Million und RM5 Millionen traten der Pflicht bei, mit einer bis zum 31. Dezember 2027 verlängerten Kulanzfrist (keine Sanktionen bei Übermittlungsfehlern).",
+    "actions": [
+      "Registrieren Sie sich für den Zugang zum MyInvois-Portal oder zur API bei der LHDN",
+      "Bestimmen Sie Ihre Phase anhand Ihres geprüften Jahresabschlusses 2022 oder der ersten verfügbaren Steuererklärung",
+      "Einzelne E-Rechnungen sind ab RM10.000 verpflichtend — konsolidierte Rechnungsstellung ist für diese Beträge nicht mehr zulässig"
+    ]
+  },
+  "my-related": {
+    "system": "Verbundene/Tochterunternehmen von Gruppen mit RM1 Mio.+",
+    "desc": "Unternehmen mit einem Umsatz unter RM1 Million, die Tochter- oder verbundene Unternehmen einer Gruppe mit RM1 Million oder mehr sind, müssen dennoch die Vorgaben erfüllen, unabhängig vom eigenen Umsatz.",
+    "actions": [
+      "Prüfen Sie die Gruppenstruktur — der Status als verbundenes Unternehmen kann die Pflicht auch für kleine Einheiten auslösen",
+      "Registrieren und testen Sie die MyInvois-Integration rechtzeitig vor der Frist"
+    ]
+  },
+  "in-threshold": {
+    "system": "GST-E-Invoicing verpflichtend ab einem Umsatz von ₹5 Crore (seit August 2023 in Kraft)",
+    "desc": "Jedes GST-registrierte Unternehmen mit einem aggregierten Jahresumsatz (AATO) über ₹5 Crore in einem Geschäftsjahr seit 2017–18 muss E-Rechnungen mit gültiger IRN für B2B- und Exporttransaktionen erstellen.",
+    "actions": [
+      "Bestätigen Sie den aggregierten Umsatz über alle GSTINs unter Ihrer PAN — die Schwelle von ₹5 Crore muss nur einmal überschritten werden",
+      "Registrieren Sie sich bei einem Invoice Registration Portal (IRP) — einvoice1.gst.gov.in des NIC oder einem autorisierten privaten IRP",
+      "Achten Sie auf eine mögliche Absenkung der Schwelle auf ₹2 Crore, die diskutiert, aber noch nicht bekanntgegeben wurde"
+    ]
+  },
+  "in-30day": {
+    "system": "30-Tage-Fenster für IRN-Meldung (AATO ≥ ₹10 Crore)",
+    "desc": "Rechnungen, Gutschriften und Lastschriften, die älter als 30 Tage sind, können nicht mehr zur IRN-Erstellung an das IRP gemeldet werden — sie werden für Steuerzahler mit AATO von ₹10 Crore oder mehr unmittelbar abgelehnt.",
+    "actions": [
+      "Integrieren Sie das 30-Tage-Meldefenster in Ihren Kreditoren-/Debitorenprozess",
+      "Aktivieren Sie die Multi-Faktor-Authentifizierung im GST-Portal — verpflichtend seit April 2025"
+    ]
+  },
+  "br-fields": {
+    "system": "CBS/IBS-Felder auf NF-e/NFC-e/NFS-e erforderlich (Testsätze)",
+    "desc": "Mit Beginn der brasilianischen Doppel-Mehrwertsteuerreform müssen elektronische Steuerdokumente die neuen CBS- und IBS-Felder mit Testsätzen (0,9 % / 0,1 %) enthalten — noch ohne finanzielle Auswirkung, aber die rechtliche Pflicht zur Angabe der Daten gilt bereits.",
+    "actions": [
+      "Aktualisieren Sie die Rechnungslayouts auf die Technische Note 2025.002-RTC (neueste Version)",
+      "Testen Sie in der Homologationsumgebung der SEFAZ vor dem Go-Live",
+      "Steuerzahler unter Simples Nacional / MEI haben einen verlängerten Zeitplan bis 2027"
+    ]
+  },
+  "br-validate": {
+    "system": "Validierung der CBS/IBS-Felder beginnt — Ablehnungsrisiko",
+    "desc": "Autorisierungssysteme beginnen mit einer strengen Validierung der CBS/IBS-Felder; Rechnungen mit fehlenden oder inkonsistenten Daten laufen Gefahr, automatisch abgelehnt zu werden.",
+    "actions": [
+      "Prüfen Sie die Rechnungsausgabe auf vollständige, konsistente CBS-/IBS-/IS-Datengruppen",
+      "Beheben Sie Ablehnungen zügig — blockierte Rechnungen stoppen den Warenverkehr"
+    ]
+  },
+  "br-mandatory": {
+    "system": "Volle gesetzliche Meldepflicht für das allgemeine Steuerregime",
+    "desc": "Gemäß Technischer Note 2025.002-RTC v1.40 müssen Steuerzahler des allgemeinen Steuerregimes IBS- und CBS-Gruppen in NF-e und NFC-e mit voller Rechtswirkung melden.",
+    "actions": [
+      "Bestätigen Sie, dass Ihr ERP-/E-Invoicing-Anbieter die erforderlichen Schema-Updates abgeschlossen hat",
+      "Gleichen Sie gemeldete CBS-/IBS-Daten mit Ihren Buchhaltungsunterlagen vor der vollständigen Durchsetzung ab"
+    ]
+  },
+  "es-verifactu-corp": {
+    "system": "VeriFactu-zertifizierte Rechnungssoftware — körperschaftsteuerpflichtige Unternehmen",
+    "desc": "Unternehmen, die der Körperschaftsteuer unterliegen, müssen VeriFactu-zertifizierte Rechnungssoftware (RRSIF) verwenden, die Integrität, Nachvollziehbarkeit und Unveränderlichkeit der an die Agencia Tributaria (AEAT) übermittelten Rechnungsdaten gewährleistet.",
+    "actions": [
+      "Bestätigen Sie, dass Ihre Rechnungssoftware VeriFactu-zertifiziert ist und die erforderliche Hash-Kette und den QR-Code erzeugt",
+      "Dies ist eine eigenständige Pflicht, unabhängig vom weiter unten beschriebenen breiteren Crea-y-Crece-B2B-E-Invoicing-Mandat"
+    ]
+  },
+  "es-verifactu-rest": {
+    "system": "VeriFactu verpflichtend — alle übrigen Steuerzahler",
+    "desc": "Die VeriFactu-Pflicht gilt nun für alle übrigen Steuerzahler, die zur Führung von Rechnungsdaten verpflichtet sind, einschließlich Selbstständiger und anderer der Einkommensteuer unterliegender Berufsgruppen.",
+    "actions": [
+      "Selbstständige/Freiberufler: Stellen Sie sicher, dass zertifizierte Rechnungssoftware weit vor diesem Datum vorhanden ist",
+      "Unternehmen, die bereits das Echtzeit-Meldesystem SII nutzen, sind von VeriFactu befreit"
+    ]
+  },
+  "es-b2b-large": {
+    "system": "Crea-y-Crece-B2B-E-Invoicing — Großunternehmen (Umsatz >8 Mio. €)",
+    "desc": "Strukturiertes B2B-E-Invoicing wird für Großunternehmen im Rahmen des Crea-y-Crece-Gesetzes verpflichtend, ausgetauscht über private Plattformen (mit verpflichtender Kopie an die staatliche Plattform) oder die kostenlose öffentliche Lösung (SPFE), parallel zu VeriFactu.",
+    "actions": [
+      "Wählen Sie eine private E-Invoicing-Plattform (muss eine Kopie an die SPFE weiterleiten) oder nutzen Sie die öffentliche Plattform direkt",
+      "Bestätigen Sie EN-16931-konforme Formate (UBL, Facturae, CII)",
+      "Melden Sie den Rechnungsstatus — angenommen, abgelehnt oder bezahlt — der AEAT innerhalb von 4 Kalendertagen"
+    ]
+  },
+  "es-b2b-all": {
+    "system": "Crea-y-Crece-B2B-E-Invoicing — alle verbleibenden Unternehmen",
+    "desc": "Die B2B-E-Invoicing-Pflicht gilt nun auch für KMU, Einzelunternehmer und alle übrigen umsatzsteuerpflichtigen Unternehmen und schließt Spaniens zweigleisige E-Invoicing-Reform ab.",
+    "actions": [
+      "Finalisieren Sie die Plattformwahl und Integration rechtzeitig vor der Frist",
+      "Die endgültige Ministerialverordnung stand Mitte 2026 noch aus — bestätigen Sie dieses Datum näher am Zeitpunkt"
+    ]
+  },
+  "uk-mandate": {
+    "system": "Verpflichtendes E-Invoicing für alle umsatzsteuerpflichtigen Rechnungen (B2B und B2G)",
+    "desc": "Im Haushalt 2025 bestätigt: Alle umsatzsteuerpflichtigen Unternehmen müssen strukturierte E-Rechnungen für B2B- und B2G-Transaktionen ausstellen und empfangen, unter Verwendung eines dezentralen Vier-Ecken-Peppol-Modells. Eine Echtzeitmeldung an die HMRC ist nicht Teil dieser ersten Vorgabe.",
+    "actions": [
+      "Bestätigen Sie, dass Ihre Buchhaltungssoftware einen Weg zum Peppol-basierten E-Invoicing bietet",
+      "Achten Sie auf die vollständige Umsetzungs-Roadmap und technische Standards, die für den Haushalt 2026 erwartet werden",
+      "Unternehmen in Nordirland: Beachten Sie eine mögliche frühere, zusätzliche EU-angeglichene Pflicht für den Warenhandel ab Juli 2030"
+    ]
+  },
+  "ro-established": {
+    "system": "RO-e-Factura-Clearing-Modell verpflichtend für B2B/B2G (seit Juli 2024 in Kraft)",
+    "desc": "Rumänien betreibt ein zentralisiertes Clearing-Modell (CTC): B2B- und B2G-Rechnungen müssen von der ANAF über RO e-Factura validiert und digital versiegelt werden, bevor sie Rechtswirkung entfalten. Die B2C-Meldung folgte ab Januar 2025.",
+    "actions": [
+      "Bestätigen Sie die Registrierung bei RO e-Factura und die Erstellung RO_CIUS-konformer XML-Rechnungen",
+      "Die Übermittlungsfrist beträgt 5 Werktage ab Ausstellung (verkürzt von 5 Kalendertagen im Januar 2026)"
+    ]
+  },
+  "ro-sme": {
+    "system": "Volle Durchsetzung erweitert sich auf Kleinunternehmen (Umsatz <500.000 €)",
+    "desc": "Nach einer bestätigten Verzögerung unterliegen Kleinunternehmen mit einem Umsatz unter 500.000 € nun in vollem Umfang der e-Factura-Durchsetzung und den Sanktionen, gleichrangig mit größeren Unternehmen.",
+    "actions": [
+      "Standardisieren Sie Kundenadressen und Länder-/ISO-Codes rechtzeitig vor der Frist",
+      "Bestätigen Sie, dass Ihr Rechnungstool die 5-Werktage-Übermittlungsregel anwendet"
+    ]
+  },
+  "uae-pilot": {
+    "system": "Freiwillige Pilotphase für E-Invoicing beginnt",
+    "desc": "Die freiwillige Teilnahme wurde vor der Pflicht eröffnet, sodass Unternehmen die Konnektivität mit einem Accredited Service Provider (ASP) und das PINT-AE-Rechnungsformat risikofrei testen können, bevor Sanktionen greifen.",
+    "actions": [
+      "Erwägen Sie die Teilnahme am freiwilligen Pilotprogramm, um ASP-Integrationsprobleme vor der Pflichtphase zu lösen",
+      "Verfolgen Sie Aktualisierungen der technischen Leitlinien der Federal Tax Authority (FTA)"
+    ]
+  },
+  "uae-asp": {
+    "system": "Frist zur ASP-Benennung — Unternehmen mit Umsatz ≥ 50 Mio. AED",
+    "desc": "Unternehmen mit einem Umsatz von 50 Millionen AED oder mehr müssen vor dem Go-Live im Januar 2027 einen Accredited Service Provider (ASP) benannt haben (Frist verlängert vom 31. Juli 2026).",
+    "actions": [
+      "Wählen und beauftragen Sie einen von der FTA akkreditierten Accredited Service Provider",
+      "Beginnen Sie die PINT-AE-(UBL-2.1-)Integrationstests mit Ihrem ASP"
+    ]
+  },
+  "uae-phase1": {
+    "system": "Verpflichtender Go-Live Phase 1 — Umsatz ≥ 50 Mio. AED",
+    "desc": "Strukturiertes E-Invoicing wird für Großunternehmen verpflichtend, übermittelt über einen ASP im Peppol-Netzwerk im PINT-AE-Format, mit einer Echtzeit-Kopie an die FTA.",
+    "actions": [
+      "Schließen Sie die ASP-Integration und End-to-End-Tests vor dem Go-Live ab",
+      "Stellen Sie sicher, dass Rechnungen alle von der FTA geforderten Datenfelder enthalten — PDF und Papier sind nicht mehr zulässig"
+    ]
+  },
+  "uae-phase2": {
+    "system": "Die Pflicht erweitert sich auf alle übrigen umsatzsteuerpflichtigen Unternehmen",
+    "desc": "Die E-Invoicing-Pflicht erweitert sich auf alle verbleibenden umsatzsteuerpflichtigen Unternehmen für B2B-/B2G-Transaktionen, mit spezifischen G2B-/B2G-Pflichten ab Oktober 2027.",
+    "actions": [
+      "Bestätigen Sie den Umsatzsteuer-Registrierungsstatus und benennen Sie einen ASP rechtzeitig vor diesem Datum",
+      "Konzerninterne Transaktionen innerhalb einer einzelnen VAE-Umsatzsteuergruppe haben eine verlängerte Übergangsfrist bis zum 1. Januar 2029"
+    ]
+  },
+  "mx-cfdi": {
+    "system": "Verpflichtendes CFDI-Clearing-Modell (aktuelle Version CFDI 4.0)",
+    "desc": "Mexiko betreibt eines der ausgereiftesten E-Invoicing-Clearing-Systeme der Welt: Jede Rechnung muss von einem autorisierten PAC validiert und digital gestempelt (timbrado) werden, bevor sie im CFDI-4.0-XML-Format rechtsgültig ist.",
+    "actions": [
+      "Stellen Sie die PAC-Konnektivität und die aktuelle Feldzuordnung nach CFDI 4.0 (Anexo 20) sicher — RFC/Name/Steuerregime des Empfängers müssen exakt mit den SAT-Daten übereinstimmen",
+      "Fügen Sie erforderliche Complementos bei Bedarf hinzu (Carta Porte für Warentransport, Pagos für Ratenzahlungen, Comercio Exterior für Exporte)",
+      "Bewahren Sie XML-Rechnungen und PAC-Bestätigungen mindestens 5 Jahre lang auf"
+    ]
+  },
+  "mx-reform": {
+    "system": "Steuerreform 2026 — strengere Echtheitsanforderungen und Durchsetzung",
+    "desc": "Eine seit Januar 2026 geltende Steuerreform stärkte die Durchsetzungsbefugnisse der SAT und führte strengere Echtheitsprüfungen sowie strafrechtliche Haftung für gefälschte oder vorgetäuschte CFDIs ein.",
+    "actions": [
+      "Bewahren Sie Nachweise zur Echtheit von Transaktionen auf — Verträge, Lieferbelege, Zahlungsnachweise —, da die SAT diese innerhalb von 5 Werktagen anfordern kann",
+      "Überprüfen Sie CFDI-Verteidigungsunterlagen und Stornierungsverfahren angesichts der neuen strafrechtlichen Haftungsbestimmungen"
+    ]
+  },
+  "au-ncereceive": {
+    "system": "Bundesbehörden müssen Peppol-E-Rechnungen empfangen können (seit Juli 2022 in Kraft)",
+    "desc": "Alle Non-Corporate Commonwealth Entities (Bundesbehörden) müssen seit dem 1. Juli 2022 Peppol-E-Rechnungen empfangen können. Es besteht keine allgemeine B2B-Pflicht, aber die staatliche Akzeptanz nimmt weiter zu.",
+    "actions": [
+      "Lieferanten von Bundesbehörden: Verbinden Sie sich über einen von der ATO akkreditierten Peppol Access Point",
+      "Über Peppol übermittelte Rechnungen können innerhalb von 5 statt der üblichen 20 Tage bezahlt werden"
+    ]
+  },
+  "au-30pct": {
+    "system": "30 % der Rechnungen von Bundesbehörden müssen über Peppol verarbeitet werden",
+    "desc": "Non-Corporate Commonwealth Entities müssen mindestens 30 % der erhaltenen Lieferantenrechnungen über das Peppol-Netzwerk abwickeln, auf dem Weg zur vollständigen Automatisierung bis Dezember 2026.",
+    "actions": [
+      "Wenn Sie australische Bundesbehörden beliefern, bestätigen Sie, dass Ihre Rechnungsstellung Peppol-fähig ist",
+      "Verwenden Sie das Format PINT A-NZ — der einzige unterstützte Standard seit dem 15. Mai 2025"
+    ]
+  },
+  "au-automate": {
+    "system": "Bundesbehörden müssen Versand und Verarbeitung von E-Rechnungen automatisieren",
+    "desc": "Non-Corporate Commonwealth Entities müssen empfangene E-Rechnungen automatisch verarbeiten und E-Rechnungen versenden können, mit vierteljährlicher Fortschrittsberichterstattung an die Australian Peppol Authority.",
+    "actions": [
+      "Bestätigen Sie, dass Ihre E-Invoicing-Einrichtung eine vollständig automatisierte, berührungslose Verarbeitung unterstützt",
+      "Öffentliche Lieferanten sollten mit schnelleren Zahlungszyklen rechnen, sobald die Automatisierung greift"
+    ]
+  },
+  "nz-central": {
+    "system": "Zentrale Regierungsbehörden müssen E-Rechnungen empfangen können (seit März 2022 in Kraft)",
+    "desc": "Alle zentralen öffentlichen Behörden müssen seit März 2022 Peppol-E-Rechnungen empfangen können, verwaltet vom MBIE als neuseeländische Peppol-Autorität.",
+    "actions": [
+      "Lieferanten zentraler Behörden: Richten Sie die Peppol-Rechnungsfähigkeit über einen akkreditierten Access Point ein"
+    ]
+  },
+  "nz-2000": {
+    "system": "Behörden mit 2.000+ Rechnungen/Jahr müssen E-Rechnungen senden und empfangen",
+    "desc": "Regierungsbehörden, die jährlich mehr als 2.000 inländische Handelsrechnungen bearbeiten, müssen sowohl strukturierte E-Rechnungen senden als auch empfangen können und 95 % davon innerhalb von 5 Werktagen bezahlen.",
+    "actions": [
+      "Bestätigen Sie die Einhaltung des Formats PINT A-NZ — verpflichtend für staatliches E-Invoicing seit Mai 2025",
+      "Prüfen Sie, ob Ihr Regierungskunde innerhalb dieser Volumenschwelle liegt"
+    ]
+  },
+  "nz-largesupplier": {
+    "system": "Große Lieferanten (Umsatz >33 Mio. NZD) müssen E-Rechnungen an die Regierung übermitteln",
+    "desc": "Lieferanten mit einem Umsatz von über 33 Millionen NZD in jedem der letzten zwei Geschäftsjahre müssen E-Rechnungen über Peppol für inländische Handelsrechnungen an staatliche Käufer übermitteln.",
+    "actions": [
+      "Prüfen Sie, ob Ihr Umsatz die Schwelle von 33 Millionen NZD überschreitet",
+      "Integrieren Sie sich rechtzeitig vor der Frist mit einem Peppol Access Point"
+    ]
+  },
+  "sg-voluntary2025": {
+    "system": "GST InvoiceNow verpflichtend — neue freiwillige GST-Registrierte (innerhalb von 6 Monaten nach Gründung)",
+    "desc": "Die erste verpflichtende Phase von GST InvoiceNow verlangte von Unternehmen, die sich innerhalb von sechs Monaten nach Gründung freiwillig für die GST registrierten, Rechnungsdaten über das Peppol-basierte InvoiceNow-Netzwerk an die IRAS zu übermitteln.",
+    "actions": [
+      "Neue qualifizierte GST-Registrierte: Richten Sie zum Zeitpunkt der Registrierung eine InvoiceNow-Ready-Lösung und eine Peppol-ID ein"
+    ]
+  },
+  "sg-allvoluntary": {
+    "system": "Die Pflicht erweitert sich auf alle neuen freiwilligen GST-Registrierten",
+    "desc": "Alle neuen freiwilligen GST-Registrierten müssen unabhängig vom Gründungsdatum oder der Unternehmensstruktur InvoiceNow als Voraussetzung für die GST-Registrierung übernehmen.",
+    "actions": [
+      "Berücksichtigen Sie ab diesem Datum die InvoiceNow-Einrichtung in Ihrem GST-Registrierungsantrag",
+      "Nutzen Sie den Implementierungsdatum-Rechner der IRAS, falls unklar ist, welche Phase für Sie gilt"
+    ]
+  },
+  "sg-existing2028": {
+    "system": "Stufenweiser Rollout beginnt für bestehende GST-registrierte Unternehmen",
+    "desc": "Bestehende GST-registrierte Unternehmen werden nach einem stufenweisen Zeitplan in GST InvoiceNow einbezogen, der 2031 zur vollständigen Einführung führt. Die IRAS wird betroffene Unternehmen im Jahr 2026 über ihr spezifisches Datum informieren.",
+    "actions": [
+      "Nutzen Sie den GST-InvoiceNow-Implementierungsdatum-Rechner der IRAS, um Ihr geltendes Datum zu ermitteln",
+      "Achten Sie auf die direkte Benachrichtigung durch die IRAS (voraussichtlich Mitte 2026)"
+    ]
+  },
+  "sg-full2031": {
+    "system": "Vollständige Einführung — alle GST-registrierten Unternehmen",
+    "desc": "Bis zu diesem Datum muss jedes GST-registrierte Unternehmen in Singapur, einschließlich großer multinationaler Konzerne, Rechnungsdaten über InvoiceNow übermitteln.",
+    "actions": [
+      "Planen Sie die Integration weit im Voraus — übergangsweise stehen staatliche Zuschüsse zur Unterstützung der Einführung zur Verfügung"
+    ]
+  },
+  "sk-voluntary": {
+    "system": "Freiwillige Übergangsphase für E-Invoicing/E-Reporting beginnt",
+    "desc": "Unternehmen können sich freiwillig registrieren, um strukturiertes E-Invoicing und Meldewesen vor der Pflicht im Januar 2027 zu testen, unter Verwendung eines dezentralen, Peppol-basierten \"5-Corner\"-Modells.",
+    "actions": [
+      "Registrieren Sie sich für die freiwillige Teilnahme bei der Finanzverwaltung, um Integrationen frühzeitig zu testen",
+      "Bestätigen Sie, dass Ihre Buchhaltungssoftware Peppol-BIS-3.0-UBL-XML erzeugen kann"
+    ]
+  },
+  "sk-mandate": {
+    "system": "Verpflichtendes inländisches B2B-/B2G-E-Invoicing und Nahezu-Echtzeit-Meldung",
+    "desc": "Strukturiertes E-Invoicing und Echtzeitmeldung werden für inländische B2B- und B2G-Transaktionen zwischen slowakischen Umsatzsteuerpflichtigen verpflichtend, unter Verwendung zertifizierter \"Digital Postman\"-Access-Points in einem Peppol-basierten Netzwerk.",
+    "actions": [
+      "Wählen Sie einen zugelassenen Digital-Postman-Anbieter (zertifizierter Access Point)",
+      "Ab 2027 können Vorsteuerabzüge bei nicht konformen eingehenden Rechnungen nicht mehr geltend gemacht werden",
+      "Hinweis: Grenzüberschreitendes E-Invoicing folgt später, gemäß dem EU-ViDA-Zeitplan ab Juli 2030"
+    ]
+  },
+  "pe-established": {
+    "system": "E-Invoicing (CPE) verpflichtend für alle Steuerzahler (seit Juni 2022 in Kraft)",
+    "desc": "Peru betreibt eines der ausgereiftesten E-Invoicing-Systeme Lateinamerikas. Elektronische Zahlungsbelege (CPE) müssen im UBL-2.1-XML-Format erstellt, digital signiert und von der SUNAT oder einem autorisierten Electronic Services Operator (OSE) validiert werden, bevor sie rechtsgültig sind.",
+    "actions": [
+      "Verwenden Sie einen zugelassenen Electronic Service Provider (PSE) zur Erstellung und Signierung von CPEs",
+      "Übermitteln Sie E-Rechnungen innerhalb von 3 Kalendertagen nach Ausstellung an die SUNAT",
+      "Bewahren Sie XML-Rechnungen und CDR-Empfangsbestätigungen mindestens 5 Jahre lang auf"
+    ]
+  },
+  "cl-established": {
+    "system": "Elektronische Steuerdokumente (DTE) für alle Unternehmen verpflichtend (seit 2018 in Kraft)",
+    "desc": "Alle chilenischen Unternehmen müssen elektronische Steuerdokumente (Documentos Tributarios Electrónicos, DTE) ausstellen — einschließlich Facturas (B2B) und Boletas (B2C) —, validiert vom Servicio de Impuestos Internos (SII).",
+    "actions": [
+      "Bestätigen Sie, dass Ihr DTE-Ausstellungssystem autorisiert und mit dem SII verbunden ist",
+      "Bei Verkäufen über 135 UF muss die elektronische Boleta den Käufer per RUT und Namen identifizieren"
+    ]
+  },
+  "cl-digital-delivery": {
+    "system": "Digitale Zustellung der elektronischen Boleta erforderlich, wenn kein Drucker verfügbar ist",
+    "desc": "Unternehmen ohne Druckmöglichkeit müssen die elektronische Boleta digital zustellen — per E-Mail, SMS, WhatsApp, QR-Code oder einem anderen gleichwertigen elektronischen Kanal — statt die Zustellung ganz auszulassen.",
+    "actions": [
+      "Falls Ihnen ein Kassendrucker fehlt, richten Sie jetzt einen elektronischen Zustellkanal ein (E-Mail/SMS/QR)",
+      "Unternehmen mit Druckern müssen die gedruckte Darstellung im Allgemeinen weiterhin zustellen"
+    ]
+  },
+  "ie-phase1": {
+    "system": "Phase 1 — Großkonzerne müssen E-Rechnungen ausstellen; alle Unternehmen müssen empfangen können",
+    "desc": "Umsatzsteuerpflichtige Großkonzerne, die von der Large Corporates Division von Revenue verwaltet werden, müssen strukturierte E-Rechnungen ausstellen und einen Teil der Transaktionsdaten für inländische B2B-Verkäufe melden. Ab diesem Datum müssen alle Unternehmen technisch in der Lage sein, strukturierte E-Rechnungen zu empfangen.",
+    "actions": [
+      "Großkonzerne: Bewerten Sie jetzt die ERP-Bereitschaft für strukturierte EN-16931-Rechnungsstellung über Peppol",
+      "Alle Unternehmen: Bestätigen Sie, dass Ihre Systeme strukturierte E-Rechnungen empfangen können — PDFs werden von betroffenen Lieferanten nicht mehr akzeptiert"
+    ]
+  },
+  "ie-phase2": {
+    "system": "Phase 2 — die Pflicht erweitert sich auf alle umsatzsteuerpflichtigen Unternehmen im innergemeinschaftlichen Handel",
+    "desc": "Die inländische E-Invoicing- und Meldepflicht erweitert sich auf alle verbleibenden umsatzsteuerpflichtigen Unternehmen, die grenzüberschreitenden B2B-Handel innerhalb der EU betreiben, vor der vollständigen EU-ViDA-Konformität im Juli 2030.",
+    "actions": [
+      "Unternehmen mit grenzüberschreitendem Handel innerhalb der EU sollten mit der Planung der Peppol-Integration beginnen",
+      "Achten Sie auf detaillierte Leitlinien von Revenue, die deutlich vor jeder Phase erwartet werden"
+    ]
+  },
+  "no-issue": {
+    "system": "Verpflichtende Ausstellung von B2B-E-Rechnungen (EHF 3.0 / Peppol BIS)",
+    "desc": "Nach Inkrafttreten der Änderungen des Buchführungsgesetzes müssen alle Unternehmen mit norwegischen Buchführungspflichten strukturierte E-Rechnungen (EHF-Format) an andere im ELMA-Verzeichnis registrierte Unternehmen ausstellen.",
+    "actions": [
+      "Registrieren Sie sich in ELMA (dem norwegischen Peppol-Empfängerverzeichnis), falls noch nicht gelistet",
+      "Bestätigen Sie, dass Ihre Rechnungssoftware EHF-3.0-/Peppol-BIS-Ausgaben unterstützt",
+      "PDF- und Papier-B2B-Rechnungen sind für betroffene Transaktionen nicht mehr gültig"
+    ]
+  },
+  "no-receive": {
+    "system": "Verpflichtender Empfang von E-Rechnungen und vollständig digitale Buchführung",
+    "desc": "Die Pflicht erweitert sich auf den Empfang strukturierter E-Rechnungen und die Führung vollständig digitaler Buchhaltungsunterlagen und schließt Norwegens zweistufige Reform ab.",
+    "actions": [
+      "Planen Sie die Migration zu einem zugelassenen digitalen Buchführungssystem rechtzeitig vor diesem Datum",
+      "Bestätigen Sie, dass Kreditorensysteme EHF-/Peppol-Rechnungen automatisch empfangen und verarbeiten können"
+    ]
+  },
+  "dk-established": {
+    "system": "Digitales Buchführungsgesetz durchgesetzt — mittlere/große Unternehmen (seit Juli 2024 in Kraft)",
+    "desc": "Mittlere und große Unternehmen, die Jahresberichte einreichen, müssen ein zertifiziertes digitales Buchführungssystem verwenden, das strukturierte E-Rechnungen (OIOUBL oder Peppol BIS 3.0) senden und empfangen sowie auf Anfrage SAF-T-Dateien erzeugen kann.",
+    "actions": [
+      "Bestätigen Sie, dass Ihr Buchführungssystem auf der zertifizierten Liste der dänischen Unternehmensbehörde steht, oder stellen Sie bei Nutzung eines individuellen Systems die Konformität selbst sicher",
+      "Führen Sie 5-jährige digitale Aufzeichnungen mit automatisierter externer Sicherung"
+    ]
+  },
+  "dk-small": {
+    "system": "Kleinunternehmen (Umsatz >300.000 DKK) mit individuellen Systemen müssen die Vorgaben erfüllen",
+    "desc": "Kleinunternehmen und Einzelunternehmen, die in zwei aufeinanderfolgenden Jahren einen Umsatz von 300.000 DKK überschreiten und nicht registrierte (\"individuelle\") Buchhaltungssysteme verwenden, unterliegen nun vollständig den digitalen Anforderungen des Buchführungsgesetzes.",
+    "actions": [
+      "Prüfen Sie, ob Ihr Umsatz die Schwelle von 300.000 DKK in den letzten zwei Geschäftsjahren überschritten hat",
+      "Unternehmen mit registrierten/zertifizierten Systemen mussten die Vorgaben bereits seit Januar 2026 erfüllen"
+    ]
+  },
+  "se-b2g": {
+    "system": "B2G-E-Invoicing für alle öffentlichen Stellen verpflichtend (seit 2019 in Kraft)",
+    "desc": "Alle Vergabestellen und öffentlichen Einrichtungen in Schweden müssen EN-16931-konforme E-Rechnungen empfangen können, wobei Peppol BIS Billing 3.0 das empfohlene (und zunehmend geforderte) Format ist, während Altformate wie Svefaktura ausgemustert werden.",
+    "actions": [
+      "Lieferanten schwedischer öffentlicher Stellen: Nutzen Sie nach Möglichkeit Peppol BIS Billing 3.0 — die Altformate SFTI/EDIFACT werden abgeschafft",
+      "Es besteht noch keine inländische B2B-Pflicht — siehe den folgenden Eintrag zur erwarteten EU-Angleichung"
+    ]
+  },
+  "se-b2b-expected": {
+    "system": "Grenzüberschreitendes B2B-E-Invoicing unter EU-ViDA erwartet",
+    "desc": "Schweden hat noch keine inländische B2B-E-Invoicing-Pflicht gesetzlich verankert; Skatteverket, DIGG und Bolagsverket haben die Regierung gebeten, eine solche zu prüfen, doch die einzige feste Frist ist derzeit die EU-weite ViDA-Grenzüberschreitungspflicht.",
+    "actions": [
+      "Verfolgen Sie eine mögliche Ankündigung einer inländischen Pflicht — ein formeller Regierungsvorschlag steht noch aus",
+      "Grenzüberschreitend tätige Unternehmen sollten sich dennoch auf EN-16931-/Peppol-Bereitschaft vor der EU-weiten Frist 2030 vorbereiten"
+    ]
+  },
+  "cn-nationwide": {
+    "system": "Vollständig digitalisierte E-Rechnung (e-fapiao) landesweit eingeführt (seit Dezember 2024 in Kraft)",
+    "desc": "Die staatliche Steuerverwaltung (STA) schloss die landesweite Einführung vollständig digitalisierter elektronischer Rechnungen (e-fapiao) ab, die nun dieselbe Rechtsgültigkeit wie Papierrechnungen haben und die früheren Pilotphasen des Golden-Tax-Systems ablösen.",
+    "actions": [
+      "Richten Sie ein digitales Steuerkonto bei der STA ein, um e-fapiao auszustellen und zu empfangen",
+      "Bestätigen Sie, dass ERP-/Rechnungssysteme e-fapiao mit den vorgeschriebenen vereinfachten chinesischen Feldern und OFD-/XML-Darstellung erzeugen können",
+      "Bewahren Sie den STA-Rechnungscode, die digitale Signatur, den dynamischen QR-Code und den Freigabezeitstempel jeder Rechnung auf"
+    ]
+  },
+  "cn-paper-phaseout": {
+    "system": "Regionale Abschaffung von Papierrechnungen beschleunigt sich",
+    "desc": "Lokale Steuerbehörden in mehreren Regionen (z. B. Dalian, mit Wirkung zum 1. Juli 2026) haben begonnen, bestimmte steuerlich überwachte Papierrechnungsarten zugunsten von e-fapiao einzustellen, wobei im Jahr 2026 weitere Regionen folgen dürften.",
+    "actions": [
+      "Prüfen Sie die Ankündigungen Ihrer lokalen STA-Niederlassung zu den regions- und branchenspezifischen Abschaffungsterminen für Papierrechnungen",
+      "Vor dem regionalen Stichtag ausgestellte Rechnungen bleiben gültig, aber neue Papierausstellungen können ab diesem Datum blockiert werden"
+    ]
+  },
+  "hr-b2b": {
+    "system": "Fiskalizacija 2.0 — verpflichtendes E-Invoicing und E-Reporting für umsatzsteuerpflichtige Unternehmen",
+    "desc": "Kroatiens \"Fiskalisierung 2.0\"-Reform machte strukturiertes E-Invoicing (Ausstellung und Empfang) sowie Echtzeit-E-Reporting für alle umsatzsteuerpflichtigen, in Kroatien ansässigen Steuerzahler verpflichtend, zusätzlich zur seit 2019 geltenden B2G-E-Invoicing-Pflicht.",
+    "actions": [
+      "Registrieren Sie eine AMS-Adresse und beauftragen Sie einen zertifizierten Informationsvermittler oder Access Point",
+      "Stellen Sie sicher, dass ERP-Systeme gültiges UBL-2.1-XML gemäß dem CIUS HR-FISK 2.0 erzeugen (einschließlich 6-stelliger KPD-Codes und OIBs)",
+      "Integrieren Sie den 5-Tage-Fiskalisierungsprozess auf Käuferseite sowie das monatliche E-Reporting bis zum 20.",
+      "Archivieren Sie originale XML-Rechnungen 11 Jahre lang"
+    ]
+  },
+  "hr-nonvat": {
+    "system": "Die Pflicht erweitert sich auf nicht umsatzsteuerregistrierte Einrichtungen und öffentliche Stellen",
+    "desc": "Die Pflicht zur Ausstellung (nicht nur zum Empfang) strukturierter E-Rechnungen und E-Reporting-Daten erweitert sich auf nicht umsatzsteuerregistrierte Einrichtungen — kleine Unternehmen, Selbstständige und bestimmte öffentliche/haushaltsgebundene Stellen.",
+    "actions": [
+      "Nicht umsatzsteuerregistrierte Unternehmen und Einzelunternehmer: Bestätigen Sie die Fähigkeit zur E-Rechnungsausstellung rechtzeitig vor diesem Datum",
+      "Nicht umsatzsteuerregistrierte öffentliche Stellen sollten die Access-Point-Integration im Jahr 2026 abschließen"
+    ]
+  },
+  "us-federal-b2g": {
+    "system": "Bundesbehörden müssen Rechnungen elektronisch verwalten (B2G, seit 2018 in Kraft)",
+    "desc": "Das Office of Management and Budget wies Bundesbehörden an, für geeignete Beschaffungen auf elektronische Rechnungsstellung umzustellen. Die meisten nutzen inzwischen die Invoice Processing Platform (IPP) des Finanzministeriums — es gibt jedoch kein einheitlich vorgeschriebenes Format und keine inländische B2B-Pflicht jeglicher Art.",
+    "actions": [
+      "Wenn Sie an Bundesbehörden verkaufen, bestätigen Sie, dass Sie auf der IPP oder dem von Ihrer Behörde vorgesehenen E-Invoicing-Kanal eingerichtet sind",
+      "Bewahren Sie elektronische Rechnungsunterlagen so auf, dass sie gemäß IRS-Leitlinien (Publikation 583) zugänglich, korrekt und lesbar bleiben"
+    ]
+  },
+  "us-dbnalliance": {
+    "system": "DBNAlliance-B2B-E-Rechnungsaustauschnetzwerk aktiv (freiwillig, marktgetrieben)",
+    "desc": "Die Digital Business Networks Alliance (DBNAlliance) — eine gemeinnützige Organisation, die aus einem Pilotprojekt der Federal Reserve / Business Payments Coalition hervorging — betreibt nun ein Peppol-ähnliches Vier-Ecken-Netzwerk für den freiwilligen strukturierten B2B-E-Rechnungsaustausch in den USA und Kanada. Kein Bundes- oder Landesgesetz schreibt die Einführung vor.",
+    "actions": [
+      "Erwägen Sie den Anschluss über einen von DBNAlliance zertifizierten Dienstleister vor einer möglichen künftigen Pflicht",
+      "Falls Sie mit Partnern in Ländern handeln, die E-Invoicing bereits vorschreiben (EU, Mexiko, Brasilien usw.), stellen Sie sicher, dass Ihre Systeme weiterhin deren erforderliche Formate erzeugen können"
+    ]
+  },
+  "ca-federal-b2g": {
+    "system": "Alle Lieferanten der Bundesregierung müssen elektronisch fakturieren (B2G, seit 2022 in Kraft)",
+    "desc": "Seit April 2022 verlangt Public Services and Procurement Canada (PSPC) von Lieferanten, Rechnungen elektronisch über seine SAP-Ariba-basierte E-Beschaffungslösung einzureichen. Es besteht keine bundesweite B2B-E-Invoicing-Pflicht.",
+    "actions": [
+      "Wenn Sie die kanadische Regierung beliefern, registrieren Sie sich über CanadaBuys in SAP Ariba",
+      "Bewahren Sie elektronische Rechnungen gemäß den Aufbewahrungspflichten der CRA mindestens 6 Jahre lang auf"
+    ]
+  },
+  "ca-watch": {
+    "system": "CRA prüft eine mögliche B2B-E-Invoicing-Pflicht (keine Pflicht erlassen)",
+    "desc": "Die Canada Revenue Agency führte eine Stakeholder-Untersuchung zu einer möglichen inländischen B2B-E-Invoicing-Pflicht durch. Es folgten weder Gesetzgebung noch ein fester Zeitplan — die GST-/HST-Vorschriften bleiben formatneutral, und Papier-, PDF- und EDI-Rechnungen sind derzeit alle zulässig, sofern sie die erforderlichen Steuerangaben enthalten.",
+    "actions": [
+      "Heute ist über gute Aufbewahrungspraxis hinaus keine Maßnahme erforderlich",
+      "Verfolgen Sie künftige Ankündigungen der CRA / von Finance Canada, insbesondere da die Nutzung des DBNAlliance-Netzwerks in Kanada zunimmt"
+    ]
+  }
+}

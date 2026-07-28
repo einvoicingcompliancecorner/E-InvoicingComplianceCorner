@@ -48,5 +48,42 @@
   "languageSwitcher": {
     "label": "Language",
     "unreviewedBanner": "This translation was produced with AI assistance and has not yet been reviewed by a human translator. Wording may be imprecise — refer to the English version if anything looks unclear."
+  },
+  "regionNames": {
+    "Europe": "Europe",
+    "Middle East": "Middle East",
+    "Asia-Pacific": "Asia-Pacific",
+    "Americas": "Americas"
+  },
+  "countryNames": {
+    "European Union": "European Union", "Belgium": "Belgium", "Germany": "Germany", "France": "France",
+    "Poland": "Poland", "Italy": "Italy", "Saudi Arabia": "Saudi Arabia", "Malaysia": "Malaysia",
+    "India": "India", "Brazil": "Brazil", "Spain": "Spain", "United Kingdom": "United Kingdom",
+    "Romania": "Romania", "United Arab Emirates": "United Arab Emirates", "Mexico": "Mexico",
+    "Australia": "Australia", "New Zealand": "New Zealand", "Singapore": "Singapore", "Slovakia": "Slovakia",
+    "Peru": "Peru", "Chile": "Chile", "Ireland": "Ireland", "Norway": "Norway", "Denmark": "Denmark",
+    "Sweden": "Sweden", "China": "China", "Croatia": "Croatia", "United States": "United States", "Canada": "Canada"
+  },
+  "filters": {
+    "all": "All",
+    "inEffect": "In effect",
+    "dueSoon": "Due soon",
+    "upcoming": "Upcoming",
+    "nextClearanceDates": "Next clearance dates",
+    "searchPlaceholder": "Search country or system…",
+    "noResults": "No milestones match these filters.",
+    "footerNote": "Data compiled from official tax-authority and EU Commission sources. \"Days remaining\" and status badges are calculated automatically from today's date. <a href=\"privacy-policy.html\" style=\"color:var(--soon);\">Privacy Policy</a>",
+    "soonestFirst": "Soonest first",
+    "furthestFirst": "Furthest first",
+    "milestoneSingular": "milestone",
+    "milestonePlural": "milestones",
+    "total": "total",
+    "establishedRegulations": "Established regulations"
+  },
+  "cardLabels": {
+    "actionChecklist": "Action checklist",
+    "countryDeepDive": "Country deep dive →",
+    "inEffectSince": "In effect since",
+    "expectedNotFinal": "Expected — not final"
   }
 }

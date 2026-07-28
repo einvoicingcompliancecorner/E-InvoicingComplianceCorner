@@ -43,6 +43,7 @@ const EICC_I18N = {
   currentLang: DEFAULT_LANGUAGE,
   strings: {},
   meta: {},
+  entryData: {}, // per-id translations of {system, desc, actions} for the current language
 
   detectLanguage() {
     const params = new URLSearchParams(window.location.search);
@@ -73,6 +74,19 @@ const EICC_I18N = {
       console.warn(`i18n: could not load "${code}", falling back to English.`, err);
       if (code !== DEFAULT_LANGUAGE) {
         await this.loadLanguage(DEFAULT_LANGUAGE);
+        return;
+      }
+    }
+
+    // Load the per-country DATA translations too, if this isn't English
+    // (English IS the source data, so there's nothing to load/override).
+    this.entryData = {};
+    if (this.currentLang !== DEFAULT_LANGUAGE) {
+      try {
+        const res = await fetch(`i18n/${this.currentLang}-data.json`);
+        if (res.ok) this.entryData = await res.json();
+      } catch (err) {
+        console.warn(`i18n: could not load i18n/${this.currentLang}-data.json — DATA entries will stay in English.`, err);
       }
     }
   },
@@ -89,6 +103,29 @@ const EICC_I18N = {
       }
     }
     return typeof node === "string" ? node : null;
+  },
+
+  // Translate a country or region name via the loaded dictionary,
+  // falling back to the original English name if no translation exists.
+  translateCountry(name) {
+    return this.strings?.countryNames?.[name] || name;
+  },
+  translateRegion(name) {
+    return this.strings?.regionNames?.[name] || name;
+  },
+
+  // Given a DATA entry object (with .id, .system, .desc, .actions), return
+  // the translated {system, desc, actions} for the current language, or
+  // the entry's own English fields if no translation is available for
+  // that specific entry (e.g. a country added after this language's data
+  // file was last updated).
+  translateEntry(entry) {
+    const t = this.entryData[entry.id];
+    return {
+      system: t?.system || entry.system,
+      desc: t?.desc || entry.desc,
+      actions: t?.actions || entry.actions,
+    };
   },
 
   applyToDom() {

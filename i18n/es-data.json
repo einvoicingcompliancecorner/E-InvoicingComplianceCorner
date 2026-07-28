@@ -1,0 +1,561 @@
+{
+  "eu-transpose": {
+    "system": "ViDA — transposición nacional",
+    "desc": "Cada Estado miembro de la UE debe transponer la Directiva del IVA en la Era Digital (ViDA) a su legislación nacional, allanando el camino para que los mandatos nacionales de facturación electrónica se alineen con el marco de la UE.",
+    "actions": [
+      "Siga el calendario de transposición de su autoridad fiscal nacional y cualquier norma doméstica nueva que introduzca",
+      "Confirme que sus sistemas ERP/CxP pueden emitir facturas electrónicas estructuradas conformes con EN 16931",
+      "Esté atento a las excepciones específicas de cada país que puedan fijar una fecha límite nacional anterior o posterior"
+    ]
+  },
+  "eu-drr": {
+    "system": "ViDA — Requisitos de Reporte Digital transfronterizo",
+    "desc": "La facturación electrónica estructurada y los Requisitos de Reporte Digital (DRR) casi en tiempo real pasan a ser obligatorios en toda la UE para las transacciones B2B transfronterizas. Se elimina el Listado Recapitulativo (Modelo 349) y se sustituye por el DRR.",
+    "actions": [
+      "Poder emitir facturas electrónicas conformes con EN 16931 dentro de los 10 días posteriores al hecho imponible en ventas B2B intracomunitarias",
+      "Incorpore el reporte casi en tiempo real a su flujo de facturación antes de la fecha de entrada en vigor",
+      "Retire los procesos del Listado Recapitulativo una vez que el DRR los sustituya"
+    ]
+  },
+  "eu-align": {
+    "system": "ViDA — armonización de sistemas nacionales",
+    "desc": "Todos los sistemas nacionales de facturación electrónica y reporte ya existentes (incluidos modelos de compensación consolidados como el SDI de Italia) deben alinearse con la norma armonizada de la UE bajo ViDA.",
+    "actions": [
+      "Si opera en un país con su propio sistema de compensación, confirme su plan de alineación con EN 16931/ViDA",
+      "Planifique un modelo de reporte único para todos los mercados de la UE en los que opere"
+    ]
+  },
+  "be-mandate": {
+    "system": "Facturación electrónica B2B obligatoria vía Peppol",
+    "desc": "La facturación electrónica estructurada pasó a ser obligatoria para las transacciones B2B nacionales entre empresas belgas registradas a efectos del IVA, utilizando el estándar Peppol BIS Billing 3.0 / EN 16931.",
+    "actions": [
+      "Conéctese a través de un Punto de Acceso Peppol certificado (o confirme que su proveedor lo es)",
+      "Emita y reciba facturas UBL Peppol BIS Billing 3.0 para todas las ventas B2B nacionales",
+      "Las facturas en PDF y en papel ya no son válidas — solo se admite el formato estructurado"
+    ]
+  },
+  "be-penalty": {
+    "system": "Finaliza el período de tolerancia — se aplican sanciones",
+    "desc": "Finalizó el período de tolerancia administrativa de tres meses; ahora se aplica un régimen de sanciones progresivas (1.500 € / 3.000 € / 5.000 €) a la facturación no conforme.",
+    "actions": [
+      "Resuelva de inmediato cualquier vacío pendiente en la incorporación a Peppol — se aplican multas por infracción",
+      "Audite las facturas recientes para verificar el cumplimiento del formato estructurado"
+    ]
+  },
+  "be-ereport": {
+    "system": "Reporte casi en tiempo real (modelo Peppol de 5 esquinas)",
+    "desc": "Bélgica prevé introducir el reporte digital de IVA casi en tiempo real mediante un modelo Peppol de cinco esquinas, que enviará automáticamente los datos de las facturas a la autoridad fiscal.",
+    "actions": [
+      "Empiece a definir el alcance de la capacidad de reporte Peppol de cinco esquinas con su proveedor de Punto de Acceso",
+      "Confirme que esto sigue en marcha a medida que se acerque la fecha — las normas de aplicación finales aún están pendientes"
+    ]
+  },
+  "de-receive": {
+    "system": "Recepción obligatoria de facturas electrónicas estructuradas",
+    "desc": "Todas las empresas alemanas, sin importar su tamaño, deben poder recibir facturas electrónicas estructuradas conformes con EN 16931 (XRechnung o ZUGFeRD) para transacciones B2B nacionales.",
+    "actions": [
+      "Confirme que su proceso de cuentas por pagar puede aceptar XML XRechnung o PDF híbridos ZUGFeRD",
+      "Un buzón de correo capaz de recibir facturas estructuradas cumple el mínimo requerido actualmente"
+    ]
+  },
+  "de-issue-large": {
+    "system": "Obligación de emisión — empresas con facturación superior a 800.000 €",
+    "desc": "Las empresas con facturación del ejercicio anterior superior a 800.000 € deben emitir facturas electrónicas estructuradas para transacciones B2B nacionales; las facturas solo en PDF ya no son válidas para este grupo.",
+    "actions": [
+      "Confirme que su ERP puede generar salida XRechnung o ZUGFeRD 2.1 o superior",
+      "Los acuerdos EDI existentes deben cumplir con EN 16931 o transicionar antes de finales de 2027"
+    ]
+  },
+  "de-issue-all": {
+    "system": "Obligación de emisión — todas las empresas B2B nacionales",
+    "desc": "La obligación de emisión se extiende a todas las empresas B2B nacionales sin importar la facturación, completando el despliegue por fases de Alemania bajo la Ley de Oportunidades de Crecimiento.",
+    "actions": [
+      "Complete el despliegue en cualquier flujo de facturación B2B nacional restante",
+      "No se aplicarán más disposiciones transitorias después de esta fecha"
+    ]
+  },
+  "fr-receive": {
+    "system": "Obligación de recepción + emisión para grandes y medianas empresas",
+    "desc": "Todas las empresas registradas a efectos del IVA en Francia deben poder recibir facturas electrónicas; las grandes y medianas empresas también deben emitirlas a través del portal público (PPF) o una plataforma acreditada (PA, antes PDP).",
+    "actions": [
+      "Registre la entrada de su directorio empresarial en el PPF (Portail Public de Facturation)",
+      "Elija una Plateforme Agréée acreditada o utilice el portal público gratuito",
+      "Configure el e-reporting para transacciones B2C y transfronterizas junto con la facturación electrónica"
+    ]
+  },
+  "fr-issue-all": {
+    "system": "La obligación de emisión se extiende a todas las empresas restantes",
+    "desc": "Las pequeñas y microempresas, incluidos los autónomos, deben emitir facturas electrónicas, completando la reforma francesa por fases de facturación electrónica y e-reporting B2B.",
+    "actions": [
+      "Finalice el software de facturación o la integración con la PA con suficiente antelación a la fecha límite",
+      "Confirme que su software admite el formato Factur-X, UBL o CII"
+    ]
+  },
+  "pl-large": {
+    "system": "KSeF obligatorio — grandes contribuyentes (>200 millones PLN)",
+    "desc": "Los grandes contribuyentes con facturación superior a 200 millones de zlotys se convirtieron en el primer grupo obligado a emitir facturas B2B a través de la plataforma de compensación Krajowy System e-Faktur (KSeF).",
+    "actions": [
+      "Intégrese con KSeF vía API utilizando el esquema XML FA(3)",
+      "Configure las autorizaciones de KSeF para el personal y cualquier emisor externo"
+    ]
+  },
+  "pl-all": {
+    "system": "KSeF obligatorio — el resto de las empresas registradas a efectos del IVA",
+    "desc": "El mandato de KSeF se extendió a todas las empresas registradas a efectos del IVA en Polonia restantes (excluyendo a los microempresarios); una factura solo tiene validez legal una vez que KSeF la ha compensado.",
+    "actions": [
+      "Confirme que su sistema de facturación genera facturas estructuradas FA(3) válidas",
+      "Las notas de corrección (noty korygujące) ya no son válidas — use el proceso de corrección estructurado de KSeF en su lugar",
+      "Añada el número de factura de KSeF a las referencias de transferencia bancaria cuando ese requisito entre en vigor (1 de agosto de 2026)"
+    ]
+  },
+  "pl-micro": {
+    "system": "KSeF obligatorio — microempresarios; comienzan las sanciones",
+    "desc": "Los microempresarios se incorporan al mandato de KSeF, y el período de gracia sobre las sanciones económicas (hasta el 100% del IVA de la factura por incumplimiento) finaliza para todos.",
+    "actions": [
+      "Microempresas: confirmen que la integración con KSeF está activa mucho antes de esta fecha",
+      "Todas las empresas: resuelvan cualquier vacío de cumplimiento pendiente antes de que se apliquen las sanciones"
+    ]
+  },
+  "it-sdi": {
+    "system": "Facturación electrónica B2B/B2C obligatoria vía SDI (en vigor desde 2019)",
+    "desc": "Italia fue el primer Estado miembro de la UE en exigir la facturación electrónica bajo un modelo de compensación para prácticamente todas las transacciones nacionales — B2B, B2C y B2G — a través del Sistema di Interscambio (SDI), usando el formato XML FatturaPA.",
+    "actions": [
+      "Confirme que su canal de generación de FatturaPA y transmisión al SDI (PEC, FTP o servicio web) sigue activo",
+      "Vigile los cambios de alineación con EN 16931/ViDA antes de la renovación de la excepción del SDI de Italia (hasta 2027) y el plazo de armonización a nivel de la UE de 2035"
+    ]
+  },
+  "sa-wave23": {
+    "system": "ZATCA Fatoora — Ola 23 (facturación > 750.000 SAR)",
+    "desc": "Las empresas con facturación sujeta a IVA superior a 750.000 SAR en 2022, 2023 o 2024 debían completar la integración de la Fase 2 con la plataforma Fatoora para la compensación en tiempo real.",
+    "actions": [
+      "Confirme el plazo de notificación e integración directa de ZATCA para su entidad",
+      "Integre su sistema de facturación con la API de Fatoora para la compensación B2B/B2G en tiempo real",
+      "Asegúrese de que las facturas incluyan un UUID, código QR y sello criptográfico"
+    ]
+  },
+  "sa-wave24": {
+    "system": "ZATCA Fatoora — Ola 24 (facturación > 375.000 SAR)",
+    "desc": "El umbral bajó a 375.000 SAR — igualando en la práctica el umbral obligatorio de registro de IVA, incorporando a casi todas las empresas registradas a efectos del IVA a la compensación de la Fase 2.",
+    "actions": [
+      "Asuma que está dentro del alcance si está registrado a efectos del IVA; ZATCA notifica a los contribuyentes afectados con unos seis meses de antelación",
+      "Emita facturas Estándar (compensación, IVA soportado deducible) para B2B/B2G y facturas Simplificadas para B2C, reportadas en un plazo de 24 horas"
+    ]
+  },
+  "my-phase4": {
+    "system": "MyInvois Fase 4 — facturación de RM1m a RM5m",
+    "desc": "Las empresas con facturación anual entre RM1 millón y RM5 millones entraron en el mandato, con un período de relajación (sin sanciones por errores de presentación) extendido hasta el 31 de diciembre de 2027.",
+    "actions": [
+      "Regístrese para el acceso al portal o API de MyInvois con LHDN",
+      "Determine su fase usando sus cuentas auditadas del ejercicio 2022 o su primera declaración de impuestos disponible",
+      "Las facturas electrónicas individuales son obligatorias por encima de RM10.000 — ya no se permite la facturación consolidada para esos importes"
+    ]
+  },
+  "my-related": {
+    "system": "Empresas relacionadas/filiales de grupos con RM1m o más",
+    "desc": "Las empresas con facturación inferior a RM1 millón que son filiales o empresas relacionadas de un grupo con RM1 millón o más deben cumplir de todos modos, sin importar sus propios ingresos individuales.",
+    "actions": [
+      "Revise la estructura del grupo — la condición de empresa relacionada puede activar el mandato incluso para entidades pequeñas",
+      "Registre y pruebe la integración con MyInvois con suficiente antelación a la fecha límite"
+    ]
+  },
+  "in-threshold": {
+    "system": "Facturación electrónica GST obligatoria por encima de ₹5 crore de facturación (en vigor desde agosto de 2023)",
+    "desc": "Cualquier empresa registrada a efectos del GST con facturación anual agregada (AATO) superior a ₹5 crore en cualquier ejercicio fiscal desde 2017-18 debe generar facturas electrónicas con un IRN válido para transacciones B2B y de exportación.",
+    "actions": [
+      "Confirme la facturación agregada en todos los GSTIN bajo su PAN — solo necesita superar ₹5 crore una vez",
+      "Regístrese en un Portal de Registro de Facturas (IRP) — einvoice1.gst.gov.in del NIC o un IRP privado autorizado",
+      "Esté atento a una posible reducción del umbral a ₹2 crore, en debate pero aún no notificada"
+    ]
+  },
+  "in-30day": {
+    "system": "Ventana de reporte de IRN de 30 días (AATO ≥ ₹10 crore)",
+    "desc": "Las facturas, notas de crédito y notas de débito de más de 30 días de antigüedad ya no pueden reportarse al IRP para generar el IRN — serán rechazadas directamente para contribuyentes con AATO de ₹10 crore o más.",
+    "actions": [
+      "Incorpore la ventana de reporte de 30 días a su flujo de trabajo de CxP/CxC",
+      "Active la autenticación multifactor en el portal de GST — obligatoria desde abril de 2025"
+    ]
+  },
+  "br-fields": {
+    "system": "Campos CBS/IBS requeridos en NF-e/NFC-e/NFS-e (tasas de prueba)",
+    "desc": "A medida que comienza la reforma tributaria del IVA dual de Brasil, los documentos fiscales electrónicos deben incluir los nuevos campos CBS e IBS con tasas de prueba (0,9 % / 0,1 %) — sin impacto financiero todavía, pero la obligación legal de incluir los datos ya se aplica.",
+    "actions": [
+      "Actualice los formatos de facturación a la Nota Técnica 2025.002-RTC (versión más reciente)",
+      "Realice pruebas en el entorno de homologación de la SEFAZ antes de la puesta en marcha",
+      "Los contribuyentes de Simples Nacional / MEI tienen un plazo ampliado hasta 2027"
+    ]
+  },
+  "br-validate": {
+    "system": "Comienza la validación de campos CBS/IBS — riesgo de rechazo",
+    "desc": "Los sistemas de autorización comienzan a validar rigurosamente los campos CBS/IBS; las facturas con datos incompletos o inconsistentes corren el riesgo de rechazo automático.",
+    "actions": [
+      "Audite la salida de facturas para verificar grupos de datos CBS/IBS/IS completos y consistentes",
+      "Resuelva rápidamente cualquier rechazo — las facturas bloqueadas detienen el movimiento de mercancías"
+    ]
+  },
+  "br-mandatory": {
+    "system": "Obligación legal plena de reporte para el Régimen Tributario General",
+    "desc": "Bajo la Nota Técnica 2025.002-RTC v1.40, los contribuyentes del Régimen Tributario General deben reportar los grupos IBS y CBS en NF-e y NFC-e con plenos efectos legales.",
+    "actions": [
+      "Confirme que su ERP/proveedor de facturación electrónica ha completado las actualizaciones de esquema requeridas",
+      "Concilie los datos de CBS/IBS reportados con sus registros contables antes de la aplicación total"
+    ]
+  },
+  "es-verifactu-corp": {
+    "system": "Software de facturación certificado VeriFactu — contribuyentes de sociedades",
+    "desc": "Las empresas sujetas al Impuesto sobre Sociedades deben usar software de facturación certificado VeriFactu (RRSIF) que garantice la integridad, trazabilidad e inmutabilidad de los registros de facturación enviados a la Agencia Tributaria (AEAT).",
+    "actions": [
+      "Confirme que su software de facturación está certificado como VeriFactu y genera la cadena de hash y el código QR requeridos",
+      "Esta es una obligación independiente del mandato más amplio de facturación electrónica B2B de Crea y Crece detallado abajo"
+    ]
+  },
+  "es-verifactu-rest": {
+    "system": "VeriFactu obligatorio — resto de contribuyentes",
+    "desc": "La obligación VeriFactu se extiende al resto de contribuyentes obligados a llevar registros de facturación, incluidos autónomos y otros profesionales sujetos al IRPF.",
+    "actions": [
+      "Autónomos/freelancers: confirmen que el software de facturación certificado está implantado bien antes de esta fecha",
+      "Las empresas que ya usan el sistema de reporte en tiempo real SII están exentas de VeriFactu"
+    ]
+  },
+  "es-b2b-large": {
+    "system": "Facturación electrónica B2B Crea y Crece — grandes empresas (>8 millones € de facturación)",
+    "desc": "La facturación electrónica B2B estructurada pasa a ser obligatoria para grandes empresas bajo la ley Crea y Crece, intercambiada a través de plataformas privadas (con copia obligatoria a la plataforma estatal) o la solución pública gratuita (SPFE), en paralelo con VeriFactu.",
+    "actions": [
+      "Elija una plataforma de facturación electrónica privada (debe reenviar copia al SPFE) o use la plataforma pública directamente",
+      "Confirme formatos conformes con EN 16931 (UBL, Facturae, CII)",
+      "Reporte el estado de la factura — aceptada, rechazada o pagada — a la AEAT dentro de 4 días naturales"
+    ]
+  },
+  "es-b2b-all": {
+    "system": "Facturación electrónica B2B Crea y Crece — el resto de empresas",
+    "desc": "El mandato de facturación electrónica B2B se extiende a pymes, autónomos y el resto de empresas registradas a efectos del IVA, completando la reforma de doble vía de facturación electrónica de España.",
+    "actions": [
+      "Finalice la elección de plataforma e integración con suficiente antelación a la fecha límite",
+      "La Orden Ministerial final aún estaba pendiente a mediados de 2026 — confirme esta fecha más cerca del momento"
+    ]
+  },
+  "uk-mandate": {
+    "system": "Facturación electrónica obligatoria para todas las facturas con IVA (B2B y B2G)",
+    "desc": "Confirmado en los Presupuestos de 2025, todas las empresas registradas a efectos del IVA deben emitir y recibir facturas electrónicas estructuradas para transacciones B2B y B2G, usando un modelo Peppol descentralizado de cuatro esquinas. El reporte en tiempo real a la HMRC no forma parte de este mandato inicial.",
+    "actions": [
+      "Confirme que su software de contabilidad tiene una vía hacia la facturación electrónica basada en Peppol",
+      "Esté atento a la hoja de ruta completa de implementación y los estándares técnicos previstos para los Presupuestos de 2026",
+      "Empresas de Irlanda del Norte: tengan en cuenta una posible obligación adicional anterior alineada con la UE para el comercio de bienes desde julio de 2030"
+    ]
+  },
+  "ro-established": {
+    "system": "Modelo de compensación RO e-Factura obligatorio para B2B/B2G (en vigor desde julio de 2024)",
+    "desc": "Rumanía opera un modelo de compensación centralizado (CTC): las facturas B2B y B2G deben ser validadas y selladas digitalmente por la ANAF a través de RO e-Factura antes de tener efectos legales. El reporte B2C siguió desde enero de 2025.",
+    "actions": [
+      "Confirme el registro en RO e-Factura y la generación de facturas XML conformes con RO_CIUS",
+      "El plazo de transmisión es de 5 días hábiles desde la emisión (reducido desde 5 días naturales en enero de 2026)"
+    ]
+  },
+  "ro-sme": {
+    "system": "La aplicación plena se extiende a los pequeños contribuyentes (<500.000 € de facturación)",
+    "desc": "Tras un retraso confirmado, los pequeños contribuyentes con facturación inferior a 500.000 € quedan plenamente sujetos a la aplicación y sanciones de e-Factura, en igualdad de condiciones con las empresas más grandes.",
+    "actions": [
+      "Estandarice las direcciones de clientes y los códigos de país/ISO antes de la fecha límite",
+      "Confirme que su herramienta de facturación aplica la regla de transmisión de 5 días hábiles"
+    ]
+  },
+  "uae-pilot": {
+    "system": "Comienza la fase piloto voluntaria de facturación electrónica",
+    "desc": "Se abrió la participación voluntaria antes del mandato, permitiendo a las empresas probar la conectividad con un Proveedor de Servicios Acreditado (ASP) y el formato de factura PINT AE sin riesgo antes de que se apliquen sanciones.",
+    "actions": [
+      "Considere unirse al piloto voluntario para resolver problemas de integración con el ASP antes de la fase obligatoria",
+      "Siga las actualizaciones de orientación técnica de la Autoridad Federal de Impuestos (FTA)"
+    ]
+  },
+  "uae-asp": {
+    "system": "Plazo de nombramiento de ASP — empresas con facturación ≥ 50 millones AED",
+    "desc": "Las empresas con facturación de 50 millones AED o más deben haber nombrado un Proveedor de Servicios Acreditado (ASP) antes de la puesta en marcha de enero de 2027 (plazo ampliado desde el 31 de julio de 2026).",
+    "actions": [
+      "Seleccione y contrate un Proveedor de Servicios Acreditado por la FTA",
+      "Comience las pruebas de integración PINT AE (UBL 2.1) con su ASP"
+    ]
+  },
+  "uae-phase1": {
+    "system": "Puesta en marcha obligatoria de la Fase 1 — facturación ≥ 50 millones AED",
+    "desc": "La facturación electrónica estructurada pasa a ser obligatoria para grandes empresas, transmitida a través de un ASP por la red Peppol en formato PINT AE, con una copia en tiempo real reportada a la FTA.",
+    "actions": [
+      "Complete la integración con el ASP y las pruebas de extremo a extremo antes de la puesta en marcha",
+      "Asegúrese de que las facturas incluyan todos los campos de datos exigidos por la FTA — el PDF y el papel ya no son válidos"
+    ]
+  },
+  "uae-phase2": {
+    "system": "El mandato se extiende a todas las demás empresas registradas a efectos del IVA",
+    "desc": "El mandato de facturación electrónica se amplía para cubrir a todas las empresas registradas a efectos del IVA restantes para transacciones B2B/B2G, con obligaciones específicas de G2B/B2G a partir de octubre de 2027.",
+    "actions": [
+      "Confirme el estado de registro de IVA y nombre un ASP con suficiente antelación a esta fecha",
+      "Las transacciones intragrupo dentro de un mismo grupo de IVA de los EAU tienen una transición ampliada hasta el 1 de enero de 2029"
+    ]
+  },
+  "mx-cfdi": {
+    "system": "Modelo de compensación CFDI obligatorio (versión actual CFDI 4.0)",
+    "desc": "México opera uno de los sistemas de compensación de facturación electrónica más maduros del mundo: cada factura debe ser validada y sellada digitalmente (timbrada) por un PAC autorizado antes de tener validez legal, en formato XML CFDI 4.0.",
+    "actions": [
+      "Asegure la conectividad con el PAC y el mapeo actualizado de campos CFDI 4.0 (Anexo 20) — el RFC/nombre/Régimen Fiscal del receptor debe coincidir exactamente con los registros del SAT",
+      "Adjunte los complementos requeridos cuando corresponda (Carta Porte para transporte de mercancías, Pagos para pagos a plazos, Comercio Exterior para exportaciones)",
+      "Conserve las facturas XML y los acuses de recibo del PAC durante al menos 5 años"
+    ]
+  },
+  "mx-reform": {
+    "system": "Reforma fiscal de 2026 — requisitos de autenticidad y aplicación más estrictos",
+    "desc": "Una reforma fiscal vigente desde enero de 2026 reforzó las facultades de fiscalización del SAT, añadiendo controles de autenticidad más estrictos y responsabilidad penal por CFDI falsos o simulados.",
+    "actions": [
+      "Mantenga evidencia que respalde la autenticidad de las transacciones — contratos, comprobantes de entrega, registros de pago — ya que el SAT puede solicitarlos en un plazo de 5 días hábiles",
+      "Revise la documentación de defensa de CFDI y los procedimientos de cancelación dadas las nuevas disposiciones de responsabilidad penal"
+    ]
+  },
+  "au-ncereceive": {
+    "system": "Organismos federales obligados a recibir facturas Peppol (en vigor desde julio de 2022)",
+    "desc": "Todas las Entidades No Corporativas de la Mancomunidad (organismos federales) están obligadas a recibir facturas Peppol desde el 1 de julio de 2022. No existe un mandato general B2B, pero la adopción gubernamental sigue acelerándose.",
+    "actions": [
+      "Proveedores de organismos federales: conéctense a través de un Punto de Acceso Peppol acreditado por la ATO",
+      "Las facturas entregadas vía Peppol pueden pagarse en 5 días en lugar de los 20 estándar"
+    ]
+  },
+  "au-30pct": {
+    "system": "El 30 % de las facturas de organismos federales debe procesarse vía Peppol",
+    "desc": "Las Entidades No Corporativas de la Mancomunidad deben tener al menos el 30 % de las facturas de proveedores recibidas fluyendo por la red Peppol, camino hacia la automatización total en diciembre de 2026.",
+    "actions": [
+      "Si abastece a organismos federales australianos, confirme que su facturación está habilitada para Peppol",
+      "Use el formato PINT A-NZ — el único estándar admitido desde el 15 de mayo de 2025"
+    ]
+  },
+  "au-automate": {
+    "system": "Los organismos federales deben automatizar el envío y procesamiento de facturas electrónicas",
+    "desc": "Las Entidades No Corporativas de la Mancomunidad deben poder procesar automáticamente las facturas electrónicas recibidas y enviar facturas electrónicas, con reporte trimestral de avance a la Autoridad Peppol Australiana.",
+    "actions": [
+      "Confirme que su configuración de facturación electrónica admite el procesamiento totalmente automatizado, sin intervención manual",
+      "Los proveedores del gobierno deben esperar ciclos de pago más rápidos a medida que se implanta la automatización"
+    ]
+  },
+  "nz-central": {
+    "system": "Los organismos del gobierno central obligados a recibir facturas electrónicas (en vigor desde marzo de 2022)",
+    "desc": "Todos los organismos públicos centrales están obligados a recibir facturas Peppol desde marzo de 2022, administrado por el MBIE como la Autoridad Peppol de Nueva Zelanda.",
+    "actions": [
+      "Proveedores de organismos centrales: configuren la capacidad de facturación Peppol a través de un Punto de Acceso acreditado"
+    ]
+  },
+  "nz-2000": {
+    "system": "Los organismos que gestionan más de 2.000 facturas/año deben enviar y recibir facturas electrónicas",
+    "desc": "Los organismos gubernamentales que procesan más de 2.000 facturas comerciales nacionales al año deben poder tanto enviar como recibir facturas electrónicas estructuradas, y pagar el 95 % de ellas en un plazo de 5 días hábiles.",
+    "actions": [
+      "Confirme el cumplimiento del formato PINT A-NZ — obligatorio para la facturación electrónica gubernamental desde mayo de 2025",
+      "Compruebe si su cliente gubernamental se encuentra dentro de este umbral de volumen"
+    ]
+  },
+  "nz-largesupplier": {
+    "system": "Los grandes proveedores (facturación >33 millones NZD) deben enviar facturas electrónicas al gobierno",
+    "desc": "Los proveedores con facturación superior a 33 millones NZD en cada uno de los dos ejercicios contables anteriores deben enviar facturas electrónicas vía Peppol para facturas de comercio nacional a compradores gubernamentales.",
+    "actions": [
+      "Evalúe si su facturación supera el umbral de 33 millones NZD",
+      "Intégrese con un Punto de Acceso Peppol con suficiente antelación a la fecha límite"
+    ]
+  },
+  "sg-voluntary2025": {
+    "system": "GST InvoiceNow obligatorio — nuevos registrantes voluntarios de GST (dentro de los 6 meses de constitución)",
+    "desc": "La primera fase obligatoria de GST InvoiceNow exigió a las empresas que se registraron voluntariamente para el GST dentro de los seis meses posteriores a su constitución que transmitieran los datos de facturación a la IRAS a través de la red InvoiceNow basada en Peppol.",
+    "actions": [
+      "Nuevos registrantes de GST que califiquen: configuren una Solución Lista para InvoiceNow y un ID Peppol en el momento del registro"
+    ]
+  },
+  "sg-allvoluntary": {
+    "system": "El mandato se extiende a todos los nuevos registrantes voluntarios de GST",
+    "desc": "Todos los nuevos registrantes voluntarios de GST, sin importar la fecha de constitución o la estructura empresarial, deben adoptar InvoiceNow como condición del registro de GST.",
+    "actions": [
+      "Incorpore la configuración de InvoiceNow a su solicitud de registro de GST a partir de esta fecha",
+      "Use la calculadora de fecha de implementación de la IRAS si no está seguro de qué fase le corresponde"
+    ]
+  },
+  "sg-existing2028": {
+    "system": "Comienza el despliegue por fases para empresas ya registradas a efectos del GST",
+    "desc": "Las empresas ya registradas a efectos del GST comienzan a incorporarse a GST InvoiceNow según un calendario por fases que culmina en la adopción total en 2031. La IRAS notificará a las empresas afectadas su fecha específica durante 2026.",
+    "actions": [
+      "Use la Calculadora de Fecha de Implementación de GST InvoiceNow de la IRAS para determinar su fecha aplicable",
+      "Esté atento a la notificación directa de la IRAS (prevista para mediados de 2026)"
+    ]
+  },
+  "sg-full2031": {
+    "system": "Adopción total — todas las empresas registradas a efectos del GST",
+    "desc": "Para esta fecha, toda empresa registrada a efectos del GST en Singapur, incluidas las grandes multinacionales, debe transmitir los datos de facturación vía InvoiceNow.",
+    "actions": [
+      "Planifique la integración con suficiente antelación — hay subvenciones gubernamentales transitorias disponibles para apoyar la adopción"
+    ]
+  },
+  "sk-voluntary": {
+    "system": "Comienza el período de transición voluntario de facturación/reporte electrónico",
+    "desc": "Las empresas pueden registrarse voluntariamente para probar la facturación electrónica estructurada y el reporte antes del mandato de enero de 2027, usando un modelo descentralizado de \"5 esquinas\" basado en Peppol.",
+    "actions": [
+      "Regístrese para la participación voluntaria con la Administración Financiera para probar integraciones con antelación",
+      "Confirme que su software de contabilidad puede generar XML UBL Peppol BIS 3.0"
+    ]
+  },
+  "sk-mandate": {
+    "system": "Facturación electrónica B2B/B2G nacional obligatoria y reporte casi en tiempo real",
+    "desc": "La facturación electrónica estructurada y el reporte en tiempo real pasan a ser obligatorios para transacciones B2B y B2G nacionales entre contribuyentes eslovacos de IVA, usando puntos de acceso certificados \"Digital Postman\" en una red basada en Peppol.",
+    "actions": [
+      "Seleccione un proveedor de Digital Postman (punto de acceso certificado) aprobado",
+      "A partir de 2027, no se podrán deducir el IVA soportado en facturas entrantes no conformes",
+      "Nota: la facturación electrónica transfronteriza sigue después, bajo el calendario de ViDA de la UE desde julio de 2030"
+    ]
+  },
+  "pe-established": {
+    "system": "Facturación electrónica (CPE) obligatoria para todos los contribuyentes (en vigor desde junio de 2022)",
+    "desc": "Perú opera uno de los sistemas de facturación electrónica más maduros de América Latina. Los Comprobantes de Pago Electrónicos (CPE) deben emitirse en XML UBL 2.1, firmados digitalmente, y validados por la SUNAT o un Operador de Servicios Electrónicos (OSE) autorizado antes de tener validez legal.",
+    "actions": [
+      "Use un Proveedor de Servicios Electrónicos (PSE) aprobado para generar y firmar CPE",
+      "Envíe las facturas electrónicas a la SUNAT dentro de los 3 días naturales posteriores a la emisión",
+      "Archive las facturas XML y las confirmaciones de recepción CDR durante al menos 5 años"
+    ]
+  },
+  "cl-established": {
+    "system": "Documentos Tributarios Electrónicos (DTE) obligatorios para todas las empresas (en vigor desde 2018)",
+    "desc": "Todas las empresas chilenas deben emitir Documentos Tributarios Electrónicos (DTE) — incluyendo facturas (B2B) y boletas (B2C) — validados por el Servicio de Impuestos Internos (SII).",
+    "actions": [
+      "Confirme que su sistema de emisión de DTE está autorizado y conectado al SII",
+      "Para ventas superiores a 135 UF, la boleta electrónica debe identificar al comprador por RUT y nombre"
+    ]
+  },
+  "cl-digital-delivery": {
+    "system": "Se requiere entrega digital de la boleta electrónica cuando no hay impresora disponible",
+    "desc": "Las empresas sin capacidad de impresión deben entregar la boleta electrónica digitalmente — por correo electrónico, SMS, WhatsApp, código QR u otro canal electrónico equivalente — en lugar de omitir la entrega por completo.",
+    "actions": [
+      "Si carece de impresión en el punto de venta, configure ahora un canal de entrega electrónica (correo/SMS/QR)",
+      "Las empresas con impresoras generalmente deben seguir entregando la representación impresa"
+    ]
+  },
+  "ie-phase1": {
+    "system": "Fase 1 — las grandes corporaciones deben emitir facturas electrónicas; todas las empresas deben poder recibirlas",
+    "desc": "Las grandes corporaciones registradas a efectos del IVA gestionadas por la División de Grandes Corporaciones de Revenue deben emitir facturas electrónicas estructuradas y reportar un subconjunto de datos de transacciones para ventas B2B nacionales. A partir de esta fecha, todas las empresas deben estar técnicamente capacitadas para recibir facturas electrónicas estructuradas.",
+    "actions": [
+      "Grandes corporaciones: evalúen la preparación de su ERP para la facturación estructurada EN 16931 vía Peppol desde ahora",
+      "Todas las empresas: confirmen que sus sistemas pueden recibir facturas electrónicas estructuradas — los PDF ya no serán aceptados de proveedores dentro del alcance"
+    ]
+  },
+  "ie-phase2": {
+    "system": "Fase 2 — el mandato se extiende a todas las empresas registradas a efectos del IVA en comercio intracomunitario",
+    "desc": "La obligación nacional de facturación electrónica y reporte se extiende a todas las empresas restantes registradas a efectos del IVA que participan en el comercio B2B transfronterizo dentro de la UE, antes del pleno cumplimiento de ViDA de la UE en julio de 2030.",
+    "actions": [
+      "Las empresas que comercian de forma transfronteriza dentro de la UE deben comenzar a planificar la integración con Peppol",
+      "Esté atento a las directrices detalladas de Revenue, previstas con bastante antelación a cada fase"
+    ]
+  },
+  "no-issue": {
+    "system": "Emisión obligatoria de facturas electrónicas B2B (EHF 3.0 / Peppol BIS)",
+    "desc": "Tras la promulgación de las enmiendas a la Ley de Contabilidad, todas las empresas con obligaciones contables noruegas deben emitir facturas electrónicas estructuradas (formato EHF) a otras empresas registradas en el directorio ELMA.",
+    "actions": [
+      "Regístrese en ELMA (el directorio noruego de receptores Peppol) si aún no figura en él",
+      "Confirme que su software de facturación admite la salida EHF 3.0 / Peppol BIS",
+      "Las facturas B2B en PDF y en papel dejarán de ser válidas para las transacciones dentro del alcance"
+    ]
+  },
+  "no-receive": {
+    "system": "Recepción obligatoria de facturas electrónicas y contabilidad totalmente digital",
+    "desc": "El mandato se extiende a la recepción de facturas electrónicas estructuradas y al mantenimiento de registros contables totalmente digitales, completando la reforma noruega en dos fases.",
+    "actions": [
+      "Planifique la migración a un sistema de contabilidad digital aprobado con suficiente antelación a esta fecha",
+      "Confirme que los sistemas de CxP pueden recibir y procesar automáticamente facturas EHF/Peppol"
+    ]
+  },
+  "dk-established": {
+    "system": "Ley de Contabilidad Digital en vigor — empresas medianas/grandes (en vigor desde julio de 2024)",
+    "desc": "Las empresas medianas y grandes que presentan informes anuales deben usar un sistema de contabilidad digital certificado capaz de enviar y recibir facturas electrónicas estructuradas (OIOUBL o Peppol BIS 3.0) y generar archivos SAF-T a petición.",
+    "actions": [
+      "Confirme que su sistema de contabilidad figura en la lista certificada de la Autoridad Empresarial Danesa, o garantice el cumplimiento usted mismo si usa un sistema personalizado",
+      "Mantenga registros digitales durante 5 años con copia de seguridad automatizada externa"
+    ]
+  },
+  "dk-small": {
+    "system": "Las pequeñas empresas (facturación >300.000 DKK) con sistemas personalizados deben cumplir",
+    "desc": "Las pequeñas empresas y empresas unipersonales que superan los 300.000 DKK de facturación en dos años consecutivos, que usan sistemas de contabilidad no registrados (\"personalizados\"), quedan plenamente sujetas a los requisitos digitales de la Ley de Contabilidad.",
+    "actions": [
+      "Compruebe si su facturación ha superado el umbral de 300.000 DKK en los últimos dos ejercicios fiscales",
+      "Las empresas con sistemas registrados/certificados ya debían cumplir desde enero de 2026"
+    ]
+  },
+  "se-b2g": {
+    "system": "Facturación electrónica B2G obligatoria para todas las entidades públicas (en vigor desde 2019)",
+    "desc": "Todas las autoridades contratantes y entidades públicas de Suecia deben poder recibir facturas electrónicas conformes con EN 16931, siendo Peppol BIS Billing 3.0 el formato recomendado (y cada vez más exigido) a medida que se retiran formatos heredados como Svefaktura.",
+    "actions": [
+      "Proveedores de entidades públicas suecas: usen Peppol BIS Billing 3.0 cuando sea posible — los formatos heredados SFTI/EDIFACT están siendo retirados",
+      "Aún no existe un mandato B2B nacional — vea la entrada siguiente sobre la alineación esperada con la UE"
+    ]
+  },
+  "se-b2b-expected": {
+    "system": "Se espera la facturación electrónica B2B transfronteriza bajo ViDA de la UE",
+    "desc": "Suecia aún no ha legislado un mandato nacional de facturación electrónica B2B; Skatteverket, DIGG y Bolagsverket han pedido al gobierno que evalúe uno, pero el único plazo firme actualmente sobre la mesa es el requisito transfronterizo de ViDA a nivel de la UE.",
+    "actions": [
+      "Siga de cerca cualquier anuncio de mandato nacional — aún está pendiente una propuesta formal del gobierno",
+      "Los comerciantes transfronterizos deben planificar igualmente la preparación EN 16931/Peppol antes del plazo de 2030 a nivel de la UE"
+    ]
+  },
+  "cn-nationwide": {
+    "system": "La factura electrónica totalmente digitalizada (e-fapiao) se implanta a nivel nacional (en vigor desde diciembre de 2024)",
+    "desc": "La Administración Estatal de Tributación (STA) completó la implantación nacional de facturas electrónicas totalmente digitalizadas (e-fapiao), otorgándoles la misma validez legal que las facturas en papel y sustituyendo las fases piloto anteriores del Sistema Fiscal de Oro.",
+    "actions": [
+      "Configure una cuenta fiscal digital con la STA para emitir y recibir e-fapiao",
+      "Confirme que los sistemas ERP/facturación pueden generar e-fapiao con los campos obligatorios en chino simplificado y renderizado OFD/XML",
+      "Conserve el código de factura de la STA, la firma digital, el código QR dinámico y la marca de tiempo de compensación de cada factura"
+    ]
+  },
+  "cn-paper-phaseout": {
+    "system": "Se acelera la eliminación regional de las facturas en papel",
+    "desc": "Autoridades fiscales locales en varias regiones (por ejemplo, Dalian, con efecto desde el 1 de julio de 2026) han comenzado a eliminar tipos específicos de facturas en papel supervisadas fiscalmente en favor de la e-fapiao, y se espera que más regiones sigan este ejemplo durante 2026.",
+    "actions": [
+      "Consulte los anuncios de su oficina local de la STA sobre las fechas de eliminación del papel específicas de su región y sector",
+      "Las facturas emitidas antes de la fecha límite de una región siguen siendo válidas, pero la nueva emisión en papel puede bloquearse a partir de esa fecha"
+    ]
+  },
+  "hr-b2b": {
+    "system": "Fiskalizacija 2.0 — facturación y reporte electrónico obligatorios para empresas registradas a efectos del IVA",
+    "desc": "La reforma \"Fiscalización 2.0\" de Croacia hizo obligatoria la facturación electrónica estructurada (emisión y recepción) y el e-reporting en tiempo real para todos los contribuyentes croatas registrados a efectos del IVA, sumándose al mandato de facturación electrónica B2G ya vigente desde 2019.",
+    "actions": [
+      "Registre una dirección AMS y contrate un intermediario de información o punto de acceso certificado",
+      "Asegúrese de que los sistemas ERP generen XML UBL 2.1 válido alineado con el CIUS HR-FISK 2.0 (incluidos códigos KPD de 6 dígitos y OIB)",
+      "Incorpore el flujo de trabajo de fiscalización del comprador a 5 días y el e-reporting mensual antes del día 20",
+      "Archive las facturas XML originales durante 11 años"
+    ]
+  },
+  "hr-nonvat": {
+    "system": "El mandato se extiende a entidades no registradas a efectos del IVA y organismos públicos",
+    "desc": "La obligación de emitir (no solo recibir) facturas electrónicas estructuradas y datos de e-reporting se extiende a entidades no registradas a efectos del IVA — pequeñas empresas, autónomos y ciertos organismos públicos/presupuestarios.",
+    "actions": [
+      "Empresas y autónomos no registrados a efectos del IVA: confirmen la capacidad de emisión de facturación electrónica con suficiente antelación a esta fecha",
+      "Los organismos públicos no registrados a efectos del IVA deben completar la integración del punto de acceso durante 2026"
+    ]
+  },
+  "us-federal-b2g": {
+    "system": "Los organismos federales deben gestionar las facturas electrónicamente (B2G, en vigor desde 2018)",
+    "desc": "La Oficina de Gestión y Presupuesto ordenó a los organismos federales pasar a la facturación electrónica para las contrataciones apropiadas. La mayoría usan ahora la Plataforma de Procesamiento de Facturas (IPP) del Tesoro — pero no existe un formato único obligatorio, ni ningún mandato B2B nacional.",
+    "actions": [
+      "Si vende a organismos federales, confirme que está configurado en la IPP o en el canal de facturación electrónica designado por su organismo",
+      "Conserve los registros de facturas electrónicas para que sigan siendo accesibles, precisos y legibles según las directrices del IRS (Publicación 583)"
+    ]
+  },
+  "us-dbnalliance": {
+    "system": "Red de intercambio de facturas electrónicas B2B DBNAlliance activa (voluntaria, impulsada por el mercado)",
+    "desc": "La Digital Business Networks Alliance (DBNAlliance) — una organización sin ánimo de lucro surgida de un piloto de la Reserva Federal / Business Payments Coalition — opera ahora una red de cuatro esquinas al estilo Peppol para el intercambio voluntario y estructurado de facturas electrónicas B2B en EE. UU. y Canadá. Ninguna ley federal o estatal exige su adopción.",
+    "actions": [
+      "Considere conectarse a través de un proveedor de servicios certificado por DBNAlliance antes de cualquier mandato futuro",
+      "Si comercia con socios en países que ya exigen la facturación electrónica (UE, México, Brasil, etc.), asegúrese de que sus sistemas puedan seguir produciendo sus formatos requeridos"
+    ]
+  },
+  "ca-federal-b2g": {
+    "system": "Todos los proveedores del gobierno federal deben facturar electrónicamente (B2G, en vigor desde 2022)",
+    "desc": "Desde abril de 2022, Public Services and Procurement Canada (PSPC) exige a los proveedores presentar facturas electrónicamente a través de su solución de contratación electrónica basada en SAP Ariba. No existe ningún mandato federal de facturación electrónica B2B.",
+    "actions": [
+      "Si abastece al Gobierno de Canadá, regístrese en SAP Ariba a través de CanadaBuys",
+      "Conserve las facturas electrónicas durante al menos 6 años según los requisitos de conservación de registros de la CRA"
+    ]
+  },
+  "ca-watch": {
+    "system": "La CRA estudia un posible mandato de facturación electrónica B2B (sin mandato promulgado)",
+    "desc": "La Agencia de Ingresos de Canadá realizó una investigación con partes interesadas sobre un posible mandato nacional de facturación electrónica B2B. No se ha seguido de ninguna legislación ni plazo firme — las normas de GST/HST siguen siendo neutrales en cuanto al formato, y las facturas en papel, PDF y EDI son actualmente todas aceptables siempre que contengan la información fiscal requerida.",
+    "actions": [
+      "No se requiere ninguna acción hoy más allá de las buenas prácticas de conservación de registros",
+      "Siga los futuros anuncios de la CRA / Finance Canada, especialmente a medida que crece la adopción de la red DBNAlliance en Canadá"
+    ]
+  }
+}

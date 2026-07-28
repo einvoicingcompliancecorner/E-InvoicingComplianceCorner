@@ -48,5 +48,42 @@
   "languageSwitcher": {
     "label": "Sprache",
     "unreviewedBanner": "Diese Übersetzung wurde mit KI-Unterstützung erstellt und noch nicht von einem menschlichen Übersetzer geprüft. Die Formulierung kann ungenau sein — bei Unklarheiten bitte die englische Version heranziehen."
+  },
+  "regionNames": {
+    "Europe": "Europa",
+    "Middle East": "Naher Osten",
+    "Asia-Pacific": "Asien-Pazifik",
+    "Americas": "Amerika"
+  },
+  "countryNames": {
+    "European Union": "Europäische Union", "Belgium": "Belgien", "Germany": "Deutschland", "France": "Frankreich",
+    "Poland": "Polen", "Italy": "Italien", "Saudi Arabia": "Saudi-Arabien", "Malaysia": "Malaysia",
+    "India": "Indien", "Brazil": "Brasilien", "Spain": "Spanien", "United Kingdom": "Vereinigtes Königreich",
+    "Romania": "Rumänien", "United Arab Emirates": "Vereinigte Arabische Emirate", "Mexico": "Mexiko",
+    "Australia": "Australien", "New Zealand": "Neuseeland", "Singapore": "Singapur", "Slovakia": "Slowakei",
+    "Peru": "Peru", "Chile": "Chile", "Ireland": "Irland", "Norway": "Norwegen", "Denmark": "Dänemark",
+    "Sweden": "Schweden", "China": "China", "Croatia": "Kroatien", "United States": "Vereinigte Staaten", "Canada": "Kanada"
+  },
+  "filters": {
+    "all": "Alle",
+    "inEffect": "In Kraft",
+    "dueSoon": "Bald fällig",
+    "upcoming": "Bevorstehend",
+    "nextClearanceDates": "Nächste Stichtage",
+    "searchPlaceholder": "Land oder System suchen…",
+    "noResults": "Kein Meilenstein entspricht diesen Filtern.",
+    "footerNote": "Daten aus offiziellen Quellen der Steuerbehörden und der Europäischen Kommission zusammengestellt. \"Verbleibende Tage\" und Status-Kennzeichnungen werden automatisch anhand des heutigen Datums berechnet. <a href=\"privacy-policy.html\" style=\"color:var(--soon);\">Datenschutzerklärung</a>",
+    "soonestFirst": "Bald zuerst",
+    "furthestFirst": "Später zuerst",
+    "milestoneSingular": "Meilenstein",
+    "milestonePlural": "Meilensteine",
+    "total": "insgesamt",
+    "establishedRegulations": "Etablierte Vorschriften"
+  },
+  "cardLabels": {
+    "actionChecklist": "Maßnahmen-Checkliste",
+    "countryDeepDive": "Länderanalyse →",
+    "inEffectSince": "In Kraft seit",
+    "expectedNotFinal": "Erwartet — noch nicht endgültig"
   }
 }
