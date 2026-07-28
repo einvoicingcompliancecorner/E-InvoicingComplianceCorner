@@ -81,7 +81,8 @@
     "establishedRegulations": "Etablierte Vorschriften",
     "daySingular": "Tag",
     "dayPlural": "Tage",
-    "noUpcoming": "Keine bevorstehenden Meilensteine im erfassten Datensatz."
+    "noUpcoming": "Keine bevorstehenden Meilensteine im erfassten Datensatz.",
+    "disclaimer": "Dieser Tracker spiegelt öffentlich verfügbare Hinweise mit Stand Juli 2026 wider und dient der allgemeinen Information, nicht als Rechts- oder Steuerberatung. Schwellenwerte, Wellen-Nummern und Stichtage für E-Invoicing ändern sich häufig — bestätigen Sie Ihre Pflichten direkt auf dem in jedem Eintrag verlinkten offiziellen Regierungsportal oder bei Ihrem Steuerberater, bevor Sie Compliance-Entscheidungen treffen."
   },
   "cardLabels": {
     "actionChecklist": "Maßnahmen-Checkliste",

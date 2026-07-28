@@ -81,7 +81,8 @@
     "establishedRegulations": "Established regulations",
     "daySingular": "day",
     "dayPlural": "days",
-    "noUpcoming": "No upcoming milestones in the tracked dataset."
+    "noUpcoming": "No upcoming milestones in the tracked dataset.",
+    "disclaimer": "This tracker reflects publicly available guidance as of July 2026 and is provided for general awareness, not legal or tax advice. E-invoicing thresholds, wave numbers and go-live dates change frequently — confirm your obligations directly on the official government portal linked in each entry, or with your tax advisor, before making compliance decisions."
   },
   "cardLabels": {
     "actionChecklist": "Action checklist",

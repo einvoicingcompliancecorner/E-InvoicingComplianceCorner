@@ -81,7 +81,8 @@
     "establishedRegulations": "Normativas ya establecidas",
     "daySingular": "día",
     "dayPlural": "días",
-    "noUpcoming": "No hay hitos próximos en el conjunto de datos seguido."
+    "noUpcoming": "No hay hitos próximos en el conjunto de datos seguido.",
+    "disclaimer": "Este seguimiento refleja la información pública disponible a julio de 2026 y se ofrece con fines meramente informativos, no como asesoramiento legal o fiscal. Los umbrales, números de ola y fechas de entrada en vigor de la facturación electrónica cambian con frecuencia — confirme sus obligaciones directamente en el portal oficial del gobierno enlazado en cada entrada, o con su asesor fiscal, antes de tomar decisiones de cumplimiento."
   },
   "cardLabels": {
     "actionChecklist": "Lista de acciones",
