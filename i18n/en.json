@@ -82,7 +82,15 @@
     "daySingular": "day",
     "dayPlural": "days",
     "noUpcoming": "No upcoming milestones in the tracked dataset.",
-    "disclaimer": "This tracker reflects publicly available guidance as of July 2026 and is provided for general awareness, not legal or tax advice. E-invoicing thresholds, wave numbers and go-live dates change frequently — confirm your obligations directly on the official government portal linked in each entry, or with your tax advisor, before making compliance decisions."
+    "disclaimer": "This tracker reflects publicly available guidance as of July 2026 and is provided for general awareness, not legal or tax advice. E-invoicing thresholds, wave numbers and go-live dates change frequently — confirm your obligations directly on the official government portal linked in each entry, or with your tax advisor, before making compliance decisions.",
+    "mobilePortalsToggle": "☰ Portals",
+    "jumpToPortal": "Jump to portal",
+    "governmentPortals": "Government portals",
+    "regionLabel": "Region",
+    "statusLabel": "Status",
+    "recentAndUpcoming": "Recent &amp; Upcoming",
+    "recentIntro": "Milestones from the last few months through the furthest confirmed deadline. Already-settled regulations live in the collapsed section below so this list stays focused on what's actually changing.",
+    "estLabel": "— already in force for a while, rarely changing"
   },
   "cardLabels": {
     "actionChecklist": "Action checklist",

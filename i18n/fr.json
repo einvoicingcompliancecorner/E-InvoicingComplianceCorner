@@ -82,7 +82,15 @@
     "daySingular": "jour",
     "dayPlural": "jours",
     "noUpcoming": "Aucun jalon à venir dans les données suivies.",
-    "disclaimer": "Ce suivi reflète les informations publiques disponibles à juillet 2026 et est fourni à titre informatif général, sans constituer un conseil juridique ou fiscal. Les seuils, numéros de vague et dates de mise en service de la facturation électronique changent fréquemment — vérifiez vos obligations directement sur le portail officiel du gouvernement lié à chaque entrée, ou auprès de votre conseiller fiscal, avant de prendre des décisions de conformité."
+    "disclaimer": "Ce suivi reflète les informations publiques disponibles à juillet 2026 et est fourni à titre informatif général, sans constituer un conseil juridique ou fiscal. Les seuils, numéros de vague et dates de mise en service de la facturation électronique changent fréquemment — vérifiez vos obligations directement sur le portail officiel du gouvernement lié à chaque entrée, ou auprès de votre conseiller fiscal, avant de prendre des décisions de conformité.",
+    "mobilePortalsToggle": "☰ Portails",
+    "jumpToPortal": "Aller au portail",
+    "governmentPortals": "Portails gouvernementaux",
+    "regionLabel": "Région",
+    "statusLabel": "Statut",
+    "recentAndUpcoming": "Récents et à venir",
+    "recentIntro": "Jalons des derniers mois jusqu'à l'échéance confirmée la plus lointaine. Les réglementations déjà établies se trouvent dans la section repliée ci-dessous, afin que cette liste reste centrée sur ce qui évolue réellement.",
+    "estLabel": "— déjà en vigueur depuis un certain temps, change rarement"
   },
   "cardLabels": {
     "actionChecklist": "Liste d'actions",

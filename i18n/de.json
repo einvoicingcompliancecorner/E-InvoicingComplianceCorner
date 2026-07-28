@@ -82,7 +82,15 @@
     "daySingular": "Tag",
     "dayPlural": "Tage",
     "noUpcoming": "Keine bevorstehenden Meilensteine im erfassten Datensatz.",
-    "disclaimer": "Dieser Tracker spiegelt öffentlich verfügbare Hinweise mit Stand Juli 2026 wider und dient der allgemeinen Information, nicht als Rechts- oder Steuerberatung. Schwellenwerte, Wellen-Nummern und Stichtage für E-Invoicing ändern sich häufig — bestätigen Sie Ihre Pflichten direkt auf dem in jedem Eintrag verlinkten offiziellen Regierungsportal oder bei Ihrem Steuerberater, bevor Sie Compliance-Entscheidungen treffen."
+    "disclaimer": "Dieser Tracker spiegelt öffentlich verfügbare Hinweise mit Stand Juli 2026 wider und dient der allgemeinen Information, nicht als Rechts- oder Steuerberatung. Schwellenwerte, Wellen-Nummern und Stichtage für E-Invoicing ändern sich häufig — bestätigen Sie Ihre Pflichten direkt auf dem in jedem Eintrag verlinkten offiziellen Regierungsportal oder bei Ihrem Steuerberater, bevor Sie Compliance-Entscheidungen treffen.",
+    "mobilePortalsToggle": "☰ Portale",
+    "jumpToPortal": "Zum Portal springen",
+    "governmentPortals": "Regierungsportale",
+    "regionLabel": "Region",
+    "statusLabel": "Status",
+    "recentAndUpcoming": "Aktuell &amp; bevorstehend",
+    "recentIntro": "Meilensteine der letzten Monate bis zur am weitesten entfernten bestätigten Frist. Bereits etablierte Vorschriften befinden sich im eingeklappten Bereich weiter unten, damit diese Liste auf das Aktuelle fokussiert bleibt.",
+    "estLabel": "— bereits seit längerem in Kraft, ändert sich selten"
   },
   "cardLabels": {
     "actionChecklist": "Maßnahmen-Checkliste",

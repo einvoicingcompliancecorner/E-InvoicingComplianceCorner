@@ -82,7 +82,15 @@
     "daySingular": "día",
     "dayPlural": "días",
     "noUpcoming": "No hay hitos próximos en el conjunto de datos seguido.",
-    "disclaimer": "Este seguimiento refleja la información pública disponible a julio de 2026 y se ofrece con fines meramente informativos, no como asesoramiento legal o fiscal. Los umbrales, números de ola y fechas de entrada en vigor de la facturación electrónica cambian con frecuencia — confirme sus obligaciones directamente en el portal oficial del gobierno enlazado en cada entrada, o con su asesor fiscal, antes de tomar decisiones de cumplimiento."
+    "disclaimer": "Este seguimiento refleja la información pública disponible a julio de 2026 y se ofrece con fines meramente informativos, no como asesoramiento legal o fiscal. Los umbrales, números de ola y fechas de entrada en vigor de la facturación electrónica cambian con frecuencia — confirme sus obligaciones directamente en el portal oficial del gobierno enlazado en cada entrada, o con su asesor fiscal, antes de tomar decisiones de cumplimiento.",
+    "mobilePortalsToggle": "☰ Portales",
+    "jumpToPortal": "Ir al portal",
+    "governmentPortals": "Portales gubernamentales",
+    "regionLabel": "Región",
+    "statusLabel": "Estado",
+    "recentAndUpcoming": "Recientes y próximos",
+    "recentIntro": "Hitos desde los últimos meses hasta la fecha límite confirmada más lejana. Las normativas ya asentadas se encuentran en la sección plegada de abajo, para que esta lista se centre en lo que realmente está cambiando.",
+    "estLabel": "— ya en vigor desde hace tiempo, con pocos cambios"
   },
   "cardLabels": {
     "actionChecklist": "Lista de acciones",

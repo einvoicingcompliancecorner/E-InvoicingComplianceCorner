@@ -182,6 +182,11 @@ const EICC_I18N = {
     const lang = this.detectLanguage();
     await this.loadLanguage(lang);
     this.applyToDom();
+    // Dispatch the same event used for manual switches, so any page-specific
+    // code that renders dynamic content (cards, boards, sidebars) in the
+    // current language also runs once on initial load — not just when the
+    // user actively changes languages later.
+    document.dispatchEvent(new CustomEvent("eicc:languageChanged", { detail: { lang: this.currentLang } }));
   },
 };
 

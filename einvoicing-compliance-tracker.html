@@ -384,13 +384,13 @@
 </head>
 <body>
 
-<button class="menu-toggle" id="menuToggle">☰ Portals</button>
+<button class="menu-toggle" id="menuToggle" data-i18n="filters.mobilePortalsToggle">☰ Portals</button>
 <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
 <aside class="sidebar" id="sidebar">
   <div class="sidebar-head">
-    <p class="sidebar-eyebrow">Jump to portal</p>
-    <h2>Government portals</h2>
+    <p class="sidebar-eyebrow" data-i18n="filters.jumpToPortal">Jump to portal</p>
+    <h2 data-i18n="filters.governmentPortals">Government portals</h2>
   </div>
   <nav id="sidebarNav"></nav>
 </aside>
@@ -502,10 +502,10 @@
 
 <div class="filters">
   <div class="filter-group" id="regionFilters">
-    <span class="fg-label">Region</span>
+    <span class="fg-label" data-i18n="filters.regionLabel">Region</span>
   </div>
   <div class="filter-group" id="statusFilters">
-    <span class="fg-label">Status</span>
+    <span class="fg-label" data-i18n="filters.statusLabel">Status</span>
   </div>
   <div class="search-wrap">
     <input type="text" id="searchBox" data-i18n-attr="placeholder:filters.searchPlaceholder" placeholder="Search country or system…">
@@ -514,11 +514,11 @@
 
 <div class="timeline-section">
   <div class="section-heading">
-    <h2 class="display">Recent &amp; Upcoming</h2>
+    <h2 class="display" data-i18n="filters.recentAndUpcoming">Recent &amp; Upcoming</h2>
     <span id="resultCount"></span>
     <button class="sort-toggle" id="sortToggle">↕ <span id="sortToggleLabel">Soonest first</span></button>
   </div>
-  <p style="color:var(--muted); font-size:13.5px; max-width:640px; margin:-8px 0 20px;">Milestones from the last few months through the furthest confirmed deadline. Already-settled regulations live in the collapsed section below so this list stays focused on what's actually changing.</p>
+  <p style="color:var(--muted); font-size:13.5px; max-width:640px; margin:-8px 0 20px;" data-i18n="filters.recentIntro">Milestones from the last few months through the furthest confirmed deadline. Already-settled regulations live in the collapsed section below so this list stays focused on what's actually changing.</p>
   <div class="timeline" id="timeline"></div>
   <div class="no-results" id="noResults" style="display:none;" data-i18n="filters.noResults">No milestones match these filters.</div>
 
@@ -526,7 +526,7 @@
     <summary>
       <span class="chev">▶</span>
       <span id="establishedSummary">Established regulations</span>
-      <span class="est-label">— already in force for a while, rarely changing</span>
+      <span class="est-label" data-i18n="filters.estLabel">— already in force for a while, rarely changing</span>
     </summary>
     <div class="established-body">
       <div class="timeline" id="establishedTimeline"></div>
