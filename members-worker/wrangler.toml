@@ -9,7 +9,7 @@ compatibility_date = "2026-07-01"
 # The public URL this Worker will be reachable at once deployed —
 # e.g. a workers.dev subdomain to start, or your own custom domain
 # once you route it (Cloudflare Dashboard → Workers → Triggers).
-SITE_URL = "https://eicc-members.YOUR-SUBDOMAIN.workers.dev"
+SITE_URL = "https://eicc-members.einvcc.workers.dev"
 
 # The "from" address for magic-link emails.
 # Using Resend's shared sandbox domain for now — this works without any
