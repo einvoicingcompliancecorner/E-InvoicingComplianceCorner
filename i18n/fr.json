@@ -37,7 +37,12 @@
     "subscribe": "S'abonner — à partir de 10 $/an",
     "archive": "Archives de la newsletter (abonnés)",
     "feedback": "Donner votre avis",
-    "lastUpdated": "Dernière mise à jour :"
+    "lastUpdated": "Dernière mise à jour :",
+    "eduMandateTypes": "Types d'obligation",
+    "eduImpact": "Impact de l'obligation",
+    "eduPreparing": "Se préparer à une obligation",
+    "eduProviderTypes": "Types de prestataires",
+    "eduCertifiedProviders": "Prestataires certifiés par l'État"
   },
   "about": {
     "eyebrow": "À propos",

@@ -37,7 +37,12 @@
     "subscribe": "Abonnieren — ab $10/Jahr",
     "archive": "Newsletter-Archiv (Abonnenten)",
     "feedback": "Feedback geben",
-    "lastUpdated": "Zuletzt aktualisiert:"
+    "lastUpdated": "Zuletzt aktualisiert:",
+    "eduMandateTypes": "Arten von Vorgaben",
+    "eduImpact": "Auswirkungen der Vorgabe",
+    "eduPreparing": "Vorbereitung auf eine Vorgabe",
+    "eduProviderTypes": "Anbietertypen",
+    "eduCertifiedProviders": "Staatlich zertifizierte Anbieter"
   },
   "about": {
     "eyebrow": "Über uns",

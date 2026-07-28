@@ -37,7 +37,12 @@
     "subscribe": "Subscribe — from $10/yr",
     "archive": "Newsletter archive (subscribers)",
     "feedback": "Give feedback",
-    "lastUpdated": "Last updated:"
+    "lastUpdated": "Last updated:",
+    "eduMandateTypes": "Types of Mandate",
+    "eduImpact": "Impact of Mandate",
+    "eduPreparing": "Preparing for a Mandate",
+    "eduProviderTypes": "Types of Provider",
+    "eduCertifiedProviders": "Government Certified Providers"
   },
   "about": {
     "eyebrow": "About",

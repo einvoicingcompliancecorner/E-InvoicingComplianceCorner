@@ -37,7 +37,12 @@
     "subscribe": "Suscribirse — desde $10/año",
     "archive": "Archivo del boletín (suscriptores)",
     "feedback": "Enviar comentarios",
-    "lastUpdated": "Última actualización:"
+    "lastUpdated": "Última actualización:",
+    "eduMandateTypes": "Tipos de mandato",
+    "eduImpact": "Impacto del mandato",
+    "eduPreparing": "Preparación para un mandato",
+    "eduProviderTypes": "Tipos de proveedor",
+    "eduCertifiedProviders": "Proveedores certificados por el gobierno"
   },
   "about": {
     "eyebrow": "Acerca de",
