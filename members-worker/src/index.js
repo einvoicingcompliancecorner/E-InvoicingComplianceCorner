@@ -69,15 +69,126 @@ export default {
       if (request.method === "POST" && url.pathname === "/members/preferences") {
         return handlePreferencesPost(request, env);
       }
+      if (request.method === "GET" && url.pathname === "/members/unsubscribe-notifications") {
+        return handleUnsubscribeNotifications(request, env);
+      }
       if (request.method === "POST" && url.pathname === "/members/logout") {
         return handleLogout();
+      }
+      // Manual trigger for testing the monthly notification job without
+      // waiting for the actual cron schedule — see README for how to call
+      // this safely (it's not linked from anywhere in the UI).
+      if (request.method === "POST" && url.pathname === "/admin/send-monthly-notifications") {
+        return handleManualNotificationTrigger(request, env);
       }
       return new Response("Not found", { status: 404 });
     } catch (err) {
       return new Response("Server error — " + err.message, { status: 500 });
     }
   },
+
+  // Cloudflare Workers Cron Trigger entry point — see wrangler.toml's
+  // [triggers] section for the actual schedule. Sends every active
+  // subscriber a short, personalised notification about the current
+  // month's issue, without emailing the full digest content itself.
+  async scheduled(event, env, ctx) {
+    ctx.waitUntil(sendMonthlyNotifications(env));
+  },
 };
+
+// ================================================================
+// MONTHLY NOTIFICATION JOB — the core of the country-tailored alert
+// ================================================================
+// Does NOT email the full newsletter content. Sends a short, honest
+// notification telling each subscriber whether this month's issue
+// covers any of the countries they've said they care about, with a
+// link to log in and read the full thing either way.
+async function sendMonthlyNotifications(env) {
+  const monthKey = currentMonthKey();
+  const issueRaw = await env.ISSUES.get(monthKey);
+  if (!issueRaw) {
+    console.log(`No issue published for ${monthKey} yet — skipping this month's notification run.`);
+    return;
+  }
+  const issue = JSON.parse(issueRaw);
+  const issueCountries = issue.countries || [];
+
+  let cursor = undefined;
+  let sent = 0;
+  do {
+    const list = await env.SUBSCRIBERS.list({ cursor });
+    for (const key of list.keys) {
+      const email = key.name;
+      try {
+        const sub = await getSubscriber(env, email);
+        if (!sub || !sub.active) continue;
+        if (sub.plan === "onetime" && sub.expiresAt && Date.now() > sub.expiresAt) continue;
+        if (sub.notificationsEnabled === false) continue; // explicit opt-out only — default is enabled
+
+        const followed = sub.countries || [];
+        const matched = followed.filter((c) => issueCountries.includes(c));
+
+        let message;
+        if (followed.length === 0) {
+          // No specific preference set — they get the full-digest framing every time.
+          message = `This month's issue is live, covering: ${issueCountries.join(", ")}.`;
+        } else if (matched.length > 0) {
+          message = `This month's issue covers updates on: ${matched.join(", ")} — among others.`;
+        } else {
+          message = `None of your followed countries came up in this month's issue, but it's there if you're curious — this month covers: ${issueCountries.join(", ")}.`;
+        }
+
+        const unsubToken = await signToken(env.SESSION_SECRET, { email, purpose: "unsub-notifications" }, 60 * 60 * 24 * 365 * 5); // 5-year effective validity — this link should still work whenever someone gets around to clicking it
+        await sendMonthlyNotificationEmail(env, email, issue.title, message, monthKey, unsubToken);
+        sent++;
+      } catch (err) {
+        console.error(`Failed to notify ${email}:`, err);
+        // Deliberately continue to the next subscriber rather than aborting
+        // the whole run over one failure.
+      }
+    }
+    cursor = list.list_complete ? undefined : list.cursor;
+  } while (cursor);
+
+  console.log(`Monthly notification run for ${monthKey} complete — sent ${sent} emails.`);
+}
+
+function currentMonthKey() {
+  const d = new Date();
+  const y = d.getUTCFullYear();
+  const m = String(d.getUTCMonth() + 1).padStart(2, "0");
+  return `${y}-${m}`;
+}
+
+async function handleManualNotificationTrigger(request, env) {
+  // Deliberately requires a shared secret passed as a header, since this
+  // route isn't linked from anywhere and would otherwise let anyone trigger
+  // a real send to your whole subscriber list.
+  const provided = request.headers.get("X-Admin-Secret");
+  if (!provided || provided !== env.SESSION_SECRET) {
+    return new Response("Unauthorized", { status: 401 });
+  }
+  await sendMonthlyNotifications(env);
+  return new Response("Monthly notification run triggered — check `wrangler tail` for logs.", { status: 200 });
+}
+
+async function handleUnsubscribeNotifications(request, env) {
+  const url = new URL(request.url);
+  const token = url.searchParams.get("token") || "";
+  const payload = await verifyToken(env.SESSION_SECRET, token);
+
+  if (!payload || payload.purpose !== "unsub-notifications") {
+    return htmlResponse(renderSimpleMessage("That link has expired or is invalid.", "You can manage your notification preference directly from the archive instead, once logged in."));
+  }
+
+  const existing = await getSubscriber(env, payload.email);
+  await putSubscriber(env, payload.email, { ...(existing || {}), notificationsEnabled: false, updated: Date.now() });
+
+  return htmlResponse(renderSimpleMessage(
+    "You've been unsubscribed from monthly notification emails.",
+    "Your paid subscription itself is unaffected — you can still log in and read every issue any time. You can turn notifications back on from your preferences page whenever you like."
+  ));
+}
 
 // ================================================================
 // LEMON SQUEEZY WEBHOOK — keeps SUBSCRIBERS KV in sync automatically
@@ -270,7 +381,8 @@ async function handlePreferencesGet(request, env) {
 
   const sub = await getSubscriber(env, email);
   const currentCountries = sub?.countries || [];
-  return htmlResponse(renderPreferencesPage(email, currentCountries));
+  const notificationsEnabled = sub?.notificationsEnabled !== false; // default: enabled
+  return htmlResponse(renderPreferencesPage(email, currentCountries, false, notificationsEnabled));
 }
 
 async function handlePreferencesPost(request, env) {
@@ -279,11 +391,12 @@ async function handlePreferencesPost(request, env) {
 
   const form = await request.formData();
   const selected = form.getAll("countries"); // array of checked values
+  const notificationsEnabled = form.get("notificationsEnabled") === "on";
 
   const existing = await getSubscriber(env, email);
-  await putSubscriber(env, email, { ...(existing || {}), countries: selected, updated: Date.now() });
+  await putSubscriber(env, email, { ...(existing || {}), countries: selected, notificationsEnabled, updated: Date.now() });
 
-  return htmlResponse(renderPreferencesPage(email, selected, true));
+  return htmlResponse(renderPreferencesPage(email, selected, true, notificationsEnabled));
 }
 
 // ================================================================
@@ -305,6 +418,31 @@ async function sendMagicLinkEmail(env, email, link) {
         <p>Click below to access the subscriber newsletter archive. This link expires in 15 minutes and can only be used once.</p>
         <p><a href="${link}">${link}</a></p>
         <p style="color:#888;font-size:12px;">If you didn't request this, you can safely ignore this email.</p>
+      `,
+    }),
+  });
+}
+
+async function sendMonthlyNotificationEmail(env, email, issueTitle, personalizedMessage, monthKey, unsubToken) {
+  const archiveLink = `${env.SITE_URL}/members/archive/${encodeURIComponent(monthKey)}`;
+  const unsubLink = `${env.SITE_URL}/members/unsubscribe-notifications?token=${encodeURIComponent(unsubToken)}`;
+  await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${env.RESEND_API_KEY}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      from: env.FROM_EMAIL,
+      to: email,
+      subject: `This month's issue is live — ${issueTitle}`,
+      html: `
+        <p>${personalizedMessage}</p>
+        <p><a href="${archiveLink}">Read the full issue →</a></p>
+        <p style="color:#888;font-size:12px; margin-top:24px; padding-top:12px; border-top:1px solid #ddd;">
+          You're receiving this because you have an active subscription to The E-Invoicing Compliance Corner.
+          <a href="${unsubLink}">Stop these monthly notification emails</a> — this won't cancel your subscription, you'll still be able to log in and read every issue any time.
+        </p>
       `,
     }),
   });
@@ -534,8 +672,9 @@ function renderArchiveList(issues, email) {
   return pageShell(body);
 }
 
-function renderPreferencesPage(email, selectedCountries, justSaved) {
+function renderPreferencesPage(email, selectedCountries, justSaved, notificationsEnabled) {
   const selectedSet = new Set(selectedCountries || []);
+  const notifChecked = notificationsEnabled !== false ? "checked" : "";
   const regionGroups = Object.keys(COUNTRIES_BY_REGION)
     .map((region) => {
       const checks = COUNTRIES_BY_REGION[region]
@@ -565,6 +704,10 @@ function renderPreferencesPage(email, selectedCountries, justSaved) {
           <a id="clearAllCountries">Clear all</a>
         </div>
         <div class="prefs-box" id="prefsBox">${regionGroups}</div>
+        <label class="country-check" style="margin:16px 0; font-size:13.5px;">
+          <input type="checkbox" name="notificationsEnabled" ${notifChecked}>
+          Email me a short notification when a new monthly issue is published
+        </label>
         <button type="submit" class="btn">Save preferences</button>
       </form>
     </div>
@@ -580,6 +723,17 @@ function renderPreferencesPage(email, selectedCountries, justSaved) {
   return pageShell(body);
 }
 
+function renderSimpleMessage(title, subtext) {
+  const body = `
+  <div class="wrap">
+    <a class="back-link" href="/members">← Back to sign in</a>
+    <div class="card">
+      <h1 class="title">${escapeHtml(title)}</h1>
+      <p class="sub">${escapeHtml(subtext)}</p>
+    </div>
+  </div>`;
+  return pageShell(body);
+}
 
 function renderIssue(issue) {
   const body = `

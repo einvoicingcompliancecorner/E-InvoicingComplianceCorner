@@ -38,6 +38,15 @@ binding = "ISSUES"
 id = "6142dc4affb945b487c4980c0b9b33bd"
 
 # ----------------------------------------------------------------
+# Cron Trigger — fires the scheduled() handler in src/index.js once
+# a month, which sends every active subscriber a short, personalised
+# notification about that month's issue (not the full digest itself).
+# Schedule below: 09:00 UTC on the 1st of every month.
+# ----------------------------------------------------------------
+[triggers]
+crons = ["0 9 1 * *"]
+
+# ----------------------------------------------------------------
 # Secrets are NOT set here — never put real secrets in this file,
 # since it may end up in version control. Set them with:
 #   wrangler secret put LEMONSQUEEZY_WEBHOOK_SECRET

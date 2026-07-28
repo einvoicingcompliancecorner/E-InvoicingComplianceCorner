@@ -126,12 +126,32 @@ one-person operation. Save your issue as HTML in a file, e.g. `issue.html`,
 then:
 
 ```bash
-wrangler kv key put --binding=ISSUES "2026-08" '{"title":"August 2026: Poland KSeF penalties begin, Ireland confirms Phase 1","date":"2026-08-01","summary":"This month: KSeF penalties activate, Ireland locks in its large-corporate definition, and three new deep dives go live.","html":"<p>Your full newsletter HTML content goes here...</p>"}'
+wrangler kv key put --binding=ISSUES "2026-08" --remote --path=issue.json
+```
+
+Where `issue.json` looks like:
+
+```json
+{
+  "title": "August 2026: Poland KSeF penalties begin, Ireland confirms Phase 1",
+  "date": "2026-08-01",
+  "summary": "This month: KSeF penalties activate, Ireland locks in its large-corporate definition, and three new deep dives go live.",
+  "countries": ["Poland", "Ireland"],
+  "html": "<p>Your full newsletter HTML content goes here...</p>"
+}
 ```
 
 The key (`"2026-08"` above) becomes the issue's URL slug — use whatever
-naming scheme you like (e.g. `2026-08`, `august-2026`), just keep it
-consistent so issues sort sensibly.
+naming scheme you like, but if you want the monthly notification job
+(Step 10) to find the right issue automatically, keep it in `YYYY-MM`
+format matching the actual calendar month.
+
+**The `countries` field is what powers the monthly notification email**
+(Step 10) — list every country this issue actually covers, using the
+exact same names as `countries.js` on the main site (e.g. `"United Arab
+Emirates"`, not `"UAE"`). If you skip this field, the notification job
+still runs, it just won't be able to tell any subscriber their specific
+countries came up.
 
 ## Step 9 — Link to it from your main site
 
@@ -139,6 +159,43 @@ Add a link somewhere visible on the tracker (e.g. the Menu dropdown or
 footer) pointing to `https://YOUR-WORKER-URL/members`. The tracker site
 itself stays static and unchanged — this Worker is a separate, small
 piece of infrastructure alongside it.
+
+## Step 10 — The monthly notification email (already wired up, nothing to build)
+
+Every month, on the 1st at 09:00 UTC, this Worker automatically:
+
+1. Looks up that month's issue (using the `YYYY-MM` key)
+2. Goes through every active subscriber
+3. Compares their followed countries (Step 8's country-preferences work)
+against that issue's `countries` field
+4. Sends a short notification — **not the full newsletter content** —
+   telling them either which of their countries came up, or, if none did,
+   that nothing matched this month but the full digest is there if they're
+   curious
+5. Includes a one-click "stop these notifications" link that opts them out
+   of future monthly emails without touching their paid subscription
+
+This is deliberately a notification, not the newsletter itself — the
+actual content only ever lives behind the login, in one place, in one
+format. This avoids needing the full digest to render correctly as an
+HTML email across Gmail/Outlook/Apple Mail, which is its own can of worms.
+
+**This requires no setup on your part** beyond having deployed the Worker
+with the `[triggers]` section in `wrangler.toml` — Cloudflare handles the
+actual scheduling. You can confirm the cron is registered from the
+Cloudflare dashboard: Workers & Pages → your Worker → Triggers.
+
+**To test it without waiting for the 1st of the month**, there's a manual
+trigger endpoint, protected by your `SESSION_SECRET` so nobody else can
+fire it:
+
+```bash
+curl -X POST https://YOUR-WORKER-URL/admin/send-monthly-notifications \
+  -H "X-Admin-Secret: YOUR_SESSION_SECRET_VALUE"
+```
+
+Watch `wrangler tail` while you run this to see it process each
+subscriber and confirm how many emails were sent.
 
 ---
 
@@ -165,6 +222,12 @@ which countries you get alerts for" link that takes them to
 `/members/preferences`. It's gated by the same login session as the
 archive itself, shows their current selection pre-checked, and saves
 straight back to their KV record on submit.
+
+The same page also has a checkbox for the monthly notification email
+itself — a subscriber can turn that off without cancelling their paid
+subscription, or turn it back on later. This is the same setting the
+one-click "stop these notifications" link in the email itself controls
+(that link works without logging in, so it stays genuinely one-click).
 
 **Keeping the country list in sync**: both `countries.js` (loaded by
 the static subscribe page) and this Worker's `COUNTRIES_BY_REGION`
@@ -208,8 +271,16 @@ event — you'll only see it change if someone goes through checkout again.
 
 ## Ongoing maintenance
 
-- Add a new KV entry each month when you publish an issue (Step 8).
-- Everything else — subscriber sync, login, access control, and country
-  preference capture — runs automatically once deployed. There's no
-  server to patch or restart.
+- Add a new KV entry each month when you publish an issue (Step 8) —
+  **remember the `countries` field**, since that's what the monthly
+  notification job reads to personalise each subscriber's email.
+- Everything else — subscriber sync, login, access control, country
+  preference capture, and the monthly notification email — runs
+  automatically once deployed. There's no server to patch or restart,
+  and no cron job to babysit beyond the initial deploy.
+- **Resend's free tier caps at 100 emails/day.** Fine at low subscriber
+  counts, but worth knowing this ceiling exists — if your list grows past
+  that, the monthly notification run could hit the limit partway through
+  and silently stop sending to the rest. Check Resend's pricing page if
+  you're approaching that size.
 
