@@ -73,12 +73,75 @@
   .mono{font-family:'IBM Plex Mono',monospace;}
   a{color:inherit;}
 
-  .wrap{width:100%; max-width:560px; padding:0 5vw 60px;}
+  .wrap{width:100%; max-width:1140px; padding:0 5vw 60px;}
   .back-link{
     display:inline-flex; align-items:center; gap:6px; margin:24px 0 28px;
     font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:var(--muted); text-decoration:none;
   }
   .back-link:hover{color:var(--soon);}
+
+  .layout-grid{display:grid; grid-template-columns:1fr 500px; gap:48px; align-items:start;}
+  @media (max-width:900px){ .layout-grid{grid-template-columns:1fr;} }
+
+  /* ---------- benefits panel (left column) ---------- */
+  .benefits-panel{padding-top:6px;}
+  .benefits-eyebrow{
+    font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.16em; text-transform:uppercase;
+    color:var(--soon); margin:0 0 10px;
+  }
+  .benefits-title{font-size:clamp(30px,4vw,44px); line-height:1.02; margin:0 0 16px; text-transform:uppercase;}
+  .benefits-intro{font-size:15px; color:var(--muted); max-width:520px; line-height:1.6; margin:0 0 28px;}
+
+  .benefit-stat-strip{
+    display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--line);
+    border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; margin-bottom:32px; max-width:520px;
+  }
+  .benefit-stat-strip .stat{background:var(--ink-2); padding:14px 16px;}
+  .benefit-stat-strip .stat .num{font-family:'Big Shoulders Display',sans-serif; font-weight:800; font-size:20px; line-height:1.1;}
+  .benefit-stat-strip .stat .lbl{font-size:10.3px; color:var(--muted); text-transform:uppercase; letter-spacing:0.06em; margin-top:4px;}
+
+  .benefit-list{list-style:none; margin:0; padding:0; max-width:520px;}
+  .benefit-list li{
+    display:flex; gap:14px; padding:16px 0; border-top:1px dashed var(--line);
+  }
+  .benefit-list li:first-child{border-top:none;}
+  .benefit-list .b-icon{font-size:20px; line-height:1.3; flex:0 0 auto;}
+  .benefit-list .b-title{font-family:'IBM Plex Sans',sans-serif; font-weight:700; font-size:14.5px; margin:0 0 3px;}
+  .benefit-list .b-body{font-size:13px; color:var(--muted); line-height:1.5; margin:0;}
+
+  .sample-issue-link{
+    display:inline-flex; align-items:center; gap:7px; font-family:'IBM Plex Mono',monospace; font-size:12.5px;
+    color:var(--soon); text-decoration:underline; cursor:pointer; margin-bottom:28px; background:none; border:none; padding:0;
+  }
+  .sample-issue-link:hover{color:#e0a55c;}
+
+  /* ---------- sample issue modal ---------- */
+  .modal-overlay{
+    display:none; position:fixed; inset:0; background:rgba(10,15,25,0.72); z-index:100;
+    align-items:flex-start; justify-content:center; padding:5vh 5vw; overflow-y:auto;
+  }
+  .modal-overlay.open{display:flex;}
+  .modal-card{
+    background:var(--paper); color:#241d10; border-radius:var(--radius); border:1px solid var(--paper-line);
+    max-width:680px; width:100%; padding:28px 30px 30px; position:relative; margin-bottom:5vh;
+  }
+  .modal-close{
+    position:absolute; top:18px; right:18px; background:none; border:none; cursor:pointer;
+    font-family:'IBM Plex Mono',monospace; font-size:13px; color:#8a7d5a; padding:4px 8px;
+  }
+  .modal-close:hover{color:var(--stamp);}
+  .modal-badge{
+    display:inline-block; font-family:'IBM Plex Mono',monospace; font-size:10.5px; text-transform:uppercase;
+    letter-spacing:0.06em; background:var(--soon-dim); color:#ffe0b3; padding:4px 10px; border-radius:999px; margin-bottom:14px;
+  }
+  .modal-date{font-family:'IBM Plex Mono',monospace; font-size:12px; color:#6b5f3f; text-transform:uppercase; letter-spacing:0.05em;}
+  .modal-title{font-family:'Big Shoulders Display',sans-serif; font-weight:800; font-size:24px; text-transform:uppercase; margin:6px 0 18px; line-height:1.1;}
+  .modal-body{font-size:14px; line-height:1.65;}
+  .modal-body h3{font-size:16px; margin:22px 0 8px;}
+  .modal-body h3:first-child{margin-top:0;}
+  .modal-body p{margin:0 0 12px;}
+  .modal-fineprint{font-size:11.5px; color:#7a6f52; margin-top:22px; padding-top:16px; border-top:1px dashed var(--paper-line); line-height:1.5;}
+
 
   .card{
     background:var(--paper); color:#241d10; border-radius:var(--radius);
@@ -195,13 +258,62 @@
 
   <a class="back-link" href="einvoicing-compliance-tracker.html">← Back to global tracker</a>
 
-  <div class="card">
+  <div class="layout-grid">
+
+    <!-- ================= BENEFITS PANEL ================= -->
+    <div class="benefits-panel">
+      <p class="benefits-eyebrow">Never get caught off guard</p>
+      <h1 class="benefits-title display">Get notified the moment a government changes the rules</h1>
+      <p class="benefits-intro">E-invoicing thresholds, wave numbers, and go-live dates change constantly — often with little public notice. Subscribe once, and every government update or announcement across the 29 jurisdictions we track lands in your inbox automatically, in plain language, before it catches your team off guard.</p>
+
+      <button type="button" class="sample-issue-link" id="openSampleIssue">👀 See a real sample issue (January 2026) →</button>
+
+      <div class="benefit-stat-strip">
+        <div class="stat"><div class="num display">29</div><div class="lbl">Jurisdictions tracked</div></div>
+        <div class="stat"><div class="num display">Monthly</div><div class="lbl">Digest cadence</div></div>
+        <div class="stat"><div class="num display">0</div><div class="lbl">Spam between issues</div></div>
+      </div>
+
+      <ul class="benefit-list">
+        <li>
+          <span class="b-icon">🔔</span>
+          <div>
+            <p class="b-title">Real government announcements, summarised</p>
+            <p class="b-body">Every new mandate, shifted deadline, and penalty change we track, written in plain language — not legal text copy-pasted from a tax authority's press release.</p>
+          </div>
+        </li>
+        <li>
+          <span class="b-icon">🌍</span>
+          <div>
+            <p class="b-title">Choose exactly which countries you care about</p>
+            <p class="b-body">Tell us which of the 29 jurisdictions matter to your business, and your monthly notification email tells you specifically whether they came up — or get the full global digest if you'd rather see everything.</p>
+          </div>
+        </li>
+        <li>
+          <span class="b-icon">🗂️</span>
+          <div>
+            <p class="b-title">A full, searchable back-catalogue</p>
+            <p class="b-body">Every past issue lives in a searchable, filterable archive — look back at any month, any country, any time, not just whatever landed in your inbox most recently.</p>
+          </div>
+        </li>
+        <li>
+          <span class="b-icon">📘</span>
+          <div>
+            <p class="b-title">Priority access to new education content</p>
+            <p class="b-body">New country deep dives and education guides get flagged to subscribers first, as we publish them.</p>
+          </div>
+        </li>
+      </ul>
+    </div>
+
+    <!-- ================= FORM CARD ================= -->
+    <div class="card">
 
     <!-- STEP 1: choose plan + lead capture -->
     <div id="detailsStep" class="checkout-step visible">
-      <p class="eyebrow">Stay ahead of the deadlines</p>
-      <h1 class="title">Monthly compliance digest</h1>
-      <p class="sub">One email a month covering everything that changed across the 29 jurisdictions we track — new mandates, shifted dates, and anything newly due.</p>
+      <p class="eyebrow">Subscribe</p>
+      <h1 class="title">Choose your plan</h1>
+      <p class="sub">One email a month, plus a short alert whenever a new issue covering your countries goes live.</p>
 
       <p class="plan-label">Choose how you'd like to pay</p>
       <div class="plan-options">
@@ -218,13 +330,6 @@
           <div class="po-desc">Covers 12 months, then simply ends. No auto-renewal, no card kept on file.</div>
         </label>
       </div>
-
-      <ul class="includes">
-        <li>One email per month, no spam between issues</li>
-        <li>Every new mandate, deadline change, and penalty update we track</li>
-        <li>Plain-language "what this means for your team" summaries</li>
-        <li>Priority access to new country deep dives as we publish them</li>
-      </ul>
 
       <form id="detailsForm" novalidate>
         <div class="form-row">
@@ -287,7 +392,23 @@
       <p class="form-fineprint" id="confirmFineprint">You'll be taken to a secure Lemon Squeezy checkout window. This plan renews automatically each year until you cancel — you can cancel anytime from the link in your receipt email.</p>
     </div>
 
+    </div>
   </div>
+
+  <!-- ================= SAMPLE ISSUE MODAL ================= -->
+  <div class="modal-overlay" id="sampleIssueModal">
+    <div class="modal-card">
+      <button type="button" class="modal-close" id="closeSampleIssue">✕ Close</button>
+      <div class="modal-badge">Real sample issue — not a mockup</div>
+      <p class="modal-date">1 January 2026</p>
+      <h2 class="modal-title">New Year, new mandates: six countries kick off 2026</h2>
+      <div class="modal-body">
+<p>Welcome to the first issue of the year — and it's a genuinely busy one. Six separate mandates across four continents all take effect on 1 January. Here's the roundup, with a link to each government's own portal so you can verify anything directly at the source rather than taking our summary on faith.</p><h3>🇧🇪 Belgium — mandatory B2B e-invoicing via Peppol</h3><p>Structured e-invoicing is now mandatory for domestic B2B transactions between Belgian VAT-registered businesses, using Peppol BIS Billing 3.0 / EN 16931. PDF and paper invoices no longer qualify as of today. A three-month administrative tolerance period runs until 1 April, after which a progressive penalty regime (€1,500 / €3,000 / €5,000 per infraction) applies — so this window is genuinely worth using to close any remaining gaps, not just to wait it out.</p><p style="margin:4px 0 16px 0; font-size:12.8px;"><a style="color:#b5432f; text-decoration:underline; font-weight:600;" href="https://ec.europa.eu/digital-building-blocks/sites/spaces/DIGITAL/pages/467108877/eInvoicing+in+Belgium" target="_blank" rel="noopener">🔗 Official source: EU Digital Building Blocks — Belgium</a></p><h3>🇲🇾 Malaysia — MyInvois Phase 4 begins</h3><p>Businesses with annual turnover between RM1 million and RM5 million enter the mandate today, with a relaxation period on submission-error penalties running through to the end of 2027. Individual e-invoices above RM10,000 are now mandatory — consolidated invoicing is no longer permitted for amounts at that level.</p><p style="margin:4px 0 16px 0; font-size:12.8px;"><a style="color:#b5432f; text-decoration:underline; font-weight:600;" href="https://www.hasil.gov.my/en/e-invoice" target="_blank" rel="noopener">🔗 Official source: LHDN — MyInvois / e-Invoice</a></p><h3>🇧🇷 Brazil — CBS/IBS test fields required</h3><p>As Brazil's dual-VAT reform begins, electronic tax documents (NF-e, NFC-e, NFS-e) must now include the new CBS and IBS fields at test rates of 0.9% and 0.1% respectively. There's no financial impact yet at these test rates, but the legal obligation to include the data correctly already applies — and validation tightens considerably from April.</p><p style="margin:4px 0 16px 0; font-size:12.8px;"><a style="color:#b5432f; text-decoration:underline; font-weight:600;" href="https://www.nfe.fazenda.gov.br/portal/principal.aspx" target="_blank" rel="noopener">🔗 Official source: Portal Nacional da NF-e (SEFAZ)</a></p><h3>🇲🇽 Mexico — 2026 tax reform takes effect</h3><p>SAT's enforcement powers strengthen from today, adding stricter authenticity checks and — notably — new criminal liability for false or simulated CFDIs. This is a meaningful escalation from the previous purely administrative penalty framework. Worth reviewing your defense documentation and cancellation procedures now, given SAT can request supporting evidence within just 5 business days.</p><p style="margin:4px 0 16px 0; font-size:12.8px;"><a style="color:#b5432f; text-decoration:underline; font-weight:600;" href="https://www.sat.gob.mx" target="_blank" rel="noopener">🔗 Official source: SAT — Servicio de Administración Tributaria</a></p><h3>🇳🇿 New Zealand — high-volume government agencies must send and receive e-invoices</h3><p>Agencies processing more than 2,000 domestic trade invoices annually must now be fully capable of both sending and receiving structured e-invoices — using the PINT A-NZ format, mandatory for government e-invoicing since May 2025 — and must pay 95% of them within 5 business days. If you supply an agency at this volume, this is the moment payment terms should actually start improving.</p><p style="margin:4px 0 16px 0; font-size:12.8px;"><a style="color:#b5432f; text-decoration:underline; font-weight:600;" href="https://www.einvoicing.govt.nz" target="_blank" rel="noopener">🔗 Official source: einvoicing.govt.nz — MBIE</a></p><h3>🇭🇷 Croatia — Fiskalizacija 2.0 goes live</h3><p>Croatia's biggest e-invoicing reform yet: structured issuance, receipt, and real-time e-reporting are now mandatory for all VAT-registered, Croatian-established taxpayers — layered on top of the B2G mandate already in force since 2019. This includes a 5-day buyer-side fiscalization workflow and monthly e-reporting by the 20th of each month, plus an 11-year archiving requirement for original XML invoices.</p><p style="margin:4px 0 16px 0; font-size:12.8px;"><a style="color:#b5432f; text-decoration:underline; font-weight:600;" href="https://porezna-uprava.gov.hr/en" target="_blank" rel="noopener">🔗 Official source: Porezna uprava (Croatian Tax Administration)</a></p><p><strong>What this means for your team:</strong> if you operate in any of these six markets, this is the moment to confirm — not assume — that whatever went live over the holidays is actually working correctly in production, not just configured and left untested.</p>
+      </div>
+      <p class="modal-fineprint">This is the actual first issue sent to subscribers, exactly as published — nothing edited or shortened for this preview. Every subscriber gets access to the full searchable archive, not just this one issue.</p>
+    </div>
+  </div>
+
 </div>
 
 <script>
@@ -437,6 +558,20 @@ detailsForm.addEventListener('submit', async (e)=>{
 document.getElementById('editDetails').addEventListener('click', ()=>{
   checkoutStep.classList.remove('visible');
   detailsStep.classList.add('visible');
+});
+
+// ---------- sample issue modal ----------
+const sampleModal = document.getElementById('sampleIssueModal');
+document.getElementById('openSampleIssue').addEventListener('click', ()=>{
+  sampleModal.classList.add('open');
+});
+function closeSampleModal(){ sampleModal.classList.remove('open'); }
+document.getElementById('closeSampleIssue').addEventListener('click', closeSampleModal);
+sampleModal.addEventListener('click', (e)=>{
+  if(e.target === sampleModal) closeSampleModal(); // click on the overlay itself, not the card
+});
+document.addEventListener('keydown', (e)=>{
+  if(e.key === 'Escape' && sampleModal.classList.contains('open')) closeSampleModal();
 });
 </script>
 </body>
