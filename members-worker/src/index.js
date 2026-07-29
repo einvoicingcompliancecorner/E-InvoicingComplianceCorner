@@ -369,7 +369,7 @@ async function sendMonthlyNotifications(env) {
         }
 
         const unsubToken = await signToken(env.SESSION_SECRET, { email, purpose: "unsub-notifications" }, 60 * 60 * 24 * 365 * 5); // 5-year effective validity — this link should still work whenever someone gets around to clicking it
-        await sendMonthlyNotificationEmail(env, email, issue.title, message, monthKey, unsubToken);
+        await sendMonthlyNotificationEmail(env, email, issue.title, issue.summary, message, monthKey, unsubToken);
         sent++;
       } catch (err) {
         console.error(`Failed to notify ${email}:`, err);
@@ -630,7 +630,54 @@ async function handlePreferencesPost(request, env, lang) {
 // EMAIL SENDING (via Resend — swap this function for any other
 // transactional email API if you'd rather use Postmark, SES, etc.)
 // ================================================================
+//
+// Email HTML has to follow much stricter rules than the site's own
+// pages — most clients (Gmail, Outlook) strip <style> blocks and ignore
+// modern CSS, so everything below uses inline styles and a table-based
+// layout, which survives virtually every client. Fonts are a plain
+// monospace/serif web-safe stack rather than the site's actual Google
+// Fonts, since custom web fonts don't reliably render in email at all.
+function buildEmailShell(bodyHtml, footerHtml) {
+  return `
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#0f1a2b; padding:0; margin:0;">
+  <tr>
+    <td align="center" style="padding:32px 16px;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px; background-color:#efe9db; border-radius:10px;">
+        <tr>
+          <td style="background-color:#0f1a2b; padding:18px 28px; border-radius:10px 10px 0 0; border-bottom:3px solid #b5432f;">
+            <p style="margin:0; font-family:'Courier New',Courier,monospace; font-size:11px; letter-spacing:1.5px; text-transform:uppercase; color:#c98a3a;">The E-Invoicing Compliance Corner</p>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:30px 28px 26px;">
+            ${bodyHtml}
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:16px 28px 24px; border-top:1px dashed #c9bd9e;">
+            ${footerHtml}
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>`;
+}
+
 async function sendMagicLinkEmail(env, email, link) {
+  const body = `
+    <p style="margin:0 0 6px; font-family:'Courier New',Courier,monospace; font-size:11px; text-transform:uppercase; letter-spacing:1px; color:#c98a3a;">Sign-in link</p>
+    <h1 style="margin:0 0 14px; font-size:20px; line-height:1.3; color:#241d10; font-family:Georgia,'Times New Roman',serif;">Access the subscriber archive</h1>
+    <p style="margin:0 0 22px; font-size:14px; line-height:1.6; color:#4a4030;">Click below to sign in. This link expires in 15 minutes and can only be used once.</p>
+    <table role="presentation" cellpadding="0" cellspacing="0">
+      <tr>
+        <td style="background-color:#b5432f; border-radius:6px;">
+          <a href="${link}" style="display:inline-block; padding:12px 22px; font-family:'Courier New',Courier,monospace; font-size:13px; font-weight:bold; color:#ffffff; text-decoration:none;">Sign in →</a>
+        </td>
+      </tr>
+    </table>`;
+  const footer = `<p style="margin:0; font-size:11.5px; color:#8a7d5a; line-height:1.5;">If you didn't request this, you can safely ignore this email — nobody can access your account without clicking the link above.</p>`;
+
   await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: {
@@ -641,18 +688,43 @@ async function sendMagicLinkEmail(env, email, link) {
       from: env.FROM_EMAIL,
       to: email,
       subject: "Your sign-in link — The E-Invoicing Compliance Corner",
-      html: `
-        <p>Click below to access the subscriber newsletter archive. This link expires in 15 minutes and can only be used once.</p>
-        <p><a href="${link}">${link}</a></p>
-        <p style="color:#888;font-size:12px;">If you didn't request this, you can safely ignore this email.</p>
-      `,
+      html: buildEmailShell(body, footer),
     }),
   });
 }
 
-async function sendMonthlyNotificationEmail(env, email, issueTitle, personalizedMessage, monthKey, unsubToken) {
+async function sendMonthlyNotificationEmail(env, email, issueTitle, issueSummary, personalizedMessage, monthKey, unsubToken) {
   const archiveLink = `${env.SITE_URL}/members/archive/${encodeURIComponent(monthKey)}`;
   const unsubLink = `${env.SITE_URL}/members/unsubscribe-notifications?token=${encodeURIComponent(unsubToken)}`;
+
+  const safeTitle = escapeHtml(issueTitle);
+  const safeSummary = escapeHtml(issueSummary || "");
+  const safeMessage = escapeHtml(personalizedMessage);
+
+  const body = `
+    <p style="margin:0 0 6px; font-family:'Courier New',Courier,monospace; font-size:11px; text-transform:uppercase; letter-spacing:1px; color:#c98a3a;">This month's issue</p>
+    <h1 style="margin:0 0 12px; font-size:21px; line-height:1.3; color:#241d10; font-family:Georgia,'Times New Roman',serif;">${safeTitle}</h1>
+    ${safeSummary ? `<p style="margin:0 0 20px; font-size:14px; line-height:1.6; color:#4a4030;">${safeSummary}</p>` : ""}
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#e4dcc6; border-radius:8px; margin:0 0 24px;">
+      <tr>
+        <td style="padding:14px 16px;">
+          <p style="margin:0; font-size:13.5px; line-height:1.55; color:#241d10;">${safeMessage}</p>
+        </td>
+      </tr>
+    </table>
+    <table role="presentation" cellpadding="0" cellspacing="0">
+      <tr>
+        <td style="background-color:#b5432f; border-radius:6px;">
+          <a href="${archiveLink}" style="display:inline-block; padding:12px 22px; font-family:'Courier New',Courier,monospace; font-size:13px; font-weight:bold; color:#ffffff; text-decoration:none;">Read the full issue →</a>
+        </td>
+      </tr>
+    </table>`;
+  const footer = `
+    <p style="margin:0; font-size:11.5px; color:#8a7d5a; line-height:1.5;">
+      You're receiving this because you have an active subscription to The E-Invoicing Compliance Corner.
+      <a href="${unsubLink}" style="color:#8a7d5a;">Stop these monthly notification emails</a> — this won't cancel your subscription, you'll still be able to log in and read every issue any time.
+    </p>`;
+
   await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: {
@@ -663,14 +735,7 @@ async function sendMonthlyNotificationEmail(env, email, issueTitle, personalized
       from: env.FROM_EMAIL,
       to: email,
       subject: `This month's issue is live — ${issueTitle}`,
-      html: `
-        <p>${personalizedMessage}</p>
-        <p><a href="${archiveLink}">Read the full issue →</a></p>
-        <p style="color:#888;font-size:12px; margin-top:24px; padding-top:12px; border-top:1px solid #ddd;">
-          You're receiving this because you have an active subscription to The E-Invoicing Compliance Corner.
-          <a href="${unsubLink}">Stop these monthly notification emails</a> — this won't cancel your subscription, you'll still be able to log in and read every issue any time.
-        </p>
-      `,
+      html: buildEmailShell(body, footer),
     }),
   });
 }
