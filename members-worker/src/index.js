@@ -284,6 +284,11 @@ export default {
       let response;
       if (request.method === "POST" && url.pathname === "/webhooks/lemonsqueezy") {
         return handleWebhook(request, env); // webhook responses never carry a lang cookie
+      } else if (request.method === "GET" && url.pathname === "/") {
+        // Visiting the bare custom domain directly (no path) previously hit
+        // this Worker's own 404 fallback, which looked like a broken
+        // deployment rather than a missing convenience redirect.
+        return new Response(null, { status: 302, headers: { Location: "/members" } });
       } else if (request.method === "GET" && url.pathname === "/members") {
         response = htmlResponse(renderLoginPage(null, lang));
       } else if (request.method === "POST" && url.pathname === "/members/login") {
