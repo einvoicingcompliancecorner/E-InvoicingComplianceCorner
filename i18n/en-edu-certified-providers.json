@@ -1,0 +1,56 @@
+{
+  "_meta": { "language": "en", "reviewed": true },
+  "backLink": "← Back to global tracker",
+  "header": {
+    "eyebrow": "Education",
+    "title": "Government Certified Providers",
+    "sub": "Where to find the official, government-published list of accredited service providers or Peppol-ready software for each country — verified directly against the relevant authority's own site, not a third-party summary.",
+    "lastUpdated": "Last updated:"
+  },
+  "statusBanner": { "text": "This is a <strong>starting set of verified links</strong>, not a complete map of all 29 tracked jurisdictions. Every link below was checked directly against the named government/authority's own website. Several countries in this tracker don't run a public accreditation registry at all — see the note in Section 3 before assuming one exists." },
+  "stats": { "label1": "Countries verified so far", "label2": "Different accreditation terms in use", "label3": "Global Peppol provider directory" },
+  "sec1": {
+    "heading": "Same idea, different names",
+    "intro": "Every country below runs a version of the same concept — a government-recognised list of software or intermediaries you can safely rely on — but each one uses its own term for it.",
+    "card1": { "body": "Used in the UAE. The intermediary that validates and transmits your e-invoices over the Peppol network on your behalf." },
+    "card2": { "body": "Used in Mexico. The third party authorised by SAT to stamp (timbrar) your CFDI and give it legal validity." },
+    "card3": { "body": "Used in Peru. An OSE validates your invoice with the same legal authority as SUNAT itself; a PSE signs on your behalf using its own certificate." },
+    "card4": { "body": "Used in India. A licensed intermediary providing the software/API layer that connects a taxpayer to the GSTN." },
+    "card5": { "title": "Peppol Service Provider / Access Point", "body": "Used in Malaysia, Singapore, Australia, and any other Peppol-based market. An accredited Access Point connects your business to the shared Peppol network." }
+  },
+  "sec2": {
+    "heading": "Verified official links, by country",
+    "intro": "Click through to the authority's own page — always cross-check a specific provider's current status there directly before signing anything, since these lists change.",
+    "table": {
+      "h1": "Country", "h2": "What's listed", "h3": "Official source",
+      "uae": "Ministry of Finance's register of pre-approved / accredited e-invoicing Service Providers (ASPs)",
+      "mexico": "SAT's register of Proveedores Autorizados de Certificación",
+      "peru": "SUNAT's official padrón (registry) of authorised OSE and PSE providers",
+      "india": "GSTN's list of licensed GST Suvidha Providers",
+      "malaysia": "MDEC's (Malaysia's Peppol Authority) register of accredited Peppol Service Providers",
+      "singapore": "IMDA's list of authorised Access Point providers and InvoiceNow-Ready solutions",
+      "australia": "The ATO's (Australian Peppol Authority) register of accredited Peppol service providers",
+      "france": "The DGFiP's list of registered Plateformes Agréées (formerly PDP)"
+    },
+    "franceNote": "France's exact list sits within the DGFiP's broader impots.gouv.fr site rather than one fixed, stable URL we could verify with full confidence — search \"liste des plateformes agréées\" directly on that site for the current version."
+  },
+  "sec3": {
+    "heading": "Where this pattern doesn't apply",
+    "intro": "Several major markets in this tracker simply don't run a public provider-accreditation registry at all — worth knowing so you don't go looking for one that doesn't exist.",
+    "card1": { "body": "KSeF and SDI are both direct government platforms — any compliant software can connect via the published API/schema, with no formal \"accredited intermediary\" layer to certify against." },
+    "card2": { "body": "Taxpayers self-certify as authorised issuers directly with the tax authority (SEFAZ, SII); there's no equivalent PAC/OSE-style third-party accreditation model in either country." },
+    "card3": { "body": "ZATCA doesn't publish a comparable public list — compliance is a matter of your invoicing system meeting the published technical specification directly, not intermediary accreditation." }
+  },
+  "sec4": {
+    "heading": "One resource that spans every Peppol market",
+    "body": "For any Peppol-based country not yet in the table above — Belgium, Norway, Denmark, and others — OpenPeppol itself (the network's governing body) maintains a single global register of every certified Peppol service provider, searchable by country of legal residence."
+  },
+  "sec5": {
+    "heading": "Where to go next",
+    "card1": { "title": "🏷️ Understand the vendor categories first", "body": "\"Types of Provider\" (under Education) breaks down ERP, Solution Provider, Tax Compliance, Technology, and Consultancy categories before you start browsing government lists." },
+    "card2": { "title": "🗓️ Ready to run a vendor selection?", "body": "\"Preparing for a Mandate\" (under Education) walks through how to evaluate and select a provider once you've found the right list." },
+    "card3": { "title": "🌍 Check your country's specific requirements", "body": "The Deep Dives menu covers exact registration steps, technical specifications, and penalties for each of the 29 jurisdictions tracked here." },
+    "card4": { "title": "📬 This list will grow", "body": "More countries will be added here as we verify their official sources directly — subscribers get notified when new entries are published." }
+  },
+  "footer": { "text": "This page links directly to official government and authority sources as verified at the date above, and is provided for general awareness — it is not an endorsement of any specific provider, and inclusion on a government list is not a guarantee of fit for your specific needs. Always confirm a provider's current accreditation status directly on the linked official page before signing an agreement." }
+}

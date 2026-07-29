@@ -1,0 +1,56 @@
+{
+  "_meta": { "language": "de", "reviewed": true },
+  "backLink": "← Zurück zur Übersicht",
+  "header": {
+    "eyebrow": "Wissen",
+    "title": "Staatlich zertifizierte Anbieter",
+    "sub": "Wo Sie die offizielle, von der Regierung veröffentlichte Liste akkreditierter Dienstleister oder Peppol-fähiger Software für jedes Land finden — direkt anhand der eigenen Website der jeweiligen Behörde verifiziert, nicht anhand einer Zusammenfassung Dritter.",
+    "lastUpdated": "Zuletzt aktualisiert:"
+  },
+  "statusBanner": { "text": "Dies ist ein <strong>erster Satz verifizierter Links</strong>, keine vollständige Übersicht aller 29 erfassten Rechtsordnungen. Jeder Link unten wurde direkt anhand der eigenen Website der genannten Regierung/Behörde geprüft. Mehrere Länder in diesem Tracker führen überhaupt kein öffentliches Akkreditierungsregister — siehe den Hinweis in Abschnitt 3, bevor Sie annehmen, dass eines existiert." },
+  "stats": { "label1": "Bisher verifizierte Länder", "label2": "Verschiedene verwendete Akkreditierungsbegriffe", "label3": "Globales Peppol-Anbieterverzeichnis" },
+  "sec1": {
+    "heading": "Gleiche Idee, unterschiedliche Namen",
+    "intro": "Jedes Land unten betreibt eine Version desselben Konzepts — eine staatlich anerkannte Liste von Software oder Vermittlern, auf die Sie sich sicher verlassen können —, aber jedes verwendet dafür seinen eigenen Begriff.",
+    "card1": { "body": "Verwendet in den VAE. Der Vermittler, der Ihre E-Rechnungen über das Peppol-Netzwerk in Ihrem Namen validiert und überträgt." },
+    "card2": { "body": "Verwendet in Mexiko. Der von der SAT autorisierte Dritte, der Ihre CFDI stempelt (timbrar) und ihr Rechtsgültigkeit verleiht." },
+    "card3": { "body": "Verwendet in Peru. Ein OSE validiert Ihre Rechnung mit derselben Rechtsautorität wie die SUNAT selbst; ein PSE signiert in Ihrem Namen mit seinem eigenen Zertifikat." },
+    "card4": { "body": "Verwendet in Indien. Ein lizenzierter Vermittler, der die Software-/API-Ebene bereitstellt, die einen Steuerpflichtigen mit der GSTN verbindet." },
+    "card5": { "title": "Peppol Service Provider / Access Point", "body": "Verwendet in Malaysia, Singapur, Australien und jedem anderen Peppol-basierten Markt. Ein akkreditierter Access Point verbindet Ihr Unternehmen mit dem gemeinsamen Peppol-Netzwerk." }
+  },
+  "sec2": {
+    "heading": "Verifizierte offizielle Links, nach Land",
+    "intro": "Klicken Sie durch zur eigenen Seite der Behörde — prüfen Sie den aktuellen Status eines bestimmten Anbieters immer dort direkt, bevor Sie etwas unterschreiben, da sich diese Listen ändern.",
+    "table": {
+      "h1": "Land", "h2": "Was gelistet ist", "h3": "Offizielle Quelle",
+      "uae": "Register des Finanzministeriums für vorab genehmigte / akkreditierte E-Invoicing-Dienstleister (ASPs)",
+      "mexico": "Register der SAT für Proveedores Autorizados de Certificación",
+      "peru": "Offizieller padrón (Register) der SUNAT für autorisierte OSE- und PSE-Anbieter",
+      "india": "Liste der GSTN mit lizenzierten GST Suvidha Providern",
+      "malaysia": "Register der MDEC (Peppol-Behörde Malaysias) für akkreditierte Peppol Service Provider",
+      "singapore": "Liste der IMDA mit autorisierten Access-Point-Anbietern und InvoiceNow-Ready-Lösungen",
+      "australia": "Register der ATO (australische Peppol-Behörde) für akkreditierte Peppol-Dienstleister",
+      "france": "Liste der DGFiP mit registrierten Plateformes Agréées (früher PDP)"
+    },
+    "franceNote": "Frankreichs genaue Liste befindet sich innerhalb der breiteren Website impots.gouv.fr der DGFiP statt unter einer festen, stabilen URL, die wir mit voller Sicherheit verifizieren könnten — suchen Sie direkt auf dieser Website nach \"liste des plateformes agréées\" für die aktuelle Version."
+  },
+  "sec3": {
+    "heading": "Wo dieses Muster nicht gilt",
+    "intro": "Mehrere bedeutende Märkte in diesem Tracker führen schlicht kein öffentliches Anbieterakkreditierungsregister — gut zu wissen, damit Sie nicht nach etwas suchen, das nicht existiert.",
+    "card1": { "body": "KSeF und SDI sind beide direkte Regierungsplattformen — jede konforme Software kann sich über das veröffentlichte API/Schema verbinden, ohne eine formelle Ebene eines \"akkreditierten Vermittlers\", gegen die zertifiziert werden müsste." },
+    "card2": { "body": "Steuerpflichtige zertifizieren sich selbst als autorisierte Aussteller direkt bei der Steuerbehörde (SEFAZ, SII); in keinem der beiden Länder gibt es ein vergleichbares PAC-/OSE-artiges Drittanbieter-Akkreditierungsmodell." },
+    "card3": { "body": "Die ZATCA veröffentlicht keine vergleichbare öffentliche Liste — Compliance bedeutet, dass Ihr Rechnungssystem direkt die veröffentlichte technische Spezifikation erfüllt, nicht eine Vermittlerakkreditierung." }
+  },
+  "sec4": {
+    "heading": "Eine Ressource, die jeden Peppol-Markt abdeckt",
+    "body": "Für jedes Peppol-basierte Land, das noch nicht in der obigen Tabelle steht — Belgien, Norwegen, Dänemark und andere — führt OpenPeppol selbst (das leitende Gremium des Netzwerks) ein einziges globales Register aller zertifizierten Peppol-Dienstleister, durchsuchbar nach Land des rechtlichen Sitzes."
+  },
+  "sec5": {
+    "heading": "Wie es weitergeht",
+    "card1": { "title": "🏷️ Verstehen Sie zuerst die Anbieterkategorien", "body": "\"Anbietertypen\" (unter Wissen) schlüsselt die Kategorien ERP, Lösungsanbieter, Steuer-Compliance, Technologie und Beratung auf, bevor Sie mit dem Durchsuchen staatlicher Listen beginnen." },
+    "card2": { "title": "🗓️ Bereit für eine Anbieterauswahl?", "body": "\"Vorbereitung auf eine Vorgabe\" (unter Wissen) erklärt, wie Sie einen Anbieter bewerten und auswählen, sobald Sie die richtige Liste gefunden haben." },
+    "card3": { "title": "🌍 Prüfen Sie die spezifischen Anforderungen Ihres Landes", "body": "Das Menü der Länderanalysen behandelt die genauen Registrierungsschritte, technischen Spezifikationen und Sanktionen für jede der 29 hier erfassten Rechtsordnungen." },
+    "card4": { "title": "📬 Diese Liste wird wachsen", "body": "Weitere Länder werden hier hinzugefügt, sobald wir ihre offiziellen Quellen direkt verifizieren — Abonnenten werden benachrichtigt, wenn neue Einträge veröffentlicht werden." }
+  },
+  "footer": { "text": "Diese Seite verlinkt direkt zu offiziellen Regierungs- und Behördenquellen, verifiziert zum oben genannten Datum, und dient der allgemeinen Information — sie stellt keine Empfehlung eines bestimmten Anbieters dar, und die Aufnahme in eine Regierungsliste ist keine Garantie für die Eignung für Ihre spezifischen Bedürfnisse. Bestätigen Sie den aktuellen Akkreditierungsstatus eines Anbieters immer direkt auf der verlinkten offiziellen Seite, bevor Sie eine Vereinbarung unterzeichnen." }
+}

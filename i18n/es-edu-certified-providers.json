@@ -1,0 +1,56 @@
+{
+  "_meta": { "language": "es", "reviewed": true },
+  "backLink": "← Volver al panel general",
+  "header": {
+    "eyebrow": "Educación",
+    "title": "Proveedores certificados por el gobierno",
+    "sub": "Dónde encontrar la lista oficial, publicada por el gobierno, de proveedores de servicios acreditados o software listo para Peppol de cada país — verificada directamente en el propio sitio de la autoridad correspondiente, no en un resumen de terceros.",
+    "lastUpdated": "Última actualización:"
+  },
+  "statusBanner": { "text": "Este es un <strong>conjunto inicial de enlaces verificados</strong>, no un mapa completo de las 29 jurisdicciones seguidas. Cada enlace de abajo se comprobó directamente en el propio sitio web del gobierno/autoridad mencionado. Varios países de este seguimiento simplemente no gestionan un registro público de acreditación — vea la nota de la Sección 3 antes de asumir que existe uno." },
+  "stats": { "label1": "Países verificados hasta ahora", "label2": "Términos de acreditación distintos en uso", "label3": "Directorio global de proveedores Peppol" },
+  "sec1": {
+    "heading": "Misma idea, nombres distintos",
+    "intro": "Cada país de abajo gestiona una versión del mismo concepto — una lista reconocida por el gobierno de software o intermediarios en los que puede confiar de forma segura — pero cada uno usa su propio término para ello.",
+    "card1": { "body": "Se usa en los EAU. El intermediario que valida y transmite sus facturas electrónicas a través de la red Peppol en su nombre." },
+    "card2": { "body": "Se usa en México. El tercero autorizado por el SAT para sellar (timbrar) su CFDI y darle validez legal." },
+    "card3": { "body": "Se usa en Perú. Un OSE valida su factura con la misma autoridad legal que la propia SUNAT; un PSE firma en su nombre usando su propio certificado." },
+    "card4": { "body": "Se usa en India. Un intermediario con licencia que proporciona la capa de software/API que conecta a un contribuyente con la GSTN." },
+    "card5": { "title": "Proveedor de Servicios Peppol / Punto de Acceso", "body": "Se usa en Malasia, Singapur, Australia y cualquier otro mercado basado en Peppol. Un Punto de Acceso acreditado conecta su empresa a la red Peppol compartida." }
+  },
+  "sec2": {
+    "heading": "Enlaces oficiales verificados, por país",
+    "intro": "Vaya directamente a la página propia de la autoridad — verifique siempre allí el estado actual de un proveedor concreto antes de firmar nada, ya que estas listas cambian.",
+    "table": {
+      "h1": "País", "h2": "Qué se lista", "h3": "Fuente oficial",
+      "uae": "Registro del Ministerio de Finanzas de Proveedores de Servicios de facturación electrónica preaprobados/acreditados (ASP)",
+      "mexico": "Registro del SAT de Proveedores Autorizados de Certificación",
+      "peru": "Padrón oficial de la SUNAT (registro) de proveedores OSE y PSE autorizados",
+      "india": "Lista de la GSTN de Proveedores de GST Suvidha con licencia",
+      "malaysia": "Registro de la MDEC (Autoridad Peppol de Malasia) de Proveedores de Servicios Peppol acreditados",
+      "singapore": "Lista de la IMDA de proveedores de Punto de Acceso autorizados y soluciones listas para InvoiceNow",
+      "australia": "Registro de la ATO (Autoridad Peppol de Australia) de proveedores de servicios Peppol acreditados",
+      "france": "Lista de la DGFiP de Plateformes Agréées registradas (antes PDP)"
+    },
+    "franceNote": "La lista exacta de Francia se encuentra dentro del sitio más amplio impots.gouv.fr de la DGFiP, en lugar de en una URL fija y estable que podamos verificar con plena confianza — busque \"liste des plateformes agréées\" directamente en ese sitio para la versión actual."
+  },
+  "sec3": {
+    "heading": "Dónde no se aplica este patrón",
+    "intro": "Varios mercados importantes de este seguimiento simplemente no gestionan ningún registro público de acreditación de proveedores — vale la pena saberlo para no buscar uno que no existe.",
+    "card1": { "body": "KSeF y SDI son ambos plataformas gubernamentales directas — cualquier software conforme puede conectarse mediante la API/esquema publicados, sin ninguna capa formal de \"intermediario acreditado\" frente a la que certificarse." },
+    "card2": { "body": "Los contribuyentes se autocertifican como emisores autorizados directamente ante la autoridad fiscal (SEFAZ, SII); no existe un modelo equivalente de acreditación de terceros al estilo PAC/OSE en ninguno de los dos países." },
+    "card3": { "body": "ZATCA no publica una lista pública comparable — el cumplimiento consiste en que su sistema de facturación cumpla directamente la especificación técnica publicada, no en la acreditación de intermediarios." }
+  },
+  "sec4": {
+    "heading": "Un recurso que abarca todos los mercados Peppol",
+    "body": "Para cualquier país basado en Peppol que aún no esté en la tabla anterior — Bélgica, Noruega, Dinamarca y otros — el propio OpenPeppol (el organismo rector de la red) mantiene un único registro global de todos los proveedores de servicios Peppol certificados, consultable por país de residencia legal."
+  },
+  "sec5": {
+    "heading": "A dónde ir después",
+    "card1": { "title": "🏷️ Entienda primero las categorías de proveedor", "body": "\"Tipos de proveedor\" (en Educación) desglosa las categorías de ERP, Proveedor de Solución, Cumplimiento Fiscal, Tecnología y Consultoría antes de que empiece a consultar las listas gubernamentales." },
+    "card2": { "title": "🗓️ ¿Listo para ejecutar una selección de proveedor?", "body": "\"Preparación para un mandato\" (en Educación) explica cómo evaluar y seleccionar un proveedor una vez que ha encontrado la lista correcta." },
+    "card3": { "title": "🌍 Consulte los requisitos específicos de su país", "body": "El menú de análisis por país cubre los pasos exactos de registro, las especificaciones técnicas y las sanciones de cada una de las 29 jurisdicciones seguidas aquí." },
+    "card4": { "title": "📬 Esta lista crecerá", "body": "Se añadirán más países aquí a medida que verifiquemos directamente sus fuentes oficiales — los suscriptores reciben una notificación cuando se publican nuevas entradas." }
+  },
+  "footer": { "text": "Esta página enlaza directamente con fuentes oficiales de gobiernos y autoridades verificadas en la fecha indicada arriba, y se ofrece con fines informativos generales — no constituye un aval de ningún proveedor concreto, y la inclusión en una lista gubernamental no garantiza su idoneidad para sus necesidades específicas. Confirme siempre el estado de acreditación actual de un proveedor directamente en la página oficial enlazada antes de firmar cualquier acuerdo." }
+}
