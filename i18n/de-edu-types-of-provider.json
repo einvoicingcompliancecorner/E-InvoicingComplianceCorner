@@ -1,0 +1,107 @@
+{
+  "_meta": { "language": "de", "reviewed": true },
+  "backLink": "← Zurück zur Übersicht",
+  "header": {
+    "eyebrow": "Wissen",
+    "title": "Anbietertypen",
+    "sub": "\"Einen Anbieter besorgen\" wird der tatsächlichen Vielfalt dieses Marktes nicht gerecht. Fünf grundverschiedene Anbieterkategorien verkaufen allesamt E-Invoicing-Compliance-Lösungen — zu wissen, mit welcher Sie es zu tun haben, ändert, was Sie von ihr erwarten sollten.",
+    "lastUpdated": "Zuletzt aktualisiert:"
+  },
+  "statusBanner": { "text": "Firmennamen unten sind <strong>rein illustrative Beispiele</strong> — eine kleine, nicht erschöpfende Auswahl, um jede Kategorie greifbar zu machen, keine Empfehlung oder Rangliste. Viele reale Anbieter überschneiden mehr als eine Kategorie." },
+  "stats": { "label1": "Eigenständige Anbieterkategorien", "label2": "Kategorien, die die meisten Programme tatsächlich kombinieren", "label3": "Kategorie, die alles allein abdeckt" },
+  "sec1": {
+    "heading": "Warum die Kategorie wichtiger ist als der Name",
+    "intro": "Zwei Anbieter können beide sagen \"wir machen E-Invoicing\" und dabei genuin unterschiedliche Dinge meinen. Zu wissen, welche Kategorie Sie bewerten, sagt Ihnen, welche Fragen tatsächlich zu stellen sind — und welche Lücken zu erwarten und einzuplanen sind."
+  },
+  "sec2": {
+    "heading": "Die fünf Kategorien",
+    "strengthsLabel": "Typische Stärken",
+    "tradeoffsLabel": "Typische Kompromisse",
+    "examplesLabel": "Illustrative Beispiele:",
+    "card1": {
+      "title": "1. ERP-Anbieter",
+      "what": "Vollständige Enterprise-Resource-Planning-Suiten — Finanzen, Lieferkette, Personalwesen und mehr —, die E-Invoicing-Compliance als natives oder Zusatzmodul innerhalb ihrer eigenen Plattform aufgebaut haben.",
+      "s1": "Nativ in Ihrem zentralen Buchführungssystem — keine separate Datenextraktionsebene",
+      "s2": "Eine einzige Anbieterbeziehung, wenn Sie bereits Kunde sind",
+      "s3": "Konsistente Stammdaten, da sie das ERP nie verlassen",
+      "t1": "Länderabdeckung und Update-Geschwindigkeit können hinter spezialisierten Anbietern zurückbleiben, besonders bei neueren oder kleineren Märkten",
+      "t2": "Oft weiterhin ein Zusatzmodul oder ein Partner für vollständige globale Reichweite nötig",
+      "t3": "Weniger flexibel, wenn Sie mehr als ein ERP im Konzern betreiben"
+    },
+    "card2": {
+      "title": "2. Lösungsanbieter (Kreditoren-/Debitoren-Spezialisten)",
+      "what": "Anbieter, die sich speziell auf Kreditoren- und Debitorenautomatisierung, E-Rechnungsaustausch konzentrieren und als der akkreditierte Vermittler (Access Point, PAC, OSE) fungieren, den die Vorgabe eines bestimmten Landes verlangt.",
+      "s1": "Tiefe, oft sich schneller entwickelnde Länder- und Formatabdeckung — das ist ihr gesamtes Geschäft",
+      "s2": "ERP-unabhängig — konzipiert, um sich in jedes bereits genutzte System einzuklinken",
+      "s3": "Speziell für die Austausch- und Validierungsebene entwickelt",
+      "t1": "Eine weitere Anbieterbeziehung und ein weiterer Vertrag neben Ihrem ERP zu verwalten",
+      "t2": "Es ist weiterhin Integrationsaufwand nötig, um es an Ihre Kernsysteme anzubinden"
+    },
+    "card3": {
+      "title": "3. Steuer-Compliance-Anbieter",
+      "what": "Anbieter, deren Kerngeschäft die breitere indirekte Steuer-Compliance ist — Umsatzsteuer-/GST-Bestimmung, Erklärungen und Meldungen —, die sich als Teil dieses breiteren Steuertechnologie-Stacks auf E-Invoicing ausgeweitet haben.",
+      "s1": "Ein Anbieter für sowohl Steuerbestimmung als auch E-Invoicing, wenn Sie ihn bereits für Steuern nutzen",
+      "s2": "Tiefe steuertechnische Expertise, die der Compliance-Logik zugrunde liegt",
+      "t1": "E-Invoicing kann ein neuerer Teil ihres Angebots sein als ihr Kernsteuerprodukt — prüfen Sie die Reife der Länderabdeckung hierfür spezifisch, nicht nur ihren allgemeinen Steuerruf"
+    },
+    "card4": {
+      "title": "4. Technologieanbieter (EDI / Middleware)",
+      "what": "Anbieter, deren Kernkompetenz der breitere B2B-Datenaustausch und Integrations-Middleware ist — oft seit langem in EDI etabliert —, die strukturierte E-Rechnungsformat-Unterstützung als Erweiterung dieser bestehenden Fähigkeit hinzugefügt haben.",
+      "s1": "Wenn Sie bereits erhebliches EDI-Handelspartnervolumen betreiben, wird dieselbe Integrationsebene erweitert, statt ein Parallelsystem hinzuzufügen",
+      "s2": "Starke universelle Fähigkeiten zur Datenzuordnung und -transformation",
+      "t1": "CTC-spezifische Feinheiten — Echtzeit-Freigabe, digitale Signaturen, staatliche Meldungen — sind oft eine neuere Schicht auf einer EDI-first-Architektur, nicht Teil der Kern-DNA"
+    },
+    "card5": {
+      "title": "5. Beratungsunternehmen",
+      "what": "Beratungs- und Umsetzungsfirmen — selbst kein Softwareprodukt —, die Bewertung, Unterstützung bei der Anbieterauswahl und Programmmanagement für eine Vorgabenreaktion anbieten.",
+      "s1": "Unabhängig von einem einzelnen Softwareanbieter, was objektivere Unterstützung bei der Anbieterauswahl bedeuten kann",
+      "s2": "Nützlich für komplexe, länder- und einheitenübergreifende Programme, die dediziertes Programmmanagement benötigen",
+      "t1": "Ersetzt nicht die Notwendigkeit eines tatsächlichen Software-/Dienstanbieters — dies ist eine ergänzende Ebene",
+      "t2": "Typischerweise Kosten nach Zeit und Aufwand statt einer vorhersehbaren Gebühr pro Transaktion"
+    }
+  },
+  "sec3": {
+    "heading": "Im Vergleich",
+    "intro": "Ein grober Leitfaden dazu, wie sich die Kategorien typischerweise unterscheiden — reale Anbieter variieren, und mehrere überschneiden bewusst mehr als eine Zeile.",
+    "table": {
+      "h1": "Kategorie", "h2": "Kerngeschäft", "h3": "Tiefe der Länderabdeckung", "h4": "Typisches Kostenmodell",
+      "r1c1": "ERP-Anbieter", "r1c2": "Vollständiges Geschäftssystem, E-Invoicing als Modul", "r1c3": "Unterschiedlich — stark in Heimatmärkten, kann anderswo hinterherhinken", "r1c4": "Lizenzierung + Modulgebühren",
+      "r2c1": "Lösungsanbieter", "r2c2": "Kreditoren-/Debitorenautomatisierung &amp; E-Rechnungsaustausch", "r2c3": "Meist breit — das ist ihre Spezialität", "r2c4": "Pro Transaktion oder Abonnement",
+      "r3c1": "Steuer-Compliance-Anbieter", "r3c2": "Bestimmung und Einreichung indirekter Steuern", "r3c3": "Stark, wo ihr Steuerprodukt etabliert ist", "r3c4": "Abonnement, oft mit Steuerprodukt gebündelt",
+      "r4c1": "Technologieanbieter", "r4c2": "B2B-Datenaustausch / EDI-Middleware", "r4c3": "Stark, wo EDI-Handel bereits etabliert ist", "r4c4": "Pro Transaktion oder Plattformgebühr",
+      "r5c1": "Beratungsunternehmen", "r5c2": "Beratungs- &amp; Umsetzungsdienstleistungen", "r5c3": "Beratungsreichweite, keine technische Plattform selbst", "r5c4": "Zeit-und-Aufwand- oder Festpreisprojekt"
+    }
+  },
+  "sec4": {
+    "heading": "Wie sich diese in der Praxis tatsächlich kombinieren",
+    "intro": "Nur sehr wenige reale Vorgabenprogramme nutzen nur eine Kategorie — die meisten kombinieren zwei oder drei, jede deckt einen anderen Teil des Problems ab.",
+    "scenarioTitle": "Ein realistisches multinationales Szenario",
+    "scenarioBody": "Ein Konzern, der SAP global betreibt, nutzt das native Compliance-Modul seines ERP für Märkte mit ausgereifter Abdeckung, holt einen spezialisierten Lösungsanbieter gezielt für eine Handvoll Länder hinzu, die das ERP-Modul noch nicht gut unterstützt, und beauftragt für einige Monate ein Beratungsunternehmen, um das Programmmanagement über den gesamten Rollout zu führen und die Anbieterauswahl zu unterstützen.",
+    "flow1": "ERP-Modul — reife Märkte", "flow2": "Lösungsanbieter — Abdeckungslücken", "flow3": "Beratung — Programmaufsicht"
+  },
+  "sec5": {
+    "heading": "Fragen, die sich lohnen, unabhängig davon, welche Kategorie Sie bewerten",
+    "q1": "Ist E-Invoicing für diesen Anbieter genuin Kerngeschäft, oder ein Zusatz zu etwas anderem, das er verkauft?",
+    "q2": "Wie schnell haben sie historisch Unterstützung für neu angekündigte Vorgaben hinzugefügt?",
+    "q3": "Halten sie die Akkreditierung direkt, oder verlassen sie sich für bestimmte Länder auf einen Dritten unter ihnen?",
+    "q4": "Wenn sie Spezialist in einer Kategorie sind, wen erwarten sie, dass Sie hinzuziehen, um die anderen abzudecken?",
+    "q5": "Wie sieht ihre Roadmap für Länder aus, die Sie noch nicht benötigen, aber in ein bis zwei Jahren vielleicht?"
+  },
+  "sec6": {
+    "heading": "Weiterführend: Analystenforschung",
+    "intro": "Fünf Analysehäuser decken diesen Markt aktiv ab und sind es wert, gekannt zu werden, wenn Sie unabhängige Validierung jenseits der Aussagen eines einzelnen Anbieters wünschen. Die meisten vollständigen Berichte liegen hinter einem Abonnement oder einem vom Anbieter bereitgestellten Auszug, aber jedes Haus unten veröffentlicht auch etwas genuin frei Zugängliches ohne ein solches.",
+    "gartner": "Veröffentlicht jährlich einen Magic Quadrant für Accounts Payable Applications, zusammen mit einer eigenen Kategorie \"E-invoicing Compliance Applications\" auf Gartner Peer Insights — echte, durchsuchbare Nutzerbewertungen, kein Abonnement erforderlich.",
+    "forrester": "Veröffentlicht regelmäßig The Forrester Wave™: Accounts Payable Invoice Automation Software (zuletzt Q2 2026). Die vollständige Wave erfordert Forrester-Zugang, aber die eigene Blog-Ankündigung mit einer Zusammenfassung der Erkenntnisse jeder Ausgabe ist öffentlich lesbar.",
+    "idc": "Veröffentlicht IDC-MarketScape-Anbieterbewertungen zu E-Invoicing- und Umsatzsteuer-Compliance-Software, sowohl weltweite als auch europaspezifische Ausgaben. Die vollständigen Bewertungen sind kostenpflichtig, aber IDCs eigene Blogserie zu E-Invoicing ist ein genuin nützlicher, frei zugänglicher Einstiegspunkt.",
+    "spendMatters": "Betreibt SolutionMap, ein Ranking-System, das Beschaffungstechnologie in 16 Source-to-Pay-Kategorien abdeckt, einschließlich Kreditorenautomatisierung. Erwähnenswert: Spend Matters ist nach einer Fusion nun eine Abteilung der Hackett Group, sodass beide zunehmend eine Forschungsorganisation sind statt vollständig unabhängig voneinander.",
+    "hackett": "Führt groß angelegte Benchmarking-Studien zu Procure-to-Pay- und Kreditorenbuchhaltungs-Leistung durch, einschließlich spezifischer Forschung dazu, wie KI Kreditorenlösungen und die globale E-Invoicing-/CTC-Compliance-Fähigkeit verändert.",
+    "footnote": "Bestimmte namentlich genannte Ausgaben (z. B. \"Q2 2026\") werden in regelmäßigen Zyklen abgelöst — prüfen Sie die eigene Website jedes Hauses auf die aktuelle Version, statt anzunehmen, dass eine hier oder anderswo genannte konkrete Ausgabe zum Zeitpunkt Ihrer Lektüre noch die aktuellste ist."
+  },
+  "sec7": {
+    "heading": "Wie es weitergeht",
+    "card1": { "title": "🗓️ Den eigentlichen Auswahlprozess durchführen", "body": "\"Vorbereitung auf eine Vorgabe\" (unter Wissen) behandelt, wie Anforderungen definiert, ein Proof of Concept durchgeführt und ein Vertrag geprüft werden, sobald Sie wissen, welche Kategorie passt." },
+    "card2": { "title": "✅ Staatlich verifizierte Anbieter prüfen", "body": "\"Staatlich zertifizierte Anbieter\" verlinkt direkt zu offiziellen Registern, in denen mehrere Länder akkreditierte Anbieter namentlich veröffentlichen." },
+    "card3": { "title": "🌍 Prüfen Sie die Anforderungen Ihres spezifischen Landes", "body": "Das Menü der Länderanalysen behandelt die genauen technischen Spezifikationen und Registrierungsschritte für jede der 29 hier erfassten Rechtsordnungen." }
+  },
+  "footer": { "text": "Firmennamen auf dieser Seite sind rein illustrative Beispiele, um jede Kategorie greifbar zu machen — sie sind keine Empfehlungen, Ranglisten oder eine vollständige Marktübersicht, und ihre Nennung impliziert keine Beziehung zu dieser Website. Die oben genannte Analystenforschung wird nur zur allgemeinen Information verlinkt; vollständige Berichte können ein kostenpflichtiges Abonnement oder anbieterseitigen Zugang erfordern, und jede darin enthaltene Anbieterpositionierung spiegelt die eigene Methodik und Ansichten dieses Hauses wider, nicht unsere. Prüfen Sie die aktuelle Akkreditierung und Eignung eines bestimmten Anbieters für Ihre Bedürfnisse direkt, bevor Sie ihn beauftragen." }
+}

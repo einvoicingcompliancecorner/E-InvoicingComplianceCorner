@@ -1,0 +1,107 @@
+{
+  "_meta": { "language": "en", "reviewed": true },
+  "backLink": "← Back to global tracker",
+  "header": {
+    "eyebrow": "Education",
+    "title": "Types of Provider",
+    "sub": "\"Get a vendor\" undersells how varied this market actually is. Five genuinely different categories of provider all sell into e-invoicing compliance — understanding which one you're talking to changes what you should expect from them.",
+    "lastUpdated": "Last updated:"
+  },
+  "statusBanner": { "text": "Company names below are <strong>illustrative examples only</strong> — a small, non-exhaustive sample to make each category concrete, not a recommendation or ranking. Many real providers straddle more than one category." },
+  "stats": { "label1": "Distinct provider categories", "label2": "Categories most programmes actually combine", "label3": "Category that covers everything alone" },
+  "sec1": {
+    "heading": "Why the category matters before the name does",
+    "intro": "Two providers can both say \"we do e-invoicing\" and mean genuinely different things by it. Knowing which category you're evaluating tells you what questions to actually ask — and what gaps to expect and plan around."
+  },
+  "sec2": {
+    "heading": "The five categories",
+    "strengthsLabel": "Typical strengths",
+    "tradeoffsLabel": "Typical trade-offs",
+    "examplesLabel": "Illustrative examples:",
+    "card1": {
+      "title": "1. ERP Providers",
+      "what": "Full enterprise resource planning suites — finance, supply chain, HR, and more — that have built e-invoicing compliance as a native or add-on module within their own platform.",
+      "s1": "Native to your core system of record — no separate data extraction layer",
+      "s2": "Single vendor relationship if you're already a customer",
+      "s3": "Consistent master data, since it never leaves the ERP",
+      "t1": "Country coverage and update speed can lag specialist providers, especially for newer or smaller markets",
+      "t2": "Often still needs a bolt-on module or partner for full global reach",
+      "t3": "Less flexible if you run more than one ERP across your group"
+    },
+    "card2": {
+      "title": "2. Solution Providers (AP/AR specialists)",
+      "what": "Providers focused specifically on accounts payable and accounts receivable automation, e-invoice exchange, and acting as the accredited intermediary (Access Point, PAC, OSE) a given country's mandate requires.",
+      "s1": "Deep, often faster-moving country and format coverage — this is their whole business",
+      "s2": "ERP-agnostic — designed to plug into whatever system(s) you already run",
+      "s3": "Purpose-built for the exchange and validation layer specifically",
+      "t1": "Another vendor relationship and contract to manage alongside your ERP",
+      "t2": "Integration effort still required to connect it to your core systems"
+    },
+    "card3": {
+      "title": "3. Tax Compliance Providers",
+      "what": "Providers whose core business is broader indirect tax compliance — VAT/GST determination, returns, and reporting — who have extended into e-invoicing as part of that wider tax technology stack.",
+      "s1": "One provider for both tax determination and e-invoicing, if you already use them for tax",
+      "s2": "Deep tax-technical expertise underpinning the compliance logic",
+      "t1": "E-invoicing may be a newer part of their offering than their core tax product — check country coverage maturity specifically for this, not just their tax reputation generally"
+    },
+    "card4": {
+      "title": "4. Technology Providers (EDI / middleware)",
+      "what": "Providers whose core competency is broader B2B data exchange and integration middleware — often long-established in EDI — who have added structured e-invoice format support as an extension of that existing capability.",
+      "s1": "If you already run significant EDI trading-partner volume, extends the same integration layer rather than adding a parallel system",
+      "s2": "Strong general-purpose data mapping and transformation capability",
+      "t1": "CTC-specific nuances — real-time clearance, digital signatures, government reporting — are often a newer layer on top of EDI-first architecture rather than core DNA"
+    },
+    "card5": {
+      "title": "5. Consultancies",
+      "what": "Advisory and implementation firms — not a software product themselves — offering assessment, vendor selection support, and programme management for a mandate response.",
+      "s1": "Independent of any one software vendor, which can mean more objective vendor selection support",
+      "s2": "Useful for complex, multi-country, multi-entity programmes needing dedicated programme management",
+      "t1": "Doesn't replace the need for an actual software/service provider — this is a complementary layer",
+      "t2": "Typically time-and-materials cost rather than a predictable per-transaction fee"
+    }
+  },
+  "sec3": {
+    "heading": "Side by side",
+    "intro": "A rough guide to how the categories typically differ — real providers vary, and several deliberately straddle more than one row.",
+    "table": {
+      "h1": "Category", "h2": "Core business", "h3": "Country coverage depth", "h4": "Typical cost model",
+      "r1c1": "ERP Provider", "r1c2": "Full business system, e-invoicing as a module", "r1c3": "Varies — strong in home markets, can lag elsewhere", "r1c4": "Licensing + module fees",
+      "r2c1": "Solution Provider", "r2c2": "AP/AR automation &amp; e-invoice exchange", "r2c3": "Usually broad — this is their specialism", "r2c4": "Per-transaction or subscription",
+      "r3c1": "Tax Compliance Provider", "r3c2": "Indirect tax determination &amp; filing", "r3c3": "Strong where their tax product is established", "r3c4": "Subscription, often bundled with tax",
+      "r4c1": "Technology Provider", "r4c2": "B2B data exchange / EDI middleware", "r4c3": "Strong where EDI trading is already established", "r4c4": "Per-transaction or platform fee",
+      "r5c1": "Consultancy", "r5c2": "Advisory &amp; implementation services", "r5c3": "Advisory reach, not a technical platform itself", "r5c4": "Time-and-materials or fixed-fee project"
+    }
+  },
+  "sec4": {
+    "heading": "How these actually combine in practice",
+    "intro": "Very few real mandate programmes use just one category — most combine two or three, each covering a different part of the problem.",
+    "scenarioTitle": "A realistic multinational scenario",
+    "scenarioBody": "A group running SAP globally uses its ERP's native compliance module for markets where coverage is mature, brings in a specialist Solution Provider specifically to cover a handful of countries the ERP module doesn't yet support well, and engages a consultancy for a few months to run programme management across the whole rollout and support vendor selection.",
+    "flow1": "ERP module — mature markets", "flow2": "Solution Provider — coverage gaps", "flow3": "Consultancy — programme oversight"
+  },
+  "sec5": {
+    "heading": "Questions worth asking, whichever category you're evaluating",
+    "q1": "Is e-invoicing genuinely core to this provider's business, or a bolt-on to something else they sell?",
+    "q2": "How quickly have they historically added support for newly announced mandates?",
+    "q3": "Do they hold accreditation directly, or do they rely on a third party underneath them for certain countries?",
+    "q4": "If they're a specialist in one category, who do they expect you to bring in to cover the others?",
+    "q5": "What does their roadmap look like for countries you don't need yet, but might in a year or two?"
+  },
+  "sec6": {
+    "heading": "Further reading: analyst research",
+    "intro": "Five research firms actively cover this market and are worth knowing about if you want independent validation beyond any single vendor's own claims. Most full reports sit behind a subscription or a vendor-provided excerpt, but each firm below also publishes something genuinely accessible without one.",
+    "gartner": "Publishes an annual Magic Quadrant for Accounts Payable Applications, alongside a dedicated \"E-invoicing Compliance Applications\" category on Gartner Peer Insights — real, browsable user reviews, no subscription required.",
+    "forrester": "Publishes The Forrester Wave™: Accounts Payable Invoice Automation Software periodically (most recently Q2 2026). The full Wave requires Forrester access, but their own blog announcement summarising each edition's findings is publicly readable.",
+    "idc": "Publishes IDC MarketScape vendor assessments covering e-invoicing and VAT compliance software, both worldwide and Europe-specific editions. The full assessments are paywalled, but IDC's own blog series on e-invoicing is a genuinely useful, freely accessible starting point.",
+    "spendMatters": "Runs SolutionMap, a rankings system covering procurement technology across 16 source-to-pay categories including AP automation. Worth knowing: Spend Matters is now a division of The Hackett Group following a merger, so the two are increasingly one research organisation rather than fully independent of each other.",
+    "hackett": "Runs large-scale benchmarking studies across procure-to-pay and accounts payable performance, including specific research on how AI is changing AP solutions and global e-invoicing/CTC compliance capability.",
+    "footnote": "Specific named editions (e.g., \"Q2 2026\") get superseded on a regular cycle — check each firm's own site for the current version rather than assuming any specific edition referenced here, or anywhere else, is still the latest by the time you read this."
+  },
+  "sec7": {
+    "heading": "Where to go next",
+    "card1": { "title": "🗓️ Run the actual selection process", "body": "\"Preparing for a Mandate\" (under Education) covers how to define requirements, run a proof of concept, and scrutinise a contract once you know which category fits." },
+    "card2": { "title": "✅ Check government-verified providers", "body": "\"Government Certified Providers\" links directly to official registries where several countries publish accredited providers by name." },
+    "card3": { "title": "🌍 Check your specific country's requirements", "body": "The Deep Dives menu covers exact technical specifications and registration steps for each of the 29 jurisdictions tracked here." }
+  },
+  "footer": { "text": "Company names in this page are illustrative examples only, included to make each category concrete — they are not endorsements, rankings, or a complete market map, and their inclusion does not imply any relationship with this site. Analyst research referenced above is linked for general awareness only; full reports may require a paid subscription or vendor-provided access, and any vendor positioning within them reflects that firm's own methodology and views, not ours. Verify any specific provider's current accreditation and fit for your needs directly before engaging them." }
+}

@@ -1,0 +1,107 @@
+{
+  "_meta": { "language": "es", "reviewed": true },
+  "backLink": "← Volver al panel general",
+  "header": {
+    "eyebrow": "Educación",
+    "title": "Tipos de proveedor",
+    "sub": "\"Conseguir un proveedor\" resta importancia a lo variado que es en realidad este mercado. Cinco categorías genuinamente distintas de proveedor venden soluciones de cumplimiento de facturación electrónica — entender con cuál está hablando cambia lo que debería esperar de él.",
+    "lastUpdated": "Última actualización:"
+  },
+  "statusBanner": { "text": "Los nombres de empresas a continuación son <strong>únicamente ejemplos ilustrativos</strong> — una muestra pequeña y no exhaustiva para hacer concreta cada categoría, no una recomendación ni una clasificación. Muchos proveedores reales abarcan más de una categoría." },
+  "stats": { "label1": "Categorías de proveedor distintas", "label2": "Categorías que la mayoría de los programas combinan realmente", "label3": "Categoría que lo cubre todo por sí sola" },
+  "sec1": {
+    "heading": "Por qué la categoría importa antes que el nombre",
+    "intro": "Dos proveedores pueden decir ambos \"hacemos facturación electrónica\" y referirse a cosas genuinamente distintas. Saber qué categoría está evaluando le indica qué preguntas hacer realmente — y qué carencias esperar y planificar."
+  },
+  "sec2": {
+    "heading": "Las cinco categorías",
+    "strengthsLabel": "Fortalezas típicas",
+    "tradeoffsLabel": "Compensaciones típicas",
+    "examplesLabel": "Ejemplos ilustrativos:",
+    "card1": {
+      "title": "1. Proveedores de ERP",
+      "what": "Suites completas de planificación de recursos empresariales — finanzas, cadena de suministro, RR. HH. y más — que han incorporado el cumplimiento de facturación electrónica como módulo nativo o adicional dentro de su propia plataforma.",
+      "s1": "Nativo en su sistema central de registro — sin una capa de extracción de datos independiente",
+      "s2": "Una única relación con proveedor si ya es cliente",
+      "s3": "Datos maestros consistentes, ya que nunca salen del ERP",
+      "t1": "La cobertura de países y la velocidad de actualización pueden ir por detrás de proveedores especializados, especialmente en mercados más nuevos o pequeños",
+      "t2": "A menudo sigue necesitando un módulo adicional o un socio para alcanzar cobertura global completa",
+      "t3": "Menos flexible si utiliza más de un ERP en su grupo"
+    },
+    "card2": {
+      "title": "2. Proveedores de soluciones (especialistas en CxP/CxC)",
+      "what": "Proveedores centrados específicamente en la automatización de cuentas por pagar y por cobrar, el intercambio de facturas electrónicas, y actuando como el intermediario acreditado (Punto de Acceso, PAC, OSE) que exige el mandato de un país concreto.",
+      "s1": "Cobertura de países y formatos profunda y a menudo más ágil — es todo su negocio",
+      "s2": "Independiente del ERP — diseñado para conectarse con cualquier sistema(s) que ya utilice",
+      "s3": "Diseñado específicamente para la capa de intercambio y validación",
+      "t1": "Otra relación y contrato con proveedor que gestionar junto a su ERP",
+      "t2": "Sigue requiriendo esfuerzo de integración para conectarlo con sus sistemas centrales"
+    },
+    "card3": {
+      "title": "3. Proveedores de cumplimiento fiscal",
+      "what": "Proveedores cuyo negocio principal es el cumplimiento fiscal indirecto más amplio — determinación del IVA/GST, declaraciones y reportes — y que se han extendido a la facturación electrónica como parte de esa pila tecnológica fiscal más amplia.",
+      "s1": "Un solo proveedor tanto para la determinación fiscal como para la facturación electrónica, si ya lo usa para fiscalidad",
+      "s2": "Profunda experiencia técnico-fiscal que sustenta la lógica de cumplimiento",
+      "t1": "La facturación electrónica puede ser una parte más nueva de su oferta que su producto fiscal principal — verifique específicamente la madurez de la cobertura por país para esto, no solo su reputación fiscal en general"
+    },
+    "card4": {
+      "title": "4. Proveedores de tecnología (EDI/middleware)",
+      "what": "Proveedores cuya competencia principal es el intercambio de datos B2B más amplio y el middleware de integración — a menudo consolidados desde hace tiempo en EDI — que han añadido soporte para formatos de factura electrónica estructurados como extensión de esa capacidad ya existente.",
+      "s1": "Si ya gestiona un volumen significativo de socios comerciales EDI, extiende la misma capa de integración en lugar de añadir un sistema paralelo",
+      "s2": "Sólida capacidad de mapeo y transformación de datos de propósito general",
+      "t1": "Los matices específicos de CTC — compensación en tiempo real, firmas digitales, reporte gubernamental — suelen ser una capa más nueva sobre una arquitectura originalmente basada en EDI, no parte de su ADN central"
+    },
+    "card5": {
+      "title": "5. Consultoras",
+      "what": "Firmas de asesoría e implementación — no un producto de software en sí mismas — que ofrecen evaluación, apoyo en la selección de proveedores y gestión de programa para una respuesta al mandato.",
+      "s1": "Independientes de cualquier proveedor de software concreto, lo que puede significar un apoyo más objetivo en la selección de proveedores",
+      "s2": "Útiles para programas complejos, multinacionales y multi-entidad que necesitan gestión de programa dedicada",
+      "t1": "No sustituyen la necesidad de un proveedor real de software/servicios — es una capa complementaria",
+      "t2": "Normalmente coste por tiempo y materiales en lugar de una tarifa predecible por transacción"
+    }
+  },
+  "sec3": {
+    "heading": "Comparativa",
+    "intro": "Una guía aproximada de cómo suelen diferir las categorías — los proveedores reales varían, y varios abarcan deliberadamente más de una fila.",
+    "table": {
+      "h1": "Categoría", "h2": "Negocio principal", "h3": "Profundidad de cobertura por país", "h4": "Modelo de coste típico",
+      "r1c1": "Proveedor de ERP", "r1c2": "Sistema empresarial completo, facturación electrónica como módulo", "r1c3": "Variable — fuerte en mercados de origen, puede rezagarse en otros", "r1c4": "Licencias + tarifas de módulo",
+      "r2c1": "Proveedor de soluciones", "r2c2": "Automatización de CxP/CxC e intercambio de facturas electrónicas", "r2c3": "Normalmente amplia — es su especialidad", "r2c4": "Por transacción o suscripción",
+      "r3c1": "Proveedor de cumplimiento fiscal", "r3c2": "Determinación y presentación de impuestos indirectos", "r3c3": "Fuerte donde su producto fiscal está establecido", "r3c4": "Suscripción, a menudo incluida con fiscalidad",
+      "r4c1": "Proveedor de tecnología", "r4c2": "Intercambio de datos B2B / middleware EDI", "r4c3": "Fuerte donde el comercio EDI ya está establecido", "r4c4": "Por transacción o tarifa de plataforma",
+      "r5c1": "Consultoría", "r5c2": "Servicios de asesoría e implementación", "r5c3": "Alcance de asesoría, no una plataforma técnica en sí misma", "r5c4": "Proyecto por tiempo y materiales o tarifa fija"
+    }
+  },
+  "sec4": {
+    "heading": "Cómo se combinan realmente en la práctica",
+    "intro": "Muy pocos programas reales de mandato usan solo una categoría — la mayoría combina dos o tres, cada una cubriendo una parte distinta del problema.",
+    "scenarioTitle": "Un escenario multinacional realista",
+    "scenarioBody": "Un grupo que usa SAP a nivel global utiliza el módulo de cumplimiento nativo de su ERP para mercados donde la cobertura es madura, incorpora un Proveedor de Soluciones especializado específicamente para cubrir un puñado de países que el módulo del ERP aún no soporta bien, y contrata una consultora durante unos meses para dirigir la gestión del programa en todo el despliegue y apoyar la selección de proveedores.",
+    "flow1": "Módulo ERP — mercados maduros", "flow2": "Proveedor de soluciones — brechas de cobertura", "flow3": "Consultoría — supervisión del programa"
+  },
+  "sec5": {
+    "heading": "Preguntas que vale la pena hacer, sea cual sea la categoría que esté evaluando",
+    "q1": "¿Es la facturación electrónica genuinamente el núcleo del negocio de este proveedor, o un añadido a otra cosa que vende?",
+    "q2": "¿Con qué rapidez han añadido históricamente soporte para mandatos recién anunciados?",
+    "q3": "¿Tienen acreditación directa, o dependen de un tercero por debajo de ellos para ciertos países?",
+    "q4": "Si son especialistas en una categoría, ¿a quién esperan que usted incorpore para cubrir las demás?",
+    "q5": "¿Cómo es su hoja de ruta para países que aún no necesita, pero que podría necesitar en uno o dos años?"
+  },
+  "sec6": {
+    "heading": "Para saber más: investigación de analistas",
+    "intro": "Cinco firmas de investigación cubren activamente este mercado y vale la pena conocerlas si busca una validación independiente más allá de las afirmaciones de un solo proveedor. La mayoría de los informes completos están detrás de una suscripción o un extracto proporcionado por el proveedor, pero cada firma a continuación también publica algo genuinamente accesible sin ella.",
+    "gartner": "Publica un Magic Quadrant anual para Aplicaciones de Cuentas por Pagar, junto con una categoría dedicada de \"Aplicaciones de Cumplimiento de Facturación Electrónica\" en Gartner Peer Insights — reseñas reales de usuarios, consultables sin suscripción.",
+    "forrester": "Publica periódicamente The Forrester Wave™: Accounts Payable Invoice Automation Software (la más reciente, del segundo trimestre de 2026). El informe Wave completo requiere acceso a Forrester, pero su propio anuncio de blog resumiendo los hallazgos de cada edición es de lectura pública.",
+    "idc": "Publica evaluaciones de proveedores IDC MarketScape que cubren software de facturación electrónica y cumplimiento del IVA, tanto en ediciones mundiales como específicas de Europa. Las evaluaciones completas están tras un muro de pago, pero la propia serie de blog de IDC sobre facturación electrónica es un punto de partida genuinamente útil y de acceso gratuito.",
+    "spendMatters": "Gestiona SolutionMap, un sistema de clasificación que cubre tecnología de compras en 16 categorías de source-to-pay, incluida la automatización de CxP. Vale la pena saber: Spend Matters es ahora una división de The Hackett Group tras una fusión, por lo que ambas son cada vez más una única organización de investigación en lugar de ser totalmente independientes entre sí.",
+    "hackett": "Realiza estudios de benchmarking a gran escala sobre el rendimiento de procure-to-pay y cuentas por pagar, incluida investigación específica sobre cómo la IA está cambiando las soluciones de CxP y la capacidad de cumplimiento global de facturación electrónica/CTC.",
+    "footnote": "Las ediciones concretas con nombre (p. ej., \"Q2 2026\") quedan sustituidas en un ciclo regular — consulte el propio sitio de cada firma para la versión actual en lugar de asumir que cualquier edición específica mencionada aquí, o en cualquier otro lugar, sigue siendo la más reciente en el momento en que lea esto."
+  },
+  "sec7": {
+    "heading": "A dónde ir después",
+    "card1": { "title": "🗓️ Ejecute el proceso de selección real", "body": "\"Preparación para un mandato\" (en Educación) cubre cómo definir requisitos, ejecutar una prueba de concepto y examinar un contrato una vez que sepa qué categoría encaja." },
+    "card2": { "title": "✅ Consulte proveedores verificados por el gobierno", "body": "\"Proveedores certificados por el gobierno\" enlaza directamente con los registros oficiales donde varios países publican los proveedores acreditados por nombre." },
+    "card3": { "title": "🌍 Consulte los requisitos de su país concreto", "body": "El menú de análisis por país cubre las especificaciones técnicas exactas y los pasos de registro para cada una de las 29 jurisdicciones seguidas aquí." }
+  },
+  "footer": { "text": "Los nombres de empresas en esta página son únicamente ejemplos ilustrativos, incluidos para hacer concreta cada categoría — no son avales, clasificaciones ni un mapa completo del mercado, y su inclusión no implica ninguna relación con este sitio. La investigación de analistas mencionada arriba se enlaza solo con fines informativos generales; los informes completos pueden requerir una suscripción de pago o acceso proporcionado por el proveedor, y cualquier posicionamiento de proveedores en ellos refleja la propia metodología y opiniones de esa firma, no las nuestras. Verifique directamente la acreditación actual y la idoneidad de cualquier proveedor concreto para sus necesidades antes de contratarlo." }
+}
