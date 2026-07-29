@@ -269,6 +269,39 @@ checkout's custom data, so the Worker deliberately preserves whichever
 country selection was captured at signup rather than wiping it on every
 event — you'll only see it change if someone goes through checkout again.
 
+## The members area is now multilingual (EN/ES/DE/FR)
+
+Unlike the static tracker site — which loads translations via `fetch()`
+from JSON files sitting alongside it — this Worker bundles its own small
+translation dictionary (`WORKER_I18N`) directly in `src/index.js`, since
+it's a separate origin and can't reach the static site's `/i18n/*.json`
+files with a relative fetch. Everything is rendered server-side, per
+request, in whichever language is active — no client-side loading step,
+no flash of English before it swaps.
+
+**How the language is chosen:** a `?lang=es` query parameter (clicked via
+the 🌐 switcher in the topbar) sets a one-year cookie (`eicc_lang`), which
+every subsequent request on this Worker reads automatically. No login or
+account setting involved — it's purely a browser-level preference, same
+mechanism as the session cookie already used for login.
+
+**What's translated:** all the Worker's own UI chrome — login, check-your-
+email, the archive (including the new search box and country filter
+pills), preferences, and the unsubscribe confirmation pages — plus every
+country and region name, reusing the same translations already written
+for the static site.
+
+**What's NOT translated, deliberately:** the actual newsletter issue
+content itself (title, summary, HTML body) — that stays exactly as
+written, in whichever language you wrote it in. Translating 68+ pieces
+of compliance content per language is a different, much larger project;
+this covers the page chrome around it.
+
+**Adding a fifth language later:** add a new key to `WORKER_I18N` (copy
+the `en` block and translate every string), add the two-letter code to
+`SUPPORTED_LANGS`, and add its country/region names to
+`COUNTRY_NAME_TRANSLATIONS`. No other code changes needed.
+
 ## Ongoing maintenance
 
 - Add a new KV entry each month when you publish an issue (Step 8) —

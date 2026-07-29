@@ -40,48 +40,278 @@ const COUNTRIES_BY_REGION = {
   ]
 };
 
+// ================================================================
+// TRANSLATIONS (EN / ES / DE / FR)
+// ================================================================
+// This Worker is a separate origin from the static site, so it can't
+// fetch the static site's /i18n/*.json files directly (relative fetches
+// resolve against THIS Worker's own domain). Rather than duplicate those
+// files here, the small set of UI strings this Worker actually needs are
+// bundled directly into the Worker's own source below, and rendered
+// server-side per request — no client-side loading step needed at all.
+//
+// Language is picked via a "lang" query param (which also sets a
+// long-lived cookie so it persists across pages), falling back to the
+// cookie, falling back to English. English is always the fallback for
+// any individual missing key too.
+const SUPPORTED_LANGS = ["en", "es", "de", "fr"];
+const LANG_NAMES = { en: "English", es: "Español", de: "Deutsch", fr: "Français" };
+const LANG_COOKIE = "eicc_lang";
+const LANG_COOKIE_TTL_SECONDS = 60 * 60 * 24 * 365; // 1 year
+
+const COUNTRY_NAME_TRANSLATIONS = {
+  es: {
+    "Belgium": "Bélgica", "Croatia": "Croacia", "Denmark": "Dinamarca", "France": "Francia",
+    "Germany": "Alemania", "Ireland": "Irlanda", "Italy": "Italia", "Norway": "Noruega",
+    "Poland": "Polonia", "Romania": "Rumania", "Slovakia": "Eslovaquia", "Spain": "España",
+    "Sweden": "Suecia", "United Kingdom": "Reino Unido", "Saudi Arabia": "Arabia Saudita",
+    "United Arab Emirates": "Emiratos Árabes Unidos", "Australia": "Australia", "China": "China",
+    "India": "India", "Malaysia": "Malasia", "New Zealand": "Nueva Zelanda", "Singapore": "Singapur",
+    "Brazil": "Brasil", "Canada": "Canadá", "Chile": "Chile", "Mexico": "México", "Peru": "Perú",
+    "United States": "Estados Unidos"
+  },
+  de: {
+    "Belgium": "Belgien", "Croatia": "Kroatien", "Denmark": "Dänemark", "France": "Frankreich",
+    "Germany": "Deutschland", "Ireland": "Irland", "Italy": "Italien", "Norway": "Norwegen",
+    "Poland": "Polen", "Romania": "Rumänien", "Slovakia": "Slowakei", "Spain": "Spanien",
+    "Sweden": "Schweden", "United Kingdom": "Vereinigtes Königreich", "Saudi Arabia": "Saudi-Arabien",
+    "United Arab Emirates": "Vereinigte Arabische Emirate", "Australia": "Australien", "China": "China",
+    "India": "Indien", "Malaysia": "Malaysia", "New Zealand": "Neuseeland", "Singapore": "Singapur",
+    "Brazil": "Brasilien", "Canada": "Kanada", "Chile": "Chile", "Mexico": "Mexiko", "Peru": "Peru",
+    "United States": "Vereinigte Staaten"
+  },
+  fr: {
+    "Belgium": "Belgique", "Croatia": "Croatie", "Denmark": "Danemark", "France": "France",
+    "Germany": "Allemagne", "Ireland": "Irlande", "Italy": "Italie", "Norway": "Norvège",
+    "Poland": "Pologne", "Romania": "Roumanie", "Slovakia": "Slovaquie", "Spain": "Espagne",
+    "Sweden": "Suède", "United Kingdom": "Royaume-Uni", "Saudi Arabia": "Arabie saoudite",
+    "United Arab Emirates": "Émirats arabes unis", "Australia": "Australie", "China": "Chine",
+    "India": "Inde", "Malaysia": "Malaisie", "New Zealand": "Nouvelle-Zélande", "Singapore": "Singapour",
+    "Brazil": "Brésil", "Canada": "Canada", "Chile": "Chili", "Mexico": "Mexique", "Peru": "Pérou",
+    "United States": "États-Unis"
+  }
+};
+
+function translateCountryName(lang, name) {
+  return COUNTRY_NAME_TRANSLATIONS[lang]?.[name] || name;
+}
+function translateRegionName(lang, name) {
+  const map = {
+    es: { "Europe": "Europa", "Middle East": "Oriente Medio", "Asia-Pacific": "Asia-Pacífico", "Americas": "América" },
+    de: { "Europe": "Europa", "Middle East": "Naher Osten", "Asia-Pacific": "Asien-Pazifik", "Americas": "Amerika" },
+    fr: { "Europe": "Europe", "Middle East": "Moyen-Orient", "Asia-Pacific": "Asie-Pacifique", "Americas": "Amériques" },
+  };
+  return map[lang]?.[name] || name;
+}
+
+const WORKER_I18N = {
+  en: {
+    backToTracker: "← Back to global tracker", backToArchive: "← Back to archive", backToSignIn: "← Back to sign in", logout: "Log out",
+    login: {
+      eyebrow: "Subscribers only", title: "Newsletter archive",
+      intro: "Enter the email address you subscribed with — we'll send you a one-click sign-in link. No password to remember.",
+      emailLabel: "Email address", sendButton: "Send sign-in link",
+      notSubscribed: "Not a subscriber yet?", subscribeHere: "Subscribe here",
+      errorInvalid: "Please enter a valid email address.",
+      errorExpired: "That link has expired or is invalid — please request a new one.",
+      errorNoActive: "We couldn't find an active subscription for that email. If you've just subscribed, this can take a minute to sync — try again shortly.",
+    },
+    checkEmail: { eyebrow: "Almost there", title: "Check your email",
+      body: "If that email has an active subscription, a sign-in link is on its way — it expires in 15 minutes and works once. Check spam if it doesn't arrive within a minute or two." },
+    archive: {
+      title: "Newsletter archive", signedInAs: "Signed in as",
+      issuesPublished: (n) => `${n} issue${n === 1 ? "" : "s"} published. Search by keyword, or filter to a specific country.`,
+      searchPlaceholder: "Search issue titles and summaries…",
+      noIssuesYet: "No issues published yet — check back after the next monthly send.",
+      noMatch: "No issues match your search or filter.",
+      managePrefs: "Manage which countries you get alerts for →",
+    },
+    preferences: {
+      title: "Alert preferences",
+      intro: "Choose which countries you want alerts for. Leave everything unchecked to receive the full monthly digest covering all tracked jurisdictions.",
+      saved: "✓ Preferences saved.", selectAll: "Select all", clearAll: "Clear all",
+      notifyLabel: "Email me a short notification when a new monthly issue is published",
+      saveButton: "Save preferences",
+    },
+    unsubscribed: { title: "You've been unsubscribed from monthly notification emails.",
+      body: "Your paid subscription itself is unaffected — you can still log in and read every issue any time. You can turn notifications back on from your preferences page whenever you like." },
+    invalidUnsub: { title: "That link has expired or is invalid.",
+      body: "You can manage your notification preference directly from the archive instead, once logged in." },
+  },
+  es: {
+    backToTracker: "← Volver al panel general", backToArchive: "← Volver al archivo", backToSignIn: "← Volver al inicio de sesión", logout: "Cerrar sesión",
+    login: {
+      eyebrow: "Solo suscriptores", title: "Archivo del boletín",
+      intro: "Introduzca el correo electrónico con el que se suscribió — le enviaremos un enlace de acceso de un solo clic. Sin contraseña que recordar.",
+      emailLabel: "Correo electrónico", sendButton: "Enviar enlace de acceso",
+      notSubscribed: "¿Aún no es suscriptor?", subscribeHere: "Suscríbase aquí",
+      errorInvalid: "Introduzca una dirección de correo electrónico válida.",
+      errorExpired: "Ese enlace ha caducado o no es válido — solicite uno nuevo.",
+      errorNoActive: "No hemos encontrado una suscripción activa para ese correo. Si acaba de suscribirse, puede tardar un minuto en sincronizarse — inténtelo de nuevo enseguida.",
+    },
+    checkEmail: { eyebrow: "Ya casi está", title: "Revise su correo",
+      body: "Si ese correo tiene una suscripción activa, un enlace de acceso está en camino — caduca en 15 minutos y funciona una sola vez. Revise el spam si no llega en uno o dos minutos." },
+    archive: {
+      title: "Archivo del boletín", signedInAs: "Sesión iniciada como",
+      issuesPublished: (n) => `${n} número${n === 1 ? "" : "s"} publicado${n === 1 ? "" : "s"}. Busque por palabra clave o filtre por país.`,
+      searchPlaceholder: "Buscar en títulos y resúmenes de los números…",
+      noIssuesYet: "Aún no se ha publicado ningún número — vuelva después del próximo envío mensual.",
+      noMatch: "Ningún número coincide con su búsqueda o filtro.",
+      managePrefs: "Gestione los países sobre los que recibe alertas →",
+    },
+    preferences: {
+      title: "Preferencias de alertas",
+      intro: "Elija los países sobre los que desea recibir alertas. Deje todo sin marcar para recibir el resumen mensual completo de todas las jurisdicciones seguidas.",
+      saved: "✓ Preferencias guardadas.", selectAll: "Seleccionar todo", clearAll: "Borrar todo",
+      notifyLabel: "Enviarme una breve notificación por correo cuando se publique un nuevo número mensual",
+      saveButton: "Guardar preferencias",
+    },
+    unsubscribed: { title: "Se ha dado de baja de las notificaciones mensuales por correo.",
+      body: "Su suscripción de pago no se ve afectada — puede seguir iniciando sesión y leyendo todos los números en cualquier momento. Puede reactivar las notificaciones desde su página de preferencias cuando quiera." },
+    invalidUnsub: { title: "Ese enlace ha caducado o no es válido.",
+      body: "Puede gestionar su preferencia de notificaciones directamente desde el archivo, una vez que inicie sesión." },
+  },
+  de: {
+    backToTracker: "← Zurück zur Übersicht", backToArchive: "← Zurück zum Archiv", backToSignIn: "← Zurück zur Anmeldung", logout: "Abmelden",
+    login: {
+      eyebrow: "Nur für Abonnenten", title: "Newsletter-Archiv",
+      intro: "Geben Sie die E-Mail-Adresse ein, mit der Sie abonniert haben — wir senden Ihnen einen Ein-Klick-Anmeldelink. Kein Passwort nötig.",
+      emailLabel: "E-Mail-Adresse", sendButton: "Anmeldelink senden",
+      notSubscribed: "Noch kein Abonnent?", subscribeHere: "Hier abonnieren",
+      errorInvalid: "Bitte geben Sie eine gültige E-Mail-Adresse ein.",
+      errorExpired: "Dieser Link ist abgelaufen oder ungültig — bitte fordern Sie einen neuen an.",
+      errorNoActive: "Wir konnten kein aktives Abonnement für diese E-Mail finden. Falls Sie sich gerade erst angemeldet haben, kann die Synchronisierung einen Moment dauern — versuchen Sie es gleich noch einmal.",
+    },
+    checkEmail: { eyebrow: "Fast geschafft", title: "Prüfen Sie Ihre E-Mails",
+      body: "Falls diese E-Mail ein aktives Abonnement hat, ist ein Anmeldelink unterwegs — er läuft nach 15 Minuten ab und funktioniert einmal. Prüfen Sie den Spam-Ordner, falls er nicht innerhalb weniger Minuten ankommt." },
+    archive: {
+      title: "Newsletter-Archiv", signedInAs: "Angemeldet als",
+      issuesPublished: (n) => `${n} Ausgabe${n === 1 ? "" : "n"} veröffentlicht. Durchsuchen Sie sie nach Stichwort oder filtern Sie nach Land.`,
+      searchPlaceholder: "Ausgabentitel und Zusammenfassungen durchsuchen…",
+      noIssuesYet: "Noch keine Ausgabe veröffentlicht — schauen Sie nach dem nächsten monatlichen Versand wieder vorbei.",
+      noMatch: "Keine Ausgabe entspricht Ihrer Suche oder Ihrem Filter.",
+      managePrefs: "Verwalten Sie, für welche Länder Sie Benachrichtigungen erhalten →",
+    },
+    preferences: {
+      title: "Benachrichtigungseinstellungen",
+      intro: "Wählen Sie, für welche Länder Sie Benachrichtigungen erhalten möchten. Lassen Sie alles unmarkiert, um den vollständigen monatlichen Digest für alle erfassten Länder zu erhalten.",
+      saved: "✓ Einstellungen gespeichert.", selectAll: "Alle auswählen", clearAll: "Alle abwählen",
+      notifyLabel: "Mich per kurzer E-Mail benachrichtigen, wenn eine neue monatliche Ausgabe veröffentlicht wird",
+      saveButton: "Einstellungen speichern",
+    },
+    unsubscribed: { title: "Sie haben die monatlichen Benachrichtigungs-E-Mails abbestellt.",
+      body: "Ihr bezahltes Abonnement selbst ist davon nicht betroffen — Sie können sich weiterhin jederzeit anmelden und jede Ausgabe lesen. Sie können Benachrichtigungen jederzeit über Ihre Einstellungsseite wieder aktivieren." },
+    invalidUnsub: { title: "Dieser Link ist abgelaufen oder ungültig.",
+      body: "Sie können Ihre Benachrichtigungseinstellung stattdessen direkt im Archiv verwalten, sobald Sie angemeldet sind." },
+  },
+  fr: {
+    backToTracker: "← Retour au suivi global", backToArchive: "← Retour aux archives", backToSignIn: "← Retour à la connexion", logout: "Se déconnecter",
+    login: {
+      eyebrow: "Réservé aux abonnés", title: "Archives de la newsletter",
+      intro: "Saisissez l'adresse e-mail utilisée pour votre abonnement — nous vous enverrons un lien de connexion en un clic. Pas de mot de passe à retenir.",
+      emailLabel: "Adresse e-mail", sendButton: "Envoyer le lien de connexion",
+      notSubscribed: "Pas encore abonné ?", subscribeHere: "Abonnez-vous ici",
+      errorInvalid: "Veuillez saisir une adresse e-mail valide.",
+      errorExpired: "Ce lien a expiré ou n'est pas valide — veuillez en demander un nouveau.",
+      errorNoActive: "Nous n'avons trouvé aucun abonnement actif pour cet e-mail. Si vous venez de vous abonner, la synchronisation peut prendre un instant — réessayez sous peu.",
+    },
+    checkEmail: { eyebrow: "Presque terminé", title: "Consultez vos e-mails",
+      body: "Si cet e-mail correspond à un abonnement actif, un lien de connexion est en route — il expire dans 15 minutes et ne fonctionne qu'une fois. Vérifiez vos spams s'il n'arrive pas sous quelques minutes." },
+    archive: {
+      title: "Archives de la newsletter", signedInAs: "Connecté en tant que",
+      issuesPublished: (n) => `${n} numéro${n === 1 ? "" : "s"} publié${n === 1 ? "" : "s"}. Recherchez par mot-clé ou filtrez par pays.`,
+      searchPlaceholder: "Rechercher dans les titres et résumés des numéros…",
+      noIssuesYet: "Aucun numéro publié pour l'instant — revenez après le prochain envoi mensuel.",
+      noMatch: "Aucun numéro ne correspond à votre recherche ou filtre.",
+      managePrefs: "Gérez les pays pour lesquels vous recevez des alertes →",
+    },
+    preferences: {
+      title: "Préférences d'alerte",
+      intro: "Choisissez les pays pour lesquels vous souhaitez des alertes. Laissez tout décoché pour recevoir la synthèse mensuelle complète couvrant toutes les juridictions suivies.",
+      saved: "✓ Préférences enregistrées.", selectAll: "Tout sélectionner", clearAll: "Tout désélectionner",
+      notifyLabel: "M'envoyer une courte notification par e-mail lors de la publication d'un nouveau numéro mensuel",
+      saveButton: "Enregistrer les préférences",
+    },
+    unsubscribed: { title: "Vous avez été désabonné des e-mails de notification mensuels.",
+      body: "Votre abonnement payant lui-même n'est pas affecté — vous pouvez toujours vous connecter et lire chaque numéro à tout moment. Vous pouvez réactiver les notifications depuis votre page de préférences quand vous le souhaitez." },
+    invalidUnsub: { title: "Ce lien a expiré ou n'est pas valide.",
+      body: "Vous pouvez gérer votre préférence de notification directement depuis les archives, une fois connecté." },
+  },
+};
+
+function t(lang, path) {
+  const parts = path.split(".");
+  let enNode = WORKER_I18N.en;
+  let node = WORKER_I18N[lang] || WORKER_I18N.en;
+  for (const part of parts) {
+    node = node?.[part];
+    enNode = enNode?.[part];
+  }
+  return node !== undefined ? node : enNode;
+}
+
+function resolveLanguage(request) {
+  const url = new URL(request.url);
+  const fromQuery = url.searchParams.get("lang");
+  if (fromQuery && SUPPORTED_LANGS.includes(fromQuery)) return { lang: fromQuery, shouldSetCookie: true };
+
+  const cookieLang = getCookie(request, LANG_COOKIE);
+  if (cookieLang && SUPPORTED_LANGS.includes(cookieLang)) return { lang: cookieLang, shouldSetCookie: false };
+
+  return { lang: "en", shouldSetCookie: false };
+}
+
+function withLangCookie(response, lang, shouldSetCookie) {
+  if (!shouldSetCookie) return response;
+  const headers = new Headers(response.headers);
+  headers.append("Set-Cookie", `${LANG_COOKIE}=${lang}; Path=/; Max-Age=${LANG_COOKIE_TTL_SECONDS}; SameSite=Lax`);
+  return new Response(response.body, { status: response.status, headers });
+}
+
+function renderLangSwitcher(lang, currentPath) {
+  const links = SUPPORTED_LANGS.map((code) => {
+    const isActive = code === lang;
+    return `<a href="${currentPath}?lang=${code}" style="color:${isActive ? "var(--soon)" : "var(--muted)"}; font-weight:${isActive ? "700" : "400"}; text-decoration:none; margin-left:10px;">${code.toUpperCase()}</a>`;
+  }).join("");
+  return `<span style="font-family:'IBM Plex Mono',monospace; font-size:11.5px;">🌐${links}</span>`;
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
+    const { lang, shouldSetCookie } = resolveLanguage(request);
     try {
+      let response;
       if (request.method === "POST" && url.pathname === "/webhooks/lemonsqueezy") {
-        return handleWebhook(request, env);
-      }
-      if (request.method === "GET" && url.pathname === "/members") {
-        return htmlResponse(renderLoginPage());
-      }
-      if (request.method === "POST" && url.pathname === "/members/login") {
-        return handleLoginRequest(request, env);
-      }
-      if (request.method === "GET" && url.pathname === "/members/verify") {
-        return handleVerify(request, env);
-      }
-      if (request.method === "GET" && url.pathname === "/members/archive") {
-        return handleArchiveList(request, env);
-      }
-      if (request.method === "GET" && url.pathname.startsWith("/members/archive/")) {
+        return handleWebhook(request, env); // webhook responses never carry a lang cookie
+      } else if (request.method === "GET" && url.pathname === "/members") {
+        response = htmlResponse(renderLoginPage(null, lang));
+      } else if (request.method === "POST" && url.pathname === "/members/login") {
+        response = await handleLoginRequest(request, env, lang);
+      } else if (request.method === "GET" && url.pathname === "/members/verify") {
+        response = await handleVerify(request, env, lang);
+      } else if (request.method === "GET" && url.pathname === "/members/archive") {
+        response = await handleArchiveList(request, env, lang);
+      } else if (request.method === "GET" && url.pathname.startsWith("/members/archive/")) {
         const slug = decodeURIComponent(url.pathname.replace("/members/archive/", ""));
-        return handleArchiveIssue(request, env, slug);
-      }
-      if (request.method === "GET" && url.pathname === "/members/preferences") {
-        return handlePreferencesGet(request, env);
-      }
-      if (request.method === "POST" && url.pathname === "/members/preferences") {
-        return handlePreferencesPost(request, env);
-      }
-      if (request.method === "GET" && url.pathname === "/members/unsubscribe-notifications") {
-        return handleUnsubscribeNotifications(request, env);
-      }
-      if (request.method === "POST" && url.pathname === "/members/logout") {
-        return handleLogout();
-      }
-      // Manual trigger for testing the monthly notification job without
-      // waiting for the actual cron schedule — see README for how to call
-      // this safely (it's not linked from anywhere in the UI).
-      if (request.method === "POST" && url.pathname === "/admin/send-monthly-notifications") {
+        response = await handleArchiveIssue(request, env, slug, lang);
+      } else if (request.method === "GET" && url.pathname === "/members/preferences") {
+        response = await handlePreferencesGet(request, env, lang);
+      } else if (request.method === "POST" && url.pathname === "/members/preferences") {
+        response = await handlePreferencesPost(request, env, lang);
+      } else if (request.method === "GET" && url.pathname === "/members/unsubscribe-notifications") {
+        response = await handleUnsubscribeNotifications(request, env, lang);
+      } else if (request.method === "POST" && url.pathname === "/members/logout") {
+        response = handleLogout();
+      } else if (request.method === "POST" && url.pathname === "/admin/send-monthly-notifications") {
+        // Manual trigger for testing the monthly notification job without
+        // waiting for the actual cron schedule — see README for how to call
+        // this safely (it's not linked from anywhere in the UI).
         return handleManualNotificationTrigger(request, env);
+      } else {
+        response = new Response("Not found", { status: 404 });
       }
-      return new Response("Not found", { status: 404 });
+      return withLangCookie(response, lang, shouldSetCookie);
     } catch (err) {
       return new Response("Server error — " + err.message, { status: 500 });
     }
@@ -172,22 +402,19 @@ async function handleManualNotificationTrigger(request, env) {
   return new Response("Monthly notification run triggered — check `wrangler tail` for logs.", { status: 200 });
 }
 
-async function handleUnsubscribeNotifications(request, env) {
+async function handleUnsubscribeNotifications(request, env, lang) {
   const url = new URL(request.url);
   const token = url.searchParams.get("token") || "";
   const payload = await verifyToken(env.SESSION_SECRET, token);
 
   if (!payload || payload.purpose !== "unsub-notifications") {
-    return htmlResponse(renderSimpleMessage("That link has expired or is invalid.", "You can manage your notification preference directly from the archive instead, once logged in."));
+    return htmlResponse(renderSimpleMessage(t(lang, "invalidUnsub.title"), t(lang, "invalidUnsub.body"), lang));
   }
 
   const existing = await getSubscriber(env, payload.email);
   await putSubscriber(env, payload.email, { ...(existing || {}), notificationsEnabled: false, updated: Date.now() });
 
-  return htmlResponse(renderSimpleMessage(
-    "You've been unsubscribed from monthly notification emails.",
-    "Your paid subscription itself is unaffected — you can still log in and read every issue any time. You can turn notifications back on from your preferences page whenever you like."
-  ));
+  return htmlResponse(renderSimpleMessage(t(lang, "unsubscribed.title"), t(lang, "unsubscribed.body"), lang));
 }
 
 // ================================================================
@@ -273,12 +500,12 @@ async function isCurrentlyActive(env, email) {
 // ================================================================
 // LOGIN — passwordless magic link
 // ================================================================
-async function handleLoginRequest(request, env) {
+async function handleLoginRequest(request, env, lang) {
   const form = await request.formData();
   const email = (form.get("email") || "").toString().toLowerCase().trim();
 
   if (!email || !email.includes("@")) {
-    return htmlResponse(renderLoginPage("Please enter a valid email address."));
+    return htmlResponse(renderLoginPage(t(lang, "login.errorInvalid"), lang));
   }
 
   const active = await isCurrentlyActive(env, email);
@@ -286,25 +513,25 @@ async function handleLoginRequest(request, env) {
   // active subscriber — this avoids revealing which emails are/aren't customers.
   if (active) {
     const token = await signToken(env.SESSION_SECRET, { email, purpose: "login" }, MAGIC_LINK_TTL_SECONDS);
-    const link = `${env.SITE_URL}/members/verify?token=${encodeURIComponent(token)}`;
+    const link = `${env.SITE_URL}/members/verify?token=${encodeURIComponent(token)}${lang !== "en" ? `&lang=${lang}` : ""}`;
     await sendMagicLinkEmail(env, email, link);
   }
 
-  return htmlResponse(renderCheckEmailPage());
+  return htmlResponse(renderCheckEmailPage(lang));
 }
 
-async function handleVerify(request, env) {
+async function handleVerify(request, env, lang) {
   const url = new URL(request.url);
   const token = url.searchParams.get("token") || "";
   const payload = await verifyToken(env.SESSION_SECRET, token);
 
   if (!payload || payload.purpose !== "login") {
-    return htmlResponse(renderLoginPage("That link has expired or is invalid — please request a new one."));
+    return htmlResponse(renderLoginPage(t(lang, "login.errorExpired"), lang));
   }
 
   const active = await isCurrentlyActive(env, payload.email);
   if (!active) {
-    return htmlResponse(renderLoginPage("We couldn't find an active subscription for that email. If you've just subscribed, this can take a minute to sync — try again shortly."));
+    return htmlResponse(renderLoginPage(t(lang, "login.errorNoActive"), lang));
   }
 
   const sessionToken = await signToken(env.SESSION_SECRET, { email: payload.email, purpose: "session" }, SESSION_TTL_SECONDS);
@@ -337,7 +564,7 @@ async function requireSession(request, env) {
   return payload.email;
 }
 
-async function handleArchiveList(request, env) {
+async function handleArchiveList(request, env, lang) {
   const email = await requireSession(request, env);
   if (!email) return redirectToLogin();
 
@@ -347,22 +574,22 @@ async function handleArchiveList(request, env) {
     const raw = await env.ISSUES.get(key.name);
     if (raw) {
       const meta = JSON.parse(raw);
-      issues.push({ slug: key.name, title: meta.title, date: meta.date, summary: meta.summary || "" });
+      issues.push({ slug: key.name, title: meta.title, date: meta.date, summary: meta.summary || "", countries: meta.countries || [] });
     }
   }
   issues.sort((a, b) => new Date(b.date) - new Date(a.date));
 
-  return htmlResponse(renderArchiveList(issues, email));
+  return htmlResponse(renderArchiveList(issues, email, lang));
 }
 
-async function handleArchiveIssue(request, env, slug) {
+async function handleArchiveIssue(request, env, slug, lang) {
   const email = await requireSession(request, env);
   if (!email) return redirectToLogin();
 
   const raw = await env.ISSUES.get(slug);
   if (!raw) return new Response("Issue not found", { status: 404 });
   const issue = JSON.parse(raw);
-  return htmlResponse(renderIssue(issue));
+  return htmlResponse(renderIssue(issue, lang));
 }
 
 function redirectToLogin() {
@@ -375,17 +602,17 @@ function redirectToLogin() {
 // Lemon Squeezy checkout again (this is just a preference, not a
 // payment change).
 // ================================================================
-async function handlePreferencesGet(request, env) {
+async function handlePreferencesGet(request, env, lang) {
   const email = await requireSession(request, env);
   if (!email) return redirectToLogin();
 
   const sub = await getSubscriber(env, email);
   const currentCountries = sub?.countries || [];
   const notificationsEnabled = sub?.notificationsEnabled !== false; // default: enabled
-  return htmlResponse(renderPreferencesPage(email, currentCountries, false, notificationsEnabled));
+  return htmlResponse(renderPreferencesPage(email, currentCountries, false, notificationsEnabled, lang));
 }
 
-async function handlePreferencesPost(request, env) {
+async function handlePreferencesPost(request, env, lang) {
   const email = await requireSession(request, env);
   if (!email) return redirectToLogin();
 
@@ -396,7 +623,7 @@ async function handlePreferencesPost(request, env) {
   const existing = await getSubscriber(env, email);
   await putSubscriber(env, email, { ...(existing || {}), countries: selected, notificationsEnabled, updated: Date.now() });
 
-  return htmlResponse(renderPreferencesPage(email, selected, true, notificationsEnabled));
+  return htmlResponse(renderPreferencesPage(email, selected, true, notificationsEnabled, lang));
 }
 
 // ================================================================
@@ -566,16 +793,41 @@ const BASE_STYLE = `
   .btn{width:100%; background:var(--ink); color:var(--text-lo); border:none; border-radius:8px; padding:13px; font-family:'IBM Plex Mono',monospace; font-size:13.5px; font-weight:600; cursor:pointer; letter-spacing:0.03em; text-decoration:none; text-align:center; display:block;}
   .btn:hover{background:var(--stamp);}
   .fineprint{font-size:11.5px; color:#7a6f52; margin-top:16px; line-height:1.55;}
-  .issue-list{list-style:none; margin:0; padding:0;}
-  .issue-row{display:block; padding:16px 0; border-top:1px dashed var(--paper-line); text-decoration:none; color:#241d10;}
-  .issue-row:first-child{border-top:none;}
-  .issue-row:hover .issue-title{color:var(--stamp);}
-  .issue-date{font-family:'IBM Plex Mono',monospace; font-size:11px; color:#6b5f3f; text-transform:uppercase; letter-spacing:0.05em;}
-  .issue-title{font-family:'Big Shoulders Display',sans-serif; font-weight:800; font-size:17px; text-transform:uppercase; margin:4px 0;}
-  .issue-summary{font-size:13px; color:#4a4030;}
   .topbar{width:100%; max-width:640px; display:flex; justify-content:space-between; align-items:center; padding:0 5vw; margin-top:24px;}
+  .topbar-wide{max-width:1100px;}
   .logout-btn{background:none; border:1px solid var(--line); color:var(--muted); font-family:'IBM Plex Mono',monospace; font-size:11.5px; padding:6px 12px; border-radius:999px; cursor:pointer;}
   .logout-btn:hover{border-color:var(--stamp); color:var(--stamp);}
+
+  /* Archive: wide layout, search + country filter, card grid */
+  .archive-wrap{width:100%; max-width:1100px; padding:0 5vw 60px;}
+  .archive-head{margin-bottom:20px;}
+  .archive-toolbar{display:flex; flex-wrap:wrap; gap:12px; align-items:center; margin-bottom:14px;}
+  .archive-search{
+    flex:1 1 260px; background:var(--ink-2); border:1px solid var(--line); border-radius:8px;
+    padding:11px 14px; color:var(--text-lo); font-family:'IBM Plex Sans',sans-serif; font-size:14px;
+  }
+  .archive-search:focus{outline:2px solid var(--soon); outline-offset:0;}
+  .archive-search::placeholder{color:var(--muted);}
+  .country-pills{display:flex; flex-wrap:wrap; gap:6px; margin-bottom:22px;}
+  .country-pill{
+    font-family:'IBM Plex Mono',monospace; font-size:11.5px; background:var(--ink-2); border:1px solid var(--line);
+    color:var(--muted); padding:5px 13px; border-radius:999px; cursor:pointer; transition:all .1s ease;
+  }
+  .country-pill:hover{border-color:var(--soon); color:var(--text-lo);}
+  .country-pill.active{background:var(--stamp); border-color:var(--stamp); color:#fff;}
+  .issue-grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(300px,1fr)); gap:16px;}
+  .issue-card{
+    background:var(--paper); border:1px solid var(--paper-line); border-radius:var(--radius);
+    padding:18px 20px 20px; text-decoration:none; color:#241d10; display:block; transition:border-color .1s ease;
+  }
+  .issue-card:hover{border-color:var(--stamp);}
+  .issue-card:hover .issue-title{color:var(--stamp);}
+  .issue-date{font-family:'IBM Plex Mono',monospace; font-size:11px; color:#6b5f3f; text-transform:uppercase; letter-spacing:0.05em;}
+  .issue-title{font-family:'Big Shoulders Display',sans-serif; font-weight:800; font-size:17px; text-transform:uppercase; margin:6px 0; line-height:1.2;}
+  .issue-summary{font-size:12.8px; color:#4a4030; margin:0 0 12px; line-height:1.5;}
+  .issue-country-tags{display:flex; flex-wrap:wrap; gap:5px;}
+  .issue-country-tags span{font-family:'IBM Plex Mono',monospace; font-size:10px; background:var(--paper-2); color:#6b5f3f; padding:3px 9px; border-radius:999px;}
+  .no-match{color:var(--muted); font-size:13.5px; padding:40px 0; text-align:center; grid-column:1/-1;}
 
   /* Preferences page */
   .prefs-box{max-height:280px; overflow-y:auto; border:1px solid var(--paper-line); border-radius:8px; background:#fff; padding:4px 14px; margin:16px 0;}
@@ -589,9 +841,9 @@ const BASE_STYLE = `
   .saved-banner{background:var(--live-dim); color:#bfe6cf; border-radius:6px; padding:10px 14px; font-size:12.8px; margin-bottom:16px;}
 `;
 
-function pageShell(bodyHtml, includeTopbar) {
+function pageShell(bodyHtml, lang) {
   return `<!DOCTYPE html>
-<html lang="en">
+<html lang="${lang || "en"}">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -607,72 +859,147 @@ ${bodyHtml}
 </html>`;
 }
 
-function renderLoginPage(error) {
+function renderLoginPage(error, lang) {
+  lang = lang || "en";
   const body = `
   <div class="wrap">
-    <a class="back-link" href="/">← Back to global tracker</a>
-    <div class="card">
-      <p class="eyebrow">Subscribers only</p>
-      <h1 class="title">Newsletter archive</h1>
-      <p class="sub">Enter the email address you subscribed with — we'll send you a one-click sign-in link. No password to remember.</p>
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <a class="back-link" href="/" style="margin:0;">${t(lang, "backToTracker")}</a>
+      ${renderLangSwitcher(lang, "/members")}
+    </div>
+    <div class="card" style="margin-top:16px;">
+      <p class="eyebrow">${t(lang, "login.eyebrow")}</p>
+      <h1 class="title">${t(lang, "login.title")}</h1>
+      <p class="sub">${t(lang, "login.intro")}</p>
       ${error ? `<div class="form-error">${escapeHtml(error)}</div>` : ""}
       <form method="POST" action="/members/login">
+        <input type="hidden" name="lang" value="${lang}">
         <div class="form-field">
-          <label for="email">Email address</label>
+          <label for="email">${t(lang, "login.emailLabel")}</label>
           <input type="email" id="email" name="email" required autocomplete="email">
         </div>
-        <button type="submit" class="btn">Send sign-in link</button>
+        <button type="submit" class="btn">${t(lang, "login.sendButton")}</button>
       </form>
-      <p class="fineprint">Not a subscriber yet? <a href="/subscribe.html" style="color:var(--stamp); text-decoration:underline;">Subscribe here</a>.</p>
+      <p class="fineprint">${t(lang, "login.notSubscribed")} <a href="/subscribe.html" style="color:var(--stamp); text-decoration:underline;">${t(lang, "login.subscribeHere")}</a>.</p>
     </div>
   </div>`;
-  return pageShell(body);
+  return pageShell(body, lang);
 }
 
-function renderCheckEmailPage() {
+function renderCheckEmailPage(lang) {
+  lang = lang || "en";
   const body = `
   <div class="wrap">
-    <a class="back-link" href="/">← Back to global tracker</a>
+    <a class="back-link" href="/">${t(lang, "backToTracker")}</a>
     <div class="card">
-      <p class="eyebrow">Almost there</p>
-      <h1 class="title">Check your email</h1>
-      <p class="sub">If that email has an active subscription, a sign-in link is on its way — it expires in 15 minutes and works once. Check spam if it doesn't arrive within a minute or two.</p>
+      <p class="eyebrow">${t(lang, "checkEmail.eyebrow")}</p>
+      <h1 class="title">${t(lang, "checkEmail.title")}</h1>
+      <p class="sub">${t(lang, "checkEmail.body")}</p>
     </div>
   </div>`;
-  return pageShell(body);
+  return pageShell(body, lang);
 }
 
-function renderArchiveList(issues, email) {
-  const rows = issues.length
-    ? issues
-        .map(
-          (i) => `
-      <a class="issue-row" href="/members/archive/${encodeURIComponent(i.slug)}">
-        <div class="issue-date">${escapeHtml(i.date)}</div>
-        <div class="issue-title">${escapeHtml(i.title)}</div>
-        ${i.summary ? `<div class="issue-summary">${escapeHtml(i.summary)}</div>` : ""}
-      </a>`
-        )
-        .join("")
-    : `<p class="sub">No issues published yet — check back after the next monthly send.</p>`;
+function renderArchiveList(issues, email, lang) {
+  lang = lang || "en";
+  // Build the master list of countries that actually appear across every
+  // published issue, so the filter pills only ever show options that do
+  // something — no point offering a country with zero matching issues.
+  const allCountries = Array.from(new Set(issues.flatMap((i) => i.countries || []))).sort();
+
+  const pillsHtml = allCountries
+    .map((c) => `<button type="button" class="country-pill" data-country="${escapeHtml(c)}">${escapeHtml(translateCountryName(lang, c))}</button>`)
+    .join("");
+
+  // Ship the issue data to the client as JSON so search/filter can run
+  // instantly without a round-trip to the Worker for every keystroke.
+  const issuesJson = JSON.stringify(
+    issues.map((i) => ({
+      slug: i.slug,
+      title: i.title,
+      date: i.date,
+      summary: i.summary || "",
+      countries: (i.countries || []).map((c) => translateCountryName(lang, c)),
+    }))
+  );
 
   const body = `
-  <div class="topbar">
-    <a class="back-link" href="/" style="margin:0;">← Back to global tracker</a>
-    <form method="POST" action="/members/logout"><button type="submit" class="logout-btn">Log out</button></form>
+  <div class="topbar topbar-wide">
+    <a class="back-link" href="/" style="margin:0;">${t(lang, "backToTracker")}</a>
+    <div style="display:flex; align-items:center; gap:16px;">
+      ${renderLangSwitcher(lang, "/members/archive")}
+      <form method="POST" action="/members/logout"><button type="submit" class="logout-btn">${t(lang, "logout")}</button></form>
+    </div>
   </div>
-  <div class="wrap">
-    <div class="card">
-      <p class="eyebrow">Signed in as ${escapeHtml(email)}</p>
-      <h1 class="title">Newsletter archive</h1>
-      <ul class="issue-list">${rows}</ul>
-      <p class="fineprint"><a href="/members/preferences" style="color:var(--stamp); text-decoration:underline;">Manage which countries you get alerts for →</a></p>
+  <div class="archive-wrap">
+    <div class="archive-head">
+      <p class="eyebrow">${t(lang, "archive.signedInAs")} ${escapeHtml(email)}</p>
+      <h1 class="title">${t(lang, "archive.title")}</h1>
+      <p class="sub" style="margin-bottom:18px;">${t(lang, "archive.issuesPublished")(issues.length)}</p>
     </div>
-  </div>`;
+
+    <div class="archive-toolbar">
+      <input type="text" id="archiveSearch" class="archive-search" placeholder="${t(lang, "archive.searchPlaceholder")}">
+    </div>
+    ${allCountries.length ? `<div class="country-pills" id="countryPills">${pillsHtml}</div>` : ""}
+
+    <div class="issue-grid" id="issueGrid"></div>
+
+    <p class="fineprint"><a href="/members/preferences" style="color:var(--stamp); text-decoration:underline;">${t(lang, "archive.managePrefs")}</a></p>
+  </div>
+  <script>
+    const ARCHIVE_ISSUES = ${issuesJson};
+    const NO_ISSUES_TEXT = ${JSON.stringify(t(lang, "archive.noIssuesYet"))};
+    const NO_MATCH_TEXT = ${JSON.stringify(t(lang, "archive.noMatch"))};
+    let activeCountry = null;
+
+    function escapeHtmlClient(str){
+      return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    function renderGrid(){
+      const q = document.getElementById('archiveSearch').value.trim().toLowerCase();
+      const filtered = ARCHIVE_ISSUES.filter(i => {
+        const matchesSearch = !q || i.title.toLowerCase().includes(q) || i.summary.toLowerCase().includes(q);
+        const matchesCountry = !activeCountry || i.countries.includes(activeCountry);
+        return matchesSearch && matchesCountry;
+      });
+      const grid = document.getElementById('issueGrid');
+      if(ARCHIVE_ISSUES.length === 0){
+        grid.innerHTML = '<p class="no-match">' + NO_ISSUES_TEXT + '</p>';
+        return;
+      }
+      if(filtered.length === 0){
+        grid.innerHTML = '<p class="no-match">' + NO_MATCH_TEXT + '</p>';
+        return;
+      }
+      grid.innerHTML = filtered.map(i => \`
+        <a class="issue-card" href="/members/archive/\${encodeURIComponent(i.slug)}">
+          <div class="issue-date">\${escapeHtmlClient(i.date)}</div>
+          <div class="issue-title">\${escapeHtmlClient(i.title)}</div>
+          \${i.summary ? \`<div class="issue-summary">\${escapeHtmlClient(i.summary)}</div>\` : ''}
+          \${i.countries.length ? \`<div class="issue-country-tags">\${i.countries.map(c => \`<span>\${escapeHtmlClient(c)}</span>\`).join('')}</div>\` : ''}
+        </a>
+      \`).join('');
+    }
+
+    document.getElementById('archiveSearch').addEventListener('input', renderGrid);
+    document.querySelectorAll('.country-pill').forEach(pill => {
+      pill.addEventListener('click', () => {
+        const c = pill.dataset.country;
+        activeCountry = (activeCountry === c) ? null : c;
+        document.querySelectorAll('.country-pill').forEach(p => p.classList.toggle('active', p.dataset.country === activeCountry));
+        renderGrid();
+      });
+    });
+
+    renderGrid();
+  </script>`;
   return pageShell(body);
 }
 
-function renderPreferencesPage(email, selectedCountries, justSaved, notificationsEnabled) {
+function renderPreferencesPage(email, selectedCountries, justSaved, notificationsEnabled, lang) {
+  lang = lang || "en";
   const selectedSet = new Set(selectedCountries || []);
   const notifChecked = notificationsEnabled !== false ? "checked" : "";
   const regionGroups = Object.keys(COUNTRIES_BY_REGION)
@@ -680,35 +1007,41 @@ function renderPreferencesPage(email, selectedCountries, justSaved, notification
       const checks = COUNTRIES_BY_REGION[region]
         .map((country) => {
           const checked = selectedSet.has(country) ? "checked" : "";
-          return `<label class="country-check"><input type="checkbox" name="countries" value="${escapeHtml(country)}" ${checked}>${escapeHtml(country)}</label>`;
+          // The submitted VALUE stays the canonical English name (that's
+          // what's stored in KV and matched against issue tags) — only the
+          // visible label is translated.
+          return `<label class="country-check"><input type="checkbox" name="countries" value="${escapeHtml(country)}" ${checked}>${escapeHtml(translateCountryName(lang, country))}</label>`;
         })
         .join("");
-      return `<div class="region-group"><p class="region-group-label">${escapeHtml(region)}</p>${checks}</div>`;
+      return `<div class="region-group"><p class="region-group-label">${escapeHtml(translateRegionName(lang, region))}</p>${checks}</div>`;
     })
     .join("");
 
   const body = `
   <div class="topbar">
-    <a class="back-link" href="/members/archive" style="margin:0;">← Back to archive</a>
-    <form method="POST" action="/members/logout"><button type="submit" class="logout-btn">Log out</button></form>
+    <a class="back-link" href="/members/archive" style="margin:0;">${t(lang, "backToArchive")}</a>
+    <div style="display:flex; align-items:center; gap:16px;">
+      ${renderLangSwitcher(lang, "/members/preferences")}
+      <form method="POST" action="/members/logout"><button type="submit" class="logout-btn">${t(lang, "logout")}</button></form>
+    </div>
   </div>
   <div class="wrap">
     <div class="card">
-      <p class="eyebrow">Signed in as ${escapeHtml(email)}</p>
-      <h1 class="title">Alert preferences</h1>
-      <p class="sub">Choose which countries you want alerts for. Leave everything unchecked to receive the full monthly digest covering all tracked jurisdictions.</p>
-      ${justSaved ? `<div class="saved-banner">✓ Preferences saved.</div>` : ""}
+      <p class="eyebrow">${t(lang, "archive.signedInAs")} ${escapeHtml(email)}</p>
+      <h1 class="title">${t(lang, "preferences.title")}</h1>
+      <p class="sub">${t(lang, "preferences.intro")}</p>
+      ${justSaved ? `<div class="saved-banner">${t(lang, "preferences.saved")}</div>` : ""}
       <form method="POST" action="/members/preferences">
         <div class="prefs-actions">
-          <a id="selectAllCountries">Select all</a>
-          <a id="clearAllCountries">Clear all</a>
+          <a id="selectAllCountries">${t(lang, "preferences.selectAll")}</a>
+          <a id="clearAllCountries">${t(lang, "preferences.clearAll")}</a>
         </div>
         <div class="prefs-box" id="prefsBox">${regionGroups}</div>
         <label class="country-check" style="margin:16px 0; font-size:13.5px;">
           <input type="checkbox" name="notificationsEnabled" ${notifChecked}>
-          Email me a short notification when a new monthly issue is published
+          ${t(lang, "preferences.notifyLabel")}
         </label>
-        <button type="submit" class="btn">Save preferences</button>
+        <button type="submit" class="btn">${t(lang, "preferences.saveButton")}</button>
       </form>
     </div>
   </div>
@@ -720,26 +1053,31 @@ function renderPreferencesPage(email, selectedCountries, justSaved, notification
       document.querySelectorAll('#prefsBox input[type=checkbox]').forEach(cb => cb.checked = false);
     });
   </script>`;
-  return pageShell(body);
+  return pageShell(body, lang);
 }
 
-function renderSimpleMessage(title, subtext) {
+function renderSimpleMessage(title, subtext, lang) {
+  lang = lang || "en";
   const body = `
   <div class="wrap">
-    <a class="back-link" href="/members">← Back to sign in</a>
+    <a class="back-link" href="/members">${t(lang, "backToSignIn")}</a>
     <div class="card">
       <h1 class="title">${escapeHtml(title)}</h1>
       <p class="sub">${escapeHtml(subtext)}</p>
     </div>
   </div>`;
-  return pageShell(body);
+  return pageShell(body, lang);
 }
 
-function renderIssue(issue) {
+function renderIssue(issue, lang) {
+  lang = lang || "en";
   const body = `
   <div class="topbar">
-    <a class="back-link" href="/members/archive" style="margin:0;">← Back to archive</a>
-    <form method="POST" action="/members/logout"><button type="submit" class="logout-btn">Log out</button></form>
+    <a class="back-link" href="/members/archive" style="margin:0;">${t(lang, "backToArchive")}</a>
+    <div style="display:flex; align-items:center; gap:16px;">
+      ${renderLangSwitcher(lang, "/members/archive")}
+      <form method="POST" action="/members/logout"><button type="submit" class="logout-btn">${t(lang, "logout")}</button></form>
+    </div>
   </div>
   <div class="wrap">
     <div class="card">
@@ -748,7 +1086,7 @@ function renderIssue(issue) {
       <div>${issue.html}</div>
     </div>
   </div>`;
-  return pageShell(body);
+  return pageShell(body, lang);
 }
 
 function escapeHtml(str) {
