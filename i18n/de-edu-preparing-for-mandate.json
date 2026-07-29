@@ -1,0 +1,75 @@
+{
+  "_meta": { "language": "de", "reviewed": true },
+  "backLink": "← Zurück zur Übersicht",
+  "header": {
+    "eyebrow": "Wissen",
+    "title": "Vorbereitung auf eine Vorgabe",
+    "sub": "Sobald Sie das Vorgabemodell und dessen wahrscheinliche Auswirkungen verstehen, lauten die praktischen Fragen: Wer sollte im Raum sein, wie früh sollte das beginnen, und wie gehen Sie die Anbieterauswahl an, ohne es ein Jahr später zu bereuen?",
+    "lastUpdated": "Zuletzt aktualisiert:"
+  },
+  "stats": { "label1": "Empfohlener Vorlauf vor dem Go-Live", "label2": "Typische Größe der Kernarbeitsgruppe", "label3": "Einer gut durchgeführten Anbieterauswahl" },
+  "sec1": {
+    "heading": "Wer einbezogen werden sollte",
+    "intro": "Eine Vorgabenreaktion ohne einen einzigen verantwortlichen Eigentümer, oder bei der die falschen Funktionen im Raum fehlen, ist die häufigste Ursache für späte Überraschungen. Hier ist eine Arbeitsgruppe, die das Terrain abdeckt, ohne unhandlich zu werden.",
+    "card1": { "title": "Programmsponsor", "body": "Eine leitende Führungskraft aus Finanzen oder Steuern mit der Befugnis, Budget zuzusagen und funktionsübergreifende Meinungsverschiedenheiten zu lösen. Ohne dies kann die Arbeitsgruppe Probleme erkennen, aber nicht immer schnell darauf reagieren." },
+    "card2": { "title": "Steuer-/Compliance-Verantwortlicher", "body": "Verantwortet die Auslegung der tatsächlichen rechtlichen Anforderung, verfolgt Umfang und Fristen über Einheiten hinweg und pflegt meist die Beziehung zu externen Beratern." },
+    "card3": { "title": "IT-/Integrationsverantwortlicher", "body": "Bewertet, was die aktuellen ERP-/Kreditoren-/Debitorensysteme nativ leisten können und was nicht, und verantwortet die technische Beziehung zum ausgewählten Anbieter oder zur Plattform." },
+    "card4": { "title": "Recht &amp; Datenschutz", "body": "Prüft Anbieterverträge, Fragen der Datenresidenz und grenzüberschreitenden Übermittlung — von Anfang an einbezogen statt erst bei Vertragsunterzeichnung, wenn es zu spät ist, die Form des Deals zu beeinflussen." },
+    "card5": { "title": "Geschäfts-/Einheitsverantwortliche(r)", "body": "Jemand, der für jedes betroffene Land oder jede Geschäftseinheit verantwortlich ist — besonders wichtig in multinationalen Unternehmen, wo dieselbe Vorgabe je nach lokaler Einheitsstruktur und bestehenden Systemen unterschiedlich ausfallen kann." },
+    "card6": { "title": "Einkauf / Anbietermanagement", "body": "Führt den formellen Ausschreibungsprozess durch, falls erforderlich, und stellt sicher, dass Vertragsbedingungen (SLAs, Ausstiegsklauseln, Haftung) einer angemessenen kommerziellen Prüfung unterzogen werden, statt als Standardformulierung des Anbieters akzeptiert zu werden." },
+    "outro": "Halten Sie diese Gruppe bei 6–8 Personen, die regelmäßig zusammenkommen, mit einem breiteren Kreis (Team-Verantwortliche für Kreditoren/Debitoren, wichtige Kunden oder Anbieter für Tests, externe Berater), der zu bestimmten Meilensteinen konsultiert wird, statt bei jedem Treffen dabei zu sein."
+  },
+  "sec2": {
+    "heading": "Wann man beginnen sollte",
+    "intro": "Übergangsfristen und stufenweise Schwellenwerte sind üblich, und es ist verlockend, sie als die eigentliche Frist zu behandeln. In der Praxis dauern Vorlaufzeiten bei Anbietern, Testzyklen und funktionsübergreifende Abstimmung immer länger als erwartet — früh zu beginnen entscheidet tatsächlich darüber, ob der Go-Live ruhig oder chaotisch verläuft.",
+    "marker1": "12–18 Monate vor dem Go-Live", "marker2": "9–12 Monate vor dem Go-Live", "marker3": "6–9 Monate vor dem Go-Live",
+    "marker4": "3–6 Monate vor dem Go-Live", "marker5": "1–3 Monate vor dem Go-Live", "marker6": "Go-Live und danach",
+    "card1": { "date": "Bewertung &amp; Umfangsbestimmung", "badge": "Hier beginnen", "title": "Umfang bestätigen, Arbeitsgruppe bilden, aktuelle Systeme bewerten", "desc": "Bestimmen Sie, welche Einheiten tatsächlich betroffen sind und ab wann, bilden Sie die oben genannte Kernarbeitsgruppe, und verschaffen Sie sich ein ehrliches Bild davon, was Ihre aktuellen ERP-/Kreditoren-/Debitorensysteme ohne Hilfe leisten können und was nicht." },
+    "card2": { "date": "Anbieterauswahl &amp; Lösungsdesign", "title": "Führen Sie den Anbieterauswahlprozess durch (siehe unten) und bestätigen Sie den technischen Ansatz", "desc": "Dies ist meist die zeitintensivste Einzelphase — behandeln Sie sie als eigenes Projekt mit eigenem Zeitplan, nicht als schnelle Beschaffungsübung." },
+    "card3": { "date": "Aufbau &amp; Integration", "title": "Technische Integration, Stammdatenbereinigung, internes Prozessdesign", "desc": "Besonders die Stammdatenbereinigung profitiert von einem langen Vorlauf — sie ist selten eine schnelle Lösung, sobald man sich den tatsächlichen Zustand der Kunden-/Lieferantendaten ansieht." },
+    "card4": { "date": "Test &amp; Pilot", "title": "Sandbox-/Zertifizierungstests, dann ein Live-Pilot mit einer kleinen Transaktionsteilmenge", "desc": "Testen Sie gezielt Fehlerpfade — Ablehnungen, Korrekturen, Notfall-/Offline-Modi — nicht nur den Idealfall, in dem alles beim ersten Mal validiert wird." },
+    "card5": { "date": "Parallelbetrieb &amp; Umstellungsvorbereitung", "title": "Alte und neue Prozesse parallel betreiben, Mitarbeiter an vorderster Front schulen, Notfallpläne finalisieren", "desc": "Dies ist auch der Zeitpunkt, Kunden und wichtige Anbieter über anstehende Änderungen zu informieren, falls die Vorgabe beeinflusst, wie sie Rechnungen von/an Sie empfangen oder senden." },
+    "card6": { "date": "Stabilisierung", "title": "Ablehnungsraten in den ersten Wochen genau überwachen", "desc": "Ablehnungsraten steigen typischerweise unmittelbar nach dem Go-Live sprunghaft an, da reale Datenrandfälle auftauchen, die Tests nicht erfasst haben — planen Sie hierfür Aufmerksamkeit ein, statt den Go-Live als Ziellinie zu betrachten." }
+  },
+  "sec3": {
+    "heading": "Planung eines Anbieterauswahlprozesses",
+    "intro": "Ob Sie eine Full-Service-Compliance-Plattform, einen länderspezifischen Vermittler (einen PAC, OSE oder Access Point) oder nur ein Modul innerhalb Ihres bestehenden ERP benötigen — derselbe disziplinierte Prozess zahlt sich aus.",
+    "step1": { "title": "Anforderungen definieren, bevor Sie mit einem Anbieter sprechen", "body": "Benötigte Länder-/Formatabdeckung, erwartetes Transaktionsvolumen, erforderliche Integrationsmethode (API vs. Portal) und Budgetrahmen. Ohne dies an den Markt zu gehen, führt tendenziell zu Angeboten, die schwer fair zu vergleichen sind." },
+    "step2": { "title": "Die realistische Anbieterlandschaft kartieren", "body": "Optionen umfassen meist globale Full-Service-Compliance-Plattformen, länderspezifische Vermittler und native ERP-Zusatzmodule — jeweils mit unterschiedlichen Abwägungen zwischen Abdeckungsbreite, Tiefe und Kosten." },
+    "step3": { "title": "Nach mehr als dem Preis bewerten", "body": "Format-/Länderabdeckung, Verfügbarkeits- und Support-SLAs (einschließlich Supportzeiten relativ zu Ihrer Zeitzone), Sicherheitszertifizierungen, erforderlicher Integrationsaufwand auf Ihrer Seite und — entscheidend — ihre Erfolgsbilanz, mit regulatorischen Änderungen in den benötigten Ländern Schritt zu halten." },
+    "step4": { "title": "Auf einem Proof of Concept bestehen", "body": "Ein Sandbox-Test mit Ihren eigenen echten (oder realistischen) Daten deckt Integrationsreibung auf, die eine Verkaufsdemo nie zeigen würde. Behandeln Sie dies vor der Unterzeichnung als nicht verhandelbar, nicht als optionales Extra." },
+    "step5": { "title": "Den Vertrag prüfen, nicht nur das Produkt", "body": "Datenresidenz-Zusagen, Haftung für Fehler oder verpasste Fristen, Mindest-Fortführungsfristen bei Anbieterwechsel und klare Ausstiegs-/Datenportabilitätsbedingungen — beziehen Sie Recht und Einkauf direkt in dieser Phase ein, nicht als abschließenden Formalakt." },
+    "step6": { "title": "Für die nächste Vorgabe planen, nicht nur für diese", "body": "Wenn Sie in mehreren Märkten tätig sind, fragen Sie, wie die Roadmap des Anbieters Länder abdeckt, die Sie noch nicht, aber bald benötigen könnten — ein erneuter Anbieterwechsel in zwei Jahren ist ein echter Kostenfaktor, den es zu vermeiden lohnt, wenn eine einzige Beziehung angemessen mit Ihnen wachsen kann." }
+  },
+  "sec4": {
+    "heading": "Häufige Fallstricke",
+    "intro": "Muster, auf die es sich zu achten lohnt, basierend darauf, wie diese Programme typischerweise schiefgehen.",
+    "card1": { "title": "⏳ Die Übergangsfrist als eigentliche Frist behandeln", "body": "Durchsetzungspausen existieren, um den Übergang zu erleichtern, nicht um zu signalisieren, dass keine Dringlichkeit besteht — die zugrunde liegende technische und prozessuale Arbeit muss weiterhin nach dem ursprünglichen Zeitplan erfolgen." },
+    "card2": { "title": "🗂️ Stammdatenbereinigung überspringen", "body": "Die mit Abstand häufigste Ursache früher Ablehnungen, und das Erste, was unter Zeitdruck nach hinten geschoben wird — es lohnt sich selten, sie zu überspringen." },
+    "card3": { "title": "🙋 Kein einzelner verantwortlicher Eigentümer", "body": "Wenn Finanzen, IT und Recht jeweils denken, jemand anderes übernehme die Führung, treten Lücken spät zutage — meist genau dann, wenn keine Zeit mehr bleibt, sie zu beheben." },
+    "card4": { "title": "🧪 Nur den Idealfall testen", "body": "Ablehnungen, Korrekturen und Notfall-/Offline-Modi sind genau dort, wo echter operativer Schmerz auftritt — testen Sie diese gezielt, nicht nur den Fall, in dem alles beim ersten Mal funktioniert." },
+    "card5": { "title": "🌍 Annehmen, dass sich die Lösung eines Marktes auf den nächsten übertragen lässt", "body": "Ein Anbieter oder Ansatz, der im Modell eines Landes gut funktioniert, passt nicht automatisch zu dem eines anderen — überprüfen Sie die Eignung Markt für Markt erneut, statt es anzunehmen." },
+    "card6": { "title": "💸 Anbieter anhand von Pilotvolumen-Preisen vergleichen", "body": "Kostenstrukturen, die bei geringem Volumen ähnlich aussehen, können bei tatsächlichem Produktionsvolumen deutlich auseinanderdriften — modellieren Sie Preise immer in Ihrem tatsächlich erwarteten Maßstab." }
+  },
+  "sec5": {
+    "heading": "Schnellstart-Checkliste",
+    "q1": "Benannter Programmsponsor mit Budgethoheit, bestätigt",
+    "q2": "Kernarbeitsgruppe gebildet — Steuern, IT, Recht, Einkauf und betroffene Geschäftseinheiten vertreten",
+    "q3": "Umfang bestätigt: welche Einheiten, ab wann, unter welchem Compliance-Modell",
+    "q4": "Aktuelle Systemfähigkeit ehrlich bewertet, Lücken dokumentiert",
+    "q5": "Anbieteranforderungen dokumentiert, bevor Anbietergespräche beginnen",
+    "q6": "Proof-of-Concept-Tests vor Vertragsabschluss geplant, nicht danach",
+    "q7": "Stammdatenbereinigungsplan in Gang, nicht auf \"später\" verschoben",
+    "q8": "Ablehnungs- und Korrekturworkflows ausdrücklich getestet, nicht angenommen",
+    "q9": "Schulung der Basisebene (Kreditoren/Debitoren, Auftragserfassung) vor dem Go-Live geplant"
+  },
+  "sec6": {
+    "heading": "Wie es weitergeht",
+    "card1": { "title": "📘 Nicht sicher, welches Modell gilt?", "body": "\"Arten von Vorgaben\" (unter Wissen) erklärt die auf dieser Seite genannten Compliance-Modelle." },
+    "card2": { "title": "🏗️ Verstehen Sie zuerst die vollen Auswirkungen", "body": "\"Auswirkungen der Vorgabe\" geht tiefer auf die technischen, prozessualen und finanziellen Effekte ein, auf die diese Planungsarbeit letztlich reagiert." },
+    "card3": { "title": "🌍 Prüfen Sie die Anforderungen Ihres spezifischen Landes", "body": "Das Menü der Länderanalysen behandelt die genaue technische Spezifikation, Registrierungsschritte und Sanktionen für jede der 29 hier erfassten Rechtsordnungen." },
+    "card4": { "title": "🏷️ Verstehen Sie zuerst die Anbieterlandschaft", "body": "\"Anbietertypen\" (unter Wissen) schlüsselt die fünf im obigen Auswahlprozess genannten Anbieterkategorien auf — ERP, Lösungsanbieter, Steuer-Compliance, Technologie und Beratung." },
+    "card5": { "title": "✅ Finden Sie einen akkreditierten Anbieter", "body": "\"Staatlich zertifizierte Anbieter\" (unter Wissen) verlinkt direkt zu den im obigen Abschnitt zur Anbieterauswahl genannten offiziellen Registern." }
+  },
+  "footer": { "text": "Diese Seite bietet allgemeine Bildungshinweise auf Basis gängiger Muster in Programmen zur Vorgabenvorbereitung und stellt keine Rechts-, Steuer- oder Beschaffungsberatung dar. Konkrete Zeitpläne und Anforderungen variieren je nach Land sowie Ihren eigenen Systemen und Ihrer Organisation — konsultieren Sie die jeweilige Länderanalyse und geeignete Berater, bevor Sie sich auf einen Plan festlegen." }
+}

@@ -1,0 +1,75 @@
+{
+  "_meta": { "language": "fr", "reviewed": true },
+  "backLink": "← Retour au suivi global",
+  "header": {
+    "eyebrow": "Ressources",
+    "title": "Se préparer à une obligation",
+    "sub": "Une fois que vous comprenez le modèle d'obligation et son impact probable, les questions pratiques deviennent : qui doit être impliqué, quand faut-il commencer, et comment aborder le choix d'un prestataire sans le regretter un an plus tard ?",
+    "lastUpdated": "Dernière mise à jour :"
+  },
+  "stats": { "label1": "Délai de préparation recommandé avant la mise en service", "label2": "Taille type du groupe de travail principal", "label3": "D'une sélection de prestataire bien menée" },
+  "sec1": {
+    "heading": "Qui impliquer",
+    "intro": "Une réponse à une obligation sans responsable unique désigné, ou avec les mauvaises fonctions absentes de la table, est la cause la plus fréquente de mauvaises surprises tardives. Voici un groupe de travail qui couvre le terrain sans devenir ingérable.",
+    "card1": { "title": "Sponsor du programme", "body": "Un dirigeant senior de la Finance ou de la Fiscalité ayant l'autorité pour engager un budget et arbitrer les désaccords transversaux. Sans cela, le groupe de travail peut identifier les problèmes mais pas toujours agir rapidement." },
+    "card2": { "title": "Responsable fiscal / conformité", "body": "Est responsable de l'interprétation de l'exigence légale réelle, suit le périmètre et les échéances entre entités, et gère généralement la relation avec les conseillers externes." },
+    "card3": { "title": "Responsable IT / intégration", "body": "Évalue ce que les systèmes ERP/comptes fournisseurs/clients actuels peuvent ou non faire nativement, et gère la relation technique avec le prestataire ou la plateforme retenue." },
+    "card4": { "title": "Juridique &amp; protection des données", "body": "Doit se prononcer sur la résidence des données, les implications de transfert transfrontalier et les conditions contractuelles avec les nouveaux intermédiaires — impliqué dès le début plutôt qu'à la signature du contrat, quand il est trop tard pour influencer la forme de l'accord." },
+    "card5": { "title": "Responsable(s) métier/entité", "body": "Une personne responsable pour chaque pays ou unité d'affaires concerné — particulièrement important dans les multinationales, où la même obligation peut se traduire différemment selon la structure de l'entité locale et les systèmes existants." },
+    "card6": { "title": "Achats / gestion des prestataires", "body": "Pilote le processus formel d'appel d'offres si nécessaire, et veille à ce que les conditions contractuelles (SLA, clauses de sortie, responsabilité) fassent l'objet d'un examen commercial approprié plutôt que d'être acceptées telles quelles." },
+    "outro": "Limitez ce groupe à 6–8 personnes qui se réunissent régulièrement, avec un cercle plus large (responsables d'équipes comptes fournisseurs/clients, clients ou prestataires clés pour les tests, conseillers externes) consulté à des jalons précis plutôt qu'à chaque réunion."
+  },
+  "sec2": {
+    "heading": "Quand commencer",
+    "intro": "Les périodes de grâce et les seuils progressifs sont courants, et il est tentant de les traiter comme l'échéance réelle. En pratique, les délais des prestataires, les cycles de test et la coordination transversale prennent toujours plus de temps que prévu — commencer tôt est ce qui détermine réellement si la mise en service se déroule calmement ou dans le chaos.",
+    "marker1": "12–18 mois avant la mise en service", "marker2": "9–12 mois avant la mise en service", "marker3": "6–9 mois avant la mise en service",
+    "marker4": "3–6 mois avant la mise en service", "marker5": "1–3 mois avant la mise en service", "marker6": "Mise en service et au-delà",
+    "card1": { "date": "Évaluation &amp; cadrage", "badge": "Commencez ici", "title": "Confirmer le périmètre, constituer le groupe de travail, évaluer les systèmes actuels", "desc": "Déterminez quelles entités sont réellement concernées et à partir de quand, constituez le groupe de travail principal ci-dessus, et obtenez une évaluation honnête de ce que vos systèmes ERP/comptes fournisseurs/clients actuels peuvent ou non faire sans aide." },
+    "card2": { "date": "Sélection du prestataire &amp; conception de la solution", "title": "Menez le processus de sélection de prestataire (voir ci-dessous) et confirmez l'approche technique", "desc": "C'est généralement la phase la plus longue à elle seule — traitez-la comme son propre projet avec son propre calendrier, pas comme un simple exercice d'achat." },
+    "card3": { "date": "Construction &amp; intégration", "title": "Intégration technique, nettoyage des données de référence, conception des processus internes", "desc": "Le nettoyage des données de référence bénéficie particulièrement d'un délai important — c'est rarement une correction rapide une fois qu'on examine réellement l'état des dossiers clients/fournisseurs." },
+    "card4": { "date": "Tests &amp; pilote", "title": "Tests en environnement de test/certification, puis un pilote réel avec un sous-ensemble réduit de transactions", "desc": "Testez délibérément les scénarios d'échec — rejets, corrections, modes de contingence/hors ligne — pas seulement le scénario idéal où tout se valide du premier coup." },
+    "card5": { "date": "Exécution en parallèle &amp; préparation du basculement", "title": "Faites tourner les processus anciens et nouveaux en parallèle, formez le personnel de première ligne, finalisez les plans de contingence", "desc": "C'est aussi le moment d'informer les clients et prestataires clés des changements à venir, si l'obligation affecte la façon dont ils recevront ou enverront des factures vers vous." },
+    "card6": { "date": "Stabilisation", "title": "Surveillez de près les taux de rejet pendant les premières semaines", "desc": "Les taux de rejet augmentent typiquement de façon brutale juste après la mise en service, à mesure que des cas limites de données réelles apparaissent que les tests n'ont pas détectés — prévoyez d'y consacrer de l'attention plutôt que de considérer la mise en service comme la ligne d'arrivée." }
+  },
+  "sec3": {
+    "heading": "Planifier un processus de sélection de prestataire",
+    "intro": "Que vous ayez besoin d'une plateforme de conformité tout-en-un, d'un intermédiaire spécifique à un pays (un PAC, un OSE ou un Access Point), ou simplement d'un module au sein de votre ERP existant, la même méthode rigoureuse porte ses fruits.",
+    "step1": { "title": "Définissez les besoins avant de contacter un prestataire", "body": "Couverture pays/format nécessaire, volume de transactions attendu, méthode d'intégration requise (API ou portail), et fourchette budgétaire. Aller sur le marché sans cela tend à produire des propositions difficiles à comparer équitablement." },
+    "step2": { "title": "Cartographiez le paysage réaliste des prestataires", "body": "Les options couvrent généralement des plateformes de conformité mondiales tout-en-un, des intermédiaires spécifiques à chaque pays, et des modules natifs ajoutés à l'ERP — chacun avec des compromis différents entre étendue de couverture, profondeur et coût." },
+    "step3": { "title": "Évaluez au-delà du prix", "body": "Couverture des formats/pays, SLA de disponibilité et de support (y compris les horaires de support par rapport à votre fuseau horaire), certifications de sécurité, effort d'intégration requis de votre côté, et — élément critique — leur capacité avérée à suivre le rythme des changements réglementaires dans les pays dont vous avez besoin." },
+    "step4": { "title": "Exigez une preuve de concept", "body": "Un test en bac à sable avec vos propres données réelles (ou réalistes) révèle des frictions d'intégration qu'une démonstration commerciale ne montrera jamais. Considérez cela comme non négociable avant de signer, pas comme un bonus optionnel." },
+    "step5": { "title": "Examinez le contrat, pas seulement le produit", "body": "Engagements de résidence des données, responsabilité en cas d'erreurs ou d'échéances manquées, périodes minimales de continuité en cas de changement de prestataire, et conditions claires de sortie/portabilité des données — impliquez directement le Juridique et les Achats à cette étape, pas comme simple validation finale." },
+    "step6": { "title": "Prévoyez la prochaine obligation, pas seulement celle-ci", "body": "Si vous opérez sur plusieurs marchés, demandez comment la feuille de route du prestataire couvre les pays dont vous n'avez pas encore besoin mais pourriez bientôt avoir besoin — changer à nouveau de prestataire dans deux ans est un coût réel qu'il vaut la peine d'éviter si une seule relation peut raisonnablement évoluer avec vous." }
+  },
+  "sec4": {
+    "heading": "Pièges courants",
+    "intro": "Des schémas à surveiller, fondés sur la façon dont ces programmes tournent habituellement mal.",
+    "card1": { "title": "⏳ Traiter la période de grâce comme l'échéance réelle", "body": "Les périodes de tolérance existent pour faciliter la transition, pas pour signaler une absence d'urgence — le travail technique et procédural sous-jacent doit toujours avoir lieu selon le calendrier d'origine." },
+    "card2": { "title": "🗂️ Sauter le nettoyage des données de référence", "body": "La cause la plus fréquente de rejets précoces, et la chose la plus facile à déprioriser sous la pression du temps — cela ne paie que rarement de la sauter." },
+    "card3": { "title": "🙋 Aucun responsable unique désigné", "body": "Quand la Finance, l'IT et le Juridique pensent chacun qu'un autre pilote le projet, les lacunes apparaissent tard — généralement au moment où il ne reste plus de temps pour les corriger." },
+    "card4": { "title": "🧪 Ne tester que le scénario idéal", "body": "Les rejets, les corrections et les modes de contingence/hors ligne sont précisément là où survient la vraie douleur opérationnelle — testez-les délibérément, pas seulement le cas où tout fonctionne du premier coup." },
+    "card5": { "title": "🌍 Supposer que la solution d'un marché se transpose au suivant", "body": "Un prestataire ou une approche qui fonctionne bien dans le modèle d'un pays ne convient pas automatiquement à celui d'un autre — revérifiez l'adéquation marché par marché plutôt que de la supposer." },
+    "card6": { "title": "💸 Comparer les prestataires sur des tarifs de volume pilote", "body": "Des structures de coûts qui semblent similaires à faible volume peuvent diverger fortement au volume de production réel — modélisez toujours les tarifs à votre échelle réellement attendue." }
+  },
+  "sec5": {
+    "heading": "Liste de contrôle de démarrage rapide",
+    "q1": "Sponsor du programme désigné avec autorité budgétaire, confirmé",
+    "q2": "Groupe de travail principal constitué — Fiscalité, IT, Juridique, Achats et unités d'affaires concernées représentées",
+    "q3": "Périmètre confirmé : quelles entités, à partir de quand, sous quel modèle de conformité",
+    "q4": "Capacité du système actuel évaluée honnêtement, lacunes documentées",
+    "q5": "Besoins vis-à-vis des prestataires documentés avant le début de toute conversation avec un prestataire",
+    "q6": "Tests de preuve de concept programmés avant la signature du contrat, pas après",
+    "q7": "Plan de nettoyage des données de référence en cours, non reporté à \"plus tard\"",
+    "q8": "Flux de rejet et de correction explicitement testés, non supposés",
+    "q9": "Formation de première ligne (comptes fournisseurs/clients, saisie des commandes) programmée avant la mise en service"
+  },
+  "sec6": {
+    "heading": "Pour aller plus loin",
+    "card1": { "title": "📘 Pas sûr de savoir quel modèle s'applique ?", "body": "« Types d'obligation » (sous Ressources) explique les modèles de conformité mentionnés tout au long de cette page." },
+    "card2": { "title": "🏗️ Comprenez d'abord l'impact complet", "body": "« Impact de l'obligation » approfondit les effets techniques, procéduraux et financiers auxquels répond en définitive ce travail de planification." },
+    "card3": { "title": "🌍 Consultez les exigences de votre pays précis", "body": "Le menu des analyses par pays couvre la spécification technique exacte, les étapes d'immatriculation et les sanctions pour chacune des 29 juridictions suivies ici." },
+    "card4": { "title": "🏷️ Comprenez d'abord le paysage des prestataires", "body": "« Types de prestataires » (sous Ressources) détaille les cinq catégories de prestataires mentionnées dans le processus de sélection ci-dessus — ERP, prestataire de solution, conformité fiscale, technologie et conseil." },
+    "card5": { "title": "✅ Trouvez un prestataire agréé", "body": "« Prestataires certifiés par l'État » (sous Ressources) renvoie directement vers les registres officiels mentionnés dans la section de sélection de prestataire ci-dessus." }
+  },
+  "footer": { "text": "Cette page fournit des indications pédagogiques générales fondées sur des schémas courants observés dans les programmes de préparation aux obligations, et ne constitue pas un conseil juridique, fiscal ou en matière d'achats. Les calendriers et exigences précis varient selon le pays ainsi que vos propres systèmes et organisation — consultez l'analyse du pays concerné et des conseillers appropriés avant de vous engager sur un plan." }
+}

@@ -1,0 +1,75 @@
+{
+  "_meta": { "language": "es", "reviewed": true },
+  "backLink": "← Volver al panel general",
+  "header": {
+    "eyebrow": "Educación",
+    "title": "Preparación para un mandato",
+    "sub": "Una vez que entiende el modelo de mandato y su impacto probable, las preguntas prácticas pasan a ser: ¿quién debe estar en la sala, con cuánta antelación debe empezar esto, y cómo aborda la elección de un proveedor sin arrepentirse un año después?",
+    "lastUpdated": "Última actualización:"
+  },
+  "stats": { "label1": "Antelación recomendada antes de la puesta en marcha", "label2": "Tamaño típico del grupo de trabajo principal", "label3": "De una selección de proveedor bien ejecutada" },
+  "sec1": {
+    "heading": "A quién incluir",
+    "intro": "Una respuesta al mandato sin un único responsable claro, o con las funciones equivocadas ausentes de la sala, es la causa más común de sorpresas de última hora. Aquí tiene un grupo de trabajo que cubre el terreno sin volverse inmanejable.",
+    "card1": { "title": "Patrocinador del programa", "body": "Un directivo senior de Finanzas o Fiscalidad con autoridad para comprometer presupuesto y resolver desacuerdos entre funciones. Sin esto, el grupo de trabajo puede identificar problemas, pero no siempre actuar sobre ellos con rapidez." },
+    "card2": { "title": "Responsable fiscal / de cumplimiento", "body": "Es responsable de la interpretación del requisito legal real, hace seguimiento del alcance y los plazos entre entidades, y suele ser quien gestiona la relación con cualquier asesor externo." },
+    "card3": { "title": "Responsable de TI/integración", "body": "Evalúa lo que los sistemas actuales de ERP/CxP/CxC pueden y no pueden hacer de forma nativa, y gestiona la relación técnica con el proveedor o plataforma que se seleccione." },
+    "card4": { "title": "Legal y protección de datos", "body": "Revisa los contratos con proveedores, las implicaciones de residencia de datos y las cuestiones de transferencia transfronteriza — incorporado desde el principio, no en la firma del contrato, cuando ya es tarde para influir en la forma del acuerdo." },
+    "card5": { "title": "Responsable(s) de negocio/entidad", "body": "Alguien responsable de cada país o unidad de negocio afectada — especialmente importante en multinacionales, donde el mismo mandato puede aterrizar de forma distinta según la estructura de la entidad local y los sistemas existentes." },
+    "card6": { "title": "Compras / gestión de proveedores", "body": "Dirige el proceso formal de RFP si se necesita uno, y garantiza que los términos del contrato (SLA, cláusulas de salida, responsabilidad) reciben un escrutinio comercial adecuado en lugar de aceptarse como condiciones estándar del proveedor." },
+    "outro": "Mantenga este grupo entre 6 y 8 personas que se reúnan regularmente, con un círculo más amplio (responsables de equipos de CxP/CxC, clientes o proveedores clave para pruebas, asesores externos) consultado en hitos concretos en lugar de en cada reunión."
+  },
+  "sec2": {
+    "heading": "Cuándo empezar",
+    "intro": "Los períodos de gracia y los umbrales escalonados son habituales, y resulta tentador tratarlos como el plazo real. En la práctica, los plazos de entrega de los proveedores, los ciclos de pruebas y la coordinación multifuncional tardan siempre más de lo esperado — empezar pronto es lo que realmente determina si la puesta en marcha es tranquila o caótica.",
+    "marker1": "12–18 meses antes de la puesta en marcha", "marker2": "9–12 meses antes de la puesta en marcha", "marker3": "6–9 meses antes de la puesta en marcha",
+    "marker4": "3–6 meses antes de la puesta en marcha", "marker5": "1–3 meses antes de la puesta en marcha", "marker6": "Puesta en marcha y después",
+    "card1": { "date": "Evaluación y alcance", "badge": "Empiece aquí", "title": "Confirme el alcance, forme el grupo de trabajo, evalúe los sistemas actuales", "desc": "Determine qué entidades están realmente dentro del alcance y desde cuándo, forme el grupo de trabajo principal descrito arriba, y obtenga una valoración honesta de lo que sus sistemas actuales de ERP/CxP/CxC pueden y no pueden hacer sin ayuda." },
+    "card2": { "date": "Selección de proveedor y diseño de la solución", "title": "Ejecute el proceso de selección de proveedor (véase abajo) y confirme el enfoque técnico", "desc": "Esta suele ser la fase individual más larga — trátela como su propio proyecto con su propio calendario, no como un simple trámite de compras." },
+    "card3": { "date": "Construcción e integración", "title": "Integración técnica, limpieza de datos maestros, diseño de procesos internos", "desc": "La limpieza de datos maestros en particular se beneficia de un plazo amplio — rara vez es una solución rápida una vez que se examina realmente el estado de los registros de clientes/proveedores." },
+    "card4": { "date": "Pruebas y piloto", "title": "Pruebas en entorno de pruebas/certificación, y después un piloto real con un subconjunto reducido de transacciones", "desc": "Pruebe deliberadamente las rutas de fallo — rechazos, correcciones, modos de contingencia/sin conexión — no solo el escenario ideal en el que todo se valida a la primera." },
+    "card5": { "date": "Ejecución en paralelo y preparación del cutover", "title": "Ejecute los procesos antiguos y nuevos en paralelo, forme al personal de primera línea, finalice los planes de contingencia", "desc": "Este es también el momento de informar a clientes y proveedores clave sobre los cambios, si el mandato afecta a cómo recibirán o enviarán facturas hacia usted." },
+    "card6": { "date": "Estabilización", "title": "Monitorice de cerca las tasas de rechazo durante las primeras semanas", "desc": "Las tasas de rechazo suelen dispararse inmediatamente después de la puesta en marcha, a medida que surgen casos límite de datos reales que las pruebas no detectaron — dedique atención presupuestaria a esto en lugar de asumir que la puesta en marcha es la línea de meta." }
+  },
+  "sec3": {
+    "heading": "Planificación de un proceso de selección de proveedor",
+    "intro": "Ya sea que necesite una plataforma de cumplimiento de servicio completo, un intermediario específico de un país (un PAC, OSE o Punto de Acceso), o simplemente un módulo dentro de su ERP actual, el mismo proceso disciplinado da sus frutos.",
+    "step1": { "title": "Defina los requisitos antes de hablar con cualquier proveedor", "body": "Cobertura de países/formatos necesaria, volumen de transacciones esperado, método de integración requerido (API frente a portal) y rango de presupuesto. Salir al mercado sin esto tiende a producir propuestas difíciles de comparar de forma justa." },
+    "step2": { "title": "Mapee el panorama realista de proveedores", "body": "Las opciones suelen abarcar plataformas globales de cumplimiento de servicio completo, intermediarios específicos de cada país y módulos nativos añadidos al ERP — cada uno con distintas compensaciones entre amplitud de cobertura, profundidad y coste." },
+    "step3": { "title": "Puntúe más allá del precio", "body": "Cobertura de formatos/países, SLA de disponibilidad y soporte (incluyendo horarios de soporte respecto a su zona horaria), certificaciones de seguridad, esfuerzo de integración requerido por su parte y — de forma crítica — su historial de mantener el ritmo con los cambios regulatorios en los países que necesita." },
+    "step4": { "title": "Insista en una prueba de concepto", "body": "Una prueba en entorno de pruebas con sus propios datos reales (o realistas) saca a la luz fricciones de integración que una demostración comercial nunca mostrará. Trátela como innegociable antes de firmar, no como un extra opcional." },
+    "step5": { "title": "Examine el contrato, no solo el producto", "body": "Compromisos de residencia de datos, responsabilidad por errores o plazos incumplidos, períodos mínimos de continuidad si cambia de proveedor, y condiciones claras de salida/portabilidad de datos — implique a Legal y Compras directamente en esta etapa, no como un mero trámite final." },
+    "step6": { "title": "Planifique para el próximo mandato, no solo para este", "body": "Si opera en varios mercados, pregunte cómo la hoja de ruta del proveedor cubre países que aún no necesita pero que podría necesitar pronto — cambiar de proveedor de nuevo en dos años es un coste real que vale la pena evitar si una única relación puede crecer razonablemente con usted." }
+  },
+  "sec4": {
+    "heading": "Errores comunes",
+    "intro": "Patrones que vale la pena vigilar, basados en cómo suelen fallar estos programas.",
+    "card1": { "title": "⏳ Tratar el período de gracia como el plazo real", "body": "Las moratorias de aplicación existen para facilitar la transición, no para señalar que no hay urgencia — el trabajo técnico y de procesos subyacente sigue teniendo que realizarse según el calendario original." },
+    "card2": { "title": "🗂️ Omitir la limpieza de datos maestros", "body": "La causa más común de rechazos tempranos, y lo más fácil de despriorizar bajo presión de tiempo — rara vez compensa omitirla." },
+    "card3": { "title": "🙋 Ningún responsable único", "body": "Cuando Finanzas, TI y Legal piensan cada uno que otro está liderando, las brechas emergen tarde — normalmente justo cuando ya no queda tiempo para solucionarlas." },
+    "card4": { "title": "🧪 Probar solo el escenario ideal", "body": "Los rechazos, las correcciones y los modos de contingencia/sin conexión son precisamente donde aparece el dolor operativo real — pruebe estos deliberadamente, no solo el caso en que todo funciona a la primera." },
+    "card5": { "title": "🌍 Asumir que la solución de un mercado se traslada al siguiente", "body": "Un proveedor o enfoque que funciona bien en el modelo de un país no encaja automáticamente en el de otro — verifique de nuevo el ajuste mercado por mercado en lugar de asumirlo." },
+    "card6": { "title": "💸 Comparar proveedores con precios de volumen piloto", "body": "Las estructuras de costes que parecen similares a bajo volumen pueden divergir considerablemente a volumen de producción real — modele siempre los precios a su escala real esperada." }
+  },
+  "sec5": {
+    "heading": "Lista de comprobación rápida",
+    "q1": "Patrocinador del programa designado con autoridad presupuestaria, confirmado",
+    "q2": "Grupo de trabajo principal formado — Fiscalidad, TI, Legal, Compras y unidades de negocio afectadas representadas",
+    "q3": "Alcance confirmado: qué entidades, desde cuándo, bajo qué modelo de cumplimiento",
+    "q4": "Capacidad del sistema actual evaluada honestamente, brechas documentadas",
+    "q5": "Requisitos del proveedor documentados antes de que comiencen las conversaciones con proveedores",
+    "q6": "Pruebas de prueba de concepto programadas antes de la firma del contrato, no después",
+    "q7": "Plan de limpieza de datos maestros en marcha, no aplazado para \"más adelante\"",
+    "q8": "Flujos de rechazo y corrección probados explícitamente, no asumidos",
+    "q9": "Formación de primera línea (CxP/CxC, entrada de pedidos de ventas) programada antes de la puesta en marcha"
+  },
+  "sec6": {
+    "heading": "A dónde ir después",
+    "card1": { "title": "📘 ¿No está seguro de qué modelo aplica?", "body": "\"Tipos de mandato\" (en Educación) explica los modelos de cumplimiento mencionados a lo largo de esta página." },
+    "card2": { "title": "🏗️ Entienda primero el impacto completo", "body": "\"Impacto del mandato\" profundiza en los efectos técnicos, de proceso y financieros a los que responde en última instancia este trabajo de planificación." },
+    "card3": { "title": "🌍 Consulte los requisitos de su país concreto", "body": "El menú de análisis por país cubre la especificación técnica exacta, los pasos de registro y las sanciones de cada una de las 29 jurisdicciones seguidas aquí." },
+    "card4": { "title": "🏷️ Entienda primero el panorama de proveedores", "body": "\"Tipos de proveedor\" (en Educación) desglosa las cinco categorías de proveedor mencionadas en el proceso de selección anterior — ERP, Proveedor de Solución, Cumplimiento Fiscal, Tecnología y Consultoría." },
+    "card5": { "title": "✅ Encuentre un proveedor acreditado", "body": "\"Proveedores certificados por el gobierno\" (en Educación) enlaza directamente con los registros oficiales mencionados en la sección de selección de proveedor anterior." }
+  },
+  "footer": { "text": "Esta página ofrece orientación educativa general basada en patrones comunes de los programas de preparación ante mandatos, y no constituye asesoramiento legal, fiscal ni de compras. Los plazos y requisitos concretos varían según el país y sus propios sistemas y organización — consulte el análisis del país correspondiente y a los asesores adecuados antes de comprometerse con un plan." }
+}
