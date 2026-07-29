@@ -39,11 +39,19 @@ const SUPPORTED_LANGUAGES = [
 const DEFAULT_LANGUAGE = "en";
 const STORAGE_KEY = "eicc_lang";
 
+// Optional per-page content namespace, set via a data-namespace attribute
+// on this script's own <script> tag, e.g.:
+//   <script src="i18n/i18n.js" data-namespace="edu-mandate-types"></script>
+// When set, files are loaded as i18n/<lang>-<namespace>.json instead of
+// the tracker's shared i18n/<lang>.json — lets other pages have their own
+// translation files without bloating (or colliding with) the tracker's.
+const CONTENT_NAMESPACE = document.currentScript?.dataset?.namespace || "";
+
 const EICC_I18N = {
   currentLang: DEFAULT_LANGUAGE,
   strings: {},
   meta: {},
-  entryData: {}, // per-id translations of {system, desc, actions} for the current language
+  entryData: {}, // per-id translations of {system, desc, actions} for the current language — tracker only
 
   detectLanguage() {
     const params = new URLSearchParams(window.location.search);
@@ -63,9 +71,11 @@ const EICC_I18N = {
   },
 
   async loadLanguage(code) {
+    const suffix = CONTENT_NAMESPACE ? `-${CONTENT_NAMESPACE}` : "";
+    const filePath = `i18n/${code}${suffix}.json`;
     try {
-      const res = await fetch(`i18n/${code}.json`);
-      if (!res.ok) throw new Error(`Failed to load i18n/${code}.json`);
+      const res = await fetch(filePath);
+      if (!res.ok) throw new Error(`Failed to load ${filePath}`);
       const data = await res.json();
       this.strings = data;
       this.meta = data._meta || {};
@@ -78,10 +88,11 @@ const EICC_I18N = {
       }
     }
 
-    // Load the per-country DATA translations too, if this isn't English
-    // (English IS the source data, so there's nothing to load/override).
+    // Load the per-country DATA translations too — this only applies to
+    // the main tracker (no namespace set), which has a DATA array to
+    // translate entry-by-entry. Namespaced content pages don't have this.
     this.entryData = {};
-    if (this.currentLang !== DEFAULT_LANGUAGE) {
+    if (!CONTENT_NAMESPACE && this.currentLang !== DEFAULT_LANGUAGE) {
       try {
         const res = await fetch(`i18n/${this.currentLang}-data.json`);
         if (res.ok) this.entryData = await res.json();
