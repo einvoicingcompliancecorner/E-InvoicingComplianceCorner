@@ -1,0 +1,85 @@
+{
+  "_meta": { "language": "en", "reviewed": true },
+  "backLink": "← Back to global tracker",
+  "header": {
+    "eyebrow": "Education",
+    "title": "Impact of Mandate",
+    "sub": "A new e-invoicing mandate rarely stays inside IT. This page walks through where the impact actually lands across a business — technical, procedural, financial, and organisational — so you can scope the real project, not just the software purchase.",
+    "lastUpdated": "Last updated:"
+  },
+  "stats": { "label1": "Functions typically involved", "label2": "Some issuance windows, down from days", "label3": "Rejected invoice can block a shipment" },
+  "sec1": {
+    "heading": "Why this is bigger than an IT project",
+    "intro": "The most common mistake in scoping a mandate response is treating it as \"connect our ERP to a new format.\" In practice, most mandates touch at least five functions simultaneously — and each one discovers its piece of the work at a different time, usually too late.",
+    "card1": { "title": "Finance &amp; Tax", "body": "Owns the compliance obligation itself, and usually the relationship with the chosen platform/intermediary — but often lacks visibility into whether the ERP can actually produce what's required." },
+    "card2": { "title": "IT", "body": "Builds the integration, but is frequently brought in only once Finance has already committed to a deadline — leaving little room to influence scope or timeline." },
+    "card3": { "title": "Legal &amp; Data Protection", "body": "Needs to weigh in on data residency, cross-border transfer, and contractual terms with new intermediaries — often the last function consulted, when it should be one of the first." },
+    "card4": { "title": "Sales, Procurement &amp; Logistics", "body": "Capture the master data (tax IDs, classification codes, addresses) that clearance systems now validate strictly — and are the ones who feel it operationally when a shipment gets stuck behind a rejected invoice." }
+  },
+  "sec2": {
+    "heading": "Technical impact",
+    "intro": "This is usually where planning starts — and where the real complexity is easiest to underestimate, especially once more than one jurisdiction is involved.",
+    "card1": { "title": "Integration approach", "body": "Direct ERP-to-platform API integration, a middleware/service-provider layer (PAC, OSE, Access Point), or a manual web-portal fallback for low volumes — each has a different cost, speed, and maintenance profile.", "note": "The \"manual portal\" option often looks free at low volume, then becomes the bottleneck the moment volume grows — model both." },
+    "card2": { "title": "Format fragmentation", "body": "There is no universal e-invoice format. UBL, CII, JSON, and country-specific schemas (CFDI, FA(3), e-fapiao) all coexist — a business operating across several mandated markets is realistically maintaining several different technical integrations, not one." },
+    "card3": { "title": "Master data quality", "body": "Clearance systems validate tax IDs, product/service classification codes, and buyer details in real time. Data that was \"good enough\" for an internal ERP field often fails validation the first time it meets a government platform.", "note": "This is consistently the single largest source of early rejections — worth a dedicated data-cleansing pass before go-live, not after." },
+    "card4": { "title": "Digital certificates &amp; signing", "body": "Many regimes require a qualified digital certificate to sign invoices or authenticate API calls. Certificates expire, need renewal processes, and sometimes need delegating to a third-party provider — a genuine ongoing administrative task, not a one-time setup step." },
+    "card5": { "title": "Resilience &amp; contingency", "body": "What happens when the government platform is down? Several regimes define explicit offline/contingency modes (Poland's Offline24, Saudi Arabia's failure mode) — building for these from day one avoids a scramble the first time it actually happens." },
+    "card6": { "title": "Archiving obligations", "body": "Retention periods for e-invoices are often longer, and more format-specific, than general accounting record rules (10 years is common; some categories run longer). The original structured file — not a printed or PDF rendering — is usually what must be preserved." }
+  },
+  "sec3": {
+    "heading": "Data residency &amp; sovereignty",
+    "intro": "Easy to miss if invoicing is centralised in a shared service centre — a mandate in one country can have implications for where and how that data is allowed to be processed.",
+    "card1": { "title": "Where does the data actually sit?", "body": "Some clearance models route invoice content through government infrastructure or locally accredited intermediaries by design — worth checking whether your chosen provider processes and stores data within the country in question, or elsewhere." },
+    "card2": { "title": "Shared service centre conflicts", "body": "A common architecture — invoicing for many countries processed centrally from one hub — can collide with a specific country's expectation that certain data stays local. Worth checking explicitly, market by market, rather than assuming a global platform is automatically fine everywhere." },
+    "card3": { "title": "Increased government visibility", "body": "Clearance and real-time reporting models give tax authorities far more granular, near-live visibility into commercial transactions than periodic filing ever did. Some businesses raise this as a genuine competitive-sensitivity concern worth flagging to leadership, even where it doesn't change the compliance obligation itself." },
+    "card4": { "title": "Provider lock-in risk", "body": "Country-specific intermediaries (a particular PAC, OSE, or Access Point) can become quietly load-bearing infrastructure. Understand your exit/migration path before you're dependent on one — some regimes even mandate a minimum continuity period from providers for exactly this reason." }
+  },
+  "sec4": {
+    "heading": "Process &amp; document workflow changes",
+    "intro": "The part that catches finance teams out hardest: familiar document workflows — credit notes, debit notes, corrections — don't always survive a mandate unchanged.",
+    "table": {
+      "h1": "Old process", "h2": "What changes under many mandates",
+      "r1k": "Issue a credit/debit note freely to correct an error", "r1v": "A formal \"corrective invoice\" process instead, often with its own document type and validation rules — some regimes no longer accept ad hoc correction notes at all (Poland's KSeF retired the traditional \"nota korygująca\" in favour of structured corrections through the platform itself)",
+      "r2k": "Edit or cancel an issued invoice directly", "r2v": "Once cleared/reported, many invoices legally can't be edited — the only path is a formal credit note or a new corrective document, even for minor errors",
+      "r3k": "Batch invoices at month-end", "r3v": "Issuance windows now measured in hours or days (24 hours in Saudi Arabia for B2C reporting; 5 working days in Romania and Slovakia) force closer-to-real-time issuance",
+      "r4k": "Assume an invoice is valid once sent", "r4v": "A rejected invoice in a clearance model has no legal effect at all — in practice this can hold up shipment of goods until it's resolved, a supply-chain problem, not just an accounting one",
+      "r5k": "Buyer accepts an invoice implicitly", "r5v": "Some regimes give buyers an active accept/reject window (Malaysia: 72 hours) — silence isn't automatically acceptance, and missing that window can force a full credit/debit note instead of a simple cancellation"
+    }
+  },
+  "sec5": {
+    "heading": "Financial &amp; commercial impact",
+    "intro": "Beyond the direct cost of compliance software, there are second-order effects worth putting in front of finance leadership early.",
+    "card1": { "title": "Compliance cost structure", "body": "Per-transaction fees from intermediaries, software licensing, certificate costs, and integration work all scale differently — a cost model that looks fine at pilot volume can look very different at full production volume. Model it at scale before committing to a provider." },
+    "card2": { "title": "Cash flow, both ways", "body": "Some regimes reward compliant e-invoicing with faster payment terms (5-day payment targets in New Zealand and Australia's public sector). But a rejected or delayed clearance can just as easily hold up payment — the same mechanism cuts both directions." },
+    "card3": { "title": "Your customer's exposure, not just yours", "body": "In many regimes, a non-compliant invoice from you can block your customer's own input VAT deduction or expense claim. This turns your compliance gap into their financial problem — a real relationship risk, not just an internal one." },
+    "card4": { "title": "Market entry friction", "body": "Entering a new mandated market isn't just a sales decision anymore — you may need local registration, an intermediary relationship, and technical integration in place before you can legally invoice a single customer there." }
+  },
+  "sec6": {
+    "heading": "Organisational readiness",
+    "intro": "The softest impact area, and often the one that determines whether the technical rollout actually goes smoothly.",
+    "card1": { "title": "One programme, not five projects", "body": "Finance, IT, Legal, and Sales/Procurement each discovering the mandate independently, on their own timeline, is a recipe for late surprises. A single cross-functional owner materially reduces this risk." },
+    "card2": { "title": "Tracking group/subsidiary scope", "body": "Many mandates phase in by revenue threshold, sometimes calculated across a whole corporate group rather than per entity (as in New Zealand's and Malaysia's rules). Legal and Finance need a shared, current view of group structure to know who's actually in scope, and when." },
+    "card3": { "title": "Frontline training", "body": "Sales order entry and AP/AR staff are usually the ones actually capturing the stricter master data these systems demand — training them on why a tax ID or classification code now matters more than it used to pays for itself quickly." },
+    "card4": { "title": "Ongoing data governance", "body": "A one-time data cleanse before go-live degrades over time as new customers and vendors are added. A standing process for validating trading-partner master data keeps rejection rates low permanently, not just on day one." }
+  },
+  "sec7": {
+    "heading": "Questions worth asking on day one",
+    "intro": "A quick first-pass checklist for when a new mandate lands on your radar — before diving into technical specifications.",
+    "q1": "Which of our legal entities are actually in scope, and from what date — checked against group revenue thresholds where relevant, not just our own entity's figures?",
+    "q2": "Which compliance model does this country use — post-audit, reporting, clearance, centralised platform, or Peppol-based — and what does that imply for our integration approach?",
+    "q3": "Can our current ERP produce the required format natively, or do we need a service provider / middleware layer?",
+    "q4": "Where does invoicing for this market currently happen — a shared service centre, a local team — and does that location raise any data residency questions?",
+    "q5": "What's our current master data quality like for customers/vendors in this market — has anyone actually checked?",
+    "q6": "What happens operationally if an invoice is rejected — who's notified, and how quickly can it be resolved before it affects a shipment or a payment?",
+    "q7": "Who owns this cross-functionally — is there one accountable person, or is this quietly five different people's problem?",
+    "q8": "What's the realistic cost at full production volume, not pilot volume?"
+  },
+  "sec8": {
+    "heading": "Where to go next",
+    "card1": { "title": "📘 Understand the mandate types first", "body": "If you haven't already, \"Types of Mandate\" (also under Education) explains the compliance models referenced throughout this page in more depth." },
+    "card2": { "title": "🗓️ Ready to start planning?", "body": "\"Preparing for a Mandate\" (under Education) covers who to involve, when to start, and how to approach vendor selection." },
+    "card3": { "title": "🌍 Check your specific country's requirements", "body": "The Deep Dives menu covers the exact technical specification, registration steps, and penalties for each of the 29 jurisdictions tracked here." },
+    "card4": { "title": "✅ Find an accredited provider", "body": "\"Government Certified Providers\" (under Education) links directly to the official government registries for accredited service providers, country by country." }
+  },
+  "footer": { "text": "This page provides general educational context to help scope internal planning and is not legal, tax, or technical implementation advice. Specific requirements vary by country and by your own systems and group structure — consult the relevant country deep dive and a qualified advisor before making implementation decisions." }
+}
