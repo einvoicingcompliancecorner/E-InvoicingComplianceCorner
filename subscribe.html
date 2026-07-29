@@ -7,6 +7,13 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="i18n/i18n.js" data-namespace="subscribe"></script>
+<style>
+  .lang-switcher{font-family:'IBM Plex Mono',monospace; font-size:11.5px; margin:0 0 20px;}
+  .lang-switcher a{color:var(--muted); text-decoration:none; margin-right:10px;}
+  .lang-switcher a.active{color:var(--soon); font-weight:700;}
+  .lang-switcher a:hover{color:var(--text-lo);}
+</style>
 
 <!--
   ================================================================
@@ -256,51 +263,52 @@
 <body>
 <div class="wrap">
 
-  <a class="back-link" href="einvoicing-compliance-tracker.html">← Back to global tracker</a>
+  <a class="back-link" href="einvoicing-compliance-tracker.html" data-i18n="backLink">← Back to global tracker</a>
+  <div class="lang-switcher" id="langSwitcher"></div>
 
   <div class="layout-grid">
 
     <!-- ================= BENEFITS PANEL ================= -->
     <div class="benefits-panel">
-      <p class="benefits-eyebrow">Never get caught off guard</p>
-      <h1 class="benefits-title display">Get notified the moment a government changes the rules</h1>
-      <p class="benefits-intro">E-invoicing thresholds, wave numbers, and go-live dates change constantly — often with little public notice. Subscribe once, and every government update or announcement across the 29 jurisdictions we track lands in your inbox automatically, in plain language, before it catches your team off guard.</p>
+      <p class="benefits-eyebrow" data-i18n="benefits.eyebrow">Never get caught off guard</p>
+      <h1 class="benefits-title display" data-i18n="benefits.title">Get notified the moment a government changes the rules</h1>
+      <p class="benefits-intro" data-i18n="benefits.intro">E-invoicing thresholds, wave numbers, and go-live dates change constantly — often with little public notice. Subscribe once, and every government update or announcement across the 29 jurisdictions we track lands in your inbox automatically, in plain language, before it catches your team off guard.</p>
 
-      <button type="button" class="sample-issue-link" id="openSampleIssue">👀 See a real sample issue (January 2026) →</button>
+      <button type="button" class="sample-issue-link" id="openSampleIssue" data-i18n="benefits.sampleLink">👀 See a real sample issue (January 2026) →</button>
 
       <div class="benefit-stat-strip">
-        <div class="stat"><div class="num display">29</div><div class="lbl">Jurisdictions tracked</div></div>
-        <div class="stat"><div class="num display">Monthly</div><div class="lbl">Digest cadence</div></div>
-        <div class="stat"><div class="num display">0</div><div class="lbl">Spam between issues</div></div>
+        <div class="stat"><div class="num display">29</div><div class="lbl" data-i18n="benefits.stat1">Jurisdictions tracked</div></div>
+        <div class="stat"><div class="num display">Monthly</div><div class="lbl" data-i18n="benefits.stat2">Digest cadence</div></div>
+        <div class="stat"><div class="num display">0</div><div class="lbl" data-i18n="benefits.stat3">Spam between issues</div></div>
       </div>
 
       <ul class="benefit-list">
         <li>
           <span class="b-icon">🔔</span>
           <div>
-            <p class="b-title">Real government announcements, summarised</p>
-            <p class="b-body">Every new mandate, shifted deadline, and penalty change we track, written in plain language — not legal text copy-pasted from a tax authority's press release.</p>
+            <p class="b-title" data-i18n="benefits.item1.title">Real government announcements, summarised</p>
+            <p class="b-body" data-i18n="benefits.item1.body">Every new mandate, shifted deadline, and penalty change we track, written in plain language — not legal text copy-pasted from a tax authority's press release.</p>
           </div>
         </li>
         <li>
           <span class="b-icon">🌍</span>
           <div>
-            <p class="b-title">Choose exactly which countries you care about</p>
-            <p class="b-body">Tell us which of the 29 jurisdictions matter to your business, and your monthly notification email tells you specifically whether they came up — or get the full global digest if you'd rather see everything.</p>
+            <p class="b-title" data-i18n="benefits.item2.title">Choose exactly which countries you care about</p>
+            <p class="b-body" data-i18n="benefits.item2.body">Tell us which of the 29 jurisdictions matter to your business, and your monthly notification email tells you specifically whether they came up — or get the full global digest if you'd rather see everything.</p>
           </div>
         </li>
         <li>
           <span class="b-icon">🗂️</span>
           <div>
-            <p class="b-title">A full, searchable back-catalogue</p>
-            <p class="b-body">Every past issue lives in a searchable, filterable archive — look back at any month, any country, any time, not just whatever landed in your inbox most recently.</p>
+            <p class="b-title" data-i18n="benefits.item3.title">A full, searchable back-catalogue</p>
+            <p class="b-body" data-i18n="benefits.item3.body">Every past issue lives in a searchable, filterable archive — look back at any month, any country, any time, not just whatever landed in your inbox most recently.</p>
           </div>
         </li>
         <li>
           <span class="b-icon">📘</span>
           <div>
-            <p class="b-title">Priority access to new education content</p>
-            <p class="b-body">New country deep dives and education guides get flagged to subscribers first, as we publish them.</p>
+            <p class="b-title" data-i18n="benefits.item4.title">Priority access to new education content</p>
+            <p class="b-body" data-i18n="benefits.item4.body">New country deep dives and education guides get flagged to subscribers first, as we publish them.</p>
           </div>
         </li>
       </ul>
@@ -311,84 +319,84 @@
 
     <!-- STEP 1: choose plan + lead capture -->
     <div id="detailsStep" class="checkout-step visible">
-      <p class="eyebrow">Subscribe</p>
-      <h1 class="title">Choose your plan</h1>
-      <p class="sub">One email a month, plus a short alert whenever a new issue covering your countries goes live.</p>
+      <p class="eyebrow" data-i18n="card.eyebrow">Subscribe</p>
+      <h1 class="title" data-i18n="card.title">Choose your plan</h1>
+      <p class="sub" data-i18n="card.sub">One email a month, plus a short alert whenever a new issue covering your countries goes live.</p>
 
-      <p class="plan-label">Choose how you'd like to pay</p>
+      <p class="plan-label" data-i18n="card.planLabel">Choose how you'd like to pay</p>
       <div class="plan-options">
         <label class="plan-option selected" id="planRecurringLabel">
           <input type="radio" name="plan" value="recurring" id="planRecurring" checked>
-          <div class="po-name"><span class="po-radio"></span>Recurring</div>
+          <div class="po-name"><span class="po-radio"></span><span data-i18n="card.planRecurring.name">Recurring</span></div>
           <div class="po-price" id="priceRecurring">$10/yr</div>
-          <div class="po-desc">Renews automatically each year. Cancel anytime — no need to remember to resubscribe.</div>
+          <div class="po-desc" data-i18n="card.planRecurring.desc">Renews automatically each year. Cancel anytime — no need to remember to resubscribe.</div>
         </label>
         <label class="plan-option" id="planOnetimeLabel">
           <input type="radio" name="plan" value="onetime" id="planOnetime">
-          <div class="po-name"><span class="po-radio"></span>One-time</div>
+          <div class="po-name"><span class="po-radio"></span><span data-i18n="card.planOnetime.name">One-time</span></div>
           <div class="po-price" id="priceOnetime">$12</div>
-          <div class="po-desc">Covers 12 months, then simply ends. No auto-renewal, no card kept on file.</div>
+          <div class="po-desc" data-i18n="card.planOnetime.desc">Covers 12 months, then simply ends. No auto-renewal, no card kept on file.</div>
         </label>
       </div>
 
       <form id="detailsForm" novalidate>
         <div class="form-row">
           <div class="form-field" id="field-firstName">
-            <label for="firstName">First name</label>
+            <label for="firstName" data-i18n="card.form.firstName">First name</label>
             <input type="text" id="firstName" name="firstName" autocomplete="given-name">
-            <span class="form-error-msg">First name is required</span>
+            <span class="form-error-msg" data-i18n="card.form.firstNameError">First name is required</span>
           </div>
           <div class="form-field" id="field-lastName">
-            <label for="lastName">Last name</label>
+            <label for="lastName" data-i18n="card.form.lastName">Last name</label>
             <input type="text" id="lastName" name="lastName" autocomplete="family-name">
-            <span class="form-error-msg">Last name is required</span>
+            <span class="form-error-msg" data-i18n="card.form.lastNameError">Last name is required</span>
           </div>
         </div>
         <div class="form-row">
           <div class="form-field" id="field-email">
-            <label for="email">Email address</label>
+            <label for="email" data-i18n="card.form.email">Email address</label>
             <input type="email" id="email" name="email" autocomplete="email">
-            <span class="form-error-msg">A valid email address is required</span>
+            <span class="form-error-msg" data-i18n="card.form.emailError">A valid email address is required</span>
           </div>
         </div>
         <div class="form-row">
           <div class="form-field" id="field-title">
-            <label for="jobTitle">Title</label>
+            <label for="jobTitle" data-i18n="card.form.jobTitle">Title</label>
             <input type="text" id="jobTitle" name="jobTitle" autocomplete="organization-title">
-            <span class="form-error-msg">Title is required</span>
+            <span class="form-error-msg" data-i18n="card.form.jobTitleError">Title is required</span>
           </div>
           <div class="form-field" id="field-company">
-            <label for="company">Company name</label>
+            <label for="company" data-i18n="card.form.company">Company name</label>
             <input type="text" id="company" name="company" autocomplete="organization">
-            <span class="form-error-msg">Company name is required</span>
+            <span class="form-error-msg" data-i18n="card.form.companyError">Company name is required</span>
           </div>
         </div>
 
-        <p class="countries-label">Which countries do you want alerts for?</p>
-        <p class="countries-hint">Optional — leave everything unchecked and we'll send the full monthly digest covering all 29 jurisdictions.</p>
+        <p class="countries-label" data-i18n="card.countriesLabel">Which countries do you want alerts for?</p>
+        <p class="countries-hint" data-i18n="card.countriesHint">Optional — leave everything unchecked and we'll send the full monthly digest covering all 29 jurisdictions.</p>
         <div class="countries-actions">
-          <a id="selectAllCountries">Select all</a>
-          <a id="clearAllCountries">Clear all</a>
+          <a id="selectAllCountries" data-i18n="card.selectAll">Select all</a>
+          <a id="clearAllCountries" data-i18n="card.clearAll">Clear all</a>
         </div>
         <div class="countries-box" id="countriesBox">
           <!-- Populated dynamically from countries.js — see the script at the bottom of this page -->
         </div>
 
-        <button type="submit" class="form-submit">Continue to secure payment</button>
-        <p class="form-fineprint">Payment is handled by Lemon Squeezy, our merchant of record — they collect and remit any applicable VAT/GST on this sale, so you're never charged tax separately. We never see or store your card details. See our <a href="privacy-policy.html" style="color:var(--stamp); text-decoration:underline;">privacy policy</a> for how your data is handled.</p>
+        <button type="submit" class="form-submit" data-i18n="card.submitButton">Continue to secure payment</button>
+        <p class="form-fineprint" data-i18n="card.fineprint">Payment is handled by Lemon Squeezy, our merchant of record — they collect and remit any applicable VAT/GST on this sale, so you're never charged tax separately. We never see or store your card details. See our <a href="privacy-policy.html" style="color:var(--stamp); text-decoration:underline;">privacy policy</a> for how your data is handled.</p>
       </form>
     </div>
 
     <!-- STEP 2: confirm + trigger checkout -->
     <div id="checkoutStep" class="checkout-step">
-      <p class="eyebrow">One more step</p>
-      <h1 class="title">Confirm &amp; pay</h1>
+      <p class="eyebrow" data-i18n="confirm.eyebrow">One more step</p>
+      <h1 class="title" data-i18n="confirm.title">Confirm &amp; pay</h1>
       <div class="confirm-plan-badge" id="confirmPlanBadge">Recurring — renews yearly</div>
-      <p class="sub">Subscribing as <strong id="confirmName"></strong> (<span id="confirmEmail"></span>) for <span id="confirmCompany"></span> — <span id="confirmPrice"></span>.</p>
-      <p class="sub" style="margin-top:-14px;">Alerts for: <strong id="confirmCountries"></strong></p>
+      <p class="sub"><span data-i18n="confirm.subscribingAs">Subscribing as</span> <strong id="confirmName"></strong> (<span id="confirmEmail"></span>) <span data-i18n="confirm.for">for</span> <span id="confirmCompany"></span> — <span id="confirmPrice"></span>.</p>
+      <p class="sub" style="margin-top:-14px;"><span data-i18n="confirm.alertsFor">Alerts for:</span> <strong id="confirmCountries"></strong></p>
 
-      <a href="#" id="checkoutButton" class="lemonsqueezy-button form-submit">Complete secure payment →</a>
-      <span class="edit-link" id="editDetails">← Edit my details or plan</span>
+      <a href="#" id="checkoutButton" class="lemonsqueezy-button form-submit" data-i18n="confirm.payButton">Complete secure payment →</a>
+      <span class="edit-link" id="editDetails" data-i18n="confirm.editLink">← Edit my details or plan</span>
       <p class="form-fineprint" id="confirmFineprint">You'll be taken to a secure Lemon Squeezy checkout window. This plan renews automatically each year until you cancel — you can cancel anytime from the link in your receipt email.</p>
     </div>
 
@@ -398,19 +406,35 @@
   <!-- ================= SAMPLE ISSUE MODAL ================= -->
   <div class="modal-overlay" id="sampleIssueModal">
     <div class="modal-card">
-      <button type="button" class="modal-close" id="closeSampleIssue">✕ Close</button>
-      <div class="modal-badge">Real sample issue — not a mockup</div>
+      <button type="button" class="modal-close" id="closeSampleIssue" data-i18n="modal.close">✕ Close</button>
+      <div class="modal-badge" data-i18n="modal.badge">Real sample issue — not a mockup</div>
       <p class="modal-date">1 January 2026</p>
+      <!-- The sample issue title/body below stays in English regardless of
+           site language — it's an exact, unaltered copy of the real
+           published January 2026 issue, and translating it would make
+           "exactly as published" no longer strictly true. -->
       <h2 class="modal-title">New Year, new mandates: six countries kick off 2026</h2>
       <div class="modal-body">
 <p>Welcome to the first issue of the year — and it's a genuinely busy one. Six separate mandates across four continents all take effect on 1 January. Here's the roundup, with a link to each government's own portal so you can verify anything directly at the source rather than taking our summary on faith.</p><h3>🇧🇪 Belgium — mandatory B2B e-invoicing via Peppol</h3><p>Structured e-invoicing is now mandatory for domestic B2B transactions between Belgian VAT-registered businesses, using Peppol BIS Billing 3.0 / EN 16931. PDF and paper invoices no longer qualify as of today. A three-month administrative tolerance period runs until 1 April, after which a progressive penalty regime (€1,500 / €3,000 / €5,000 per infraction) applies — so this window is genuinely worth using to close any remaining gaps, not just to wait it out.</p><p style="margin:4px 0 16px 0; font-size:12.8px;"><a style="color:#b5432f; text-decoration:underline; font-weight:600;" href="https://ec.europa.eu/digital-building-blocks/sites/spaces/DIGITAL/pages/467108877/eInvoicing+in+Belgium" target="_blank" rel="noopener">🔗 Official source: EU Digital Building Blocks — Belgium</a></p><h3>🇲🇾 Malaysia — MyInvois Phase 4 begins</h3><p>Businesses with annual turnover between RM1 million and RM5 million enter the mandate today, with a relaxation period on submission-error penalties running through to the end of 2027. Individual e-invoices above RM10,000 are now mandatory — consolidated invoicing is no longer permitted for amounts at that level.</p><p style="margin:4px 0 16px 0; font-size:12.8px;"><a style="color:#b5432f; text-decoration:underline; font-weight:600;" href="https://www.hasil.gov.my/en/e-invoice" target="_blank" rel="noopener">🔗 Official source: LHDN — MyInvois / e-Invoice</a></p><h3>🇧🇷 Brazil — CBS/IBS test fields required</h3><p>As Brazil's dual-VAT reform begins, electronic tax documents (NF-e, NFC-e, NFS-e) must now include the new CBS and IBS fields at test rates of 0.9% and 0.1% respectively. There's no financial impact yet at these test rates, but the legal obligation to include the data correctly already applies — and validation tightens considerably from April.</p><p style="margin:4px 0 16px 0; font-size:12.8px;"><a style="color:#b5432f; text-decoration:underline; font-weight:600;" href="https://www.nfe.fazenda.gov.br/portal/principal.aspx" target="_blank" rel="noopener">🔗 Official source: Portal Nacional da NF-e (SEFAZ)</a></p><h3>🇲🇽 Mexico — 2026 tax reform takes effect</h3><p>SAT's enforcement powers strengthen from today, adding stricter authenticity checks and — notably — new criminal liability for false or simulated CFDIs. This is a meaningful escalation from the previous purely administrative penalty framework. Worth reviewing your defense documentation and cancellation procedures now, given SAT can request supporting evidence within just 5 business days.</p><p style="margin:4px 0 16px 0; font-size:12.8px;"><a style="color:#b5432f; text-decoration:underline; font-weight:600;" href="https://www.sat.gob.mx" target="_blank" rel="noopener">🔗 Official source: SAT — Servicio de Administración Tributaria</a></p><h3>🇳🇿 New Zealand — high-volume government agencies must send and receive e-invoices</h3><p>Agencies processing more than 2,000 domestic trade invoices annually must now be fully capable of both sending and receiving structured e-invoices — using the PINT A-NZ format, mandatory for government e-invoicing since May 2025 — and must pay 95% of them within 5 business days. If you supply an agency at this volume, this is the moment payment terms should actually start improving.</p><p style="margin:4px 0 16px 0; font-size:12.8px;"><a style="color:#b5432f; text-decoration:underline; font-weight:600;" href="https://www.einvoicing.govt.nz" target="_blank" rel="noopener">🔗 Official source: einvoicing.govt.nz — MBIE</a></p><h3>🇭🇷 Croatia — Fiskalizacija 2.0 goes live</h3><p>Croatia's biggest e-invoicing reform yet: structured issuance, receipt, and real-time e-reporting are now mandatory for all VAT-registered, Croatian-established taxpayers — layered on top of the B2G mandate already in force since 2019. This includes a 5-day buyer-side fiscalization workflow and monthly e-reporting by the 20th of each month, plus an 11-year archiving requirement for original XML invoices.</p><p style="margin:4px 0 16px 0; font-size:12.8px;"><a style="color:#b5432f; text-decoration:underline; font-weight:600;" href="https://porezna-uprava.gov.hr/en" target="_blank" rel="noopener">🔗 Official source: Porezna uprava (Croatian Tax Administration)</a></p><p><strong>What this means for your team:</strong> if you operate in any of these six markets, this is the moment to confirm — not assume — that whatever went live over the holidays is actually working correctly in production, not just configured and left untested.</p>
       </div>
-      <p class="modal-fineprint">This is the actual first issue sent to subscribers, exactly as published — nothing edited or shortened for this preview. Every subscriber gets access to the full searchable archive, not just this one issue.</p>
+      <p class="modal-fineprint" data-i18n="modal.fineprint">This is the actual first issue sent to subscribers, exactly as published — nothing edited or shortened for this preview. Every subscriber gets access to the full searchable archive, not just this one issue.</p>
     </div>
   </div>
 
 </div>
 
+<script>
+  (function(){
+    const switcher = document.getElementById('langSwitcher');
+    const langs = [{code:'en',label:'EN'},{code:'es',label:'ES'},{code:'de',label:'DE'},{code:'fr',label:'FR'}];
+    function render(){
+      const current = (window.EICC_I18N && window.EICC_I18N.currentLang) || 'en';
+      switcher.innerHTML = '🌐 ' + langs.map(l => `<a href="?lang=${l.code}" class="${l.code===current?'active':''}">${l.label}</a>`).join('');
+    }
+    document.addEventListener('eicc:languageChanged', render);
+    render();
+  })();
+</script>
 <script>
 // ================================================================
 // SETUP NEEDED: replace these four constants once your two Lemon
@@ -444,30 +468,53 @@ planOnetimeLabel.addEventListener('click', ()=>{ planOnetime.checked = true; upd
 updatePlanSelection();
 
 function isValidEmail(v){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); }
+function t(key, fallback){
+  return (window.EICC_I18N && window.EICC_I18N.t(key)) || fallback;
+}
+function translateCountry(name){
+  const i18n = window.EICC_I18N;
+  return (i18n && i18n.strings && i18n.strings.countryNames && i18n.strings.countryNames[name]) || name;
+}
+function translateRegion(name){
+  const i18n = window.EICC_I18N;
+  return (i18n && i18n.strings && i18n.strings.regionNames && i18n.strings.regionNames[name]) || name;
+}
 
 // ---------- build the country checklist from countries.js ----------
-(function renderCountryChecklist(){
+function renderCountryChecklist(){
   const box = document.getElementById('countriesBox');
 
   if (typeof EICC_COUNTRIES_BY_REGION === 'undefined') {
     // countries.js didn't load — most likely it's missing from this
     // deployment. Fail gracefully rather than throwing, and let the
     // subscription still go through (just without per-country alerts).
-    box.innerHTML = '<p style="font-size:12px; color:#8a7d5a; padding:8px 0;">Country selection is temporarily unavailable — you\'ll still get the full monthly digest. (Missing file: countries.js)</p>';
+    const msg = t('card.countriesMissing', "Country selection is temporarily unavailable — you'll still get the full monthly digest. (Missing file: countries.js)");
+    box.innerHTML = `<p style="font-size:12px; color:#8a7d5a; padding:8px 0;">${msg}</p>`;
     return;
   }
+
+  // Preserve whatever was checked before a language switch re-renders this list.
+  const previouslyChecked = new Set(
+    Array.from(document.querySelectorAll('#countriesBox input[type="checkbox"]:checked')).map(cb => cb.value)
+  );
 
   const regions = Object.keys(EICC_COUNTRIES_BY_REGION);
   let html = '';
   regions.forEach(region => {
-    html += `<div class="region-group"><p class="region-group-label">${region}</p>`;
+    html += `<div class="region-group"><p class="region-group-label">${translateRegion(region)}</p>`;
     EICC_COUNTRIES_BY_REGION[region].forEach(country => {
-      html += `<label class="country-check"><input type="checkbox" value="${country}">${country}</label>`;
+      const checked = previouslyChecked.has(country) ? 'checked' : '';
+      // The submitted VALUE stays the canonical English name (needed for
+      // Lemon Squeezy custom data / subscriber matching) — only the
+      // visible label is translated.
+      html += `<label class="country-check"><input type="checkbox" value="${country}" ${checked}>${translateCountry(country)}</label>`;
     });
     html += `</div>`;
   });
   box.innerHTML = html;
-})();
+}
+renderCountryChecklist();
+document.addEventListener('eicc:languageChanged', renderCountryChecklist);
 
 // ---------- country interest picker ----------
 const countryCheckboxes = () => Array.from(document.querySelectorAll('#countriesBox input[type="checkbox"]'));
@@ -535,20 +582,20 @@ detailsForm.addEventListener('submit', async (e)=>{
   document.getElementById('confirmEmail').textContent = values.email;
   document.getElementById('confirmCompany').textContent = values.company;
   document.getElementById('confirmCountries').textContent = selectedCountries.length
-    ? selectedCountries.join(', ')
-    : 'the full digest (all 29 jurisdictions)';
+    ? selectedCountries.map(translateCountry).join(', ')
+    : t('confirm.fullDigest', 'the full digest (all 29 jurisdictions)');
   document.getElementById('confirmPrice').textContent = isRecurring
-    ? ('$' + chosenPrice + '/year, renewing automatically')
-    : ('$' + chosenPrice + ', one-time for 12 months');
+    ? ('$' + chosenPrice + t('confirm.perYearRenewing', '/year, renewing automatically'))
+    : ('$' + chosenPrice + t('confirm.oneTimeTwelveMonths', ', one-time for 12 months'));
 
   const badge = document.getElementById('confirmPlanBadge');
   const fineprint = document.getElementById('confirmFineprint');
   if(isRecurring){
-    badge.textContent = 'Recurring — renews yearly';
-    fineprint.textContent = "You'll be taken to a secure Lemon Squeezy checkout window. This plan renews automatically each year until you cancel — you can cancel anytime from the link in your receipt email.";
+    badge.textContent = t('confirm.badgeRecurring', 'Recurring — renews yearly');
+    fineprint.textContent = t('confirm.fineprintRecurring', "You'll be taken to a secure Lemon Squeezy checkout window. This plan renews automatically each year until you cancel — you can cancel anytime from the link in your receipt email.");
   } else {
-    badge.textContent = 'One-time — no auto-renewal';
-    fineprint.textContent = "You'll be taken to a secure Lemon Squeezy checkout window. This is a single payment covering the next 12 months — no card is kept on file and nothing renews automatically.";
+    badge.textContent = t('confirm.badgeOnetime', 'One-time — no auto-renewal');
+    fineprint.textContent = t('confirm.fineprintOnetime', "You'll be taken to a secure Lemon Squeezy checkout window. This is a single payment covering the next 12 months — no card is kept on file and nothing renews automatically.");
   }
 
   detailsStep.classList.remove('visible');

@@ -1,0 +1,25 @@
+{
+  "_meta": { "language": "de", "reviewed": true },
+  "backLink": "← Zurück zur Übersicht",
+  "form": {
+    "eyebrow": "Eine Lücke oder einen Fehler entdeckt?",
+    "title": "Feedback senden",
+    "sub": "Fehlt ein Land, ist ein Datum veraltet, oder ist ein Portal-Link defekt? Lassen Sie es uns wissen.",
+    "emailLabel": "E-Mail-Adresse",
+    "emailError": "Eine gültige E-Mail-Adresse ist erforderlich",
+    "subjectLabel": "Betreff",
+    "subjectError": "Betreff ist erforderlich",
+    "commentsLabel": "Kommentare",
+    "commentsError": "Bitte fügen Sie einen Kommentar hinzu",
+    "submitButton": "Feedback senden",
+    "fineprint": "Diese Seite läuft vollständig in Ihrem Browser — verbinden Sie das Formular mit einem echten Posteingang, Helpdesk oder Webhook, um es live zu schalten."
+  },
+  "success": {
+    "stamp": "Erhalten",
+    "thanks": "Danke — Ihr Feedback wurde vermerkt.",
+    "followUp": "Wir melden uns bei Bedarf unter",
+    "ifNeeded": "zurück.",
+    "backToTracker": "Zurück zur Übersicht",
+    "sendAnother": "Weiteres senden"
+  }
+}

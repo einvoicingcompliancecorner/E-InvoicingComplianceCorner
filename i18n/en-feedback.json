@@ -1,0 +1,25 @@
+{
+  "_meta": { "language": "en", "reviewed": true },
+  "backLink": "← Back to global tracker",
+  "form": {
+    "eyebrow": "Spot a gap or an error?",
+    "title": "Send feedback",
+    "sub": "Missing a country, an outdated date, or a broken portal link? Let us know.",
+    "emailLabel": "Email address",
+    "emailError": "A valid email address is required",
+    "subjectLabel": "Subject",
+    "subjectError": "Subject is required",
+    "commentsLabel": "Comments",
+    "commentsError": "Please add a comment",
+    "submitButton": "Send feedback",
+    "fineprint": "This page runs entirely in your browser — connect the form to a real inbox, helpdesk, or webhook to go live."
+  },
+  "success": {
+    "stamp": "Received",
+    "thanks": "Thanks — your feedback has been noted.",
+    "followUp": "We'll follow up at",
+    "ifNeeded": "if needed.",
+    "backToTracker": "Back to tracker",
+    "sendAnother": "Send another"
+  }
+}

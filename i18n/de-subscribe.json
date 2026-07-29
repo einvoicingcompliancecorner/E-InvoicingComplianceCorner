@@ -1,0 +1,75 @@
+{
+  "_meta": { "language": "de", "reviewed": true },
+  "backLink": "← Zurück zur Übersicht",
+  "benefits": {
+    "eyebrow": "Nie wieder überrascht werden",
+    "title": "Erfahren Sie sofort, wenn eine Regierung die Regeln ändert",
+    "intro": "E-Invoicing-Schwellenwerte, Wellen-Nummern und Stichtage ändern sich ständig — oft mit wenig öffentlicher Vorankündigung. Einmal abonniert, landet jede Regierungsaktualisierung oder -ankündigung aus den 29 von uns erfassten Rechtsordnungen automatisch in Ihrem Posteingang, in klarer Sprache, bevor sie Ihr Team überrascht.",
+    "sampleLink": "👀 Echte Beispielausgabe ansehen (Januar 2026) →",
+    "stat1": "Erfasste Rechtsordnungen",
+    "stat2": "Versandrhythmus",
+    "stat3": "Spam zwischen den Ausgaben",
+    "item1": { "title": "Echte Regierungsankündigungen, zusammengefasst", "body": "Jede neue Vorgabe, jede verschobene Frist und jede Sanktionsänderung, die wir erfassen, in klarer Sprache geschrieben — kein Rechtstext, der aus einer Pressemitteilung der Steuerbehörde kopiert wurde." },
+    "item2": { "title": "Wählen Sie genau die Länder, die Sie interessieren", "body": "Teilen Sie uns mit, welche der 29 Rechtsordnungen für Ihr Unternehmen relevant sind, und Ihre monatliche Benachrichtigungs-E-Mail sagt Ihnen konkret, ob sie vorkamen — oder erhalten Sie den vollständigen globalen Digest, wenn Sie lieber alles sehen möchten." },
+    "item3": { "title": "Ein vollständiges, durchsuchbares Archiv", "body": "Jede vergangene Ausgabe liegt in einem durchsuchbaren, filterbaren Archiv — schauen Sie jederzeit auf jeden Monat, jedes Land zurück, nicht nur auf das, was zuletzt in Ihrem Posteingang landete." },
+    "item4": { "title": "Bevorzugter Zugang zu neuen Wissensinhalten", "body": "Neue Länderanalysen und Wissensleitfäden werden Abonnenten zuerst angezeigt, sobald wir sie veröffentlichen." }
+  },
+  "card": {
+    "eyebrow": "Abonnieren",
+    "title": "Wählen Sie Ihren Plan",
+    "sub": "Eine E-Mail pro Monat, plus eine kurze Benachrichtigung, wann immer eine neue Ausgabe zu Ihren Ländern erscheint.",
+    "planLabel": "Wählen Sie Ihre Zahlungsweise",
+    "planRecurring": { "name": "Wiederkehrend", "desc": "Verlängert sich automatisch jedes Jahr. Jederzeit kündbar — kein erneutes Abonnieren nötig." },
+    "planOnetime": { "name": "Einmalig", "desc": "Deckt 12 Monate ab und endet dann einfach. Keine automatische Verlängerung, keine hinterlegte Karte." },
+    "form": {
+      "firstName": "Vorname", "firstNameError": "Vorname ist erforderlich",
+      "lastName": "Nachname", "lastNameError": "Nachname ist erforderlich",
+      "email": "E-Mail-Adresse", "emailError": "Eine gültige E-Mail-Adresse ist erforderlich",
+      "jobTitle": "Position", "jobTitleError": "Position ist erforderlich",
+      "company": "Firmenname", "companyError": "Firmenname ist erforderlich"
+    },
+    "countriesLabel": "Für welche Länder möchten Sie Benachrichtigungen erhalten?",
+    "countriesHint": "Optional — lassen Sie alles unmarkiert, und wir senden Ihnen den vollständigen monatlichen Digest für alle 29 Rechtsordnungen.",
+    "countriesMissing": "Die Länderauswahl ist vorübergehend nicht verfügbar — Sie erhalten trotzdem den vollständigen monatlichen Digest. (Fehlende Datei: countries.js)",
+    "selectAll": "Alle auswählen",
+    "clearAll": "Alle abwählen",
+    "submitButton": "Weiter zur sicheren Zahlung",
+    "fineprint": "Die Zahlung wird von Lemon Squeezy, unserem Handelsvertreter, abgewickelt — sie erheben und führen jede anfallende Umsatzsteuer/GST für diesen Verkauf ab, sodass Ihnen nie separat Steuern berechnet werden. Wir sehen oder speichern Ihre Kartendaten niemals. Siehe unsere <a href=\"privacy-policy.html\" style=\"color:#b5432f; text-decoration:underline;\">Datenschutzerklärung</a>, um zu erfahren, wie Ihre Daten verarbeitet werden."
+  },
+  "confirm": {
+    "eyebrow": "Noch ein Schritt",
+    "title": "Bestätigen &amp; bezahlen",
+    "subscribingAs": "Abonnieren als",
+    "for": "für",
+    "alertsFor": "Benachrichtigungen für:",
+    "fullDigest": "den vollständigen Digest (alle 29 Rechtsordnungen)",
+    "perYearRenewing": "/Jahr, mit automatischer Verlängerung",
+    "oneTimeTwelveMonths": ", einmalig für 12 Monate",
+    "badgeRecurring": "Wiederkehrend — verlängert sich jährlich",
+    "badgeOnetime": "Einmalig — keine automatische Verlängerung",
+    "fineprintRecurring": "Sie werden zu einem sicheren Lemon-Squeezy-Zahlungsfenster weitergeleitet. Dieser Plan verlängert sich automatisch jedes Jahr, bis Sie kündigen — Sie können jederzeit über den Link in Ihrer Quittungs-E-Mail kündigen.",
+    "fineprintOnetime": "Sie werden zu einem sicheren Lemon-Squeezy-Zahlungsfenster weitergeleitet. Dies ist eine einmalige Zahlung für die nächsten 12 Monate — es wird keine Karte hinterlegt und nichts verlängert sich automatisch.",
+    "payButton": "Sichere Zahlung abschließen →",
+    "editLink": "← Meine Angaben oder meinen Plan bearbeiten"
+  },
+  "modal": {
+    "close": "✕ Schließen",
+    "badge": "Echte Beispielausgabe — kein Mockup",
+    "fineprint": "Dies ist die tatsächliche erste Ausgabe, die an Abonnenten gesendet wurde, genau wie veröffentlicht — nichts wurde für diese Vorschau bearbeitet oder gekürzt. Jeder Abonnent erhält Zugang zum vollständigen durchsuchbaren Archiv, nicht nur zu dieser einen Ausgabe."
+  },
+  "regionNames": {
+    "Europe": "Europa",
+    "Middle East": "Naher Osten",
+    "Asia-Pacific": "Asien-Pazifik",
+    "Americas": "Amerika"
+  },
+  "countryNames": {
+    "European Union": "Europäische Union", "Belgium": "Belgien", "Germany": "Deutschland", "France": "Frankreich",
+    "Poland": "Polen", "Italy": "Italien", "Saudi Arabia": "Saudi-Arabien", "Malaysia": "Malaysia",
+    "India": "Indien", "Brazil": "Brasilien", "Spain": "Spanien", "United Kingdom": "Vereinigtes Königreich",
+    "Romania": "Rumänien", "United Arab Emirates": "Vereinigte Arabische Emirate", "Mexico": "Mexiko",
+    "Australia": "Australien", "New Zealand": "Neuseeland", "Singapore": "Singapur", "Slovakia": "Slowakei",
+    "Peru": "Peru", "Chile": "Chile", "Ireland": "Irland", "Norway": "Norwegen", "Denmark": "Dänemark",
+    "Sweden": "Schweden", "China": "China", "Croatia": "Kroatien", "United States": "Vereinigte Staaten", "Canada": "Kanada"
+  }
+}

@@ -1,0 +1,75 @@
+{
+  "_meta": { "language": "fr", "reviewed": true },
+  "backLink": "← Retour au suivi global",
+  "benefits": {
+    "eyebrow": "Ne soyez plus jamais pris au dépourvu",
+    "title": "Soyez averti dès qu'un gouvernement change les règles",
+    "intro": "Les seuils de facturation électronique, les numéros de vague et les dates de mise en service changent constamment — souvent avec peu de préavis public. Abonnez-vous une fois, et chaque mise à jour ou annonce gouvernementale des 29 juridictions que nous suivons arrive automatiquement dans votre boîte de réception, en langage clair, avant qu'elle ne prenne votre équipe au dépourvu.",
+    "sampleLink": "👀 Voir un véritable numéro d'exemple (janvier 2026) →",
+    "stat1": "Juridictions suivies",
+    "stat2": "Cadence de la synthèse",
+    "stat3": "Spam entre les numéros",
+    "item1": { "title": "De véritables annonces gouvernementales, synthétisées", "body": "Chaque nouvelle obligation, échéance modifiée et changement de sanction que nous suivons, rédigé en langage clair — pas un texte juridique copié-collé d'un communiqué de presse d'une administration fiscale." },
+    "item2": { "title": "Choisissez exactement les pays qui vous concernent", "body": "Indiquez-nous lesquelles des 29 juridictions concernent votre entreprise, et votre e-mail de notification mensuel vous dira précisément si elles ont été concernées — ou recevez la synthèse mondiale complète si vous préférez tout voir." },
+    "item3": { "title": "Une archive complète et consultable", "body": "Chaque numéro passé se trouve dans une archive consultable et filtrable — consultez n'importe quel mois, n'importe quel pays, à tout moment, pas seulement ce qui est arrivé le plus récemment dans votre boîte de réception." },
+    "item4": { "title": "Accès prioritaire aux nouveaux contenus pédagogiques", "body": "Les nouvelles analyses par pays et guides pédagogiques sont signalés en priorité aux abonnés, dès leur publication." }
+  },
+  "card": {
+    "eyebrow": "S'abonner",
+    "title": "Choisissez votre formule",
+    "sub": "Un e-mail par mois, plus une courte alerte chaque fois qu'un nouveau numéro concernant vos pays est publié.",
+    "planLabel": "Choisissez votre mode de paiement",
+    "planRecurring": { "name": "Récurrent", "desc": "Se renouvelle automatiquement chaque année. Annulez à tout moment — pas besoin de penser à vous réabonner." },
+    "planOnetime": { "name": "Paiement unique", "desc": "Couvre 12 mois, puis se termine simplement. Pas de renouvellement automatique, aucune carte conservée." },
+    "form": {
+      "firstName": "Prénom", "firstNameError": "Le prénom est requis",
+      "lastName": "Nom", "lastNameError": "Le nom est requis",
+      "email": "Adresse e-mail", "emailError": "Une adresse e-mail valide est requise",
+      "jobTitle": "Fonction", "jobTitleError": "La fonction est requise",
+      "company": "Nom de l'entreprise", "companyError": "Le nom de l'entreprise est requis"
+    },
+    "countriesLabel": "Pour quels pays souhaitez-vous recevoir des alertes ?",
+    "countriesHint": "Facultatif — laissez tout décoché et nous vous enverrons la synthèse mensuelle complète couvrant les 29 juridictions.",
+    "countriesMissing": "La sélection de pays est temporairement indisponible — vous recevrez tout de même la synthèse mensuelle complète. (Fichier manquant : countries.js)",
+    "selectAll": "Tout sélectionner",
+    "clearAll": "Tout désélectionner",
+    "submitButton": "Continuer vers le paiement sécurisé",
+    "fineprint": "Le paiement est géré par Lemon Squeezy, notre marchand officiel — ils collectent et reversent toute TVA/TPS applicable à cette vente, de sorte que la taxe ne vous est jamais facturée séparément. Nous ne voyons ni ne stockons jamais les détails de votre carte. Consultez notre <a href=\"privacy-policy.html\" style=\"color:#b5432f; text-decoration:underline;\">politique de confidentialité</a> pour savoir comment vos données sont traitées."
+  },
+  "confirm": {
+    "eyebrow": "Encore une étape",
+    "title": "Confirmer &amp; payer",
+    "subscribingAs": "Abonnement au nom de",
+    "for": "pour",
+    "alertsFor": "Alertes pour :",
+    "fullDigest": "la synthèse complète (les 29 juridictions)",
+    "perYearRenewing": "/an, avec renouvellement automatique",
+    "oneTimeTwelveMonths": ", paiement unique pour 12 mois",
+    "badgeRecurring": "Récurrent — se renouvelle annuellement",
+    "badgeOnetime": "Paiement unique — sans renouvellement automatique",
+    "fineprintRecurring": "Vous serez redirigé vers une fenêtre de paiement sécurisée Lemon Squeezy. Cette formule se renouvelle automatiquement chaque année jusqu'à annulation — vous pouvez annuler à tout moment via le lien de votre e-mail de reçu.",
+    "fineprintOnetime": "Vous serez redirigé vers une fenêtre de paiement sécurisée Lemon Squeezy. Il s'agit d'un paiement unique couvrant les 12 prochains mois — aucune carte n'est conservée et rien ne se renouvelle automatiquement.",
+    "payButton": "Finaliser le paiement sécurisé →",
+    "editLink": "← Modifier mes informations ou ma formule"
+  },
+  "modal": {
+    "close": "✕ Fermer",
+    "badge": "Véritable numéro d'exemple — pas une maquette",
+    "fineprint": "Il s'agit du tout premier numéro réellement envoyé aux abonnés, exactement tel que publié — rien n'a été modifié ni raccourci pour cet aperçu. Chaque abonné a accès à l'archive complète et consultable, pas seulement à ce numéro."
+  },
+  "regionNames": {
+    "Europe": "Europe",
+    "Middle East": "Moyen-Orient",
+    "Asia-Pacific": "Asie-Pacifique",
+    "Americas": "Amériques"
+  },
+  "countryNames": {
+    "European Union": "Union européenne", "Belgium": "Belgique", "Germany": "Allemagne", "France": "France",
+    "Poland": "Pologne", "Italy": "Italie", "Saudi Arabia": "Arabie saoudite", "Malaysia": "Malaisie",
+    "India": "Inde", "Brazil": "Brésil", "Spain": "Espagne", "United Kingdom": "Royaume-Uni",
+    "Romania": "Roumanie", "United Arab Emirates": "Émirats arabes unis", "Mexico": "Mexique",
+    "Australia": "Australie", "New Zealand": "Nouvelle-Zélande", "Singapore": "Singapour", "Slovakia": "Slovaquie",
+    "Peru": "Pérou", "Chile": "Chili", "Ireland": "Irlande", "Norway": "Norvège", "Denmark": "Danemark",
+    "Sweden": "Suède", "China": "Chine", "Croatia": "Croatie", "United States": "États-Unis", "Canada": "Canada"
+  }
+}

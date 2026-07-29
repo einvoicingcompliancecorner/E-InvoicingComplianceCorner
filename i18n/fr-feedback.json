@@ -1,0 +1,25 @@
+{
+  "_meta": { "language": "fr", "reviewed": true },
+  "backLink": "← Retour au suivi global",
+  "form": {
+    "eyebrow": "Vous avez repéré une lacune ou une erreur ?",
+    "title": "Envoyer un commentaire",
+    "sub": "Un pays manquant, une date obsolète ou un lien de portail cassé ? Faites-le-nous savoir.",
+    "emailLabel": "Adresse e-mail",
+    "emailError": "Une adresse e-mail valide est requise",
+    "subjectLabel": "Objet",
+    "subjectError": "L'objet est requis",
+    "commentsLabel": "Commentaires",
+    "commentsError": "Veuillez ajouter un commentaire",
+    "submitButton": "Envoyer le commentaire",
+    "fineprint": "Cette page fonctionne entièrement dans votre navigateur — connectez le formulaire à une véritable boîte de réception, un helpdesk ou un webhook pour la mettre en service."
+  },
+  "success": {
+    "stamp": "Reçu",
+    "thanks": "Merci — votre commentaire a bien été pris en compte.",
+    "followUp": "Nous vous recontacterons à",
+    "ifNeeded": "si nécessaire.",
+    "backToTracker": "Retour au suivi",
+    "sendAnother": "Envoyer un autre"
+  }
+}

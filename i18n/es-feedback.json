@@ -1,0 +1,25 @@
+{
+  "_meta": { "language": "es", "reviewed": true },
+  "backLink": "← Volver al panel general",
+  "form": {
+    "eyebrow": "¿Ha detectado una carencia o un error?",
+    "title": "Enviar comentarios",
+    "sub": "¿Falta un país, hay una fecha desactualizada o un enlace de portal roto? Cuéntenoslo.",
+    "emailLabel": "Correo electrónico",
+    "emailError": "Se requiere una dirección de correo electrónico válida",
+    "subjectLabel": "Asunto",
+    "subjectError": "El asunto es obligatorio",
+    "commentsLabel": "Comentarios",
+    "commentsError": "Por favor, añada un comentario",
+    "submitButton": "Enviar comentarios",
+    "fineprint": "Esta página funciona enteramente en su navegador — conecte el formulario a una bandeja de entrada, un servicio de asistencia o un webhook real para ponerla en producción."
+  },
+  "success": {
+    "stamp": "Recibido",
+    "thanks": "Gracias — hemos registrado sus comentarios.",
+    "followUp": "Le responderemos en",
+    "ifNeeded": "si es necesario.",
+    "backToTracker": "Volver al seguimiento",
+    "sendAnother": "Enviar otro"
+  }
+}
