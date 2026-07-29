@@ -59,7 +59,7 @@
      below with those two real URLs.
 
   4. Replace LSQ_PRICE_RECURRING and LSQ_PRICE_ONETIME below with
-     your actual prices (plain numbers, e.g. 12 for $12).
+     your actual prices (plain numbers, e.g. 12 for £12).
 
   5. Optional, in the Lemon Squeezy dashboard (Settings → Checkout)
      for each product:
@@ -337,13 +337,13 @@
         <label class="plan-option selected" id="planRecurringLabel">
           <input type="radio" name="plan" value="recurring" id="planRecurring" checked>
           <div class="po-name"><span class="po-radio"></span><span data-i18n="card.planRecurring.name">Recurring</span></div>
-          <div class="po-price" id="priceRecurring">$10/yr</div>
+          <div class="po-price" id="priceRecurring">£10/yr</div>
           <div class="po-desc" data-i18n="card.planRecurring.desc">Renews automatically each year. Cancel anytime — no need to remember to resubscribe.</div>
         </label>
         <label class="plan-option" id="planOnetimeLabel">
           <input type="radio" name="plan" value="onetime" id="planOnetime">
           <div class="po-name"><span class="po-radio"></span><span data-i18n="card.planOnetime.name">One-time</span></div>
-          <div class="po-price" id="priceOnetime">$12</div>
+          <div class="po-price" id="priceOnetime">£12</div>
           <div class="po-desc" data-i18n="card.planOnetime.desc">Covers 12 months, then simply ends. No auto-renewal, no card kept on file.</div>
         </label>
       </div>
@@ -455,8 +455,8 @@ const LSQ_CHECKOUT_URL_ONETIME   = "https://YOUR-STORE.lemonsqueezy.com/buy/YOUR
 const LSQ_PRICE_RECURRING = 10; // TODO: replace with your real recurring annual price
 const LSQ_PRICE_ONETIME   = 12; // TODO: replace with your real one-time price (can differ from recurring)
 
-document.getElementById('priceRecurring').textContent = '$' + LSQ_PRICE_RECURRING + '/yr';
-document.getElementById('priceOnetime').textContent = '$' + LSQ_PRICE_ONETIME;
+document.getElementById('priceRecurring').textContent = '£' + LSQ_PRICE_RECURRING + '/yr';
+document.getElementById('priceOnetime').textContent = '£' + LSQ_PRICE_ONETIME;
 
 const detailsStep = document.getElementById('detailsStep');
 const checkoutStep = document.getElementById('checkoutStep');
@@ -594,8 +594,8 @@ detailsForm.addEventListener('submit', async (e)=>{
     ? selectedCountries.map(translateCountry).join(', ')
     : t('confirm.fullDigest', 'the full digest (all 29 jurisdictions)');
   document.getElementById('confirmPrice').textContent = isRecurring
-    ? ('$' + chosenPrice + t('confirm.perYearRenewing', '/year, renewing automatically'))
-    : ('$' + chosenPrice + t('confirm.oneTimeTwelveMonths', ', one-time for 12 months'));
+    ? ('£' + chosenPrice + t('confirm.perYearRenewing', '/year, renewing automatically'))
+    : ('£' + chosenPrice + t('confirm.oneTimeTwelveMonths', ', one-time for 12 months'));
 
   const badge = document.getElementById('confirmPlanBadge');
   const fineprint = document.getElementById('confirmFineprint');
