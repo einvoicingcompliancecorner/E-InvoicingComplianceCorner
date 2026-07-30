@@ -1347,7 +1347,7 @@ function renderIssue(story, lang) {
   <div class="topbar">
     <a class="back-link" href="/members/archive" style="margin:0;">${t(lang, "backToArchive")}</a>
     <div style="display:flex; align-items:center; gap:16px;">
-      ${renderLangSwitcher(lang, "/members/archive")}
+      ${renderLangSwitcher(lang, `/members/archive/${encodeURIComponent(story.id)}`)}
       <form method="POST" action="/members/logout"><button type="submit" class="logout-btn">${t(lang, "logout")}</button></form>
     </div>
   </div>
