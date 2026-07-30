@@ -980,7 +980,7 @@ const BASE_STYLE = `
   }
   .archive-search:focus{outline:2px solid var(--soon); outline-offset:0;}
   .archive-search::placeholder{color:var(--muted);}
-  .country-checkboxes{display:flex; flex-wrap:wrap; gap:6px 14px; margin-bottom:22px;}
+  .country-checkboxes{display:flex; flex-direction:column; gap:5px;}
   .country-check-filter{
     display:inline-flex; align-items:center; gap:6px; font-family:'IBM Plex Mono',monospace; font-size:11.5px;
     color:var(--muted); cursor:pointer; user-select:none;
@@ -1006,6 +1006,7 @@ const BASE_STYLE = `
   .region-group{padding:10px 0; border-top:1px dashed var(--paper-line);}
   .region-group:first-child{border-top:none;}
   .region-group-label{font-family:'IBM Plex Mono',monospace; font-size:10px; text-transform:uppercase; letter-spacing:0.07em; color:#8a7d5a; margin:0 0 6px;}
+  .region-columns{display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:16px 24px; margin-bottom:22px;}
   .country-check{display:flex; align-items:center; gap:8px; padding:3px 0; font-size:12.8px; color:#241d10;}
   .country-check input{width:auto; margin:0;}
   .prefs-actions{display:flex; gap:14px; margin:10px 0;}
@@ -1100,7 +1101,7 @@ function renderArchiveList(stories, regionByCountryName, englishNameByDisplayNam
   // or this would silently never match on any non-English page.
   const preferredSet = new Set(preferredCountries || []);
 
-  const checkboxesHtml = orderedRegions
+  const checkboxesHtml = `<div class="region-columns">${orderedRegions
     .map((region) => {
       const checks = countriesByRegion[region]
         .map((c) => {
@@ -1108,9 +1109,9 @@ function renderArchiveList(stories, regionByCountryName, englishNameByDisplayNam
           return `<label class="country-check-filter"><input type="checkbox" class="country-filter-cb" value="${escapeHtml(c)}" ${isPreferred ? "checked" : ""}>${escapeHtml(c)}</label>`;
         })
         .join("");
-      return `<div class="region-group"><p class="region-group-label">${escapeHtml(translateRegionName(lang, region))}</p><div class="country-checkboxes">${checks}</div></div>`;
+      return `<div><p class="region-group-label">${escapeHtml(translateRegionName(lang, region))}</p><div class="country-checkboxes">${checks}</div></div>`;
     })
-    .join("");
+    .join("")}</div>`;
 
   // Ship the story data to the client as JSON so search/filter can run
   // instantly without a round-trip to the Worker for every keystroke.
