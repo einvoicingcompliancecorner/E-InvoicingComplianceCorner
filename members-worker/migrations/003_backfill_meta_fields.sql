@@ -1,3 +1,7 @@
+-- Re-generated to force a fresh upload (Wrangler appeared to be
+-- reusing a cached copy of the previous attempt). See conversation
+-- history for context — no content below has changed otherwise.
+
 -- Incremental patch: adds _meta.* fields (language, reviewed, and
 -- for the tracker namespace specifically, label and reviewedNote)
 -- that were mistakenly excluded from 001's original flatten logic.
