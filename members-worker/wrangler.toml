@@ -38,6 +38,19 @@ binding = "ISSUES"
 id = "6142dc4affb945b487c4980c0b9b33bd"
 
 # ----------------------------------------------------------------
+# D1 database — translations (tracker, subscribe, education pages,
+# country deep dives) and newsletter story content. See
+# D1-MIGRATION-PLAN.md for the full design. Not yet used by any code
+# in this file — this binding is wired up ahead of the later data-
+# access rewrite described in that plan, and is used directly by the
+# build-time translation-generation script via `wrangler d1 execute`.
+# ----------------------------------------------------------------
+[[d1_databases]]
+binding = "eicc_content"
+database_name = "eicc-content"
+database_id = "d1d10bd0-e90a-44a3-9494-a63689e8d32e"
+
+# ----------------------------------------------------------------
 # Cron Trigger — fires the scheduled() handler in src/index.js once
 # a month, which sends every active subscriber a short, personalised
 # notification about that month's issue (not the full digest itself).
