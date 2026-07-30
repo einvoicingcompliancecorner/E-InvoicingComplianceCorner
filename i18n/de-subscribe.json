@@ -16,11 +16,8 @@
   },
   "card": {
     "eyebrow": "Abonnieren",
-    "title": "Wählen Sie Ihren Plan",
-    "sub": "Eine E-Mail pro Monat, plus eine kurze Benachrichtigung, wann immer eine neue Ausgabe zu Ihren Ländern erscheint.",
-    "planLabel": "Wählen Sie Ihre Zahlungsweise",
-    "planRecurring": { "name": "Wiederkehrend", "desc": "Verlängert sich automatisch jedes Jahr. Jederzeit kündbar — kein erneutes Abonnieren nötig." },
-    "planOnetime": { "name": "Einmalig", "desc": "Deckt 12 Monate ab und endet dann einfach. Keine automatische Verlängerung, keine hinterlegte Karte." },
+    "title": "Los geht's",
+    "sub": "Eine E-Mail pro Monat, plus eine kurze Benachrichtigung, wann immer eine neue Ausgabe zu Ihren Ländern erscheint. Ob wiederkehrend oder einmalig, wählen Sie im nächsten, sicheren Schritt.",
     "form": {
       "firstName": "Vorname", "firstNameError": "Vorname ist erforderlich",
       "lastName": "Nachname", "lastNameError": "Nachname ist erforderlich",
@@ -38,19 +35,14 @@
   },
   "confirm": {
     "eyebrow": "Noch ein Schritt",
-    "title": "Bestätigen &amp; bezahlen",
+    "title": "Bestätigen Sie Ihre Angaben",
     "subscribingAs": "Abonnieren als",
     "for": "für",
     "alertsFor": "Benachrichtigungen für:",
     "fullDigest": "den vollständigen Digest (alle 29 Rechtsordnungen)",
-    "perYearRenewing": "/Jahr, mit automatischer Verlängerung",
-    "oneTimeTwelveMonths": ", einmalig für 12 Monate",
-    "badgeRecurring": "Wiederkehrend — verlängert sich jährlich",
-    "badgeOnetime": "Einmalig — keine automatische Verlängerung",
-    "fineprintRecurring": "Sie werden zu einem sicheren Lemon-Squeezy-Zahlungsfenster weitergeleitet. Dieser Plan verlängert sich automatisch jedes Jahr, bis Sie kündigen — Sie können jederzeit über den Link in Ihrer Quittungs-E-Mail kündigen.",
-    "fineprintOnetime": "Sie werden zu einem sicheren Lemon-Squeezy-Zahlungsfenster weitergeleitet. Dies ist eine einmalige Zahlung für die nächsten 12 Monate — es wird keine Karte hinterlegt und nichts verlängert sich automatisch.",
-    "payButton": "Sichere Zahlung abschließen →",
-    "editLink": "← Meine Angaben oder meinen Plan bearbeiten"
+    "fineprint": "Sie werden zu einem sicheren Lemon-Squeezy-Zahlungsfenster weitergeleitet, in dem Sie zwischen wiederkehrender und einmaliger Zahlung wählen und Ihren Kauf abschließen können.",
+    "payButton": "Weiter zur Zahlung →",
+    "editLink": "← Meine Angaben bearbeiten"
   },
   "modal": {
     "close": "✕ Schließen",

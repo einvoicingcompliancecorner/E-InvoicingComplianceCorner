@@ -16,11 +16,8 @@
   },
   "card": {
     "eyebrow": "Suscríbase",
-    "title": "Elija su plan",
-    "sub": "Un correo al mes, más una breve alerta cada vez que se publique un nuevo número que cubra sus países.",
-    "planLabel": "Elija cómo desea pagar",
-    "planRecurring": { "name": "Recurrente", "desc": "Se renueva automáticamente cada año. Cancele cuando quiera — no necesita recordar volver a suscribirse." },
-    "planOnetime": { "name": "Pago único", "desc": "Cubre 12 meses y luego simplemente termina. Sin renovación automática, sin tarjeta guardada." },
+    "title": "Empecemos",
+    "sub": "Un correo al mes, más una breve alerta cada vez que se publique un nuevo número que cubra sus países. Elegirá pago recurrente o único en el siguiente paso, seguro.",
     "form": {
       "firstName": "Nombre", "firstNameError": "El nombre es obligatorio",
       "lastName": "Apellidos", "lastNameError": "Los apellidos son obligatorios",
@@ -38,19 +35,14 @@
   },
   "confirm": {
     "eyebrow": "Un paso más",
-    "title": "Confirmar y pagar",
+    "title": "Confirme sus datos",
     "subscribingAs": "Suscribiéndose como",
     "for": "para",
     "alertsFor": "Alertas para:",
     "fullDigest": "el resumen completo (las 29 jurisdicciones)",
-    "perYearRenewing": "/año, con renovación automática",
-    "oneTimeTwelveMonths": ", pago único por 12 meses",
-    "badgeRecurring": "Recurrente — se renueva anualmente",
-    "badgeOnetime": "Pago único — sin renovación automática",
-    "fineprintRecurring": "Se le llevará a una ventana de pago segura de Lemon Squeezy. Este plan se renueva automáticamente cada año hasta que lo cancele — puede cancelarlo en cualquier momento desde el enlace de su correo de recibo.",
-    "fineprintOnetime": "Se le llevará a una ventana de pago segura de Lemon Squeezy. Este es un pago único que cubre los próximos 12 meses — no se guarda ninguna tarjeta y nada se renueva automáticamente.",
-    "payButton": "Completar pago seguro →",
-    "editLink": "← Editar mis datos o plan"
+    "fineprint": "Se le llevará a una ventana de pago segura de Lemon Squeezy, donde podrá elegir pago recurrente o único y completar su compra.",
+    "payButton": "Continuar al pago →",
+    "editLink": "← Editar mis datos"
   },
   "modal": {
     "close": "✕ Cerrar",

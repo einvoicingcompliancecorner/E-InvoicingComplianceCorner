@@ -28,41 +28,37 @@
   ================================================================
   SETUP NEEDED before this page can take real payments:
 
-  This page offers TWO billing options, which means you need TWO
-  separate products in Lemon Squeezy:
+  This page offers ONE checkout, backed by a single Lemon Squeezy
+  PRODUCT with TWO VARIANTS — a recurring annual subscription and
+  a one-time payment. Recurring vs. one-time is deliberately chosen
+  by the customer on Lemon Squeezy's own checkout page, not on this
+  page — Lemon Squeezy always shows all variants of a product at
+  checkout regardless of which variant's link you share, so asking
+  the customer to choose again here would just be a redundant,
+  slightly annoying second selection.
 
-  1a. "Compliance Digest — Recurring" — create this as a
-      SUBSCRIPTION product (billing interval: yearly). It renews
-      automatically each year until the customer cancels.
+  1. In Lemon Squeezy, create ONE product with two variants:
+     - "Recurring" — a SUBSCRIPTION variant (billing interval: yearly)
+     - "One-time" — a SINGLE PAYMENT variant
 
-  1b. "Compliance Digest — One-time" — create this as a
-      SINGLE PAYMENT product. It charges once and does not renew;
-      if you want it to functionally "expire" after 12 months
-      (e.g. stop sending the newsletter), that's something you
-      handle on your side when you process the sale, since Lemon
-      Squeezy has no built-in concept of a single payment "lapsing."
+     Both can be priced the same or differently — entirely up to you.
 
-  Both can be priced the same or differently — entirely up to you.
+     Why annual (for the recurring variant), not monthly: Lemon
+     Squeezy's fee is 5.5% + $0.50 PER CHARGE. On a $1/month plan
+     billed monthly, that flat $0.50 eats more than half of every
+     payment (12 charges/year). Billing the same low price once a
+     year instead nets you noticeably more, for the same
+     monthly-equivalent price the subscriber sees.
 
-  Why annual (for the recurring option), not monthly: Lemon
-  Squeezy's fee is 5.5% + $0.50 PER CHARGE. On a $1/month plan
-  billed monthly, that flat $0.50 eats more than half of every
-  payment (12 charges/year). Billing the same low price once a
-  year instead nets you noticeably more, for the same
-  monthly-equivalent price the subscriber sees.
-
-  2. Grab EACH product's checkout URL from Lemon Squeezy
-     (Products → your product → Copy checkout link). Looks like:
+  2. Grab the product's (not a specific variant's) checkout URL from
+     Lemon Squeezy — Products → your product → Share → copy the link.
+     Looks like:
      https://YOUR-STORE.lemonsqueezy.com/buy/XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
 
-  3. Replace LSQ_CHECKOUT_URL_RECURRING and LSQ_CHECKOUT_URL_ONETIME
-     below with those two real URLs.
+  3. Replace LSQ_CHECKOUT_URL below with that one real URL.
 
-  4. Replace LSQ_PRICE_RECURRING and LSQ_PRICE_ONETIME below with
-     your actual prices (plain numbers, e.g. 12 for £12).
-
-  5. Optional, in the Lemon Squeezy dashboard (Settings → Checkout)
-     for each product:
+  4. Optional, in the Lemon Squeezy dashboard (Settings → Checkout)
+     for the product:
      - Set a "Redirect URL" back to this site so buyers land
        somewhere branded after paying.
      - Add custom checkout fields if you want to capture Title /
@@ -329,24 +325,8 @@
     <!-- STEP 1: choose plan + lead capture -->
     <div id="detailsStep" class="checkout-step visible">
       <p class="eyebrow" data-i18n="card.eyebrow">Subscribe</p>
-      <h1 class="title" data-i18n="card.title">Choose your plan</h1>
-      <p class="sub" data-i18n="card.sub">One email a month, plus a short alert whenever a new issue covering your countries goes live.</p>
-
-      <p class="plan-label" data-i18n="card.planLabel">Choose how you'd like to pay</p>
-      <div class="plan-options">
-        <label class="plan-option selected" id="planRecurringLabel">
-          <input type="radio" name="plan" value="recurring" id="planRecurring" checked>
-          <div class="po-name"><span class="po-radio"></span><span data-i18n="card.planRecurring.name">Recurring</span></div>
-          <div class="po-price" id="priceRecurring">£10/yr</div>
-          <div class="po-desc" data-i18n="card.planRecurring.desc">Renews automatically each year. Cancel anytime — no need to remember to resubscribe.</div>
-        </label>
-        <label class="plan-option" id="planOnetimeLabel">
-          <input type="radio" name="plan" value="onetime" id="planOnetime">
-          <div class="po-name"><span class="po-radio"></span><span data-i18n="card.planOnetime.name">One-time</span></div>
-          <div class="po-price" id="priceOnetime">£12</div>
-          <div class="po-desc" data-i18n="card.planOnetime.desc">Covers 12 months, then simply ends. No auto-renewal, no card kept on file.</div>
-        </label>
-      </div>
+      <h1 class="title" data-i18n="card.title">Get started</h1>
+      <p class="sub" data-i18n="card.sub">One email a month, plus a short alert whenever a new issue covering your countries goes live. You'll choose recurring or one-time payment on the next, secure step.</p>
 
       <form id="detailsForm" novalidate>
         <div class="form-row">
@@ -396,17 +376,18 @@
       </form>
     </div>
 
-    <!-- STEP 2: confirm + trigger checkout -->
+    <!-- STEP 2: confirm details + hand off to Lemon Squeezy, where the -->
+    <!-- customer picks recurring vs. one-time on Lemon Squeezy's own    -->
+    <!-- checkout page — deliberately not asked twice.                  -->
     <div id="checkoutStep" class="checkout-step">
       <p class="eyebrow" data-i18n="confirm.eyebrow">One more step</p>
-      <h1 class="title" data-i18n="confirm.title">Confirm &amp; pay</h1>
-      <div class="confirm-plan-badge" id="confirmPlanBadge">Recurring — renews yearly</div>
-      <p class="sub"><span data-i18n="confirm.subscribingAs">Subscribing as</span> <strong id="confirmName"></strong> (<span id="confirmEmail"></span>) <span data-i18n="confirm.for">for</span> <span id="confirmCompany"></span> — <span id="confirmPrice"></span>.</p>
+      <h1 class="title" data-i18n="confirm.title">Confirm your details</h1>
+      <p class="sub"><span data-i18n="confirm.subscribingAs">Subscribing as</span> <strong id="confirmName"></strong> (<span id="confirmEmail"></span>) <span data-i18n="confirm.for">for</span> <span id="confirmCompany"></span>.</p>
       <p class="sub" style="margin-top:-14px;"><span data-i18n="confirm.alertsFor">Alerts for:</span> <strong id="confirmCountries"></strong></p>
 
-      <a href="#" id="checkoutButton" class="lemonsqueezy-button form-submit" data-i18n="confirm.payButton">Complete secure payment →</a>
-      <span class="edit-link" id="editDetails" data-i18n="confirm.editLink">← Edit my details or plan</span>
-      <p class="form-fineprint" id="confirmFineprint">You'll be taken to a secure Lemon Squeezy checkout window. This plan renews automatically each year until you cancel — you can cancel anytime from the link in your receipt email.</p>
+      <a href="#" id="checkoutButton" class="lemonsqueezy-button form-submit" data-i18n="confirm.payButton">Continue to checkout →</a>
+      <span class="edit-link" id="editDetails" data-i18n="confirm.editLink">← Edit my details</span>
+      <p class="form-fineprint" id="confirmFineprint" data-i18n="confirm.fineprint">You'll be taken to a secure Lemon Squeezy checkout window, where you can choose recurring or one-time payment and complete your purchase.</p>
     </div>
 
     </div>
@@ -446,35 +427,17 @@
 </script>
 <script>
 // ================================================================
-// SETUP NEEDED: replace these four constants once your two Lemon
-// Squeezy products exist. See the SETUP NEEDED comment at the top
-// of this file for exactly where to find them.
+// SETUP NEEDED: replace this with your Lemon Squeezy checkout URL.
+// Since recurring vs. one-time is chosen on Lemon Squeezy's own
+// checkout page (both are variants of the same product), only one
+// URL is needed here — no separate recurring/one-time distinction
+// on this page at all.
 // ================================================================
-const LSQ_CHECKOUT_URL_RECURRING = "https://YOUR-STORE.lemonsqueezy.com/buy/YOUR-RECURRING-VARIANT-ID"; // TODO: replace
-const LSQ_CHECKOUT_URL_ONETIME   = "https://YOUR-STORE.lemonsqueezy.com/buy/YOUR-ONETIME-VARIANT-ID";   // TODO: replace
-const LSQ_PRICE_RECURRING = 10; // TODO: replace with your real recurring annual price
-const LSQ_PRICE_ONETIME   = 12; // TODO: replace with your real one-time price (can differ from recurring)
-
-document.getElementById('priceRecurring').textContent = '£' + LSQ_PRICE_RECURRING + '/yr';
-document.getElementById('priceOnetime').textContent = '£' + LSQ_PRICE_ONETIME;
+const LSQ_CHECKOUT_URL = "https://YOUR-STORE.lemonsqueezy.com/buy/YOUR-PRODUCT-ID"; // TODO: replace
 
 const detailsStep = document.getElementById('detailsStep');
 const checkoutStep = document.getElementById('checkoutStep');
 const detailsForm = document.getElementById('detailsForm');
-
-const planRecurring = document.getElementById('planRecurring');
-const planOnetime = document.getElementById('planOnetime');
-const planRecurringLabel = document.getElementById('planRecurringLabel');
-const planOnetimeLabel = document.getElementById('planOnetimeLabel');
-
-function updatePlanSelection(){
-  const recurringChosen = planRecurring.checked;
-  planRecurringLabel.classList.toggle('selected', recurringChosen);
-  planOnetimeLabel.classList.toggle('selected', !recurringChosen);
-}
-planRecurringLabel.addEventListener('click', ()=>{ planRecurring.checked = true; updatePlanSelection(); });
-planOnetimeLabel.addEventListener('click', ()=>{ planOnetime.checked = true; updatePlanSelection(); });
-updatePlanSelection();
 
 function isValidEmail(v){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); }
 function t(key, fallback){
@@ -563,14 +526,10 @@ detailsForm.addEventListener('submit', async (e)=>{
   });
   if(!allValid) return;
 
-  const isRecurring = planRecurring.checked;
-  const chosenUrl = isRecurring ? LSQ_CHECKOUT_URL_RECURRING : LSQ_CHECKOUT_URL_ONETIME;
-  const chosenPrice = isRecurring ? LSQ_PRICE_RECURRING : LSQ_PRICE_ONETIME;
-
   // Best-effort local record of the lead, independent of the Lemon Squeezy sale record.
   try{
     if(window.storage && typeof window.storage.set === 'function'){
-      await window.storage.set('subscriber-lead:'+Date.now(), JSON.stringify({...values, plan: isRecurring ? 'recurring' : 'onetime', countries: selectedCountries}));
+      await window.storage.set('subscriber-lead:'+Date.now(), JSON.stringify({...values, countries: selectedCountries}));
     }
   }catch(err){ /* no storage available — flow still proceeds */ }
 
@@ -578,8 +537,9 @@ detailsForm.addEventListener('submit', async (e)=>{
   // selection through as Lemon Squeezy "custom data" — this rides along
   // inside every Order/Subscription webhook as meta.custom_data.countries,
   // which the members-worker's webhook handler stores against this
-  // subscriber for future segmentation.
-  const url = new URL(chosenUrl);
+  // subscriber for future segmentation. Recurring vs. one-time is chosen
+  // by the customer on Lemon Squeezy's own checkout page, not here.
+  const url = new URL(LSQ_CHECKOUT_URL);
   url.searchParams.set('checkout[email]', values.email);
   url.searchParams.set('checkout[name]', values.firstName + ' ' + values.lastName);
   url.searchParams.set('checkout[custom][countries]', selectedCountries.join(','));
@@ -593,19 +553,6 @@ detailsForm.addEventListener('submit', async (e)=>{
   document.getElementById('confirmCountries').textContent = selectedCountries.length
     ? selectedCountries.map(translateCountry).join(', ')
     : t('confirm.fullDigest', 'the full digest (all 29 jurisdictions)');
-  document.getElementById('confirmPrice').textContent = isRecurring
-    ? ('£' + chosenPrice + t('confirm.perYearRenewing', '/year, renewing automatically'))
-    : ('£' + chosenPrice + t('confirm.oneTimeTwelveMonths', ', one-time for 12 months'));
-
-  const badge = document.getElementById('confirmPlanBadge');
-  const fineprint = document.getElementById('confirmFineprint');
-  if(isRecurring){
-    badge.textContent = t('confirm.badgeRecurring', 'Recurring — renews yearly');
-    fineprint.textContent = t('confirm.fineprintRecurring', "You'll be taken to a secure Lemon Squeezy checkout window. This plan renews automatically each year until you cancel — you can cancel anytime from the link in your receipt email.");
-  } else {
-    badge.textContent = t('confirm.badgeOnetime', 'One-time — no auto-renewal');
-    fineprint.textContent = t('confirm.fineprintOnetime', "You'll be taken to a secure Lemon Squeezy checkout window. This is a single payment covering the next 12 months — no card is kept on file and nothing renews automatically.");
-  }
 
   detailsStep.classList.remove('visible');
   checkoutStep.classList.add('visible');

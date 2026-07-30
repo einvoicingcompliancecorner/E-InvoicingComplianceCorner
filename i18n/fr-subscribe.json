@@ -16,11 +16,8 @@
   },
   "card": {
     "eyebrow": "S'abonner",
-    "title": "Choisissez votre formule",
-    "sub": "Un e-mail par mois, plus une courte alerte chaque fois qu'un nouveau numéro concernant vos pays est publié.",
-    "planLabel": "Choisissez votre mode de paiement",
-    "planRecurring": { "name": "Récurrent", "desc": "Se renouvelle automatiquement chaque année. Annulez à tout moment — pas besoin de penser à vous réabonner." },
-    "planOnetime": { "name": "Paiement unique", "desc": "Couvre 12 mois, puis se termine simplement. Pas de renouvellement automatique, aucune carte conservée." },
+    "title": "Commençons",
+    "sub": "Un e-mail par mois, plus une courte alerte chaque fois qu'un nouveau numéro concernant vos pays est publié. Vous choisirez paiement récurrent ou unique à l'étape suivante, sécurisée.",
     "form": {
       "firstName": "Prénom", "firstNameError": "Le prénom est requis",
       "lastName": "Nom", "lastNameError": "Le nom est requis",
@@ -38,19 +35,14 @@
   },
   "confirm": {
     "eyebrow": "Encore une étape",
-    "title": "Confirmer &amp; payer",
+    "title": "Confirmez vos informations",
     "subscribingAs": "Abonnement au nom de",
     "for": "pour",
     "alertsFor": "Alertes pour :",
     "fullDigest": "la synthèse complète (les 29 juridictions)",
-    "perYearRenewing": "/an, avec renouvellement automatique",
-    "oneTimeTwelveMonths": ", paiement unique pour 12 mois",
-    "badgeRecurring": "Récurrent — se renouvelle annuellement",
-    "badgeOnetime": "Paiement unique — sans renouvellement automatique",
-    "fineprintRecurring": "Vous serez redirigé vers une fenêtre de paiement sécurisée Lemon Squeezy. Cette formule se renouvelle automatiquement chaque année jusqu'à annulation — vous pouvez annuler à tout moment via le lien de votre e-mail de reçu.",
-    "fineprintOnetime": "Vous serez redirigé vers une fenêtre de paiement sécurisée Lemon Squeezy. Il s'agit d'un paiement unique couvrant les 12 prochains mois — aucune carte n'est conservée et rien ne se renouvelle automatiquement.",
-    "payButton": "Finaliser le paiement sécurisé →",
-    "editLink": "← Modifier mes informations ou ma formule"
+    "fineprint": "Vous serez redirigé vers une fenêtre de paiement sécurisée Lemon Squeezy, où vous pourrez choisir un paiement récurrent ou unique et finaliser votre achat.",
+    "payButton": "Continuer vers le paiement →",
+    "editLink": "← Modifier mes informations"
   },
   "modal": {
     "close": "✕ Fermer",

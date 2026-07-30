@@ -16,11 +16,8 @@
   },
   "card": {
     "eyebrow": "Subscribe",
-    "title": "Choose your plan",
-    "sub": "One email a month, plus a short alert whenever a new issue covering your countries goes live.",
-    "planLabel": "Choose how you'd like to pay",
-    "planRecurring": { "name": "Recurring", "desc": "Renews automatically each year. Cancel anytime — no need to remember to resubscribe." },
-    "planOnetime": { "name": "One-time", "desc": "Covers 12 months, then simply ends. No auto-renewal, no card kept on file." },
+    "title": "Get started",
+    "sub": "One email a month, plus a short alert whenever a new issue covering your countries goes live. You'll choose recurring or one-time payment on the next, secure step.",
     "form": {
       "firstName": "First name", "firstNameError": "First name is required",
       "lastName": "Last name", "lastNameError": "Last name is required",
@@ -38,19 +35,14 @@
   },
   "confirm": {
     "eyebrow": "One more step",
-    "title": "Confirm &amp; pay",
+    "title": "Confirm your details",
     "subscribingAs": "Subscribing as",
     "for": "for",
     "alertsFor": "Alerts for:",
     "fullDigest": "the full digest (all 29 jurisdictions)",
-    "perYearRenewing": "/year, renewing automatically",
-    "oneTimeTwelveMonths": ", one-time for 12 months",
-    "badgeRecurring": "Recurring — renews yearly",
-    "badgeOnetime": "One-time — no auto-renewal",
-    "fineprintRecurring": "You'll be taken to a secure Lemon Squeezy checkout window. This plan renews automatically each year until you cancel — you can cancel anytime from the link in your receipt email.",
-    "fineprintOnetime": "You'll be taken to a secure Lemon Squeezy checkout window. This is a single payment covering the next 12 months — no card is kept on file and nothing renews automatically.",
-    "payButton": "Complete secure payment →",
-    "editLink": "← Edit my details or plan"
+    "fineprint": "You'll be taken to a secure Lemon Squeezy checkout window, where you can choose recurring or one-time payment and complete your purchase.",
+    "payButton": "Continue to checkout →",
+    "editLink": "← Edit my details"
   },
   "modal": {
     "close": "✕ Close",
