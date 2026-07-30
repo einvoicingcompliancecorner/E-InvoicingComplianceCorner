@@ -943,7 +943,7 @@ function renderLoginPage(error, lang) {
   const body = `
   <div class="wrap">
     <div style="display:flex; justify-content:space-between; align-items:center;">
-      <a class="back-link" href="/" style="margin:0;">${t(lang, "backToTracker")}</a>
+      <a class="back-link" href="https://e-invoicingcompliancecorner.com/einvoicing-compliance-tracker.html" style="margin:0;">${t(lang, "backToTracker")}</a>
       ${renderLangSwitcher(lang, "/members")}
     </div>
     <div class="card" style="margin-top:16px;">
@@ -959,7 +959,7 @@ function renderLoginPage(error, lang) {
         </div>
         <button type="submit" class="btn">${t(lang, "login.sendButton")}</button>
       </form>
-      <p class="fineprint">${t(lang, "login.notSubscribed")} <a href="/subscribe.html" style="color:var(--stamp); text-decoration:underline;">${t(lang, "login.subscribeHere")}</a>.</p>
+      <p class="fineprint">${t(lang, "login.notSubscribed")} <a href="https://e-invoicingcompliancecorner.com/subscribe.html" style="color:var(--stamp); text-decoration:underline;">${t(lang, "login.subscribeHere")}</a>.</p>
     </div>
   </div>`;
   return pageShell(body, lang);
@@ -969,7 +969,7 @@ function renderCheckEmailPage(lang) {
   lang = lang || "en";
   const body = `
   <div class="wrap">
-    <a class="back-link" href="/">${t(lang, "backToTracker")}</a>
+    <a class="back-link" href="https://e-invoicingcompliancecorner.com/einvoicing-compliance-tracker.html">${t(lang, "backToTracker")}</a>
     <div class="card">
       <p class="eyebrow">${t(lang, "checkEmail.eyebrow")}</p>
       <h1 class="title">${t(lang, "checkEmail.title")}</h1>
@@ -1004,7 +1004,7 @@ function renderArchiveList(issues, email, lang) {
 
   const body = `
   <div class="topbar topbar-wide">
-    <a class="back-link" href="/" style="margin:0;">${t(lang, "backToTracker")}</a>
+    <a class="back-link" href="https://e-invoicingcompliancecorner.com/einvoicing-compliance-tracker.html" style="margin:0;">${t(lang, "backToTracker")}</a>
     <div style="display:flex; align-items:center; gap:16px;">
       ${renderLangSwitcher(lang, "/members/archive")}
       <form method="POST" action="/members/logout"><button type="submit" class="logout-btn">${t(lang, "logout")}</button></form>
