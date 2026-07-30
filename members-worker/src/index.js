@@ -1124,14 +1124,14 @@ function renderArchiveList(stories, regionByCountryName, email, lang) {
       <p class="sub" style="margin-bottom:18px;">${t(lang, "archive.issuesPublished")(stories.length)}</p>
     </div>
 
+    <p class="fineprint" style="margin:0 0 16px;"><a href="/members/preferences" style="color:var(--stamp); text-decoration:underline;">${t(lang, "archive.managePrefs")}</a></p>
+
     <div class="archive-toolbar">
       <input type="text" id="archiveSearch" class="archive-search" placeholder="${t(lang, "archive.searchPlaceholder")}">
     </div>
     ${allCountries.length ? `<div id="countryCheckboxes">${checkboxesHtml}</div>` : ""}
 
     <div class="issue-grid" id="issueGrid"></div>
-
-    <p class="fineprint"><a href="/members/preferences" style="color:var(--stamp); text-decoration:underline;">${t(lang, "archive.managePrefs")}</a></p>
   </div>
   <script>
     const ARCHIVE_STORIES = ${storiesJson};
