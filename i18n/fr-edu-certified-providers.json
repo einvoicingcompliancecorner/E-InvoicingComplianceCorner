@@ -7,7 +7,7 @@
     "sub": "Où trouver la liste officielle, publiée par l'État, des prestataires de services agréés ou des logiciels compatibles Peppol pour chaque pays — vérifiée directement sur le site propre de l'autorité concernée, pas un résumé tiers.",
     "lastUpdated": "Dernière mise à jour :"
   },
-  "statusBanner": { "text": "Il s'agit d'un <strong>premier ensemble de liens vérifiés</strong>, pas d'une cartographie complète des 28 juridictions suivies. Chaque lien ci-dessous a été vérifié directement sur le site propre du gouvernement/de l'autorité mentionné. Plusieurs pays de ce suivi ne gèrent tout simplement aucun registre public d'agrément — consultez la remarque de la section 3 avant de supposer qu'il en existe un." },
+  "statusBanner": { "text": "Il s'agit d'un <strong>premier ensemble de liens vérifiés</strong>, pas d'une cartographie complète des 29 juridictions suivies. Chaque lien ci-dessous a été vérifié directement sur le site propre du gouvernement/de l'autorité mentionné. Plusieurs pays de ce suivi ne gèrent tout simplement aucun registre public d'agrément — consultez la remarque de la section 3 avant de supposer qu'il en existe un." },
   "stats": { "label1": "Pays vérifiés à ce jour", "label2": "Termes d'agrément distincts en usage", "label3": "Annuaire mondial de prestataires Peppol" },
   "sec1": {
     "heading": "Même idée, noms différents",
@@ -49,7 +49,7 @@
     "heading": "Pour aller plus loin",
     "card1": { "title": "🏷️ Comprenez d'abord les catégories de prestataires", "body": "« Types de prestataires » (sous Ressources) détaille les catégories ERP, prestataire de solution, conformité fiscale, technologie et conseil avant que vous ne commenciez à parcourir les listes gouvernementales." },
     "card2": { "title": "🗓️ Prêt à mener une sélection de prestataire ?", "body": "« Se préparer à une obligation » (sous Ressources) explique comment évaluer et sélectionner un prestataire une fois que vous avez trouvé la bonne liste." },
-    "card3": { "title": "🌍 Consultez les exigences spécifiques de votre pays", "body": "Le menu des analyses par pays couvre les étapes exactes d'immatriculation, les spécifications techniques et les sanctions pour chacune des 28 juridictions suivies ici." },
+    "card3": { "title": "🌍 Consultez les exigences spécifiques de votre pays", "body": "Le menu des analyses par pays couvre les étapes exactes d'immatriculation, les spécifications techniques et les sanctions pour chacune des 29 juridictions suivies ici." },
     "card4": { "title": "📬 Cette liste va s'étoffer", "body": "D'autres pays seront ajoutés ici au fur et à mesure que nous vérifions directement leurs sources officielles — les abonnés sont notifiés lors de la publication de nouvelles entrées." }
   },
   "footer": { "text": "Cette page renvoie directement vers des sources gouvernementales et officielles vérifiées à la date indiquée ci-dessus, à titre purement informatif — elle ne constitue l'approbation d'aucun prestataire en particulier, et la présence sur une liste gouvernementale ne garantit pas son adéquation à vos besoins spécifiques. Vérifiez toujours directement le statut d'agrément actuel d'un prestataire sur la page officielle liée avant de signer un accord." }

@@ -7,7 +7,7 @@
     "sub": "Where to find the official, government-published list of accredited service providers or Peppol-ready software for each country — verified directly against the relevant authority's own site, not a third-party summary.",
     "lastUpdated": "Last updated:"
   },
-  "statusBanner": { "text": "This is a <strong>starting set of verified links</strong>, not a complete map of all 28 tracked jurisdictions. Every link below was checked directly against the named government/authority's own website. Several countries in this tracker don't run a public accreditation registry at all — see the note in Section 3 before assuming one exists." },
+  "statusBanner": { "text": "This is a <strong>starting set of verified links</strong>, not a complete map of all 29 tracked jurisdictions. Every link below was checked directly against the named government/authority's own website. Several countries in this tracker don't run a public accreditation registry at all — see the note in Section 3 before assuming one exists." },
   "stats": { "label1": "Countries verified so far", "label2": "Different accreditation terms in use", "label3": "Global Peppol provider directory" },
   "sec1": {
     "heading": "Same idea, different names",
@@ -49,7 +49,7 @@
     "heading": "Where to go next",
     "card1": { "title": "🏷️ Understand the vendor categories first", "body": "\"Types of Provider\" (under Education) breaks down ERP, Solution Provider, Tax Compliance, Technology, and Consultancy categories before you start browsing government lists." },
     "card2": { "title": "🗓️ Ready to run a vendor selection?", "body": "\"Preparing for a Mandate\" (under Education) walks through how to evaluate and select a provider once you've found the right list." },
-    "card3": { "title": "🌍 Check your country's specific requirements", "body": "The Deep Dives menu covers exact registration steps, technical specifications, and penalties for each of the 28 jurisdictions tracked here." },
+    "card3": { "title": "🌍 Check your country's specific requirements", "body": "The Deep Dives menu covers exact registration steps, technical specifications, and penalties for each of the 29 jurisdictions tracked here." },
     "card4": { "title": "📬 This list will grow", "body": "More countries will be added here as we verify their official sources directly — subscribers get notified when new entries are published." }
   },
   "footer": { "text": "This page links directly to official government and authority sources as verified at the date above, and is provided for general awareness — it is not an endorsement of any specific provider, and inclusion on a government list is not a guarantee of fit for your specific needs. Always confirm a provider's current accreditation status directly on the linked official page before signing an agreement." }
