@@ -23,6 +23,23 @@ const MAGIC_LINK_TTL_SECONDS = 60 * 15; // 15 minutes
 // Kept in sync with /countries.js on the static site — see the note at
 // the top of that file. This Worker runs in a separate JS environment
 // and can't load that file directly, so it keeps its own copy here.
+// Maps a country's canonical English name to its deep-dive page filename
+// on the main site. Not a simple lowercase-and-hyphenate transform —
+// several use abbreviated filenames (uae.html, uk.html) — so this is an
+// explicit table rather than a derived one. Countries without an entry
+// here (e.g. European Union, which has no dedicated deep-dive page)
+// simply get no deep-dive link rendered, rather than a broken one.
+const COUNTRY_DEEP_DIVE_SLUGS = {
+  "Australia": "australia", "Belgium": "belgium", "Brazil": "brazil", "Canada": "canada",
+  "Chile": "chile", "China": "china", "Croatia": "croatia", "Denmark": "denmark",
+  "France": "france", "Germany": "germany", "India": "india", "Ireland": "ireland",
+  "Italy": "italy", "Malaysia": "malaysia", "Mexico": "mexico", "New Zealand": "new-zealand",
+  "Norway": "norway", "Peru": "peru", "Poland": "poland", "Romania": "romania",
+  "Saudi Arabia": "saudi-arabia", "Singapore": "singapore", "Slovakia": "slovakia",
+  "Spain": "spain", "Sweden": "sweden", "United Arab Emirates": "uae",
+  "United Kingdom": "uk", "United States": "united-states",
+};
+
 const COUNTRIES_BY_REGION = {
   "Europe": [
     "Belgium", "Croatia", "Denmark", "France", "Germany", "Ireland",
@@ -127,6 +144,7 @@ const WORKER_I18N = {
       managePrefs: "Manage which countries you get alerts for →",
       officialSource: "Official source",
       editionAll: "All editions", editionLatest: "Latest edition", editionThisYear: "This year",
+      readDeepDive: (country) => `Read the full ${country} Deep Dive for complete technical detail →`,
     },
     preferences: {
       title: "Alert preferences",
@@ -162,6 +180,7 @@ const WORKER_I18N = {
       managePrefs: "Gestione los países sobre los que recibe alertas →",
       officialSource: "Fuente oficial",
       editionAll: "Todas las ediciones", editionLatest: "Última edición", editionThisYear: "Este año",
+      readDeepDive: (country) => `Lea el análisis completo de ${country} para el detalle técnico completo →`,
     },
     preferences: {
       title: "Preferencias de alertas",
@@ -197,6 +216,7 @@ const WORKER_I18N = {
       managePrefs: "Verwalten Sie, für welche Länder Sie Benachrichtigungen erhalten →",
       officialSource: "Offizielle Quelle",
       editionAll: "Alle Ausgaben", editionLatest: "Neueste Ausgabe", editionThisYear: "Dieses Jahr",
+      readDeepDive: (country) => `Lesen Sie die vollständige Länderanalyse ${country} für alle technischen Details →`,
     },
     preferences: {
       title: "Benachrichtigungseinstellungen",
@@ -232,6 +252,7 @@ const WORKER_I18N = {
       managePrefs: "Gérez les pays pour lesquels vous recevez des alertes →",
       officialSource: "Source officielle",
       editionAll: "Toutes les éditions", editionLatest: "Dernière édition", editionThisYear: "Cette année",
+      readDeepDive: (country) => `Lire l'analyse complète de ${country} pour tous les détails techniques →`,
     },
     preferences: {
       title: "Préférences d'alerte",
@@ -710,7 +731,7 @@ async function handleArchiveIssue(request, env, slug, lang) {
   if (!row) return new Response("Story not found", { status: 404 });
 
   const countryRows = await d1All(env, `
-    SELECT COALESCE(ct.display_name, c.name_en) as name
+    SELECT c.name_en, COALESCE(ct.display_name, c.name_en) as name
     FROM story_countries sc
     JOIN countries c ON c.id = sc.country_id
     LEFT JOIN country_translations ct ON ct.country_id = c.id AND ct.lang = ?
@@ -723,7 +744,7 @@ async function handleArchiveIssue(request, env, slug, lang) {
     title: row.title_translated || deriveTitleFromHtml(row.html),
     html: row.html,
     sourceUrl: row.source_url,
-    countries: countryRows.map((r) => r.name),
+    countries: countryRows.map((r) => ({ displayName: r.name, englishName: r.name_en })),
   };
 
   return htmlResponse(renderIssue(story, lang));
@@ -1338,11 +1359,23 @@ function renderSimpleMessage(title, subtext, lang) {
 function renderIssue(story, lang) {
   lang = lang || "en";
   const countryTagsHtml = (story.countries || []).length
-    ? `<div class="issue-country-tags" style="margin:10px 0 0;">${story.countries.map((c) => `<span>${escapeHtml(c)}</span>`).join("")}</div>`
+    ? `<div class="issue-country-tags" style="margin:10px 0 0;">${story.countries.map((c) => `<span>${escapeHtml(c.displayName)}</span>`).join("")}</div>`
     : "";
   const sourceLinkHtml = story.sourceUrl
     ? `<p style="margin-top:18px;"><a href="${escapeHtml(story.sourceUrl)}" target="_blank" rel="noopener" style="color:var(--stamp); text-decoration:underline; font-size:13px;">🔗 ${escapeHtml(t(lang, "archive.officialSource"))}</a></p>`
     : "";
+  // Deep-dive links are always rendered below the source link, never
+  // embedded in a story's own HTML — a country with no deep-dive page
+  // (e.g. European Union) is silently skipped rather than linking
+  // somewhere broken. A story tagged with several countries gets one
+  // link per country that actually has a page.
+  const deepDiveLinksHtml = (story.countries || [])
+    .filter((c) => COUNTRY_DEEP_DIVE_SLUGS[c.englishName])
+    .map((c) => {
+      const url = `https://e-invoicingcompliancecorner.com/${COUNTRY_DEEP_DIVE_SLUGS[c.englishName]}.html`;
+      return `<p style="margin-top:10px;"><a href="${url}" style="color:#b5432f; text-decoration:underline; font-weight:600; font-size:13px;">📖 ${escapeHtml(t(lang, "archive.readDeepDive")(c.displayName))}</a></p>`;
+    })
+    .join("");
   const body = `
   <div class="topbar">
     <a class="back-link" href="/members/archive" style="margin:0;">${t(lang, "backToArchive")}</a>
@@ -1358,6 +1391,7 @@ function renderIssue(story, lang) {
       ${countryTagsHtml}
       <div>${story.html}</div>
       ${sourceLinkHtml}
+      ${deepDiveLinksHtml}
     </div>
   </div>`;
   return pageShell(body, lang);
