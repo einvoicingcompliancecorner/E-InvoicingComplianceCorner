@@ -4,13 +4,13 @@
   "benefits": {
     "eyebrow": "Ne soyez plus jamais pris au dépourvu",
     "title": "Soyez averti dès qu'un gouvernement change les règles",
-    "intro": "Les seuils de facturation électronique, les numéros de vague et les dates de mise en service changent constamment — souvent avec peu de préavis public. Abonnez-vous une fois, et chaque mise à jour ou annonce gouvernementale des 29 juridictions que nous suivons arrive automatiquement dans votre boîte de réception, en langage clair, avant qu'elle ne prenne votre équipe au dépourvu.",
+    "intro": "Les seuils de facturation électronique, les numéros de vague et les dates de mise en service changent constamment — souvent avec peu de préavis public. Abonnez-vous une fois, et chaque mise à jour ou annonce gouvernementale des 28 juridictions que nous suivons arrive automatiquement dans votre boîte de réception, en langage clair, avant qu'elle ne prenne votre équipe au dépourvu.",
     "sampleLink": "👀 Voir un véritable numéro d'exemple (janvier 2026) →",
     "stat1": "Juridictions suivies",
     "stat2": "Cadence de la synthèse",
     "stat3": "Spam entre les numéros",
     "item1": { "title": "De véritables annonces gouvernementales, synthétisées", "body": "Chaque nouvelle obligation, échéance modifiée et changement de sanction que nous suivons, rédigé en langage clair — pas un texte juridique copié-collé d'un communiqué de presse d'une administration fiscale." },
-    "item2": { "title": "Choisissez exactement les pays qui vous concernent", "body": "Indiquez-nous lesquelles des 29 juridictions concernent votre entreprise, et votre e-mail de notification mensuel vous dira précisément si elles ont été concernées — ou recevez la synthèse mondiale complète si vous préférez tout voir." },
+    "item2": { "title": "Choisissez exactement les pays qui vous concernent", "body": "Indiquez-nous lesquelles des 28 juridictions concernent votre entreprise, et votre e-mail de notification mensuel vous dira précisément si elles ont été concernées — ou recevez la synthèse mondiale complète si vous préférez tout voir." },
     "item3": { "title": "Une archive complète et consultable", "body": "Chaque numéro passé se trouve dans une archive consultable et filtrable — consultez n'importe quel mois, n'importe quel pays, à tout moment, pas seulement ce qui est arrivé le plus récemment dans votre boîte de réception." },
     "item4": { "title": "Accès prioritaire aux nouveaux contenus pédagogiques", "body": "Les nouvelles analyses par pays et guides pédagogiques sont signalés en priorité aux abonnés, dès leur publication." }
   },
@@ -26,7 +26,7 @@
       "company": "Nom de l'entreprise", "companyError": "Le nom de l'entreprise est requis"
     },
     "countriesLabel": "Pour quels pays souhaitez-vous recevoir des alertes ?",
-    "countriesHint": "Facultatif — laissez tout décoché et nous vous enverrons la synthèse mensuelle complète couvrant les 29 juridictions.",
+    "countriesHint": "Facultatif — laissez tout décoché et nous vous enverrons la synthèse mensuelle complète couvrant les 28 juridictions.",
     "countriesMissing": "La sélection de pays est temporairement indisponible — vous recevrez tout de même la synthèse mensuelle complète. (Fichier manquant : countries.js)",
     "selectAll": "Tout sélectionner",
     "clearAll": "Tout désélectionner",
@@ -39,7 +39,7 @@
     "subscribingAs": "Abonnement au nom de",
     "for": "pour",
     "alertsFor": "Alertes pour :",
-    "fullDigest": "la synthèse complète (les 29 juridictions)",
+    "fullDigest": "la synthèse complète (les 28 juridictions)",
     "fineprint": "Vous serez redirigé vers une fenêtre de paiement sécurisée Lemon Squeezy, où vous pourrez choisir un paiement récurrent ou unique et finaliser votre achat.",
     "payButton": "Continuer vers le paiement →",
     "editLink": "← Modifier mes informations"

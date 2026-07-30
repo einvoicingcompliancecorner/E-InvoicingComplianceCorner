@@ -4,13 +4,13 @@
   "benefits": {
     "eyebrow": "Never get caught off guard",
     "title": "Get notified the moment a government changes the rules",
-    "intro": "E-invoicing thresholds, wave numbers, and go-live dates change constantly — often with little public notice. Subscribe once, and every government update or announcement across the 29 jurisdictions we track lands in your inbox automatically, in plain language, before it catches your team off guard.",
+    "intro": "E-invoicing thresholds, wave numbers, and go-live dates change constantly — often with little public notice. Subscribe once, and every government update or announcement across the 28 jurisdictions we track lands in your inbox automatically, in plain language, before it catches your team off guard.",
     "sampleLink": "👀 See a real sample issue (January 2026) →",
     "stat1": "Jurisdictions tracked",
     "stat2": "Digest cadence",
     "stat3": "Spam between issues",
     "item1": { "title": "Real government announcements, summarised", "body": "Every new mandate, shifted deadline, and penalty change we track, written in plain language — not legal text copy-pasted from a tax authority's press release." },
-    "item2": { "title": "Choose exactly which countries you care about", "body": "Tell us which of the 29 jurisdictions matter to your business, and your monthly notification email tells you specifically whether they came up — or get the full global digest if you'd rather see everything." },
+    "item2": { "title": "Choose exactly which countries you care about", "body": "Tell us which of the 28 jurisdictions matter to your business, and your monthly notification email tells you specifically whether they came up — or get the full global digest if you'd rather see everything." },
     "item3": { "title": "A full, searchable back-catalogue", "body": "Every past issue lives in a searchable, filterable archive — look back at any month, any country, any time, not just whatever landed in your inbox most recently." },
     "item4": { "title": "Priority access to new education content", "body": "New country deep dives and education guides get flagged to subscribers first, as we publish them." }
   },
@@ -26,7 +26,7 @@
       "company": "Company name", "companyError": "Company name is required"
     },
     "countriesLabel": "Which countries do you want alerts for?",
-    "countriesHint": "Optional — leave everything unchecked and we'll send the full monthly digest covering all 29 jurisdictions.",
+    "countriesHint": "Optional — leave everything unchecked and we'll send the full monthly digest covering all 28 jurisdictions.",
     "countriesMissing": "Country selection is temporarily unavailable — you'll still get the full monthly digest. (Missing file: countries.js)",
     "selectAll": "Select all",
     "clearAll": "Clear all",
@@ -39,7 +39,7 @@
     "subscribingAs": "Subscribing as",
     "for": "for",
     "alertsFor": "Alerts for:",
-    "fullDigest": "the full digest (all 29 jurisdictions)",
+    "fullDigest": "the full digest (all 28 jurisdictions)",
     "fineprint": "You'll be taken to a secure Lemon Squeezy checkout window, where you can choose recurring or one-time payment and complete your purchase.",
     "payButton": "Continue to checkout →",
     "editLink": "← Edit my details"

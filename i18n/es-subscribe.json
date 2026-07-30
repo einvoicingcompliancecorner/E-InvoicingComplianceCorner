@@ -4,13 +4,13 @@
   "benefits": {
     "eyebrow": "Nunca más se lleve una sorpresa",
     "title": "Reciba una notificación en cuanto un gobierno cambie las normas",
-    "intro": "Los umbrales de facturación electrónica, los números de ola y las fechas de puesta en marcha cambian constantemente — a menudo con poco aviso público. Suscríbase una vez y cada actualización o anuncio gubernamental de las 29 jurisdicciones que seguimos llegará automáticamente a su bandeja de entrada, en lenguaje sencillo, antes de que sorprenda a su equipo.",
+    "intro": "Los umbrales de facturación electrónica, los números de ola y las fechas de puesta en marcha cambian constantemente — a menudo con poco aviso público. Suscríbase una vez y cada actualización o anuncio gubernamental de las 28 jurisdicciones que seguimos llegará automáticamente a su bandeja de entrada, en lenguaje sencillo, antes de que sorprenda a su equipo.",
     "sampleLink": "👀 Vea un ejemplar real de muestra (enero de 2026) →",
     "stat1": "Jurisdicciones seguidas",
     "stat2": "Cadencia del resumen",
     "stat3": "Spam entre números",
     "item1": { "title": "Anuncios gubernamentales reales, resumidos", "body": "Cada nuevo mandato, cambio de plazo y actualización de sanciones que seguimos, escrito en lenguaje sencillo — no texto legal copiado y pegado del comunicado de una autoridad fiscal." },
-    "item2": { "title": "Elija exactamente los países que le importan", "body": "Díganos cuáles de las 29 jurisdicciones importan a su negocio, y su correo de notificación mensual le dirá específicamente si aparecieron — o reciba el resumen global completo si prefiere verlo todo." },
+    "item2": { "title": "Elija exactamente los países que le importan", "body": "Díganos cuáles de las 28 jurisdicciones importan a su negocio, y su correo de notificación mensual le dirá específicamente si aparecieron — o reciba el resumen global completo si prefiere verlo todo." },
     "item3": { "title": "Un catálogo completo y consultable", "body": "Cada número anterior vive en un archivo consultable y filtrable — vuelva a consultar cualquier mes, cualquier país, en cualquier momento, no solo lo último que llegó a su bandeja de entrada." },
     "item4": { "title": "Acceso prioritario a nuevo contenido educativo", "body": "Los nuevos análisis por país y guías educativas se señalan primero a los suscriptores, a medida que los publicamos." }
   },
@@ -26,7 +26,7 @@
       "company": "Nombre de la empresa", "companyError": "El nombre de la empresa es obligatorio"
     },
     "countriesLabel": "¿Sobre qué países desea recibir alertas?",
-    "countriesHint": "Opcional — deje todo sin marcar y le enviaremos el resumen mensual completo de las 29 jurisdicciones.",
+    "countriesHint": "Opcional — deje todo sin marcar y le enviaremos el resumen mensual completo de las 28 jurisdicciones.",
     "countriesMissing": "La selección de países no está disponible temporalmente — de todas formas recibirá el resumen mensual completo. (Falta el archivo: countries.js)",
     "selectAll": "Seleccionar todo",
     "clearAll": "Borrar todo",
@@ -39,7 +39,7 @@
     "subscribingAs": "Suscribiéndose como",
     "for": "para",
     "alertsFor": "Alertas para:",
-    "fullDigest": "el resumen completo (las 29 jurisdicciones)",
+    "fullDigest": "el resumen completo (las 28 jurisdicciones)",
     "fineprint": "Se le llevará a una ventana de pago segura de Lemon Squeezy, donde podrá elegir pago recurrente o único y completar su compra.",
     "payButton": "Continuar al pago →",
     "editLink": "← Editar mis datos"

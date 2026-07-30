@@ -7,7 +7,7 @@
     "sub": "Dónde encontrar la lista oficial, publicada por el gobierno, de proveedores de servicios acreditados o software listo para Peppol de cada país — verificada directamente en el propio sitio de la autoridad correspondiente, no en un resumen de terceros.",
     "lastUpdated": "Última actualización:"
   },
-  "statusBanner": { "text": "Este es un <strong>conjunto inicial de enlaces verificados</strong>, no un mapa completo de las 29 jurisdicciones seguidas. Cada enlace de abajo se comprobó directamente en el propio sitio web del gobierno/autoridad mencionado. Varios países de este seguimiento simplemente no gestionan un registro público de acreditación — vea la nota de la Sección 3 antes de asumir que existe uno." },
+  "statusBanner": { "text": "Este es un <strong>conjunto inicial de enlaces verificados</strong>, no un mapa completo de las 28 jurisdicciones seguidas. Cada enlace de abajo se comprobó directamente en el propio sitio web del gobierno/autoridad mencionado. Varios países de este seguimiento simplemente no gestionan un registro público de acreditación — vea la nota de la Sección 3 antes de asumir que existe uno." },
   "stats": { "label1": "Países verificados hasta ahora", "label2": "Términos de acreditación distintos en uso", "label3": "Directorio global de proveedores Peppol" },
   "sec1": {
     "heading": "Misma idea, nombres distintos",
@@ -49,7 +49,7 @@
     "heading": "A dónde ir después",
     "card1": { "title": "🏷️ Entienda primero las categorías de proveedor", "body": "\"Tipos de proveedor\" (en Educación) desglosa las categorías de ERP, Proveedor de Solución, Cumplimiento Fiscal, Tecnología y Consultoría antes de que empiece a consultar las listas gubernamentales." },
     "card2": { "title": "🗓️ ¿Listo para ejecutar una selección de proveedor?", "body": "\"Preparación para un mandato\" (en Educación) explica cómo evaluar y seleccionar un proveedor una vez que ha encontrado la lista correcta." },
-    "card3": { "title": "🌍 Consulte los requisitos específicos de su país", "body": "El menú de análisis por país cubre los pasos exactos de registro, las especificaciones técnicas y las sanciones de cada una de las 29 jurisdicciones seguidas aquí." },
+    "card3": { "title": "🌍 Consulte los requisitos específicos de su país", "body": "El menú de análisis por país cubre los pasos exactos de registro, las especificaciones técnicas y las sanciones de cada una de las 28 jurisdicciones seguidas aquí." },
     "card4": { "title": "📬 Esta lista crecerá", "body": "Se añadirán más países aquí a medida que verifiquemos directamente sus fuentes oficiales — los suscriptores reciben una notificación cuando se publican nuevas entradas." }
   },
   "footer": { "text": "Esta página enlaza directamente con fuentes oficiales de gobiernos y autoridades verificadas en la fecha indicada arriba, y se ofrece con fines informativos generales — no constituye un aval de ningún proveedor concreto, y la inclusión en una lista gubernamental no garantiza su idoneidad para sus necesidades específicas. Confirme siempre el estado de acreditación actual de un proveedor directamente en la página oficial enlazada antes de firmar cualquier acuerdo." }

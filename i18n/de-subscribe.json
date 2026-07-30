@@ -4,13 +4,13 @@
   "benefits": {
     "eyebrow": "Nie wieder überrascht werden",
     "title": "Erfahren Sie sofort, wenn eine Regierung die Regeln ändert",
-    "intro": "E-Invoicing-Schwellenwerte, Wellen-Nummern und Stichtage ändern sich ständig — oft mit wenig öffentlicher Vorankündigung. Einmal abonniert, landet jede Regierungsaktualisierung oder -ankündigung aus den 29 von uns erfassten Rechtsordnungen automatisch in Ihrem Posteingang, in klarer Sprache, bevor sie Ihr Team überrascht.",
+    "intro": "E-Invoicing-Schwellenwerte, Wellen-Nummern und Stichtage ändern sich ständig — oft mit wenig öffentlicher Vorankündigung. Einmal abonniert, landet jede Regierungsaktualisierung oder -ankündigung aus den 28 von uns erfassten Rechtsordnungen automatisch in Ihrem Posteingang, in klarer Sprache, bevor sie Ihr Team überrascht.",
     "sampleLink": "👀 Echte Beispielausgabe ansehen (Januar 2026) →",
     "stat1": "Erfasste Rechtsordnungen",
     "stat2": "Versandrhythmus",
     "stat3": "Spam zwischen den Ausgaben",
     "item1": { "title": "Echte Regierungsankündigungen, zusammengefasst", "body": "Jede neue Vorgabe, jede verschobene Frist und jede Sanktionsänderung, die wir erfassen, in klarer Sprache geschrieben — kein Rechtstext, der aus einer Pressemitteilung der Steuerbehörde kopiert wurde." },
-    "item2": { "title": "Wählen Sie genau die Länder, die Sie interessieren", "body": "Teilen Sie uns mit, welche der 29 Rechtsordnungen für Ihr Unternehmen relevant sind, und Ihre monatliche Benachrichtigungs-E-Mail sagt Ihnen konkret, ob sie vorkamen — oder erhalten Sie den vollständigen globalen Digest, wenn Sie lieber alles sehen möchten." },
+    "item2": { "title": "Wählen Sie genau die Länder, die Sie interessieren", "body": "Teilen Sie uns mit, welche der 28 Rechtsordnungen für Ihr Unternehmen relevant sind, und Ihre monatliche Benachrichtigungs-E-Mail sagt Ihnen konkret, ob sie vorkamen — oder erhalten Sie den vollständigen globalen Digest, wenn Sie lieber alles sehen möchten." },
     "item3": { "title": "Ein vollständiges, durchsuchbares Archiv", "body": "Jede vergangene Ausgabe liegt in einem durchsuchbaren, filterbaren Archiv — schauen Sie jederzeit auf jeden Monat, jedes Land zurück, nicht nur auf das, was zuletzt in Ihrem Posteingang landete." },
     "item4": { "title": "Bevorzugter Zugang zu neuen Wissensinhalten", "body": "Neue Länderanalysen und Wissensleitfäden werden Abonnenten zuerst angezeigt, sobald wir sie veröffentlichen." }
   },
@@ -26,7 +26,7 @@
       "company": "Firmenname", "companyError": "Firmenname ist erforderlich"
     },
     "countriesLabel": "Für welche Länder möchten Sie Benachrichtigungen erhalten?",
-    "countriesHint": "Optional — lassen Sie alles unmarkiert, und wir senden Ihnen den vollständigen monatlichen Digest für alle 29 Rechtsordnungen.",
+    "countriesHint": "Optional — lassen Sie alles unmarkiert, und wir senden Ihnen den vollständigen monatlichen Digest für alle 28 Rechtsordnungen.",
     "countriesMissing": "Die Länderauswahl ist vorübergehend nicht verfügbar — Sie erhalten trotzdem den vollständigen monatlichen Digest. (Fehlende Datei: countries.js)",
     "selectAll": "Alle auswählen",
     "clearAll": "Alle abwählen",
@@ -39,7 +39,7 @@
     "subscribingAs": "Abonnieren als",
     "for": "für",
     "alertsFor": "Benachrichtigungen für:",
-    "fullDigest": "den vollständigen Digest (alle 29 Rechtsordnungen)",
+    "fullDigest": "den vollständigen Digest (alle 28 Rechtsordnungen)",
     "fineprint": "Sie werden zu einem sicheren Lemon-Squeezy-Zahlungsfenster weitergeleitet, in dem Sie zwischen wiederkehrender und einmaliger Zahlung wählen und Ihren Kauf abschließen können.",
     "payButton": "Weiter zur Zahlung →",
     "editLink": "← Meine Angaben bearbeiten"
