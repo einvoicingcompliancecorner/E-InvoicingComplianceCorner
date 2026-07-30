@@ -4,6 +4,8 @@
 -- Deliberately excludes *-data.json (tracker per-country content
 -- translations) — see D1-MIGRATION-PLAN.md.
 
+INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-certified-providers', '_meta.language', 'de', 'de');
+INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-certified-providers', '_meta.reviewed', 'de', 'true');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-certified-providers', 'backLink', 'de', '← Zurück zur Übersicht');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-certified-providers', 'header.eyebrow', 'de', 'Wissen');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-certified-providers', 'header.title', 'de', 'Staatlich zertifizierte Anbieter');
@@ -52,6 +54,8 @@ INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-certified-pr
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-certified-providers', 'sec5.card4.title', 'de', '📬 Diese Liste wird wachsen');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-certified-providers', 'sec5.card4.body', 'de', 'Weitere Länder werden hier hinzugefügt, sobald wir ihre offiziellen Quellen direkt verifizieren — Abonnenten werden benachrichtigt, wenn neue Einträge veröffentlicht werden.');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-certified-providers', 'footer.text', 'de', 'Diese Seite verlinkt direkt zu offiziellen Regierungs- und Behördenquellen, verifiziert zum oben genannten Datum, und dient der allgemeinen Information — sie stellt keine Empfehlung eines bestimmten Anbieters dar, und die Aufnahme in eine Regierungsliste ist keine Garantie für die Eignung für Ihre spezifischen Bedürfnisse. Bestätigen Sie den aktuellen Akkreditierungsstatus eines Anbieters immer direkt auf der verlinkten offiziellen Seite, bevor Sie eine Vereinbarung unterzeichnen.');
+INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-impact-of-mandate', '_meta.language', 'de', 'de');
+INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-impact-of-mandate', '_meta.reviewed', 'de', 'true');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-impact-of-mandate', 'backLink', 'de', '← Zurück zur Übersicht');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-impact-of-mandate', 'header.eyebrow', 'de', 'Wissen');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-impact-of-mandate', 'header.title', 'de', 'Auswirkungen der Vorgabe');
@@ -150,6 +154,8 @@ INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-impact-of-ma
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-impact-of-mandate', 'sec8.card4.title', 'de', '✅ Finden Sie einen akkreditierten Anbieter');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-impact-of-mandate', 'sec8.card4.body', 'de', '"Staatlich zertifizierte Anbieter" (unter Wissen) verlinkt direkt zu den offiziellen Regierungsregistern für akkreditierte Dienstleister, Land für Land.');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-impact-of-mandate', 'footer.text', 'de', 'Diese Seite bietet allgemeinen Bildungskontext zur Unterstützung der internen Planung und stellt keine Rechts-, Steuer- oder technische Umsetzungsberatung dar. Konkrete Anforderungen variieren je nach Land sowie Ihren eigenen Systemen und Ihrer Konzernstruktur — konsultieren Sie die jeweilige Länderanalyse und einen qualifizierten Berater, bevor Sie Umsetzungsentscheidungen treffen.');
+INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-mandate-types', '_meta.language', 'de', 'de');
+INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-mandate-types', '_meta.reviewed', 'de', 'true');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-mandate-types', 'backLink', 'de', '← Zurück zur Übersicht');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-mandate-types', 'header.eyebrow', 'de', 'Wissen');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-mandate-types', 'header.title', 'de', 'Arten von Vorgaben');
@@ -229,6 +235,8 @@ INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-mandate-type
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-mandate-types', 'sec5.card4.title', 'de', '🔔 Benachrichtigt werden, sobald sie erscheinen');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-mandate-types', 'sec5.card4.body', 'de', 'Abonnenten erhalten bevorzugten Zugang zu neuen Wissensinhalten, sobald sie veröffentlicht werden, zusätzlich zum monatlichen Compliance-Digest.');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-mandate-types', 'footer.text', 'de', 'Diese Seite bietet allgemeinen Bildungskontext und stellt keine Rechts- oder Steuerberatung dar. Compliance-Modelle können sich ändern und tun dies auch — die jeweilige Länderanalyse ist die maßgebliche Quelle für ihre aktuellen spezifischen Anforderungen.');
+INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-preparing-for-mandate', '_meta.language', 'de', 'de');
+INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-preparing-for-mandate', '_meta.reviewed', 'de', 'true');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-preparing-for-mandate', 'backLink', 'de', '← Zurück zur Übersicht');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-preparing-for-mandate', 'header.eyebrow', 'de', 'Wissen');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-preparing-for-mandate', 'header.title', 'de', 'Vorbereitung auf eine Vorgabe');
@@ -329,6 +337,8 @@ INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-preparing-fo
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-preparing-for-mandate', 'sec6.card5.title', 'de', '✅ Finden Sie einen akkreditierten Anbieter');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-preparing-for-mandate', 'sec6.card5.body', 'de', '"Staatlich zertifizierte Anbieter" (unter Wissen) verlinkt direkt zu den im obigen Abschnitt zur Anbieterauswahl genannten offiziellen Registern.');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-preparing-for-mandate', 'footer.text', 'de', 'Diese Seite bietet allgemeine Bildungshinweise auf Basis gängiger Muster in Programmen zur Vorgabenvorbereitung und stellt keine Rechts-, Steuer- oder Beschaffungsberatung dar. Konkrete Zeitpläne und Anforderungen variieren je nach Land sowie Ihren eigenen Systemen und Ihrer Organisation — konsultieren Sie die jeweilige Länderanalyse und geeignete Berater, bevor Sie sich auf einen Plan festlegen.');
+INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-types-of-provider', '_meta.language', 'de', 'de');
+INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-types-of-provider', '_meta.reviewed', 'de', 'true');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-types-of-provider', 'backLink', 'de', '← Zurück zur Übersicht');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-types-of-provider', 'header.eyebrow', 'de', 'Wissen');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-types-of-provider', 'header.title', 'de', 'Anbietertypen');
@@ -430,6 +440,8 @@ INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-types-of-pro
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-types-of-provider', 'sec7.card3.title', 'de', '🌍 Prüfen Sie die Anforderungen Ihres spezifischen Landes');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-types-of-provider', 'sec7.card3.body', 'de', 'Das Menü der Länderanalysen behandelt die genauen technischen Spezifikationen und Registrierungsschritte für jede der 28 hier erfassten Rechtsordnungen.');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-types-of-provider', 'footer.text', 'de', 'Firmennamen auf dieser Seite sind rein illustrative Beispiele, um jede Kategorie greifbar zu machen — sie sind keine Empfehlungen, Ranglisten oder eine vollständige Marktübersicht, und ihre Nennung impliziert keine Beziehung zu dieser Website. Die oben genannte Analystenforschung wird nur zur allgemeinen Information verlinkt; vollständige Berichte können ein kostenpflichtiges Abonnement oder anbieterseitigen Zugang erfordern, und jede darin enthaltene Anbieterpositionierung spiegelt die eigene Methodik und Ansichten dieses Hauses wider, nicht unsere. Prüfen Sie die aktuelle Akkreditierung und Eignung eines bestimmten Anbieters für Ihre Bedürfnisse direkt, bevor Sie ihn beauftragen.');
+INSERT INTO translations (namespace, key, lang, value) VALUES ('feedback', '_meta.language', 'de', 'de');
+INSERT INTO translations (namespace, key, lang, value) VALUES ('feedback', '_meta.reviewed', 'de', 'true');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('feedback', 'backLink', 'de', '← Zurück zur Übersicht');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('feedback', 'form.eyebrow', 'de', 'Eine Lücke oder einen Fehler entdeckt?');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('feedback', 'form.title', 'de', 'Feedback senden');
@@ -448,6 +460,8 @@ INSERT INTO translations (namespace, key, lang, value) VALUES ('feedback', 'succ
 INSERT INTO translations (namespace, key, lang, value) VALUES ('feedback', 'success.ifNeeded', 'de', 'zurück.');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('feedback', 'success.backToTracker', 'de', 'Zurück zur Übersicht');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('feedback', 'success.sendAnother', 'de', 'Weiteres senden');
+INSERT INTO translations (namespace, key, lang, value) VALUES ('subscribe', '_meta.language', 'de', 'de');
+INSERT INTO translations (namespace, key, lang, value) VALUES ('subscribe', '_meta.reviewed', 'de', 'true');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('subscribe', 'backLink', 'de', '← Zurück zur Übersicht');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('subscribe', 'benefits.eyebrow', 'de', 'Nie wieder überrascht werden');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('subscribe', 'benefits.title', 'de', 'Erfahren Sie sofort, wenn eine Regierung die Regeln ändert');
@@ -496,6 +510,10 @@ INSERT INTO translations (namespace, key, lang, value) VALUES ('subscribe', 'con
 INSERT INTO translations (namespace, key, lang, value) VALUES ('subscribe', 'modal.close', 'de', '✕ Schließen');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('subscribe', 'modal.badge', 'de', 'Echte Beispielausgabe — kein Mockup');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('subscribe', 'modal.fineprint', 'de', 'Dies ist die tatsächliche erste Ausgabe, die an Abonnenten gesendet wurde, genau wie veröffentlicht — nichts wurde für diese Vorschau bearbeitet oder gekürzt. Jeder Abonnent erhält Zugang zum vollständigen durchsuchbaren Archiv, nicht nur zu dieser einen Ausgabe.');
+INSERT INTO translations (namespace, key, lang, value) VALUES ('tracker', '_meta.language', 'de', 'de');
+INSERT INTO translations (namespace, key, lang, value) VALUES ('tracker', '_meta.label', 'de', 'Deutsch');
+INSERT INTO translations (namespace, key, lang, value) VALUES ('tracker', '_meta.reviewed', 'de', 'true');
+INSERT INTO translations (namespace, key, lang, value) VALUES ('tracker', '_meta.reviewedNote', 'de', 'Mit KI-Unterstützung erstellte Übersetzung, freigegeben zur Veröffentlichung (Navigationsinhalte, keine Compliance-Daten).');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('tracker', 'brand.eyebrow', 'de', 'Compliance-Übersicht');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('tracker', 'brand.title', 'de', 'The E-Invoicing<br>Compliance Corner');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('tracker', 'brand.description', 'de', 'Ein laufend aktualisierter Überblick über E-Invoicing- und digitale Meldepflichten in 28 Ländern — EU-weite ViDA-Regeln, nationale CTC-Systeme und alles dazwischen. Jeder Eintrag zeigt die Frist, was konkret zu tun ist, und einen direkten Link zum offiziellen Regierungsportal — damit Sie in einem einzigen Blick von "betrifft uns das?" zu "das müssen wir tun" kommen.');
@@ -568,6 +586,8 @@ INSERT INTO translations (namespace, key, lang, value) VALUES ('tracker', 'stats
 INSERT INTO translations (namespace, key, lang, value) VALUES ('tracker', 'stats.alreadyInEffect', 'de', 'Bereits in Kraft');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('tracker', 'stats.dueWithin90Days', 'de', 'Fällig innerhalb von 90 Tagen');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('tracker', 'stats.furtherOut', 'de', 'Später fällig');
+INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-certified-providers', '_meta.language', 'en', 'en');
+INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-certified-providers', '_meta.reviewed', 'en', 'true');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-certified-providers', 'backLink', 'en', '← Back to global tracker');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-certified-providers', 'header.eyebrow', 'en', 'Education');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-certified-providers', 'header.title', 'en', 'Government Certified Providers');
@@ -616,6 +636,8 @@ INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-certified-pr
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-certified-providers', 'sec5.card4.title', 'en', '📬 This list will grow');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-certified-providers', 'sec5.card4.body', 'en', 'More countries will be added here as we verify their official sources directly — subscribers get notified when new entries are published.');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-certified-providers', 'footer.text', 'en', 'This page links directly to official government and authority sources as verified at the date above, and is provided for general awareness — it is not an endorsement of any specific provider, and inclusion on a government list is not a guarantee of fit for your specific needs. Always confirm a provider''s current accreditation status directly on the linked official page before signing an agreement.');
+INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-impact-of-mandate', '_meta.language', 'en', 'en');
+INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-impact-of-mandate', '_meta.reviewed', 'en', 'true');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-impact-of-mandate', 'backLink', 'en', '← Back to global tracker');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-impact-of-mandate', 'header.eyebrow', 'en', 'Education');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-impact-of-mandate', 'header.title', 'en', 'Impact of Mandate');
@@ -714,6 +736,8 @@ INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-impact-of-ma
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-impact-of-mandate', 'sec8.card4.title', 'en', '✅ Find an accredited provider');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-impact-of-mandate', 'sec8.card4.body', 'en', '"Government Certified Providers" (under Education) links directly to the official government registries for accredited service providers, country by country.');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-impact-of-mandate', 'footer.text', 'en', 'This page provides general educational context to help scope internal planning and is not legal, tax, or technical implementation advice. Specific requirements vary by country and by your own systems and group structure — consult the relevant country deep dive and a qualified advisor before making implementation decisions.');
+INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-mandate-types', '_meta.language', 'en', 'en');
+INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-mandate-types', '_meta.reviewed', 'en', 'true');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-mandate-types', 'backLink', 'en', '← Back to global tracker');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-mandate-types', 'header.eyebrow', 'en', 'Education');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-mandate-types', 'header.title', 'en', 'Types of Mandate');
@@ -793,6 +817,8 @@ INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-mandate-type
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-mandate-types', 'sec5.card4.title', 'en', '🔔 Get notified when they land');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-mandate-types', 'sec5.card4.body', 'en', 'Subscribers get priority access to new education content as it''s published, alongside the monthly compliance digest itself.');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-mandate-types', 'footer.text', 'en', 'This page provides general educational context and is not legal or tax advice. Compliance models can and do evolve — a country''s own deep dive is the authoritative source for its current specific requirements.');
+INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-preparing-for-mandate', '_meta.language', 'en', 'en');
+INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-preparing-for-mandate', '_meta.reviewed', 'en', 'true');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-preparing-for-mandate', 'backLink', 'en', '← Back to global tracker');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-preparing-for-mandate', 'header.eyebrow', 'en', 'Education');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-preparing-for-mandate', 'header.title', 'en', 'Preparing for a Mandate');
@@ -893,6 +919,8 @@ INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-preparing-fo
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-preparing-for-mandate', 'sec6.card5.title', 'en', '✅ Find an accredited provider');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-preparing-for-mandate', 'sec6.card5.body', 'en', '"Government Certified Providers" (under Education) links directly to the official registries referenced in the vendor selection section above.');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-preparing-for-mandate', 'footer.text', 'en', 'This page provides general educational guidance based on common patterns in mandate readiness programmes, and is not legal, tax, or procurement advice. Specific timelines and requirements vary by country and by your own systems and organisation — consult the relevant country deep dive and appropriate advisors before committing to a plan.');
+INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-types-of-provider', '_meta.language', 'en', 'en');
+INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-types-of-provider', '_meta.reviewed', 'en', 'true');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-types-of-provider', 'backLink', 'en', '← Back to global tracker');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-types-of-provider', 'header.eyebrow', 'en', 'Education');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-types-of-provider', 'header.title', 'en', 'Types of Provider');
@@ -994,6 +1022,8 @@ INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-types-of-pro
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-types-of-provider', 'sec7.card3.title', 'en', '🌍 Check your specific country''s requirements');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-types-of-provider', 'sec7.card3.body', 'en', 'The Deep Dives menu covers exact technical specifications and registration steps for each of the 28 jurisdictions tracked here.');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-types-of-provider', 'footer.text', 'en', 'Company names in this page are illustrative examples only, included to make each category concrete — they are not endorsements, rankings, or a complete market map, and their inclusion does not imply any relationship with this site. Analyst research referenced above is linked for general awareness only; full reports may require a paid subscription or vendor-provided access, and any vendor positioning within them reflects that firm''s own methodology and views, not ours. Verify any specific provider''s current accreditation and fit for your needs directly before engaging them.');
+INSERT INTO translations (namespace, key, lang, value) VALUES ('feedback', '_meta.language', 'en', 'en');
+INSERT INTO translations (namespace, key, lang, value) VALUES ('feedback', '_meta.reviewed', 'en', 'true');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('feedback', 'backLink', 'en', '← Back to global tracker');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('feedback', 'form.eyebrow', 'en', 'Spot a gap or an error?');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('feedback', 'form.title', 'en', 'Send feedback');
@@ -1012,6 +1042,8 @@ INSERT INTO translations (namespace, key, lang, value) VALUES ('feedback', 'succ
 INSERT INTO translations (namespace, key, lang, value) VALUES ('feedback', 'success.ifNeeded', 'en', 'if needed.');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('feedback', 'success.backToTracker', 'en', 'Back to tracker');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('feedback', 'success.sendAnother', 'en', 'Send another');
+INSERT INTO translations (namespace, key, lang, value) VALUES ('subscribe', '_meta.language', 'en', 'en');
+INSERT INTO translations (namespace, key, lang, value) VALUES ('subscribe', '_meta.reviewed', 'en', 'true');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('subscribe', 'backLink', 'en', '← Back to global tracker');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('subscribe', 'benefits.eyebrow', 'en', 'Never get caught off guard');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('subscribe', 'benefits.title', 'en', 'Get notified the moment a government changes the rules');
@@ -1060,6 +1092,10 @@ INSERT INTO translations (namespace, key, lang, value) VALUES ('subscribe', 'con
 INSERT INTO translations (namespace, key, lang, value) VALUES ('subscribe', 'modal.close', 'en', '✕ Close');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('subscribe', 'modal.badge', 'en', 'Real sample issue — not a mockup');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('subscribe', 'modal.fineprint', 'en', 'This is the actual first issue sent to subscribers, exactly as published — nothing edited or shortened for this preview. Every subscriber gets access to the full searchable archive, not just this one issue.');
+INSERT INTO translations (namespace, key, lang, value) VALUES ('tracker', '_meta.language', 'en', 'en');
+INSERT INTO translations (namespace, key, lang, value) VALUES ('tracker', '_meta.label', 'en', 'English');
+INSERT INTO translations (namespace, key, lang, value) VALUES ('tracker', '_meta.reviewed', 'en', 'true');
+INSERT INTO translations (namespace, key, lang, value) VALUES ('tracker', '_meta.reviewedNote', 'en', 'Source language — always considered authoritative.');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('tracker', 'brand.eyebrow', 'en', 'Compliance clearance board');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('tracker', 'brand.title', 'en', 'The E-Invoicing<br>Compliance Corner');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('tracker', 'brand.description', 'en', 'A living tracker of e-invoicing and digital reporting mandates across 28 countries — EU-wide ViDA rules, national CTC systems, and everything in between. Each entry shows the deadline, what you need to do about it, and a direct link to the official government portal, so you can go from "is this relevant to us?" to "here''s what to action" in one page.');
@@ -1132,6 +1168,8 @@ INSERT INTO translations (namespace, key, lang, value) VALUES ('tracker', 'stats
 INSERT INTO translations (namespace, key, lang, value) VALUES ('tracker', 'stats.alreadyInEffect', 'en', 'Already in effect');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('tracker', 'stats.dueWithin90Days', 'en', 'Due within 90 days');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('tracker', 'stats.furtherOut', 'en', 'Further out');
+INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-certified-providers', '_meta.language', 'es', 'es');
+INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-certified-providers', '_meta.reviewed', 'es', 'true');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-certified-providers', 'backLink', 'es', '← Volver al panel general');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-certified-providers', 'header.eyebrow', 'es', 'Educación');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-certified-providers', 'header.title', 'es', 'Proveedores certificados por el gobierno');
@@ -1180,6 +1218,8 @@ INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-certified-pr
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-certified-providers', 'sec5.card4.title', 'es', '📬 Esta lista crecerá');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-certified-providers', 'sec5.card4.body', 'es', 'Se añadirán más países aquí a medida que verifiquemos directamente sus fuentes oficiales — los suscriptores reciben una notificación cuando se publican nuevas entradas.');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-certified-providers', 'footer.text', 'es', 'Esta página enlaza directamente con fuentes oficiales de gobiernos y autoridades verificadas en la fecha indicada arriba, y se ofrece con fines informativos generales — no constituye un aval de ningún proveedor concreto, y la inclusión en una lista gubernamental no garantiza su idoneidad para sus necesidades específicas. Confirme siempre el estado de acreditación actual de un proveedor directamente en la página oficial enlazada antes de firmar cualquier acuerdo.');
+INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-impact-of-mandate', '_meta.language', 'es', 'es');
+INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-impact-of-mandate', '_meta.reviewed', 'es', 'true');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-impact-of-mandate', 'backLink', 'es', '← Volver al panel general');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-impact-of-mandate', 'header.eyebrow', 'es', 'Educación');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-impact-of-mandate', 'header.title', 'es', 'Impacto del mandato');
@@ -1278,6 +1318,8 @@ INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-impact-of-ma
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-impact-of-mandate', 'sec8.card4.title', 'es', '✅ Encuentre un proveedor acreditado');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-impact-of-mandate', 'sec8.card4.body', 'es', '"Proveedores certificados por el gobierno" (en Educación) enlaza directamente con los registros oficiales del gobierno para proveedores de servicios acreditados, país por país.');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-impact-of-mandate', 'footer.text', 'es', 'Esta página ofrece contexto educativo general para ayudar a dimensionar la planificación interna y no constituye asesoramiento legal, fiscal ni de implementación técnica. Los requisitos específicos varían según el país y sus propios sistemas y estructura de grupo — consulte el análisis del país correspondiente y a un asesor cualificado antes de tomar decisiones de implementación.');
+INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-mandate-types', '_meta.language', 'es', 'es');
+INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-mandate-types', '_meta.reviewed', 'es', 'true');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-mandate-types', 'backLink', 'es', '← Volver al panel general');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-mandate-types', 'header.eyebrow', 'es', 'Educación');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-mandate-types', 'header.title', 'es', 'Tipos de mandato');
@@ -1357,6 +1399,8 @@ INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-mandate-type
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-mandate-types', 'sec5.card4.title', 'es', '🔔 Reciba una notificación cuando se publiquen');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-mandate-types', 'sec5.card4.body', 'es', 'Los suscriptores obtienen acceso prioritario al nuevo contenido educativo en cuanto se publica, junto con el resumen mensual de cumplimiento.');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-mandate-types', 'footer.text', 'es', 'Esta página ofrece contexto educativo general y no constituye asesoramiento legal ni fiscal. Los modelos de cumplimiento pueden evolucionar y de hecho lo hacen — el análisis propio de cada país es la fuente autorizada de sus requisitos específicos actuales.');
+INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-preparing-for-mandate', '_meta.language', 'es', 'es');
+INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-preparing-for-mandate', '_meta.reviewed', 'es', 'true');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-preparing-for-mandate', 'backLink', 'es', '← Volver al panel general');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-preparing-for-mandate', 'header.eyebrow', 'es', 'Educación');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-preparing-for-mandate', 'header.title', 'es', 'Preparación para un mandato');
@@ -1457,6 +1501,8 @@ INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-preparing-fo
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-preparing-for-mandate', 'sec6.card5.title', 'es', '✅ Encuentre un proveedor acreditado');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-preparing-for-mandate', 'sec6.card5.body', 'es', '"Proveedores certificados por el gobierno" (en Educación) enlaza directamente con los registros oficiales mencionados en la sección de selección de proveedor anterior.');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-preparing-for-mandate', 'footer.text', 'es', 'Esta página ofrece orientación educativa general basada en patrones comunes de los programas de preparación ante mandatos, y no constituye asesoramiento legal, fiscal ni de compras. Los plazos y requisitos concretos varían según el país y sus propios sistemas y organización — consulte el análisis del país correspondiente y a los asesores adecuados antes de comprometerse con un plan.');
+INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-types-of-provider', '_meta.language', 'es', 'es');
+INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-types-of-provider', '_meta.reviewed', 'es', 'true');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-types-of-provider', 'backLink', 'es', '← Volver al panel general');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-types-of-provider', 'header.eyebrow', 'es', 'Educación');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-types-of-provider', 'header.title', 'es', 'Tipos de proveedor');
@@ -1558,6 +1604,8 @@ INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-types-of-pro
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-types-of-provider', 'sec7.card3.title', 'es', '🌍 Consulte los requisitos de su país concreto');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-types-of-provider', 'sec7.card3.body', 'es', 'El menú de análisis por país cubre las especificaciones técnicas exactas y los pasos de registro para cada una de las 28 jurisdicciones seguidas aquí.');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-types-of-provider', 'footer.text', 'es', 'Los nombres de empresas en esta página son únicamente ejemplos ilustrativos, incluidos para hacer concreta cada categoría — no son avales, clasificaciones ni un mapa completo del mercado, y su inclusión no implica ninguna relación con este sitio. La investigación de analistas mencionada arriba se enlaza solo con fines informativos generales; los informes completos pueden requerir una suscripción de pago o acceso proporcionado por el proveedor, y cualquier posicionamiento de proveedores en ellos refleja la propia metodología y opiniones de esa firma, no las nuestras. Verifique directamente la acreditación actual y la idoneidad de cualquier proveedor concreto para sus necesidades antes de contratarlo.');
+INSERT INTO translations (namespace, key, lang, value) VALUES ('feedback', '_meta.language', 'es', 'es');
+INSERT INTO translations (namespace, key, lang, value) VALUES ('feedback', '_meta.reviewed', 'es', 'true');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('feedback', 'backLink', 'es', '← Volver al panel general');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('feedback', 'form.eyebrow', 'es', '¿Ha detectado una carencia o un error?');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('feedback', 'form.title', 'es', 'Enviar comentarios');
@@ -1576,6 +1624,8 @@ INSERT INTO translations (namespace, key, lang, value) VALUES ('feedback', 'succ
 INSERT INTO translations (namespace, key, lang, value) VALUES ('feedback', 'success.ifNeeded', 'es', 'si es necesario.');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('feedback', 'success.backToTracker', 'es', 'Volver al seguimiento');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('feedback', 'success.sendAnother', 'es', 'Enviar otro');
+INSERT INTO translations (namespace, key, lang, value) VALUES ('subscribe', '_meta.language', 'es', 'es');
+INSERT INTO translations (namespace, key, lang, value) VALUES ('subscribe', '_meta.reviewed', 'es', 'true');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('subscribe', 'backLink', 'es', '← Volver al panel general');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('subscribe', 'benefits.eyebrow', 'es', 'Nunca más se lleve una sorpresa');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('subscribe', 'benefits.title', 'es', 'Reciba una notificación en cuanto un gobierno cambie las normas');
@@ -1624,6 +1674,10 @@ INSERT INTO translations (namespace, key, lang, value) VALUES ('subscribe', 'con
 INSERT INTO translations (namespace, key, lang, value) VALUES ('subscribe', 'modal.close', 'es', '✕ Cerrar');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('subscribe', 'modal.badge', 'es', 'Ejemplar de muestra real — no es una maqueta');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('subscribe', 'modal.fineprint', 'es', 'Este es el primer número real enviado a los suscriptores, exactamente como se publicó — nada editado ni acortado para esta vista previa. Cada suscriptor tiene acceso al archivo completo y consultable, no solo a este número.');
+INSERT INTO translations (namespace, key, lang, value) VALUES ('tracker', '_meta.language', 'es', 'es');
+INSERT INTO translations (namespace, key, lang, value) VALUES ('tracker', '_meta.label', 'es', 'Español');
+INSERT INTO translations (namespace, key, lang, value) VALUES ('tracker', '_meta.reviewed', 'es', 'true');
+INSERT INTO translations (namespace, key, lang, value) VALUES ('tracker', '_meta.reviewedNote', 'es', 'Traducción generada con asistencia de IA, aprobada para publicación (contenido de navegación, no datos de cumplimiento).');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('tracker', 'brand.eyebrow', 'es', 'Panel de cumplimiento normativo');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('tracker', 'brand.title', 'es', 'The E-Invoicing<br>Compliance Corner');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('tracker', 'brand.description', 'es', 'Un seguimiento actualizado de los mandatos de facturación electrónica y reporte digital en 28 países — normas de ViDA a nivel de la UE, sistemas nacionales de CTC, y todo lo demás. Cada entrada muestra la fecha límite, lo que debe hacer al respecto, y un enlace directo al portal oficial del gobierno, para que pueda pasar de "¿esto nos afecta?" a "esto es lo que hay que hacer" en una sola página.');
@@ -1696,6 +1750,8 @@ INSERT INTO translations (namespace, key, lang, value) VALUES ('tracker', 'stats
 INSERT INTO translations (namespace, key, lang, value) VALUES ('tracker', 'stats.alreadyInEffect', 'es', 'Ya en vigor');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('tracker', 'stats.dueWithin90Days', 'es', 'Vencen en 90 días');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('tracker', 'stats.furtherOut', 'es', 'Más adelante');
+INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-certified-providers', '_meta.language', 'fr', 'fr');
+INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-certified-providers', '_meta.reviewed', 'fr', 'true');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-certified-providers', 'backLink', 'fr', '← Retour au suivi global');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-certified-providers', 'header.eyebrow', 'fr', 'Ressources');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-certified-providers', 'header.title', 'fr', 'Prestataires certifiés par l''État');
@@ -1744,6 +1800,8 @@ INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-certified-pr
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-certified-providers', 'sec5.card4.title', 'fr', '📬 Cette liste va s''étoffer');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-certified-providers', 'sec5.card4.body', 'fr', 'D''autres pays seront ajoutés ici au fur et à mesure que nous vérifions directement leurs sources officielles — les abonnés sont notifiés lors de la publication de nouvelles entrées.');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-certified-providers', 'footer.text', 'fr', 'Cette page renvoie directement vers des sources gouvernementales et officielles vérifiées à la date indiquée ci-dessus, à titre purement informatif — elle ne constitue l''approbation d''aucun prestataire en particulier, et la présence sur une liste gouvernementale ne garantit pas son adéquation à vos besoins spécifiques. Vérifiez toujours directement le statut d''agrément actuel d''un prestataire sur la page officielle liée avant de signer un accord.');
+INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-impact-of-mandate', '_meta.language', 'fr', 'fr');
+INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-impact-of-mandate', '_meta.reviewed', 'fr', 'true');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-impact-of-mandate', 'backLink', 'fr', '← Retour au suivi global');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-impact-of-mandate', 'header.eyebrow', 'fr', 'Ressources');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-impact-of-mandate', 'header.title', 'fr', 'Impact de l''obligation');
@@ -1842,6 +1900,8 @@ INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-impact-of-ma
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-impact-of-mandate', 'sec8.card4.title', 'fr', '✅ Trouvez un prestataire agréé');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-impact-of-mandate', 'sec8.card4.body', 'fr', '« Prestataires certifiés par l''État » (sous Ressources) renvoie directement vers les registres gouvernementaux officiels des prestataires de services agréés, pays par pays.');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-impact-of-mandate', 'footer.text', 'fr', 'Cette page fournit un contexte pédagogique général pour aider à cadrer la planification interne et ne constitue pas un conseil juridique, fiscal ou de mise en œuvre technique. Les exigences précises varient selon le pays ainsi que vos propres systèmes et structure de groupe — consultez l''analyse du pays concerné et un conseiller qualifié avant de prendre des décisions de mise en œuvre.');
+INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-mandate-types', '_meta.language', 'fr', 'fr');
+INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-mandate-types', '_meta.reviewed', 'fr', 'true');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-mandate-types', 'backLink', 'fr', '← Retour au suivi global');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-mandate-types', 'header.eyebrow', 'fr', 'Ressources');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-mandate-types', 'header.title', 'fr', 'Types d''obligation');
@@ -1921,6 +1981,8 @@ INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-mandate-type
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-mandate-types', 'sec5.card4.title', 'fr', '🔔 Soyez averti dès leur publication');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-mandate-types', 'sec5.card4.body', 'fr', 'Les abonnés bénéficient d''un accès prioritaire aux nouveaux contenus pédagogiques dès leur publication, en plus de la synthèse mensuelle de conformité.');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-mandate-types', 'footer.text', 'fr', 'Cette page fournit un contexte pédagogique général et ne constitue pas un conseil juridique ou fiscal. Les modèles de conformité peuvent évoluer et évoluent effectivement — l''analyse propre à chaque pays reste la source faisant autorité pour ses exigences spécifiques actuelles.');
+INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-preparing-for-mandate', '_meta.language', 'fr', 'fr');
+INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-preparing-for-mandate', '_meta.reviewed', 'fr', 'true');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-preparing-for-mandate', 'backLink', 'fr', '← Retour au suivi global');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-preparing-for-mandate', 'header.eyebrow', 'fr', 'Ressources');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-preparing-for-mandate', 'header.title', 'fr', 'Se préparer à une obligation');
@@ -2021,6 +2083,8 @@ INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-preparing-fo
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-preparing-for-mandate', 'sec6.card5.title', 'fr', '✅ Trouvez un prestataire agréé');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-preparing-for-mandate', 'sec6.card5.body', 'fr', '« Prestataires certifiés par l''État » (sous Ressources) renvoie directement vers les registres officiels mentionnés dans la section de sélection de prestataire ci-dessus.');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-preparing-for-mandate', 'footer.text', 'fr', 'Cette page fournit des indications pédagogiques générales fondées sur des schémas courants observés dans les programmes de préparation aux obligations, et ne constitue pas un conseil juridique, fiscal ou en matière d''achats. Les calendriers et exigences précis varient selon le pays ainsi que vos propres systèmes et organisation — consultez l''analyse du pays concerné et des conseillers appropriés avant de vous engager sur un plan.');
+INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-types-of-provider', '_meta.language', 'fr', 'fr');
+INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-types-of-provider', '_meta.reviewed', 'fr', 'true');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-types-of-provider', 'backLink', 'fr', '← Retour au suivi global');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-types-of-provider', 'header.eyebrow', 'fr', 'Ressources');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-types-of-provider', 'header.title', 'fr', 'Types de prestataires');
@@ -2122,6 +2186,8 @@ INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-types-of-pro
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-types-of-provider', 'sec7.card3.title', 'fr', '🌍 Consultez les exigences de votre pays précis');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-types-of-provider', 'sec7.card3.body', 'fr', 'Le menu des analyses par pays couvre les spécifications techniques exactes et les étapes d''immatriculation pour chacune des 28 juridictions suivies ici.');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('edu-types-of-provider', 'footer.text', 'fr', 'Les noms d''entreprises mentionnés sur cette page sont des exemples purement illustratifs, inclus pour rendre chaque catégorie concrète — ce ne sont ni des recommandations, ni des classements, ni une cartographie complète du marché, et leur mention n''implique aucune relation avec ce site. Les recherches d''analystes mentionnées ci-dessus sont liées à titre purement informatif ; les rapports complets peuvent nécessiter un abonnement payant ou un accès fourni par un prestataire, et tout positionnement de prestataire qui y figure reflète la propre méthodologie et les opinions de ce cabinet, pas les nôtres. Vérifiez directement l''accréditation actuelle et l''adéquation de tout prestataire précis à vos besoins avant de le solliciter.');
+INSERT INTO translations (namespace, key, lang, value) VALUES ('feedback', '_meta.language', 'fr', 'fr');
+INSERT INTO translations (namespace, key, lang, value) VALUES ('feedback', '_meta.reviewed', 'fr', 'true');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('feedback', 'backLink', 'fr', '← Retour au suivi global');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('feedback', 'form.eyebrow', 'fr', 'Vous avez repéré une lacune ou une erreur ?');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('feedback', 'form.title', 'fr', 'Envoyer un commentaire');
@@ -2140,6 +2206,8 @@ INSERT INTO translations (namespace, key, lang, value) VALUES ('feedback', 'succ
 INSERT INTO translations (namespace, key, lang, value) VALUES ('feedback', 'success.ifNeeded', 'fr', 'si nécessaire.');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('feedback', 'success.backToTracker', 'fr', 'Retour au suivi');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('feedback', 'success.sendAnother', 'fr', 'Envoyer un autre');
+INSERT INTO translations (namespace, key, lang, value) VALUES ('subscribe', '_meta.language', 'fr', 'fr');
+INSERT INTO translations (namespace, key, lang, value) VALUES ('subscribe', '_meta.reviewed', 'fr', 'true');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('subscribe', 'backLink', 'fr', '← Retour au suivi global');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('subscribe', 'benefits.eyebrow', 'fr', 'Ne soyez plus jamais pris au dépourvu');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('subscribe', 'benefits.title', 'fr', 'Soyez averti dès qu''un gouvernement change les règles');
@@ -2188,6 +2256,10 @@ INSERT INTO translations (namespace, key, lang, value) VALUES ('subscribe', 'con
 INSERT INTO translations (namespace, key, lang, value) VALUES ('subscribe', 'modal.close', 'fr', '✕ Fermer');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('subscribe', 'modal.badge', 'fr', 'Véritable numéro d''exemple — pas une maquette');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('subscribe', 'modal.fineprint', 'fr', 'Il s''agit du tout premier numéro réellement envoyé aux abonnés, exactement tel que publié — rien n''a été modifié ni raccourci pour cet aperçu. Chaque abonné a accès à l''archive complète et consultable, pas seulement à ce numéro.');
+INSERT INTO translations (namespace, key, lang, value) VALUES ('tracker', '_meta.language', 'fr', 'fr');
+INSERT INTO translations (namespace, key, lang, value) VALUES ('tracker', '_meta.label', 'fr', 'Français');
+INSERT INTO translations (namespace, key, lang, value) VALUES ('tracker', '_meta.reviewed', 'fr', 'true');
+INSERT INTO translations (namespace, key, lang, value) VALUES ('tracker', '_meta.reviewedNote', 'fr', 'Traduction générée avec assistance de l''IA, approuvée pour publication (contenu de navigation, pas de données de conformité).');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('tracker', 'brand.eyebrow', 'fr', 'Tableau de suivi de conformité');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('tracker', 'brand.title', 'fr', 'The E-Invoicing<br>Compliance Corner');
 INSERT INTO translations (namespace, key, lang, value) VALUES ('tracker', 'brand.description', 'fr', 'Un suivi actualisé en continu des obligations de facturation électronique et de télédéclaration dans 28 pays — règles ViDA à l''échelle de l''UE, systèmes nationaux de CTC, et tout ce qui se trouve entre les deux. Chaque entrée indique l''échéance, ce qu''il faut faire, et un lien direct vers le portail officiel du gouvernement, pour passer de "est-ce que cela nous concerne ?" à "voici ce qu''il faut faire" en une seule page.');

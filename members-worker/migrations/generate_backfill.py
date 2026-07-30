@@ -32,14 +32,17 @@ def sql_escape(s):
     return s.replace("'", "''")
 
 def flatten(obj, prefix=""):
-    """Yield (dot.notation.key, value) for every leaf string, skipping
-    _meta, and skipping countryNames/regionNames entirely (those are
-    migrated separately into the dedicated countries/regions tables,
-    not duplicated again inside generic page-chrome translations —
-    that duplication is exactly what this migration exists to fix)."""
+    """Yield (dot.notation.key, value) for every leaf value, skipping
+    countryNames/regionNames entirely (those are migrated separately
+    into the dedicated countries/regions tables, not duplicated again
+    inside generic page-chrome translations). _meta IS captured (it's
+    genuinely used at runtime — i18n.js checks _meta.reviewed to show
+    an "unreviewed translation" warning), with booleans normalized to
+    lowercase "true"/"false" strings so they reconstruct as real JSON
+    booleans rather than Python's str(True) == "True"."""
     if isinstance(obj, dict):
         for k, v in obj.items():
-            if prefix == "" and k in ("_meta", "countryNames", "regionNames"):
+            if prefix == "" and k in ("countryNames", "regionNames"):
                 continue
             new_prefix = f"{prefix}.{k}" if prefix else k
             yield from flatten(v, new_prefix)
@@ -47,7 +50,9 @@ def flatten(obj, prefix=""):
         for i, item in enumerate(obj):
             yield from flatten(item, f"{prefix}.{i}")
     else:
-        if obj is not None and str(obj).strip() != "":
+        if isinstance(obj, bool):
+            yield (prefix, "true" if obj else "false")
+        elif obj is not None and str(obj).strip() != "":
             yield (prefix, str(obj))
 
 rows = []  # (namespace, key, lang, value)
