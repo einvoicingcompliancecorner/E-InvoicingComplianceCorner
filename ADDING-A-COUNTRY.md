@@ -68,36 +68,53 @@ File: `members-worker/src/index.js`
   page but not in the logged-in preferences page — a real, easy-to-miss
   inconsistency.
 - **`COUNTRY_NAME_TRANSLATIONS`** — add the ES/DE/FR name for the country.
-  Double-check the actual local name isn't just "Qatar" copy-pasted three
-  times — e.g. Spanish renders it "Catar." Get this from a real source, not
-  assumption.
+  Double-check the actual local name isn't just the English name
+  copy-pasted three times — get this from a real source, not assumption.
+  **This is the one genuine duplicate the D1 migration didn't reach** — see
+  Phase 4 below for why the other two copies no longer need hand-editing.
+- **`COUNTRY_DEEP_DIVE_SLUGS`** — added after this runbook was first written,
+  as part of making the newsletter archive's source/deep-dive links
+  auto-rendered rather than hand-embedded. Add `"CountryName": "country-slug"`
+  here too, or any future newsletter story tagged with this country will
+  silently render with no deep-dive link at all — no error, it just won't
+  appear.
 
 ---
 
-## Phase 4 — Translation dictionaries (the part most likely to drift)
+## Phase 4 — Country name translations
 
-**Country name translations currently live in three separate places.** All
-three need the identical new entry, by hand, in the same session — there is
-no shared source of truth between them:
+**As of the D1 migration, this is genuinely simpler than it used to be —
+only worth two separate updates now, not three.**
 
-| # | File(s) | Powers |
-|---|---|---|
-| 1 | `i18n/en.json`, `es.json`, `de.json`, `fr.json` | Main tracker's filter pills, cards, sidebar |
-| 2 | `i18n/en-subscribe.json`, `es-subscribe.json`, `de-subscribe.json`, `fr-subscribe.json` | Subscribe page's country picker |
-| 3 | `members-worker/src/index.js` (`COUNTRY_NAME_TRANSLATIONS`) | Logged-in preferences page |
+1. **D1's `countries` and `country_translations` tables** — insert the new
+   country (code, English name, region) and its ES/DE/FR translated names.
+   This single insert now powers **three** things at once: the tracker's
+   own `i18n/*.json` (regenerated via `generate_files.py`), the subscribe
+   page's `i18n/*-subscribe.json` (same regeneration), and the newsletter
+   archive's own country-tag display and deep-dive-link rendering. This
+   used to be two separate hand-edited JSON files plus a third hardcoded
+   copy — now it's one D1 insert plus running the generation script.
 
-Add the country + its ES/DE/FR name to the `countryNames` object in **all
-seven** of the JSON files above, plus the Worker's own dictionary. Use the
-exact same translated spelling in all of them.
+   ```bash
+   npx wrangler d1 execute eicc-content --remote --file=./migrations/XXX_add_country.sql
+   cd members-worker && python3 migrations/generate_files.py --remote --out i18n-generated
+   python3 migrations/compare_generated.py   # confirm nothing else changed unexpectedly
+   # then copy the genuinely new/changed files from i18n-generated/ into the real i18n/ folder
+   ```
 
-If you have time later, this triple duplication is worth consolidating —
-see "Known architectural debt" at the bottom of this doc.
+2. **`members-worker/src/index.js`'s `COUNTRY_NAME_TRANSLATIONS`** — still a
+   separate hardcoded copy (see Phase 3). This is the one piece of the old
+   triple-duplication that D1 hasn't absorbed, since the preferences page
+   reads from this dictionary directly rather than from D1.
 
 ### New DATA entries also need their own translations
 Each new milestone you added to `DATA` in Phase 1 needs a matching entry
 added to `i18n/es-data.json`, `de-data.json`, and `fr-data.json`, keyed by
-the same `id` you used in `DATA`. Same pattern as the other 68+ entries —
-`{ "system": "...", "desc": "...", "actions": ["...", "..."] }`.
+the same `id` you used in `DATA`. Same pattern as the other entries —
+`{ "system": "...", "desc": "...", "actions": ["...", "..."] }`. **This
+part is unrelated to the D1 migration and still needs hand-editing** —
+D1 currently covers page-chrome translations and newsletter stories, not
+the tracker's own per-milestone DATA content.
 
 Run the same cross-check used throughout this project before moving on:
 
@@ -151,18 +168,24 @@ Work through this in order after all of the above:
 
 ---
 
-## Known architectural debt (not urgent, but real)
+## Known architectural debt (partially resolved, one piece remains)
 
-The triple-duplicated country-name dictionary (Phase 4) is a genuine design
-smell — three copies of the same data, in two different codebases, with no
-mechanism keeping them in sync beyond human discipline. It has worked fine
-so far because additions have been infrequent and done carefully, but it
-will eventually drift if this process is ever rushed or done by someone
-without this document in front of them.
+**Update, post-D1-migration:** two of the original three duplicate copies
+are now genuinely gone. The D1 `countries`/`country_translations` tables
+are the actual single source of truth for the tracker and subscribe page's
+country names, via the `generate_files.py` build step (see
+`D1-MIGRATION-PLAN.md` and `NEWSLETTER-ARCHIVE-REDESIGN.md` for how and
+why this was built). What used to be described here as a speculative fix
+("could the members-worker fetch the tracker's JSON at request time?") is
+no longer the relevant question — a real database ended up being the
+actual answer.
 
-If country additions become frequent, worth revisiting: could the
-members-worker fetch the tracker's static `i18n/*.json` files at request
-time instead of maintaining its own hardcoded copy? (Cross-origin fetches
-from a Worker don't hit CORS restrictions the way browser-side fetches do,
-since the request happens server-side.) That would collapse three sources
-of truth down to one.
+**One genuine duplicate remains**: `members-worker/src/index.js`'s
+`COUNTRY_NAME_TRANSLATIONS` object still exists as a separate hardcoded
+copy, since the logged-in preferences page reads from it directly rather
+than querying D1. This is a small, known gap — the Worker already has a
+live D1 binding (`env.eicc_content`) it uses for stories, so having the
+preferences page query `country_translations` directly instead of the
+hardcoded object is a genuinely small, well-scoped piece of remaining
+work, not a speculative one. Worth doing if country additions become
+frequent enough that this one remaining hand-edit starts causing drift.
