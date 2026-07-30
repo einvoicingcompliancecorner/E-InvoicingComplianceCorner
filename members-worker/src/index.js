@@ -669,6 +669,29 @@ function buildEmailShell(bodyHtml, footerHtml) {
 </table>`;
 }
 
+// Wraps the raw Resend API call so failures are actually visible. A bare
+// fetch() only rejects on network-level failures — it resolves normally
+// even for a 401 (bad API key), 422 (rejected recipient/sender), or any
+// other error Resend returns, meaning a broken send could previously
+// look completely successful from this Worker's own perspective. This
+// logs the full response body on any non-2xx status so `wrangler tail`
+// actually shows what went wrong, instead of the failure being silent.
+async function sendViaResend(env, payload) {
+  const res = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${env.RESEND_API_KEY}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const errorBody = await res.text().catch(() => "(could not read response body)");
+    console.error(`Resend send failed — status ${res.status} for ${payload.to}: ${errorBody}`);
+  }
+  return res.ok;
+}
+
 async function sendMagicLinkEmail(env, email, link) {
   const body = `
     <p style="margin:0 0 6px; font-family:'Courier New',Courier,monospace; font-size:11px; text-transform:uppercase; letter-spacing:1px; color:#c98a3a;">Sign-in link</p>
@@ -683,18 +706,11 @@ async function sendMagicLinkEmail(env, email, link) {
     </table>`;
   const footer = `<p style="margin:0; font-size:11.5px; color:#8a7d5a; line-height:1.5;">If you didn't request this, you can safely ignore this email — nobody can access your account without clicking the link above.</p>`;
 
-  await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${env.RESEND_API_KEY}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      from: env.FROM_EMAIL,
-      to: email,
-      subject: "Your sign-in link — The E-Invoicing Compliance Corner",
-      html: buildEmailShell(body, footer),
-    }),
+  return await sendViaResend(env, {
+    from: env.FROM_EMAIL,
+    to: email,
+    subject: "Your sign-in link — The E-Invoicing Compliance Corner",
+    html: buildEmailShell(body, footer),
   });
 }
 
@@ -730,18 +746,11 @@ async function sendMonthlyNotificationEmail(env, email, issueTitle, issueSummary
       <a href="${unsubLink}" style="color:#8a7d5a;">Stop these monthly notification emails</a> — this won't cancel your subscription, you'll still be able to log in and read every issue any time.
     </p>`;
 
-  await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${env.RESEND_API_KEY}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      from: env.FROM_EMAIL,
-      to: email,
-      subject: `This month's issue is live — ${issueTitle}`,
-      html: buildEmailShell(body, footer),
-    }),
+  await sendViaResend(env, {
+    from: env.FROM_EMAIL,
+    to: email,
+    subject: `This month's issue is live — ${issueTitle}`,
+    html: buildEmailShell(body, footer),
   });
 }
 
