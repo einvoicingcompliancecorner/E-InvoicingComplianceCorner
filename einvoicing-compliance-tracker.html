@@ -1255,6 +1255,38 @@ const DATA = [
     portals:[{label:'Portal das Finanças — e-Fatura (Autoridade Tributária)', url:'https://www.portaldasfinancas.gov.pt/pt/menu.action?pai=5075'}]
   },
 
+  // ---------------- FINLAND ----------------
+  {
+    id:'fi-b2g', country:'Finland', flag:'🇫🇮', code:'FI', region:'Europe',
+    system:'B2G e-invoicing mandatory (in force since Apr 2020)', date:'2020-04-01', anchor:true,
+    desc:'All suppliers invoicing Finnish government agencies must send e-invoices unless otherwise agreed — one of the most mature B2G regimes in Europe, with around 99% of invoices to public buyers already electronic. Finland has no general B2B or B2C e-invoicing mandate: domestic B2B e-invoicing remains entirely voluntary, though businesses with turnover above €10,000 have a statutory right to demand e-invoices from their suppliers under the eInvoicing Act 241/2019.',
+    actions:[
+      'If you supply any Finnish public-sector body, confirm you can send e-invoices — this has been the norm for years, not a new requirement',
+      'For domestic B2B, don\'t assume a legal mandate exists — check your specific customer\'s contractual requirements instead'
+    ],
+    portals:[{label:'Valtiokonttori (Finnish State Treasury) — e-invoicing', url:'https://www.valtiokonttori.fi/en/e-invoicing-fast-and-safe/'}]
+  },
+  {
+    id:'fi-en-standard', country:'Finland', flag:'🇫🇮', code:'FI', region:'Europe',
+    system:'State requires EN 16931-compliant e-invoices (in force since Apr 2021)', date:'2021-04-01',
+    desc:'From this date, Finnish government agencies only accept e-invoices compliant with the European Standard (EN 16931) — non-standard formats are no longer sufficient for B2G invoicing, even though e-invoicing itself had already been mandatory for a year. Finvoice 3.0 and TEAPPSXML 3.0 can both produce EN-compliant invoices, but compliance isn\'t automatic — businesses must verify their software\'s output actually meets the standard rather than assuming it by default.',
+    actions:[
+      'Confirm your invoicing software\'s Finvoice 3.0 or TEAPPSXML 3.0 output is genuinely EN 16931-compliant, not just superficially similar',
+      'Check the Verkkolaskuosoite directory to confirm which e-invoicing operator/portal reaches a given public-sector counterparty — there\'s no single central platform'
+    ],
+    portals:[{label:'Valtiokonttori (Finnish State Treasury) — e-invoicing', url:'https://www.valtiokonttori.fi/en/e-invoicing-fast-and-safe/'}]
+  },
+  {
+    id:'fi-vida', country:'Finland', flag:'🇫🇮', code:'FI', region:'Europe',
+    system:'Intra-EU B2B e-invoicing mandatory under EU ViDA', date:'2030-07-01',
+    desc:'Finland currently has no domestic B2B e-invoicing mandate and none is confirmed before this EU-wide deadline, under which intra-EU B2B transactions will require structured e-invoicing and digital reporting across every member state. Finland\'s government has indicated it plans to begin preparations around 2028, and a domestic mandate may follow this EU deadline rather than precede it — a genuinely different posture from most other countries in this tracker, which are moving well ahead of the 2030 EU floor.',
+    actions:[
+      'Don\'t assume Finland will follow the same domestic-mandate timeline as its Nordic neighbours — as of today, no domestic B2B mandate date has been set',
+      'Revisit this page periodically rather than treating "no mandate yet" as a permanent state — 2028 preparations could surface a firmer domestic timeline'
+    ],
+    portals:[{label:'Valtiokonttori (Finnish State Treasury) — e-invoicing', url:'https://www.valtiokonttori.fi/en/e-invoicing-fast-and-safe/'}]
+  },
+
   // ---------------- SWEDEN ----------------
   {
     id:'se-b2g', country:'Sweden', flag:'🇸🇪', code:'SE', region:'Europe',
@@ -1378,6 +1410,7 @@ const DEEP_DIVES = {
   'Germany': 'germany.html',
   'Poland': 'poland.html',
   'Portugal': 'portugal.html',
+  'Finland': 'finland.html',
   'United Kingdom': 'uk.html',
   'Croatia': 'croatia.html',
   'Italy': 'italy.html',
