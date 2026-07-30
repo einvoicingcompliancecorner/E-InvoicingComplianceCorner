@@ -33,17 +33,23 @@ ONE_TIME_VARIANT_ID = "1962239"
 binding = "SUBSCRIBERS"
 id = "5a7d9f86169a4e16852e914346568a9a"
 
-[[kv_namespaces]]
-binding = "ISSUES"
-id = "6142dc4affb945b487c4980c0b9b33bd"
+# NOTE: the old ISSUES KV binding was removed here — the monthly
+# notification job and the archive both now read from D1 (see
+# D1-MIGRATION-PLAN.md and NEWSLETTER-ARCHIVE-REDESIGN.md). Removing
+# this binding does NOT delete the underlying KV namespace or its data
+# in your Cloudflare account — it just stops this Worker from having
+# access to it. If you want to fully clean up the old data too, that's
+# a separate step: `wrangler kv namespace list` to find its ID, then
+# `wrangler kv namespace delete --namespace-id=<id>`.
 
 # ----------------------------------------------------------------
 # D1 database — translations (tracker, subscribe, education pages,
 # country deep dives) and newsletter story content. See
-# D1-MIGRATION-PLAN.md for the full design. Not yet used by any code
-# in this file — this binding is wired up ahead of the later data-
-# access rewrite described in that plan, and is used directly by the
-# build-time translation-generation script via `wrangler d1 execute`.
+# D1-MIGRATION-PLAN.md and NEWSLETTER-ARCHIVE-REDESIGN.md for the full
+# design. Actively used by the archive routes and the monthly
+# notification job (env.eicc_content in src/index.js), and also used
+# directly by the build-time translation-generation script via
+# `wrangler d1 execute`.
 # ----------------------------------------------------------------
 [[d1_databases]]
 binding = "eicc_content"
@@ -52,8 +58,10 @@ database_id = "d1d10bd0-e90a-44a3-9494-a63689e8d32e"
 
 # ----------------------------------------------------------------
 # Cron Trigger — fires the scheduled() handler in src/index.js once
-# a month, which sends every active subscriber a short, personalised
-# notification about that month's issue (not the full digest itself).
+# a month, which emails every active subscriber a list of that
+# month's newsletter stories — either just the ones matching their
+# saved country preferences, or the full month's list if they haven't
+# set any preference.
 # Schedule below: 09:00 UTC on the 1st of every month.
 # ----------------------------------------------------------------
 [triggers]
