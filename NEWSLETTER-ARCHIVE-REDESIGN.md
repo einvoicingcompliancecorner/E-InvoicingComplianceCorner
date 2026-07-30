@@ -288,6 +288,35 @@ Worth being clear this solves the members-worker's half of the problem
 cleanly, but the static-site half needs a separate decision regardless of
 which storage choice wins here.
 
+### D1's free tier, in concrete numbers
+
+Worth grounding the above in actual figures rather than a general
+trade-off, straight from Cloudflare's own current documentation:
+
+| Limit | Free plan |
+|---|---|
+| Rows read | 5 million per day |
+| Rows written | 100,000 per day |
+| Total storage | 5 GB |
+| Max size per database | 500 MB |
+| Databases per account | 10 |
+
+Exceeding a daily read/write limit simply makes queries fail with an
+error until the next UTC reset — no surprise overage billing on the free
+tier. Hitting the storage cap blocks new inserts/schema changes until
+something's cleaned up. Either way, upgrading to the paid plan lifts
+these "typically within minutes," per Cloudflare's own FAQ.
+
+**None of this would be a real constraint for this project for a long
+time.** Even several hundred stories, each with a handful of translated
+variants, sits nowhere near 500 MB, and even a generous burst of
+subscriber activity in a single day would land far under 100,000 writes.
+The free tier alone would comfortably cover this project through its
+early growth — this isn't a "you'll need to start paying for D1 soon"
+situation even if the migration happened today. The recommendation to
+wait isn't about avoiding cost; it's about not rewriting a working
+data-access layer ahead of an actual need.
+
 ### Recommendation: stay with KV for now
 
 At the project's current scale — a handful of stories, a modest
