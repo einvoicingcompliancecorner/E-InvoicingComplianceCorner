@@ -17,7 +17,7 @@ SITE_URL = "https://members.e-invoicingcompliancecorner.com"
 # up to Resend with (fine for testing). Once you have a real domain,
 # verify it in Resend and change this to something like
 # "newsletter@yourdomain.com".
-FROM_EMAIL = "onboarding@resend.dev"
+FROM_EMAIL = "noreply@e-invoicingcompliancecorner.com"
 
 # The Lemon Squeezy variant ID for your ONE-TIME (non-recurring)
 # product — find this in Lemon Squeezy: Products → your one-time
