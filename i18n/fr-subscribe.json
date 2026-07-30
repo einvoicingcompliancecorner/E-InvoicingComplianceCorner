@@ -6,6 +6,7 @@
     "title": "Soyez averti dès qu'un gouvernement change les règles",
     "intro": "Les seuils de facturation électronique, les numéros de vague et les dates de mise en service changent constamment — souvent avec peu de préavis public. Abonnez-vous une fois, et chaque mise à jour ou annonce gouvernementale des 28 juridictions que nous suivons arrive automatiquement dans votre boîte de réception, en langage clair, avant qu'elle ne prenne votre équipe au dépourvu.",
     "sampleLink": "👀 Voir un véritable numéro d'exemple (janvier 2026) →",
+    "trialBadge": "✨ Essai gratuit de 60 jours — essayez le service d'abord, aucun paiement requis",
     "stat1": "Juridictions suivies",
     "stat2": "Cadence de la synthèse",
     "stat3": "Spam entre les numéros",
@@ -30,7 +31,7 @@
     "countriesMissing": "La sélection de pays est temporairement indisponible — vous recevrez tout de même la synthèse mensuelle complète. (Fichier manquant : countries.js)",
     "selectAll": "Tout sélectionner",
     "clearAll": "Tout désélectionner",
-    "submitButton": "Continuer vers le paiement sécurisé",
+    "submitButton": "S'abonner aux newsletters",
     "fineprint": "Le paiement est géré par Lemon Squeezy, notre marchand officiel — ils collectent et reversent toute TVA/TPS applicable à cette vente, de sorte que la taxe ne vous est jamais facturée séparément. Nous ne voyons ni ne stockons jamais les détails de votre carte. Consultez notre <a href=\"privacy-policy.html\" style=\"color:#b5432f; text-decoration:underline;\">politique de confidentialité</a> pour savoir comment vos données sont traitées."
   },
   "confirm": {

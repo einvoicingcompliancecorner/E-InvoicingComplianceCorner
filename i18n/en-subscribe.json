@@ -6,6 +6,7 @@
     "title": "Get notified the moment a government changes the rules",
     "intro": "E-invoicing thresholds, wave numbers, and go-live dates change constantly — often with little public notice. Subscribe once, and every government update or announcement across the 28 jurisdictions we track lands in your inbox automatically, in plain language, before it catches your team off guard.",
     "sampleLink": "👀 See a real sample issue (January 2026) →",
+    "trialBadge": "✨ 60-day free trial — try the service out first, no payment needed",
     "stat1": "Jurisdictions tracked",
     "stat2": "Digest cadence",
     "stat3": "Spam between issues",
@@ -30,7 +31,7 @@
     "countriesMissing": "Country selection is temporarily unavailable — you'll still get the full monthly digest. (Missing file: countries.js)",
     "selectAll": "Select all",
     "clearAll": "Clear all",
-    "submitButton": "Continue to secure payment",
+    "submitButton": "Subscribe to Newsletters",
     "fineprint": "Payment is handled by Lemon Squeezy, our merchant of record — they collect and remit any applicable VAT/GST on this sale, so you're never charged tax separately. We never see or store your card details. See our <a href=\"privacy-policy.html\" style=\"color:#b5432f; text-decoration:underline;\">privacy policy</a> for how your data is handled."
   },
   "confirm": {

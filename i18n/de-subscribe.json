@@ -6,6 +6,7 @@
     "title": "Erfahren Sie sofort, wenn eine Regierung die Regeln ändert",
     "intro": "E-Invoicing-Schwellenwerte, Wellen-Nummern und Stichtage ändern sich ständig — oft mit wenig öffentlicher Vorankündigung. Einmal abonniert, landet jede Regierungsaktualisierung oder -ankündigung aus den 28 von uns erfassten Rechtsordnungen automatisch in Ihrem Posteingang, in klarer Sprache, bevor sie Ihr Team überrascht.",
     "sampleLink": "👀 Echte Beispielausgabe ansehen (Januar 2026) →",
+    "trialBadge": "✨ 60 Tage kostenlos testen — probieren Sie den Service zunächst aus, keine Zahlung nötig",
     "stat1": "Erfasste Rechtsordnungen",
     "stat2": "Versandrhythmus",
     "stat3": "Spam zwischen den Ausgaben",
@@ -30,7 +31,7 @@
     "countriesMissing": "Die Länderauswahl ist vorübergehend nicht verfügbar — Sie erhalten trotzdem den vollständigen monatlichen Digest. (Fehlende Datei: countries.js)",
     "selectAll": "Alle auswählen",
     "clearAll": "Alle abwählen",
-    "submitButton": "Weiter zur sicheren Zahlung",
+    "submitButton": "Newsletter abonnieren",
     "fineprint": "Die Zahlung wird von Lemon Squeezy, unserem Handelsvertreter, abgewickelt — sie erheben und führen jede anfallende Umsatzsteuer/GST für diesen Verkauf ab, sodass Ihnen nie separat Steuern berechnet werden. Wir sehen oder speichern Ihre Kartendaten niemals. Siehe unsere <a href=\"privacy-policy.html\" style=\"color:#b5432f; text-decoration:underline;\">Datenschutzerklärung</a>, um zu erfahren, wie Ihre Daten verarbeitet werden."
   },
   "confirm": {

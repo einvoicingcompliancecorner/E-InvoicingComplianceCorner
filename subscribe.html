@@ -126,6 +126,11 @@
     color:var(--soon); text-decoration:underline; cursor:pointer; margin-bottom:28px; background:none; border:none; padding:0;
   }
   .sample-issue-link:hover{color:#e0a55c;}
+  .trial-badge{
+    display:inline-flex; align-items:center; gap:8px; font-family:'IBM Plex Mono',monospace; font-size:12.5px; font-weight:600;
+    color:var(--stamp); background:rgba(181,67,47,0.08); border:1px solid rgba(181,67,47,0.3);
+    border-radius:999px; padding:7px 16px; margin-bottom:20px;
+  }
 
   /* ---------- sample issue modal ---------- */
   .modal-overlay{
@@ -279,6 +284,8 @@
       <h1 class="benefits-title display" data-i18n="benefits.title">Get notified the moment a government changes the rules</h1>
       <p class="benefits-intro" data-i18n="benefits.intro">E-invoicing thresholds, wave numbers, and go-live dates change constantly — often with little public notice. Subscribe once, and every government update or announcement across the 28 jurisdictions we track lands in your inbox automatically, in plain language, before it catches your team off guard.</p>
 
+      <p class="trial-badge" data-i18n="benefits.trialBadge">✨ 60-day free trial — try the service out first, no payment needed</p>
+
       <button type="button" class="sample-issue-link" id="openSampleIssue" data-i18n="benefits.sampleLink">👀 See a real sample issue (January 2026) →</button>
 
       <div class="benefit-stat-strip">
@@ -371,7 +378,7 @@
           <!-- Populated dynamically from countries.js — see the script at the bottom of this page -->
         </div>
 
-        <button type="submit" class="form-submit" data-i18n="card.submitButton">Continue to secure payment</button>
+        <button type="submit" class="form-submit" data-i18n="card.submitButton">Subscribe to Newsletters</button>
         <p class="form-fineprint" data-i18n="card.fineprint">Payment is handled by Lemon Squeezy, our merchant of record — they collect and remit any applicable VAT/GST on this sale, so you're never charged tax separately. We never see or store your card details. See our <a href="privacy-policy.html" style="color:var(--stamp); text-decoration:underline;">privacy policy</a> for how your data is handled.</p>
       </form>
     </div>

@@ -6,6 +6,7 @@
     "title": "Reciba una notificación en cuanto un gobierno cambie las normas",
     "intro": "Los umbrales de facturación electrónica, los números de ola y las fechas de puesta en marcha cambian constantemente — a menudo con poco aviso público. Suscríbase una vez y cada actualización o anuncio gubernamental de las 28 jurisdicciones que seguimos llegará automáticamente a su bandeja de entrada, en lenguaje sencillo, antes de que sorprenda a su equipo.",
     "sampleLink": "👀 Vea un ejemplar real de muestra (enero de 2026) →",
+    "trialBadge": "✨ Prueba gratuita de 60 días — pruebe el servicio primero, sin necesidad de pago",
     "stat1": "Jurisdicciones seguidas",
     "stat2": "Cadencia del resumen",
     "stat3": "Spam entre números",
@@ -30,7 +31,7 @@
     "countriesMissing": "La selección de países no está disponible temporalmente — de todas formas recibirá el resumen mensual completo. (Falta el archivo: countries.js)",
     "selectAll": "Seleccionar todo",
     "clearAll": "Borrar todo",
-    "submitButton": "Continuar al pago seguro",
+    "submitButton": "Suscribirse a los boletines",
     "fineprint": "El pago lo gestiona Lemon Squeezy, nuestro comerciante registrado — ellos recaudan y remiten cualquier IVA/GST aplicable a esta venta, por lo que nunca se le cobra el impuesto por separado. Nunca vemos ni almacenamos los datos de su tarjeta. Consulte nuestra <a href=\"privacy-policy.html\" style=\"color:#b5432f; text-decoration:underline;\">política de privacidad</a> para saber cómo se gestionan sus datos."
   },
   "confirm": {
