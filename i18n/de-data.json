@@ -581,5 +581,29 @@
       "Identifizieren Sie einen EU-gelisteten qualifizierten Vertrauensdiensteanbieter für QES rechtzeitig vor der Frist 2027 — dies ist ein eigener Beschaffungsschritt, keine Softwareeinstellung",
       "Gehen Sie nicht davon aus, dass die Einhaltung der bestehenden ATCUD-/QR-/Zertifizierungssoftware-Anforderungen dies bereits abdeckt — QES ist eine echte, zusätzliche Ebene speziell für PDF-Rechnungen"
     ]
+  },
+  "fi-b2g": {
+    "system": "B2G-E-Rechnung verpflichtend (in Kraft seit April 2020)",
+    "desc": "Alle Lieferanten, die finnische Regierungsbehörden in Rechnung stellen, müssen E-Rechnungen senden, sofern nicht anders vereinbart — eines der ausgereiftesten B2G-Regime Europas, mit rund 99 % bereits elektronischer Rechnungen an öffentliche Auftraggeber. Finnland hat keine allgemeine B2B- oder B2C-E-Invoicing-Vorgabe: Die inländische B2B-E-Rechnungsstellung bleibt vollständig freiwillig, obwohl Unternehmen mit einem Umsatz über 10.000 € nach dem E-Invoicing-Gesetz 241/2019 einen gesetzlichen Anspruch haben, E-Rechnungen von ihren Lieferanten zu verlangen.",
+    "actions": [
+      "Wenn Sie eine finnische öffentliche Stelle beliefern, bestätigen Sie, dass Sie E-Rechnungen senden können — dies ist seit Jahren die Norm, keine neue Anforderung",
+      "Gehen Sie bei inländischem B2B nicht von einer gesetzlichen Vorgabe aus — prüfen Sie stattdessen die spezifischen vertraglichen Anforderungen Ihres Kunden"
+    ]
+  },
+  "fi-en-standard": {
+    "system": "Staat verlangt EN-16931-konforme E-Rechnungen (in Kraft seit April 2021)",
+    "desc": "Ab diesem Datum akzeptieren finnische Regierungsbehörden nur noch E-Rechnungen, die dem Europäischen Standard (EN 16931) entsprechen — nicht standardisierte Formate reichen für die B2G-Rechnungsstellung nicht mehr aus, obwohl die E-Rechnungsstellung selbst bereits seit einem Jahr verpflichtend war. Sowohl Finvoice 3.0 als auch TEAPPSXML 3.0 können EN-konforme Rechnungen erzeugen, doch die Konformität ist nicht automatisch — Unternehmen müssen prüfen, dass die Ausgabe ihrer Software den Standard tatsächlich erfüllt, statt es standardmäßig anzunehmen.",
+    "actions": [
+      "Bestätigen Sie, dass die Finvoice-3.0- oder TEAPPSXML-3.0-Ausgabe Ihrer Software tatsächlich EN-16931-konform ist, nicht nur oberflächlich ähnlich",
+      "Prüfen Sie im Verkkolaskuosoite-Verzeichnis, welcher E-Invoicing-Betreiber/welches Portal eine bestimmte Stelle im öffentlichen Sektor erreicht — es gibt keine einzige zentrale Plattform"
+    ]
+  },
+  "fi-vida": {
+    "system": "Innergemeinschaftliche B2B-E-Rechnung unter dem EU-ViDA-Rahmen verpflichtend",
+    "desc": "Finnland hat derzeit keine inländische B2B-E-Invoicing-Vorgabe, und keine ist vor dieser EU-weiten Frist bestätigt, unter der innergemeinschaftliche B2B-Transaktionen in jedem Mitgliedstaat strukturierte E-Rechnungen und digitale Meldungen erfordern. Die finnische Regierung hat signalisiert, dass sie Vorbereitungen um 2028 beginnen plant, und eine inländische Vorgabe könnte dieser EU-Frist eher folgen als vorausgehen — eine genuin andere Haltung als bei den meisten anderen EU-Ländern in diesem Tracker, die der EU-Untergrenze von 2030 deutlich vorauseilen.",
+    "actions": [
+      "Gehen Sie nicht davon aus, dass Finnland demselben inländischen Vorgaben-Zeitplan wie seine nordischen Nachbarn folgt — bislang wurde kein inländisches Vorgabendatum festgelegt",
+      "Prüfen Sie diese Seite regelmäßig erneut, statt das derzeitige Fehlen einer Vorgabe als dauerhaften Zustand zu behandeln — die Vorbereitungen für 2028 könnten einen konkreteren inländischen Zeitplan zutage fördern"
+    ]
   }
 }

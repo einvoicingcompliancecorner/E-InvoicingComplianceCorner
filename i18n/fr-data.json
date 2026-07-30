@@ -581,5 +581,29 @@
       "Identifiez un prestataire de services de confiance qualifié inscrit sur liste européenne pour la QES bien avant l'échéance de 2027 — il s'agit d'une étape d'approvisionnement distincte, pas d'un simple paramètre logiciel",
       "Ne supposez pas que la conformité aux exigences existantes ATCUD/QR/logiciel certifié couvre déjà cela — la QES est une couche véritablement nouvelle et supplémentaire spécifique aux factures PDF"
     ]
+  },
+  "fi-b2g": {
+    "system": "Facturation électronique B2G obligatoire (en vigueur depuis avril 2020)",
+    "desc": "Tous les fournisseurs facturant des organismes gouvernementaux finlandais doivent envoyer des factures électroniques sauf accord contraire — l'un des régimes B2G les plus matures d'Europe, avec environ 99 % des factures aux acheteurs publics déjà électroniques. La Finlande n'a pas d'obligation générale de facturation électronique B2B ou B2C : la facturation électronique B2B nationale reste entièrement volontaire, bien que les entreprises dont le chiffre d'affaires dépasse 10 000 € disposent d'un droit légal d'exiger des factures électroniques de leurs fournisseurs en vertu de la loi sur la facturation électronique 241/2019.",
+    "actions": [
+      "Si vous fournissez un organisme public finlandais, confirmez que vous pouvez envoyer des factures électroniques — c'est la norme depuis des années, pas une nouvelle exigence",
+      "Pour le B2B national, ne supposez pas qu'une obligation légale existe — vérifiez plutôt les exigences contractuelles propres à votre client"
+    ]
+  },
+  "fi-en-standard": {
+    "system": "L'État exige des factures électroniques conformes à l'EN 16931 (en vigueur depuis avril 2021)",
+    "desc": "À partir de cette date, les organismes gouvernementaux finlandais n'acceptent plus que les factures électroniques conformes à la norme européenne (EN 16931) — les formats non standard ne suffisent plus pour la facturation B2G, alors même que la facturation électronique elle-même était déjà obligatoire depuis un an. Finvoice 3.0 et TEAPPSXML 3.0 peuvent tous deux produire des factures conformes à l'EN, mais la conformité n'est pas automatique — les entreprises doivent vérifier que la sortie de leur logiciel respecte réellement la norme, sans la supposer par défaut.",
+    "actions": [
+      "Confirmez que la sortie Finvoice 3.0 ou TEAPPSXML 3.0 de votre logiciel est réellement conforme à l'EN 16931, pas seulement superficiellement similaire",
+      "Consultez l'annuaire Verkkolaskuosoite pour confirmer quel opérateur/portail de facturation électronique permet d'atteindre un interlocuteur donné du secteur public — il n'existe pas de plateforme centrale unique"
+    ]
+  },
+  "fi-vida": {
+    "system": "Facturation électronique B2B intracommunautaire obligatoire au titre du ViDA de l'UE",
+    "desc": "La Finlande n'a actuellement aucune obligation nationale de facturation électronique B2B, et aucune n'est confirmée avant cette échéance à l'échelle de l'UE, en vertu de laquelle les transactions B2B intracommunautaires nécessiteront une facturation électronique structurée et une déclaration numérique dans tous les États membres. Le gouvernement finlandais a indiqué qu'il prévoyait de commencer les préparatifs autour de 2028, et une obligation nationale pourrait suivre cette échéance de l'UE plutôt que la précéder — une posture véritablement différente de celle de la plupart des autres pays de l'UE dans ce suivi, qui devancent largement le plancher de l'UE de 2030.",
+    "actions": [
+      "Ne supposez pas que la Finlande suivra le même calendrier d'obligation nationale que ses voisins nordiques — à ce jour, aucune date d'obligation nationale n'a été fixée",
+      "Consultez cette page périodiquement plutôt que de considérer l'absence actuelle d'obligation comme un état permanent — les préparatifs de 2028 pourraient faire apparaître un calendrier national plus ferme"
+    ]
   }
 }
