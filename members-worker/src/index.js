@@ -145,6 +145,7 @@ const WORKER_I18N = {
       officialSource: "Official source",
       editionAll: "All editions", editionLatest: "Latest edition", editionThisYear: "This year",
       readDeepDive: (country) => `Read the full ${country} Deep Dive for complete technical detail →`,
+      accuracyNote: (date) => `Dates and thresholds above reflect the situation as of ${date} and may have changed since — check the official source and country deep dive below for the latest.`,
     },
     preferences: {
       title: "Alert preferences",
@@ -181,6 +182,7 @@ const WORKER_I18N = {
       officialSource: "Fuente oficial",
       editionAll: "Todas las ediciones", editionLatest: "Última edición", editionThisYear: "Este año",
       readDeepDive: (country) => `Lea el análisis completo de ${country} para el detalle técnico completo →`,
+      accuracyNote: (date) => `Las fechas y umbrales anteriores reflejan la situación a ${date} y pueden haber cambiado desde entonces — consulte la fuente oficial y el análisis del país a continuación para conocer las últimas novedades.`,
     },
     preferences: {
       title: "Preferencias de alertas",
@@ -217,6 +219,7 @@ const WORKER_I18N = {
       officialSource: "Offizielle Quelle",
       editionAll: "Alle Ausgaben", editionLatest: "Neueste Ausgabe", editionThisYear: "Dieses Jahr",
       readDeepDive: (country) => `Lesen Sie die vollständige Länderanalyse ${country} für alle technischen Details →`,
+      accuracyNote: (date) => `Die obigen Daten und Schwellenwerte spiegeln den Stand vom ${date} wider und können sich seither geändert haben — die aktuellsten Informationen finden Sie in der offiziellen Quelle und der Länderanalyse unten.`,
     },
     preferences: {
       title: "Benachrichtigungseinstellungen",
@@ -253,6 +256,7 @@ const WORKER_I18N = {
       officialSource: "Source officielle",
       editionAll: "Toutes les éditions", editionLatest: "Dernière édition", editionThisYear: "Cette année",
       readDeepDive: (country) => `Lire l'analyse complète de ${country} pour tous les détails techniques →`,
+      accuracyNote: (date) => `Les dates et seuils ci-dessus reflètent la situation au ${date} et peuvent avoir changé depuis — consultez la source officielle et l'analyse du pays ci-dessous pour les dernières informations.`,
     },
     preferences: {
       title: "Préférences d'alerte",
@@ -1376,6 +1380,15 @@ function renderIssue(story, lang) {
       return `<p style="margin-top:10px;"><a href="${url}" style="color:#b5432f; text-decoration:underline; font-weight:600; font-size:13px;">📖 ${escapeHtml(t(lang, "archive.readDeepDive")(c.displayName))}</a></p>`;
     })
     .join("");
+  // Accuracy disclaimer — derived from the story's own date, not
+  // hand-written per story, since every article here describes
+  // mandate timelines that have already proven, repeatedly, to shift.
+  const LOCALE_BY_LANG = { en: "en-GB", es: "es-ES", de: "de-DE", fr: "fr-FR" };
+  const formattedDate = new Date(story.date + "T00:00:00Z").toLocaleDateString(
+    LOCALE_BY_LANG[lang] || "en-GB",
+    { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" }
+  );
+  const accuracyNoteHtml = `<p style="margin-top:14px; font-size:12px; color:#8a7d5a; font-style:italic;">${escapeHtml(t(lang, "archive.accuracyNote")(formattedDate))}</p>`;
   const body = `
   <div class="topbar">
     <a class="back-link" href="/members/archive" style="margin:0;">${t(lang, "backToArchive")}</a>
@@ -1390,6 +1403,7 @@ function renderIssue(story, lang) {
       <h1 class="title">${escapeHtml(story.title)}</h1>
       ${countryTagsHtml}
       <div>${story.html}</div>
+      ${accuracyNoteHtml}
       ${sourceLinkHtml}
       ${deepDiveLinksHtml}
     </div>
