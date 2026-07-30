@@ -72,11 +72,13 @@ def main():
 
     os.makedirs(args.out, exist_ok=True)
 
-    all_rows = run_query("SELECT namespace, key, lang, value FROM translations;", args.remote)
+    all_rows = run_query("SELECT namespace, key, lang, value FROM translations ORDER BY namespace, key, lang;", args.remote)
 
     by_namespace_lang = {}
     for row in all_rows:
         ns, key, lang, value = row["namespace"], row["key"], row["lang"], row["value"]
+        if ns == "regions":
+            continue  # folded into tracker/subscribe's regionNames block below, not its own file
         by_namespace_lang.setdefault((ns, lang), []).append((key, value))
 
     # countryNames / regionNames — reconstructed once, reused for every
