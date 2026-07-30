@@ -342,15 +342,42 @@ export default {
 // notification telling each subscriber whether this month's issue
 // covers any of the countries they've said they care about, with a
 // link to log in and read the full thing either way.
+async function getStoriesForMonth(env, monthKey) {
+  const stories = await d1All(env, `
+    SELECT s.id, COALESCE(st.title, NULL) as title_translated, s.html_en
+    FROM stories s
+    LEFT JOIN story_translations st ON st.story_id = s.id AND st.lang = 'en'
+    WHERE s.month = ? AND s.published = 1
+    ORDER BY s.date ASC
+  `, monthKey);
+  if (stories.length === 0) return [];
+
+  const countryRows = await d1All(env, `
+    SELECT sc.story_id, c.name_en
+    FROM story_countries sc
+    JOIN stories s ON s.id = sc.story_id
+    JOIN countries c ON c.id = sc.country_id
+    WHERE s.month = ?
+  `, monthKey);
+  const countriesByStory = {};
+  for (const row of countryRows) {
+    (countriesByStory[row.story_id] ||= []).push(row.name_en);
+  }
+
+  return stories.map((s) => ({
+    id: s.id,
+    title: s.title_translated || deriveTitleFromHtml(s.html_en),
+    countries: countriesByStory[s.id] || [],
+  }));
+}
+
 async function sendMonthlyNotifications(env) {
   const monthKey = currentMonthKey();
-  const issueRaw = await env.ISSUES.get(monthKey);
-  if (!issueRaw) {
-    console.log(`No issue published for ${monthKey} yet — skipping this month's notification run.`);
+  const monthStories = await getStoriesForMonth(env, monthKey);
+  if (monthStories.length === 0) {
+    console.log(`No stories published for ${monthKey} yet — skipping this month's notification run.`);
     return;
   }
-  const issue = JSON.parse(issueRaw);
-  const issueCountries = issue.countries || [];
 
   let cursor = undefined;
   let sent = 0;
@@ -365,20 +392,28 @@ async function sendMonthlyNotifications(env) {
         if (sub.notificationsEnabled === false) continue; // explicit opt-out only — default is enabled
 
         const followed = sub.countries || [];
-        const matched = followed.filter((c) => issueCountries.includes(c));
+        const matched = followed.length
+          ? monthStories.filter((s) => s.countries.some((c) => followed.includes(c)))
+          : [];
 
-        let message;
+        // The genuine upgrade over the old blob-per-month model: this can
+        // now name the actual matching story headlines and link straight
+        // to each, rather than a vague "yes/no, your countries came up."
+        let storiesToShow;
+        let introText;
         if (followed.length === 0) {
-          // No specific preference set — they get the full-digest framing every time.
-          message = `This month's issue is live, covering: ${issueCountries.join(", ")}.`;
+          storiesToShow = monthStories;
+          introText = "Here's everything published this month:";
         } else if (matched.length > 0) {
-          message = `This month's issue covers updates on: ${matched.join(", ")} — among others.`;
+          storiesToShow = matched;
+          introText = "Here's what came up in your countries this month:";
         } else {
-          message = `None of your followed countries came up in this month's issue, but it's there if you're curious — this month covers: ${issueCountries.join(", ")}.`;
+          storiesToShow = monthStories;
+          introText = "None of your followed countries came up this month, but here's everything that was published:";
         }
 
         const unsubToken = await signToken(env.SESSION_SECRET, { email, purpose: "unsub-notifications" }, 60 * 60 * 24 * 365 * 5); // 5-year effective validity — this link should still work whenever someone gets around to clicking it
-        await sendMonthlyNotificationEmail(env, email, issue.title, issue.summary, message, monthKey, unsubToken);
+        await sendMonthlyNotificationEmail(env, email, monthKey, introText, storiesToShow, unsubToken);
         sent++;
       } catch (err) {
         console.error(`Failed to notify ${email}:`, err);
@@ -807,29 +842,33 @@ async function sendMagicLinkEmail(env, email, link) {
   });
 }
 
-async function sendMonthlyNotificationEmail(env, email, issueTitle, issueSummary, personalizedMessage, monthKey, unsubToken) {
-  const archiveLink = `${env.SITE_URL}/members/archive/${encodeURIComponent(monthKey)}`;
+async function sendMonthlyNotificationEmail(env, email, monthKey, introText, stories, unsubToken) {
+  const archiveLink = `${env.SITE_URL}/members/archive`;
   const unsubLink = `${env.SITE_URL}/members/unsubscribe-notifications?token=${encodeURIComponent(unsubToken)}`;
 
-  const safeTitle = escapeHtml(issueTitle);
-  const safeSummary = escapeHtml(issueSummary || "");
-  const safeMessage = escapeHtml(personalizedMessage);
+  const monthLabel = new Date(monthKey + "-01T00:00:00Z").toLocaleDateString("en-US", { month: "long", year: "numeric", timeZone: "UTC" });
+
+  const storyListHtml = stories
+    .map((s) => {
+      const link = `${env.SITE_URL}/members/archive/${encodeURIComponent(s.id)}`;
+      return `<li style="margin:0 0 8px; font-size:14px; line-height:1.5;"><a href="${escapeHtml(link)}" style="color:#241d10; text-decoration:underline;">${escapeHtml(s.title)}</a></li>`;
+    })
+    .join("");
 
   const body = `
-    <p style="margin:0 0 6px; font-family:'Courier New',Courier,monospace; font-size:11px; text-transform:uppercase; letter-spacing:1px; color:#c98a3a;">This month's issue</p>
-    <h1 style="margin:0 0 12px; font-size:21px; line-height:1.3; color:#241d10; font-family:Georgia,'Times New Roman',serif;">${safeTitle}</h1>
-    ${safeSummary ? `<p style="margin:0 0 20px; font-size:14px; line-height:1.6; color:#4a4030;">${safeSummary}</p>` : ""}
+    <p style="margin:0 0 6px; font-family:'Courier New',Courier,monospace; font-size:11px; text-transform:uppercase; letter-spacing:1px; color:#c98a3a;">${escapeHtml(monthLabel)}</p>
+    <h1 style="margin:0 0 12px; font-size:21px; line-height:1.3; color:#241d10; font-family:Georgia,'Times New Roman',serif;">${escapeHtml(introText)}</h1>
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#e4dcc6; border-radius:8px; margin:0 0 24px;">
       <tr>
-        <td style="padding:14px 16px;">
-          <p style="margin:0; font-size:13.5px; line-height:1.55; color:#241d10;">${safeMessage}</p>
+        <td style="padding:14px 18px;">
+          <ul style="margin:0; padding-left:18px; color:#241d10;">${storyListHtml}</ul>
         </td>
       </tr>
     </table>
     <table role="presentation" cellpadding="0" cellspacing="0">
       <tr>
         <td style="background-color:#b5432f; border-radius:6px;">
-          <a href="${archiveLink}" style="display:inline-block; padding:12px 22px; font-family:'Courier New',Courier,monospace; font-size:13px; font-weight:bold; color:#ffffff; text-decoration:none;">Read the full issue →</a>
+          <a href="${archiveLink}" style="display:inline-block; padding:12px 22px; font-family:'Courier New',Courier,monospace; font-size:13px; font-weight:bold; color:#ffffff; text-decoration:none;">Browse the full archive →</a>
         </td>
       </tr>
     </table>`;
@@ -842,7 +881,7 @@ async function sendMonthlyNotificationEmail(env, email, issueTitle, issueSummary
   await sendViaResend(env, {
     from: env.FROM_EMAIL,
     to: email,
-    subject: `This month's issue is live — ${issueTitle}`,
+    subject: `This month's e-invoicing updates — ${monthLabel}`,
     html: buildEmailShell(body, footer),
   });
 }
