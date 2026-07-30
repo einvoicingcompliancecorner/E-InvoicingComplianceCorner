@@ -231,6 +231,76 @@ than building a second, different switching mechanism just for this page.
 
 ---
 
+## Storage choice: KV, or a real database (D1)?
+
+Everything above assumes KV, matching the rest of this project. Worth
+addressing directly, since the per-story model is exactly the kind of
+design where this question becomes real rather than academic.
+
+### The actual trade-off, not the generic version
+
+Per Cloudflare's own current guidance: **KV trades relational/query
+capability for extremely fast, cheap point-lookups** — sub-10ms reads,
+writes propagating globally in roughly 60 seconds. **D1 is real SQL** —
+strongly consistent, indexed, supports joins and transactions. Cloudflare's
+own recommendation is blunt: use KV for session data, credentials, and
+config read constantly and rarely changed; reach for D1 the moment you
+need to actually *query* the data rather than fetch it by a key you
+already know.
+
+### Two things already in this project that are D1-shaped problems, not KV-shaped ones
+
+1. **The triple-duplicated country-name translation dictionary**
+   (`ADDING-A-COUNTRY.md`) — three hand-maintained copies kept in sync by
+   discipline alone. A single `country_translations` table
+   (`country_code`, `lang`, `display_name`), queried directly, would
+   eliminate that structurally rather than relying on remembering to
+   update all three every time.
+
+2. **Country/date filtering across many stories.** "Every story about
+   Poland or Brazil from the last 6 months" is a natural
+   `WHERE country IN (...) AND date > ...` query — exactly what SQL is
+   for. In KV, the same thing means fetching everything via `list()` and
+   filtering in code, fine at dozens of stories, genuinely awkward once
+   story count grows into the hundreds (KV's `list()` caps at 1,000 keys
+   per call before pagination is needed).
+
+### The concrete trigger point for this project specifically
+
+**Building per-story translations at real volume** is the clearest
+signal. A story with several language variants is a genuine one-to-many
+relationship — a `stories` + `story_translations` table with a foreign
+key models that cleanly. The KV equivalent (naming-convention keys like
+`es-2026-08-15-poland-...`) is the same fragile pattern already causing
+the country-dictionary problem, just repeated at a larger, ongoing scale
+as stories accumulate over months and years.
+
+### An honest limitation — this isn't a one-move fix for everything
+
+D1 would only directly help the **members-worker's own data** —
+subscribers, stories, translations it manages server-side. It would
+**not** automatically fix the *static* site's duplication (the tracker's
+own `i18n/*.json` files, the subscribe page's own copy) unless those
+pages either started fetching from an API at request time — turning part
+of a currently fully-static site dynamic, a real architectural shift — or
+a build step generated the static JSON files *from* D1 at deploy time.
+Worth being clear this solves the members-worker's half of the problem
+cleanly, but the static-site half needs a separate decision regardless of
+which storage choice wins here.
+
+### Recommendation: stay with KV for now
+
+At the project's current scale — a handful of stories, a modest
+subscriber base, no reporting/analytics need yet — KV is doing its job
+fine, and migrating now means a genuine rewrite of the members-worker's
+data-access layer (`env.SUBSCRIBERS.get/put`-style calls become actual
+SQL queries), not a drop-in swap. Build the per-story model on KV first,
+matching the rest of this document — and treat the two trigger points
+above as the actual signal for when to revisit this, rather than
+migrating ahead of a real need.
+
+---
+
 ## Rough build scope, when ready to build this
 
 - New `STORIES` KV namespace (or repurpose `ISSUES` with the new schema —
