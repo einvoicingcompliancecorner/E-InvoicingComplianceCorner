@@ -23,7 +23,7 @@ FROM_EMAIL = "onboarding@resend.dev"
 # product — find this in Lemon Squeezy: Products → your one-time
 # product → the variant's ID shown in the URL or via the API.
 # Leave as-is if you haven't set up the one-time tier yet.
-ONE_TIME_VARIANT_ID = "YOUR-ONE-TIME-VARIANT-ID"
+ONE_TIME_VARIANT_ID = "1962239"
 
 # ----------------------------------------------------------------
 # KV namespaces — create these with `wrangler kv namespace create`
