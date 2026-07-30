@@ -42,6 +42,8 @@
     "fullDigest": "el resumen completo (las 28 jurisdicciones)",
     "fineprint": "Se le llevará a una ventana de pago segura de Lemon Squeezy, donde podrá elegir pago recurrente o único y completar su compra.",
     "payButton": "Continuar al pago →",
+    "trialIntro": "¿Aún no está listo para pagar? Pruebe el acceso completo gratis durante 60 días.",
+    "trialButton": "Iniciar mi prueba gratuita de 60 días →",
     "editLink": "← Editar mis datos"
   },
   "modal": {

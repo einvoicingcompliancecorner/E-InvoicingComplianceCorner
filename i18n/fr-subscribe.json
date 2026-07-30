@@ -42,6 +42,8 @@
     "fullDigest": "la synthèse complète (les 28 juridictions)",
     "fineprint": "Vous serez redirigé vers une fenêtre de paiement sécurisée Lemon Squeezy, où vous pourrez choisir un paiement récurrent ou unique et finaliser votre achat.",
     "payButton": "Continuer vers le paiement →",
+    "trialIntro": "Pas encore prêt à payer ? Essayez l'accès complet gratuitement pendant 60 jours.",
+    "trialButton": "Démarrer mon essai gratuit de 60 jours →",
     "editLink": "← Modifier mes informations"
   },
   "modal": {

@@ -42,6 +42,8 @@
     "fullDigest": "the full digest (all 28 jurisdictions)",
     "fineprint": "You'll be taken to a secure Lemon Squeezy checkout window, where you can choose recurring or one-time payment and complete your purchase.",
     "payButton": "Continue to checkout →",
+    "trialIntro": "Not ready to pay yet? Try full access free for 60 days.",
+    "trialButton": "Start my 60-day free trial →",
     "editLink": "← Edit my details"
   },
   "modal": {

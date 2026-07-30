@@ -386,6 +386,16 @@
       <p class="sub" style="margin-top:-14px;"><span data-i18n="confirm.alertsFor">Alerts for:</span> <strong id="confirmCountries"></strong></p>
 
       <a href="#" id="checkoutButton" class="lemonsqueezy-button form-submit" data-i18n="confirm.payButton">Continue to checkout →</a>
+
+      <div style="margin:18px 0; padding-top:18px; border-top:1px dashed var(--paper-line); text-align:center;">
+        <p class="sub" style="margin:0 0 10px; font-size:13px;" data-i18n="confirm.trialIntro">Not ready to pay yet? Try full access free for 60 days.</p>
+        <form id="trialForm" method="POST" action="https://members.e-invoicingcompliancecorner.com/members/start-trial">
+          <input type="hidden" name="email" id="trialEmailField">
+          <input type="hidden" name="countries" id="trialCountriesField">
+          <button type="submit" class="form-submit" style="background:transparent; border:1px solid var(--stamp); color:var(--stamp);" data-i18n="confirm.trialButton">Start my 60-day free trial →</button>
+        </form>
+      </div>
+
       <span class="edit-link" id="editDetails" data-i18n="confirm.editLink">← Edit my details</span>
       <p class="form-fineprint" id="confirmFineprint" data-i18n="confirm.fineprint">You'll be taken to a secure Lemon Squeezy checkout window, where you can choose recurring or one-time payment and complete your purchase.</p>
     </div>
@@ -546,6 +556,12 @@ detailsForm.addEventListener('submit', async (e)=>{
 
   const checkoutBtn = document.getElementById('checkoutButton');
   checkoutBtn.href = url.toString();
+
+  // Same email/country data as the paid checkout, just for the separate
+  // free-trial path — this bypasses Lemon Squeezy entirely (see the
+  // members-worker's /members/start-trial handler).
+  document.getElementById('trialEmailField').value = values.email;
+  document.getElementById('trialCountriesField').value = selectedCountries.join(',');
 
   document.getElementById('confirmName').textContent = values.firstName + ' ' + values.lastName;
   document.getElementById('confirmEmail').textContent = values.email;

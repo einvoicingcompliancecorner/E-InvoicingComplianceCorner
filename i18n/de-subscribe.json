@@ -42,6 +42,8 @@
     "fullDigest": "den vollständigen Digest (alle 28 Rechtsordnungen)",
     "fineprint": "Sie werden zu einem sicheren Lemon-Squeezy-Zahlungsfenster weitergeleitet, in dem Sie zwischen wiederkehrender und einmaliger Zahlung wählen und Ihren Kauf abschließen können.",
     "payButton": "Weiter zur Zahlung →",
+    "trialIntro": "Noch nicht bereit zu zahlen? Testen Sie den vollen Zugang 60 Tage lang kostenlos.",
+    "trialButton": "Meine kostenlose 60-Tage-Testphase starten →",
     "editLink": "← Meine Angaben bearbeiten"
   },
   "modal": {
