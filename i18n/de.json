@@ -1,58 +1,99 @@
 {
   "_meta": {
-    "language": "de",
     "label": "Deutsch",
+    "language": "de",
     "reviewed": true,
     "reviewedNote": "Mit KI-Unterstützung erstellte Übersetzung, freigegeben zur Veröffentlichung (Navigationsinhalte, keine Compliance-Daten)."
   },
-  "brand": {
-    "eyebrow": "Compliance-Übersicht",
-    "title": "The E-Invoicing<br>Compliance Corner",
-    "description": "Ein laufend aktualisierter Überblick über E-Invoicing- und digitale Meldepflichten in 30 Ländern — EU-weite ViDA-Regeln, nationale CTC-Systeme und alles dazwischen. Jeder Eintrag zeigt die Frist, was konkret zu tun ist, und einen direkten Link zum offiziellen Regierungsportal — damit Sie in einem einzigen Blick von \"betrifft uns das?\" zu \"das müssen wir tun\" kommen."
-  },
-  "perks": {
-    "heading": "Abonnenten erhalten außerdem",
-    "item1": "Einen monatlichen E-Mail-Digest — jede neue Vorgabe oder Friständerung, zusammengefasst",
-    "item2": "Vollen Zugriff auf das Newsletter-Archiv, nicht nur die aktuelle Ausgabe",
-    "item3": "Bevorzugten Zugang zu neuen Länder-Deep-Dives, sobald sie veröffentlicht werden",
-    "item4": "Verständliche Zusammenfassungen, was das für Ihr Team bedeutet — nicht nur Gesetzestext",
-    "cta": "Abonnieren (Demnächst) →"
-  },
-  "navTips": {
-    "label": "So funktioniert diese Seite",
-    "tip1Title": "Filtern Sie auf das Wesentliche",
-    "tip1Desc": "Nutzen Sie die Region- und Status-Filter oder die Suche, um die Zeitleiste auf Ihre Märkte einzugrenzen.",
-    "tip2Title": "Tiefer in ein Land einsteigen",
-    "tip2Desc": "Das Menü \"Deep Dives\" verlinkt zu einer vollständigen technischen Analyse — Dateiformate, Übertragungsprotokolle, Registrierungsschritte und Strafen.",
-    "tip3Title": "Direkt zum Portal springen",
-    "tip3Desc": "Die Seitenleiste (☰ auf Mobilgeräten) verlinkt direkt zum offiziellen Regierungsportal jedes hier erfassten Landes.",
-    "tip4Title": "Altes ist eingeklappt",
-    "tip4Desc": "Die Zeitleiste zeigt standardmäßig aktuelle und bevorstehende Änderungen — längst etablierte Vorschriften finden Sie im eingeklappten Bereich weiter unten."
-  },
-  "menu": {
-    "deepDives": "Länderanalysen",
-    "education": "Wissen",
-    "menu": "Menü",
-    "about": "Über diese Seite",
-    "subscribe": "Abonnieren (Demnächst)",
-    "archive": "Newsletter-Archiv (Demnächst)",
-    "feedback": "Feedback geben",
-    "lastUpdated": "Zuletzt aktualisiert:",
-    "eduMandateTypes": "Arten von Vorgaben",
-    "eduImpact": "Auswirkungen der Vorgabe",
-    "eduPreparing": "Vorbereitung auf eine Vorgabe",
-    "eduProviderTypes": "Anbietertypen",
-    "eduCertifiedProviders": "Staatlich zertifizierte Anbieter"
-  },
   "about": {
     "eyebrow": "Über uns",
-    "title": "The E-Invoicing Compliance Corner",
     "p1": "The E-Invoicing Compliance Corner entstand als Antwort auf die wachsende Komplexität und die rasante Verbreitung von E-Invoicing-Vorgaben weltweit. Ob kleines Unternehmen oder globaler Konzern — dieses Thema kann schwierig und teuer in der Umsetzung sein.",
-    "p2": "Diese Seite soll einen kostengünstigen, einfachen Zugang zu verlässlichen Informationen bieten — und Sie laufend benachrichtigen, sobald sich Vorgaben ändern oder neue Gesetze eingeführt werden."
+    "p2": "Diese Seite soll einen kostengünstigen, einfachen Zugang zu verlässlichen Informationen bieten — und Sie laufend benachrichtigen, sobald sich Vorgaben ändern oder neue Gesetze eingeführt werden.",
+    "title": "The E-Invoicing Compliance Corner"
+  },
+  "brand": {
+    "description": "Ein laufend aktualisierter Überblick über E-Invoicing- und digitale Meldepflichten in 30 Ländern — EU-weite ViDA-Regeln, nationale CTC-Systeme und alles dazwischen. Jeder Eintrag zeigt die Frist, was konkret zu tun ist, und einen direkten Link zum offiziellen Regierungsportal — damit Sie in einem einzigen Blick von \"betrifft uns das?\" zu \"das müssen wir tun\" kommen.",
+    "eyebrow": "Compliance-Übersicht",
+    "title": "The E-Invoicing<br>Compliance Corner"
+  },
+  "cardLabels": {
+    "actionChecklist": "Maßnahmen-Checkliste",
+    "countryDeepDive": "Länderanalyse →",
+    "expectedNotFinal": "Erwartet — noch nicht endgültig",
+    "inEffectSince": "In Kraft seit"
+  },
+  "filters": {
+    "all": "Alle",
+    "dayPlural": "Tage",
+    "daySingular": "Tag",
+    "disclaimer": "Dieser Tracker spiegelt öffentlich verfügbare Hinweise mit Stand Juli 2026 wider und dient der allgemeinen Information, nicht als Rechts- oder Steuerberatung. Schwellenwerte, Wellen-Nummern und Stichtage für E-Invoicing ändern sich häufig — bestätigen Sie Ihre Pflichten direkt auf dem in jedem Eintrag verlinkten offiziellen Regierungsportal oder bei Ihrem Steuerberater, bevor Sie Compliance-Entscheidungen treffen.",
+    "dueSoon": "Bald fällig",
+    "estLabel": "— bereits seit längerem in Kraft, ändert sich selten",
+    "establishedRegulations": "Etablierte Vorschriften",
+    "footerNote": "Daten aus offiziellen Quellen der Steuerbehörden und der Europäischen Kommission zusammengestellt. \"Verbleibende Tage\" und Status-Kennzeichnungen werden automatisch anhand des heutigen Datums berechnet. <a href=\"privacy-policy.html\" style=\"color:var(--soon);\">Datenschutzerklärung</a>",
+    "furthestFirst": "Später zuerst",
+    "governmentPortals": "Regierungsportale",
+    "inEffect": "In Kraft",
+    "jumpToPortal": "Zum Portal springen",
+    "milestonePlural": "Meilensteine",
+    "milestoneSingular": "Meilenstein",
+    "mobilePortalsToggle": "☰ Portale",
+    "nextClearanceDates": "Nächste Stichtage",
+    "noResults": "Kein Meilenstein entspricht diesen Filtern.",
+    "noUpcoming": "Keine bevorstehenden Meilensteine im erfassten Datensatz.",
+    "recentAndUpcoming": "Aktuell &amp; bevorstehend",
+    "recentIntro": "Meilensteine der letzten Monate bis zur am weitesten entfernten bestätigten Frist. Bereits etablierte Vorschriften befinden sich im eingeklappten Bereich weiter unten, damit diese Liste auf das Aktuelle fokussiert bleibt.",
+    "regionLabel": "Region",
+    "searchPlaceholder": "Land oder System suchen…",
+    "soonestFirst": "Bald zuerst",
+    "statusLabel": "Status",
+    "total": "insgesamt",
+    "upcoming": "Bevorstehend"
   },
   "languageSwitcher": {
     "label": "Sprache",
     "unreviewedBanner": "Diese Übersetzung wurde mit KI-Unterstützung erstellt und noch nicht von einem menschlichen Übersetzer geprüft. Die Formulierung kann ungenau sein — bei Unklarheiten bitte die englische Version heranziehen."
+  },
+  "menu": {
+    "about": "Über diese Seite",
+    "archive": "Newsletter-Archiv (Demnächst)",
+    "deepDives": "Länderanalysen",
+    "eduCertifiedProviders": "Staatlich zertifizierte Anbieter",
+    "eduImpact": "Auswirkungen der Vorgabe",
+    "eduMandateTypes": "Arten von Vorgaben",
+    "eduPreparing": "Vorbereitung auf eine Vorgabe",
+    "eduProviderTypes": "Anbietertypen",
+    "education": "Wissen",
+    "feedback": "Feedback geben",
+    "lastUpdated": "Zuletzt aktualisiert:",
+    "menu": "Menü",
+    "subscribe": "Abonnieren (Demnächst)"
+  },
+  "navTips": {
+    "label": "So funktioniert diese Seite",
+    "tip1Desc": "Nutzen Sie die Region- und Status-Filter oder die Suche, um die Zeitleiste auf Ihre Märkte einzugrenzen.",
+    "tip1Title": "Filtern Sie auf das Wesentliche",
+    "tip2Desc": "Das Menü \"Deep Dives\" verlinkt zu einer vollständigen technischen Analyse — Dateiformate, Übertragungsprotokolle, Registrierungsschritte und Strafen.",
+    "tip2Title": "Tiefer in ein Land einsteigen",
+    "tip3Desc": "Die Seitenleiste (☰ auf Mobilgeräten) verlinkt direkt zum offiziellen Regierungsportal jedes hier erfassten Landes.",
+    "tip3Title": "Direkt zum Portal springen",
+    "tip4Desc": "Die Zeitleiste zeigt standardmäßig aktuelle und bevorstehende Änderungen — längst etablierte Vorschriften finden Sie im eingeklappten Bereich weiter unten.",
+    "tip4Title": "Altes ist eingeklappt"
+  },
+  "perks": {
+    "cta": "Abonnieren (Demnächst) →",
+    "heading": "Abonnenten erhalten außerdem",
+    "item1": "Einen monatlichen E-Mail-Digest — jede neue Vorgabe oder Friständerung, zusammengefasst",
+    "item2": "Vollen Zugriff auf das Newsletter-Archiv, nicht nur die aktuelle Ausgabe",
+    "item3": "Bevorzugten Zugang zu neuen Länder-Deep-Dives, sobald sie veröffentlicht werden",
+    "item4": "Verständliche Zusammenfassungen, was das für Ihr Team bedeutet — nicht nur Gesetzestext"
+  },
+  "stats": {
+    "alreadyInEffect": "Bereits in Kraft",
+    "dueWithin90Days": "Fällig innerhalb von 90 Tagen",
+    "furtherOut": "Später fällig",
+    "jurisdictionsTracked": "Erfasste Rechtsordnungen",
+    "milestonesTracked": "Erfasste Meilensteine"
   },
   "regionNames": {
     "Europe": "Europa",
@@ -61,53 +102,36 @@
     "Americas": "Amerika"
   },
   "countryNames": {
-    "European Union": "Europäische Union", "Belgium": "Belgien", "Germany": "Deutschland", "France": "Frankreich",
-    "Poland": "Polen", "Italy": "Italien", "Saudi Arabia": "Saudi-Arabien", "Malaysia": "Malaysia",
-    "India": "Indien", "Brazil": "Brasilien", "Spain": "Spanien", "United Kingdom": "Vereinigtes Königreich",
-    "Romania": "Rumänien", "United Arab Emirates": "Vereinigte Arabische Emirate", "Mexico": "Mexiko",
-    "Australia": "Australien", "New Zealand": "Neuseeland", "Singapore": "Singapur", "Slovakia": "Slowakei",
-    "Peru": "Peru", "Chile": "Chile", "Ireland": "Irland", "Norway": "Norwegen", "Denmark": "Dänemark",
-    "Sweden": "Schweden", "China": "China", "Croatia": "Kroatien", "United States": "Vereinigte Staaten", "Canada": "Kanada"
-  },
-  "filters": {
-    "all": "Alle",
-    "inEffect": "In Kraft",
-    "dueSoon": "Bald fällig",
-    "upcoming": "Bevorstehend",
-    "nextClearanceDates": "Nächste Stichtage",
-    "searchPlaceholder": "Land oder System suchen…",
-    "noResults": "Kein Meilenstein entspricht diesen Filtern.",
-    "footerNote": "Daten aus offiziellen Quellen der Steuerbehörden und der Europäischen Kommission zusammengestellt. \"Verbleibende Tage\" und Status-Kennzeichnungen werden automatisch anhand des heutigen Datums berechnet. <a href=\"privacy-policy.html\" style=\"color:var(--soon);\">Datenschutzerklärung</a>",
-    "soonestFirst": "Bald zuerst",
-    "furthestFirst": "Später zuerst",
-    "milestoneSingular": "Meilenstein",
-    "milestonePlural": "Meilensteine",
-    "total": "insgesamt",
-    "establishedRegulations": "Etablierte Vorschriften",
-    "daySingular": "Tag",
-    "dayPlural": "Tage",
-    "noUpcoming": "Keine bevorstehenden Meilensteine im erfassten Datensatz.",
-    "disclaimer": "Dieser Tracker spiegelt öffentlich verfügbare Hinweise mit Stand Juli 2026 wider und dient der allgemeinen Information, nicht als Rechts- oder Steuerberatung. Schwellenwerte, Wellen-Nummern und Stichtage für E-Invoicing ändern sich häufig — bestätigen Sie Ihre Pflichten direkt auf dem in jedem Eintrag verlinkten offiziellen Regierungsportal oder bei Ihrem Steuerberater, bevor Sie Compliance-Entscheidungen treffen.",
-    "mobilePortalsToggle": "☰ Portale",
-    "jumpToPortal": "Zum Portal springen",
-    "governmentPortals": "Regierungsportale",
-    "regionLabel": "Region",
-    "statusLabel": "Status",
-    "recentAndUpcoming": "Aktuell &amp; bevorstehend",
-    "recentIntro": "Meilensteine der letzten Monate bis zur am weitesten entfernten bestätigten Frist. Bereits etablierte Vorschriften befinden sich im eingeklappten Bereich weiter unten, damit diese Liste auf das Aktuelle fokussiert bleibt.",
-    "estLabel": "— bereits seit längerem in Kraft, ändert sich selten"
-  },
-  "cardLabels": {
-    "actionChecklist": "Maßnahmen-Checkliste",
-    "countryDeepDive": "Länderanalyse →",
-    "inEffectSince": "In Kraft seit",
-    "expectedNotFinal": "Erwartet — noch nicht endgültig"
-  },
-  "stats": {
-    "jurisdictionsTracked": "Erfasste Rechtsordnungen",
-    "milestonesTracked": "Erfasste Meilensteine",
-    "alreadyInEffect": "Bereits in Kraft",
-    "dueWithin90Days": "Fällig innerhalb von 90 Tagen",
-    "furtherOut": "Später fällig"
+    "Belgium": "Belgien",
+    "Croatia": "Kroatien",
+    "Denmark": "Dänemark",
+    "France": "Frankreich",
+    "Germany": "Deutschland",
+    "Ireland": "Irland",
+    "Italy": "Italien",
+    "Norway": "Norwegen",
+    "Poland": "Polen",
+    "Romania": "Rumänien",
+    "Slovakia": "Slowakei",
+    "Spain": "Spanien",
+    "Sweden": "Schweden",
+    "United Kingdom": "Vereinigtes Königreich",
+    "Saudi Arabia": "Saudi-Arabien",
+    "United Arab Emirates": "Vereinigte Arabische Emirate",
+    "Australia": "Australien",
+    "China": "China",
+    "India": "Indien",
+    "Malaysia": "Malaysia",
+    "New Zealand": "Neuseeland",
+    "Singapore": "Singapur",
+    "Brazil": "Brasilien",
+    "Canada": "Kanada",
+    "Chile": "Chile",
+    "Mexico": "Mexiko",
+    "Peru": "Peru",
+    "United States": "Vereinigte Staaten",
+    "European Union": "Europäische Union",
+    "Portugal": "Portugal",
+    "Finland": "Finnland"
   }
 }

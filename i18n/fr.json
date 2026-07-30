@@ -1,58 +1,99 @@
 {
   "_meta": {
-    "language": "fr",
     "label": "Français",
+    "language": "fr",
     "reviewed": true,
     "reviewedNote": "Traduction générée avec assistance de l'IA, approuvée pour publication (contenu de navigation, pas de données de conformité)."
   },
-  "brand": {
-    "eyebrow": "Tableau de suivi de conformité",
-    "title": "The E-Invoicing<br>Compliance Corner",
-    "description": "Un suivi actualisé en continu des obligations de facturation électronique et de télédéclaration dans 30 pays — règles ViDA à l'échelle de l'UE, systèmes nationaux de CTC, et tout ce qui se trouve entre les deux. Chaque entrée indique l'échéance, ce qu'il faut faire, et un lien direct vers le portail officiel du gouvernement, pour passer de \"est-ce que cela nous concerne ?\" à \"voici ce qu'il faut faire\" en une seule page."
-  },
-  "perks": {
-    "heading": "Les abonnés bénéficient également de",
-    "item1": "Une synthèse mensuelle par e-mail — chaque nouvelle obligation ou changement d'échéance, résumé",
-    "item2": "L'accès complet aux archives de la newsletter, pas seulement au numéro du mois",
-    "item3": "Un accès prioritaire aux nouvelles analyses par pays dès leur publication",
-    "item4": "Des synthèses en langage clair sur \"ce que cela signifie pour votre équipe\", pas seulement du texte juridique",
-    "cta": "S'abonner (Bientôt disponible) →"
-  },
-  "navTips": {
-    "label": "Comment naviguer sur ce site",
-    "tip1Title": "Filtrez selon vos besoins",
-    "tip1Desc": "Utilisez les filtres de région et de statut, ou la barre de recherche, pour cibler la chronologie sur vos marchés.",
-    "tip2Title": "Approfondissez un pays",
-    "tip2Desc": "Le menu \"Deep Dives\" renvoie vers une analyse technique complète — formats de fichier, protocoles de transmission, étapes d'inscription et sanctions.",
-    "tip3Title": "Accédez directement à un portail",
-    "tip3Desc": "La barre latérale (☰ sur mobile) renvoie directement au portail officiel du gouvernement de chaque pays suivi ici.",
-    "tip4Title": "Les informations anciennes sont rangées à part",
-    "tip4Desc": "La chronologie affiche par défaut les changements récents et à venir — les réglementations bien établies depuis longtemps se trouvent dans la section repliée ci-dessous."
-  },
-  "menu": {
-    "deepDives": "Analyses par pays",
-    "education": "Ressources",
-    "menu": "Menu",
-    "about": "À propos de ce site",
-    "subscribe": "S'abonner (Bientôt disponible)",
-    "archive": "Archives de la newsletter (Bientôt disponible)",
-    "feedback": "Donner votre avis",
-    "lastUpdated": "Dernière mise à jour :",
-    "eduMandateTypes": "Types d'obligation",
-    "eduImpact": "Impact de l'obligation",
-    "eduPreparing": "Se préparer à une obligation",
-    "eduProviderTypes": "Types de prestataires",
-    "eduCertifiedProviders": "Prestataires certifiés par l'État"
-  },
   "about": {
     "eyebrow": "À propos",
-    "title": "The E-Invoicing Compliance Corner",
     "p1": "The E-Invoicing Compliance Corner a été créé en réponse à la complexité croissante et à la diffusion rapide des obligations de facturation électronique dans le monde. Qu'il s'agisse d'une petite entreprise ou d'un grand groupe international, ce sujet peut être difficile et coûteux à maîtriser.",
-    "p2": "Ce site vise à offrir un accès simple et peu coûteux à une information fiable et rapide — ainsi que des alertes continues à chaque évolution des obligations ou nouvelle législation."
+    "p2": "Ce site vise à offrir un accès simple et peu coûteux à une information fiable et rapide — ainsi que des alertes continues à chaque évolution des obligations ou nouvelle législation.",
+    "title": "The E-Invoicing Compliance Corner"
+  },
+  "brand": {
+    "description": "Un suivi actualisé en continu des obligations de facturation électronique et de télédéclaration dans 30 pays — règles ViDA à l'échelle de l'UE, systèmes nationaux de CTC, et tout ce qui se trouve entre les deux. Chaque entrée indique l'échéance, ce qu'il faut faire, et un lien direct vers le portail officiel du gouvernement, pour passer de \"est-ce que cela nous concerne ?\" à \"voici ce qu'il faut faire\" en une seule page.",
+    "eyebrow": "Tableau de suivi de conformité",
+    "title": "The E-Invoicing<br>Compliance Corner"
+  },
+  "cardLabels": {
+    "actionChecklist": "Liste d'actions",
+    "countryDeepDive": "Analyse du pays →",
+    "expectedNotFinal": "Attendu — non définitif",
+    "inEffectSince": "En vigueur depuis"
+  },
+  "filters": {
+    "all": "Tous",
+    "dayPlural": "jours",
+    "daySingular": "jour",
+    "disclaimer": "Ce suivi reflète les informations publiques disponibles à juillet 2026 et est fourni à titre informatif général, sans constituer un conseil juridique ou fiscal. Les seuils, numéros de vague et dates de mise en service de la facturation électronique changent fréquemment — vérifiez vos obligations directement sur le portail officiel du gouvernement lié à chaque entrée, ou auprès de votre conseiller fiscal, avant de prendre des décisions de conformité.",
+    "dueSoon": "Échéance proche",
+    "estLabel": "— déjà en vigueur depuis un certain temps, change rarement",
+    "establishedRegulations": "Réglementations déjà établies",
+    "footerNote": "Données compilées à partir de sources officielles des administrations fiscales et de la Commission européenne. Les \"jours restants\" et les badges de statut sont calculés automatiquement à partir de la date du jour. <a href=\"privacy-policy.html\" style=\"color:var(--soon);\">Politique de confidentialité</a>",
+    "furthestFirst": "Le plus lointain d'abord",
+    "governmentPortals": "Portails gouvernementaux",
+    "inEffect": "En vigueur",
+    "jumpToPortal": "Aller au portail",
+    "milestonePlural": "jalons",
+    "milestoneSingular": "jalon",
+    "mobilePortalsToggle": "☰ Portails",
+    "nextClearanceDates": "Prochaines échéances",
+    "noResults": "Aucun jalon ne correspond à ces filtres.",
+    "noUpcoming": "Aucun jalon à venir dans les données suivies.",
+    "recentAndUpcoming": "Récents et à venir",
+    "recentIntro": "Jalons des derniers mois jusqu'à l'échéance confirmée la plus lointaine. Les réglementations déjà établies se trouvent dans la section repliée ci-dessous, afin que cette liste reste centrée sur ce qui évolue réellement.",
+    "regionLabel": "Région",
+    "searchPlaceholder": "Rechercher un pays ou un système…",
+    "soonestFirst": "Le plus proche d'abord",
+    "statusLabel": "Statut",
+    "total": "au total",
+    "upcoming": "À venir"
   },
   "languageSwitcher": {
     "label": "Langue",
     "unreviewedBanner": "Cette traduction a été générée avec l'assistance de l'IA et n'a pas encore été relue par un traducteur humain. Certaines formulations peuvent être imprécises — consultez la version anglaise en cas de doute."
+  },
+  "menu": {
+    "about": "À propos de ce site",
+    "archive": "Archives de la newsletter (Bientôt disponible)",
+    "deepDives": "Analyses par pays",
+    "eduCertifiedProviders": "Prestataires certifiés par l'État",
+    "eduImpact": "Impact de l'obligation",
+    "eduMandateTypes": "Types d'obligation",
+    "eduPreparing": "Se préparer à une obligation",
+    "eduProviderTypes": "Types de prestataires",
+    "education": "Ressources",
+    "feedback": "Donner votre avis",
+    "lastUpdated": "Dernière mise à jour :",
+    "menu": "Menu",
+    "subscribe": "S'abonner (Bientôt disponible)"
+  },
+  "navTips": {
+    "label": "Comment naviguer sur ce site",
+    "tip1Desc": "Utilisez les filtres de région et de statut, ou la barre de recherche, pour cibler la chronologie sur vos marchés.",
+    "tip1Title": "Filtrez selon vos besoins",
+    "tip2Desc": "Le menu \"Deep Dives\" renvoie vers une analyse technique complète — formats de fichier, protocoles de transmission, étapes d'inscription et sanctions.",
+    "tip2Title": "Approfondissez un pays",
+    "tip3Desc": "La barre latérale (☰ sur mobile) renvoie directement au portail officiel du gouvernement de chaque pays suivi ici.",
+    "tip3Title": "Accédez directement à un portail",
+    "tip4Desc": "La chronologie affiche par défaut les changements récents et à venir — les réglementations bien établies depuis longtemps se trouvent dans la section repliée ci-dessous.",
+    "tip4Title": "Les informations anciennes sont rangées à part"
+  },
+  "perks": {
+    "cta": "S'abonner (Bientôt disponible) →",
+    "heading": "Les abonnés bénéficient également de",
+    "item1": "Une synthèse mensuelle par e-mail — chaque nouvelle obligation ou changement d'échéance, résumé",
+    "item2": "L'accès complet aux archives de la newsletter, pas seulement au numéro du mois",
+    "item3": "Un accès prioritaire aux nouvelles analyses par pays dès leur publication",
+    "item4": "Des synthèses en langage clair sur \"ce que cela signifie pour votre équipe\", pas seulement du texte juridique"
+  },
+  "stats": {
+    "alreadyInEffect": "Déjà en vigueur",
+    "dueWithin90Days": "Échéance sous 90 jours",
+    "furtherOut": "Plus lointain",
+    "jurisdictionsTracked": "Juridictions suivies",
+    "milestonesTracked": "Jalons suivis"
   },
   "regionNames": {
     "Europe": "Europe",
@@ -61,53 +102,36 @@
     "Americas": "Amériques"
   },
   "countryNames": {
-    "European Union": "Union européenne", "Belgium": "Belgique", "Germany": "Allemagne", "France": "France",
-    "Poland": "Pologne", "Italy": "Italie", "Saudi Arabia": "Arabie saoudite", "Malaysia": "Malaisie",
-    "India": "Inde", "Brazil": "Brésil", "Spain": "Espagne", "United Kingdom": "Royaume-Uni",
-    "Romania": "Roumanie", "United Arab Emirates": "Émirats arabes unis", "Mexico": "Mexique",
-    "Australia": "Australie", "New Zealand": "Nouvelle-Zélande", "Singapore": "Singapour", "Slovakia": "Slovaquie",
-    "Peru": "Pérou", "Chile": "Chili", "Ireland": "Irlande", "Norway": "Norvège", "Denmark": "Danemark",
-    "Sweden": "Suède", "China": "Chine", "Croatia": "Croatie", "United States": "États-Unis", "Canada": "Canada"
-  },
-  "filters": {
-    "all": "Tous",
-    "inEffect": "En vigueur",
-    "dueSoon": "Échéance proche",
-    "upcoming": "À venir",
-    "nextClearanceDates": "Prochaines échéances",
-    "searchPlaceholder": "Rechercher un pays ou un système…",
-    "noResults": "Aucun jalon ne correspond à ces filtres.",
-    "footerNote": "Données compilées à partir de sources officielles des administrations fiscales et de la Commission européenne. Les \"jours restants\" et les badges de statut sont calculés automatiquement à partir de la date du jour. <a href=\"privacy-policy.html\" style=\"color:var(--soon);\">Politique de confidentialité</a>",
-    "soonestFirst": "Le plus proche d'abord",
-    "furthestFirst": "Le plus lointain d'abord",
-    "milestoneSingular": "jalon",
-    "milestonePlural": "jalons",
-    "total": "au total",
-    "establishedRegulations": "Réglementations déjà établies",
-    "daySingular": "jour",
-    "dayPlural": "jours",
-    "noUpcoming": "Aucun jalon à venir dans les données suivies.",
-    "disclaimer": "Ce suivi reflète les informations publiques disponibles à juillet 2026 et est fourni à titre informatif général, sans constituer un conseil juridique ou fiscal. Les seuils, numéros de vague et dates de mise en service de la facturation électronique changent fréquemment — vérifiez vos obligations directement sur le portail officiel du gouvernement lié à chaque entrée, ou auprès de votre conseiller fiscal, avant de prendre des décisions de conformité.",
-    "mobilePortalsToggle": "☰ Portails",
-    "jumpToPortal": "Aller au portail",
-    "governmentPortals": "Portails gouvernementaux",
-    "regionLabel": "Région",
-    "statusLabel": "Statut",
-    "recentAndUpcoming": "Récents et à venir",
-    "recentIntro": "Jalons des derniers mois jusqu'à l'échéance confirmée la plus lointaine. Les réglementations déjà établies se trouvent dans la section repliée ci-dessous, afin que cette liste reste centrée sur ce qui évolue réellement.",
-    "estLabel": "— déjà en vigueur depuis un certain temps, change rarement"
-  },
-  "cardLabels": {
-    "actionChecklist": "Liste d'actions",
-    "countryDeepDive": "Analyse du pays →",
-    "inEffectSince": "En vigueur depuis",
-    "expectedNotFinal": "Attendu — non définitif"
-  },
-  "stats": {
-    "jurisdictionsTracked": "Juridictions suivies",
-    "milestonesTracked": "Jalons suivis",
-    "alreadyInEffect": "Déjà en vigueur",
-    "dueWithin90Days": "Échéance sous 90 jours",
-    "furtherOut": "Plus lointain"
+    "Belgium": "Belgique",
+    "Croatia": "Croatie",
+    "Denmark": "Danemark",
+    "France": "France",
+    "Germany": "Allemagne",
+    "Ireland": "Irlande",
+    "Italy": "Italie",
+    "Norway": "Norvège",
+    "Poland": "Pologne",
+    "Romania": "Roumanie",
+    "Slovakia": "Slovaquie",
+    "Spain": "Espagne",
+    "Sweden": "Suède",
+    "United Kingdom": "Royaume-Uni",
+    "Saudi Arabia": "Arabie saoudite",
+    "United Arab Emirates": "Émirats arabes unis",
+    "Australia": "Australie",
+    "China": "Chine",
+    "India": "Inde",
+    "Malaysia": "Malaisie",
+    "New Zealand": "Nouvelle-Zélande",
+    "Singapore": "Singapour",
+    "Brazil": "Brésil",
+    "Canada": "Canada",
+    "Chile": "Chili",
+    "Mexico": "Mexique",
+    "Peru": "Pérou",
+    "United States": "États-Unis",
+    "European Union": "Union européenne",
+    "Portugal": "Portugal",
+    "Finland": "Finlande"
   }
 }

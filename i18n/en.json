@@ -1,58 +1,99 @@
 {
   "_meta": {
-    "language": "en",
     "label": "English",
+    "language": "en",
     "reviewed": true,
     "reviewedNote": "Source language — always considered authoritative."
   },
-  "brand": {
-    "eyebrow": "Compliance clearance board",
-    "title": "The E-Invoicing<br>Compliance Corner",
-    "description": "A living tracker of e-invoicing and digital reporting mandates across 30 countries — EU-wide ViDA rules, national CTC systems, and everything in between. Each entry shows the deadline, what you need to do about it, and a direct link to the official government portal, so you can go from \"is this relevant to us?\" to \"here's what to action\" in one page."
-  },
-  "perks": {
-    "heading": "Subscribers also get",
-    "item1": "A monthly email digest — every new mandate or deadline change, summarised",
-    "item2": "Full access to the newsletter archive, not just this month's issue",
-    "item3": "Priority access to new country deep dives as they're published",
-    "item4": "Plain-language \"what this means for your team\" write-ups, not just legal text",
-    "cta": "Subscribe (Coming soon) →"
-  },
-  "navTips": {
-    "label": "Getting around this site",
-    "tip1Title": "Filter to what matters to you",
-    "tip1Desc": "Use the region and status pills, or the search box, to narrow the timeline down to your markets.",
-    "tip2Title": "Go deep on a country",
-    "tip2Desc": "The \"Deep Dives\" menu links to a full technical breakdown — file formats, transmission protocols, registration steps, and penalties.",
-    "tip3Title": "Jump straight to a portal",
-    "tip3Desc": "The sidebar (☰ on mobile) links directly to the official government portal for every country tracked here.",
-    "tip4Title": "Old news is tucked away",
-    "tip4Desc": "The timeline shows recent and upcoming changes by default — long-settled regulations live in the collapsed section below it."
-  },
-  "menu": {
-    "deepDives": "Deep Dives",
-    "education": "Education",
-    "menu": "Menu",
-    "about": "About this site",
-    "subscribe": "Subscribe (Coming soon)",
-    "archive": "Newsletter archive (Coming soon)",
-    "feedback": "Give feedback",
-    "lastUpdated": "Last updated:",
-    "eduMandateTypes": "Types of Mandate",
-    "eduImpact": "Impact of Mandate",
-    "eduPreparing": "Preparing for a Mandate",
-    "eduProviderTypes": "Types of Provider",
-    "eduCertifiedProviders": "Government Certified Providers"
-  },
   "about": {
     "eyebrow": "About",
-    "title": "The E-Invoicing Compliance Corner",
     "p1": "The E-Invoicing Compliance Corner was created in response to the growing complexity and rapid spread of e-invoicing mandates worldwide. Whether you're a small business or a global enterprise, this can be a difficult and costly subject to navigate.",
-    "p2": "This site aims to provide a low-cost, easy way to access accurate information quickly — and to give you ongoing alerts whenever mandates change or new legislation is introduced."
+    "p2": "This site aims to provide a low-cost, easy way to access accurate information quickly — and to give you ongoing alerts whenever mandates change or new legislation is introduced.",
+    "title": "The E-Invoicing Compliance Corner"
+  },
+  "brand": {
+    "description": "A living tracker of e-invoicing and digital reporting mandates across 30 countries — EU-wide ViDA rules, national CTC systems, and everything in between. Each entry shows the deadline, what you need to do about it, and a direct link to the official government portal, so you can go from \"is this relevant to us?\" to \"here's what to action\" in one page.",
+    "eyebrow": "Compliance clearance board",
+    "title": "The E-Invoicing<br>Compliance Corner"
+  },
+  "cardLabels": {
+    "actionChecklist": "Action checklist",
+    "countryDeepDive": "Country deep dive →",
+    "expectedNotFinal": "Expected — not final",
+    "inEffectSince": "In effect since"
+  },
+  "filters": {
+    "all": "All",
+    "dayPlural": "days",
+    "daySingular": "day",
+    "disclaimer": "This tracker reflects publicly available guidance as of July 2026 and is provided for general awareness, not legal or tax advice. E-invoicing thresholds, wave numbers and go-live dates change frequently — confirm your obligations directly on the official government portal linked in each entry, or with your tax advisor, before making compliance decisions.",
+    "dueSoon": "Due soon",
+    "estLabel": "— already in force for a while, rarely changing",
+    "establishedRegulations": "Established regulations",
+    "footerNote": "Data compiled from official tax-authority and EU Commission sources. \"Days remaining\" and status badges are calculated automatically from today's date. <a href=\"privacy-policy.html\" style=\"color:var(--soon);\">Privacy Policy</a>",
+    "furthestFirst": "Furthest first",
+    "governmentPortals": "Government portals",
+    "inEffect": "In effect",
+    "jumpToPortal": "Jump to portal",
+    "milestonePlural": "milestones",
+    "milestoneSingular": "milestone",
+    "mobilePortalsToggle": "☰ Portals",
+    "nextClearanceDates": "Next clearance dates",
+    "noResults": "No milestones match these filters.",
+    "noUpcoming": "No upcoming milestones in the tracked dataset.",
+    "recentAndUpcoming": "Recent &amp; Upcoming",
+    "recentIntro": "Milestones from the last few months through the furthest confirmed deadline. Already-settled regulations live in the collapsed section below so this list stays focused on what's actually changing.",
+    "regionLabel": "Region",
+    "searchPlaceholder": "Search country or system…",
+    "soonestFirst": "Soonest first",
+    "statusLabel": "Status",
+    "total": "total",
+    "upcoming": "Upcoming"
   },
   "languageSwitcher": {
     "label": "Language",
     "unreviewedBanner": "This translation was produced with AI assistance and has not yet been reviewed by a human translator. Wording may be imprecise — refer to the English version if anything looks unclear."
+  },
+  "menu": {
+    "about": "About this site",
+    "archive": "Newsletter archive (Coming soon)",
+    "deepDives": "Deep Dives",
+    "eduCertifiedProviders": "Government Certified Providers",
+    "eduImpact": "Impact of Mandate",
+    "eduMandateTypes": "Types of Mandate",
+    "eduPreparing": "Preparing for a Mandate",
+    "eduProviderTypes": "Types of Provider",
+    "education": "Education",
+    "feedback": "Give feedback",
+    "lastUpdated": "Last updated:",
+    "menu": "Menu",
+    "subscribe": "Subscribe (Coming soon)"
+  },
+  "navTips": {
+    "label": "Getting around this site",
+    "tip1Desc": "Use the region and status pills, or the search box, to narrow the timeline down to your markets.",
+    "tip1Title": "Filter to what matters to you",
+    "tip2Desc": "The \"Deep Dives\" menu links to a full technical breakdown — file formats, transmission protocols, registration steps, and penalties.",
+    "tip2Title": "Go deep on a country",
+    "tip3Desc": "The sidebar (☰ on mobile) links directly to the official government portal for every country tracked here.",
+    "tip3Title": "Jump straight to a portal",
+    "tip4Desc": "The timeline shows recent and upcoming changes by default — long-settled regulations live in the collapsed section below it.",
+    "tip4Title": "Old news is tucked away"
+  },
+  "perks": {
+    "cta": "Subscribe (Coming soon) →",
+    "heading": "Subscribers also get",
+    "item1": "A monthly email digest — every new mandate or deadline change, summarised",
+    "item2": "Full access to the newsletter archive, not just this month's issue",
+    "item3": "Priority access to new country deep dives as they're published",
+    "item4": "Plain-language \"what this means for your team\" write-ups, not just legal text"
+  },
+  "stats": {
+    "alreadyInEffect": "Already in effect",
+    "dueWithin90Days": "Due within 90 days",
+    "furtherOut": "Further out",
+    "jurisdictionsTracked": "Jurisdictions tracked",
+    "milestonesTracked": "Milestones tracked"
   },
   "regionNames": {
     "Europe": "Europe",
@@ -61,53 +102,36 @@
     "Americas": "Americas"
   },
   "countryNames": {
-    "European Union": "European Union", "Belgium": "Belgium", "Germany": "Germany", "France": "France",
-    "Poland": "Poland", "Italy": "Italy", "Saudi Arabia": "Saudi Arabia", "Malaysia": "Malaysia",
-    "India": "India", "Brazil": "Brazil", "Spain": "Spain", "United Kingdom": "United Kingdom",
-    "Romania": "Romania", "United Arab Emirates": "United Arab Emirates", "Mexico": "Mexico",
-    "Australia": "Australia", "New Zealand": "New Zealand", "Singapore": "Singapore", "Slovakia": "Slovakia",
-    "Peru": "Peru", "Chile": "Chile", "Ireland": "Ireland", "Norway": "Norway", "Denmark": "Denmark",
-    "Sweden": "Sweden", "China": "China", "Croatia": "Croatia", "United States": "United States", "Canada": "Canada"
-  },
-  "filters": {
-    "all": "All",
-    "inEffect": "In effect",
-    "dueSoon": "Due soon",
-    "upcoming": "Upcoming",
-    "nextClearanceDates": "Next clearance dates",
-    "searchPlaceholder": "Search country or system…",
-    "noResults": "No milestones match these filters.",
-    "footerNote": "Data compiled from official tax-authority and EU Commission sources. \"Days remaining\" and status badges are calculated automatically from today's date. <a href=\"privacy-policy.html\" style=\"color:var(--soon);\">Privacy Policy</a>",
-    "soonestFirst": "Soonest first",
-    "furthestFirst": "Furthest first",
-    "milestoneSingular": "milestone",
-    "milestonePlural": "milestones",
-    "total": "total",
-    "establishedRegulations": "Established regulations",
-    "daySingular": "day",
-    "dayPlural": "days",
-    "noUpcoming": "No upcoming milestones in the tracked dataset.",
-    "disclaimer": "This tracker reflects publicly available guidance as of July 2026 and is provided for general awareness, not legal or tax advice. E-invoicing thresholds, wave numbers and go-live dates change frequently — confirm your obligations directly on the official government portal linked in each entry, or with your tax advisor, before making compliance decisions.",
-    "mobilePortalsToggle": "☰ Portals",
-    "jumpToPortal": "Jump to portal",
-    "governmentPortals": "Government portals",
-    "regionLabel": "Region",
-    "statusLabel": "Status",
-    "recentAndUpcoming": "Recent &amp; Upcoming",
-    "recentIntro": "Milestones from the last few months through the furthest confirmed deadline. Already-settled regulations live in the collapsed section below so this list stays focused on what's actually changing.",
-    "estLabel": "— already in force for a while, rarely changing"
-  },
-  "cardLabels": {
-    "actionChecklist": "Action checklist",
-    "countryDeepDive": "Country deep dive →",
-    "inEffectSince": "In effect since",
-    "expectedNotFinal": "Expected — not final"
-  },
-  "stats": {
-    "jurisdictionsTracked": "Jurisdictions tracked",
-    "milestonesTracked": "Milestones tracked",
-    "alreadyInEffect": "Already in effect",
-    "dueWithin90Days": "Due within 90 days",
-    "furtherOut": "Further out"
+    "Belgium": "Belgium",
+    "Croatia": "Croatia",
+    "Denmark": "Denmark",
+    "France": "France",
+    "Germany": "Germany",
+    "Ireland": "Ireland",
+    "Italy": "Italy",
+    "Norway": "Norway",
+    "Poland": "Poland",
+    "Romania": "Romania",
+    "Slovakia": "Slovakia",
+    "Spain": "Spain",
+    "Sweden": "Sweden",
+    "United Kingdom": "United Kingdom",
+    "Saudi Arabia": "Saudi Arabia",
+    "United Arab Emirates": "United Arab Emirates",
+    "Australia": "Australia",
+    "China": "China",
+    "India": "India",
+    "Malaysia": "Malaysia",
+    "New Zealand": "New Zealand",
+    "Singapore": "Singapore",
+    "Brazil": "Brazil",
+    "Canada": "Canada",
+    "Chile": "Chile",
+    "Mexico": "Mexico",
+    "Peru": "Peru",
+    "United States": "United States",
+    "European Union": "European Union",
+    "Portugal": "Portugal",
+    "Finland": "Finland"
   }
 }

@@ -1,55 +1,72 @@
 {
-  "_meta": { "language": "de", "reviewed": true },
+  "_meta": {
+    "language": "de",
+    "reviewed": true
+  },
   "backLink": "← Zurück zur Übersicht",
   "benefits": {
     "eyebrow": "Nie wieder überrascht werden",
-    "title": "Erfahren Sie sofort, wenn eine Regierung die Regeln ändert",
-    "intro": "E-Invoicing-Schwellenwerte, Wellen-Nummern und Stichtage ändern sich ständig — oft mit wenig öffentlicher Vorankündigung. Einmal abonniert, landet jede Regierungsaktualisierung oder -ankündigung aus den 28 von uns erfassten Rechtsordnungen automatisch in Ihrem Posteingang, in klarer Sprache, bevor sie Ihr Team überrascht.",
+    "intro": "E-Invoicing-Schwellenwerte, Wellen-Nummern und Stichtage ändern sich ständig — oft mit wenig öffentlicher Vorankündigung. Einmal abonniert, landet jede Regierungsaktualisierung oder -ankündigung aus den 30 von uns erfassten Rechtsordnungen automatisch in Ihrem Posteingang, in klarer Sprache, bevor sie Ihr Team überrascht.",
+    "item1": {
+      "body": "Jede neue Vorgabe, jede verschobene Frist und jede Sanktionsänderung, die wir erfassen, in klarer Sprache geschrieben — kein Rechtstext, der aus einer Pressemitteilung der Steuerbehörde kopiert wurde.",
+      "title": "Echte Regierungsankündigungen, zusammengefasst"
+    },
+    "item2": {
+      "body": "Teilen Sie uns mit, welche der 30 Rechtsordnungen für Ihr Unternehmen relevant sind, und Ihre monatliche Benachrichtigungs-E-Mail sagt Ihnen konkret, ob sie vorkamen — oder erhalten Sie den vollständigen globalen Digest, wenn Sie lieber alles sehen möchten.",
+      "title": "Wählen Sie genau die Länder, die Sie interessieren"
+    },
+    "item3": {
+      "body": "Jede vergangene Ausgabe liegt in einem durchsuchbaren, filterbaren Archiv — schauen Sie jederzeit auf jeden Monat, jedes Land zurück, nicht nur auf das, was zuletzt in Ihrem Posteingang landete.",
+      "title": "Ein vollständiges, durchsuchbares Archiv"
+    },
+    "item4": {
+      "body": "Neue Länderanalysen und Wissensleitfäden werden Abonnenten zuerst angezeigt, sobald wir sie veröffentlichen.",
+      "title": "Bevorzugter Zugang zu neuen Wissensinhalten"
+    },
     "sampleLink": "👀 Echte Beispielausgabe ansehen (Januar 2026) →",
-    "trialBadge": "✨ 60 Tage kostenlos testen — probieren Sie den Service zunächst aus, keine Zahlung nötig",
     "stat1": "Erfasste Rechtsordnungen",
     "stat2": "Versandrhythmus",
     "stat3": "Spam zwischen den Ausgaben",
-    "item1": { "title": "Echte Regierungsankündigungen, zusammengefasst", "body": "Jede neue Vorgabe, jede verschobene Frist und jede Sanktionsänderung, die wir erfassen, in klarer Sprache geschrieben — kein Rechtstext, der aus einer Pressemitteilung der Steuerbehörde kopiert wurde." },
-    "item2": { "title": "Wählen Sie genau die Länder, die Sie interessieren", "body": "Teilen Sie uns mit, welche der 30 Rechtsordnungen für Ihr Unternehmen relevant sind, und Ihre monatliche Benachrichtigungs-E-Mail sagt Ihnen konkret, ob sie vorkamen — oder erhalten Sie den vollständigen globalen Digest, wenn Sie lieber alles sehen möchten." },
-    "item3": { "title": "Ein vollständiges, durchsuchbares Archiv", "body": "Jede vergangene Ausgabe liegt in einem durchsuchbaren, filterbaren Archiv — schauen Sie jederzeit auf jeden Monat, jedes Land zurück, nicht nur auf das, was zuletzt in Ihrem Posteingang landete." },
-    "item4": { "title": "Bevorzugter Zugang zu neuen Wissensinhalten", "body": "Neue Länderanalysen und Wissensleitfäden werden Abonnenten zuerst angezeigt, sobald wir sie veröffentlichen." }
+    "title": "Erfahren Sie sofort, wenn eine Regierung die Regeln ändert"
   },
   "card": {
-    "eyebrow": "Abonnieren",
-    "title": "Los geht's",
-    "sub": "Eine E-Mail pro Monat, plus eine kurze Benachrichtigung, wann immer eine neue Ausgabe zu Ihren Ländern erscheint. Ob wiederkehrend oder einmalig, wählen Sie im nächsten, sicheren Schritt.",
-    "form": {
-      "firstName": "Vorname", "firstNameError": "Vorname ist erforderlich",
-      "lastName": "Nachname", "lastNameError": "Nachname ist erforderlich",
-      "email": "E-Mail-Adresse", "emailError": "Eine gültige E-Mail-Adresse ist erforderlich",
-      "jobTitle": "Position", "jobTitleError": "Position ist erforderlich",
-      "company": "Firmenname", "companyError": "Firmenname ist erforderlich"
-    },
-    "countriesLabel": "Für welche Länder möchten Sie Benachrichtigungen erhalten?",
-    "countriesHint": "Optional — lassen Sie alles unmarkiert, und wir senden Ihnen den vollständigen monatlichen Digest für alle 30 Rechtsordnungen.",
-    "countriesMissing": "Die Länderauswahl ist vorübergehend nicht verfügbar — Sie erhalten trotzdem den vollständigen monatlichen Digest. (Fehlende Datei: countries.js)",
-    "selectAll": "Alle auswählen",
     "clearAll": "Alle abwählen",
-    "submitButton": "Newsletter abonnieren",
-    "fineprint": "Die Zahlung wird von Lemon Squeezy, unserem Handelsvertreter, abgewickelt — sie erheben und führen jede anfallende Umsatzsteuer/GST für diesen Verkauf ab, sodass Ihnen nie separat Steuern berechnet werden. Wir sehen oder speichern Ihre Kartendaten niemals. Siehe unsere <a href=\"privacy-policy.html\" style=\"color:#b5432f; text-decoration:underline;\">Datenschutzerklärung</a>, um zu erfahren, wie Ihre Daten verarbeitet werden."
+    "countriesHint": "Optional — lassen Sie alles unmarkiert, und wir senden Ihnen den vollständigen monatlichen Digest für alle 30 Rechtsordnungen.",
+    "countriesLabel": "Für welche Länder möchten Sie Benachrichtigungen erhalten?",
+    "countriesMissing": "Die Länderauswahl ist vorübergehend nicht verfügbar — Sie erhalten trotzdem den vollständigen monatlichen Digest. (Fehlende Datei: countries.js)",
+    "eyebrow": "Abonnieren",
+    "fineprint": "Die Zahlung wird von Lemon Squeezy, unserem Handelsvertreter, abgewickelt — sie erheben und führen jede anfallende Umsatzsteuer/GST für diesen Verkauf ab, sodass Ihnen nie separat Steuern berechnet werden. Wir sehen oder speichern Ihre Kartendaten niemals. Siehe unsere <a href=\"privacy-policy.html\" style=\"color:#b5432f; text-decoration:underline;\">Datenschutzerklärung</a>, um zu erfahren, wie Ihre Daten verarbeitet werden.",
+    "form": {
+      "company": "Firmenname",
+      "companyError": "Firmenname ist erforderlich",
+      "email": "E-Mail-Adresse",
+      "emailError": "Eine gültige E-Mail-Adresse ist erforderlich",
+      "firstName": "Vorname",
+      "firstNameError": "Vorname ist erforderlich",
+      "jobTitle": "Position",
+      "jobTitleError": "Position ist erforderlich",
+      "lastName": "Nachname",
+      "lastNameError": "Nachname ist erforderlich"
+    },
+    "selectAll": "Alle auswählen",
+    "sub": "Eine E-Mail pro Monat, plus eine kurze Benachrichtigung, wann immer eine neue Ausgabe zu Ihren Ländern erscheint. Ob wiederkehrend oder einmalig, wählen Sie im nächsten, sicheren Schritt.",
+    "submitButton": "Weiter zur sicheren Zahlung",
+    "title": "Los geht's"
   },
   "confirm": {
-    "eyebrow": "Noch ein Schritt",
-    "title": "Bestätigen Sie Ihre Angaben",
-    "subscribingAs": "Abonnieren als",
-    "for": "für",
     "alertsFor": "Benachrichtigungen für:",
-    "fullDigest": "den vollständigen Digest (alle 30 Rechtsordnungen)",
+    "editLink": "← Meine Angaben bearbeiten",
+    "eyebrow": "Noch ein Schritt",
     "fineprint": "Sie werden zu einem sicheren Lemon-Squeezy-Zahlungsfenster weitergeleitet, in dem Sie zwischen wiederkehrender und einmaliger Zahlung wählen und Ihren Kauf abschließen können.",
+    "for": "für",
+    "fullDigest": "den vollständigen Digest (alle 30 Rechtsordnungen)",
     "payButton": "Weiter zur Zahlung →",
-    "trialIntro": "Noch nicht bereit zu zahlen? Testen Sie den vollen Zugang 60 Tage lang kostenlos.",
-    "trialButton": "Meine kostenlose 60-Tage-Testphase starten →",
-    "editLink": "← Meine Angaben bearbeiten"
+    "subscribingAs": "Abonnieren als",
+    "title": "Bestätigen Sie Ihre Angaben"
   },
   "modal": {
-    "close": "✕ Schließen",
     "badge": "Echte Beispielausgabe — kein Mockup",
+    "close": "✕ Schließen",
     "fineprint": "Dies ist die tatsächliche erste Ausgabe, die an Abonnenten gesendet wurde, genau wie veröffentlicht — nichts wurde für diese Vorschau bearbeitet oder gekürzt. Jeder Abonnent erhält Zugang zum vollständigen durchsuchbaren Archiv, nicht nur zu dieser einen Ausgabe."
   },
   "regionNames": {
@@ -59,12 +76,36 @@
     "Americas": "Amerika"
   },
   "countryNames": {
-    "European Union": "Europäische Union", "Belgium": "Belgien", "Germany": "Deutschland", "France": "Frankreich",
-    "Poland": "Polen", "Italy": "Italien", "Saudi Arabia": "Saudi-Arabien", "Malaysia": "Malaysia",
-    "India": "Indien", "Brazil": "Brasilien", "Spain": "Spanien", "United Kingdom": "Vereinigtes Königreich",
-    "Romania": "Rumänien", "United Arab Emirates": "Vereinigte Arabische Emirate", "Mexico": "Mexiko",
-    "Australia": "Australien", "New Zealand": "Neuseeland", "Singapore": "Singapur", "Slovakia": "Slowakei",
-    "Peru": "Peru", "Chile": "Chile", "Ireland": "Irland", "Norway": "Norwegen", "Denmark": "Dänemark",
-    "Sweden": "Schweden", "China": "China", "Croatia": "Kroatien", "United States": "Vereinigte Staaten", "Canada": "Kanada"
+    "Belgium": "Belgien",
+    "Croatia": "Kroatien",
+    "Denmark": "Dänemark",
+    "France": "Frankreich",
+    "Germany": "Deutschland",
+    "Ireland": "Irland",
+    "Italy": "Italien",
+    "Norway": "Norwegen",
+    "Poland": "Polen",
+    "Romania": "Rumänien",
+    "Slovakia": "Slowakei",
+    "Spain": "Spanien",
+    "Sweden": "Schweden",
+    "United Kingdom": "Vereinigtes Königreich",
+    "Saudi Arabia": "Saudi-Arabien",
+    "United Arab Emirates": "Vereinigte Arabische Emirate",
+    "Australia": "Australien",
+    "China": "China",
+    "India": "Indien",
+    "Malaysia": "Malaysia",
+    "New Zealand": "Neuseeland",
+    "Singapore": "Singapur",
+    "Brazil": "Brasilien",
+    "Canada": "Kanada",
+    "Chile": "Chile",
+    "Mexico": "Mexiko",
+    "Peru": "Peru",
+    "United States": "Vereinigte Staaten",
+    "European Union": "Europäische Union",
+    "Portugal": "Portugal",
+    "Finland": "Finnland"
   }
 }

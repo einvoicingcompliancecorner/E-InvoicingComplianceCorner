@@ -1,55 +1,72 @@
 {
-  "_meta": { "language": "en", "reviewed": true },
+  "_meta": {
+    "language": "en",
+    "reviewed": true
+  },
   "backLink": "← Back to global tracker",
   "benefits": {
     "eyebrow": "Never get caught off guard",
-    "title": "Get notified the moment a government changes the rules",
     "intro": "E-invoicing thresholds, wave numbers, and go-live dates change constantly — often with little public notice. Subscribe once, and every government update or announcement across the 30 jurisdictions we track lands in your inbox automatically, in plain language, before it catches your team off guard.",
+    "item1": {
+      "body": "Every new mandate, shifted deadline, and penalty change we track, written in plain language — not legal text copy-pasted from a tax authority's press release.",
+      "title": "Real government announcements, summarised"
+    },
+    "item2": {
+      "body": "Tell us which of the 30 jurisdictions matter to your business, and your monthly notification email tells you specifically whether they came up — or get the full global digest if you'd rather see everything.",
+      "title": "Choose exactly which countries you care about"
+    },
+    "item3": {
+      "body": "Every past issue lives in a searchable, filterable archive — look back at any month, any country, any time, not just whatever landed in your inbox most recently.",
+      "title": "A full, searchable back-catalogue"
+    },
+    "item4": {
+      "body": "New country deep dives and education guides get flagged to subscribers first, as we publish them.",
+      "title": "Priority access to new education content"
+    },
     "sampleLink": "👀 See a real sample issue (January 2026) →",
-    "trialBadge": "✨ 60-day free trial — try the service out first, no payment needed",
     "stat1": "Jurisdictions tracked",
     "stat2": "Digest cadence",
     "stat3": "Spam between issues",
-    "item1": { "title": "Real government announcements, summarised", "body": "Every new mandate, shifted deadline, and penalty change we track, written in plain language — not legal text copy-pasted from a tax authority's press release." },
-    "item2": { "title": "Choose exactly which countries you care about", "body": "Tell us which of the 30 jurisdictions matter to your business, and your monthly notification email tells you specifically whether they came up — or get the full global digest if you'd rather see everything." },
-    "item3": { "title": "A full, searchable back-catalogue", "body": "Every past issue lives in a searchable, filterable archive — look back at any month, any country, any time, not just whatever landed in your inbox most recently." },
-    "item4": { "title": "Priority access to new education content", "body": "New country deep dives and education guides get flagged to subscribers first, as we publish them." }
+    "title": "Get notified the moment a government changes the rules"
   },
   "card": {
-    "eyebrow": "Subscribe",
-    "title": "Get started",
-    "sub": "One email a month, plus a short alert whenever a new issue covering your countries goes live. You'll choose recurring or one-time payment on the next, secure step.",
-    "form": {
-      "firstName": "First name", "firstNameError": "First name is required",
-      "lastName": "Last name", "lastNameError": "Last name is required",
-      "email": "Email address", "emailError": "A valid email address is required",
-      "jobTitle": "Title", "jobTitleError": "Title is required",
-      "company": "Company name", "companyError": "Company name is required"
-    },
-    "countriesLabel": "Which countries do you want alerts for?",
-    "countriesHint": "Optional — leave everything unchecked and we'll send the full monthly digest covering all 30 jurisdictions.",
-    "countriesMissing": "Country selection is temporarily unavailable — you'll still get the full monthly digest. (Missing file: countries.js)",
-    "selectAll": "Select all",
     "clearAll": "Clear all",
-    "submitButton": "Subscribe to Newsletters",
-    "fineprint": "Payment is handled by Lemon Squeezy, our merchant of record — they collect and remit any applicable VAT/GST on this sale, so you're never charged tax separately. We never see or store your card details. See our <a href=\"privacy-policy.html\" style=\"color:#b5432f; text-decoration:underline;\">privacy policy</a> for how your data is handled."
+    "countriesHint": "Optional — leave everything unchecked and we'll send the full monthly digest covering all 30 jurisdictions.",
+    "countriesLabel": "Which countries do you want alerts for?",
+    "countriesMissing": "Country selection is temporarily unavailable — you'll still get the full monthly digest. (Missing file: countries.js)",
+    "eyebrow": "Subscribe",
+    "fineprint": "Payment is handled by Lemon Squeezy, our merchant of record — they collect and remit any applicable VAT/GST on this sale, so you're never charged tax separately. We never see or store your card details. See our <a href=\"privacy-policy.html\" style=\"color:#b5432f; text-decoration:underline;\">privacy policy</a> for how your data is handled.",
+    "form": {
+      "company": "Company name",
+      "companyError": "Company name is required",
+      "email": "Email address",
+      "emailError": "A valid email address is required",
+      "firstName": "First name",
+      "firstNameError": "First name is required",
+      "jobTitle": "Title",
+      "jobTitleError": "Title is required",
+      "lastName": "Last name",
+      "lastNameError": "Last name is required"
+    },
+    "selectAll": "Select all",
+    "sub": "One email a month, plus a short alert whenever a new issue covering your countries goes live. You'll choose recurring or one-time payment on the next, secure step.",
+    "submitButton": "Continue to secure payment",
+    "title": "Get started"
   },
   "confirm": {
-    "eyebrow": "One more step",
-    "title": "Confirm your details",
-    "subscribingAs": "Subscribing as",
-    "for": "for",
     "alertsFor": "Alerts for:",
-    "fullDigest": "the full digest (all 30 jurisdictions)",
+    "editLink": "← Edit my details",
+    "eyebrow": "One more step",
     "fineprint": "You'll be taken to a secure Lemon Squeezy checkout window, where you can choose recurring or one-time payment and complete your purchase.",
+    "for": "for",
+    "fullDigest": "the full digest (all 30 jurisdictions)",
     "payButton": "Continue to checkout →",
-    "trialIntro": "Not ready to pay yet? Try full access free for 60 days.",
-    "trialButton": "Start my 60-day free trial →",
-    "editLink": "← Edit my details"
+    "subscribingAs": "Subscribing as",
+    "title": "Confirm your details"
   },
   "modal": {
-    "close": "✕ Close",
     "badge": "Real sample issue — not a mockup",
+    "close": "✕ Close",
     "fineprint": "This is the actual first issue sent to subscribers, exactly as published — nothing edited or shortened for this preview. Every subscriber gets access to the full searchable archive, not just this one issue."
   },
   "regionNames": {
@@ -59,12 +76,36 @@
     "Americas": "Americas"
   },
   "countryNames": {
-    "European Union": "European Union", "Belgium": "Belgium", "Germany": "Germany", "France": "France",
-    "Poland": "Poland", "Italy": "Italy", "Saudi Arabia": "Saudi Arabia", "Malaysia": "Malaysia",
-    "India": "India", "Brazil": "Brazil", "Spain": "Spain", "United Kingdom": "United Kingdom",
-    "Romania": "Romania", "United Arab Emirates": "United Arab Emirates", "Mexico": "Mexico",
-    "Australia": "Australia", "New Zealand": "New Zealand", "Singapore": "Singapore", "Slovakia": "Slovakia",
-    "Peru": "Peru", "Chile": "Chile", "Ireland": "Ireland", "Norway": "Norway", "Denmark": "Denmark",
-    "Sweden": "Sweden", "China": "China", "Croatia": "Croatia", "United States": "United States", "Canada": "Canada"
+    "Belgium": "Belgium",
+    "Croatia": "Croatia",
+    "Denmark": "Denmark",
+    "France": "France",
+    "Germany": "Germany",
+    "Ireland": "Ireland",
+    "Italy": "Italy",
+    "Norway": "Norway",
+    "Poland": "Poland",
+    "Romania": "Romania",
+    "Slovakia": "Slovakia",
+    "Spain": "Spain",
+    "Sweden": "Sweden",
+    "United Kingdom": "United Kingdom",
+    "Saudi Arabia": "Saudi Arabia",
+    "United Arab Emirates": "United Arab Emirates",
+    "Australia": "Australia",
+    "China": "China",
+    "India": "India",
+    "Malaysia": "Malaysia",
+    "New Zealand": "New Zealand",
+    "Singapore": "Singapore",
+    "Brazil": "Brazil",
+    "Canada": "Canada",
+    "Chile": "Chile",
+    "Mexico": "Mexico",
+    "Peru": "Peru",
+    "United States": "United States",
+    "European Union": "European Union",
+    "Portugal": "Portugal",
+    "Finland": "Finland"
   }
 }
