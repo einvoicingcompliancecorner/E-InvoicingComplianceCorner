@@ -557,5 +557,29 @@
       "Heute ist über gute Aufbewahrungspraxis hinaus keine Maßnahme erforderlich",
       "Verfolgen Sie künftige Ankündigungen der CRA / von Finance Canada, insbesondere da die Nutzung des DBNAlliance-Netzwerks in Kanada zunimmt"
     ]
+  },
+  "pt-b2g-large": {
+    "system": "B2G-E-Rechnung für Großunternehmen verpflichtend (in Kraft seit Januar 2021)",
+    "desc": "Großunternehmen, die öffentliche Verwaltungsstellen beliefern, müssen strukturierte E-Rechnungen im nationalen Format CIUS-PT ausstellen (eine portugiesische Umsetzung von EN 16931, via UBL 2.1 oder CEFACT CII), übermittelt über die von eSPap betriebene FE-AP-Plattform oder einen anderen zugelassenen Kanal. Portugal hat keine allgemeine B2B- oder B2C-E-Invoicing-Vorgabe — diese Anforderung gilt speziell für die Belieferung des öffentlichen Sektors.",
+    "actions": [
+      "Bestätigen Sie, dass Ihr Rechnungssystem gültiges strukturiertes CIUS-PT-XML erzeugen kann, nicht nur eine PDF-Darstellung",
+      "Verbinden Sie sich mit FE-AP oder einem zugelassenen alternativen Kanal zur Übermittlung von Rechnungen an öffentliche Stellen"
+    ]
+  },
+  "pt-b2g-sme": {
+    "system": "B2G-Vorgabe erstreckt sich auf kleine, mittlere und Kleinstunternehmen",
+    "desc": "Die Anforderung strukturierter CIUS-PT-E-Rechnungen für Lieferanten des öffentlichen Sektors, die zuvor nur für Großunternehmen galt, erstreckt sich nun auf kleine, mittlere und Kleinstunternehmen. Unabhängig von Unternehmensgröße oder B2G-Status müssen zudem alle Rechnungen — Papier oder elektronisch — bereits mit AT-zertifizierter Software ausgestellt werden und einen ATCUD-Code, einen QR-Code sowie eine Hash-Kette zur Echtheitsprüfung tragen.",
+    "actions": [
+      "Wenn Sie eine portugiesische öffentliche Stelle beliefern und noch keine strukturierten CIUS-PT-Rechnungen ausstellen, ist dies bereits eine aktive Compliance-Lücke, keine zukünftige",
+      "Bestätigen Sie unabhängig von Ihrem B2G-Status, dass Ihre Rechnungssoftware auf der AT-zertifizierten Liste steht — die Nutzung nicht zertifizierter Software macht eine Rechnung unabhängig von ihrem Inhalt ungültig"
+    ]
+  },
+  "pt-qes": {
+    "system": "Qualifizierte Elektronische Signatur (QES) für PDF-Rechnungen erforderlich",
+    "desc": "PDF-Rechnungen in B2B- und B2C-Transaktionen benötigen eine Qualifizierte Elektronische Signatur eines EU-gelisteten qualifizierten Vertrauensdiensteanbieters, um weiterhin rechtsgültig zu sein — verschoben von einem ursprünglichen Datum 2026 über den Staatshaushalt 2026. Bis zum 31. Dezember 2026 bleiben von zertifizierter Software ausgestellte PDF-Rechnungen mit ATCUD und QR-Code auch ohne QES gültig. Diese Ebene gilt zusätzlich zu, nicht anstelle der bereits geltenden Anforderungen an zertifizierte Software/ATCUD/QR/SAF-T.",
+    "actions": [
+      "Identifizieren Sie einen EU-gelisteten qualifizierten Vertrauensdiensteanbieter für QES rechtzeitig vor der Frist 2027 — dies ist ein eigener Beschaffungsschritt, keine Softwareeinstellung",
+      "Gehen Sie nicht davon aus, dass die Einhaltung der bestehenden ATCUD-/QR-/Zertifizierungssoftware-Anforderungen dies bereits abdeckt — QES ist eine echte, zusätzliche Ebene speziell für PDF-Rechnungen"
+    ]
   }
 }

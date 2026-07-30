@@ -557,5 +557,29 @@
       "Aucune action n'est requise aujourd'hui au-delà de bonnes pratiques de tenue de registres",
       "Surveillez les futures annonces de l'ARC / Finances Canada, notamment à mesure que l'adoption du réseau DBNAlliance progresse au Canada"
     ]
+  },
+  "pt-b2g-large": {
+    "system": "Facturation électronique B2G obligatoire pour les grandes entreprises (en vigueur depuis janvier 2021)",
+    "desc": "Les grandes entreprises fournissant des organismes de l'administration publique doivent émettre des factures électroniques structurées au format national CIUS-PT (une mise en œuvre portugaise de la norme EN 16931, via UBL 2.1 ou CEFACT CII), transmises via la plateforme FE-AP gérée par l'eSPap ou un autre canal approuvé. Le Portugal n'a pas d'obligation générale de facturation électronique B2B ou B2C — cette exigence s'applique spécifiquement à l'approvisionnement du secteur public.",
+    "actions": [
+      "Confirmez que votre système de facturation peut générer un XML structuré CIUS-PT valide, pas seulement une représentation PDF",
+      "Connectez-vous à FE-AP ou à un canal alternatif approuvé pour transmettre les factures aux organismes publics"
+    ]
+  },
+  "pt-b2g-sme": {
+    "system": "L'obligation B2G s'étend aux petites, moyennes et micro-entreprises",
+    "desc": "L'exigence de facturation électronique structurée CIUS-PT pour les fournisseurs du secteur public, auparavant limitée aux grandes entreprises, s'étend désormais aux petites, moyennes et micro-entreprises. Par ailleurs, indépendamment de la taille de l'entreprise ou de l'applicabilité du B2G, toutes les factures — papier ou électroniques — doivent déjà être émises à l'aide d'un logiciel certifié par l'AT et porter un code ATCUD, un code QR et une chaîne de hachage garantissant l'authenticité.",
+    "actions": [
+      "Si vous fournissez un organisme public portugais et n'émettez pas encore de factures structurées CIUS-PT, il s'agit désormais d'un écart de conformité actif, non futur",
+      "Indépendamment de votre statut B2G, confirmez que votre logiciel de facturation figure sur la liste certifiée par l'AT — l'utilisation d'un logiciel non certifié invalide une facture quel que soit son contenu"
+    ]
+  },
+  "pt-qes": {
+    "system": "La Signature Électronique Qualifiée (QES) requise pour les factures PDF",
+    "desc": "Les factures PDF dans les transactions B2B et B2C nécessiteront une Signature Électronique Qualifiée d'un prestataire de services de confiance qualifié inscrit sur liste européenne pour rester légalement valables — reportée d'une date initiale de 2026 via le Budget de l'État 2026. Jusqu'au 31 décembre 2026, les factures PDF émises par un logiciel certifié avec ATCUD et code QR restent valables sans QES. Cette couche s'applique en plus de, et non à la place de, les exigences déjà en vigueur en matière de logiciel certifié/ATCUD/QR/SAF-T.",
+    "actions": [
+      "Identifiez un prestataire de services de confiance qualifié inscrit sur liste européenne pour la QES bien avant l'échéance de 2027 — il s'agit d'une étape d'approvisionnement distincte, pas d'un simple paramètre logiciel",
+      "Ne supposez pas que la conformité aux exigences existantes ATCUD/QR/logiciel certifié couvre déjà cela — la QES est une couche véritablement nouvelle et supplémentaire spécifique aux factures PDF"
+    ]
   }
 }
