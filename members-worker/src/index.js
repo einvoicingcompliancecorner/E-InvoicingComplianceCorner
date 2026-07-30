@@ -126,6 +126,7 @@ const WORKER_I18N = {
       noMatch: "No issues match your search or filter.",
       managePrefs: "Manage which countries you get alerts for →",
       officialSource: "Official source",
+      editionAll: "All editions", editionLatest: "Latest edition", editionThisYear: "This year",
     },
     preferences: {
       title: "Alert preferences",
@@ -160,6 +161,7 @@ const WORKER_I18N = {
       noMatch: "Ningún número coincide con su búsqueda o filtro.",
       managePrefs: "Gestione los países sobre los que recibe alertas →",
       officialSource: "Fuente oficial",
+      editionAll: "Todas las ediciones", editionLatest: "Última edición", editionThisYear: "Este año",
     },
     preferences: {
       title: "Preferencias de alertas",
@@ -194,6 +196,7 @@ const WORKER_I18N = {
       noMatch: "Keine Ausgabe entspricht Ihrer Suche oder Ihrem Filter.",
       managePrefs: "Verwalten Sie, für welche Länder Sie Benachrichtigungen erhalten →",
       officialSource: "Offizielle Quelle",
+      editionAll: "Alle Ausgaben", editionLatest: "Neueste Ausgabe", editionThisYear: "Dieses Jahr",
     },
     preferences: {
       title: "Benachrichtigungseinstellungen",
@@ -228,6 +231,7 @@ const WORKER_I18N = {
       noMatch: "Aucun numéro ne correspond à votre recherche ou filtre.",
       managePrefs: "Gérez les pays pour lesquels vous recevez des alertes →",
       officialSource: "Source officielle",
+      editionAll: "Toutes les éditions", editionLatest: "Dernière édition", editionThisYear: "Cette année",
     },
     preferences: {
       title: "Préférences d'alerte",
@@ -1183,6 +1187,11 @@ function renderArchiveList(stories, regionByCountryName, englishNameByDisplayNam
 
     <div class="archive-toolbar">
       <input type="text" id="archiveSearch" class="archive-search" placeholder="${t(lang, "archive.searchPlaceholder")}">
+      <select id="editionFilter" class="archive-search" style="flex:0 0 auto; cursor:pointer;">
+        <option value="thisYear" selected>${t(lang, "archive.editionThisYear")}</option>
+        <option value="latest">${t(lang, "archive.editionLatest")}</option>
+        <option value="all">${t(lang, "archive.editionAll")}</option>
+      </select>
     </div>
     ${allCountries.length ? `<div id="countryCheckboxes">${checkboxesHtml}</div>` : ""}
 
@@ -1201,16 +1210,29 @@ function renderArchiveList(stories, regionByCountryName, englishNameByDisplayNam
       return Array.from(document.querySelectorAll('.country-filter-cb:checked')).map(cb => cb.value);
     }
 
+    // Most recent month present in the data (e.g. "2026-07"), used for
+    // the "Latest edition" option — derived from the data itself rather
+    // than assumed, so it's always correct regardless of when this page
+    // is viewed relative to when stories were actually published.
+    const mostRecentMonth = ARCHIVE_STORIES.length
+      ? ARCHIVE_STORIES.reduce((max, s) => s.date.slice(0, 7) > max ? s.date.slice(0, 7) : max, ARCHIVE_STORIES[0].date.slice(0, 7))
+      : null;
+    const currentYear = String(new Date().getFullYear());
+
     function renderGrid(){
       const q = document.getElementById('archiveSearch').value.trim().toLowerCase();
       const checked = getCheckedCountries();
+      const edition = document.getElementById('editionFilter').value;
       const filtered = ARCHIVE_STORIES.filter(s => {
         const matchesSearch = !q || s.title.toLowerCase().includes(q) || s.summary.toLowerCase().includes(q);
         // Union match: a story shows if it matches ANY checked country,
         // not all of them — checking Poland and Brazil should surface
         // stories about either, not only stories that mention both.
         const matchesCountry = checked.length === 0 || s.countries.some(c => checked.includes(c));
-        return matchesSearch && matchesCountry;
+        const matchesEdition = edition === 'all'
+          || (edition === 'latest' && s.date.slice(0, 7) === mostRecentMonth)
+          || (edition === 'thisYear' && s.date.slice(0, 4) === currentYear);
+        return matchesSearch && matchesCountry && matchesEdition;
       });
       const grid = document.getElementById('issueGrid');
       if(ARCHIVE_STORIES.length === 0){
@@ -1232,6 +1254,7 @@ function renderArchiveList(stories, regionByCountryName, englishNameByDisplayNam
     }
 
     document.getElementById('archiveSearch').addEventListener('input', renderGrid);
+    document.getElementById('editionFilter').addEventListener('change', renderGrid);
     document.querySelectorAll('.country-filter-cb').forEach(cb => {
       cb.addEventListener('change', renderGrid);
     });
