@@ -529,7 +529,7 @@ async function getStoriesWithCountries(env, lang) {
   `, lang);
 
   const countryRows = await d1All(env, `
-    SELECT sc.story_id, c.region, COALESCE(ct.display_name, c.name_en) as name
+    SELECT sc.story_id, c.region, c.name_en, COALESCE(ct.display_name, c.name_en) as name
     FROM story_countries sc
     JOIN countries c ON c.id = sc.country_id
     LEFT JOIN country_translations ct ON ct.country_id = c.id AND ct.lang = ?
@@ -537,9 +537,11 @@ async function getStoriesWithCountries(env, lang) {
 
   const countriesByStory = {};
   const regionByCountryName = {};
+  const englishNameByDisplayName = {};
   for (const row of countryRows) {
     (countriesByStory[row.story_id] ||= []).push(row.name);
     regionByCountryName[row.name] = row.region;
+    englishNameByDisplayName[row.name] = row.name_en;
   }
 
   const storiesOut = stories.map((s) => ({
@@ -552,7 +554,7 @@ async function getStoriesWithCountries(env, lang) {
     countries: countriesByStory[s.id] || [],
   }));
 
-  return { stories: storiesOut, regionByCountryName };
+  return { stories: storiesOut, regionByCountryName, englishNameByDisplayName };
 }
 
 function deriveTitleFromHtml(html) {
@@ -646,9 +648,11 @@ async function handleArchiveList(request, env, lang) {
   const email = await requireSession(request, env);
   if (!email) return redirectToLogin();
 
-  const { stories, regionByCountryName } = await getStoriesWithCountries(env, lang);
+  const { stories, regionByCountryName, englishNameByDisplayName } = await getStoriesWithCountries(env, lang);
+  const subscriber = await getSubscriber(env, email);
+  const preferredCountries = subscriber?.countries || [];
 
-  return htmlResponse(renderArchiveList(stories, regionByCountryName, email, lang));
+  return htmlResponse(renderArchiveList(stories, regionByCountryName, englishNameByDisplayName, preferredCountries, email, lang));
 }
 
 async function handleArchiveIssue(request, env, slug, lang) {
@@ -1068,7 +1072,7 @@ function renderCheckEmailPage(lang) {
   return pageShell(body, lang);
 }
 
-function renderArchiveList(stories, regionByCountryName, email, lang) {
+function renderArchiveList(stories, regionByCountryName, englishNameByDisplayName, preferredCountries, email, lang) {
   lang = lang || "en";
   // Build the master list of countries that actually appear across every
   // published story, so the filter checkboxes only ever show options
@@ -1088,10 +1092,21 @@ function renderArchiveList(stories, regionByCountryName, email, lang) {
   }
   const orderedRegions = [...REGION_ORDER.filter((r) => countriesByRegion[r]), ...Object.keys(countriesByRegion).filter((r) => !REGION_ORDER.includes(r))];
 
+  // Pre-check boxes matching the subscriber's saved alert preferences.
+  // preferredCountries stores canonical English names (same as KV/
+  // subscriber records everywhere else) — the checkbox's own value is
+  // the translated display name, so the comparison has to go through
+  // englishNameByDisplayName rather than comparing the two directly,
+  // or this would silently never match on any non-English page.
+  const preferredSet = new Set(preferredCountries || []);
+
   const checkboxesHtml = orderedRegions
     .map((region) => {
       const checks = countriesByRegion[region]
-        .map((c) => `<label class="country-check-filter"><input type="checkbox" class="country-filter-cb" value="${escapeHtml(c)}">${escapeHtml(c)}</label>`)
+        .map((c) => {
+          const isPreferred = preferredSet.has(englishNameByDisplayName[c] || c);
+          return `<label class="country-check-filter"><input type="checkbox" class="country-filter-cb" value="${escapeHtml(c)}" ${isPreferred ? "checked" : ""}>${escapeHtml(c)}</label>`;
+        })
         .join("");
       return `<div class="region-group"><p class="region-group-label">${escapeHtml(translateRegionName(lang, region))}</p><div class="country-checkboxes">${checks}</div></div>`;
     })
