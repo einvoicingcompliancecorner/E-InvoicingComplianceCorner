@@ -529,18 +529,20 @@ async function getStoriesWithCountries(env, lang) {
   `, lang);
 
   const countryRows = await d1All(env, `
-    SELECT sc.story_id, COALESCE(ct.display_name, c.name_en) as name
+    SELECT sc.story_id, c.region, COALESCE(ct.display_name, c.name_en) as name
     FROM story_countries sc
     JOIN countries c ON c.id = sc.country_id
     LEFT JOIN country_translations ct ON ct.country_id = c.id AND ct.lang = ?
   `, lang);
 
   const countriesByStory = {};
+  const regionByCountryName = {};
   for (const row of countryRows) {
     (countriesByStory[row.story_id] ||= []).push(row.name);
+    regionByCountryName[row.name] = row.region;
   }
 
-  return stories.map((s) => ({
+  const storiesOut = stories.map((s) => ({
     id: s.id,
     date: s.date,
     title: s.title_translated || deriveTitleFromHtml(s.html),
@@ -549,6 +551,8 @@ async function getStoriesWithCountries(env, lang) {
     sourceUrl: s.source_url,
     countries: countriesByStory[s.id] || [],
   }));
+
+  return { stories: storiesOut, regionByCountryName };
 }
 
 function deriveTitleFromHtml(html) {
@@ -642,9 +646,9 @@ async function handleArchiveList(request, env, lang) {
   const email = await requireSession(request, env);
   if (!email) return redirectToLogin();
 
-  const stories = await getStoriesWithCountries(env, lang);
+  const { stories, regionByCountryName } = await getStoriesWithCountries(env, lang);
 
-  return htmlResponse(renderArchiveList(stories, email, lang));
+  return htmlResponse(renderArchiveList(stories, regionByCountryName, email, lang));
 }
 
 async function handleArchiveIssue(request, env, slug, lang) {
@@ -1064,15 +1068,33 @@ function renderCheckEmailPage(lang) {
   return pageShell(body, lang);
 }
 
-function renderArchiveList(stories, email, lang) {
+function renderArchiveList(stories, regionByCountryName, email, lang) {
   lang = lang || "en";
   // Build the master list of countries that actually appear across every
   // published story, so the filter checkboxes only ever show options
   // that do something — no point offering a country with zero matches.
-  const allCountries = Array.from(new Set(stories.flatMap((s) => s.countries || []))).sort();
+  // Grouped by region, in the same order used everywhere else on the
+  // site (tracker's Deep Dives menu, sidebar, subscribe/preferences
+  // pickers), rather than one long flat alphabetical list.
+  const allCountries = Array.from(new Set(stories.flatMap((s) => s.countries || [])));
+  const REGION_ORDER = ["Europe", "Middle East", "Asia-Pacific", "Americas"];
+  const countriesByRegion = {};
+  for (const country of allCountries) {
+    const region = regionByCountryName[country] || "Other";
+    (countriesByRegion[region] ||= []).push(country);
+  }
+  for (const region of Object.keys(countriesByRegion)) {
+    countriesByRegion[region].sort();
+  }
+  const orderedRegions = [...REGION_ORDER.filter((r) => countriesByRegion[r]), ...Object.keys(countriesByRegion).filter((r) => !REGION_ORDER.includes(r))];
 
-  const checkboxesHtml = allCountries
-    .map((c) => `<label class="country-check-filter"><input type="checkbox" class="country-filter-cb" value="${escapeHtml(c)}">${escapeHtml(c)}</label>`)
+  const checkboxesHtml = orderedRegions
+    .map((region) => {
+      const checks = countriesByRegion[region]
+        .map((c) => `<label class="country-check-filter"><input type="checkbox" class="country-filter-cb" value="${escapeHtml(c)}">${escapeHtml(c)}</label>`)
+        .join("");
+      return `<div class="region-group"><p class="region-group-label">${escapeHtml(translateRegionName(lang, region))}</p><div class="country-checkboxes">${checks}</div></div>`;
+    })
     .join("");
 
   // Ship the story data to the client as JSON so search/filter can run
@@ -1105,7 +1127,7 @@ function renderArchiveList(stories, email, lang) {
     <div class="archive-toolbar">
       <input type="text" id="archiveSearch" class="archive-search" placeholder="${t(lang, "archive.searchPlaceholder")}">
     </div>
-    ${allCountries.length ? `<div class="country-checkboxes" id="countryCheckboxes">${checkboxesHtml}</div>` : ""}
+    ${allCountries.length ? `<div id="countryCheckboxes">${checkboxesHtml}</div>` : ""}
 
     <div class="issue-grid" id="issueGrid"></div>
 
