@@ -1223,6 +1223,38 @@ const DATA = [
     portals:[{label:'Erhvervsstyrelsen (Danish Business Authority)', url:'https://erhvervsstyrelsen.dk'}]
   },
 
+  // ---------------- PORTUGAL ----------------
+  {
+    id:'pt-b2g-large', country:'Portugal', flag:'🇵🇹', code:'PT', region:'Europe',
+    system:'B2G e-invoicing mandatory for large companies (in force since Jan 2021)', date:'2021-01-01', anchor:true,
+    desc:'Large companies supplying public administration bodies must issue structured e-invoices in the national CIUS-PT format (a Portuguese implementation of EN 16931, via UBL 2.1 or CEFACT CII), transmitted through the eSPap-operated FE-AP platform or another approved channel. Portugal has no general B2B or B2C e-invoicing mandate — this requirement applies specifically to public-sector supply.',
+    actions:[
+      'Confirm your invoicing system can generate valid CIUS-PT structured XML, not just a PDF representation',
+      'Connect to FE-AP or an approved alternative channel for transmitting invoices to public bodies'
+    ],
+    portals:[{label:'Portal das Finanças — e-Fatura (Autoridade Tributária)', url:'https://www.portaldasfinancas.gov.pt/pt/menu.action?pai=5075'}]
+  },
+  {
+    id:'pt-b2g-sme', country:'Portugal', flag:'🇵🇹', code:'PT', region:'Europe',
+    system:'B2G mandate extends to small, medium, and micro-enterprises', date:'2026-01-01',
+    desc:'The CIUS-PT structured e-invoicing requirement for public-sector suppliers, previously applying only to large companies, now extends to small, medium, and micro-enterprises. Separately, regardless of company size or whether B2G applies, all invoices — paper or electronic — must already be issued using AT-certified software and carry an ATCUD code, a QR code, and a hash chain for authenticity.',
+    actions:[
+      'If you supply any Portuguese public-sector body and don\'t yet issue structured CIUS-PT invoices, this is now a live compliance gap, not a future one',
+      'Independently of B2G status, confirm your invoicing software is on the AT-certified list — using uncertified software makes an invoice invalid regardless of its content'
+    ],
+    portals:[{label:'Portal das Finanças — e-Fatura (Autoridade Tributária)', url:'https://www.portaldasfinancas.gov.pt/pt/menu.action?pai=5075'}]
+  },
+  {
+    id:'pt-qes', country:'Portugal', flag:'🇵🇹', code:'PT', region:'Europe',
+    system:'Qualified Electronic Signature (QES) required for PDF invoices', date:'2027-01-01',
+    desc:'PDF invoices in B2B and B2C transactions will require a Qualified Electronic Signature from an EU-listed trust service provider to remain legally valid — deferred from an original 2026 date via the 2026 State Budget. Until 31 December 2026, PDF invoices issued by certified software with ATCUD and a QR code remain valid without a QES. This layer applies on top of, not instead of, the certified-software/ATCUD/QR/SAF-T requirements already in force.',
+    actions:[
+      'Identify an EU-listed qualified trust service provider for QES well before the 2027 deadline — this is a distinct procurement step, not a software setting',
+      'Don\'t assume compliance with the existing ATCUD/QR/certified-software requirements covers this — QES is a genuinely new, additional layer specifically for PDF invoices'
+    ],
+    portals:[{label:'Portal das Finanças — e-Fatura (Autoridade Tributária)', url:'https://www.portaldasfinancas.gov.pt/pt/menu.action?pai=5075'}]
+  },
+
   // ---------------- SWEDEN ----------------
   {
     id:'se-b2g', country:'Sweden', flag:'🇸🇪', code:'SE', region:'Europe',
@@ -1345,6 +1377,7 @@ const DEEP_DIVES = {
   'Belgium': 'belgium.html',
   'Germany': 'germany.html',
   'Poland': 'poland.html',
+  'Portugal': 'portugal.html',
   'United Kingdom': 'uk.html',
   'Croatia': 'croatia.html',
   'Italy': 'italy.html',

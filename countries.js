@@ -24,7 +24,7 @@
 const EICC_COUNTRIES_BY_REGION = {
   "Europe": [
     "Belgium", "Croatia", "Denmark", "France", "Germany", "Ireland",
-    "Italy", "Norway", "Poland", "Romania", "Slovakia", "Spain",
+    "Italy", "Norway", "Poland", "Portugal", "Romania", "Slovakia", "Spain",
     "Sweden", "United Kingdom"
   ],
   "Middle East": [
