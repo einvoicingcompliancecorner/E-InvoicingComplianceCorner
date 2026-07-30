@@ -125,6 +125,7 @@ const WORKER_I18N = {
       noIssuesYet: "No issues published yet — check back after the next monthly send.",
       noMatch: "No issues match your search or filter.",
       managePrefs: "Manage which countries you get alerts for →",
+      officialSource: "Official source",
     },
     preferences: {
       title: "Alert preferences",
@@ -158,6 +159,7 @@ const WORKER_I18N = {
       noIssuesYet: "Aún no se ha publicado ningún número — vuelva después del próximo envío mensual.",
       noMatch: "Ningún número coincide con su búsqueda o filtro.",
       managePrefs: "Gestione los países sobre los que recibe alertas →",
+      officialSource: "Fuente oficial",
     },
     preferences: {
       title: "Preferencias de alertas",
@@ -191,6 +193,7 @@ const WORKER_I18N = {
       noIssuesYet: "Noch keine Ausgabe veröffentlicht — schauen Sie nach dem nächsten monatlichen Versand wieder vorbei.",
       noMatch: "Keine Ausgabe entspricht Ihrer Suche oder Ihrem Filter.",
       managePrefs: "Verwalten Sie, für welche Länder Sie Benachrichtigungen erhalten →",
+      officialSource: "Offizielle Quelle",
     },
     preferences: {
       title: "Benachrichtigungseinstellungen",
@@ -224,6 +227,7 @@ const WORKER_I18N = {
       noIssuesYet: "Aucun numéro publié pour l'instant — revenez après le prochain envoi mensuel.",
       noMatch: "Aucun numéro ne correspond à votre recherche ou filtre.",
       managePrefs: "Gérez les pays pour lesquels vous recevez des alertes →",
+      officialSource: "Source officielle",
     },
     preferences: {
       title: "Préférences d'alerte",
@@ -491,6 +495,71 @@ async function handleWebhook(request, env) {
 async function putSubscriber(env, email, data) {
   await env.SUBSCRIBERS.put(email.toLowerCase().trim(), JSON.stringify(data));
 }
+// ================================================================
+// D1 — newsletter stories (replacing the old ISSUES KV blob-per-month
+// model with individual, country-tagged, continuously-published
+// stories). See NEWSLETTER-ARCHIVE-REDESIGN.md and D1-MIGRATION-PLAN.md.
+// Countries/translations chrome still lives in KV/JSON as before —
+// this is scoped to stories only, per the decision to focus there first.
+// ================================================================
+async function d1All(env, sql, ...params) {
+  const stmt = params.length ? env.eicc_content.prepare(sql).bind(...params) : env.eicc_content.prepare(sql);
+  const { results } = await stmt.all();
+  return results;
+}
+
+async function d1First(env, sql, ...params) {
+  const stmt = params.length ? env.eicc_content.prepare(sql).bind(...params) : env.eicc_content.prepare(sql);
+  return await stmt.first();
+}
+
+async function getStoriesWithCountries(env, lang) {
+  // One story can have several countries (a handful of genuinely
+  // cross-cutting stories do) — fetched separately and grouped, rather
+  // than a join that would duplicate story rows per country.
+  const stories = await d1All(env, `
+    SELECT s.id, s.date, s.month, s.source_url,
+           COALESCE(st.title, NULL) as title_translated,
+           COALESCE(st.summary, s.summary_en) as summary,
+           COALESCE(st.html, s.html_en) as html
+    FROM stories s
+    LEFT JOIN story_translations st ON st.story_id = s.id AND st.lang = ?
+    WHERE s.published = 1
+    ORDER BY s.date DESC
+  `, lang);
+
+  const countryRows = await d1All(env, `
+    SELECT sc.story_id, COALESCE(ct.display_name, c.name_en) as name
+    FROM story_countries sc
+    JOIN countries c ON c.id = sc.country_id
+    LEFT JOIN country_translations ct ON ct.country_id = c.id AND ct.lang = ?
+  `, lang);
+
+  const countriesByStory = {};
+  for (const row of countryRows) {
+    (countriesByStory[row.story_id] ||= []).push(row.name);
+  }
+
+  return stories.map((s) => ({
+    id: s.id,
+    date: s.date,
+    title: s.title_translated || deriveTitleFromHtml(s.html),
+    summary: s.summary,
+    html: s.html,
+    sourceUrl: s.source_url,
+    countries: countriesByStory[s.id] || [],
+  }));
+}
+
+function deriveTitleFromHtml(html) {
+  // Story titles aren't stored as their own column on `stories` itself
+  // (only in story_translations, which every story has an 'en' row in)
+  // — this is a defensive fallback only, in case a future story is ever
+  // inserted without a translation row at all.
+  const match = /<h3>(?:[^<a-zA-Z]*)([^<]+)<\/h3>/.exec(html || "");
+  return match ? match[1].trim() : "Untitled";
+}
+
 async function getSubscriber(env, email) {
   const raw = await env.SUBSCRIBERS.get(email.toLowerCase().trim());
   return raw ? JSON.parse(raw) : null;
@@ -573,28 +642,44 @@ async function handleArchiveList(request, env, lang) {
   const email = await requireSession(request, env);
   if (!email) return redirectToLogin();
 
-  const list = await env.ISSUES.list();
-  const issues = [];
-  for (const key of list.keys) {
-    const raw = await env.ISSUES.get(key.name);
-    if (raw) {
-      const meta = JSON.parse(raw);
-      issues.push({ slug: key.name, title: meta.title, date: meta.date, summary: meta.summary || "", countries: meta.countries || [] });
-    }
-  }
-  issues.sort((a, b) => new Date(b.date) - new Date(a.date));
+  const stories = await getStoriesWithCountries(env, lang);
 
-  return htmlResponse(renderArchiveList(issues, email, lang));
+  return htmlResponse(renderArchiveList(stories, email, lang));
 }
 
 async function handleArchiveIssue(request, env, slug, lang) {
   const email = await requireSession(request, env);
   if (!email) return redirectToLogin();
 
-  const raw = await env.ISSUES.get(slug);
-  if (!raw) return new Response("Issue not found", { status: 404 });
-  const issue = JSON.parse(raw);
-  return htmlResponse(renderIssue(issue, lang));
+  const row = await d1First(env, `
+    SELECT s.id, s.date, s.source_url,
+           COALESCE(st.title, NULL) as title_translated,
+           COALESCE(st.summary, s.summary_en) as summary,
+           COALESCE(st.html, s.html_en) as html
+    FROM stories s
+    LEFT JOIN story_translations st ON st.story_id = s.id AND st.lang = ?
+    WHERE s.id = ? AND s.published = 1
+  `, lang, slug);
+  if (!row) return new Response("Story not found", { status: 404 });
+
+  const countryRows = await d1All(env, `
+    SELECT COALESCE(ct.display_name, c.name_en) as name
+    FROM story_countries sc
+    JOIN countries c ON c.id = sc.country_id
+    LEFT JOIN country_translations ct ON ct.country_id = c.id AND ct.lang = ?
+    WHERE sc.story_id = ?
+  `, lang, slug);
+
+  const story = {
+    id: row.id,
+    date: row.date,
+    title: row.title_translated || deriveTitleFromHtml(row.html),
+    html: row.html,
+    sourceUrl: row.source_url,
+    countries: countryRows.map((r) => r.name),
+  };
+
+  return htmlResponse(renderIssue(story, lang));
 }
 
 function redirectToLogin() {
@@ -887,13 +972,13 @@ const BASE_STYLE = `
   }
   .archive-search:focus{outline:2px solid var(--soon); outline-offset:0;}
   .archive-search::placeholder{color:var(--muted);}
-  .country-pills{display:flex; flex-wrap:wrap; gap:6px; margin-bottom:22px;}
-  .country-pill{
-    font-family:'IBM Plex Mono',monospace; font-size:11.5px; background:var(--ink-2); border:1px solid var(--line);
-    color:var(--muted); padding:5px 13px; border-radius:999px; cursor:pointer; transition:all .1s ease;
+  .country-checkboxes{display:flex; flex-wrap:wrap; gap:6px 14px; margin-bottom:22px;}
+  .country-check-filter{
+    display:inline-flex; align-items:center; gap:6px; font-family:'IBM Plex Mono',monospace; font-size:11.5px;
+    color:var(--muted); cursor:pointer; user-select:none;
   }
-  .country-pill:hover{border-color:var(--soon); color:var(--text-lo);}
-  .country-pill.active{background:var(--stamp); border-color:var(--stamp); color:#fff;}
+  .country-check-filter:hover{color:var(--text-lo);}
+  .country-check-filter input[type="checkbox"]{accent-color:var(--stamp); cursor:pointer;}
   .issue-grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(300px,1fr)); gap:16px;}
   .issue-card{
     background:var(--paper); border:1px solid var(--paper-line); border-radius:var(--radius);
@@ -979,26 +1064,26 @@ function renderCheckEmailPage(lang) {
   return pageShell(body, lang);
 }
 
-function renderArchiveList(issues, email, lang) {
+function renderArchiveList(stories, email, lang) {
   lang = lang || "en";
   // Build the master list of countries that actually appear across every
-  // published issue, so the filter pills only ever show options that do
-  // something — no point offering a country with zero matching issues.
-  const allCountries = Array.from(new Set(issues.flatMap((i) => i.countries || []))).sort();
+  // published story, so the filter checkboxes only ever show options
+  // that do something — no point offering a country with zero matches.
+  const allCountries = Array.from(new Set(stories.flatMap((s) => s.countries || []))).sort();
 
-  const pillsHtml = allCountries
-    .map((c) => `<button type="button" class="country-pill" data-country="${escapeHtml(c)}">${escapeHtml(translateCountryName(lang, c))}</button>`)
+  const checkboxesHtml = allCountries
+    .map((c) => `<label class="country-check-filter"><input type="checkbox" class="country-filter-cb" value="${escapeHtml(c)}">${escapeHtml(c)}</label>`)
     .join("");
 
-  // Ship the issue data to the client as JSON so search/filter can run
+  // Ship the story data to the client as JSON so search/filter can run
   // instantly without a round-trip to the Worker for every keystroke.
-  const issuesJson = JSON.stringify(
-    issues.map((i) => ({
-      slug: i.slug,
-      title: i.title,
-      date: i.date,
-      summary: i.summary || "",
-      countries: (i.countries || []).map((c) => translateCountryName(lang, c)),
+  const storiesJson = JSON.stringify(
+    stories.map((s) => ({
+      id: s.id,
+      title: s.title,
+      date: s.date,
+      summary: s.summary || "",
+      countries: s.countries || [],
     }))
   );
 
@@ -1014,37 +1099,44 @@ function renderArchiveList(issues, email, lang) {
     <div class="archive-head">
       <p class="eyebrow">${t(lang, "archive.signedInAs")} ${escapeHtml(email)}</p>
       <h1 class="title">${t(lang, "archive.title")}</h1>
-      <p class="sub" style="margin-bottom:18px;">${t(lang, "archive.issuesPublished")(issues.length)}</p>
+      <p class="sub" style="margin-bottom:18px;">${t(lang, "archive.issuesPublished")(stories.length)}</p>
     </div>
 
     <div class="archive-toolbar">
       <input type="text" id="archiveSearch" class="archive-search" placeholder="${t(lang, "archive.searchPlaceholder")}">
     </div>
-    ${allCountries.length ? `<div class="country-pills" id="countryPills">${pillsHtml}</div>` : ""}
+    ${allCountries.length ? `<div class="country-checkboxes" id="countryCheckboxes">${checkboxesHtml}</div>` : ""}
 
     <div class="issue-grid" id="issueGrid"></div>
 
     <p class="fineprint"><a href="/members/preferences" style="color:var(--stamp); text-decoration:underline;">${t(lang, "archive.managePrefs")}</a></p>
   </div>
   <script>
-    const ARCHIVE_ISSUES = ${issuesJson};
+    const ARCHIVE_STORIES = ${storiesJson};
     const NO_ISSUES_TEXT = ${JSON.stringify(t(lang, "archive.noIssuesYet"))};
     const NO_MATCH_TEXT = ${JSON.stringify(t(lang, "archive.noMatch"))};
-    let activeCountry = null;
 
     function escapeHtmlClient(str){
       return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     }
 
+    function getCheckedCountries(){
+      return Array.from(document.querySelectorAll('.country-filter-cb:checked')).map(cb => cb.value);
+    }
+
     function renderGrid(){
       const q = document.getElementById('archiveSearch').value.trim().toLowerCase();
-      const filtered = ARCHIVE_ISSUES.filter(i => {
-        const matchesSearch = !q || i.title.toLowerCase().includes(q) || i.summary.toLowerCase().includes(q);
-        const matchesCountry = !activeCountry || i.countries.includes(activeCountry);
+      const checked = getCheckedCountries();
+      const filtered = ARCHIVE_STORIES.filter(s => {
+        const matchesSearch = !q || s.title.toLowerCase().includes(q) || s.summary.toLowerCase().includes(q);
+        // Union match: a story shows if it matches ANY checked country,
+        // not all of them — checking Poland and Brazil should surface
+        // stories about either, not only stories that mention both.
+        const matchesCountry = checked.length === 0 || s.countries.some(c => checked.includes(c));
         return matchesSearch && matchesCountry;
       });
       const grid = document.getElementById('issueGrid');
-      if(ARCHIVE_ISSUES.length === 0){
+      if(ARCHIVE_STORIES.length === 0){
         grid.innerHTML = '<p class="no-match">' + NO_ISSUES_TEXT + '</p>';
         return;
       }
@@ -1052,24 +1144,19 @@ function renderArchiveList(issues, email, lang) {
         grid.innerHTML = '<p class="no-match">' + NO_MATCH_TEXT + '</p>';
         return;
       }
-      grid.innerHTML = filtered.map(i => \`
-        <a class="issue-card" href="/members/archive/\${encodeURIComponent(i.slug)}">
-          <div class="issue-date">\${escapeHtmlClient(i.date)}</div>
-          <div class="issue-title">\${escapeHtmlClient(i.title)}</div>
-          \${i.summary ? \`<div class="issue-summary">\${escapeHtmlClient(i.summary)}</div>\` : ''}
-          \${i.countries.length ? \`<div class="issue-country-tags">\${i.countries.map(c => \`<span>\${escapeHtmlClient(c)}</span>\`).join('')}</div>\` : ''}
+      grid.innerHTML = filtered.map(s => \`
+        <a class="issue-card" href="/members/archive/\${encodeURIComponent(s.id)}">
+          <div class="issue-date">\${escapeHtmlClient(s.date)}</div>
+          <div class="issue-title">\${escapeHtmlClient(s.title)}</div>
+          \${s.summary ? \`<div class="issue-summary">\${escapeHtmlClient(s.summary)}</div>\` : ''}
+          \${s.countries.length ? \`<div class="issue-country-tags">\${s.countries.map(c => \`<span>\${escapeHtmlClient(c)}</span>\`).join('')}</div>\` : ''}
         </a>
       \`).join('');
     }
 
     document.getElementById('archiveSearch').addEventListener('input', renderGrid);
-    document.querySelectorAll('.country-pill').forEach(pill => {
-      pill.addEventListener('click', () => {
-        const c = pill.dataset.country;
-        activeCountry = (activeCountry === c) ? null : c;
-        document.querySelectorAll('.country-pill').forEach(p => p.classList.toggle('active', p.dataset.country === activeCountry));
-        renderGrid();
-      });
+    document.querySelectorAll('.country-filter-cb').forEach(cb => {
+      cb.addEventListener('change', renderGrid);
     });
 
     renderGrid();
@@ -1148,8 +1235,14 @@ function renderSimpleMessage(title, subtext, lang) {
   return pageShell(body, lang);
 }
 
-function renderIssue(issue, lang) {
+function renderIssue(story, lang) {
   lang = lang || "en";
+  const countryTagsHtml = (story.countries || []).length
+    ? `<div class="issue-country-tags" style="margin:10px 0 0;">${story.countries.map((c) => `<span>${escapeHtml(c)}</span>`).join("")}</div>`
+    : "";
+  const sourceLinkHtml = story.sourceUrl
+    ? `<p style="margin-top:18px;"><a href="${escapeHtml(story.sourceUrl)}" target="_blank" rel="noopener" style="color:var(--stamp); text-decoration:underline; font-size:13px;">🔗 ${escapeHtml(t(lang, "archive.officialSource"))}</a></p>`
+    : "";
   const body = `
   <div class="topbar">
     <a class="back-link" href="/members/archive" style="margin:0;">${t(lang, "backToArchive")}</a>
@@ -1160,9 +1253,11 @@ function renderIssue(issue, lang) {
   </div>
   <div class="wrap">
     <div class="card">
-      <p class="eyebrow">${escapeHtml(issue.date)}</p>
-      <h1 class="title">${escapeHtml(issue.title)}</h1>
-      <div>${issue.html}</div>
+      <p class="eyebrow">${escapeHtml(story.date)}</p>
+      <h1 class="title">${escapeHtml(story.title)}</h1>
+      ${countryTagsHtml}
+      <div>${story.html}</div>
+      ${sourceLinkHtml}
     </div>
   </div>`;
   return pageShell(body, lang);
