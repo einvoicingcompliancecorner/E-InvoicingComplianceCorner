@@ -88,6 +88,16 @@
   }
   .subscriber-perks .perks-cta:hover{color:var(--text-lo);}
 
+  /* TEMPORARY — remove once Lemon Squeezy account is live, not just test
+     mode. See .dropdown-item.coming-soon below for the matching Menu
+     dropdown treatment. */
+  .subscriber-perks .perks-cta.coming-soon{
+    color:var(--muted); cursor:default; pointer-events:none;
+  }
+  .dropdown-item.coming-soon{
+    color:var(--muted) !important; cursor:default; pointer-events:none;
+  }
+
   /* ===== Navigation tips ===== */
   .nav-tips-wrap{padding:22px 5vw 4px;}
   .nav-tips-label{
@@ -433,7 +443,11 @@
           <li data-i18n="perks.item3">Priority access to new country deep dives as they're published</li>
           <li data-i18n="perks.item4">Plain-language "what this means for your team" write-ups, not just legal text</li>
         </ul>
-        <a class="perks-cta" href="subscribe.html" data-i18n="perks.cta">Subscribe →</a>
+        <!-- TEMPORARY: href removed and coming-soon class added while Lemon
+             Squeezy account is in test mode, not yet live. Restore
+             href="subscribe.html", remove class="coming-soon", and revert
+             the data-i18n text back to "Subscribe →" once live. -->
+        <span class="perks-cta coming-soon" data-i18n="perks.cta">Subscribe (Coming soon) →</span>
       </div>
     </div>
   </div>
@@ -458,8 +472,14 @@
         <button class="menu-trigger" id="menuTrigger" data-i18n="menu.menu">Menu</button>
         <div class="dropdown-panel" id="dropdownPanel">
           <button class="dropdown-item" id="ddAbout"><span class="dd-icon">ℹ️</span><span data-i18n="menu.about">About this site</span></button>
-          <a class="dropdown-item" href="subscribe.html"><span class="dd-icon">✉</span><span data-i18n="menu.subscribe">Subscribe — from $10/yr</span></a>
-          <a class="dropdown-item" href="https://eicc-members.einvcc.workers.dev/members"><span class="dd-icon">🔒</span><span data-i18n="menu.archive">Newsletter archive (subscribers)</span></a>
+          <!-- TEMPORARY: both items below disabled with class="coming-soon"
+               and hrefs removed while Lemon Squeezy account is in test
+               mode, not yet live. Restore both hrefs (subscribe.html, and
+               https://members.e-invoicingcompliancecorner.com/members),
+               remove class="coming-soon" from both, and revert the
+               data-i18n text back to the original wording once live. -->
+          <span class="dropdown-item coming-soon"><span class="dd-icon">✉</span><span data-i18n="menu.subscribe">Subscribe (Coming soon)</span></span>
+          <span class="dropdown-item coming-soon"><span class="dd-icon">🔒</span><span data-i18n="menu.archive">Newsletter archive (Coming soon)</span></span>
           <a class="dropdown-item" href="feedback.html"><span class="dd-icon">💬</span><span data-i18n="menu.feedback">Give feedback</span></a>
         </div>
       </div>
