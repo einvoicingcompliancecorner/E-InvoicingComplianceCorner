@@ -125,6 +125,8 @@ const WORKER_I18N = {
   en: {
     backToTracker: "← Back to global tracker", backToArchive: "← Back to archive", backToSignIn: "← Back to sign in", logout: "Log out",
     inEffect: "In effect", upcoming: "Upcoming", penaltyFailure: "Failure", penaltyFine: "Fine", penaltyAnnualCap: "Annual cap",
+    secTimeline: "Compliance timeline", secFileFormat: "File format & data specification", secScope: "Scope & transmission", secSteps: "Getting compliant", secPenalties: "Penalties & enforcement",
+    countryDeepDiveEyebrow: "Country deep dive", lastUpdatedLabel: "Last updated", complianceModelLabel: "Compliance model",
     login: {
       eyebrow: "Subscribers only", title: "Newsletter archive",
       intro: "Enter the email address you subscribed with — we'll send you a one-click sign-in link. No password to remember.",
@@ -166,6 +168,8 @@ const WORKER_I18N = {
   es: {
     backToTracker: "← Volver al panel general", backToArchive: "← Volver al archivo", backToSignIn: "← Volver al inicio de sesión", logout: "Cerrar sesión",
     inEffect: "En vigor", upcoming: "Próximamente", penaltyFailure: "Incumplimiento", penaltyFine: "Multa", penaltyAnnualCap: "Límite anual",
+    secTimeline: "Cronología de cumplimiento", secFileFormat: "Formato de archivo y especificación de datos", secScope: "Alcance y transmisión", secSteps: "Cómo cumplir", secPenalties: "Sanciones y aplicación",
+    countryDeepDiveEyebrow: "Análisis del país", lastUpdatedLabel: "Última actualización", complianceModelLabel: "Modelo de cumplimiento",
     login: {
       eyebrow: "Solo suscriptores", title: "Archivo del boletín",
       intro: "Introduzca el correo electrónico con el que se suscribió — le enviaremos un enlace de acceso de un solo clic. Sin contraseña que recordar.",
@@ -207,6 +211,8 @@ const WORKER_I18N = {
   de: {
     backToTracker: "← Zurück zur Übersicht", backToArchive: "← Zurück zum Archiv", backToSignIn: "← Zurück zur Anmeldung", logout: "Abmelden",
     inEffect: "In Kraft", upcoming: "Bevorstehend", penaltyFailure: "Verstoß", penaltyFine: "Bußgeld", penaltyAnnualCap: "Jahresobergrenze",
+    secTimeline: "Compliance-Zeitachse", secFileFormat: "Dateiformat & Datenspezifikation", secScope: "Anwendungsbereich & Übermittlung", secSteps: "So werden Sie compliant", secPenalties: "Sanktionen & Durchsetzung",
+    countryDeepDiveEyebrow: "Länderanalyse", lastUpdatedLabel: "Zuletzt aktualisiert", complianceModelLabel: "Compliance-Modell",
     login: {
       eyebrow: "Nur für Abonnenten", title: "Newsletter-Archiv",
       intro: "Geben Sie die E-Mail-Adresse ein, mit der Sie abonniert haben — wir senden Ihnen einen Ein-Klick-Anmeldelink. Kein Passwort nötig.",
@@ -248,6 +254,8 @@ const WORKER_I18N = {
   fr: {
     backToTracker: "← Retour au suivi global", backToArchive: "← Retour aux archives", backToSignIn: "← Retour à la connexion", logout: "Se déconnecter",
     inEffect: "En vigueur", upcoming: "À venir", penaltyFailure: "Manquement", penaltyFine: "Amende", penaltyAnnualCap: "Plafond annuel",
+    secTimeline: "Chronologie de conformité", secFileFormat: "Format de fichier et spécification des données", secScope: "Champ d'application et transmission", secSteps: "Comment se conformer", secPenalties: "Sanctions et application",
+    countryDeepDiveEyebrow: "Analyse par pays", lastUpdatedLabel: "Dernière mise à jour", complianceModelLabel: "Modèle de conformité",
     login: {
       eyebrow: "Réservé aux abonnés", title: "Archives de la newsletter",
       intro: "Saisissez l'adresse e-mail utilisée pour votre abonnement — nous vous enverrons un lien de connexion en un clic. Pas de mot de passe à retenir.",
@@ -1160,42 +1168,42 @@ async function renderFullDeepDivePage(countryName, flag, code, region, content, 
     <div style="display:flex; gap:16px; align-items:center;">
       <div class="country-flag">${flag}</div>
       <div>
-        <p class="country-eyebrow">Country deep dive — dynamically rendered from D1</p>
+        <p class="country-eyebrow">${t(lang, "countryDeepDiveEyebrow")}</p>
         <h1 class="country-title display">${escapeHtml(countryName)}</h1>
         <div class="country-region">${escapeHtml(region)} · ${escapeHtml(code)} · VAT area: EU</div>
       </div>
     </div>
-    <div class="country-meta">Last updated: ${escapeHtml(content.last_updated)}<br>Compliance model: ${escapeHtml(content.compliance_model)}</div>
+    <div class="country-meta">${t(lang, "lastUpdatedLabel")}: ${escapeHtml(content.last_updated)}<br>${t(lang, "complianceModelLabel")}: ${escapeHtml(content.compliance_model)}</div>
   </div>
 
   <div class="stat-strip">${statsHtml}</div>
 
   <div class="section">
-    <div class="section-head"><span class="num mono">01</span><h2 class="display">Compliance timeline</h2></div>
+    <div class="section-head"><span class="num mono">01</span><h2 class="display">${t(lang, "secTimeline")}</h2></div>
     <p class="section-intro">${escapeHtml(content.timeline_intro)}</p>
     ${timelineHtml}
   </div>
 
   <div class="section">
-    <div class="section-head"><span class="num mono">02</span><h2 class="display">File format &amp; data specification</h2></div>
+    <div class="section-head"><span class="num mono">02</span><h2 class="display">${t(lang, "secFileFormat")}</h2></div>
     <p class="section-intro">${escapeHtml(content.file_format_intro)}</p>
     <div class="spec-grid">${fileFormatHtml}</div>
   </div>
 
   <div class="section">
-    <div class="section-head"><span class="num mono">03</span><h2 class="display">Scope &amp; transmission</h2></div>
+    <div class="section-head"><span class="num mono">03</span><h2 class="display">${t(lang, "secScope")}</h2></div>
     <p class="section-intro">${escapeHtml(content.scope_intro)}</p>
     <div class="spec-grid">${scopeHtml}</div>
   </div>
 
   <div class="section">
-    <div class="section-head"><span class="num mono">04</span><h2 class="display">Getting compliant</h2></div>
+    <div class="section-head"><span class="num mono">04</span><h2 class="display">${t(lang, "secSteps")}</h2></div>
     <p class="section-intro">${escapeHtml(content.steps_intro)}</p>
     <div class="steps">${stepsHtml}</div>
   </div>
 
   <div class="section">
-    <div class="section-head"><span class="num mono">05</span><h2 class="display">Penalties &amp; enforcement</h2></div>
+    <div class="section-head"><span class="num mono">05</span><h2 class="display">${t(lang, "secPenalties")}</h2></div>
     <p class="section-intro">${escapeHtml(content.penalties_intro)}</p>
     <div class="related-grid">${relatedHtml}</div>
   </div>
