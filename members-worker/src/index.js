@@ -1147,7 +1147,9 @@ const BASE_STYLE = `
   .region-group{padding:10px 0; border-top:1px dashed var(--paper-line);}
   .region-group:first-child{border-top:none;}
   .region-group-label{font-family:'IBM Plex Mono',monospace; font-size:10px; text-transform:uppercase; letter-spacing:0.07em; color:#8a7d5a; margin:0 0 6px;}
-  .region-columns{display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:16px 24px; margin-bottom:22px;}
+  .region-columns{display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:16px 24px; margin-bottom:22px;}
+  .region-columns > .wide-region{grid-column:span 2;}
+  @media (max-width:480px){ .region-columns > .wide-region{grid-column:span 1;} }
   .country-check{display:flex; align-items:center; gap:8px; padding:3px 0; font-size:12.8px; color:#241d10;}
   .country-check input{width:auto; margin:0;}
   .prefs-actions{display:flex; gap:14px; margin:10px 0;}
@@ -1265,11 +1267,16 @@ function renderArchiveList(stories, regionByCountryName, englishNameByDisplayNam
           return `<label class="country-check-filter"><input type="checkbox" class="country-filter-cb" value="${escapeHtml(c)}" ${isPreferred ? "checked" : ""}>${escapeHtml(c)}</label>`;
         })
         .join("");
-      // Long lists wrap into two columns automatically — this isn't
-      // hardcoded to Europe specifically, so it applies to any region
-      // that grows past the threshold, not just the one that triggered it.
-      const wrapClass = countriesByRegion[region].length > 8 ? " two-col" : "";
-      return `<div><p class="region-group-label">${escapeHtml(translateRegionName(lang, region))}</p><div class="country-checkboxes${wrapClass}">${checks}</div></div>`;
+      // Long lists wrap into two columns and span two grid tracks —
+      // this isn't hardcoded to Europe specifically, so it applies to
+      // any region that grows past the threshold, not just the one
+      // that triggered it. Everything else keeps its original compact
+      // width rather than every column being widened to accommodate
+      // whichever region happens to be largest.
+      const isWide = countriesByRegion[region].length > 8;
+      const wrapClass = isWide ? " two-col" : "";
+      const outerClass = isWide ? ' class="wide-region"' : "";
+      return `<div${outerClass}><p class="region-group-label">${escapeHtml(translateRegionName(lang, region))}</p><div class="country-checkboxes${wrapClass}">${checks}</div></div>`;
     })
     .join("")}</div>`;
 
