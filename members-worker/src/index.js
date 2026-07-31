@@ -999,25 +999,33 @@ async function getDeepDiveContent(env, countryName, lang) {
     WHERE c.name_en = ? ORDER BY dp.sort_order
   `, lang, countryName);
 
-  const lifecycleIntro = await d1First(env, `
-    SELECT COALESCE(dlit.title, dlit_en.title) as title,
-           COALESCE(dlit.intro_text, dlit_en.intro_text) as intro_text,
-           COALESCE(dlit.outro_text, dlit_en.outro_text) as outro_text
-    FROM deep_dive_lifecycle_intro dli
-    JOIN countries c ON c.id = dli.country_id
-    LEFT JOIN deep_dive_lifecycle_intro_translations dlit ON dlit.country_id = dli.country_id AND dlit.lang = ?
-    LEFT JOIN deep_dive_lifecycle_intro_translations dlit_en ON dlit_en.country_id = dli.country_id AND dlit_en.lang = 'en'
-    WHERE c.name_en = ?
+  // Multiple lifecycle-style pill cards per country are genuinely
+  // possible (Malaysia has two: "Submission methods" and "Validation
+  // lifecycle"), so this queries all cards for the country and their
+  // statuses, grouped by card -- not just one.
+  const lifecycleCardRows = await d1All(env, `
+    SELECT dlc.id, dlc.section, dlc.sort_order,
+           COALESCE(dlct.title, dlct_en.title) as title,
+           COALESCE(dlct.intro_text, dlct_en.intro_text) as intro_text,
+           COALESCE(dlct.outro_text, dlct_en.outro_text) as outro_text
+    FROM deep_dive_lifecycle_cards dlc
+    JOIN countries c ON c.id = dlc.country_id
+    LEFT JOIN deep_dive_lifecycle_card_translations dlct ON dlct.card_id = dlc.id AND dlct.lang = ?
+    LEFT JOIN deep_dive_lifecycle_card_translations dlct_en ON dlct_en.card_id = dlc.id AND dlct_en.lang = 'en'
+    WHERE c.name_en = ? ORDER BY dlc.section, dlc.sort_order
   `, lang, countryName);
 
-  const lifecycleStatuses = await d1All(env, `
-    SELECT dls.is_special, COALESCE(dlst.label, dlst_en.label) as label
-    FROM deep_dive_lifecycle_statuses dls
-    JOIN countries c ON c.id = dls.country_id
-    LEFT JOIN deep_dive_lifecycle_status_translations dlst ON dlst.status_id = dls.id AND dlst.lang = ?
-    LEFT JOIN deep_dive_lifecycle_status_translations dlst_en ON dlst_en.status_id = dls.id AND dlst_en.lang = 'en'
-    WHERE c.name_en = ? ORDER BY dls.sort_order
-  `, lang, countryName);
+  const lifecycleCards = [];
+  for (const row of lifecycleCardRows) {
+    const statuses = await d1All(env, `
+      SELECT dls.is_special, COALESCE(dlst.label, dlst_en.label) as label
+      FROM deep_dive_lifecycle_statuses_v2 dls
+      LEFT JOIN deep_dive_lifecycle_status_v2_translations dlst ON dlst.status_id = dls.id AND dlst.lang = ?
+      LEFT JOIN deep_dive_lifecycle_status_v2_translations dlst_en ON dlst_en.status_id = dls.id AND dlst_en.lang = 'en'
+      WHERE dls.card_id = ? ORDER BY dls.sort_order
+    `, lang, row.id);
+    lifecycleCards.push({ section: row.section, sortOrder: row.sort_order, title: row.title, intro: row.intro_text, outro: row.outro_text, statuses });
+  }
 
   const penaltyRows = await d1All(env, `
     SELECT COALESCE(dprt.failure_description, dprt_en.failure_description) as failure_description,
@@ -1030,8 +1038,9 @@ async function getDeepDiveContent(env, countryName, lang) {
     WHERE c.name_en = ? ORDER BY dpr.sort_order
   `, lang, countryName);
 
-  return { ...page, stats, cards, steps, portals, lifecycleTitle: lifecycleIntro?.title || null, lifecycleIntro: lifecycleIntro?.intro_text || null, lifecycleOutro: lifecycleIntro?.outro_text || null, lifecycleStatuses, penaltyRows };
+  return { ...page, stats, cards, steps, portals, lifecycleCards, penaltyRows };
 }
+
 
 function renderSpecCard(card) {
   const rowsHtml = (card.rows || []).map(([k, v]) => `<div class="spec-row"><span class="k">${escapeHtml(k)}</span><span class="v">${escapeHtml(v)}</span></div>`).join("");
@@ -1045,15 +1054,25 @@ function renderRelatedCard(card) {
 // Lifecycle pills render as an extra spec-card appended to the
 // scope_transmission grid, matching France's actual placement --
 // only rendered when a country has lifecycle statuses at all.
-function renderLifecycleCard(title, intro, statuses, outro) {
-  if (!statuses || statuses.length === 0) return "";
-  const pillsHtml = statuses.map((s) => `<span${s.is_special ? ' class="rej"' : ""}>${escapeHtml(s.label)}</span>`).join("");
+function renderLifecycleCard(card) {
+  if (!card.statuses || card.statuses.length === 0) return "";
+  const pillsHtml = card.statuses.map((s) => `<span${s.is_special ? ' class="rej"' : ""}>${escapeHtml(s.label)}</span>`).join("");
   return `<div class="spec-card">
-    ${title ? `<h3>${escapeHtml(title)}</h3>` : ""}
-    ${intro ? `<p class="note" style="margin-top:0; padding-top:0; border-top:none;">${escapeHtml(intro)}</p>` : ""}
+    ${card.title ? `<h3>${escapeHtml(card.title)}</h3>` : ""}
+    ${card.intro ? `<p class="note" style="margin-top:0; padding-top:0; border-top:none;">${escapeHtml(card.intro)}</p>` : ""}
     <div class="lifecycle">${pillsHtml}</div>
-    ${outro ? `<p class="note">${escapeHtml(outro)}</p>` : ""}
+    ${card.outro ? `<p class="note">${escapeHtml(card.outro)}</p>` : ""}
   </div>`;
+}
+
+// Renders every lifecycle card belonging to a given section, in order --
+// a country can have zero, one, or several (Malaysia has two within
+// scope_transmission alone).
+function renderLifecycleCardsForSection(lifecycleCards, section) {
+  return (lifecycleCards || [])
+    .filter((c) => c.section === section)
+    .map(renderLifecycleCard)
+    .join("");
 }
 
 // Genuine tabular penalty schedule, rendered full-width alongside any
@@ -1079,7 +1098,7 @@ async function renderFullDeepDivePage(countryName, flag, code, region, content, 
   const timelineHtml = renderDeepDiveStyleMilestones(milestones, lang);
   const statsHtml = content.stats.map((s) => `<div class="stat"><div class="num display">${escapeHtml(s.stat_value)}</div><div class="lbl">${escapeHtml(s.stat_label)}</div></div>`).join("");
   const fileFormatHtml = content.cards.file_format.map(renderSpecCard).join("");
-  const scopeHtml = content.cards.scope_transmission.map(renderSpecCard).join("") + renderLifecycleCard(content.lifecycleTitle, content.lifecycleIntro, content.lifecycleStatuses, content.lifecycleOutro);
+  const scopeHtml = content.cards.scope_transmission.map(renderSpecCard).join("") + renderLifecycleCardsForSection(content.lifecycleCards, "scope_transmission");
   const relatedHtml = renderPenaltyTable(content.penaltyRows, lang) + content.cards.penalties_related.map(renderRelatedCard).join("");
   const stepsHtml = content.steps.map((s, i) => `
     <div class="step"><div class="step-num"></div><div class="step-body"><h4>${escapeHtml(s.title)}</h4><p>${escapeHtml(s.description)}</p></div></div>`).join("");
