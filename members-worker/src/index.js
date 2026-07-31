@@ -1218,8 +1218,13 @@ async function handleDeepDivePreview(request, env, lang) {
   if (!content) return new Response(`No deep-dive content in D1 for "${countryName}" yet.`, { status: 404 });
 
   const milestones = await getMilestonesForCountry(env, countryName, lang);
-  const flagMap = { PT: "🇵🇹" }; // proof-of-concept only — full flag lookup comes with the real migration
-  const flag = flagMap[countryRow.code] || "🏳️";
+  // Derives the flag emoji from the ISO country code algorithmically
+  // (combining two Unicode regional indicator symbols) rather than a
+  // hardcoded per-country map -- works correctly for every country
+  // without needing to add an entry each time a new one is backfilled.
+  const flag = countryRow.code.toUpperCase().replace(/./g, (ch) =>
+    String.fromCodePoint(127397 + ch.charCodeAt(0))
+  );
 
   const html = await renderFullDeepDivePage(countryName, flag, countryRow.code, countryRow.region, content, milestones, lang);
   return htmlResponse(html);
