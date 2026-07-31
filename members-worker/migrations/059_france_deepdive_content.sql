@@ -61,7 +61,7 @@ INSERT INTO deep_dive_penalty_rows (country_id, sort_order) SELECT id, 2 FROM co
 INSERT INTO deep_dive_penalty_row_translations (row_id, lang, failure_description, fine_amount, annual_cap) VALUES ((SELECT MAX(id) FROM deep_dive_penalty_rows), 'en', 'Not connected to an accredited platform (after 3-month notice)', '€500 → €1,000 → €1,000/quarter', '—');
 
 INSERT INTO deep_dive_lifecycle_intro (country_id) SELECT id FROM countries WHERE name_en = 'France';
-INSERT INTO deep_dive_lifecycle_intro_translations (country_id, lang, intro_text) SELECT id, 'en', 'Every invoice must carry status updates through its life — this is what lets DGFiP pre-fill VAT returns in near real time.' FROM countries WHERE name_en = 'France';
+INSERT INTO deep_dive_lifecycle_intro_translations (country_id, lang, title, intro_text) SELECT id, 'en', 'Lifecycle status exchange', 'Every invoice must carry status updates through its life — this is what lets DGFiP pre-fill VAT returns in near real time.' FROM countries WHERE name_en = 'France';
 INSERT INTO deep_dive_lifecycle_statuses (country_id, sort_order, is_special) SELECT id, 0, 0 FROM countries WHERE name_en = 'France';
 INSERT INTO deep_dive_lifecycle_status_translations (status_id, lang, label) VALUES ((SELECT MAX(id) FROM deep_dive_lifecycle_statuses), 'en', 'Deposited');
 INSERT INTO deep_dive_lifecycle_statuses (country_id, sort_order, is_special) SELECT id, 1, 0 FROM countries WHERE name_en = 'France';

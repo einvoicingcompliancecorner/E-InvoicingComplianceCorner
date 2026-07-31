@@ -28,6 +28,7 @@ CREATE TABLE IF NOT EXISTS deep_dive_lifecycle_intro (
 CREATE TABLE IF NOT EXISTS deep_dive_lifecycle_intro_translations (
   country_id INTEGER NOT NULL,
   lang TEXT NOT NULL,
+  title TEXT,
   intro_text TEXT NOT NULL,
   PRIMARY KEY (country_id, lang),
   FOREIGN KEY (country_id) REFERENCES countries(id)
