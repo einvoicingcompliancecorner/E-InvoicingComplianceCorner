@@ -1123,13 +1123,14 @@ async function renderFullDeepDivePage(countryName, flag, code, region, content, 
   .rbadge.upcoming{background:var(--upcoming-dim); color:#dbe2ee;}
   .rcard-title{font-weight:600; margin-bottom:4px;}
   .rcard-desc{color:#4a4030; font-size:13.5px; margin:0;}
-  .spec-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:16px;}
-  .spec-card{background:var(--paper); color:#241d10; border:1px solid var(--paper-line); border-radius:var(--radius); padding:18px 20px;}
-  .spec-card h3{margin:0 0 12px; font-size:15px; color:#6b5f3f;}
-  .spec-row{display:flex; justify-content:space-between; gap:12px; padding:6px 0; border-bottom:1px dashed var(--paper-line); font-size:13.5px;}
-  .spec-row:last-of-type{border-bottom:none;}
-  .spec-row .k{color:#6b5f3f;} .spec-row .v{text-align:right; font-weight:600; color:#241d10;}
-  .note{color:#5a5138; font-size:12.5px; margin:10px 0 0; line-height:1.5;}
+  .spec-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:14px;}
+  .spec-card{background:var(--paper); color:#241d10; border:1px solid var(--paper-line); border-radius:var(--radius); padding:16px 18px 18px;}
+  .spec-card h3{font-family:'IBM Plex Mono',monospace; font-size:11px; text-transform:uppercase; letter-spacing:0.09em; color:#6b5f3f; margin:0 0 10px; display:flex; align-items:center; gap:8px;}
+  .spec-card h3::after{content:""; flex:1; height:1px; background:var(--paper-line);}
+  .spec-row{display:flex; justify-content:space-between; gap:12px; padding:6px 0; border-top:1px dashed var(--paper-line); font-size:13px;}
+  .spec-row:first-of-type{border-top:none;}
+  .spec-row .k{color:#6b5f3f; flex:0 0 42%;} .spec-row .v{color:#241d10; text-align:right; font-weight:500;}
+  .note{font-size:12.6px; color:#5a5138; margin:10px 0 0; padding-top:10px; border-top:1px dashed var(--paper-line); line-height:1.5;}
   .lifecycle{display:flex; flex-wrap:wrap; gap:8px; margin-top:4px;}
   .lifecycle span{font-family:'IBM Plex Mono',monospace; font-size:11px; background:var(--soon-dim); color:#ffe0b3; padding:5px 11px; border-radius:999px; white-space:nowrap;}
   .lifecycle span.rej{background:var(--stamp-dim); color:#ffd7cc;}
