@@ -66,7 +66,13 @@ tracker's own `DATA` array:
       paragraphs (a short one before the pills, a longer one after), which
       got merged into one during extraction and silently dropped the second
       paragraph. Don't assume a single combined note; check the actual HTML
-      structure around the pills element directly.
+      structure around the pills element directly. **A country can have
+      more than one pill-list card** — Malaysia has two, genuinely separate
+      ("Submission methods" and "Validation lifecycle"), both in the same
+      section. The schema was originally one-card-per-country (a real
+      limitation caught here) and was generalized to support any number of
+      cards per country, in any section — check the static page for every
+      distinct pill-list element, don't assume a country has at most one.
 - [ ] **Penalty table**, if the country has a genuine, sourced fine schedule
       (as opposed to narrative-only related-cards). Check for a
       `.penalty-table`/`.penalty-card` element specifically.
@@ -181,5 +187,9 @@ with the user before being added.
       tracker can have more current info than the deep-dive, and a new
       status-banner component that was folded into existing section-intro
       text per user preference, rather than built as new schema)
-- [ ] Malaysia
+- [x] Malaysia — content complete, translations pending (revealed that a
+      country can have *multiple* separate lifecycle-pill cards, not just
+      one — required generalizing the schema from one-card-per-country to
+      many-per-country, with France's and Poland's existing data migrated
+      into the new structure)
 - [ ] United Kingdom
