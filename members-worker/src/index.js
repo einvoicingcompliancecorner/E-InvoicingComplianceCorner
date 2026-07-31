@@ -1018,6 +1018,8 @@ async function renderFullDeepDivePage(countryName, flag, code, region, content, 
   body{background:var(--ink); color:var(--text-lo); font-family:'IBM Plex Sans',sans-serif; line-height:1.55;}
   .display{font-family:'Big Shoulders Display',sans-serif; font-weight:800;}
   .wrap{max-width:980px; margin:0 auto; padding:0 5vw 60px;}
+  .back-link{display:inline-flex; align-items:center; gap:6px; margin:24px 0 0; font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:var(--muted); text-decoration:none;}
+  .back-link:hover{color:var(--soon);}
   .country-head{display:flex; flex-wrap:wrap; gap:18px; align-items:flex-start; justify-content:space-between; padding:18px 0 26px; border-bottom:1px solid var(--line); margin-bottom:28px;}
   .country-flag{font-size:46px; line-height:1;}
   .country-eyebrow{font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.16em; text-transform:uppercase; color:var(--soon); margin:0 0 4px;}
@@ -1065,6 +1067,7 @@ async function renderFullDeepDivePage(countryName, flag, code, region, content, 
 </head>
 <body>
 <div class="wrap">
+  <a class="back-link" href="einvoicing-compliance-tracker.html">← Back to global tracker</a>
   <div class="country-head">
     <div style="display:flex; gap:16px; align-items:center;">
       <div class="country-flag">${flag}</div>
