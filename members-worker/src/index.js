@@ -1128,6 +1128,7 @@ async function handleDeepDivePreview(request, env, lang) {
 }
 
 
+async function handleMilestonesPreview(request, env, lang) {
   const url = new URL(request.url);
   const country = url.searchParams.get("country") || "Portugal";
   const milestones = await getMilestonesForCountry(env, country, lang);
