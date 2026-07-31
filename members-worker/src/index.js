@@ -347,6 +347,8 @@ export default {
       } else if (request.method === "GET" && url.pathname.startsWith("/members/archive/")) {
         const slug = decodeURIComponent(url.pathname.replace("/members/archive/", ""));
         response = await handleArchiveIssue(request, env, slug, lang);
+      } else if (request.method === "GET" && url.pathname === "/admin/preview/milestones") {
+        response = await handleMilestonesPreview(request, env, lang);
       } else if (request.method === "GET" && url.pathname === "/members/preferences") {
         response = await handlePreferencesGet(request, env, lang);
       } else if (request.method === "POST" && url.pathname === "/members/preferences") {
@@ -824,6 +826,129 @@ async function handleArchiveIssue(request, env, slug, lang) {
 
   return htmlResponse(renderIssue(story, lang));
 }
+
+// ---------------------------------------------------------------
+// PROOF-OF-CONCEPT: dynamic milestones, queried live from D1, fed
+// into two genuinely different templates -- the tracker's own card
+// style, and the deep-dive page's timeline style. Not yet wired into
+// the real tracker or deep-dive pages (those are still static Pages
+// files) -- this is a preview route for verifying the architecture
+// before committing to the full migration and cutover.
+// ---------------------------------------------------------------
+async function getMilestonesForCountry(env, countryName, lang) {
+  const rows = await d1All(env, `
+    SELECT m.id, m.date, m.anchor, m.source_url,
+           COALESCE(mt.system, mt_en.system) as system,
+           COALESCE(mt.desc, mt_en.desc) as desc,
+           COALESCE(mt.actions, mt_en.actions) as actions
+    FROM milestones m
+    JOIN countries c ON c.id = m.country_id
+    LEFT JOIN milestone_translations mt ON mt.milestone_id = m.id AND mt.lang = ?
+    LEFT JOIN milestone_translations mt_en ON mt_en.milestone_id = m.id AND mt_en.lang = 'en'
+    WHERE c.name_en = ?
+    ORDER BY m.date ASC
+  `, lang, countryName);
+  return rows.map((r) => ({
+    id: r.id,
+    date: r.date,
+    anchor: !!r.anchor,
+    sourceUrl: r.source_url,
+    system: r.system,
+    desc: r.desc,
+    actions: JSON.parse(r.actions || "[]"),
+  }));
+}
+
+function formatMilestoneDate(dateStr) {
+  const [y, m] = dateStr.split("-");
+  const monthNames = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  return `${monthNames[parseInt(m, 10) - 1]} ${y}`;
+}
+
+// Tracker-style rendering: matches the tracker's own card structure —
+// active/upcoming milestones in the main list, anchor (settled,
+// historical) milestones in a separate "Established regulations" group.
+function renderTrackerStyleMilestones(milestones, countryName) {
+  const active = milestones.filter((m) => !m.anchor);
+  const established = milestones.filter((m) => m.anchor);
+
+  const card = (m) => `
+    <div style="background:#1c2c48; border:1px solid #2b3c5a; border-radius:10px; padding:16px 20px; margin-bottom:12px;">
+      <div style="font-family:'IBM Plex Mono',monospace; font-size:12px; color:#93a3c0; margin-bottom:6px;">${escapeHtml(m.date)}</div>
+      <div style="font-weight:600; margin-bottom:6px; color:#f2f0e8;">${escapeHtml(m.system)}</div>
+      <p style="color:#93a3c0; font-size:13.5px; margin:0 0 8px;">${escapeHtml(m.desc)}</p>
+      ${m.actions.length ? `<ul style="margin:8px 0 0; padding-left:18px; color:#c3ceE0; font-size:13px;">${m.actions.map((a) => `<li>${escapeHtml(a)}</li>`).join("")}</ul>` : ""}
+    </div>`;
+
+  return `
+    <h3 style="color:#f2f0e8; font-family:'IBM Plex Mono',monospace; text-transform:uppercase; font-size:13px;">Recent &amp; Upcoming — ${escapeHtml(countryName)}</h3>
+    ${active.map(card).join("")}
+    <details style="margin-top:16px;">
+      <summary style="color:#93a3c0; font-family:'IBM Plex Mono',monospace; font-size:12px; cursor:pointer;">Established regulations (${established.length})</summary>
+      <div style="margin-top:10px;">${established.map(card).join("")}</div>
+    </details>`;
+}
+
+// Deep-dive-style rendering: matches portugal.html's actual timeline
+// section CSS classes (.rtimeline, .rmonth-marker, .rcard, .rbadge) —
+// same underlying milestone data, genuinely different template.
+function renderDeepDiveStyleMilestones(milestones) {
+  let lastMonthMarker = "";
+  const cards = milestones.map((m) => {
+    const marker = formatMilestoneDate(m.date);
+    const markerHtml = marker !== lastMonthMarker
+      ? `<div class="rmonth-marker">${escapeHtml(marker.split(" ")[1])}</div>`
+      : "";
+    lastMonthMarker = marker;
+    const badgeClass = m.anchor || new Date(m.date) < new Date() ? "inforce" : "upcoming";
+    const badgeLabel = badgeClass === "inforce" ? "In effect" : "Upcoming";
+    return `${markerHtml}<div class="rcard">
+      <div class="rcard-top"><span class="rcard-date">${escapeHtml(m.date)}</span><span class="rbadge ${badgeClass}">${badgeLabel}</span></div>
+      <div class="rcard-title">${escapeHtml(m.system)}</div>
+      <p class="rcard-desc">${escapeHtml(m.desc)}</p>
+    </div>`;
+  }).join("");
+  return `<div class="rtimeline">${cards}</div>`;
+}
+
+async function handleMilestonesPreview(request, env, lang) {
+  const url = new URL(request.url);
+  const country = url.searchParams.get("country") || "Portugal";
+  const milestones = await getMilestonesForCountry(env, country, lang);
+
+  if (milestones.length === 0) {
+    return new Response(`No milestones found in D1 for "${country}" yet.`, { status: 404 });
+  }
+
+  const body = `
+  <div style="max-width:900px; margin:40px auto; padding:0 20px; font-family:'IBM Plex Sans',sans-serif;">
+    <h1 style="color:#f2f0e8;">Dynamic milestones preview — ${escapeHtml(country)}</h1>
+    <p style="color:#93a3c0;">Proof-of-concept: both renderings below are built from the exact same ${milestones.length} D1 rows, fed into two different templates.</p>
+
+    <h2 style="color:#c98a3a; margin-top:40px;">1. Tracker-style rendering</h2>
+    ${renderTrackerStyleMilestones(milestones, country)}
+
+    <h2 style="color:#c98a3a; margin-top:40px;">2. Deep-dive-style rendering</h2>
+    <style>
+      .rtimeline{position:relative; padding-left:20px; border-left:2px solid #2b3c5a;}
+      .rmonth-marker{font-family:'IBM Plex Mono',monospace; font-size:11px; color:#c98a3a; text-transform:uppercase; letter-spacing:0.08em; margin:22px 0 8px -20px; padding-left:20px;}
+      .rmonth-marker:first-child{margin-top:0;}
+      .rcard{background:#1c2c48; border:1px solid #2b3c5a; border-radius:10px; padding:14px 18px; margin-bottom:10px;}
+      .rcard-top{display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;}
+      .rcard-date{font-family:'IBM Plex Mono',monospace; font-size:12px; color:#93a3c0;}
+      .rbadge{font-family:'IBM Plex Mono',monospace; font-size:10px; text-transform:uppercase; letter-spacing:0.06em; padding:3px 9px; border-radius:999px;}
+      .rbadge.inforce{background:#274a38; color:#8fd4ac;}
+      .rbadge.upcoming{background:#3a4864; color:#c3ceE0;}
+      .rcard-title{font-weight:600; margin-bottom:4px; color:#f2f0e8;}
+      .rcard-desc{color:#93a3c0; font-size:13.5px; margin:0;}
+    </style>
+    ${renderDeepDiveStyleMilestones(milestones)}
+  </div>`;
+
+  return htmlResponse(pageShell(body, lang));
+}
+
+
 
 function redirectToLogin() {
   return new Response(null, { status: 302, headers: { Location: "/members" } });
