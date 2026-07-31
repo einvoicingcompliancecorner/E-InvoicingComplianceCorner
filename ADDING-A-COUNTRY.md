@@ -1,5 +1,16 @@
 # Adding a New Country to the Site — Runbook
 
+> **Note:** A separate effort is underway to move the tracker and deep-dive
+> pages onto a dynamic, D1-backed architecture (see
+> `DEEP-DIVE-MIGRATION-CHECKLIST.md`). As of this writing, that work is
+> running in parallel as a verified preview — the live site still uses the
+> static files this runbook describes, for every country including the ones
+> already migrated in the new system. **Follow this document exactly as
+> written until the actual cutover happens.** This runbook will need a
+> significant rewrite once the tracker and deep-dive pages are fully dynamic
+> and the static files are retired — most of the steps below will no longer
+> apply at that point.
+
 This document exists because adding one country touches far more places than
 it should. Follow this checklist in order rather than relying on memory —
 several of these steps are easy to miss and won't cause an obvious error,
