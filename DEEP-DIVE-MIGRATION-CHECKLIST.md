@@ -151,9 +151,9 @@ with the user before being added.
       penalty table, and the theme-unification decision)
 - [x] Germany — content + translations complete (revealed the audit-access
       card pattern; confirmed no-lifecycle-system case works correctly)
-- [x] Poland — content complete, translations pending (revealed the
-      pill-list reuse pattern: "offline modes" use different CSS class name
-      but identical styling to lifecycle pills)
+- [x] Poland — content + translations complete (revealed the pill-list
+      reuse pattern: "offline modes" use different CSS class name but
+      identical styling to lifecycle pills)
 - [ ] Spain
 - [ ] Malaysia
 - [ ] United Kingdom
