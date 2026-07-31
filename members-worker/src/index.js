@@ -917,6 +917,11 @@ async function getDeepDiveContent(env, countryName, lang) {
   const page = await d1First(env, `
     SELECT COALESCE(dpt.compliance_model, dpt_en.compliance_model) as compliance_model,
            COALESCE(dpt.footer_disclaimer, dpt_en.footer_disclaimer) as footer_disclaimer,
+           COALESCE(dpt.timeline_intro, dpt_en.timeline_intro) as timeline_intro,
+           COALESCE(dpt.file_format_intro, dpt_en.file_format_intro) as file_format_intro,
+           COALESCE(dpt.scope_intro, dpt_en.scope_intro) as scope_intro,
+           COALESCE(dpt.steps_intro, dpt_en.steps_intro) as steps_intro,
+           COALESCE(dpt.penalties_intro, dpt_en.penalties_intro) as penalties_intro,
            ddp.last_updated
     FROM countries c
     JOIN deep_dive_pages ddp ON ddp.country_id = c.id
@@ -1083,27 +1088,32 @@ async function renderFullDeepDivePage(countryName, flag, code, region, content, 
   <div class="stat-strip">${statsHtml}</div>
 
   <div class="section">
-    <div class="section-head"><span class="num">01</span><h2 class="display">Compliance timeline</h2></div>
+    <div class="section-head"><span class="num mono">01</span><h2 class="display">Compliance timeline</h2></div>
+    <p class="section-intro">${escapeHtml(content.timeline_intro)}</p>
     ${timelineHtml}
   </div>
 
   <div class="section">
-    <div class="section-head"><span class="num">02</span><h2 class="display">File format &amp; data specification</h2></div>
+    <div class="section-head"><span class="num mono">02</span><h2 class="display">File format &amp; data specification</h2></div>
+    <p class="section-intro">${escapeHtml(content.file_format_intro)}</p>
     <div class="spec-grid">${fileFormatHtml}</div>
   </div>
 
   <div class="section">
-    <div class="section-head"><span class="num">03</span><h2 class="display">Scope &amp; transmission</h2></div>
+    <div class="section-head"><span class="num mono">03</span><h2 class="display">Scope &amp; transmission</h2></div>
+    <p class="section-intro">${escapeHtml(content.scope_intro)}</p>
     <div class="spec-grid">${scopeHtml}</div>
   </div>
 
   <div class="section">
-    <div class="section-head"><span class="num">04</span><h2 class="display">Getting compliant</h2></div>
+    <div class="section-head"><span class="num mono">04</span><h2 class="display">Getting compliant</h2></div>
+    <p class="section-intro">${escapeHtml(content.steps_intro)}</p>
     <div class="steps">${stepsHtml}</div>
   </div>
 
   <div class="section">
-    <div class="section-head"><span class="num">05</span><h2 class="display">Penalties &amp; enforcement</h2></div>
+    <div class="section-head"><span class="num mono">05</span><h2 class="display">Penalties &amp; enforcement</h2></div>
+    <p class="section-intro">${escapeHtml(content.penalties_intro)}</p>
     <div class="related-grid">${relatedHtml}</div>
   </div>
 
