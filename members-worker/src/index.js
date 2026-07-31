@@ -902,7 +902,12 @@ function renderDeepDiveStyleMilestones(milestones) {
       ? `<div class="rmonth-marker">${escapeHtml(marker.split(" ")[1])}</div>`
       : "";
     lastMonthMarker = marker;
-    const badgeClass = m.anchor || new Date(m.date) < new Date() ? "inforce" : "upcoming";
+    // Badge status depends purely on whether the date has actually
+    // passed -- anchor only controls the tracker's separate grouping
+    // into an active list vs. a collapsed "Established regulations"
+    // section, and has no bearing on whether something is genuinely
+    // in effect yet.
+    const badgeClass = new Date(m.date) <= new Date() ? "inforce" : "upcoming";
     const badgeLabel = badgeClass === "inforce" ? "In effect" : "Upcoming";
     return `${markerHtml}<div class="rcard">
       <div class="rcard-top"><span class="rcard-date">${escapeHtml(m.date)}</span><span class="rbadge ${badgeClass}">${badgeLabel}</span></div>
