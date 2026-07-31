@@ -1,3 +1,8 @@
+-- Add the outro_text column first -- this table was already created
+-- (via 057) before that migration was amended to include this column,
+-- so it needs adding here directly, same as the title column needed 070.
+ALTER TABLE deep_dive_lifecycle_intro_translations ADD COLUMN outro_text TEXT;
+
 -- Targeted fix: Poland's lifecycle intro was incorrectly merged from two
 -- genuinely separate paragraphs (one before the offline-mode pills, one
 -- after) into a single intro_text during content extraction -- caught by
