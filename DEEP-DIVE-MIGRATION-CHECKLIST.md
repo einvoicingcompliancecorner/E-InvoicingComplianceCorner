@@ -48,7 +48,12 @@ tracker's own `DATA` array:
       very first build (France's "Lifecycle status exchange" heading was
       silently missing since the function was created) and went unnoticed
       until Poland's review. Confirm the heading actually renders, not just
-      the intro text and pills.
+      the intro text and pills. **Check whether there's text both before
+      *and* after the pills** — Poland's card has two genuinely separate
+      paragraphs (a short one before the pills, a longer one after), which
+      got merged into one during extraction and silently dropped the second
+      paragraph. Don't assume a single combined note; check the actual HTML
+      structure around the pills element directly.
 - [ ] **Penalty table**, if the country has a genuine, sourced fine schedule
       (as opposed to narrative-only related-cards). Check for a
       `.penalty-table`/`.penalty-card` element specifically.
