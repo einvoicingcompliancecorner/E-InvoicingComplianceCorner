@@ -1001,7 +1001,8 @@ async function getDeepDiveContent(env, countryName, lang) {
 
   const lifecycleIntro = await d1First(env, `
     SELECT COALESCE(dlit.title, dlit_en.title) as title,
-           COALESCE(dlit.intro_text, dlit_en.intro_text) as intro_text
+           COALESCE(dlit.intro_text, dlit_en.intro_text) as intro_text,
+           COALESCE(dlit.outro_text, dlit_en.outro_text) as outro_text
     FROM deep_dive_lifecycle_intro dli
     JOIN countries c ON c.id = dli.country_id
     LEFT JOIN deep_dive_lifecycle_intro_translations dlit ON dlit.country_id = dli.country_id AND dlit.lang = ?
@@ -1029,7 +1030,7 @@ async function getDeepDiveContent(env, countryName, lang) {
     WHERE c.name_en = ? ORDER BY dpr.sort_order
   `, lang, countryName);
 
-  return { ...page, stats, cards, steps, portals, lifecycleTitle: lifecycleIntro?.title || null, lifecycleIntro: lifecycleIntro?.intro_text || null, lifecycleStatuses, penaltyRows };
+  return { ...page, stats, cards, steps, portals, lifecycleTitle: lifecycleIntro?.title || null, lifecycleIntro: lifecycleIntro?.intro_text || null, lifecycleOutro: lifecycleIntro?.outro_text || null, lifecycleStatuses, penaltyRows };
 }
 
 function renderSpecCard(card) {
@@ -1044,13 +1045,14 @@ function renderRelatedCard(card) {
 // Lifecycle pills render as an extra spec-card appended to the
 // scope_transmission grid, matching France's actual placement --
 // only rendered when a country has lifecycle statuses at all.
-function renderLifecycleCard(title, intro, statuses) {
+function renderLifecycleCard(title, intro, statuses, outro) {
   if (!statuses || statuses.length === 0) return "";
   const pillsHtml = statuses.map((s) => `<span${s.is_special ? ' class="rej"' : ""}>${escapeHtml(s.label)}</span>`).join("");
   return `<div class="spec-card">
     ${title ? `<h3>${escapeHtml(title)}</h3>` : ""}
     ${intro ? `<p class="note" style="margin-top:0; padding-top:0; border-top:none;">${escapeHtml(intro)}</p>` : ""}
     <div class="lifecycle">${pillsHtml}</div>
+    ${outro ? `<p class="note">${escapeHtml(outro)}</p>` : ""}
   </div>`;
 }
 
@@ -1077,7 +1079,7 @@ async function renderFullDeepDivePage(countryName, flag, code, region, content, 
   const timelineHtml = renderDeepDiveStyleMilestones(milestones, lang);
   const statsHtml = content.stats.map((s) => `<div class="stat"><div class="num display">${escapeHtml(s.stat_value)}</div><div class="lbl">${escapeHtml(s.stat_label)}</div></div>`).join("");
   const fileFormatHtml = content.cards.file_format.map(renderSpecCard).join("");
-  const scopeHtml = content.cards.scope_transmission.map(renderSpecCard).join("") + renderLifecycleCard(content.lifecycleTitle, content.lifecycleIntro, content.lifecycleStatuses);
+  const scopeHtml = content.cards.scope_transmission.map(renderSpecCard).join("") + renderLifecycleCard(content.lifecycleTitle, content.lifecycleIntro, content.lifecycleStatuses, content.lifecycleOutro);
   const relatedHtml = renderPenaltyTable(content.penaltyRows, lang) + content.cards.penalties_related.map(renderRelatedCard).join("");
   const stepsHtml = content.steps.map((s, i) => `
     <div class="step"><div class="step-num"></div><div class="step-body"><h4>${escapeHtml(s.title)}</h4><p>${escapeHtml(s.description)}</p></div></div>`).join("");
