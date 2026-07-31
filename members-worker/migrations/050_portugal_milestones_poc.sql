@@ -22,3 +22,16 @@ INSERT INTO milestones (id, country_id, date, anchor, source_url) SELECT 'pt-qes
 INSERT INTO milestone_translations (milestone_id, lang, system, desc, actions) VALUES ('pt-qes', 'en', 'Qualified Electronic Signature (QES) required for PDF invoices', 'PDF invoices in B2B and B2C transactions will require a Qualified Electronic Signature from an EU-listed trust service provider to remain legally valid — deferred from an original 2026 date via the 2026 State Budget. Until 31 December 2026, PDF invoices issued by certified software with ATCUD and a QR code remain valid without a QES.', '["Identify an EU-listed qualified trust service provider for QES well before the 2027 deadline \u2014 this is a procurement step, not a software setting", "Don''t assume compliance with the existing ATCUD/QR/certified-software requirements covers this \u2014 QES is a genuinely new, additional layer specifically for PDF invoices"]');
 INSERT INTO milestones (id, country_id, date, anchor, source_url) SELECT 'pt-saft-full', id, '2028-01-01', 1, 'https://www.portaldasfinancas.gov.pt/pt/menu.action?pai=5075' FROM countries WHERE name_en = 'Portugal';
 INSERT INTO milestone_translations (milestone_id, lang, system, desc, actions) VALUES ('pt-saft-full', 'en', 'Full accounting SAF-T file becomes mandatory', 'The first mandatory full annual accounting SAF-T submission, covering 2027-year transactions, becomes due — itself deferred from an earlier 2026 timeline via the same State Budget process.', '[]');
+
+-- Missing 11th milestone, caught by round-trip verification against
+-- the static portugal.html (10 vs 11 timeline cards) -- genuinely
+-- distinct from pt-qes, not just a duplicate of it.
+INSERT INTO milestones (id, country_id, date, anchor, source_url)
+  SELECT 'pt-pdf-valid-through-2026', id, '2026-11-27', 0,
+    'https://www.portaldasfinancas.gov.pt/pt/menu.action?pai=5075'
+  FROM countries WHERE name_en = 'Portugal';
+INSERT INTO milestone_translations (milestone_id, lang, system, desc, actions) VALUES
+  ('pt-pdf-valid-through-2026', 'en',
+   'PDF invoices remain valid without a QES, through 31 December 2026',
+   'Confirmed via the 2026 State Budget (approved 27 November 2025): PDF invoices issued by certified software, carrying ATCUD and a QR code, stay legally valid without a Qualified Electronic Signature until this date.',
+   '[]');
