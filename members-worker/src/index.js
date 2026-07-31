@@ -1009,6 +1009,9 @@ async function renderFullDeepDivePage(countryName, flag, code, region, content, 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>${escapeHtml(countryName)} E-Invoicing Requirements — The E-Invoicing Compliance Corner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root{--ink:#0f1a2b; --ink-2:#152238; --line:#2b3c5a; --text-lo:#f2f0e8; --muted:#93a3c0; --stamp:#b5432f; --live-dim:#274a38; --soon:#c98a3a; --upcoming-dim:#3a4864; --radius:10px;}
   *{box-sizing:border-box;} html,body{margin:0;padding:0;}
