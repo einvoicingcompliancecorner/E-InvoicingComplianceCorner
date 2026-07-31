@@ -1160,7 +1160,7 @@ async function renderFullDeepDivePage(countryName, flag, code, region, content, 
   .spec-card h3::after{content:""; flex:1; height:1px; background:var(--paper-line);}
   .spec-row{display:flex; justify-content:space-between; gap:12px; padding:6px 0; border-top:1px dashed var(--paper-line); font-size:13px;}
   .spec-row:first-of-type{border-top:none;}
-  .spec-row .k{color:#6b5f3f; flex:0 0 42%;} .spec-row .v{color:#241d10; text-align:right; font-weight:500;}
+  .spec-row .k{color:#6b5f3f; flex:0 0 42%;} .spec-row .v{color:#241d10; text-align:right; font-weight:500; flex:1 1 auto; min-width:0; overflow-wrap:break-word; word-break:break-word;}
   .note{font-size:12.6px; color:#5a5138; margin:10px 0 0; padding-top:10px; border-top:1px dashed var(--paper-line); line-height:1.5;}
   .lifecycle{display:flex; flex-wrap:wrap; gap:8px; margin-top:4px;}
   .lifecycle span{font-family:'IBM Plex Mono',monospace; font-size:11px; background:var(--soon-dim); color:#ffe0b3; padding:5px 11px; border-radius:999px; white-space:nowrap;}
