@@ -124,7 +124,7 @@ function translateRegionName(lang, name) {
 const WORKER_I18N = {
   en: {
     backToTracker: "← Back to global tracker", backToArchive: "← Back to archive", backToSignIn: "← Back to sign in", logout: "Log out",
-    inEffect: "In effect", upcoming: "Upcoming",
+    inEffect: "In effect", upcoming: "Upcoming", penaltyFailure: "Failure", penaltyFine: "Fine", penaltyAnnualCap: "Annual cap",
     login: {
       eyebrow: "Subscribers only", title: "Newsletter archive",
       intro: "Enter the email address you subscribed with — we'll send you a one-click sign-in link. No password to remember.",
@@ -165,7 +165,7 @@ const WORKER_I18N = {
   },
   es: {
     backToTracker: "← Volver al panel general", backToArchive: "← Volver al archivo", backToSignIn: "← Volver al inicio de sesión", logout: "Cerrar sesión",
-    inEffect: "En vigor", upcoming: "Próximamente",
+    inEffect: "En vigor", upcoming: "Próximamente", penaltyFailure: "Incumplimiento", penaltyFine: "Multa", penaltyAnnualCap: "Límite anual",
     login: {
       eyebrow: "Solo suscriptores", title: "Archivo del boletín",
       intro: "Introduzca el correo electrónico con el que se suscribió — le enviaremos un enlace de acceso de un solo clic. Sin contraseña que recordar.",
@@ -206,7 +206,7 @@ const WORKER_I18N = {
   },
   de: {
     backToTracker: "← Zurück zur Übersicht", backToArchive: "← Zurück zum Archiv", backToSignIn: "← Zurück zur Anmeldung", logout: "Abmelden",
-    inEffect: "In Kraft", upcoming: "Bevorstehend",
+    inEffect: "In Kraft", upcoming: "Bevorstehend", penaltyFailure: "Verstoß", penaltyFine: "Bußgeld", penaltyAnnualCap: "Jahresobergrenze",
     login: {
       eyebrow: "Nur für Abonnenten", title: "Newsletter-Archiv",
       intro: "Geben Sie die E-Mail-Adresse ein, mit der Sie abonniert haben — wir senden Ihnen einen Ein-Klick-Anmeldelink. Kein Passwort nötig.",
@@ -247,7 +247,7 @@ const WORKER_I18N = {
   },
   fr: {
     backToTracker: "← Retour au suivi global", backToArchive: "← Retour aux archives", backToSignIn: "← Retour à la connexion", logout: "Se déconnecter",
-    inEffect: "En vigueur", upcoming: "À venir",
+    inEffect: "En vigueur", upcoming: "À venir", penaltyFailure: "Manquement", penaltyFine: "Amende", penaltyAnnualCap: "Plafond annuel",
     login: {
       eyebrow: "Réservé aux abonnés", title: "Archives de la newsletter",
       intro: "Saisissez l'adresse e-mail utilisée pour votre abonnement — nous vous enverrons un lien de connexion en un clic. Pas de mot de passe à retenir.",
@@ -991,7 +991,36 @@ async function getDeepDiveContent(env, countryName, lang) {
     WHERE c.name_en = ? ORDER BY dp.sort_order
   `, lang, countryName);
 
-  return { ...page, stats, cards, steps, portals };
+  const lifecycleIntro = await d1First(env, `
+    SELECT COALESCE(dlit.intro_text, dlit_en.intro_text) as intro_text
+    FROM deep_dive_lifecycle_intro dli
+    JOIN countries c ON c.id = dli.country_id
+    LEFT JOIN deep_dive_lifecycle_intro_translations dlit ON dlit.country_id = dli.country_id AND dlit.lang = ?
+    LEFT JOIN deep_dive_lifecycle_intro_translations dlit_en ON dlit_en.country_id = dli.country_id AND dlit_en.lang = 'en'
+    WHERE c.name_en = ?
+  `, lang, countryName);
+
+  const lifecycleStatuses = await d1All(env, `
+    SELECT dls.is_special, COALESCE(dlst.label, dlst_en.label) as label
+    FROM deep_dive_lifecycle_statuses dls
+    JOIN countries c ON c.id = dls.country_id
+    LEFT JOIN deep_dive_lifecycle_status_translations dlst ON dlst.status_id = dls.id AND dlst.lang = ?
+    LEFT JOIN deep_dive_lifecycle_status_translations dlst_en ON dlst_en.status_id = dls.id AND dlst_en.lang = 'en'
+    WHERE c.name_en = ? ORDER BY dls.sort_order
+  `, lang, countryName);
+
+  const penaltyRows = await d1All(env, `
+    SELECT COALESCE(dprt.failure_description, dprt_en.failure_description) as failure_description,
+           COALESCE(dprt.fine_amount, dprt_en.fine_amount) as fine_amount,
+           COALESCE(dprt.annual_cap, dprt_en.annual_cap) as annual_cap
+    FROM deep_dive_penalty_rows dpr
+    JOIN countries c ON c.id = dpr.country_id
+    LEFT JOIN deep_dive_penalty_row_translations dprt ON dprt.row_id = dpr.id AND dprt.lang = ?
+    LEFT JOIN deep_dive_penalty_row_translations dprt_en ON dprt_en.row_id = dpr.id AND dprt_en.lang = 'en'
+    WHERE c.name_en = ? ORDER BY dpr.sort_order
+  `, lang, countryName);
+
+  return { ...page, stats, cards, steps, portals, lifecycleIntro: lifecycleIntro?.intro_text || null, lifecycleStatuses, penaltyRows };
 }
 
 function renderSpecCard(card) {
@@ -1003,6 +1032,33 @@ function renderRelatedCard(card) {
   return `<div class="related-card"><h4>${escapeHtml(card.title)}</h4><p>${escapeHtml(card.body)}</p></div>`;
 }
 
+// Lifecycle pills render as an extra spec-card appended to the
+// scope_transmission grid, matching France's actual placement --
+// only rendered when a country has lifecycle statuses at all.
+function renderLifecycleCard(intro, statuses) {
+  if (!statuses || statuses.length === 0) return "";
+  const pillsHtml = statuses.map((s) => `<span${s.is_special ? ' class="rej"' : ""}>${escapeHtml(s.label)}</span>`).join("");
+  return `<div class="spec-card">
+    ${intro ? `<p class="note" style="margin-top:0; padding-top:0; border-top:none;">${escapeHtml(intro)}</p>` : ""}
+    <div class="lifecycle">${pillsHtml}</div>
+  </div>`;
+}
+
+// Genuine tabular penalty schedule, rendered full-width alongside any
+// narrative related-cards in the same grid -- only rendered when a
+// country has a real, sourced fine schedule to cite. Table headers
+// (Failure/Fine/Annual cap) use the tracker's own translation keys.
+function renderPenaltyTable(rows, lang) {
+  if (!rows || rows.length === 0) return "";
+  const rowsHtml = rows.map((r) => `<tr><td>${escapeHtml(r.failure_description)}</td><td>${escapeHtml(r.fine_amount || "—")}</td><td>${escapeHtml(r.annual_cap || "—")}</td></tr>`).join("");
+  return `<div class="penalty-card">
+    <table class="penalty-table">
+      <tr><th>${t(lang, "penaltyFailure")}</th><th>${t(lang, "penaltyFine")}</th><th>${t(lang, "penaltyAnnualCap")}</th></tr>
+      ${rowsHtml}
+    </table>
+  </div>`;
+}
+
 // Full deep-dive page render, sourced entirely from D1 -- structurally
 // matching the static portugal.html this is meant to replace, reusing
 // the exact same CSS. Milestones come from the shared table (same data
@@ -1011,8 +1067,8 @@ async function renderFullDeepDivePage(countryName, flag, code, region, content, 
   const timelineHtml = renderDeepDiveStyleMilestones(milestones, lang);
   const statsHtml = content.stats.map((s) => `<div class="stat"><div class="num display">${escapeHtml(s.stat_value)}</div><div class="lbl">${escapeHtml(s.stat_label)}</div></div>`).join("");
   const fileFormatHtml = content.cards.file_format.map(renderSpecCard).join("");
-  const scopeHtml = content.cards.scope_transmission.map(renderSpecCard).join("");
-  const relatedHtml = content.cards.penalties_related.map(renderRelatedCard).join("");
+  const scopeHtml = content.cards.scope_transmission.map(renderSpecCard).join("") + renderLifecycleCard(content.lifecycleIntro, content.lifecycleStatuses);
+  const relatedHtml = renderPenaltyTable(content.penaltyRows, lang) + content.cards.penalties_related.map(renderRelatedCard).join("");
   const stepsHtml = content.steps.map((s, i) => `
     <div class="step"><div class="step-num"></div><div class="step-body"><h4>${escapeHtml(s.title)}</h4><p>${escapeHtml(s.description)}</p></div></div>`).join("");
   const portalsHtml = content.portals.map((p) => `<a class="portal-btn" href="${escapeHtml(p.url)}" target="_blank" rel="noopener">${escapeHtml(p.label)}</a>`).join("");
