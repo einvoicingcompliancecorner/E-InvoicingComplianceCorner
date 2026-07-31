@@ -39,7 +39,11 @@ tracker's own `DATA` array:
       disclaimer**.
 - [ ] **Lifecycle pills**, if the country has an invoice lifecycle status
       system (France did; Germany didn't). Check for a `.lifecycle` div.
-      Don't assume every country has or lacks this — check directly.
+      Don't assume every country has or lacks this — check directly. **Also
+      check for other pill-list components under a different class name**
+      (Poland's `.mode-grid` offline modes turned out to have CSS identical
+      to `.lifecycle` — reuse the same infrastructure rather than treating
+      every differently-named pill list as a new content type).
 - [ ] **Penalty table**, if the country has a genuine, sourced fine schedule
       (as opposed to narrative-only related-cards). Check for a
       `.penalty-table`/`.penalty-card` element specifically.
@@ -147,7 +151,9 @@ with the user before being added.
       penalty table, and the theme-unification decision)
 - [x] Germany — content + translations complete (revealed the audit-access
       card pattern; confirmed no-lifecycle-system case works correctly)
-- [ ] Poland
+- [x] Poland — content complete, translations pending (revealed the
+      pill-list reuse pattern: "offline modes" use different CSS class name
+      but identical styling to lifecycle pills)
 - [ ] Spain
 - [ ] Malaysia
 - [ ] United Kingdom
