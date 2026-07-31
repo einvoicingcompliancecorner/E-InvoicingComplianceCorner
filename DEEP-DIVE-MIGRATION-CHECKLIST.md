@@ -25,6 +25,19 @@ tracker's own `DATA` array:
       tracker's `DATA` array and the deep-dive page, use the tracker's
       `system`/`desc`/`actions` text, not the deep-dive's own wording. This is
       a standing rule, confirmed with the user during Portugal's review.
+      **The tracker can also have genuinely more current information than
+      the deep-dive** — Spain's deep-dive had one vague "Pending" timeline
+      entry for its B2B mandate, while the tracker had two specific,
+      concretely-dated entries (marked `confidence:'expected'` in the
+      tracker's own DATA). Check the tracker's version even for milestones
+      that don't look identical at first glance — don't assume the
+      deep-dive is always the richer source, as it was for Portugal/France.
+- [ ] **New structural component discovered** (e.g. Spain's `.status-banner`
+      at the top of the page) is a genuine decision point, not an automatic
+      "build it" — ask the user first. Spain's banner was folded into an
+      existing section's intro text instead of built as new schema, per
+      user preference to avoid proliferating one-off components. Don't
+      assume every new visual pattern needs its own table.
 - [ ] **5 section intros** — the `<p class="section-intro">` text under each
       of the 5 section headings (timeline, file format, scope, steps,
       penalties). Easy to miss because they're not part of milestones or
@@ -164,6 +177,9 @@ with the user before being added.
 - [x] Poland — content + translations complete (revealed the pill-list
       reuse pattern: "offline modes" use different CSS class name but
       identical styling to lifecycle pills)
-- [ ] Spain
+- [x] Spain — content complete, translations pending (revealed that the
+      tracker can have more current info than the deep-dive, and a new
+      status-banner component that was folded into existing section-intro
+      text per user preference, rather than built as new schema)
 - [ ] Malaysia
 - [ ] United Kingdom
