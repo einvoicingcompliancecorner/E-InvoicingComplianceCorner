@@ -177,7 +177,7 @@ with the user before being added.
 - [x] Poland — content + translations complete (revealed the pill-list
       reuse pattern: "offline modes" use different CSS class name but
       identical styling to lifecycle pills)
-- [x] Spain — content complete, translations pending (revealed that the
+- [x] Spain — content + translations complete (revealed that the
       tracker can have more current info than the deep-dive, and a new
       status-banner component that was folded into existing section-intro
       text per user preference, rather than built as new schema)
