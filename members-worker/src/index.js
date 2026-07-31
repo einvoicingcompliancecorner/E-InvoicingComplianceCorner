@@ -124,6 +124,7 @@ function translateRegionName(lang, name) {
 const WORKER_I18N = {
   en: {
     backToTracker: "← Back to global tracker", backToArchive: "← Back to archive", backToSignIn: "← Back to sign in", logout: "Log out",
+    inEffect: "In effect", upcoming: "Upcoming",
     login: {
       eyebrow: "Subscribers only", title: "Newsletter archive",
       intro: "Enter the email address you subscribed with — we'll send you a one-click sign-in link. No password to remember.",
@@ -164,6 +165,7 @@ const WORKER_I18N = {
   },
   es: {
     backToTracker: "← Volver al panel general", backToArchive: "← Volver al archivo", backToSignIn: "← Volver al inicio de sesión", logout: "Cerrar sesión",
+    inEffect: "En vigor", upcoming: "Próximamente",
     login: {
       eyebrow: "Solo suscriptores", title: "Archivo del boletín",
       intro: "Introduzca el correo electrónico con el que se suscribió — le enviaremos un enlace de acceso de un solo clic. Sin contraseña que recordar.",
@@ -204,6 +206,7 @@ const WORKER_I18N = {
   },
   de: {
     backToTracker: "← Zurück zur Übersicht", backToArchive: "← Zurück zum Archiv", backToSignIn: "← Zurück zur Anmeldung", logout: "Abmelden",
+    inEffect: "In Kraft", upcoming: "Bevorstehend",
     login: {
       eyebrow: "Nur für Abonnenten", title: "Newsletter-Archiv",
       intro: "Geben Sie die E-Mail-Adresse ein, mit der Sie abonniert haben — wir senden Ihnen einen Ein-Klick-Anmeldelink. Kein Passwort nötig.",
@@ -244,6 +247,7 @@ const WORKER_I18N = {
   },
   fr: {
     backToTracker: "← Retour au suivi global", backToArchive: "← Retour aux archives", backToSignIn: "← Retour à la connexion", logout: "Se déconnecter",
+    inEffect: "En vigueur", upcoming: "À venir",
     login: {
       eyebrow: "Réservé aux abonnés", title: "Archives de la newsletter",
       intro: "Saisissez l'adresse e-mail utilisée pour votre abonnement — nous vous enverrons un lien de connexion en un clic. Pas de mot de passe à retenir.",
@@ -894,7 +898,7 @@ function renderTrackerStyleMilestones(milestones, countryName) {
 // Deep-dive-style rendering: matches portugal.html's actual timeline
 // section CSS classes (.rtimeline, .rmonth-marker, .rcard, .rbadge) —
 // same underlying milestone data, genuinely different template.
-function renderDeepDiveStyleMilestones(milestones) {
+function renderDeepDiveStyleMilestones(milestones, lang) {
   let lastMonthMarker = "";
   const cards = milestones.map((m) => {
     const marker = formatMilestoneDate(m.date);
@@ -908,7 +912,7 @@ function renderDeepDiveStyleMilestones(milestones) {
     // section, and has no bearing on whether something is genuinely
     // in effect yet.
     const badgeClass = new Date(m.date) <= new Date() ? "inforce" : "upcoming";
-    const badgeLabel = badgeClass === "inforce" ? "In effect" : "Upcoming";
+    const badgeLabel = badgeClass === "inforce" ? t(lang, "inEffect") : t(lang, "upcoming");
     return `${markerHtml}<div class="rcard">
       <div class="rcard-top"><span class="rcard-date">${escapeHtml(m.date)}</span><span class="rbadge ${badgeClass}">${badgeLabel}</span></div>
       <div class="rcard-title">${escapeHtml(m.system)}</div>
@@ -1004,7 +1008,7 @@ function renderRelatedCard(card) {
 // the exact same CSS. Milestones come from the shared table (same data
 // the tracker itself will read once that side is migrated too).
 async function renderFullDeepDivePage(countryName, flag, code, region, content, milestones, lang) {
-  const timelineHtml = renderDeepDiveStyleMilestones(milestones);
+  const timelineHtml = renderDeepDiveStyleMilestones(milestones, lang);
   const statsHtml = content.stats.map((s) => `<div class="stat"><div class="num display">${escapeHtml(s.stat_value)}</div><div class="lbl">${escapeHtml(s.stat_label)}</div></div>`).join("");
   const fileFormatHtml = content.cards.file_format.map(renderSpecCard).join("");
   const scopeHtml = content.cards.scope_transmission.map(renderSpecCard).join("");
@@ -1077,7 +1081,7 @@ async function renderFullDeepDivePage(countryName, flag, code, region, content, 
 </head>
 <body>
 <div class="wrap">
-  <a class="back-link" href="einvoicing-compliance-tracker.html">← Back to global tracker</a>
+  <a class="back-link" href="einvoicing-compliance-tracker.html">${t(lang, "backToTracker")}</a>
   <div class="country-head">
     <div style="display:flex; gap:16px; align-items:center;">
       <div class="country-flag">${flag}</div>
@@ -1180,7 +1184,7 @@ async function handleMilestonesPreview(request, env, lang) {
       .rcard-title{font-weight:600; margin-bottom:4px; color:#f2f0e8;}
       .rcard-desc{color:#93a3c0; font-size:13.5px; margin:0;}
     </style>
-    ${renderDeepDiveStyleMilestones(milestones)}
+    ${renderDeepDiveStyleMilestones(milestones, lang)}
   </div>`;
 
   return htmlResponse(pageShell(body, lang));
