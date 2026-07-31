@@ -1227,7 +1227,18 @@ async function handleDeepDivePreview(request, env, lang) {
   );
 
   const html = await renderFullDeepDivePage(countryName, flag, countryRow.code, countryRow.region, content, milestones, lang);
-  return htmlResponse(html);
+  // The shared renderLangSwitcher assumes ?lang= is the only query
+  // param, which would drop ?country= here -- build links manually so
+  // both are preserved, since this preview page has no other way to
+  // switch language (unlike real pages, which always link within a
+  // single, parameter-free path).
+  const switcherLinks = SUPPORTED_LANGS.map((code) => {
+    const isActive = code === lang;
+    return `<a href="?country=${encodeURIComponent(countryName)}&lang=${code}" style="color:${isActive ? "#c98a3a" : "#93a3c0"}; font-weight:${isActive ? "700" : "400"}; text-decoration:none; margin-left:10px;">${code.toUpperCase()}</a>`;
+  }).join("");
+  const switcherBar = `<div style="background:#152238; padding:10px 20px; font-family:'IBM Plex Mono',monospace; font-size:12px; color:#93a3c0; text-align:right;">🌐${switcherLinks}</div>`;
+  const htmlWithSwitcher = html.replace("<body>", `<body>${switcherBar}`);
+  return htmlResponse(htmlWithSwitcher);
 }
 
 
