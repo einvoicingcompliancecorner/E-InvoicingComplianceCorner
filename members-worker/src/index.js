@@ -1104,7 +1104,7 @@ function renderPenaltyTable(rows, lang) {
 async function renderFullDeepDivePage(countryName, flag, code, region, content, milestones, lang) {
   const timelineHtml = renderDeepDiveStyleMilestones(milestones, lang);
   const statsHtml = content.stats.map((s) => `<div class="stat"><div class="num display">${escapeHtml(s.stat_value)}</div><div class="lbl">${escapeHtml(s.stat_label)}</div></div>`).join("");
-  const fileFormatHtml = content.cards.file_format.map(renderSpecCard).join("");
+  const fileFormatHtml = content.cards.file_format.map(renderSpecCard).join("") + renderLifecycleCardsForSection(content.lifecycleCards, "file_format");
   const scopeHtml = content.cards.scope_transmission.map(renderSpecCard).join("") + renderLifecycleCardsForSection(content.lifecycleCards, "scope_transmission");
   const relatedHtml = renderPenaltyTable(content.penaltyRows, lang) + content.cards.penalties_related.map(renderRelatedCard).join("");
   const stepsHtml = content.steps.map((s, i) => `

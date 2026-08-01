@@ -650,3 +650,51 @@ maintenance (v1.9.1) rather than a new mandate — a genuinely different kind of
 other countries' still-phasing-in stories.
 
 All 4 languages (en/es/de/fr) validated for structural completeness and card-shape consistency.
+
+## Saudi Arabia (migrations 180–183)
+
+Milestones: 4 total, matching the static page's 4 timeline rcards. 2 deep-dive-only entries
+(Phase 1 — Generation Phase begins, 4 Dec 2021; Phase 2 — Integration Phase begins, Wave 1,
+1 Jan 2023) plus 2 tracker-matched entries: `sa-wave23` and `sa-wave24`, both exact date/topic
+matches — tracker phrasing wins for both. Neither tracker entry sets `anchor:true`, so both
+keep anchor=0.
+
+**Required a small renderer code change**, the first of its kind in this whole migration effort.
+The static page's QR-code section (02, file format) contains a `.flow-grid` pill list of the
+nine data tags packed into ZATCA's QR code (Seller name, VAT number, Timestamp, Invoice total,
+VAT total, Crypto stamp hash, Public key, ECDSA signature) — visually identical to every other
+country's flow-grid, but semantically an *unordered set of data tags*, not a sequential process,
+and critically: it sits in the **file_format** section, not scope_transmission. Every prior
+lifecycle card (all ~15 of them) lived in scope_transmission, and `members-worker/src/index.js`'s
+`renderFullDeepDivePage` only ever called `renderLifecycleCardsForSection(content.lifecycleCards,
+"scope_transmission")` for the scope/transmission column — `fileFormatHtml` was built from
+`content.cards.file_format` alone, with no call to render lifecycle cards for that section at
+all. The D1 query and data model already supported an arbitrary `section` value on
+`deep_dive_lifecycle_cards` (just a `TEXT NOT NULL DEFAULT 'scope_transmission'` column, no CHECK
+constraint), so storing this card with `section = 'file_format'` was valid — but it would have
+silently never rendered without a matching front-end wire-up. Fixed by adding one line to
+`renderFullDeepDivePage`: `fileFormatHtml` now also calls
+`renderLifecycleCardsForSection(content.lifecycleCards, "file_format")`, mirroring the existing
+scope_transmission wiring exactly. This is a genuine code change to the worker, not just a
+content/migration file — flagging clearly since every other entry in this checklist has been
+content-only.
+
+Deep-dive content: 5 stats, 3 regular file_format spec-cards (Format, Cryptographic controls,
+Mandatory identifiers) plus the QR-code lifecycle card described above (8 "statuses" used purely
+as pill labels for the data tags, with both intro_text and outro_text populated, following the
+Italy precedent for populating both). 4 regular scope_transmission cards (B2B real-time
+clearance, B2C near-real-time reporting, common rejection codes, scope) — no lifecycle card in
+this section this time, since Saudi Arabia's only flow-grid-style element is the QR-code one
+covered above. 7 steps. 1 genuine tabular penalty row (General non-compliance: SAR 5,000–50,000
+per violation) plus 3 narrative penalties_related cards (prohibited software functions,
+archiving, GCC context) — both at once, per the Belgium/Italy precedent. 1 portal (ZATCA —
+Fatoora).
+
+Notable content point: Saudi Arabia runs one of the strictest real-time clearance models in this
+entire tracker — B2B invoices above SAR 1,000 have no legal or tax effect at all without ZATCA's
+clearance response *before* delivery to the buyer, stricter than Italy's SDI or Poland's KSeF in
+that specific sense. The wave-based Phase 2 rollout (turnover-threshold waves, each with ~6
+months' notice) is a genuinely different phase-in mechanism from the fixed-calendar-date mandates
+seen in most EU countries migrated so far.
+
+All 4 languages (en/es/de/fr) validated for structural completeness and card-shape consistency.
