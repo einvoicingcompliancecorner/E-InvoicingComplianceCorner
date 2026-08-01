@@ -963,7 +963,9 @@ async function getDeepDiveContent(env, countryName, lang) {
            COALESCE(dct.title, dct_en.title) as title,
            COALESCE(dct.rows_json, dct_en.rows_json) as rows_json,
            COALESCE(dct.note, dct_en.note) as note,
-           COALESCE(dct.body, dct_en.body) as body
+           COALESCE(dct.body, dct_en.body) as body,
+           COALESCE(dct.badge_label, dct_en.badge_label) as badge_label,
+           COALESCE(dct.badge_type, dct_en.badge_type) as badge_type
     FROM deep_dive_cards dc
     JOIN countries c ON c.id = dc.country_id
     LEFT JOIN deep_dive_card_translations dct ON dct.card_id = dc.id AND dct.lang = ?
@@ -977,6 +979,8 @@ async function getDeepDiveContent(env, countryName, lang) {
       rows: r.rows_json ? JSON.parse(r.rows_json) : null,
       note: r.note,
       body: r.body,
+      badgeLabel: r.badge_label,
+      badgeType: r.badge_type,
     });
   }
 
@@ -1044,7 +1048,8 @@ async function getDeepDiveContent(env, countryName, lang) {
 
 function renderSpecCard(card) {
   const rowsHtml = (card.rows || []).map(([k, v]) => `<div class="spec-row"><span class="k">${escapeHtml(k)}</span><span class="v">${escapeHtml(v)}</span></div>`).join("");
-  return `<div class="spec-card"><h3>${escapeHtml(card.title)}</h3>${rowsHtml}${card.note ? `<p class="note">${escapeHtml(card.note)}</p>` : ""}</div>`;
+  const badgeHtml = card.badgeLabel ? ` <span class="badge-tag ${escapeHtml(card.badgeType || "")}">${escapeHtml(card.badgeLabel)}</span>` : "";
+  return `<div class="spec-card"><h3>${escapeHtml(card.title)}${badgeHtml}</h3>${rowsHtml}${card.note ? `<p class="note">${escapeHtml(card.note)}</p>` : ""}</div>`;
 }
 
 function renderRelatedCard(card) {
@@ -1162,6 +1167,9 @@ async function renderFullDeepDivePage(countryName, flag, code, region, content, 
   .spec-row:first-of-type{border-top:none;}
   .spec-row .k{color:#6b5f3f; flex:0 0 42%;} .spec-row .v{color:#241d10; text-align:right; font-weight:500; flex:1 1 auto; min-width:0; overflow-wrap:break-word; word-break:break-word;}
   .note{font-size:12.6px; color:#5a5138; margin:10px 0 0; padding-top:10px; border-top:1px dashed var(--paper-line); line-height:1.5;}
+  .badge-tag{display:inline-block; font-family:'IBM Plex Mono',monospace; font-size:9.5px; text-transform:uppercase; letter-spacing:0.06em; padding:2px 7px; border-radius:4px; margin-left:6px; vertical-align:middle;}
+  .badge-tag.confirmed{background:var(--live-dim); color:#bfe6cf;}
+  .badge-tag.pending{background:var(--upcoming-dim); color:#dbe2ee;}
   .lifecycle{display:flex; flex-wrap:wrap; gap:8px; margin-top:4px;}
   .lifecycle span{font-family:'IBM Plex Mono',monospace; font-size:11px; background:var(--soon-dim); color:#ffe0b3; padding:5px 11px; border-radius:999px; white-space:nowrap;}
   .lifecycle span.rej{background:var(--stamp-dim); color:#ffd7cc;}
