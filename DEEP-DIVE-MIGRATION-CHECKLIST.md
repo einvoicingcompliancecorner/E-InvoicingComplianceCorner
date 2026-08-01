@@ -37,7 +37,14 @@ tracker's own `DATA` array:
       "build it" — ask the user first. Spain's banner was folded into an
       existing section's intro text instead of built as new schema, per
       user preference to avoid proliferating one-off components. Don't
-      assume every new visual pattern needs its own table.
+      assume every new visual pattern needs its own table. **Inline badge
+      tags on card headings** (the UK's "Confirmed"/"Pending Budget 2026")
+      were a similar decision point, but a much smaller one — a nullable
+      `badge_label`/`badge_type` column pair on the existing
+      `deep_dive_card_translations` table, not a new set of tables. Worth
+      distinguishing "genuinely new content type" (build schema, ask first)
+      from "small optional field on an existing table" (much lower cost,
+      still worth flagging but a smaller decision either way).
 - [ ] **5 section intros** — the `<p class="section-intro">` text under each
       of the 5 section headings (timeline, file format, scope, steps,
       penalties). Easy to miss because they're not part of milestones or
@@ -192,4 +199,11 @@ with the user before being added.
       one — required generalizing the schema from one-card-per-country to
       many-per-country, with France's and Poland's existing data migrated
       into the new structure)
-- [ ] United Kingdom
+- [x] United Kingdom — content complete, translations pending (revealed
+      inline badge tags on card headings, "Confirmed"/"Pending Budget
+      2026" — built as a small nullable field pair on the existing card
+      translations table, not new tables; status-banner folded into
+      scope_intro per user preference, matching Spain's precedent)
+
+All 6 countries in the original priority batch now have English content.
+Next: UK translations, then a final consistency pass across all 6.
