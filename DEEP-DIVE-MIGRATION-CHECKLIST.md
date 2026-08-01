@@ -189,7 +189,7 @@ with the user before being added.
 
 ## 7. Current schema reference (as of migration 091)
 
-The next new migration should be numbered **100**. Everything below is
+The next new migration should be numbered **104**. Everything below is
 confirmed applied to the live database as of this writing. Rather than
 reconstructing this by reading every migration file in sequence, use this
 as the authoritative map of what exists and what each table is for.
@@ -304,3 +304,13 @@ meant to replace.
       Belgium's tracker DATA entries use anchor:true, so the 3 shared ids
       (be-mandate, be-penalty, be-ereport) keep anchor=0 to match rather
       than defaulting to anchor=1 like Romania's flagship milestone did.
+- [x] Finland — content and translations complete (migrations 100-103).
+      No lifecycle cards, no penalty table -- genuinely correct, not a gap:
+      Finland has no domestic B2B mandate at all, so there's no fine
+      schedule to cite (all 4 penalties_related cards are narrative,
+      explaining *why* there's nothing to enforce). fi-b2g keeps the
+      tracker's anchor:true (Finland's one genuinely binding requirement,
+      B2G); fi-en-standard and fi-vida keep anchor=0 to match the tracker.
+      fi-early2000s uses 2000-01-01 as a stand-in for the static page's own
+      vague "Early 2000s" label -- doesn't affect the in-effect/upcoming
+      badge outcome either way, so no need to ask the user this time.
