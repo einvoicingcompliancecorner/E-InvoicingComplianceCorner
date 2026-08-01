@@ -7,9 +7,73 @@ and newsletter story content. It builds on, and cross-references rather
 than repeats, `NEWSLETTER-ARCHIVE-REDESIGN.md` for the per-story schema
 details.
 
-**Nothing here has been built yet — this is the plan, written before the
-code, per the reasoning that pre-launch is the safest window for a schema
-change like this.**
+**Status as of 1 August 2026: largely built and substantially exceeded
+in scope for deep-dive content. See "Current status" immediately below
+for what's actually implemented, what diverged from this original plan,
+and what's still outstanding. The rest of this document is preserved as
+the original design record — the reasoning and schema below mostly still
+holds, but the deep-dive piece in particular grew well beyond what was
+scoped here.**
+
+---
+
+## Current status (updated 1 August 2026)
+
+**Done, matching this plan closely:**
+- D1 database created and live (`eicc-content`,
+  `d1d10bd0-e90a-44a3-9494-a63689e8d32e`); `translations`, `countries`,
+  `country_translations`, `stories`, `story_countries`, and
+  `story_translations` tables all exist per the schema below and are the
+  source of truth.
+- Existing translations and the three duplicated country-name dictionaries
+  were backfilled into D1 as planned (`002_backfill_countries.sql` and
+  related migrations).
+- 40+ newsletter stories now live in D1 across the original country set,
+  plus new stories for 12 previously zero-coverage countries (Italy,
+  United Kingdom, India, Romania, European Union, China, Canada, United
+  States, Ireland, Norway, Singapore, Sweden) — all sourced and fully
+  translated (EN/ES/DE/FR).
+- The build-time generation script exists
+  (`members-worker/migrations/generate_files.py`) and is run before every
+  Cloudflare Pages upload, exactly as this plan specified — the
+  `data-i18n` / `i18n.js` runtime mechanism was never touched.
+
+**Not done — deferred, not abandoned:**
+- **Subscribers remain on KV (`SUBSCRIBERS`)**, not migrated to D1. This
+  was flagged in the original plan as "worth deciding, not required," and
+  it's still an open, separate decision rather than something blocking
+  anything else.
+
+**Substantially exceeded the original scope — "Stage 4":**
+The original plan (see the newsletter/story section below) envisioned
+deep-dive translations as a simple per-page key/value translation file,
+generated the same way as tracker or subscribe-page chrome. What actually
+got built instead is a full dynamic, D1-backed rendering architecture —
+"Stage 4" — covering not just translated prose but the entire structural
+content of each country's deep-dive page: milestones (shared with the
+tracker's own timeline), page intros, stat strips, spec/related cards,
+getting-compliant steps, tabular penalty schedules, lifecycle/pill-list
+cards, and official portal links, each fully bilingual-through-French.
+Full schema reference and lessons learned: `DEEP-DIVE-MIGRATION-CHECKLIST.md`.
+
+Stage 4 status: **16 of 31 tracker countries fully migrated** (content and
+translations both verified against the static originals) — Portugal,
+France, Germany, Poland, Spain, Malaysia, United Kingdom, Romania,
+Belgium, Finland, Croatia, Denmark, Ireland, Norway, Slovakia, and Sweden.
+**15 remain**: Australia, Brazil, Canada, Chile, China, European Union,
+India, Italy, Mexico, New Zealand, Peru, Saudi Arabia, Singapore, United
+Arab Emirates, United States.
+
+Critically, **Stage 4 is not yet live** — the dynamic rendering exists
+only as an unauthenticated preview
+(`/admin/preview/deep-dive?country=X`, `/admin/preview/milestones?country=X`),
+running in parallel with the still-live static HTML deep-dive pages and
+tracker. No cutover has happened. This means the migration plan below's
+step 6 ("update the members-worker's data-access code") has effectively
+already happened for deep-dive *reads* via the preview routes, but the
+production site itself has not been switched over — that cutover is
+still a distinct, pending step once all 31 countries are migrated and the
+preview has been reviewed end-to-end.
 
 ---
 
