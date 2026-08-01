@@ -189,7 +189,7 @@ with the user before being added.
 
 ## 7. Current schema reference (as of migration 091)
 
-The next new migration should be numbered **140**. Everything below is
+The next new migration should be numbered **144**. Everything below is
 confirmed applied to the live database as of this writing. Rather than
 reconstructing this by reading every migration file in sequence, use this
 as the authoritative map of what exists and what each table is for.
@@ -457,5 +457,15 @@ Deep-dive content: 5 stats, 4 file_format cards (Schema, what "e-invoicing" actu
 As with Australia and China, the renderer places regular spec-cards before lifecycle cards within a section, so the live scope_transmission section will show the 3 regular cards ahead of "The clearance flow" — an accepted, known display-order divergence from the static page's original card order (Governing institutions, The clearance flow, Submission channels, The 30-day rule's teeth).
 
 Notable content point: India's e-invoice is JSON, not XML — the only country in this batch (and one of very few overall) using JSON as the legal document format rather than XML.
+
+All 4 languages (en/es/de/fr) validated for structural completeness and card-shape consistency.
+
+## New Zealand (migrations 140–143)
+
+Milestones: 8 total, matching the static page's 8 timeline cards. 5 deep-dive-only entries (Australia-NZ Government Electronic Invoicing Arrangement 2018, e-invoicing framework launch 2019, PINT A-NZ becomes only accepted spec May 2025, Fifth Edition rules announced Oct 2025, Fifth Edition rules take effect Dec 2025) plus 3 tracker-matched entries: `nz-central` (31 Mar 2022), `nz-2000` (1 Jan 2026), `nz-largesupplier` (1 Jan 2027) — all three exact date/event matches with the tracker's own DATA entries, so tracker phrasing wins for all three, including their action items and portal link.
+
+Deep-dive content: 5 stats, 4 file_format cards (Specification, Identifiers, Scope of the 2027 mandate, No real-time reporting), 4 scope_transmission cards (Governance, Determining "large supplier" status, Agency-side obligations, Enforcement style) — no flow-grid/lifecycle card and no penalty rows/table this time, since New Zealand's enforcement is purely administrative (no statutory financial penalties; the static page states this explicitly). 4 penalties_related narrative cards, 5 steps, 1 portal (einvoicing.govt.nz — MBIE).
+
+Notable content point: New Zealand's mandate sits inside Government Procurement Rules rather than tax/VAT legislation — a genuinely different legal basis from every other country migrated so far, with enforcement via public quarterly reporting rather than any fine schedule.
 
 All 4 languages (en/es/de/fr) validated for structural completeness and card-shape consistency.
