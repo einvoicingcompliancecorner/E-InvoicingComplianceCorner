@@ -189,7 +189,7 @@ with the user before being added.
 
 ## 7. Current schema reference (as of migration 091)
 
-The next new migration should be numbered **128**. Everything below is
+The next new migration should be numbered **132**. Everything below is
 confirmed applied to the live database as of this writing. Rather than
 reconstructing this by reading every migration file in sequence, use this
 as the authoritative map of what exists and what each table is for.
@@ -364,6 +364,28 @@ meant to replace.
       date-based badge rule (today = 2026-08-01) -- expected divergence, not
       a bug, since the static page was authored from a different vantage
       point in time.
+- [x] Australia — content and translations complete (migrations 128-131).
+      First Asia-Pacific-batch country. All 3 tracker DATA entries
+      (`au-ncereceive`, `au-30pct`, `au-automate`) map exactly onto 3 of
+      the deep-dive timeline's 7 cards by date/event, so tracker phrasing
+      wins for all three -- 7 total milestones, not 10. `au-ncereceive`
+      inherits anchor=1 from the tracker's anchor:true. The static page's
+      `.flow-grid` element ("The four corners") is a pill-shaped badge
+      list -- mapped onto `deep_dive_lifecycle_cards` rather than a
+      regular spec card, extending the Croatia/Poland precedent (note the
+      renderer always places lifecycle cards after regular spec cards
+      within a section, so "The four corners" — first on the static page —
+      renders last in the scope_transmission section here; an accepted,
+      pre-existing rendering-order limitation, not something introduced by
+      this migration). No penalty table (no B2B mandate exists yet,
+      narrative-only). Notable content-wise: Australia has no general B2B
+      e-invoicing mandate at all -- only a demanding internal compliance
+      regime for federal agencies (Non-Corporate Commonwealth Entities),
+      building toward a 30% Peppol-processing target (Jul 2026) and full
+      automation (Dec 2026). Shares the PINT A-NZ specification with New
+      Zealand, aligned toward newer Peppol markets (Singapore, Malaysia,
+      Japan) -- worth watching for consistency when New Zealand is
+      migrated next in this batch.
 - [x] Sweden — content and translations complete (migrations 124-127).
       `se-b2g` (tracker, anchor:true) exactly replaces deep-dive timeline
       card #3 (1 Apr 2019 full EN 16931 mandate) -- same date/event, tracker
