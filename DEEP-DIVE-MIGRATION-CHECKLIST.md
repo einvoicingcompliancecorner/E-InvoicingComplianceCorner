@@ -189,7 +189,7 @@ with the user before being added.
 
 ## 7. Current schema reference (as of migration 091)
 
-The next new migration should be numbered **144**. Everything below is
+The next new migration should be numbered **148**. Everything below is
 confirmed applied to the live database as of this writing. Rather than
 reconstructing this by reading every migration file in sequence, use this
 as the authoritative map of what exists and what each table is for.
@@ -469,3 +469,15 @@ Deep-dive content: 5 stats, 4 file_format cards (Specification, Identifiers, Sco
 Notable content point: New Zealand's mandate sits inside Government Procurement Rules rather than tax/VAT legislation — a genuinely different legal basis from every other country migrated so far, with enforcement via public quarterly reporting rather than any fine schedule.
 
 All 4 languages (en/es/de/fr) validated for structural completeness and card-shape consistency.
+
+## Singapore (migrations 144–147)
+
+Milestones: 10 total, matching the static page's 10 timeline cards. 6 deep-dive-only entries (first Peppol Authority outside Europe 2018, InvoiceNow launches 2019, InvoiceNow added as B2G channel 2020, voluntary phase begins May 2025, and two mid-rollout revenue-band steps with no tracker counterpart: existing taxpayers ≤S$1m 2029, ≤S$4m 2030) plus 4 tracker-matched entries: `sg-voluntary2025` (1 Nov 2025), `sg-allvoluntary` (1 Apr 2026), `sg-existing2028` (1 Apr 2028), `sg-full2031` (1 Apr 2031) — all four exact date matches. `sg-existing2028` is a notable case: the tracker's own phrasing ("Phased rollout begins for existing GST-registered businesses") was used in preference to the deep-dive's narrower band-specific title ("New GST taxpayers, annual sales ≤ S$200,000"), per tracker-phrasing-wins, since the tracker's framing better represents the milestone as the start of the phased rollout rather than one specific revenue band.
+
+Deep-dive content: 5 stats, 4 file_format cards (Format, Mandatory Data Elements, Identifiers, Evolving format: PINT SG), 3 regular scope_transmission spec-cards (Governance, Submission timing, Roles: IRSP vs. AP) plus 1 lifecycle card ("The exchange flow", 5 statuses: Supplier's ERP → Supplier's Access Point → Buyer's Access Point (via UEN) → Buyer's ERP → Copy to IRAS) mapped from the static page's `.flow-grid` element, per the Croatia/Australia/China/India precedent. This is the first flow-grid card without an intro line on the static page (goes straight from the card title to the pills) — `intro_text` is stored as NULL for this card, which the schema supports since the column is nullable. No penalty rows/table — Singapore's enforcement is entirely administrative (no statutory fines discussed on the static page). 4 penalties_related narrative cards, 6 steps, 1 portal (IRAS — GST InvoiceNow Requirement).
+
+Notable content point: Singapore's 4-corner→5-corner architecture transition (adding IRAS as a genuine network participant rather than just an observer) is a distinctive evolution story — the static page frames it as gradually adding tax-reporting capability onto a pre-existing voluntary exchange network rather than building a clearance system from scratch, consistent with Singapore's unusually long six-year phase-in runway (Nov 2025 → Apr 2031), the longest in this tracker.
+
+All 4 languages (en/es/de/fr) validated for structural completeness and card-shape consistency.
+
+This completes the Asia-Pacific batch (Australia, China, India, New Zealand, Singapore) requested in one continuous run.
