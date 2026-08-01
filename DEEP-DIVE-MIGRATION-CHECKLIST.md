@@ -187,7 +187,7 @@ with the user before being added.
       tracker can have more current info than the deep-dive, and a new
       status-banner component that was folded into existing section-intro
       text per user preference, rather than built as new schema)
-- [x] Malaysia — content complete, translations pending (revealed that a
+- [x] Malaysia — content + translations complete (revealed that a
       country can have *multiple* separate lifecycle-pill cards, not just
       one — required generalizing the schema from one-card-per-country to
       many-per-country, with France's and Poland's existing data migrated
