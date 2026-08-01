@@ -549,3 +549,69 @@ Notable content point: Canada is structurally the closest sibling to the US in t
 All 4 languages (en/es/de/fr) validated for structural completeness and card-shape consistency.
 
 This completes the Americas batch (Brazil, Mexico, Peru, Chile, United States, Canada) requested in one continuous run.
+
+## European Union (migrations 172–175)
+
+**Structurally different from every other country migrated so far: the EU has no legacy static
+HTML deep-dive page.** It's not in the tracker's `DEEP_DIVES` link map (`european-union.html`
+does not exist), unlike Italy/Saudi Arabia/UAE which do have static pages awaiting migration.
+Per user decision, this migration writes D1 content only (milestones + full deep-dive content,
+same schema as every other country), viewable via the existing
+`/admin/preview/deep-dive?country=European Union` route — no static HTML file or tracker link
+was created. Building the static page + tracker link, if wanted, is a separate future task.
+
+**The user also asked for a careful accuracy review of the EU/ViDA content**, since there was no
+existing page to extract from and the tracker's own 3 `eu-*` DATA entries hadn't been touched in
+a while. Live research against the official EC ViDA page (taxation-customs.ec.europa.eu, fetched
+directly) and CEN's EN 16931-1:2026 announcement surfaced a real inaccuracy: the tracker's
+`eu-transpose` entry (2026-12-31) described the deadline generically as being about "domestic
+e-invoicing mandates," but that date is actually the transposition deadline specific to ViDA's
+Single VAT Registration (SVR) pillar (enabling the 1 Jan 2027 OSS/IOSS scope expansion) — a
+different pillar from e-invoicing/DRR (2030) entirely. The tracker was also missing a whole
+milestone for ViDA's second pillar: the 1 July 2028 platform-economy deemed-supplier rules +
+SVR go-live + mandatory reverse charge for non-identified suppliers.
+
+**Per user decision, both were fixed in the tracker's own DATA array** (`eu-transpose`'s
+system/desc/actions rewritten to correctly describe the SVR pillar specifically; new
+`eu-platform-svr-2028` entry added for the 2028 pillar), not just in the new deep-dive content —
+along with matching corrections/additions in all 3 `i18n/{lang}-data.json` files (es/de/fr), so
+the tracker's own multi-language timeline display stays consistent with the corrected English
+entry. This is the first migration where the tracker's pre-existing DATA was itself edited for
+accuracy rather than only read from. Verified both the tracker's DATA array (via a Node.js
+extraction/eval sanity check on the live file) and all 3 i18n JSON files parse correctly after
+the edit.
+
+Milestones: 7 total (this is a fresh, non-static-page-derived content set, so there's no
+"static page timeline count" to match against). 4 tracker-matched, using tracker phrasing
+throughout: the corrected `eu-transpose` (2026-12-31), the new `eu-platform-svr-2028`
+(2028-07-01), `eu-drr` (2030-07-01, unchanged — already accurate against the official EC
+timeline), and `eu-align` (2035-01-01, unchanged — already accurate). Plus 3 deep-dive-only
+entries adding real value beyond the tracker's own 4: ViDA's formal Council adoption
+(2025-03-11), its entry into force (2025-04-14, the date from which member states could already
+introduce their own domestic e-invoicing mandates under derogations — explains why Belgium/
+Poland/etc. moved independently ahead of any EU-wide date), and CEN's EN 16931-1:2026 semantic
+standard publication (2026-03-18, verified via a second independent web search).
+
+Deep-dive content: 5 stats (3 ViDA pillars, €11B/yr projected fraud reduction, €4.1B/yr
+projected compliance savings, 1 Jul 2030 DRR go-live, 1 Jan 2035 harmonisation deadline — the
+fraud/savings figures are sourced directly from the EC's own ViDA page). 4 file_format cards
+covering EN 16931's original B2G-era standard vs. its 2026 B2B-oriented revision (new IBAN,
+triangulation-indicator, corrective-invoice-sequencing, and margin-scheme fields), the
+format-vs-mandate distinction, and UBL/CII/Peppol BIS Billing 3.0 as the common conformant
+implementation. 3 scope_transmission cards laying out the three pillars and their distinct
+timelines, the domestic-mandate-vs-2030-cross-border-layer distinction, and the 2035
+convergence deadline — **no lifecycle card**, since this is a policy-framework overview with
+no single national clearance flow to diagram. 6 steps. 4 penalties_related narrative cards
+(no penalty rows/table — ViDA sets the framework but enforcement/fines remain a national
+competence, explicitly stated as such). 2 portals (EC Taxation & Customs Union ViDA page, and
+the VAT One Stop Shop portal, since SVR/OSS is one of the three pillars this page covers).
+
+Notable content point: this page is framed differently from every other country's deep dive —
+it's explicitly a policy/framework explainer for the whole ViDA package rather than a "how does
+a business file here" procedural page, since the EU itself has no single filing mechanism.
+Multiple cards and the scope_intro text explicitly redirect readers to the tracker's individual
+country pages (Italy, Belgium, Poland, etc.) for what's actually mandatory where they invoice
+today — treating this EU page as context/background for the country pages rather than a
+replacement for them.
+
+All 4 languages (en/es/de/fr) validated for structural completeness and card-shape consistency.

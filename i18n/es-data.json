@@ -1,11 +1,20 @@
 {
   "eu-transpose": {
-    "system": "ViDA — transposición nacional",
-    "desc": "Cada Estado miembro de la UE debe transponer la Directiva del IVA en la Era Digital (ViDA) a su legislación nacional, allanando el camino para que los mandatos nacionales de facturación electrónica se alineen con el marco de la UE.",
+    "system": "ViDA — plazo de transposición del Registro Único de IVA",
+    "desc": "Los Estados miembros deben transponer las disposiciones del Registro Único de IVA (SVR) de la Directiva ViDA a su legislación nacional antes de esta fecha, para que el alcance ampliado de la Ventanilla Única (OSS)/Ventanilla Única de Importación (IOSS) y sus aclaraciones conexas puedan aplicarse desde el 1 de enero de 2027. Este plazo es específico del pilar SVR — es distinto de, y anterior a, los calendarios de transposición del pilar de economía de plataformas de ViDA (2028) y de su pilar de facturación electrónica / Requisitos de Reporte Digital (2030).",
     "actions": [
-      "Siga el calendario de transposición de su autoridad fiscal nacional y cualquier norma doméstica nueva que introduzca",
-      "Confirme que sus sistemas ERP/CxP pueden emitir facturas electrónicas estructuradas conformes con EN 16931",
-      "Esté atento a las excepciones específicas de cada país que puedan fijar una fecha límite nacional anterior o posterior"
+      "Si vende bienes o servicios B2C transfronterizos dentro de la UE, confirme que su registro OSS/IOSS cubre el alcance ampliado que entra en vigor en enero de 2027",
+      "Este plazo no exige por sí mismo la facturación electrónica doméstica — los Estados miembros ya pueden introducir sus propios mandatos de facturación electrónica de forma independiente, bajo las excepciones disponibles desde la entrada en vigor de ViDA en abril de 2025",
+      "Siga el calendario de transposición y de facturación electrónica doméstica de su propia autoridad fiscal nacional por separado de este plazo de SVR a nivel de la UE"
+    ]
+  },
+  "eu-platform-svr-2028": {
+    "system": "ViDA — entrada en vigor de la economía de plataformas y el Registro Único de IVA",
+    "desc": "Las plataformas digitales que facilitan el alquiler de alojamiento de corta duración y el transporte de pasajeros por carretera pasan a ser el proveedor considerado (deemed supplier) a efectos del IVA cuando el proveedor subyacente no repercute el IVA él mismo (por ejemplo, pequeñas empresas o particulares). Las reformas del Registro Único de IVA entran en vigor en toda la UE, y se aplica una inversión del sujeto pasivo obligatoria cuando un proveedor no está establecido ni registrado a efectos del IVA en el Estado miembro de suministro.",
+    "actions": [
+      "Si opera una plataforma que entra en el ámbito de aplicación (alquiler de alojamiento de corta duración o transporte de pasajeros por carretera), confirme sus obligaciones de recaudación y remisión del IVA como proveedor considerado",
+      "Si suministra bienes o servicios en un Estado miembro en el que no está registrado a efectos del IVA, confirme si la nueva inversión del sujeto pasivo obligatoria se aplica ahora a sus operaciones",
+      "Evalúe si el modelo ampliado de Registro Único de IVA le permite consolidar los registros que mantiene actualmente en varios Estados miembros"
     ]
   },
   "eu-drr": {

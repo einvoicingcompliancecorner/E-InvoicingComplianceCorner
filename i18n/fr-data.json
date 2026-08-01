@@ -1,11 +1,20 @@
 {
   "eu-transpose": {
-    "system": "ViDA — transposition nationale",
-    "desc": "Chaque État membre de l'UE doit transposer la directive TVA à l'ère numérique (ViDA) dans son droit national, ouvrant la voie à des obligations nationales de facturation électronique alignées sur le cadre de l'UE.",
+    "system": "ViDA — échéance de transposition de l'immatriculation unique à la TVA",
+    "desc": "Les États membres doivent transposer les dispositions relatives à l'immatriculation unique à la TVA (Single VAT Registration, SVR) de la directive ViDA dans leur droit national avant cette date, afin que le champ élargi du guichet unique (OSS)/guichet unique à l'importation (IOSS) et les clarifications associées puissent s'appliquer à partir du 1er janvier 2027. Cette échéance concerne spécifiquement le pilier SVR — elle est distincte des calendriers de transposition du pilier économie de plateformes de ViDA (2028) et de son pilier facturation électronique / obligations de déclaration numérique (2030), et leur est antérieure.",
     "actions": [
-      "Suivez le calendrier de transposition de votre administration fiscale nationale et toute nouvelle règle nationale qu'elle introduit",
-      "Vérifiez que vos systèmes ERP/comptes fournisseurs peuvent émettre des factures électroniques structurées conformes à la norme EN 16931",
-      "Surveillez les dérogations propres à chaque pays susceptibles de fixer une échéance nationale plus précoce ou plus tardive"
+      "Si vous vendez des biens ou services B2C transfrontaliers au sein de l'UE, vérifiez que votre immatriculation OSS/IOSS couvre le champ élargi entrant en vigueur en janvier 2027",
+      "Cette échéance n'impose pas en elle-même la facturation électronique domestique — les États membres peuvent déjà introduire leurs propres obligations de facturation électronique de manière indépendante, en vertu des dérogations disponibles depuis l'entrée en vigueur de ViDA en avril 2025",
+      "Suivez le calendrier de transposition et de facturation électronique domestique de votre propre administration fiscale nationale séparément de cette échéance SVR à l'échelle de l'UE"
+    ]
+  },
+  "eu-platform-svr-2028": {
+    "system": "ViDA — entrée en vigueur de l'économie de plateformes et de l'immatriculation unique à la TVA",
+    "desc": "Les plateformes numériques facilitant la location de courte durée et le transport routier de voyageurs deviennent le fournisseur présumé (deemed supplier) aux fins de la TVA lorsque le prestataire sous-jacent ne facture pas lui-même la TVA (par exemple, petites entreprises ou particuliers). Les réformes de l'immatriculation unique à la TVA entrent en vigueur dans toute l'UE, et un mécanisme d'autoliquidation domestique obligatoire s'applique lorsqu'un fournisseur n'est ni établi ni immatriculé à la TVA dans l'État membre de fourniture.",
+    "actions": [
+      "Si vous exploitez une plateforme concernée (location de courte durée ou transport routier de voyageurs), vérifiez vos obligations de collecte et de reversement de la TVA en tant que fournisseur présumé",
+      "Si vous fournissez des biens ou services dans un État membre où vous n'êtes pas immatriculé à la TVA, vérifiez si la nouvelle autoliquidation obligatoire s'applique désormais à vos opérations",
+      "Évaluez si le modèle élargi d'immatriculation unique à la TVA vous permet de consolider les immatriculations que vous détenez actuellement dans plusieurs États membres"
     ]
   },
   "eu-drr": {

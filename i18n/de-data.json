@@ -1,11 +1,20 @@
 {
   "eu-transpose": {
-    "system": "ViDA — nationale Umsetzung",
-    "desc": "Jeder EU-Mitgliedstaat muss die Richtlinie zur Mehrwertsteuer im digitalen Zeitalter (ViDA) in nationales Recht umsetzen und damit den Weg für nationale E-Invoicing-Vorgaben ebnen, die sich am EU-Rahmen orientieren.",
+    "system": "ViDA — Umsetzungsfrist für die einheitliche USt-Registrierung",
+    "desc": "Die Mitgliedstaaten müssen die Bestimmungen zur einheitlichen USt-Registrierung (Single VAT Registration, SVR) der ViDA-Richtlinie bis zu diesem Datum in nationales Recht umsetzen, damit der erweiterte Anwendungsbereich des One-Stop-Shop (OSS)/Import-One-Stop-Shop (IOSS) und die zugehörigen Klarstellungen ab dem 1. Januar 2027 gelten können. Diese Frist betrifft ausschließlich den SVR-Bereich — sie unterscheidet sich von den Umsetzungsfristen für ViDAs Plattformwirtschafts-Bereich (2028) und den Bereich E-Invoicing/Digitale Meldepflichten (2030) und liegt zeitlich vor diesen.",
     "actions": [
-      "Verfolgen Sie den Umsetzungszeitplan Ihrer nationalen Steuerbehörde und alle neuen nationalen Vorschriften",
-      "Stellen Sie sicher, dass Ihre ERP-/Kreditorensysteme EN-16931-konforme strukturierte E-Rechnungen ausstellen können",
-      "Achten Sie auf länderspezifische Abweichungen, die eine frühere oder spätere nationale Frist festlegen könnten"
+      "Wenn Sie grenzüberschreitend B2C-Waren oder -Dienstleistungen innerhalb der EU verkaufen, stellen Sie sicher, dass Ihre OSS-/IOSS-Registrierung den ab Januar 2027 geltenden erweiterten Anwendungsbereich abdeckt",
+      "Diese Frist verlangt für sich genommen keine inländische E-Rechnungsstellung — Mitgliedstaaten können bereits seit dem Inkrafttreten von ViDA im April 2025 unabhängig eigene E-Invoicing-Mandate einführen",
+      "Verfolgen Sie den Umsetzungs- und E-Invoicing-Zeitplan Ihrer eigenen nationalen Steuerbehörde getrennt von dieser EU-weiten SVR-Frist"
+    ]
+  },
+  "eu-platform-svr-2028": {
+    "system": "ViDA — Start der Plattformwirtschafts- und SVR-Regeln",
+    "desc": "Digitale Plattformen, die die kurzfristige Vermietung von Unterkünften und den Personenstraßenverkehr vermitteln, gelten für Mehrwertsteuerzwecke als fiktiver Lieferer, wenn der eigentliche Anbieter selbst keine Mehrwertsteuer erhebt (z. B. Kleinunternehmer oder Privatpersonen). Die Reformen zur einheitlichen USt-Registrierung treten EU-weit in Kraft, und ein verpflichtendes inländisches Reverse-Charge-Verfahren gilt, wenn ein Lieferer im Mitgliedstaat der Lieferung nicht ansässig oder nicht umsatzsteuerlich registriert ist.",
+    "actions": [
+      "Wenn Sie eine betroffene Plattform betreiben (kurzfristige Unterkunftsvermietung oder Personenstraßenverkehr), klären Sie Ihre Pflichten zur Erhebung und Abführung der Umsatzsteuer als fiktiver Lieferer",
+      "Wenn Sie Waren oder Dienstleistungen in einem Mitgliedstaat erbringen, in dem Sie nicht umsatzsteuerlich registriert sind, prüfen Sie, ob das neue verpflichtende Reverse-Charge-Verfahren nun auf Ihre Umsätze anwendbar ist",
+      "Prüfen Sie, ob Sie mit dem erweiterten Modell der einheitlichen USt-Registrierung mehrere derzeit gehaltene Registrierungen in verschiedenen Mitgliedstaaten konsolidieren können"
     ]
   },
   "eu-drr": {

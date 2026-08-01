@@ -575,12 +575,23 @@ const DATA = [
   // ---------------- EUROPEAN UNION (ViDA) ----------------
   {
     id:'eu-transpose', country:'European Union', flag:'🇪🇺', code:'EU', region:'Europe',
-    system:'ViDA — national transposition', date:'2026-12-31',
-    desc:'Every EU member state must transpose the VAT in the Digital Age (ViDA) Directive into national law, clearing the way for domestic e-invoicing mandates to align with the EU framework.',
+    system:'ViDA — Single VAT Registration transposition deadline', date:'2026-12-31',
+    desc:'Member states must transpose the Single VAT Registration (SVR) provisions of the ViDA Directive into national law by this date, so the expanded One Stop Shop (OSS)/Import One Stop Shop (IOSS) scope and related clarifications can apply from 1 January 2027. This deadline is specific to the SVR pillar — it is separate from, and earlier than, the transposition timelines for ViDA\'s platform-economy pillar (2028) and its e-invoicing/Digital Reporting Requirements pillar (2030).',
     actions:[
-      "Track your national tax authority's transposition timeline and any new domestic rules it introduces",
-      'Confirm your ERP/AP systems can issue EN 16931-compliant structured e-invoices',
-      "Watch for country-specific derogations that may set an earlier or later domestic deadline"
+      'If you sell cross-border B2C goods or services within the EU, confirm your OSS/IOSS registration covers the expanded scope taking effect January 2027',
+      "This deadline does not itself require domestic e-invoicing — member states can already introduce their own e-invoicing mandates independently, under derogations available since ViDA's April 2025 entry into force",
+      "Track your national tax authority's own transposition and domestic e-invoicing timeline separately from this EU-wide SVR deadline"
+    ],
+    portals:[{label:'EU Taxation & Customs Union — ViDA', url:'https://taxation-customs.ec.europa.eu/taxation/vat/vat-digital-age-vida_en'}]
+  },
+  {
+    id:'eu-platform-svr-2028', country:'European Union', flag:'🇪🇺', code:'EU', region:'Europe',
+    system:'ViDA — platform economy & Single VAT Registration go live', date:'2028-07-01',
+    desc:'Digital platforms facilitating short-term accommodation rental and road passenger transport become the deemed supplier for VAT purposes when the underlying provider does not itself charge VAT (e.g. small businesses or individuals). The Single VAT Registration reforms take effect EU-wide, and a mandatory domestic reverse charge applies where a supplier is not established or VAT-registered in the member state of supply.',
+    actions:[
+      'If you operate a qualifying platform (short-term accommodation rental or road passenger transport), confirm your deemed-supplier VAT collection and remittance obligations',
+      'If you supply goods or services in a member state where you are not VAT-registered, confirm whether the new mandatory reverse charge now applies to your transactions',
+      'Review whether the expanded Single VAT Registration model lets you consolidate registrations you currently hold in multiple member states'
     ],
     portals:[{label:'EU Taxation & Customs Union — ViDA', url:'https://taxation-customs.ec.europa.eu/taxation/vat/vat-digital-age-vida_en'}]
   },
