@@ -189,7 +189,7 @@ with the user before being added.
 
 ## 7. Current schema reference (as of migration 091)
 
-The next new migration should be numbered **136**. Everything below is
+The next new migration should be numbered **140**. Everything below is
 confirmed applied to the live database as of this writing. Rather than
 reconstructing this by reading every migration file in sequence, use this
 as the authoritative map of what exists and what each table is for.
@@ -445,5 +445,17 @@ Milestones: 7 total, matching the static page's 7 timeline cards. 5 deep-dive-on
 Deep-dive content: 5 stats, 4 file_format cards, 3 regular scope_transmission spec-cards plus 1 lifecycle card ("The clearance flow", 5 statuses: Generate XML → Submit to STA → Validate + add Key ID/QR → Return to issuer → Deliver to recipient) mapped from the static page's `.flow-grid` element, per the Croatia/Australia precedent. 0 penalty rows — China's enforcement mechanism is invoice quotas tied to tax-authority standing (tax risk level, credit rating, real business activity) rather than a discrete published fine schedule, so this is captured entirely in the 4 penalties_related narrative cards instead of the penalty-table schema. 6 steps, 1 portal (State Taxation Administration).
 
 As with Australia, the renderer places regular spec-cards before lifecycle cards within a section, so the live scope_transmission section will show the 3 regular cards ahead of "The clearance flow" — a display-order divergence from the static page's original card order, accepted as a known pre-existing limitation.
+
+All 4 languages (en/es/de/fr) validated for structural completeness and card-shape consistency.
+
+## India (migrations 136–139)
+
+Milestones: 6 total, matching the static page's 6 timeline cards. 4 deep-dive-only entries (GST Council approves phased B2B e-invoicing 2019, mandatory begins at ₹500cr turnover 2020, progressive threshold reductions 2021-23, 2FA mandatory for large taxpayers Jul 2023) plus 2 tracker-matched entries: `in-threshold` (Aug 2023, exact date/event match with the ₹5 crore threshold) and `in-30day` (1 Apr 2025, exact date/event match with the 30-day IRN reporting window) — tracker phrasing wins for both, including their action items and portal link.
+
+Deep-dive content: 5 stats, 4 file_format cards (Schema, what "e-invoicing" actually means, the IRN itself, QR code contents), 3 regular scope_transmission spec-cards (Governing institutions, Submission channels, The 30-day rule's teeth) plus 1 lifecycle card ("The clearance flow", 5 statuses: Generate JSON → Upload to IRP → IRP validates & signs → IRN + QR returned → Issue to buyer) mapped from the static page's `.flow-grid` element, per the Croatia/Australia/China precedent. 2 penalty rows (failure to generate a required e-invoice; incorrect or invalid e-invoice) — both non-monetary consequence descriptions rather than fixed fine amounts, stored in the `fine_amount` column per the Slovakia precedent for descriptive penalty text. 3 penalties_related narrative cards, 6 steps, 1 portal (e-Invoice / IRP, NIC).
+
+As with Australia and China, the renderer places regular spec-cards before lifecycle cards within a section, so the live scope_transmission section will show the 3 regular cards ahead of "The clearance flow" — an accepted, known display-order divergence from the static page's original card order (Governing institutions, The clearance flow, Submission channels, The 30-day rule's teeth).
+
+Notable content point: India's e-invoice is JSON, not XML — the only country in this batch (and one of very few overall) using JSON as the legal document format rather than XML.
 
 All 4 languages (en/es/de/fr) validated for structural completeness and card-shape consistency.
