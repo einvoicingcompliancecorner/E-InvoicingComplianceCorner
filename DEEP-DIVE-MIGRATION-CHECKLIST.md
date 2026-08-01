@@ -189,7 +189,7 @@ with the user before being added.
 
 ## 7. Current schema reference (as of migration 091)
 
-The next new migration should be numbered **104**. Everything below is
+The next new migration should be numbered **108**. Everything below is
 confirmed applied to the live database as of this writing. Rather than
 reconstructing this by reading every migration file in sequence, use this
 as the authoritative map of what exists and what each table is for.
@@ -314,3 +314,17 @@ meant to replace.
       fi-early2000s uses 2000-01-01 as a stand-in for the static page's own
       vague "Early 2000s" label -- doesn't affect the in-effect/upcoming
       badge outcome either way, so no need to ask the user this time.
+- [x] Croatia — content and translations complete (migrations 104-107).
+      Two structural notes worth attention: (1) the static page's
+      `.flow-grid` element ("The three parallel processes") is a
+      pill-shaped badge list with intro/outro text, structurally identical
+      to the existing lifecycle-pill infrastructure under yet another new
+      class name -- mapped onto `deep_dive_lifecycle_cards` rather than
+      built as new schema, extending the Poland `.mode-grid` precedent.
+      (2) Croatia's penalty table has a genuine Companies-vs-Individuals
+      column split that the fixed 3-column schema (Failure/Fine/Annual cap)
+      doesn't support -- there's no real "annual cap" concept here. Combined
+      both figures into `fine_amount` as a single string rather than
+      mislabel data under a header it doesn't match. Worth a proper schema
+      look (a 4th penalty-row column?) if more countries show this same
+      split -- flagging now rather than deciding silently.
