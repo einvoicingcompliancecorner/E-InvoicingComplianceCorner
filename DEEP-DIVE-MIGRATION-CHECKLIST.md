@@ -615,3 +615,38 @@ today — treating this EU page as context/background for the country pages rath
 replacement for them.
 
 All 4 languages (en/es/de/fr) validated for structural completeness and card-shape consistency.
+
+## Italy (migrations 176–179)
+
+Milestones: 4 total, matching the static page's 4 timeline rcards. 3 deep-dive-only entries
+(Phase 0 — FatturaPA mandatory for B2G via SDI, 2014; FatturaPA v1.9.1 published, 31 Mar 2026;
+compliance with v1.9.1 becomes mandatory, 15 May 2026) plus 1 tracker-matched entry: `it-sdi`.
+The tracker's own date (2019-01-01) is more specific than the deep-dive's bare "2017 → 2019"
+range card for the same rollout-completion milestone, so the tracker's date is used, per the
+established more-specific-date-wins rule — tracker phrasing wins as usual, and anchor=1 to match
+the tracker's own `anchor:true`.
+
+Deep-dive content: 5 stats, 4 file_format cards (Schema, Document structure, Digital signature,
+Archiving), 3 regular scope_transmission spec-cards (Routing identifiers, Transmission channels,
+Cross-border reporting) plus 1 lifecycle card ("The clearance workflow", 4 statuses: Generate &
+sign XML → Transmit to SDI → SDI validates → Deliver or reject). Unlike every prior flow-grid
+card, this one was embedded *inside* a spec-card on the static page rather than standing alone,
+and has both an intro line ("Every invoice moves through the same sequence:") and an outro note
+("The full cycle typically completes in seconds to minutes...") — the first country to populate
+both `intro_text` and `outro_text` on the same lifecycle card. 7 steps. **A genuine 2-row tabular
+penalty schedule** (Substantive VAT violations: 90–180% of unreported VAT; Formal-only violations:
+fixed €250/invoice up to €2,000/quarter) **plus 3 narrative penalties_related cards** (voluntary
+disclosure/ravvedimento operoso, common v1.9.1 rejection codes, San Marino's special HUB-SM
+channel) — confirms a country can have both a real penalty table and narrative related-cards at
+once, per the Belgium precedent. 2 portals (Agenzia delle Entrate, FatturaPA/SDI).
+
+Notable content point: Italy is the most mature clearance-model country in this entire tracker —
+live since 2014 for B2G and 2019 for all domestic B2B/B2C, over a decade ahead of France,
+Germany, or Poland. FatturaPA predates EN 16931 entirely and is not a CIUS implementation of the
+European standard, which is why its schema, routing model (Codice Destinatario / PEC), and
+document-level digital-signature requirement (XAdES/CAdES) all diverge structurally from every
+EN-16931-based country migrated so far. The "current news" on this page is routine schema
+maintenance (v1.9.1) rather than a new mandate — a genuinely different kind of update from most
+other countries' still-phasing-in stories.
+
+All 4 languages (en/es/de/fr) validated for structural completeness and card-shape consistency.
