@@ -189,7 +189,7 @@ with the user before being added.
 
 ## 7. Current schema reference (as of migration 091)
 
-The next new migration should be numbered **116**. Everything below is
+The next new migration should be numbered **120**. Everything below is
 confirmed applied to the live database as of this writing. Rather than
 reconstructing this by reading every migration file in sequence, use this
 as the authoritative map of what exists and what each table is for.
@@ -364,3 +364,14 @@ meant to replace.
       date-based badge rule (today = 2026-08-01) -- expected divergence, not
       a bug, since the static page was authored from a different vantage
       point in time.
+- [x] Norway — content and translations complete (migrations 116-119).
+      Same pattern as Ireland: the tracker's 2 DATA entries (`no-issue`,
+      `no-receive`) map exactly onto 2 of the deep-dive timeline's 7 cards
+      by date and topic, so tracker phrasing wins for those two -- 7 total
+      milestones, not 9. No penalty table (no fine schedule discussed), no
+      lifecycle/pill-list cards, no badge tags. Notable content-wise:
+      Norway's mandate is deliberately asymmetric -- issuing becomes
+      mandatory 1 Jan 2027, receiving not until 1 Jan 2030, a genuine
+      3-year gap by design to give buyers a longer runway. High existing
+      voluntary EHF/Peppol adoption (84-89%) is called out explicitly on
+      the static page as softening the practical impact of the mandate.
