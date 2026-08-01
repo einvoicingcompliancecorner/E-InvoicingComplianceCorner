@@ -189,7 +189,7 @@ with the user before being added.
 
 ## 7. Current schema reference (as of migration 091)
 
-The next new migration should be numbered **132**. Everything below is
+The next new migration should be numbered **136**. Everything below is
 confirmed applied to the live database as of this writing. Rather than
 reconstructing this by reading every migration file in sequence, use this
 as the authoritative map of what exists and what each table is for.
@@ -437,3 +437,13 @@ now fully migrated to Stage 4 (content and translations both verified).**
       3-year gap by design to give buyers a longer runway. High existing
       voluntary EHF/Peppol adoption (84-89%) is called out explicitly on
       the static page as softening the practical impact of the mandate.
+
+## China (migrations 132–135)
+
+Milestones: 7 total, matching the static page's 7 timeline cards. 5 deep-dive-only entries (general VAT e-fapiao 2015, special VAT e-fapiao pilot 2020, all-provinces pilot 2023, railway 2024, aviation 2024) plus 2 tracker-matched entries: `cn-nationwide` (1 Dec 2024, exact date/event match — tracker phrasing wins) and `cn-paper-phaseout`, where the tracker's more specific date (1 Jul 2026, citing Dalian) was preferred over the static page's vaguer "ongoing regional phase-out" language, per the Slovakia precedent (tracker can carry more current/specific info than the deep-dive).
+
+Deep-dive content: 5 stats, 4 file_format cards, 3 regular scope_transmission spec-cards plus 1 lifecycle card ("The clearance flow", 5 statuses: Generate XML → Submit to STA → Validate + add Key ID/QR → Return to issuer → Deliver to recipient) mapped from the static page's `.flow-grid` element, per the Croatia/Australia precedent. 0 penalty rows — China's enforcement mechanism is invoice quotas tied to tax-authority standing (tax risk level, credit rating, real business activity) rather than a discrete published fine schedule, so this is captured entirely in the 4 penalties_related narrative cards instead of the penalty-table schema. 6 steps, 1 portal (State Taxation Administration).
+
+As with Australia, the renderer places regular spec-cards before lifecycle cards within a section, so the live scope_transmission section will show the 3 regular cards ahead of "The clearance flow" — a display-order divergence from the static page's original card order, accepted as a known pre-existing limitation.
+
+All 4 languages (en/es/de/fr) validated for structural completeness and card-shape consistency.
