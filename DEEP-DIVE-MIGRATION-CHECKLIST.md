@@ -187,7 +187,73 @@ if a new country seems to need one, that's worth flagging explicitly before
 building it, the way the lifecycle-pills/penalty-table schema was discussed
 with the user before being added.
 
-## 7. Batch status (this list, updated as we go)
+## 7. Current schema reference (as of migration 091)
+
+The next new migration should be numbered **092**. Everything below is
+confirmed applied to the live database as of this writing. Rather than
+reconstructing this by reading every migration file in sequence, use this
+as the authoritative map of what exists and what each table is for.
+
+**Core content tables** (one row per country, or per country+language):
+- `milestones` / `milestone_translations` — the tracker timeline entries,
+  shared between the tracker's own display and each deep-dive page's
+  timeline section (see section 1's "tracker phrasing wins" rule)
+- `deep_dive_pages` / `deep_dive_page_translations` — one row per country
+  per language, holding `compliance_model`, `footer_disclaimer`, and the
+  5 section-intro fields (`timeline_intro`, `file_format_intro`,
+  `scope_intro`, `steps_intro`, `penalties_intro`)
+- `deep_dive_stats` / `deep_dive_stat_translations` — the stat-strip
+- `deep_dive_cards` / `deep_dive_card_translations` — spec-cards (rows-based)
+  and related-cards (body-based) across the 3 sections (`file_format`,
+  `scope_transmission`, `penalties_related`). Also holds the optional
+  `badge_label`/`badge_type` columns (added migration 085) for inline
+  "Confirmed"/"Pending" tags on card headings — nullable, most cards don't
+  use this
+- `deep_dive_steps` / `deep_dive_step_translations` — the numbered
+  "Getting compliant" steps
+- `deep_dive_portals` / `deep_dive_portal_translations` — official source
+  links
+
+**Penalty tables** (optional — only for countries with a genuine, sourced
+fine schedule):
+- `deep_dive_penalty_rows` / `deep_dive_penalty_row_translations` — real
+  tabular data (Failure / Fine / Annual cap), added migration 057
+
+**Lifecycle/pill-list cards** (optional — current schema, added migration
+078, superseding an earlier one-per-country design):
+- `deep_dive_lifecycle_cards` — one row per pill-list card; a country can
+  have zero, one, or several (Malaysia has two). Has a `section` field
+  (which of the 3 sections it belongs in) and a `display_style` column
+  (`pills` default, or `list` for cards whose labels are too long for
+  compact pills — added migration 088)
+- `deep_dive_lifecycle_card_translations` — `title`, `intro_text` (before
+  the pills), `outro_text` (after the pills) — both intro and outro are
+  genuinely optional and independent; check the static page for text on
+  *both* sides of the pills, not just one
+- `deep_dive_lifecycle_statuses_v2` / `deep_dive_lifecycle_status_v2_translations`
+  — the actual pill/list items, linked to a specific card via `card_id`
+
+**Deprecated, unused tables — do not use these:**
+`deep_dive_lifecycle_intro`, `deep_dive_lifecycle_intro_translations`,
+`deep_dive_lifecycle_statuses`, `deep_dive_lifecycle_status_translations`.
+These were the original one-card-per-country design (migration 057),
+superseded by the `_v2`/`_cards` tables above (migration 078) once Malaysia
+revealed the need for multiple cards per country. Left in place rather than
+dropped, since France's and Poland's original data lived there before being
+migrated into the new structure — they're harmless, empty of anything
+current, and safe to ignore.
+
+**Rendering code** (`members-worker/src/index.js`): `getDeepDiveContent()`
+queries all of the above; `renderFullDeepDivePage()` builds the full page
+HTML; `renderTrackerStyleMilestones()`/`renderDeepDiveStyleMilestones()`
+render milestones two different ways from the same data;
+`renderLifecycleCard()`/`renderLifecycleCardsForSection()` handle the
+pill/list cards; `renderSpecCard()`/`renderRelatedCard()`/`renderPenaltyTable()`
+handle the other card types. Preview routes: `/admin/preview/deep-dive?country=X`
+and `/admin/preview/milestones?country=X`, both accepting `&lang=` and
+neither requiring authentication (no sensitive data involved).
+
+## 8. Batch status (this list, updated as we go)
 
 - [x] Portugal — content + translations complete
 - [x] France — content + translations complete (revealed lifecycle pills,
