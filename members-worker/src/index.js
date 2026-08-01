@@ -1008,7 +1008,7 @@ async function getDeepDiveContent(env, countryName, lang) {
   // lifecycle"), so this queries all cards for the country and their
   // statuses, grouped by card -- not just one.
   const lifecycleCardRows = await d1All(env, `
-    SELECT dlc.id, dlc.section, dlc.sort_order,
+    SELECT dlc.id, dlc.section, dlc.sort_order, dlc.display_style,
            COALESCE(dlct.title, dlct_en.title) as title,
            COALESCE(dlct.intro_text, dlct_en.intro_text) as intro_text,
            COALESCE(dlct.outro_text, dlct_en.outro_text) as outro_text
@@ -1028,7 +1028,7 @@ async function getDeepDiveContent(env, countryName, lang) {
       LEFT JOIN deep_dive_lifecycle_status_v2_translations dlst_en ON dlst_en.status_id = dls.id AND dlst_en.lang = 'en'
       WHERE dls.card_id = ? ORDER BY dls.sort_order
     `, lang, row.id);
-    lifecycleCards.push({ section: row.section, sortOrder: row.sort_order, title: row.title, intro: row.intro_text, outro: row.outro_text, statuses });
+    lifecycleCards.push({ section: row.section, sortOrder: row.sort_order, title: row.title, intro: row.intro_text, outro: row.outro_text, statuses, displayStyle: row.display_style });
   }
 
   const penaltyRows = await d1All(env, `
@@ -1061,11 +1061,13 @@ function renderRelatedCard(card) {
 // only rendered when a country has lifecycle statuses at all.
 function renderLifecycleCard(card) {
   if (!card.statuses || card.statuses.length === 0) return "";
-  const pillsHtml = card.statuses.map((s) => `<span${s.is_special ? ' class="rej"' : ""}>${escapeHtml(s.label)}</span>`).join("");
+  const itemsHtml = card.displayStyle === "list"
+    ? `<ul class="lifecycle-list">${card.statuses.map((s) => `<li${s.is_special ? ' class="rej"' : ""}>${escapeHtml(s.label)}</li>`).join("")}</ul>`
+    : `<div class="lifecycle">${card.statuses.map((s) => `<span${s.is_special ? ' class="rej"' : ""}>${escapeHtml(s.label)}</span>`).join("")}</div>`;
   return `<div class="spec-card">
     ${card.title ? `<h3>${escapeHtml(card.title)}</h3>` : ""}
     ${card.intro ? `<p class="note" style="margin-top:0; padding-top:0; border-top:none;">${escapeHtml(card.intro)}</p>` : ""}
-    <div class="lifecycle">${pillsHtml}</div>
+    ${itemsHtml}
     ${card.outro ? `<p class="note">${escapeHtml(card.outro)}</p>` : ""}
   </div>`;
 }
@@ -1173,6 +1175,9 @@ async function renderFullDeepDivePage(countryName, flag, code, region, content, 
   .lifecycle{display:flex; flex-wrap:wrap; gap:8px; margin-top:4px;}
   .lifecycle span{font-family:'IBM Plex Mono',monospace; font-size:11px; background:var(--soon-dim); color:#ffe0b3; padding:5px 11px; border-radius:999px; white-space:nowrap;}
   .lifecycle span.rej{background:var(--stamp-dim); color:#ffd7cc;}
+  .lifecycle-list{list-style:none; margin:4px 0 0; padding:0; display:flex; flex-direction:column; gap:6px;}
+  .lifecycle-list li{font-size:13px; color:#241d10; padding:6px 10px; background:var(--paper-2); border-radius:6px;}
+  .lifecycle-list li.rej{background:var(--stamp-dim); color:#ffd7cc;}
   .steps{counter-reset:step; display:flex; flex-direction:column; gap:0;}
   .step{display:flex; gap:16px; padding:16px 0; border-top:1px dashed var(--line);}
   .step:first-child{border-top:none;}

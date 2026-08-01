@@ -53,7 +53,7 @@ INSERT INTO deep_dive_step_translations (step_id, lang, title, description) VALU
 INSERT INTO deep_dive_portals (country_id, url, sort_order) SELECT id, 'https://www.hasil.gov.my/en/e-invoice', 0 FROM countries WHERE name_en = 'Malaysia';
 INSERT INTO deep_dive_portal_translations (portal_id, lang, label) VALUES ((SELECT MAX(id) FROM deep_dive_portals), 'en', 'LHDN — MyInvois / e-Invoice');
 
-INSERT INTO deep_dive_lifecycle_cards (country_id, section, sort_order) SELECT id, 'scope_transmission', 0 FROM countries WHERE name_en = 'Malaysia';
+INSERT INTO deep_dive_lifecycle_cards (country_id, section, sort_order, display_style) SELECT id, 'scope_transmission', 0, 'list' FROM countries WHERE name_en = 'Malaysia';
 INSERT INTO deep_dive_lifecycle_card_translations (card_id, lang, title, intro_text, outro_text) VALUES ((SELECT MAX(id) FROM deep_dive_lifecycle_cards), 'en', 'Submission methods', NULL, 'API submission is recommended for moderate-to-high invoice volumes — it enables direct ERP integration and automated batch processing that manual portal entry can''t match.');
 INSERT INTO deep_dive_lifecycle_statuses_v2 (card_id, sort_order, is_special) VALUES ((SELECT MAX(id) FROM deep_dive_lifecycle_cards), 0, 0);
 INSERT INTO deep_dive_lifecycle_status_v2_translations (status_id, lang, label) VALUES ((SELECT MAX(id) FROM deep_dive_lifecycle_statuses_v2), 'en', 'Manual entry via MyInvois Portal');
