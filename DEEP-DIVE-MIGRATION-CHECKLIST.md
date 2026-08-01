@@ -189,7 +189,7 @@ with the user before being added.
 
 ## 7. Current schema reference (as of migration 091)
 
-The next new migration should be numbered **164**. Everything below is
+The next new migration should be numbered **168**. Everything below is
 confirmed applied to the live database as of this writing. Rather than
 reconstructing this by reading every migration file in sequence, use this
 as the authoritative map of what exists and what each table is for.
@@ -519,5 +519,17 @@ Milestones: 4 total, matching the static page's 4 timeline cards. 2 deep-dive-on
 Deep-dive content: 5 stats, 4 file_format cards (Document types, CAF — Código de Autorización de Folios, TED — Timbre Electrónico Digital, Mandatory identifier), 3 regular scope_transmission spec-cards (Monthly reconciliation, API access for CAF management, Boleta batch model) plus 1 lifecycle card ("The clearance flow", 5 statuses: Request CAF → Generate DTE XML → Apply TED + signature → Submit to SII → Deliver to recipient) mapped from the static page's `.flow-grid` element. Like Singapore, Brazil, Mexico, and Peru, this flow-grid card has no intro line on the static page, so `intro_text` is stored as NULL. No penalty rows/table — the static page frames losing CAF issuance ability (not the UTM-denominated fine) as the sharpest practical risk, captured in the 4 penalties_related narrative cards. 7 steps, 1 portal (Servicio de Impuestos Internos, SII).
 
 Notable content point: Chile's CAF (Código de Autorización de Folios) mechanism is structurally distinctive — invoice numbers are a government-issued resource drawn down from an authorised range rather than an internal business convention, and repeated non-compliance can lead the SII to restrict a taxpayer's ability to download new CAFs, effectively halting all invoicing. This is a genuinely different enforcement lever from the fine-based schedules seen in most other countries in this tracker, closer in spirit to China's invoice-quota mechanism than to a standard penalty table.
+
+All 4 languages (en/es/de/fr) validated for structural completeness and card-shape consistency.
+
+## United States (migrations 164–167)
+
+Milestones: 6 total, exceeding the static page's 5 timeline cards by design. 4 deep-dive-only entries (OMB Memorandum M-15-19 directs federal agencies to e-invoicing, Jul 2015; Business Payments Coalition E-invoice Exchange Market Pilot begins, Apr 2022; pilot extends/rules finalised, 2023; first invoice transferred via DBNAlliance network, Mar 2024) plus 2 tracker-matched entries: `us-federal-b2g` and `us-dbnalliance`. `us-federal-b2g` (1 Dec 2018) is kept genuinely separate from the deep-dive's 2015 OMB-memo rcard rather than merged — the 2015 date is when the directive was issued, while the tracker's own system text explicitly names 2018 as the "in force since" effective date, a different point in the same policy's lifecycle, per the Denmark non-overlapping-milestone precedent (a tracker entry can lack a 1:1 rcard match). `us-dbnalliance` (Jan 2024) is a straightforward exact date/event match.
+
+Deep-dive content: 5 stats, 4 file_format cards (DBNAlliance network format, What actually dominates today, No mandated content requirements, Cross-border reality check), 3 regular scope_transmission spec-cards (Governance, Federal procurement — a separate channel, Payment-method agnostic) plus 1 lifecycle card ("DBNAlliance's 4-corner model", 4 statuses — one fewer than the usual 5, since the static page's `.flow-grid` only lists 4 pills: Sender's service provider → Exchange framework → Receiver's service provider → Receiver) mapped from the static page's `.flow-grid` element. Like several prior countries, this flow-grid card has no intro line, so `intro_text` is stored as NULL. No penalty rows/table — the static page explicitly and repeatedly states there is no federal penalty framework at all, since there is no mandate to enforce; captured in the 4 penalties_related narrative cards. 6 steps, and — a first for this batch — **2 portals** (DBNAlliance and the Treasury's Invoice Processing Platform/IPP), reflecting the page's two genuinely separate channels (voluntary B2B network vs. existing federal B2G procurement).
+
+The static page's `.status-banner` element (a prominent notice stating there is no federal B2B mandate) was folded into `scope_intro` rather than given new schema, per the established UK/Spain/Ireland precedent for status-banner text.
+
+Notable content point: the United States is the first country in this tracker with a genuinely voluntary, market-led model — no clearance step, no tax authority driving format standardisation, and DBNAlliance's origin in the Federal Reserve/Business Payments Coalition (a payments-efficiency initiative) rather than any tax authority (the US has no VAT). The compliance_model field reads "Fully voluntary, decentralised 4-corner" to reflect this structurally distinct posture.
 
 All 4 languages (en/es/de/fr) validated for structural completeness and card-shape consistency.
