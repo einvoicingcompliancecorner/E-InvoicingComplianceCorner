@@ -189,7 +189,7 @@ with the user before being added.
 
 ## 7. Current schema reference (as of migration 091)
 
-The next new migration should be numbered **160**. Everything below is
+The next new migration should be numbered **164**. Everything below is
 confirmed applied to the live database as of this writing. Rather than
 reconstructing this by reading every migration file in sequence, use this
 as the authoritative map of what exists and what each table is for.
@@ -509,5 +509,15 @@ Milestones: 5 total, matching the static page's 5 timeline cards. 4 deep-dive-on
 Deep-dive content: 5 stats, 4 file_format cards (Format, CPE document family, Document naming, Archiving), 3 regular scope_transmission spec-cards (The three roles, Choosing your operating tier, A permitted but risky shortcut) plus 1 lifecycle card ("The clearance flow", 5 statuses: Generate UBL 2.1 XML → Sign digitally → Submit to OSE/SUNAT → Validate against 100+ rules → CDR issued) mapped from the static page's `.flow-grid` element. Like Singapore, Brazil, and Mexico, this flow-grid card has no intro line on the static page, so `intro_text` is stored as NULL. No penalty rows/table — the static page frames invalidity (not fines) as the core practical risk, captured in the 4 penalties_related narrative cards. 7 steps, 1 portal (SUNAT).
 
 Notable content point: Peru's OSE (Operador de Servicios Electrónicos) model is genuinely distinctive among the clearance-model countries migrated so far — an OSE's validation carries the same legal authority as SUNAT validating directly, rather than being a mere intermediary, though OSEs are explicitly barred from validating delivery/transport documents in some configurations. The four-tier operating model (SEE-SOL / PSE / OSE / SEE Facturador) scaled to transaction volume is also a structurally distinct onboarding pattern not seen in this form elsewhere in the tracker.
+
+All 4 languages (en/es/de/fr) validated for structural completeness and card-shape consistency.
+
+## Chile (migrations 160–163)
+
+Milestones: 4 total, matching the static page's 4 timeline cards. 2 deep-dive-only entries (SII pilots DTE with large taxpayers, early 2000s; Boleta Electrónica mandatory under Ley 21.210, Jan 2021) plus 2 tracker-matched entries: `cl-established` and `cl-digital-delivery`. `cl-established` is a topical match with a date discrepancy: the tracker claims "in force since 2018" while the deep-dive's own stat-strip states "2014 — Mandatory for all VAT taxpayers" for the same underlying milestone — the deep-dive's date (2014) was used for internal page consistency, while the tracker's own system/desc/actions phrasing still won, per the established tracker-phrasing-wins rule. `cl-digital-delivery` (1 Mar 2026) is a straightforward exact date/event match.
+
+Deep-dive content: 5 stats, 4 file_format cards (Document types, CAF — Código de Autorización de Folios, TED — Timbre Electrónico Digital, Mandatory identifier), 3 regular scope_transmission spec-cards (Monthly reconciliation, API access for CAF management, Boleta batch model) plus 1 lifecycle card ("The clearance flow", 5 statuses: Request CAF → Generate DTE XML → Apply TED + signature → Submit to SII → Deliver to recipient) mapped from the static page's `.flow-grid` element. Like Singapore, Brazil, Mexico, and Peru, this flow-grid card has no intro line on the static page, so `intro_text` is stored as NULL. No penalty rows/table — the static page frames losing CAF issuance ability (not the UTM-denominated fine) as the sharpest practical risk, captured in the 4 penalties_related narrative cards. 7 steps, 1 portal (Servicio de Impuestos Internos, SII).
+
+Notable content point: Chile's CAF (Código de Autorización de Folios) mechanism is structurally distinctive — invoice numbers are a government-issued resource drawn down from an authorised range rather than an internal business convention, and repeated non-compliance can lead the SII to restrict a taxpayer's ability to download new CAFs, effectively halting all invoicing. This is a genuinely different enforcement lever from the fine-based schedules seen in most other countries in this tracker, closer in spirit to China's invoice-quota mechanism than to a standard penalty table.
 
 All 4 languages (en/es/de/fr) validated for structural completeness and card-shape consistency.
