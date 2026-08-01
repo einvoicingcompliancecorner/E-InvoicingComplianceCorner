@@ -189,7 +189,7 @@ with the user before being added.
 
 ## 7. Current schema reference (as of migration 091)
 
-The next new migration should be numbered **152**. Everything below is
+The next new migration should be numbered **156**. Everything below is
 confirmed applied to the live database as of this writing. Rather than
 reconstructing this by reading every migration file in sequence, use this
 as the authoritative map of what exists and what each table is for.
@@ -489,5 +489,15 @@ Milestones: 10 total, matching the static page's 10 timeline cards. 7 deep-dive-
 Deep-dive content: 5 stats, 4 file_format cards (Document structure, The 44-digit access key, Digital signature, New tax reform fields), 3 regular scope_transmission spec-cards (The document family, NFS-e fragmentation and the fix underway, What's coming: Split Payment) plus 1 lifecycle card ("The NF-e clearance flow", 5 statuses: Generate XML → Digitally sign → Submit via SOAP to state SEFAZ → SEFAZ authorises → Ship with DANFE) mapped from the static page's `.flow-grid` element, per the established precedent. Like Singapore, this flow-grid card has no intro line on the static page (goes straight from card title to pills), so `intro_text` is stored as NULL. No penalty rows/table — the static page frames rejection risk (a blocked invoice halts shipment) as the sharper practical consequence rather than a discrete fine schedule, captured entirely in the 4 penalties_related narrative cards. 7 steps, 1 portal (Portal Nacional da NF-e, SEFAZ).
 
 Notable content point: Brazil is the first country migrated with a genuinely multi-layered clearance model — state-level SEFAZ (NF-e/NFC-e/CT-e), municipal-level NFS-e (5,000+ variations), and a federal-level backstop repository, all running in parallel rather than a single national platform. The current live story is a multi-year consumption tax reform (CBS/IBS dual-VAT) being layered onto this mature 20-year-old clearance infrastructure rather than a new mandate built from scratch.
+
+All 4 languages (en/es/de/fr) validated for structural completeness and card-shape consistency.
+
+## Mexico (migrations 152–155)
+
+Milestones: 4 total, matching the static page's 4 timeline cards. 2 deep-dive-only entries (CFDI 4.0 becomes mandatory Jul 2023, updated Anexo 20 catalogs take effect Jan 2026) plus 2 tracker-matched entries: `mx-cfdi` and `mx-reform`. `mx-cfdi` is a notable reversal of the usual date-mismatch pattern — here the deep-dive's date (1 Apr 2014) is more specific than the tracker's generic year-start placeholder (2014-01-01), so the deep-dive's date was used while the tracker's own system/desc/actions phrasing still won (opposite of the Slovakia/China precedent, where the tracker's date was more specific). `mx-reform` is a straightforward exact match (tracker's 2026-01-01 vs. the deep-dive's bare "2026").
+
+Deep-dive content: 5 stats, 4 file_format cards (Base specification, Complementos — the real complexity, Catalogs, Identity & signature), 3 regular scope_transmission spec-cards (PACs — Proveedores Autorizados de Certificación, Rejection handling, Correcting a CFDI) plus 1 lifecycle card ("The clearance flow (timbrado)", 5 statuses: Generate XML → Submit to your PAC → PAC validates against Anexo 20 → PAC stamps + assigns UUID → Invoice is valid) mapped from the static page's `.flow-grid` element. Like Singapore and Brazil, this flow-grid card has no intro line on the static page, so `intro_text` is stored as NULL. No penalty rows/table — penalties are described narratively (Código Fiscal de la Federación framework, including clausura for serious infractions) rather than as a discrete fine schedule, captured in the 4 penalties_related narrative cards. 7 steps, 1 portal (SAT — Servicio de Administración Tributaria).
+
+Notable content point: Mexico's CFDI system (mandatory since 2014) is the most mature clearance system migrated so far in this batch, with the current activity being routine version/catalog maintenance (CFDI 4.0, annual Anexo 20 catalog refreshes) and a 2026 authenticity-enforcement reform rather than a new mandate. The 26+ specialised complementos (Carta Porte, Pagos, Nómina, Comercio Exterior) layered on top of the base CFDI/Anexo 20 spec are a distinctive structural feature not seen in the same form elsewhere in this tracker.
 
 All 4 languages (en/es/de/fr) validated for structural completeness and card-shape consistency.

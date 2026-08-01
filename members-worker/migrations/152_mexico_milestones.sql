@@ -1,0 +1,16 @@
+-- Mexico milestones (Stage 4 deep-dive/tracker migration)
+-- 4 total: 2 deep-dive-only + 2 tracker-matched (mx-cfdi, mx-reform).
+-- mx-cfdi is a topical match with a date discrepancy resolved the opposite way from
+-- the usual Slovakia/China precedent: here the DEEP-DIVE's date (1 Apr 2014) is more
+-- specific than the tracker's generic year-start placeholder (2014-01-01), so the
+-- deep-dive's date is used while the tracker's own system/desc/actions phrasing still wins.
+-- mx-reform is a straightforward exact match (tracker's 2026-01-01 vs deep-dive's bare "2026").
+
+INSERT OR IGNORE INTO milestones (id, country_id, date, anchor, source_url) SELECT 'mx-cfdi', id, '2014-04-01', 1, 'https://www.sat.gob.mx' FROM countries WHERE name_en = 'Mexico';
+INSERT OR IGNORE INTO milestone_translations (milestone_id, lang, system, desc, actions) VALUES ('mx-cfdi', 'en', 'Mandatory CFDI clearance model (CFDI 4.0 current version)', 'Mexico runs one of the world''s most mature e-invoicing clearance systems: every invoice must be validated and digitally stamped (timbrado) by an authorised PAC before it is legally valid, in the CFDI 4.0 XML format.', '["Ensure PAC connectivity and CFDI 4.0 (Anexo 20) field mapping are current — recipient RFC/name/Regimen Fiscal must match SAT records exactly", "Attach required complementos where applicable (Carta Porte for goods transport, Pagos for instalment payments, Comercio Exterior for exports)", "Retain XML invoices and PAC acknowledgements for at least 5 years"]');
+INSERT OR IGNORE INTO milestones (id, country_id, date, anchor, source_url) SELECT 'mx-cfdi40-2023', id, '2023-07-01', 0, NULL FROM countries WHERE name_en = 'Mexico';
+INSERT OR IGNORE INTO milestone_translations (milestone_id, lang, system, desc, actions) VALUES ('mx-cfdi40-2023', 'en', 'CFDI 4.0 becomes mandatory', 'Replaces CFDI 3.3, introducing stricter receiver-data validation — invoices are now checked against SAT''s taxpayer registry, not just internal XML consistency.', '[]');
+INSERT OR IGNORE INTO milestones (id, country_id, date, anchor, source_url) SELECT 'mx-anexo20-2026', id, '2026-01-01', 0, NULL FROM countries WHERE name_en = 'Mexico';
+INSERT OR IGNORE INTO milestone_translations (milestone_id, lang, system, desc, actions) VALUES ('mx-anexo20-2026', 'en', 'Updated Anexo 20 catalogs take effect', 'SAT''s annual catalog refresh (product/service codes, payment methods, tax regimes, and more) goes live — invoices using retired codes are rejected outright ("rebota al timbrar") from this date.', '[]');
+INSERT OR IGNORE INTO milestones (id, country_id, date, anchor, source_url) SELECT 'mx-reform', id, '2026-01-01', 0, 'https://www.sat.gob.mx' FROM countries WHERE name_en = 'Mexico';
+INSERT OR IGNORE INTO milestone_translations (milestone_id, lang, system, desc, actions) VALUES ('mx-reform', 'en', '2026 tax reform — stricter authenticity requirements and enforcement', 'A tax reform effective January 2026 strengthened SAT''s enforcement powers, adding stricter authenticity checks and criminal liability for false or simulated CFDIs.', '["Maintain evidence supporting the authenticity of transactions — contracts, proof of delivery, payment records — as SAT can request these within 5 business days", "Review CFDI defense documentation and cancellation procedures given the new criminal liability provisions"]');
