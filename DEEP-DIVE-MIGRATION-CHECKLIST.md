@@ -206,11 +206,15 @@ with the user before being added.
       one — required generalizing the schema from one-card-per-country to
       many-per-country, with France's and Poland's existing data migrated
       into the new structure)
-- [x] United Kingdom — content complete, translations pending (revealed
+- [x] United Kingdom — content + translations complete (revealed
       inline badge tags on card headings, "Confirmed"/"Pending Budget
       2026" — built as a small nullable field pair on the existing card
       translations table, not new tables; status-banner folded into
       scope_intro per user preference, matching Spain's precedent)
 
-All 6 countries in the original priority batch now have English content.
-Next: UK translations, then a final consistency pass across all 6.
+**All 6 countries in the original priority batch are now fully complete —
+content and translations both verified.** Portugal, France, Germany,
+Poland, Spain, Malaysia, United Kingdom. Remaining from the original
+gap-audit list: Peru. Beyond that, the other ~23 countries not yet
+touched by Stage 4 still use the static architecture this whole effort is
+meant to replace.
