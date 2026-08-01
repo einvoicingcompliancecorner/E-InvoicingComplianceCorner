@@ -189,7 +189,7 @@ with the user before being added.
 
 ## 7. Current schema reference (as of migration 091)
 
-The next new migration should be numbered **092**. Everything below is
+The next new migration should be numbered **094**. Everything below is
 confirmed applied to the live database as of this writing. Rather than
 reconstructing this by reading every migration file in sequence, use this
 as the authoritative map of what exists and what each table is for.
@@ -284,3 +284,10 @@ Poland, Spain, Malaysia, United Kingdom. Remaining from the original
 gap-audit list: Peru. Beyond that, the other ~23 countries not yet
 touched by Stage 4 still use the static architecture this whole effort is
 meant to replace.
+
+- [ ] Romania — content complete (migrations 092-093), translations not yet
+      started. No lifecycle/pill-list cards, no tabular penalty schedule
+      (penalties are narrative-only, a related-card like SAF-T and
+      e-Transport). One milestone (`ro-nonvat-register`, ANAF Order
+      378/2026) needed a date the static page didn't give (just "2026");
+      confirmed as 2026-06-01 with the user rather than guessed.
