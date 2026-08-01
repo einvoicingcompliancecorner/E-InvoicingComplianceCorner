@@ -189,7 +189,7 @@ with the user before being added.
 
 ## 7. Current schema reference (as of migration 091)
 
-The next new migration should be numbered **156**. Everything below is
+The next new migration should be numbered **160**. Everything below is
 confirmed applied to the live database as of this writing. Rather than
 reconstructing this by reading every migration file in sequence, use this
 as the authoritative map of what exists and what each table is for.
@@ -499,5 +499,15 @@ Milestones: 4 total, matching the static page's 4 timeline cards. 2 deep-dive-on
 Deep-dive content: 5 stats, 4 file_format cards (Base specification, Complementos — the real complexity, Catalogs, Identity & signature), 3 regular scope_transmission spec-cards (PACs — Proveedores Autorizados de Certificación, Rejection handling, Correcting a CFDI) plus 1 lifecycle card ("The clearance flow (timbrado)", 5 statuses: Generate XML → Submit to your PAC → PAC validates against Anexo 20 → PAC stamps + assigns UUID → Invoice is valid) mapped from the static page's `.flow-grid` element. Like Singapore and Brazil, this flow-grid card has no intro line on the static page, so `intro_text` is stored as NULL. No penalty rows/table — penalties are described narratively (Código Fiscal de la Federación framework, including clausura for serious infractions) rather than as a discrete fine schedule, captured in the 4 penalties_related narrative cards. 7 steps, 1 portal (SAT — Servicio de Administración Tributaria).
 
 Notable content point: Mexico's CFDI system (mandatory since 2014) is the most mature clearance system migrated so far in this batch, with the current activity being routine version/catalog maintenance (CFDI 4.0, annual Anexo 20 catalog refreshes) and a 2026 authenticity-enforcement reform rather than a new mandate. The 26+ specialised complementos (Carta Porte, Pagos, Nómina, Comercio Exterior) layered on top of the base CFDI/Anexo 20 spec are a distinctive structural feature not seen in the same form elsewhere in this tracker.
+
+All 4 languages (en/es/de/fr) validated for structural completeness and card-shape consistency.
+
+## Peru (migrations 156–159)
+
+Milestones: 5 total, matching the static page's 5 timeline cards. 4 deep-dive-only entries (mandatory rollout begins with large taxpayers 2017, UBL 2.1 becomes only supported format Mar 2019, OSE validation compulsory for big contributors Jul 2019, new airline ticket reporting system Aug 2026) plus 1 tracker-matched entry: `pe-established` (1 Jun 2022), an exact date/event match — tracker phrasing wins, including action items and portal link.
+
+Deep-dive content: 5 stats, 4 file_format cards (Format, CPE document family, Document naming, Archiving), 3 regular scope_transmission spec-cards (The three roles, Choosing your operating tier, A permitted but risky shortcut) plus 1 lifecycle card ("The clearance flow", 5 statuses: Generate UBL 2.1 XML → Sign digitally → Submit to OSE/SUNAT → Validate against 100+ rules → CDR issued) mapped from the static page's `.flow-grid` element. Like Singapore, Brazil, and Mexico, this flow-grid card has no intro line on the static page, so `intro_text` is stored as NULL. No penalty rows/table — the static page frames invalidity (not fines) as the core practical risk, captured in the 4 penalties_related narrative cards. 7 steps, 1 portal (SUNAT).
+
+Notable content point: Peru's OSE (Operador de Servicios Electrónicos) model is genuinely distinctive among the clearance-model countries migrated so far — an OSE's validation carries the same legal authority as SUNAT validating directly, rather than being a mere intermediary, though OSEs are explicitly barred from validating delivery/transport documents in some configurations. The four-tier operating model (SEE-SOL / PSE / OSE / SEE Facturador) scaled to transaction volume is also a structurally distinct onboarding pattern not seen in this form elsewhere in the tracker.
 
 All 4 languages (en/es/de/fr) validated for structural completeness and card-shape consistency.
