@@ -80,6 +80,13 @@ tracker's own `DATA` array:
       limitation caught here) and was generalized to support any number of
       cards per country, in any section — check the static page for every
       distinct pill-list element, don't assume a country has at most one.
+      **Check whether pill labels are actually short enough to look right
+      as pills** — Malaysia's "Submission methods" labels ("Manual entry
+      via MyInvois Portal") overflowed the compact pill styling, which is
+      designed for short single-word labels. A `display_style`
+      (`pills`/`list`) flag on the card handles this — set to `list` for
+      cards with longer phrases, matching the plain-list rendering rather
+      than forcing long text into a pill shape.
 - [ ] **Penalty table**, if the country has a genuine, sourced fine schedule
       (as opposed to narrative-only related-cards). Check for a
       `.penalty-table`/`.penalty-card` element specifically.
