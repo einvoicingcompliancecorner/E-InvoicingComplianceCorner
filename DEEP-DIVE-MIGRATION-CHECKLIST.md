@@ -189,7 +189,7 @@ with the user before being added.
 
 ## 7. Current schema reference (as of migration 091)
 
-The next new migration should be numbered **148**. Everything below is
+The next new migration should be numbered **152**. Everything below is
 confirmed applied to the live database as of this writing. Rather than
 reconstructing this by reading every migration file in sequence, use this
 as the authoritative map of what exists and what each table is for.
@@ -481,3 +481,13 @@ Notable content point: Singapore's 4-corner→5-corner architecture transition (
 All 4 languages (en/es/de/fr) validated for structural completeness and card-shape consistency.
 
 This completes the Asia-Pacific batch (Australia, China, India, New Zealand, Singapore) requested in one continuous run.
+
+## Brazil (migrations 148–151)
+
+Milestones: 10 total, matching the static page's 10 timeline cards. 7 deep-dive-only entries (NF-e system established 2005-2010, NFS-e mandatory for MEIs Sep 2023, Technical Note 2025.002 published Dec 2024, Lei Complementar 214/2025 enacted Jan 2025, test environment opens Jul 2025, NT v1.33 postpones hard validation block Dec 2025, CBS/IS collection begins through full 2033 migration) plus 3 tracker-matched entries: `br-fields` (1 Jan 2026), `br-validate` (1 Apr 2026), `br-mandatory` (3 Aug 2026) — all three exact date/event matches with the tracker's own DATA entries, tracker phrasing wins for all three including action items and portal link.
+
+Deep-dive content: 5 stats, 4 file_format cards (Document structure, The 44-digit access key, Digital signature, New tax reform fields), 3 regular scope_transmission spec-cards (The document family, NFS-e fragmentation and the fix underway, What's coming: Split Payment) plus 1 lifecycle card ("The NF-e clearance flow", 5 statuses: Generate XML → Digitally sign → Submit via SOAP to state SEFAZ → SEFAZ authorises → Ship with DANFE) mapped from the static page's `.flow-grid` element, per the established precedent. Like Singapore, this flow-grid card has no intro line on the static page (goes straight from card title to pills), so `intro_text` is stored as NULL. No penalty rows/table — the static page frames rejection risk (a blocked invoice halts shipment) as the sharper practical consequence rather than a discrete fine schedule, captured entirely in the 4 penalties_related narrative cards. 7 steps, 1 portal (Portal Nacional da NF-e, SEFAZ).
+
+Notable content point: Brazil is the first country migrated with a genuinely multi-layered clearance model — state-level SEFAZ (NF-e/NFC-e/CT-e), municipal-level NFS-e (5,000+ variations), and a federal-level backstop repository, all running in parallel rather than a single national platform. The current live story is a multi-year consumption tax reform (CBS/IBS dual-VAT) being layered onto this mature 20-year-old clearance infrastructure rather than a new mandate built from scratch.
+
+All 4 languages (en/es/de/fr) validated for structural completeness and card-shape consistency.
