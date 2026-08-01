@@ -189,7 +189,7 @@ with the user before being added.
 
 ## 7. Current schema reference (as of migration 091)
 
-The next new migration should be numbered **108**. Everything below is
+The next new migration should be numbered **112**. Everything below is
 confirmed applied to the live database as of this writing. Rather than
 reconstructing this by reading every migration file in sequence, use this
 as the authoritative map of what exists and what each table is for.
@@ -328,3 +328,23 @@ meant to replace.
       mislabel data under a header it doesn't match. Worth a proper schema
       look (a 4th penalty-row column?) if more countries show this same
       split -- flagging now rather than deciding silently.
+- [x] Denmark — content and translations complete (migrations 108-111).
+      Structural note worth flagging: the tracker's `dk-established` and
+      `dk-small` DATA entries don't map cleanly onto any single deep-dive
+      timeline card by date or topic (dk-established falls inside the
+      deep-dive's compressed "Phased rollout" range card without being
+      separately called out there; dk-small shares a date with the
+      unrelated "NemHandel-by-default" card by coincidence, not overlap).
+      Kept both as their own non-deduplicated milestone rows rather than
+      merging into a range card, giving Denmark 11 total milestones (9
+      deep-dive + 2 tracker-only). Penalty table uses a generic 2-row
+      Factor/Range shape (statutory range + severity factors) rather than
+      a failure-type list -- simpler than Croatia's Companies/Individuals
+      split, mapped directly onto failure_description/fine_amount with
+      annual_cap NULL for both rows. No lifecycle/pill-list cards. Also
+      notable content-wise: Denmark's Bookkeeping Act is a technical-
+      capability mandate, not a universal-transmission mandate -- a
+      meaningfully different compliance model from every clearance-model
+      country covered so far, and mid-migration from OIOUBL 2.1 to a
+      NemHandel BIS 4 / Peppol PINT format (OIOUBL 3.0 was cancelled
+      outright in Jan 2026).
