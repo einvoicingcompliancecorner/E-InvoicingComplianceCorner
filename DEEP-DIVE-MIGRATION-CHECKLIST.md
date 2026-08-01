@@ -189,7 +189,7 @@ with the user before being added.
 
 ## 7. Current schema reference (as of migration 091)
 
-The next new migration should be numbered **096**. Everything below is
+The next new migration should be numbered **100**. Everything below is
 confirmed applied to the live database as of this writing. Rather than
 reconstructing this by reading every migration file in sequence, use this
 as the authoritative map of what exists and what each table is for.
@@ -293,3 +293,14 @@ meant to replace.
       with the user rather than guessed. ro-established/ro-sme translations
       reused verbatim from the tracker's existing i18n/{lang}-data.json
       rather than re-translated, per tracker-phrasing-wins.
+- [x] Belgium — content and translations complete (migrations 096-099).
+      First country in the post-original-batch group with a genuine
+      tabular penalty schedule (`deep_dive_penalty_rows`, 3 rows: progressive
+      €1,500/€3,000/€5,000 fines) alongside narrative related-cards in the
+      same penalties_related section — confirms a country can have both at
+      once. One deep-dive-only milestone (`be-b2g-phasein`) compresses a
+      4-stage B2G rollout (Oct 2022 -> Mar 2024, phased by contract value)
+      into a single dated milestone, using the completion date. None of
+      Belgium's tracker DATA entries use anchor:true, so the 3 shared ids
+      (be-mandate, be-penalty, be-ereport) keep anchor=0 to match rather
+      than defaulting to anchor=1 like Romania's flagship milestone did.
