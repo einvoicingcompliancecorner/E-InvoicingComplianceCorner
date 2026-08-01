@@ -189,7 +189,7 @@ with the user before being added.
 
 ## 7. Current schema reference (as of migration 091)
 
-The next new migration should be numbered **120**. Everything below is
+The next new migration should be numbered **124**. Everything below is
 confirmed applied to the live database as of this writing. Rather than
 reconstructing this by reading every migration file in sequence, use this
 as the authoritative map of what exists and what each table is for.
@@ -364,6 +364,24 @@ meant to replace.
       date-based badge rule (today = 2026-08-01) -- expected divergence, not
       a bug, since the static page was authored from a different vantage
       point in time.
+- [x] Slovakia — content and translations complete (migrations 120-123).
+      Same tracker-overlap pattern as Ireland/Norway: `sk-voluntary` and
+      `sk-mandate` reused directly from the tracker, matching 2 of the
+      deep-dive timeline's 7 cards by topic -- 7 total milestones, not 9.
+      One genuine discrepancy worth flagging: the tracker dates
+      `sk-voluntary` as starting 2026-05-01, while the static page shows a
+      broader "Jan-Dec 2026" range for the same underlying voluntary-phase
+      event. Used the tracker's more specific date and phrasing per the
+      Spain precedent (tracker can have more current info than the
+      deep-dive) rather than the static page's range. Has a genuine
+      2-row tabular penalty schedule (initial breach up to €10k, repeated
+      offences up to €100k) alongside narrative related-cards in the same
+      penalties_related section -- same both-at-once pattern as Belgium.
+      Notable content-wise: Slovakia is a genuine "5-corner" Peppol model
+      (the 4-corner exchange plus a 5th corner reporting the data to the
+      tax authority in the same transmission step) via certified "Digital
+      Postman" access points -- a real architectural step beyond the plain
+      4-corner models used by Belgium, the UK, and Norway.
 - [x] Norway — content and translations complete (migrations 116-119).
       Same pattern as Ireland: the tracker's 2 DATA entries (`no-issue`,
       `no-receive`) map exactly onto 2 of the deep-dive timeline's 7 cards
