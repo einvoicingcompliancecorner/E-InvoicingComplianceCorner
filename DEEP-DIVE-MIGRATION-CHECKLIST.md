@@ -189,7 +189,7 @@ with the user before being added.
 
 ## 7. Current schema reference (as of migration 091)
 
-The next new migration should be numbered **112**. Everything below is
+The next new migration should be numbered **116**. Everything below is
 confirmed applied to the live database as of this writing. Rather than
 reconstructing this by reading every migration file in sequence, use this
 as the authoritative map of what exists and what each table is for.
@@ -348,3 +348,19 @@ meant to replace.
       country covered so far, and mid-migration from OIOUBL 2.1 to a
       NemHandel BIS 4 / Peppol PINT format (OIOUBL 3.0 was cancelled
       outright in Jan 2026).
+- [x] Ireland — content and translations complete (migrations 112-115).
+      Unlike Denmark, Ireland's 2 tracker DATA entries (`ie-phase1`, `ie-phase2`)
+      map exactly onto 2 of the deep-dive timeline's 9 cards by date and topic,
+      so tracker phrasing wins for those two rather than being kept as separate
+      rows -- 9 total milestones, not 11. Reused the existing badge_label/
+      badge_type columns (migration 085, built for the UK) on 3 file_format
+      cards for the page's own Confirmed/Pending technical-spec distinction;
+      folded the status-banner explaining that distinction into scope_intro
+      rather than new schema, per the UK/Spain precedent. No penalty table --
+      Revenue hasn't published a fine structure yet, genuinely correct (like
+      Finland and the UK), not a gap. No lifecycle/pill-list cards. One
+      timeline entry (`ie-phase1-criteria-reconfirmed`, 2 Oct 2026) shows
+      "In effect" on the static page but computes as "upcoming" under our
+      date-based badge rule (today = 2026-08-01) -- expected divergence, not
+      a bug, since the static page was authored from a different vantage
+      point in time.
