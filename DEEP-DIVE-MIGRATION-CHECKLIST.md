@@ -698,3 +698,48 @@ months' notice) is a genuinely different phase-in mechanism from the fixed-calen
 seen in most EU countries migrated so far.
 
 All 4 languages (en/es/de/fr) validated for structural completeness and card-shape consistency.
+
+## United Arab Emirates (migrations 184–187)
+
+Milestones: 8 total, matching the static page's 8 timeline rcards. 4 deep-dive-only entries
+(PINT AE Data Dictionary released for public consultation, Feb 2025; Ministerial Decisions No.
+243/244 issued, 2025; First ASPs published, 2025; Cabinet Decision No. 106 sets the penalty
+framework, Dec 2025) plus 4 tracker-matched entries: `uae-pilot`, `uae-asp`, `uae-phase1`,
+`uae-phase2`, all exact date/topic matches — tracker phrasing wins for all 4. Two of the
+deep-dive-only entries (Ministerial Decisions, First ASPs) share the static page's single bare
+"2025" marker with no more specific date given; placeholder dates (2025-06-01 and 2025-08-01)
+were assigned purely to preserve the page's own stated display order — since milestones render
+`ORDER BY date ASC` with no secondary sort key, same-date entries have no guaranteed stable
+order, so distinct placeholder dates were required, not just cosmetic. None of the tracker's own
+`uae-*` DATA entries set `anchor:true`, so all 4 keep anchor=0.
+
+Deep-dive content: 5 stats, 4 file_format cards (What PINT AE is, Three content layers, Field
+count & scope, Key identifiers & content). 3 regular scope_transmission cards (What your ASP
+actually does, ASP accreditation process, No direct FTA portal upload) plus 1 lifecycle card
+("The five corners", 5 statuses: Supplier → Supplier's ASP → Buyer's ASP → Buyer → FTA) — unlike
+Saudi Arabia's QR-code tag list (an unordered set mapped onto the lifecycle infrastructure purely
+for its pill styling), this is a genuine sequential DCTCE process and sits in scope_transmission
+per the normal pattern, with both intro_text and outro_text populated. 6 steps. A genuine 6-row
+tabular penalty schedule (implementation/ASP-appointment failure, e-invoice/e-credit-note
+lateness — both capped monthly rather than annually, so combined into `fine_amount` strings with
+`annual_cap` left NULL per the Croatia/Denmark precedent for non-annual caps — plus three
+uncapped daily-accumulating notification failures) alongside 3 narrative penalties_related cards
+(voluntary participants exempt, dual penalty exposure under two separate Cabinet Decisions,
+retention periods) — both at once, continuing the Belgium/Italy/Saudi Arabia precedent. 1 portal
+(UAE Ministry of Finance — eInvoicing).
+
+Notable content point: the UAE's decentralised 5-corner DCTCE model is the direct structural
+counterpoint to Saudi Arabia's centralised ZATCA clearance model covered earlier in this same
+batch — no government clearance portal exists at all; every invoice routes through an Accredited
+Service Provider (ASP), with the FTA (the fifth corner) receiving an automatic Tax Data Document
+report rather than performing pre-delivery clearance. The UAE also built its framework unusually
+methodically: public data-dictionary consultation, then legislation, then ASP accreditation, then
+a genuinely risk-free voluntary pilot (Cabinet Decision 106's penalties explicitly don't apply to
+voluntary participants), all before the mandate itself begins in January 2027 — a notably more
+gradual, consultative rollout than most other mandates in this tracker.
+
+All 4 languages (en/es/de/fr) validated for structural completeness and card-shape consistency.
+
+This completes the final batch of remaining countries (European Union, Italy, Saudi Arabia,
+United Arab Emirates) requested in one continuous run. Every country currently in the tracker's
+DATA array now has full Stage 4 deep-dive content in D1.
