@@ -189,7 +189,7 @@ with the user before being added.
 
 ## 7. Current schema reference (as of migration 091)
 
-The next new migration should be numbered **124**. Everything below is
+The next new migration should be numbered **128**. Everything below is
 confirmed applied to the live database as of this writing. Rather than
 reconstructing this by reading every migration file in sequence, use this
 as the authoritative map of what exists and what each table is for.
@@ -364,6 +364,28 @@ meant to replace.
       date-based badge rule (today = 2026-08-01) -- expected divergence, not
       a bug, since the static page was authored from a different vantage
       point in time.
+- [x] Sweden — content and translations complete (migrations 124-127).
+      `se-b2g` (tracker, anchor:true) exactly replaces deep-dive timeline
+      card #3 (1 Apr 2019 full EN 16931 mandate) -- same date/event, tracker
+      phrasing wins, inheriting anchor=1. `se-b2b-expected` (tracker,
+      2030-07-01) does NOT map onto any deep-dive timeline card -- the
+      static page's only mention of the 2030 ViDA deadline is inside a
+      narrative related-card, not a timeline entry -- so it's kept as its
+      own non-overlapping row, same pattern as Denmark's
+      dk-established/dk-small. 10 total milestones (8 deep-dive-only + 2
+      tracker). No penalty table (no mandate exists yet, nothing to
+      enforce), no lifecycle/pill-list cards, no badge tags. Status-banner
+      (no legislated domestic B2B mandate; national ViDA inquiry launched
+      Feb 2026, findings due Nov 2027) folded into scope_intro per the
+      UK/Spain/Ireland precedent. Notable content-wise: Sweden is one of
+      the purest decentralised models in the tracker -- no central
+      government platform or directory layer at all, everything routes via
+      the plain Peppol network, with high voluntary B2B adoption already
+      in place ahead of any legal requirement.
+
+**This completes the Europe batch started with Romania: Romania, Belgium,
+Finland, Croatia, Denmark, Ireland, Norway, Slovakia, and Sweden are all
+now fully migrated to Stage 4 (content and translations both verified).**
 - [x] Slovakia — content and translations complete (migrations 120-123).
       Same tracker-overlap pattern as Ireland/Norway: `sk-voluntary` and
       `sk-mandate` reused directly from the tracker, matching 2 of the
