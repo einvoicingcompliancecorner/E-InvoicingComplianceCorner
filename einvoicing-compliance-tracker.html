@@ -2216,10 +2216,20 @@ async function openArchive(opts){
 
   // Same :root/body -> :host rewrite as the country deep-dive panel
   // above, for the same reason -- neither selector matches anything
-  // inside a shadow tree otherwise.
+  // inside a shadow tree otherwise. Note this only ever catches the
+  // FIRST literal "body{" in the source, which is the "html,body{
+  // margin:0;padding:0;}" reset rule, not the later standalone
+  // "body{background:...; display:flex; align-items:center;}" rule
+  // that centers .archive-wrap on the real standalone page -- that one
+  // never makes it into :host, and without it .archive-wrap (which has
+  // no margin:auto of its own, unlike the deep-dive page's .wrap) just
+  // sits at the left edge instead of centering. Rather than rely on
+  // fixing that rewrite (shared with the deep-dive panel, which
+  // centers a different way and doesn't need it), added directly here.
   const scopedCss = (styleEl ? styleEl.textContent : '')
     .replace(':root{', ':host{')
-    .replace('body{', ':host{');
+    .replace('body{', ':host{')
+    + '\n.archive-wrap{margin:0 auto;}';
 
   // Fix relative /members/... links (e.g. manage-preferences, though
   // that only ever appears when signed in, which this cross-origin

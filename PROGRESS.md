@@ -306,6 +306,26 @@ Two related tracker/members-worker changes, built together:
     absolute URL, and close restores the board view. A second test
     confirms the missing-`.archive-wrap` fallback path is reached
     without an unrelated exception first.
+  - **Bug fix (same day):** the embedded archive defaulted to the left
+    edge instead of centering. The standalone archive page centers
+    `.archive-wrap` via `body{display:flex; align-items:center;}` —
+    but the `:root`/`body` → `:host` rewrite (shared with the deep-dive
+    panel above) only ever converts the *first* literal `body{` it
+    finds, which is the earlier `html,body{margin:0;padding:0;}` reset
+    rule, not this one — so the real centering rule never survives
+    into the shadow root. The deep-dive panel doesn't hit this because
+    its own `.wrap` has `margin:0 auto` directly on the class, not
+    reliant on `body`'s flexbox at all. Fixed by appending
+    `.archive-wrap{margin:0 auto;}` directly to the scoped CSS in
+    `openArchive()`, rather than touching the shared rewrite (which the
+    deep-dive panel doesn't need fixed). Confirmed the exact rule text
+    lands correctly in the injected `<style>`, targeting the right
+    selector, with nothing else in the stylesheet setting `margin` on
+    `.archive-wrap` to conflict with it — jsdom's `getComputedStyle`
+    can't verify the actual rendered result itself (confirmed via a
+    trivial isolated shadow-root test that it doesn't resolve *any*
+    shadow CSS in this environment, not just this rule), so this was
+    checked at the source level rather than a full render.
 - **Not yet deployed** — `site-worker` needs a redeploy to pick up the
   tracker/i18n changes, and `members-worker` needs one for the new
   `ARCHIVE_PUBLIC` var, the CORS header, and the archive-rendering
