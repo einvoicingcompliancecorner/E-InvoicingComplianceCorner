@@ -575,6 +575,67 @@ causes, both in the click-handling for these dropdowns:
   flyout's own open/close behaviour are both unaffected). Re-ran the
   tracker HTML parse-validity and inline-script syntax checks too.
 
+### Feedback page now opens in-page too (2 August 2026, code complete, deploy pending)
+
+Extended the same treatment to `feedback.html`, the 4th and last of
+the menu links to still be a full page navigation (subscribe.html was
+deliberately left alone for now -- see below). This one is different
+from the Education pages: it has real interactive behaviour of its
+own (form validation, and toggling between the form and a "thanks"
+success view), implemented by its own `<script>` running against the
+global `document`.
+
+- A `#feedbackView` panel, a 4th sibling of `#countryDeepDiveView`/
+  `#archiveView`/`#educationView` -- all four panels are now mutually
+  exclusive with each other.
+- Since this panel deliberately never executes the fetched page's own
+  `<script>` (same reasoning as the archive and Education panels),
+  `feedback.html`'s form validation and success-view toggle would
+  otherwise never run. Added `wireFeedbackForm()`, porting that logic
+  (email/subject/comments validation, the `window.storage` best-effort
+  local save, and the form ⇄ success view swap) to run against the
+  shadow root directly -- mirrors `feedback.html`'s own script almost
+  line for line, just scoped via `shadow.getElementById` instead of
+  `document.getElementById`.
+- One new wrinkle the Education pages didn't have: the success view's
+  own "Back to tracker" link is a real, separate `<a>` *inside* the
+  fetched content (not just the panel's own close control at the
+  top). A plain click listener on the outer tracker document can't
+  see it -- clicks originating inside an open shadow root retarget to
+  the shadow host by the time they reach a listener outside it, so
+  `e.target.closest('a')` in the usual document-level delegate would
+  never find it. Wired a direct listener on that specific link inside
+  the shadow root instead, same treatment as the panel's own top close
+  link.
+- Reused `applyI18nToShadow()` (built for the Education panels) as-is
+  for `feedback.html`'s own `i18n/<lang>-feedback.json` translations --
+  no changes needed there.
+- **`subscribe.html` deliberately NOT changed.** It's substantially
+  more involved than `feedback.html` or the Education pages: it embeds
+  the Lemon Squeezy checkout SDK (`lemon.js`), which scans the page for
+  `.lemonsqueezy-button` elements to intercept -- almost certainly
+  unable to find anything inside a shadow root without extra
+  workarounds, since that script has no reason to know to look there --
+  plus a real POST submission to `members-worker`'s `/members/start-trial`
+  endpoint and a two-step checkout flow. It's also still gated behind
+  `class="coming-soon"` with no real `href` at all today (Lemon Squeezy
+  is still in test mode), so there's no live entry point to break in
+  the first place. Raised this with Dan directly rather than guessing;
+  he confirmed: hold off until Lemon Squeezy is live and it's a real
+  link, rather than risk building throwaway checkout-flow code twice.
+- Verified with jsdom tests: clicking "Give feedback" opens the panel,
+  hides the board and topbar site-description block, sidebar stays
+  visible; submitting the form empty shows validation errors and stays
+  on the form view; submitting valid values shows the success view
+  with the submitted email; the success view's own back-link (not the
+  panel's top close link) correctly closes the panel; reopening in
+  Spanish renders the Spanish form title via `applyI18nToShadow()`;
+  and the panel is correctly mutually exclusive with the country
+  deep-dive panel in both directions. Re-ran the full existing
+  archive/menu/sidebar/topbar/education test suite afterward — no
+  regressions. Re-ran the tracker HTML parse-validity and
+  inline-script syntax checks too.
+
 ---
 
 ## Open items / next steps

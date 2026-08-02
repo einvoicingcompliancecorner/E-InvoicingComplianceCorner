@@ -603,6 +603,7 @@
 <div id="countryDeepDiveView" style="display:none;"></div>
 <div id="archiveView" style="display:none;"></div>
 <div id="educationView" style="display:none;"></div>
+<div id="feedbackView" style="display:none;"></div>
 
 <footer>
   <p data-i18n="filters.disclaimer">This tracker reflects publicly available guidance as of July 2026 and is provided for general awareness, not legal or tax advice. E-invoicing thresholds, wave numbers and go-live dates change frequently — confirm your obligations directly on the official government portal linked in each entry, or with your tax advisor, before making compliance decisions.</p>
@@ -2065,14 +2066,16 @@ async function openDeepDive(slug, opts){
   const panel = document.getElementById('countryDeepDiveView');
   const topbarBrand = document.querySelector('.topbar-brand');
   currentDeepDiveSlug = slug;
-  // Mutually exclusive with the newsletter archive and the education
-  // panel being open -- the reverse of the equivalent guards in
-  // openArchive() and openEducationPage(). Without this, opening a
-  // country deep dive while one of those was already showing left its
-  // old content sitting there too, visible underneath the deep dive
-  // panel (all three are display:'' siblings in the DOM).
+  // Mutually exclusive with the newsletter archive, the education
+  // panel, and the feedback panel being open -- the reverse of the
+  // equivalent guards in openArchive(), openEducationPage(), and
+  // openFeedbackPage(). Without this, opening a country deep dive
+  // while one of those was already showing left its old content
+  // sitting there too, visible underneath the deep dive panel (all
+  // four are display:'' siblings in the DOM).
   if(archiveOpen) closeArchive({ skipHistory: true });
   if(currentEducationPage) closeEducationPage({ skipHistory: true });
+  if(feedbackPageOpen) closeFeedbackPage({ skipHistory: true });
 
   boardView.style.display = 'none';
   // The site name/description/subscriber-perks block pushes real
@@ -2229,10 +2232,11 @@ async function openArchive(opts){
   const panel = document.getElementById('archiveView');
   const topbarBrand = document.querySelector('.topbar-brand');
   archiveOpen = true;
-  // Mutually exclusive with a country deep dive or the education
-  // panel being open.
+  // Mutually exclusive with a country deep dive, the education panel,
+  // or the feedback panel being open.
   if(currentDeepDiveSlug) closeDeepDive({ skipHistory: true });
   if(currentEducationPage) closeEducationPage({ skipHistory: true });
+  if(feedbackPageOpen) closeFeedbackPage({ skipHistory: true });
 
   boardView.style.display = 'none';
   if(topbarBrand) topbarBrand.style.display = 'none';
@@ -2437,11 +2441,13 @@ async function openEducationPage(pageKey, opts){
   const panel = document.getElementById('educationView');
   const topbarBrand = document.querySelector('.topbar-brand');
   currentEducationPage = pageKey;
-  // Mutually exclusive with a country deep dive or the newsletter
-  // archive being open -- the reverse of the equivalent guards added
-  // to openDeepDive() and openArchive().
+  // Mutually exclusive with a country deep dive, the newsletter
+  // archive, or the feedback panel being open -- the reverse of the
+  // equivalent guards added to openDeepDive(), openArchive(), and
+  // openFeedbackPage().
   if(currentDeepDiveSlug) closeDeepDive({ skipHistory: true });
   if(archiveOpen) closeArchive({ skipHistory: true });
+  if(feedbackPageOpen) closeFeedbackPage({ skipHistory: true });
 
   boardView.style.display = 'none';
   if(topbarBrand) topbarBrand.style.display = 'none';
@@ -2520,6 +2526,170 @@ function closeEducationPage(opts){
 }
 
 
+// ---------- in-page Feedback panel ----------
+// Same fetch + shadow-DOM pattern as the Education panels above, but
+// feedback.html has real interactive behaviour of its own (form
+// validation, and toggling between the form and a "thanks" success
+// view) that its own <script> implements against the global document
+// -- which won't see anything, since (same reasoning as the archive
+// and Education panels) we deliberately never execute the fetched
+// page's own script. wireFeedbackForm() below ports that same logic
+// to run against the shadow root directly, mirroring feedback.html's
+// own script almost line for line.
+let feedbackPageOpen = false;
+
+function isValidFeedbackEmail(v){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); }
+
+function wireFeedbackForm(shadow){
+  const form = shadow.getElementById('feedbackForm');
+  const formView = shadow.getElementById('feedbackFormView');
+  const successView = shadow.getElementById('feedbackSuccessView');
+  if(!form || !formView || !successView) return;
+
+  form.addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    const values = {
+      email: shadow.getElementById('fbEmail').value.trim(),
+      subject: shadow.getElementById('fbSubject').value.trim(),
+      comments: shadow.getElementById('fbComments').value.trim(),
+    };
+    const checks = [
+      ['fb-email', isValidFeedbackEmail(values.email)],
+      ['fb-subject', values.subject.length > 0],
+      ['fb-comments', values.comments.length > 0],
+    ];
+    let allValid = true;
+    checks.forEach(([key, ok])=>{
+      const el = shadow.getElementById('field-'+key);
+      if(el) el.classList.toggle('error', !ok);
+      if(!ok) allValid = false;
+    });
+    if(!allValid) return;
+
+    try{
+      if(window.storage && typeof window.storage.set === 'function'){
+        await window.storage.set('feedback:'+Date.now(), JSON.stringify(values));
+      }
+    }catch(err){ /* no storage available -- form still "succeeds" for demo purposes, matching feedback.html's own standalone behaviour */ }
+
+    shadow.getElementById('fbSuccessEmail').textContent = values.email;
+    formView.style.display = 'none';
+    successView.style.display = 'block';
+  });
+
+  const againBtn = shadow.getElementById('feedbackAnother');
+  if(againBtn){
+    againBtn.addEventListener('click', ()=>{
+      form.reset();
+      ['fb-email','fb-subject','fb-comments'].forEach(key=>{
+        const el = shadow.getElementById('field-'+key);
+        if(el) el.classList.remove('error');
+      });
+      formView.style.display = 'block';
+      successView.style.display = 'none';
+    });
+  }
+
+  // The success view's own "Back to tracker" link points at the real
+  // standalone tracker page, same destination as this panel's own
+  // close control -- intercept it the same way rather than letting it
+  // navigate away. A plain click listener on the outer document can't
+  // see clicks originating inside a shadow root (the event retargets
+  // to the shadow host, not the real link, once it crosses the shadow
+  // boundary), so this needs its own direct listener same as the
+  // close link below, not the usual document-level delegation.
+  const successBackLink = successView.querySelector('a');
+  if(successBackLink){
+    successBackLink.addEventListener('click', (e)=>{
+      e.preventDefault();
+      closeFeedbackPage();
+    });
+  }
+}
+
+async function openFeedbackPage(opts){
+  opts = opts || {};
+  const boardView = document.getElementById('boardView');
+  const panel = document.getElementById('feedbackView');
+  const topbarBrand = document.querySelector('.topbar-brand');
+  feedbackPageOpen = true;
+  // Mutually exclusive with the other 3 in-page panels.
+  if(currentDeepDiveSlug) closeDeepDive({ skipHistory: true });
+  if(archiveOpen) closeArchive({ skipHistory: true });
+  if(currentEducationPage) closeEducationPage({ skipHistory: true });
+
+  boardView.style.display = 'none';
+  if(topbarBrand) topbarBrand.style.display = 'none';
+  panel.style.display = '';
+  panel.innerHTML = '<p style="color:var(--muted); font-family:\'IBM Plex Mono\',monospace; font-size:13px; padding:40px 5vw;">Loading…</p>';
+  window.scrollTo(0, 0);
+
+  let html;
+  try {
+    const res = await fetch('feedback.html');
+    if(!res.ok) throw new Error('feedback page fetch failed: ' + res.status);
+    html = await res.text();
+  } catch(err){
+    console.warn('Falling back to a full navigation for feedback.html', err);
+    window.location.href = 'feedback.html';
+    return;
+  }
+  if(!feedbackPageOpen) return;
+
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  const styleEl = doc.querySelector('style');
+  const wrap = doc.querySelector('.wrap');
+  const backLink = wrap ? wrap.querySelector('.back-link') : null;
+  if(backLink) backLink.remove();
+
+  const scopedCss = (styleEl ? styleEl.textContent : '')
+    .replace(':root{', ':host{')
+    .replace('body{', ':host{');
+
+  panel.innerHTML = '';
+  const host = document.createElement('div');
+  panel.appendChild(host);
+  const shadow = host.attachShadow({ mode: 'open' });
+
+  const closeLabel = (window.EICC_I18N && window.EICC_I18N.t('backLink')) || '← Back to global tracker';
+  shadow.innerHTML = `
+    <style>${scopedCss}</style>
+    <div class="wrap">
+      <a class="back-link" id="feedbackCloseLink" href="/einvoicing-compliance-tracker.html">${closeLabel}</a>
+      ${wrap ? wrap.innerHTML : '<p>Could not load this page.</p>'}
+    </div>`;
+  shadow.getElementById('feedbackCloseLink').addEventListener('click', (e)=>{
+    e.preventDefault();
+    closeFeedbackPage();
+  });
+
+  wireFeedbackForm(shadow);
+  await applyI18nToShadow(shadow, 'feedback');
+  // feedbackPageOpen may have changed while translations were loading
+  // (e.g. the user navigated away already) -- don't let a stale
+  // response overwrite whatever's showing now.
+  if(!feedbackPageOpen) return;
+
+  if(!opts.skipHistory){
+    history.pushState({ feedback: true }, '', '/feedback.html');
+  }
+}
+
+function closeFeedbackPage(opts){
+  opts = opts || {};
+  feedbackPageOpen = false;
+  document.getElementById('boardView').style.display = '';
+  const topbarBrand = document.querySelector('.topbar-brand');
+  if(topbarBrand) topbarBrand.style.display = '';
+  const panel = document.getElementById('feedbackView');
+  panel.style.display = 'none';
+  panel.innerHTML = '';
+  if(!opts.skipHistory){
+    history.pushState({ feedback: false }, '', '/einvoicing-compliance-tracker.html');
+  }
+}
+
+
 const ARCHIVE_LINK_HREF = MEMBERS_ORIGIN + '/members/archive';
 
 function wireDeepDiveInPagePanel(){
@@ -2551,6 +2721,15 @@ function wireDeepDiveInPagePanel(){
       return;
     }
 
+    // The "Give feedback" link in the Menu dropdown -- same treatment.
+    if(href === 'feedback.html'){
+      e.preventDefault();
+      document.getElementById('sidebar')?.classList.remove('open');
+      document.getElementById('sidebarOverlay')?.classList.remove('open');
+      openFeedbackPage();
+      return;
+    }
+
     const slug = slugFromHref(href);
     if(!slug) return;
     e.preventDefault();
@@ -2563,28 +2742,34 @@ function wireDeepDiveInPagePanel(){
     const isArchiveUrl = new URLSearchParams(window.location.search).get('view') === 'archive';
     const slug = slugFromHref(window.location.pathname);
     const eduPage = educationPageFromHref(window.location.pathname);
+    const isFeedbackUrl = window.location.pathname.replace(/^\/+/, '') === 'feedback.html';
     if(isArchiveUrl){
       openArchive({ skipHistory: true });
     } else if(slug){
       openDeepDive(slug, { skipHistory: true });
     } else if(eduPage){
       openEducationPage(eduPage, { skipHistory: true });
+    } else if(isFeedbackUrl){
+      openFeedbackPage({ skipHistory: true });
     } else if(currentDeepDiveSlug){
       closeDeepDive({ skipHistory: true });
     } else if(archiveOpen){
       closeArchive({ skipHistory: true });
     } else if(currentEducationPage){
       closeEducationPage({ skipHistory: true });
+    } else if(feedbackPageOpen){
+      closeFeedbackPage({ skipHistory: true });
     }
   });
 
-  // If the language changes while a deep dive, the archive, or an
-  // Education page is open, re-fetch it in the new language rather
-  // than leaving stale-language content up.
+  // If the language changes while a deep dive, the archive, an
+  // Education page, or the feedback page is open, re-fetch it in the
+  // new language rather than leaving stale-language content up.
   document.addEventListener('eicc:languageChanged', ()=>{
     if(currentDeepDiveSlug) openDeepDive(currentDeepDiveSlug, { skipHistory: true });
     else if(archiveOpen) openArchive({ skipHistory: true });
     else if(currentEducationPage) openEducationPage(currentEducationPage, { skipHistory: true });
+    else if(feedbackPageOpen) openFeedbackPage({ skipHistory: true });
   });
 
   // A direct/bookmarked/shared load of ?view=archive should open the
