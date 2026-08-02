@@ -1,5 +1,8 @@
 {
-  "_meta": { "language": "de", "reviewed": true },
+  "_meta": {
+    "language": "de",
+    "reviewed": true
+  },
   "backLink": "← Zurück zur Übersicht",
   "form": {
     "eyebrow": "Eine Lücke oder einen Fehler entdeckt?",
@@ -12,7 +15,8 @@
     "commentsLabel": "Kommentare",
     "commentsError": "Bitte fügen Sie einen Kommentar hinzu",
     "submitButton": "Feedback senden",
-    "fineprint": "Diese Seite läuft vollständig in Ihrem Browser — verbinden Sie das Formular mit einem echten Posteingang, Helpdesk oder Webhook, um es live zu schalten."
+    "fineprint": "Diese Seite läuft vollständig in Ihrem Browser — verbinden Sie das Formular mit einem echten Posteingang, Helpdesk oder Webhook, um es live zu schalten.",
+    "submitError": "Beim Senden Ihres Feedbacks ist etwas schiefgelaufen — bitte versuchen Sie es gleich noch einmal."
   },
   "success": {
     "stamp": "Erhalten",

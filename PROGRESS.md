@@ -1129,6 +1129,35 @@ asset-backed path, verify the production behaviour differs from the
 static file (e.g. grep for D1-only content), not just that the page
 looks right.
 
+### Feedback form actually wired up (2 August 2026, code complete, deploy pending)
+
+Dan asked where feedback goes; the answer was **nowhere** — the form was
+demo scaffolding calling a `window.storage` API that doesn't exist in
+browsers, swallowing the error, and showing success anyway. Every
+submission since the page went live was silently discarded.
+
+Now real: migration 213 creates a `feedback` table; a new
+`POST /members/feedback` endpoint validates (email format, length caps),
+rate-limits (5/hour per IP via the indexed table itself), **stores the
+row first** (durable — a Resend outage can't lose a message), then
+emails it to einvoicingcompliancecorner@gmail.com via the existing
+sendViaResend with reply-to set to the submitter. feedback.html now does
+a form-encoded fetch (CORS simple request, no preflight needed) with an
+honest error state (new `form.submitError` i18n key, 4 languages) and a
+disabled-while-sending button. Handler behavior-tested: valid path,
+stored fields, email shape, bad-email 400, empty-subject 400, 429.
+
+Deploy:
+```
+cd members-worker/migrations && python3 apply_migrations.py --remote
+cd .. && wrangler deploy          # members-worker: the endpoint
+cd ../site-worker && wrangler deploy   # feedback.html + i18n
+```
+Spot-check: submit real feedback from the site (in-page panel or
+/feedback.html), confirm it arrives in the gmail inbox with reply-to
+working, and `SELECT * FROM feedback` shows the row. Submissions predating
+this fix are unrecoverable — they never left the browser.
+
 ## Open items / next steps
 
 ### Resources menu + open archive: redeploy (code is done, only the ship step remains)

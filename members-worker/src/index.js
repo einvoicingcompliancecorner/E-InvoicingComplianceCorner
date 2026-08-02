@@ -371,6 +371,8 @@ export default {
         response = await handleDeepDivePreview(request, env, lang);
       } else if (request.method === "GET" && url.pathname === "/members/preferences") {
         response = await handlePreferencesGet(request, env, lang);
+      } else if (request.method === "POST" && url.pathname === "/members/feedback") {
+        response = await handleFeedback(request, env);
       } else if (request.method === "POST" && url.pathname === "/members/preferences") {
         response = await handlePreferencesPost(request, env, lang);
       } else if (request.method === "GET" && url.pathname === "/members/unsubscribe-notifications") {
@@ -1081,6 +1083,62 @@ function buildEmailShell(bodyHtml, footerHtml) {
     </td>
   </tr>
 </table>`;
+}
+
+// Public feedback form (feedback.html) submissions: store in D1 first
+// (durable — a Resend outage can't lose the message), then email to the
+// site owner with reply-to set to the submitter. Form-encoded POST so
+// the browser sends it as a CORS "simple request" (no preflight needed).
+const FEEDBACK_TO = "einvoicingcompliancecorner@gmail.com";
+const FEEDBACK_MAX_PER_HOUR_PER_IP = 5;
+
+async function handleFeedback(request, env) {
+  let form;
+  try {
+    form = await request.formData();
+  } catch (e) {
+    return jsonResponse({ ok: false, error: "bad_request" }, 400);
+  }
+  const email = String(form.get("email") || "").trim().slice(0, 200);
+  const subject = String(form.get("subject") || "").trim().slice(0, 200);
+  const comments = String(form.get("comments") || "").trim().slice(0, 5000);
+  const lang = String(form.get("lang") || "en").slice(0, 5);
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !subject || !comments) {
+    return jsonResponse({ ok: false, error: "invalid" }, 400);
+  }
+  const ip = request.headers.get("CF-Connecting-IP") || "unknown";
+  // Light rate limit: protects the inbox and the table, not a fortress.
+  const cutoff = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+  const recent = await d1First(env,
+    "SELECT COUNT(*) AS n FROM feedback WHERE ip = ? AND created_at > ?", ip, cutoff);
+  if ((recent?.n || 0) >= FEEDBACK_MAX_PER_HOUR_PER_IP) {
+    return jsonResponse({ ok: false, error: "rate_limited" }, 429);
+  }
+  const now = new Date().toISOString();
+  await env.eicc_content.prepare(
+    "INSERT INTO feedback (created_at, email, subject, comments, lang, ip) VALUES (?, ?, ?, ?, ?, ?)"
+  ).bind(now, email, subject, comments, lang, ip).run();
+
+  // Email is best-effort on top of the durable row — sendViaResend logs
+  // failures to wrangler tail; the submitter still gets a success,
+  // because their message IS safely stored either way.
+  await sendViaResend(env, {
+    from: env.FROM_EMAIL,
+    to: FEEDBACK_TO,
+    reply_to: email,
+    subject: `[Feedback] ${subject}`,
+    html: `<p style="font-family:monospace; font-size:12px; color:#666; margin:0 0 12px;">From: ${escapeHtml(email)} &bull; lang: ${escapeHtml(lang)} &bull; ${escapeHtml(now)}</p>
+<h2 style="font-family:Georgia,serif; font-size:18px; margin:0 0 14px;">${escapeHtml(subject)}</h2>
+<p style="font-size:14px; line-height:1.6; white-space:pre-wrap;">${escapeHtml(comments)}</p>`,
+  });
+  return jsonResponse({ ok: true });
+}
+
+function jsonResponse(obj, status = 200) {
+  return new Response(JSON.stringify(obj), {
+    status,
+    headers: { "Content-Type": "application/json; charset=UTF-8" },
+  });
 }
 
 // Wraps the raw Resend API call so failures are actually visible. A bare

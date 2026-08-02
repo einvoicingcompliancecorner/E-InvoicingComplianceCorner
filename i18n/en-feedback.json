@@ -1,5 +1,8 @@
 {
-  "_meta": { "language": "en", "reviewed": true },
+  "_meta": {
+    "language": "en",
+    "reviewed": true
+  },
   "backLink": "← Back to global tracker",
   "form": {
     "eyebrow": "Spot a gap or an error?",
@@ -12,7 +15,8 @@
     "commentsLabel": "Comments",
     "commentsError": "Please add a comment",
     "submitButton": "Send feedback",
-    "fineprint": "This page runs entirely in your browser — connect the form to a real inbox, helpdesk, or webhook to go live."
+    "fineprint": "This page runs entirely in your browser — connect the form to a real inbox, helpdesk, or webhook to go live.",
+    "submitError": "Something went wrong sending your feedback — please try again in a moment."
   },
   "success": {
     "stamp": "Received",

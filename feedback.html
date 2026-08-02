@@ -133,6 +133,7 @@
           </div>
         </div>
         <button type="submit" class="form-submit" data-i18n="form.submitButton">Send feedback</button>
+        <p id="fbSubmitError" class="submit-error" style="display:none; color:var(--stamp); font-size:13.5px; margin:12px 0 0;" data-i18n="form.submitError">Something went wrong sending your feedback — please try again in a moment.</p>
         <p class="form-fineprint" data-i18n="form.fineprint">This page runs entirely in your browser — connect the form to a real inbox, helpdesk, or webhook to go live.</p>
       </form>
     </div>
@@ -177,15 +178,30 @@ form.addEventListener('submit', async (e)=>{
   });
   if(!allValid) return;
 
+  const submitBtn = form.querySelector('.form-submit');
+  const errEl = document.getElementById('fbSubmitError');
+  errEl.style.display='none';
+  submitBtn.disabled = true;
   try{
-    if(window.storage && typeof window.storage.set === 'function'){
-      await window.storage.set('feedback:'+Date.now(), JSON.stringify(values));
-    }
-  }catch(err){ /* no storage available — form still "succeeds" for demo purposes */ }
-
-  document.getElementById('fbSuccessEmail').textContent = values.email;
-  formView.style.display='none';
-  successView.style.display='block';
+    const body = new URLSearchParams();
+    body.set('email', values.email);
+    body.set('subject', values.subject);
+    body.set('comments', values.comments);
+    body.set('lang', (window.EICC_I18N && window.EICC_I18N.currentLang) || document.documentElement.lang || 'en');
+    const res = await fetch('https://members.e-invoicingcompliancecorner.com/members/feedback', {
+      method: 'POST',
+      body: body,
+    });
+    const data = await res.json().catch(()=>({ok:false}));
+    if(!res.ok || !data.ok) throw new Error(data.error || ('http '+res.status));
+    document.getElementById('fbSuccessEmail').textContent = values.email;
+    formView.style.display='none';
+    successView.style.display='block';
+  }catch(err){
+    errEl.style.display='block';
+  }finally{
+    submitBtn.disabled = false;
+  }
 });
 
 document.getElementById('feedbackAnother').addEventListener('click', ()=>{

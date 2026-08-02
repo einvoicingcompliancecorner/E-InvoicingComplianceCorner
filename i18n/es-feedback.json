@@ -1,5 +1,8 @@
 {
-  "_meta": { "language": "es", "reviewed": true },
+  "_meta": {
+    "language": "es",
+    "reviewed": true
+  },
   "backLink": "← Volver al panel general",
   "form": {
     "eyebrow": "¿Ha detectado una carencia o un error?",
@@ -12,7 +15,8 @@
     "commentsLabel": "Comentarios",
     "commentsError": "Por favor, añada un comentario",
     "submitButton": "Enviar comentarios",
-    "fineprint": "Esta página funciona enteramente en su navegador — conecte el formulario a una bandeja de entrada, un servicio de asistencia o un webhook real para ponerla en producción."
+    "fineprint": "Esta página funciona enteramente en su navegador — conecte el formulario a una bandeja de entrada, un servicio de asistencia o un webhook real para ponerla en producción.",
+    "submitError": "Algo salió mal al enviar sus comentarios — inténtelo de nuevo en un momento."
   },
   "success": {
     "stamp": "Recibido",

@@ -1,5 +1,8 @@
 {
-  "_meta": { "language": "fr", "reviewed": true },
+  "_meta": {
+    "language": "fr",
+    "reviewed": true
+  },
   "backLink": "← Retour au suivi global",
   "form": {
     "eyebrow": "Vous avez repéré une lacune ou une erreur ?",
@@ -12,7 +15,8 @@
     "commentsLabel": "Commentaires",
     "commentsError": "Veuillez ajouter un commentaire",
     "submitButton": "Envoyer le commentaire",
-    "fineprint": "Cette page fonctionne entièrement dans votre navigateur — connectez le formulaire à une véritable boîte de réception, un helpdesk ou un webhook pour la mettre en service."
+    "fineprint": "Cette page fonctionne entièrement dans votre navigateur — connectez le formulaire à une véritable boîte de réception, un helpdesk ou un webhook pour la mettre en service.",
+    "submitError": "Une erreur s'est produite lors de l'envoi de votre commentaire — veuillez réessayer dans un instant."
   },
   "success": {
     "stamp": "Reçu",
