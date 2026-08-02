@@ -939,6 +939,8 @@ async function getDeepDiveContent(env, countryName, lang) {
            COALESCE(dpt.scope_intro, dpt_en.scope_intro) as scope_intro,
            COALESCE(dpt.steps_intro, dpt_en.steps_intro) as steps_intro,
            COALESCE(dpt.penalties_intro, dpt_en.penalties_intro) as penalties_intro,
+           COALESCE(dpt.mandate_summary, dpt_en.mandate_summary) as mandate_summary,
+           COALESCE(dpt.mandate_summary_icon, dpt_en.mandate_summary_icon) as mandate_summary_icon,
            ddp.last_updated
     FROM countries c
     JOIN deep_dive_pages ddp ON ddp.country_id = c.id
@@ -1145,6 +1147,8 @@ async function renderFullDeepDivePage(countryName, flag, code, region, content, 
   .stat-strip .stat{background:var(--ink-2); padding:16px 18px;}
   .stat-strip .stat .num{font-family:'Big Shoulders Display',sans-serif; font-weight:800; font-size:22px; line-height:1.15;}
   .stat-strip .stat .lbl{font-size:10.8px; color:var(--muted); text-transform:uppercase; letter-spacing:0.07em; margin-top:5px;}
+  .status-banner{background:var(--soon-dim); border:1px solid var(--soon); color:#ffe9c7; border-radius:var(--radius); padding:14px 18px; margin-bottom:32px; font-size:13.3px; display:flex; gap:12px; align-items:flex-start;}
+  .status-banner .icon{font-size:18px; line-height:1;}
   .section{margin-bottom:44px;}
   .section-head{display:flex; align-items:baseline; gap:12px; margin-bottom:6px;}
   .section-head .num{color:var(--soon); font-size:13px;}
@@ -1211,6 +1215,8 @@ async function renderFullDeepDivePage(countryName, flag, code, region, content, 
     </div>
     <div class="country-meta">${t(lang, "lastUpdatedLabel")}: ${escapeHtml(content.last_updated)}<br>${t(lang, "complianceModelLabel")}: ${escapeHtml(content.compliance_model)}</div>
   </div>
+
+  ${content.mandate_summary ? `<div class="status-banner"><span class="icon">${escapeHtml(content.mandate_summary_icon || "ℹ️")}</span><span>${escapeHtml(content.mandate_summary)}</span></div>` : ""}
 
   <div class="stat-strip">${statsHtml}</div>
 

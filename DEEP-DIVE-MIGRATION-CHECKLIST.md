@@ -743,3 +743,38 @@ All 4 languages (en/es/de/fr) validated for structural completeness and card-sha
 This completes the final batch of remaining countries (European Union, Italy, Saudi Arabia,
 United Arab Emirates) requested in one continuous run. Every country currently in the tracker's
 DATA array now has full Stage 4 deep-dive content in D1.
+
+## Mandate summary tile (migrations 188–190)
+
+New feature request: replicate the top-of-page "mandate summary" tile that several original
+static pages (Spain, UK, Ireland, US, Canada, Sweden) had — a brief 2-4 sentence
+`.status-banner` explaining the type of compliance mandate currently in effect — across all 31
+country deep-dive pages, not just the six that originally had one.
+
+Schema (188): added two nullable columns to `deep_dive_page_translations` —
+`mandate_summary` and `mandate_summary_icon`. Deliberately a new dedicated field rather than
+reusing `scope_intro`, since `scope_intro` remains the Transmission Protocol section's (section
+03) intro line with its own distinct meaning, and overloading it a second time would have
+repeated the exact problem being fixed here.
+
+Content (189, English): for the six countries whose original static-page status-banner text had
+previously been merged into `scope_intro` during earlier Stage 4 migrations (Spain, UK, Ireland,
+US, Canada, Sweden), the banner text was extracted back out into the new `mandate_summary` field
+and the original, shorter section-03 `scope_intro` line was restored from the static HTML source.
+For the remaining 25 countries, a fresh `mandate_summary` (2-4 sentences, distinct from
+`scope_intro`) was authored from each page's existing deep-dive content, paired with a fitting
+emoji icon. All 31 countries validated for sentence count (1-3 sentences, within the 2-4 sentence
+target) and non-empty icon.
+
+Translations (190, parts 1-2): ES/DE/FR translations for all 31 countries' `mandate_summary`,
+plus the restored `scope_intro` translations for the six split-apart countries. 124 rows total
+(31 countries × 4 languages) validated for completeness.
+
+Renderer: `getDeepDiveContent()` now selects `mandate_summary`/`mandate_summary_icon` with the
+same `COALESCE(lang, en-fallback)` pattern as every other field. `renderFullDeepDivePage()` emits
+a `.status-banner` div (same CSS as the original static pages: `--soon-dim` background,
+`--soon` border, icon + text) between the `country-head` block and the `stat-strip`, conditional
+on `content.mandate_summary` being present.
+
+This completes the mandate-summary tile rollout across all 31 tracker countries, in all 4
+supported languages.
