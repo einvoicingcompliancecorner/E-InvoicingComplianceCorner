@@ -1090,6 +1090,45 @@ preferences show Egipto/Ägypten/Égypte, the archive shows the launch
 story with its deep-dive link, and "33" appears on subscribe/education
 pages in all languages.
 
+### Incident: the dynamic tracker never actually ran in production (found & fixed 2 August 2026)
+
+Egypt's rollout surfaced it: the archive showed Egypt (members-worker,
+D1-direct) but the tracker sidebar/flyout didn't, and the served page
+contained no Egypt milestones despite D1 holding all 83 board rows.
+
+**Root cause:** with Cloudflare "Workers with static assets", requests
+whose URL matches an existing asset file are served directly by the
+asset layer by default — **the Worker never executes**. The tracker URL
+maps to a real file, so `renderTracker` had never once run in
+production: no error, no log, no fallback message — the code simply
+never executed. The deep-dive pages always worked because `/luxembourg`
+etc. match no asset file and fall through to the Worker. Every Stage 5
+"verified in production" observation was actually the static snapshot,
+byte-equivalent to the dynamic output by design — indistinguishable
+until Egypt became the first D1-only data.
+
+**Fixes** (both committed):
+- `run_worker_first` in site-worker's `wrangler.toml`, scoped to the
+  tracker (glob covering .html and extensionless forms) and the three
+  i18n data.json paths — everything else keeps direct asset serving.
+- En route, a second real bug: the route check was an exact `.html`
+  match while the asset layer canonicalizes to extensionless URLs; the
+  router now matches both forms and the asset fetch follows redirects.
+
+Confirmed live: curl of the extensionless URL now contains the Egypt
+milestones. This also means two Stage 5 behaviours are visible in
+production for the first time: the alphabetical Deep Dives flyout and
+the tracker-wins milestone wording in ES/DE/FR (the -data.json files
+now genuinely serve from D1).
+
+**Lesson for the record:** the Stage 5 test suite mocked ASSETS and
+proved the worker code correct — but nothing tested that production
+routing would ever *invoke* that code. "The function works" and "the
+function runs" are different claims; for anything intercepting an
+asset-backed path, verify the production behaviour differs from the
+static file (e.g. grep for D1-only content), not just that the page
+looks right.
+
 ## Open items / next steps
 
 ### Resources menu + open archive: redeploy (code is done, only the ship step remains)
