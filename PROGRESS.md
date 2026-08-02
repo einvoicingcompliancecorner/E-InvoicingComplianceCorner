@@ -948,6 +948,52 @@ all).
 
 ---
 
+### Arrivals-board view for the hero (2 August 2026, code complete, deploy pending)
+
+Dan's "Compliance Terminal" concept, reviewed as a standalone mockup and
+then built into the tracker as a second view of the hero's "Next
+clearance dates" section. Two views, toggled by a pill control in the
+hero-label row: the **arrivals board** (default on load, per Dan's spec)
+and **list view** (the pre-existing 6-row next-clearance board,
+unchanged). The choice persists via a best-effort
+`localStorage['eicc_tracker_view']`.
+
+- The arrivals view renders from the page's own `DATA` — already
+  D1-injected since Stage 5 — so it needed **no worker or data-model
+  changes at all**. Statuses compute from milestone dates with the same
+  day arithmetic as `computeStatus`: FINAL CALL (≤90 days, matching the
+  board's "due soon" window), NOW BOARDING (≤1 year), JUST ARRIVED (in
+  force within the last 120 days), SCHEDULED (beyond a year); older
+  in-force entries age off the board. Today: 43 rows over 8 pages of 6.
+- Rotation every 8s with a staggered split-flap cascade; clickable page
+  dots; pause on hover and keyboard focus; stops in hidden tabs
+  (`visibilitychange`); `prefers-reduced-motion` disables both the flip
+  and the auto-rotation. Mobile stacks each row into a labelled card.
+- Styled entirely from the site's existing tokens — the terminal
+  statuses map onto the tracker's own semantic palette (`--stamp` /
+  `--soon` / `--live` / `--upcoming`).
+- Full i18n: a new `terminal.*` namespace in all four `i18n/{lang}.json`
+  files (view labels, column headers, the four statuses using real
+  airport announcement vocabulary — ÚLTIMA LLAMADA / LETZTER AUFRUF /
+  DERNIER APPEL — legend text, aria labels); country and system text
+  reuse the existing `translateCountry` / `translateEntry` mechanism, so
+  language switching just works.
+- Verified with a jsdom suite: default-arrivals load, toggle both ways,
+  localStorage persistence across loads, dot navigation, language-change
+  re-render (Spanish status labels), reduced-motion render, and
+  regression checks (timeline, sidebar, region chips untouched); inline
+  script syntax and all four JSON files validated; and — since this
+  edits the tracker HTML — confirmed site-worker's Stage 5 DATA/
+  DEEP_DIVES injection regexes still match.
+
+Deploy: `cd site-worker && wrangler deploy` (static asset change only —
+the tracker HTML and i18n files ship with the Worker's assets; no
+migrations, no members-worker). Spot-check: the hero shows the arrivals
+board by default with rotating pages; "List view" restores the familiar
+next-clearance list and the choice sticks across reloads; switch to
+Spanish and confirm ÚLTIMA LLAMADA / translated countries; the standalone
+mockup file this grew from is not part of the site.
+
 ## Open items / next steps
 
 ### Resources menu + open archive: redeploy (code is done, only the ship step remains)

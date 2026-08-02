@@ -135,5 +135,25 @@
     "European Union": "Unión Europea",
     "Portugal": "Portugal",
     "Finland": "Finlandia"
+  },
+  "terminal": {
+    "arrivalsView": "Panel de llegadas",
+    "listView": "Vista de lista",
+    "colStatus": "Estado",
+    "colDestination": "Destino",
+    "colUpdate": "Actualización",
+    "colDate": "Fecha",
+    "statusFinalCall": "ÚLTIMA LLAMADA",
+    "statusNowBoarding": "EMBARCANDO",
+    "statusJustArrived": "RECIÉN LLEGADO",
+    "statusScheduled": "PROGRAMADO",
+    "board": "PANEL",
+    "updates": "ACTUALIZACIONES",
+    "legendFinalCall": "en 90 días",
+    "legendNowBoarding": "en un año",
+    "legendJustArrived": "vigente — últimos 120 días",
+    "legendScheduled": "a más de un año",
+    "pagesAria": "Páginas del panel",
+    "pageAria": "Página del panel"
   }
 }

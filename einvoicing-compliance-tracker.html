@@ -142,6 +142,77 @@
     animation: flap 0.6s ease-out both;
   }
   .board-row:last-child{border-bottom:none;}
+  /* ---------- Arrivals-board view (the hero's second view) ---------- */
+  .view-toggle{display:inline-flex; gap:0; border:1px solid var(--line); border-radius:6px; overflow:hidden; margin-left:auto;}
+  .view-toggle button{
+    background:transparent; border:none; color:var(--muted); cursor:pointer;
+    font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:0.12em; text-transform:uppercase;
+    padding:6px 12px;
+  }
+  .view-toggle button[aria-pressed="true"]{background:var(--ink-3); color:var(--paper);}
+  .view-toggle button:focus-visible{outline:2px solid var(--soon); outline-offset:-2px;}
+  .term-board{
+    background:var(--ink-2); border:1px solid var(--line); border-radius:var(--radius);
+    padding:16px 16px 8px;
+  }
+  .term-hdr,.term-row{
+    display:grid; grid-template-columns:150px 1.1fr 2fr 104px; gap:8px; margin-bottom:8px; align-items:stretch;
+  }
+  .term-hdr div{
+    font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.2em;
+    color:var(--muted); text-transform:uppercase; padding:0 12px;
+  }
+  .term-cell{
+    background:var(--ink-3); border:1px solid var(--line); border-radius:4px;
+    padding:10px 12px; font-size:13.5px; display:flex; align-items:center; gap:9px;
+    box-shadow:inset 0 -3px rgba(0,0,0,.3); overflow:hidden;
+  }
+  .term-cell.term-update{font-size:12.5px; line-height:1.35;}
+  .term-cell.term-date{font-family:'IBM Plex Mono',monospace; font-size:12px; justify-content:center; color:var(--paper);}
+  .term-cell .term-lbl{display:none;}
+  .term-status{font-family:'IBM Plex Mono',monospace; font-weight:600; font-size:11.5px; letter-spacing:0.05em;}
+  .term-status::before{content:"●"; flex:none;}
+  .term-status.t-final-call{color:#e88a76; background:linear-gradient(0deg, rgba(181,67,47,.16), rgba(181,67,47,.16)) var(--ink-3); border-color:var(--stamp-dim);}
+  .term-status.t-now-boarding{color:#e9b978; background:linear-gradient(0deg, rgba(201,138,58,.13), rgba(201,138,58,.13)) var(--ink-3); border-color:var(--soon-dim);}
+  .term-status.t-just-arrived{color:#8fc7a8; background:linear-gradient(0deg, rgba(63,125,92,.14), rgba(63,125,92,.14)) var(--ink-3); border-color:var(--live-dim);}
+  .term-status.t-scheduled{color:var(--muted); border-color:var(--upcoming-dim);}
+  .term-flap{display:inline-block; animation:termFlip .5s ease both; animation-delay:var(--d,0s); transform-origin:center 60%; backface-visibility:hidden; min-width:0;}
+  @keyframes termFlip{
+    0%{transform:rotateX(90deg); opacity:0;}
+    55%{transform:rotateX(-14deg); opacity:1;}
+    100%{transform:rotateX(0deg);}
+  }
+  .term-controls{
+    display:flex; justify-content:space-between; align-items:center; gap:10px;
+    padding:10px 2px 6px; border-top:1px solid var(--line); margin-top:6px;
+  }
+  .term-page-label{font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:var(--muted); letter-spacing:0.1em;}
+  .term-dots{display:flex; gap:7px;}
+  .term-dot{width:8px; height:8px; border-radius:50%; border:1px solid var(--muted); background:transparent; padding:0; cursor:pointer;}
+  .term-dot[aria-current="true"]{background:var(--paper); border-color:var(--paper);}
+  .term-dot:focus-visible{outline:2px solid var(--soon); outline-offset:2px;}
+  .term-legend{
+    display:flex; flex-wrap:wrap; gap:6px 18px; padding:8px 2px 2px;
+    font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--muted); letter-spacing:0.05em;
+  }
+  .term-legend span::before{content:"●"; margin-right:5px;}
+  .term-legend .tl-fc::before{color:#e88a76;} .term-legend .tl-nb::before{color:#e9b978;}
+  .term-legend .tl-ja::before{color:#8fc7a8;} .term-legend .tl-sc::before{color:var(--upcoming);}
+  @media (prefers-reduced-motion: reduce){
+    .term-flap{animation:none;}
+  }
+  @media(max-width:700px){
+    .view-toggle{margin-left:0;}
+    .hero-label{flex-wrap:wrap;}
+    .term-hdr{display:none;}
+    .term-row{grid-template-columns:1fr; gap:4px; margin-bottom:12px; border:1px solid var(--line); border-radius:6px; padding:5px; background:var(--ink-2);}
+    .term-cell{border:none; box-shadow:none; padding:7px 9px;}
+    .term-cell .term-lbl{
+      display:inline-block; font-family:'IBM Plex Mono',monospace; font-size:9px;
+      letter-spacing:0.18em; color:var(--muted); text-transform:uppercase; min-width:86px; flex:none;
+    }
+    .term-cell.term-date{justify-content:flex-start;}
+  }
   @keyframes flap{
     0%{transform:rotateX(-90deg); opacity:0;}
     60%{transform:rotateX(8deg); opacity:1;}
@@ -548,8 +619,15 @@
 </div>
 
 <div class="hero">
-  <p class="hero-label" data-i18n="filters.nextClearanceDates">Next clearance dates</p>
+  <p class="hero-label">
+    <span data-i18n="filters.nextClearanceDates">Next clearance dates</span>
+    <span class="view-toggle" id="viewToggle" role="group" aria-label="Board view">
+      <button type="button" id="viewArrivalsBtn" data-i18n="terminal.arrivalsView" aria-pressed="true">Arrivals board</button>
+      <button type="button" id="viewListBtn" data-i18n="terminal.listView" aria-pressed="false">List view</button>
+    </span>
+  </p>
   <div class="board" id="board"></div>
+  <div class="term-board" id="arrivalsBoard" aria-label="Compliance arrivals board"></div>
 </div>
 
 <div class="stats" id="stats"></div>
@@ -1802,6 +1880,151 @@ function refreshAll(){
   renderTimeline();
 }
 
+// ---------- render: arrivals-board view (the hero's second view) ----------
+// An airport arrivals-board presentation of the same milestone data the
+// hero's list board draws from. Statuses derive from milestone dates
+// with the same day arithmetic as computeStatus, extended with an
+// arrivals vocabulary: FINAL CALL mirrors the board's 90-day "due soon"
+// window, NOW BOARDING covers the coming year, JUST ARRIVED shows
+// mandates that went into force within the last 120 days, SCHEDULED is
+// everything further out — and older in-force entries age off the board
+// entirely (an arrivals board shows what's moving, not history).
+const TERM_PAGE_SIZE = 6;
+const TERM_ROTATE_MS = 8000;
+const TERM_VIEW_STORAGE_KEY = 'eicc_tracker_view';
+let termPage = 0, termTimer = null;
+let heroView = 'arrivals'; // arrivals board launches first by design
+try {
+  const saved = localStorage.getItem(TERM_VIEW_STORAGE_KEY);
+  if (saved === 'list' || saved === 'arrivals') heroView = saved;
+} catch (e) { /* storage unavailable — default stands */ }
+const termReducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+function termT(key, fallback){
+  const i18n = window.EICC_I18N;
+  const translated = i18n && i18n.t('terminal.' + key);
+  return translated || fallback;
+}
+function termStatusOf(e){
+  const diff = daysBetween(NOW, new Date(e.date + 'T00:00:00'));
+  if (diff <= 0) return diff >= -120 ? 'just-arrived' : null;
+  if (diff <= 90) return 'final-call';
+  if (diff <= 365) return 'now-boarding';
+  return 'scheduled';
+}
+const TERM_PRIORITY = { 'final-call': 0, 'now-boarding': 1, 'just-arrived': 2, 'scheduled': 3 };
+const TERM_STATUS_KEY = { 'final-call': 'statusFinalCall', 'now-boarding': 'statusNowBoarding', 'just-arrived': 'statusJustArrived', 'scheduled': 'statusScheduled' };
+const TERM_STATUS_FALLBACK = { 'final-call': 'FINAL CALL', 'now-boarding': 'NOW BOARDING', 'just-arrived': 'JUST ARRIVED', 'scheduled': 'SCHEDULED' };
+function termFmtDate(iso){
+  const d = new Date(iso + 'T00:00:00');
+  return d.toLocaleDateString(currentLocale(), { month: 'short', year: 'numeric' }).toUpperCase();
+}
+function termRows(){
+  // Urgency-first, then chronological within each status (most recent
+  // first for already-arrived entries), then country for determinism.
+  return DATA
+    .map(e => ({ e, s: termStatusOf(e) }))
+    .filter(x => x.s)
+    .sort((a, b) => TERM_PRIORITY[a.s] - TERM_PRIORITY[b.s]
+      || (a.s === 'just-arrived' ? b.e.date.localeCompare(a.e.date) : a.e.date.localeCompare(b.e.date))
+      || a.e.country.localeCompare(b.e.country));
+}
+function renderArrivals(){
+  const container = document.getElementById('arrivalsBoard');
+  const rows = termRows();
+  const pages = Math.max(1, Math.ceil(rows.length / TERM_PAGE_SIZE));
+  if (termPage >= pages) termPage = 0;
+  const slice = rows.slice(termPage * TERM_PAGE_SIZE, termPage * TERM_PAGE_SIZE + TERM_PAGE_SIZE);
+  const i18n = window.EICC_I18N;
+
+  const hdr = `<div class="term-hdr" aria-hidden="true">
+    <div>${termT('colStatus','Status')}</div><div>${termT('colDestination','Destination')}</div>
+    <div>${termT('colUpdate','Update')}</div><div>${termT('colDate','Date')}</div>
+  </div>`;
+
+  const rowsHtml = slice.map(({ e, s }, i) => {
+    const d = (i * 0.06).toFixed(2);
+    const countryLabel = i18n ? i18n.translateCountry(e.country) : e.country;
+    const systemLabel = i18n ? i18n.translateEntry(e).system : e.system;
+    const statusLabel = termT(TERM_STATUS_KEY[s], TERM_STATUS_FALLBACK[s]);
+    return `<div class="term-row">
+      <div class="term-cell term-status t-${s}"><span class="term-lbl">${termT('colStatus','Status')}</span><span class="term-flap" style="--d:${d}s">${statusLabel}</span></div>
+      <div class="term-cell"><span class="term-lbl">${termT('colDestination','Destination')}</span><span aria-hidden="true">${e.flag}</span><span class="term-flap" style="--d:${d}s">${escapeHtmlClient(countryLabel)}</span></div>
+      <div class="term-cell term-update"><span class="term-lbl">${termT('colUpdate','Update')}</span><span class="term-flap" style="--d:${d}s">${escapeHtmlClient(systemLabel)}</span></div>
+      <div class="term-cell term-date"><span class="term-lbl">${termT('colDate','Date')}</span><span class="term-flap" style="--d:${d}s">${termFmtDate(e.date)}</span></div>
+    </div>`;
+  }).join('');
+
+  const dots = Array.from({ length: pages }, (_, p) =>
+    `<button type="button" class="term-dot" role="tab" aria-label="${termT('pageAria','Board page')} ${p + 1}" aria-current="${p === termPage}" data-page="${p}"></button>`
+  ).join('');
+
+  container.innerHTML = `${hdr}${rowsHtml}
+    <div class="term-controls">
+      <span class="term-page-label">${termT('board','BOARD')} ${termPage + 1} / ${pages} — ${rows.length} ${termT('updates','UPDATES')}</span>
+      <div class="term-dots" role="tablist" aria-label="${termT('pagesAria','Board pages')}">${dots}</div>
+    </div>
+    <div class="term-legend" aria-hidden="true">
+      <span class="tl-fc">${termT('statusFinalCall','FINAL CALL')} — ${termT('legendFinalCall','within 90 days')}</span>
+      <span class="tl-nb">${termT('statusNowBoarding','NOW BOARDING')} — ${termT('legendNowBoarding','within a year')}</span>
+      <span class="tl-ja">${termT('statusJustArrived','JUST ARRIVED')} — ${termT('legendJustArrived','in force — last 120 days')}</span>
+      <span class="tl-sc">${termT('statusScheduled','SCHEDULED')} — ${termT('legendScheduled','beyond a year')}</span>
+    </div>`;
+
+  container.querySelectorAll('.term-dot').forEach(btn => {
+    btn.addEventListener('click', () => {
+      termPage = parseInt(btn.dataset.page, 10);
+      renderArrivals();
+      termRestartRotation();
+    });
+  });
+}
+function termAdvance(){
+  const pages = Math.max(1, Math.ceil(termRows().length / TERM_PAGE_SIZE));
+  termPage = (termPage + 1) % pages;
+  renderArrivals();
+}
+function termStopRotation(){ clearInterval(termTimer); termTimer = null; }
+function termRestartRotation(){
+  termStopRotation();
+  const pages = Math.ceil(termRows().length / TERM_PAGE_SIZE);
+  if (heroView === 'arrivals' && pages > 1 && !termReducedMotion){
+    termTimer = setInterval(termAdvance, TERM_ROTATE_MS);
+  }
+}
+function applyHeroView(){
+  const listBoard = document.getElementById('board');
+  const arrivals = document.getElementById('arrivalsBoard');
+  const btnA = document.getElementById('viewArrivalsBtn');
+  const btnL = document.getElementById('viewListBtn');
+  const isArrivals = heroView === 'arrivals';
+  listBoard.style.display = isArrivals ? 'none' : '';
+  arrivals.style.display = isArrivals ? '' : 'none';
+  btnA.setAttribute('aria-pressed', String(isArrivals));
+  btnL.setAttribute('aria-pressed', String(!isArrivals));
+  if (isArrivals){ renderArrivals(); termRestartRotation(); }
+  else termStopRotation();
+}
+function wireHeroViewToggle(){
+  document.getElementById('viewArrivalsBtn').addEventListener('click', () => setHeroView('arrivals'));
+  document.getElementById('viewListBtn').addEventListener('click', () => setHeroView('list'));
+  function setHeroView(v){
+    if (heroView === v) return;
+    heroView = v;
+    try { localStorage.setItem(TERM_VIEW_STORAGE_KEY, v); } catch (e) { /* best-effort */ }
+    applyHeroView();
+  }
+  const arrivals = document.getElementById('arrivalsBoard');
+  arrivals.addEventListener('mouseenter', termStopRotation);
+  arrivals.addEventListener('mouseleave', termRestartRotation);
+  arrivals.addEventListener('focusin', termStopRotation);
+  arrivals.addEventListener('focusout', termRestartRotation);
+  // Don't burn cycles re-rendering an invisible board in a background tab.
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) termStopRotation(); else termRestartRotation();
+  });
+}
+
 // ---------- render: sidebar ----------
 const REGION_ORDER = ['Europe','Middle East','Asia-Pacific','Americas'];
 
@@ -3034,6 +3257,8 @@ function wireDeepDiveInPagePanel(){
 
 // ---------- init ----------
 renderBoard();
+wireHeroViewToggle();
+applyHeroView();
 renderStats();
 renderFilterButtons();
 renderTimeline();
@@ -3053,6 +3278,7 @@ wireDeepDiveInPagePanel();
 // actions, filter labels, sidebar, Deep Dives menu).
 document.addEventListener('eicc:languageChanged', ()=>{
   renderBoard();
+  if (heroView === 'arrivals') renderArrivals();
   renderStats();
   renderFilterButtons();
   renderTimeline();
