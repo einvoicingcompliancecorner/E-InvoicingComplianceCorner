@@ -2226,16 +2226,22 @@ async function openArchive(opts){
   // FIRST literal "body{" in the source, which is the "html,body{
   // margin:0;padding:0;}" reset rule, not the later standalone
   // "body{background:...; display:flex; align-items:center;}" rule
-  // that centers .archive-wrap on the real standalone page -- that one
-  // never makes it into :host, and without it .archive-wrap (which has
-  // no margin:auto of its own, unlike the deep-dive page's .wrap) just
-  // sits at the left edge instead of centering. Rather than rely on
-  // fixing that rewrite (shared with the deep-dive panel, which
-  // centers a different way and doesn't need it), added directly here.
+  // that centers every direct child of body (.topbar AND .archive-wrap
+  // alike) on the real standalone page via flexbox on the parent --
+  // that rule never makes it into :host, and without it, neither
+  // .topbar nor .archive-wrap has any margin:auto of its own (unlike
+  // the deep-dive page's .wrap, which centers independently of body).
+  // Rather than rely on fixing that shared rewrite (which the
+  // deep-dive panel doesn't need touched), both are centered directly
+  // here instead -- .topbar-wide is the close-link row this function
+  // builds itself below (not extracted from the fetched page), so it
+  // needs the same treatment as .archive-wrap to keep its left edge
+  // aligned with the content underneath it, not flush against the
+  // full-width container's own edge.
   const scopedCss = (styleEl ? styleEl.textContent : '')
     .replace(':root{', ':host{')
     .replace('body{', ':host{')
-    + '\n.archive-wrap{margin:0 auto;}';
+    + '\n.archive-wrap, .topbar-wide{margin:0 auto;}';
 
   // Fix relative /members/... links (e.g. manage-preferences, though
   // that only ever appears when signed in, which this cross-origin

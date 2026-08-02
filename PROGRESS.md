@@ -339,6 +339,19 @@ Two related tracker/members-worker changes, built together:
     trivial isolated shadow-root test that it doesn't resolve *any*
     shadow CSS in this environment, not just this rule), so this was
     checked at the source level rather than a full render.
+  - **Bug fix (same day):** after the centering fix above, the
+    "← Back to global tracker" close link (in its own `.topbar
+    .topbar-wide` row above `.archive-wrap`) stayed flush against the
+    left edge instead of lining up with the now-centered content
+    below it. That row is built entirely by `openArchive()`'s own JS,
+    not extracted from the fetched archive page, so it never picked
+    up the same `margin:0 auto` treatment. Fixed by widening the
+    appended CSS override to `.archive-wrap, .topbar-wide{margin:0
+    auto;}`. Verified with a jsdom test asserting the exact rule text
+    lands in the injected `<style>`, that `.topbar.topbar-wide` and
+    the close link are present in the shadow root, and that the link
+    text is the back-to-tracker label; re-ran the full existing
+    archive/menu test suite with no regressions.
 - **Not yet deployed** — `site-worker` needs a redeploy to pick up the
   tracker/i18n changes, and `members-worker` needs one for the new
   `ARCHIVE_PUBLIC` var, the CORS header, and the archive-rendering
