@@ -1203,7 +1203,7 @@ async function renderFullDeepDivePage(countryName, flag, code, region, content, 
 </head>
 <body>
 <div class="wrap">
-  <a class="back-link" href="einvoicing-compliance-tracker.html">${t(lang, "backToTracker")}</a>
+  <a class="back-link" href="https://e-invoicingcompliancecorner.com/einvoicing-compliance-tracker.html">${t(lang, "backToTracker")}</a>
   <div class="country-head">
     <div style="display:flex; gap:16px; align-items:center;">
       <div class="country-flag">${flag}</div>
