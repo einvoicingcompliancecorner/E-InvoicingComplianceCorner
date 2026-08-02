@@ -375,6 +375,22 @@
   .dropdown-item + .dropdown-item{border-top:1px dashed var(--paper-line);}
   .dropdown-item .dd-icon{font-size:14px;}
 
+  /* ===== Nested flyout submenu (Resources > Deep Dives) ===== */
+  .dd-flyout{position:relative;}
+  .dd-flyout-trigger{justify-content:space-between;}
+  .dd-flyout-label{display:flex; align-items:center; gap:9px;}
+  .dd-flyout-arrow{font-size:10px; color:#8a7d5a;}
+  .dd-flyout-panel{
+    top:0; right:calc(100% + 8px); left:auto;
+  }
+  @media (max-width:640px){
+    .dd-flyout-panel{
+      position:static; display:none; box-shadow:none; border:none; border-radius:0;
+      max-height:none; width:100%; margin:0;
+    }
+    .dd-flyout-panel.open{display:block;}
+  }
+
   /* ===== About modal ===== */
   .modal-overlay{
     display:none; position:fixed; inset:0; background:rgba(6,10,18,0.72); z-index:90;
@@ -449,9 +465,17 @@
   </div>
   <div class="topbar-right">
     <div class="topbar-menus">
-      <div class="actions-menu" id="deepDiveMenu">
-        <button class="menu-trigger" id="deepDiveTrigger" data-i18n="menu.deepDives">Deep Dives</button>
-        <div class="dropdown-panel wide" id="deepDivePanel"></div>
+      <div class="actions-menu" id="resourcesMenu">
+        <button class="menu-trigger" id="resourcesTrigger" data-i18n="menu.resources">Resources</button>
+        <div class="dropdown-panel" id="resourcesPanel">
+          <div class="dd-flyout" id="deepDiveMenu">
+            <button class="dropdown-item dd-flyout-trigger" id="deepDiveTrigger">
+              <span class="dd-flyout-label"><span class="dd-icon">🔎</span><span data-i18n="menu.deepDives">Deep Dives</span></span>
+              <span class="dd-flyout-arrow" aria-hidden="true">▸</span>
+            </button>
+            <div class="dropdown-panel wide dd-flyout-panel" id="deepDivePanel"></div>
+          </div>
+        </div>
       </div>
       <div class="actions-menu" id="educationMenu">
         <button class="menu-trigger" id="educationTrigger" data-i18n="menu.education">Education</button>
@@ -1850,6 +1874,26 @@ function renderDeepDiveMenu(){
   panel.innerHTML = html;
 }
 
+function wireResourcesMenu(){
+  const menu = document.getElementById('resourcesMenu');
+  const trigger = document.getElementById('resourcesTrigger');
+  const panel = document.getElementById('resourcesPanel');
+  const flyoutPanel = document.getElementById('deepDivePanel');
+
+  function toggle(){ panel.classList.toggle('open'); }
+  function close(){
+    panel.classList.remove('open');
+    // Collapse the nested Deep Dives flyout too, so it doesn't reopen
+    // pre-expanded the next time the Resources menu is opened.
+    flyoutPanel.classList.remove('open');
+  }
+
+  trigger.addEventListener('click', (e)=>{ e.stopPropagation(); toggle(); });
+  document.addEventListener('click', (e)=>{
+    if(!menu.contains(e.target)) close();
+  });
+}
+
 function wireDeepDiveMenu(){
   const menu = document.getElementById('deepDiveMenu');
   const trigger = document.getElementById('deepDiveTrigger');
@@ -2060,6 +2104,7 @@ wireSortToggle();
 renderSidebar();
 renderDeepDiveMenu();
 wireMenuToggle();
+wireResourcesMenu();
 wireDeepDiveMenu();
 wireEducationMenu();
 wireActionsMenu();
