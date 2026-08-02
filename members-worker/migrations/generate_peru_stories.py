@@ -1,0 +1,90 @@
+# Generates 199_peru_stories.sql — the first newsletter stories for Peru,
+# closing the final gap from the country-by-country story-count audit.
+# Peru runs one of Latin America's oldest clearance systems (CPE/SEE under
+# SUNAT, mandatory for essentially all taxpayers since 2022) and had zero
+# coverage. Sourced to the official SUNAT CPE portal; facts corroborated
+# against the official gazette El Peruano and Deloitte's analysis of
+# Resolution 000048-2026/SUNAT.
+import json
+
+CPE_URL = "https://cpe.sunat.gob.pe"
+
+stories = [
+    {
+        "id": "2026-04-30-peru-day-one-e-invoicing",
+        "date": "2026-04-30",
+        "month": "2026-04",
+        "countries": ["Peru"],
+        "title": "SUNAT abolishes the e-invoicing grace period: new taxpayers must issue electronically from day one",
+        "summary": "Superintendency Resolution 000075-2026/SUNAT, effective 1 June 2026, removes the adaptation window Peru used to give newly registered businesses: anyone registering for a RUC under the MYPE Tributario, special (RER), or general income tax regimes must now issue electronic comprobantes de pago from the date of registration.",
+        "html": """<h3>🇵🇪 SUNAT abolishes the e-invoicing grace period: new taxpayers must issue electronically from day one</h3>
+<p>Peru's tax authority, SUNAT, has published Superintendency Resolution No. 000075-2026/SUNAT (30 April 2026, effective 1 June 2026), closing one of the last soft edges in what is already one of Latin America's most comprehensive clearance systems. Electronic issuance of comprobantes de pago (CPE) through the Sistema de Emisión Electrónica (SEE) has been mandatory for essentially all Peruvian taxpayers since 2022 — but newly registered businesses previously enjoyed an adaptation window, with up to the third month after registration to get their electronic issuance working. That window is gone.</p>
+<p>Under the amended framework, any business or entrepreneur registering for a RUC (the Peruvian taxpayer registry) under the MYPE Tributario regime, the special income tax regime (RER), or the general regime must issue electronic comprobantes from the date of registration itself — day one, no transition period. Taxpayers exiting the simplified Nuevo RUS regime into one of those regimes must begin issuing electronically from the first day of the month following their exit. And in a sweep-up provision, taxpayers whose designation as electronic issuers had been made but had not yet taken effect by 31 May 2026 automatically became electronic issuers on 1 June 2026.</p>
+<p>The same resolution also tightens the timing rules around the Sistema Integrado de Registros Electrónicos (SIRE), SUNAT's platform for electronic sales and purchase ledgers, aligning when newly obligated taxpayers must begin keeping their records there with their electronic-issuance obligations.</p>
+<p><strong>What this means for your team:</strong> if you're incorporating a Peruvian entity or spinning up a new RUC for any reason, electronic issuance capability is now a pre-launch requirement, not a month-two task. In practice that means having your emission channel — SEE-SOL, your own system (SEE-Del contribuyente), SUNAT's free Facturador (SFS), or an authorized PSE/OSE provider — selected and working before the first sale, since there is no longer any lawful way to issue physical comprobantes while you get set up.</p>""",
+    },
+    {
+        "id": "2026-07-22-peru-see-overhaul-resolution-048",
+        "date": "2026-07-22",
+        "month": "2026-07",
+        "countries": ["Peru"],
+        "title": "Resolution 000048-2026/SUNAT overhauls the SEE: consolidated credit notes eliminated from 1 August",
+        "summary": "SUNAT's Resolution 000048-2026/SUNAT, with main provisions in force from 1 August 2026, brings new document types into the electronic emission system, designates new electronic issuers, further restricts physical comprobantes — and, most significantly for finance teams, requires each electronic credit note to modify exactly one comprobante, ending consolidated credit notes.",
+        "html": """<h3>🇵🇪 Resolution 000048-2026/SUNAT overhauls the SEE: consolidated credit notes eliminated from 1 August</h3>
+<p>SUNAT has published Superintendency Resolution No. 000048-2026/SUNAT, a substantial modification of Peru's Sistema de Emisión Electrónica (SEE) — the framework behind the country's clearance-model e-invoicing regime. The resolution's main provisions enter into force on 1 August 2026, with a second wave of provisions originally scheduled for 1 November 2026 (since postponed — see the companion story on Resolution 000143-2026/SUNAT).</p>
+<p>The change with the most immediate operational impact for finance teams concerns electronic credit notes: from the resolution's entry into force, a credit note may modify only a single comprobante de pago. The previous practice of issuing one consolidated credit note adjusting multiple invoices, boletas, or other electronic documents in a single operation is eliminated. Debit notes are subject to parallel tightened validation rules. For businesses with high return volumes or periodic rebate arrangements — retail, distribution, consumer goods — this is a genuine process change, not a technicality: rebates and volume adjustments that used to land in one document now need one credit note per underlying comprobante.</p>
+<p>Beyond credit notes, the resolution incorporates new document types into the SEE as electronic documents (including documentos autorizados for airport services and documentos de atribución), designates new classes of electronic issuers, further restricts the circumstances in which physical comprobantes may be used, and simplifies parts of the Reglamento de Comprobantes de Pago — continuing SUNAT's long-running pattern of steadily absorbing every remaining paper-based document class into the electronic system.</p>
+<p><strong>What this means for your team:</strong> audit your credit-note logic before issuing adjustments for August operations onward. If your ERP or billing system generates consolidated credit notes against multiple invoices — common in rebate, return, and settlement workflows — it needs to be reconfigured to emit one note per referenced comprobante, and your reconciliation processes need to expect the higher document volume that follows.</p>""",
+    },
+    {
+        "id": "2026-07-31-peru-resolution-143-postponements",
+        "date": "2026-07-31",
+        "month": "2026-07",
+        "countries": ["Peru"],
+        "title": "SUNAT postpones the next wave of SEE obligations: new electronic-issuer designations move to April 2027",
+        "summary": "Resolution 000143-2026/SUNAT, published in El Peruano on 31 July 2026, softens the implementation calendar of July's SEE overhaul: the designation of new electronic issuers moves from 1 November 2026 to 1 April 2027, transitional rules apply to notes over documents issued outside the SEE, and filing windows for forms 836, 847, and 837 are extended.",
+        "html": """<h3>🇵🇪 SUNAT postpones the next wave of SEE obligations: new electronic-issuer designations move to April 2027</h3>
+<p>Just weeks after publishing its major overhaul of the Sistema de Emisión Electrónica (Resolution 000048-2026/SUNAT — see companion story), SUNAT has partially eased the implementation calendar. Superintendency Resolution No. 000143-2026/SUNAT, published in the official gazette El Peruano on 31 July 2026, modifies articles 5, 7, and 14 of the original resolution and pushes several of its second-wave milestones from late 2026 into 2027.</p>
+<p>The headline change: the designation of new electronic issuers under the SEE — covering the taxpayers obliged to electronically issue documentos autorizados for airport services, documentos de atribución, and the other document classes being absorbed into the system — originally set for 1 November 2026, will now begin operating from 1 April 2027. Alongside it, SUNAT establishes a transition for electronic credit and debit notes issued against certain documentos autorizados that were themselves issued outside the SEE (under contingency procedures or as pre-existing physical documents): for such documents authorized up to 31 December 2026, the corresponding notes may continue to follow the rules currently in force for each SEE channel, protecting the regularization of operations conducted under the old regime.</p>
+<p>The filing calendar for authorization forms is extended in step: Forms 836 and 847 (linked to authorizations for issuing travel tickets by electronic means in rail transport, and the communication of travel-ticket issuance) may now be filed until 31 December 2026, and Form 837 (authorization for SEAE comprobantes issued by electronic means) until 31 March 2027.</p>
+<p><strong>What this means for your team:</strong> the extension buys integration time, but read it narrowly. The provisions of Resolution 000048-2026/SUNAT that entered into force on 1 August 2026 — including the single-comprobante credit-note rule — are not postponed; the relief targets the November wave of new issuer designations and the transition for out-of-SEE documents. If your Peruvian operations touch the affected document classes, the sensible move is to treat April 2027 as a hard deadline and use the extra months for development and validation testing, not to defer the work — SUNAT's pattern with these extensions, as with SIRE before, is to grant them once operational pressure peaks, not to soften the underlying technical requirements.</p>""",
+    },
+]
+
+def sql_escape(s):
+    return s.replace("'", "''")
+
+lines = []
+lines.append("-- First newsletter stories for Peru — the FINAL zero-coverage country")
+lines.append("-- from the country-by-country story-count audit, closing the audit out.")
+lines.append("-- One of Latin America's oldest and most comprehensive clearance systems")
+lines.append("-- (CPE/SEE under SUNAT, mandatory for essentially all taxpayers since")
+lines.append("-- 2022) had zero coverage. Covers Resolution 000075-2026 (grace period")
+lines.append("-- for new taxpayers abolished from 1 June), Resolution 000048-2026 (the")
+lines.append("-- SEE overhaul incl. the single-comprobante credit-note rule from 1 Aug),")
+lines.append("-- and Resolution 000143-2026 (31 July postponements of the November")
+lines.append("-- wave to April 2027). Sourced to the official SUNAT CPE portal;")
+lines.append("-- corroborated against El Peruano (official gazette) and Deloitte's")
+lines.append("-- analysis. Generated by migrations/generate_peru_stories.py.")
+lines.append("")
+
+for s in stories:
+    lines.append(
+        f"INSERT INTO stories (id, date, month, summary_en, html_en, source_url, published) VALUES "
+        f"('{sql_escape(s['id'])}', '{s['date']}', '{s['month']}', "
+        f"'{sql_escape(s['summary'])}', '{sql_escape(s['html'])}', '{sql_escape(CPE_URL)}', 1);"
+    )
+    for country in s["countries"]:
+        lines.append(
+            f"INSERT INTO story_countries (story_id, country_id) "
+            f"SELECT '{sql_escape(s['id'])}', id FROM countries WHERE name_en = '{sql_escape(country)}';"
+        )
+    lines.append(
+        f"INSERT INTO story_translations (story_id, lang, title, summary, html) VALUES "
+        f"('{sql_escape(s['id'])}', 'en', '{sql_escape(s['title'])}', '{sql_escape(s['summary'])}', '{sql_escape(s['html'])}');"
+    )
+    lines.append("")
+
+with open("199_peru_stories.sql", "w", encoding="utf-8") as out:
+    out.write("\n".join(lines))
+print(f"Written {len(stories)} stories to 199_peru_stories.sql")
