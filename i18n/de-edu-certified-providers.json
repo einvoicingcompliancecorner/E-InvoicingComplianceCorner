@@ -7,7 +7,7 @@
     "sub": "Wo Sie die offizielle, von der Regierung veröffentlichte Liste akkreditierter Dienstleister oder Peppol-fähiger Software für jedes Land finden — direkt anhand der eigenen Website der jeweiligen Behörde verifiziert, nicht anhand einer Zusammenfassung Dritter.",
     "lastUpdated": "Zuletzt aktualisiert:"
   },
-  "statusBanner": { "text": "Dies ist ein <strong>erster Satz verifizierter Links</strong>, keine vollständige Übersicht aller 30 erfassten Rechtsordnungen. Jeder Link unten wurde direkt anhand der eigenen Website der genannten Regierung/Behörde geprüft. Mehrere Länder in diesem Tracker führen überhaupt kein öffentliches Akkreditierungsregister — siehe den Hinweis in Abschnitt 3, bevor Sie annehmen, dass eines existiert." },
+  "statusBanner": { "text": "Dies ist ein <strong>erster Satz verifizierter Links</strong>, keine vollständige Übersicht aller 32 erfassten Rechtsordnungen. Jeder Link unten wurde direkt anhand der eigenen Website der genannten Regierung/Behörde geprüft. Mehrere Länder in diesem Tracker führen überhaupt kein öffentliches Akkreditierungsregister — siehe den Hinweis in Abschnitt 3, bevor Sie annehmen, dass eines existiert." },
   "stats": { "label1": "Bisher verifizierte Länder", "label2": "Verschiedene verwendete Akkreditierungsbegriffe", "label3": "Globales Peppol-Anbieterverzeichnis" },
   "sec1": {
     "heading": "Gleiche Idee, unterschiedliche Namen",
@@ -49,7 +49,7 @@
     "heading": "Wie es weitergeht",
     "card1": { "title": "🏷️ Verstehen Sie zuerst die Anbieterkategorien", "body": "\"Anbietertypen\" (unter Wissen) schlüsselt die Kategorien ERP, Lösungsanbieter, Steuer-Compliance, Technologie und Beratung auf, bevor Sie mit dem Durchsuchen staatlicher Listen beginnen." },
     "card2": { "title": "🗓️ Bereit für eine Anbieterauswahl?", "body": "\"Vorbereitung auf eine Vorgabe\" (unter Wissen) erklärt, wie Sie einen Anbieter bewerten und auswählen, sobald Sie die richtige Liste gefunden haben." },
-    "card3": { "title": "🌍 Prüfen Sie die spezifischen Anforderungen Ihres Landes", "body": "Das Menü der Länderanalysen behandelt die genauen Registrierungsschritte, technischen Spezifikationen und Sanktionen für jede der 30 hier erfassten Rechtsordnungen." },
+    "card3": { "title": "🌍 Prüfen Sie die spezifischen Anforderungen Ihres Landes", "body": "Das Menü der Länderanalysen behandelt die genauen Registrierungsschritte, technischen Spezifikationen und Sanktionen für jede der 32 hier erfassten Rechtsordnungen." },
     "card4": { "title": "📬 Diese Liste wird wachsen", "body": "Weitere Länder werden hier hinzugefügt, sobald wir ihre offiziellen Quellen direkt verifizieren — Abonnenten werden benachrichtigt, wenn neue Einträge veröffentlicht werden." }
   },
   "footer": { "text": "Diese Seite verlinkt direkt zu offiziellen Regierungs- und Behördenquellen, verifiziert zum oben genannten Datum, und dient der allgemeinen Information — sie stellt keine Empfehlung eines bestimmten Anbieters dar, und die Aufnahme in eine Regierungsliste ist keine Garantie für die Eignung für Ihre spezifischen Bedürfnisse. Bestätigen Sie den aktuellen Akkreditierungsstatus eines Anbieters immer direkt auf der verlinkten offiziellen Seite, bevor Sie eine Vereinbarung unterzeichnen." }

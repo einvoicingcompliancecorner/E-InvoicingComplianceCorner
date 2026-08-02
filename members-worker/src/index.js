@@ -41,7 +41,7 @@ const COUNTRY_DEEP_DIVE_SLUGS = {
   "Australia": "australia", "Belgium": "belgium", "Brazil": "brazil", "Canada": "canada",
   "Chile": "chile", "China": "china", "Croatia": "croatia", "Denmark": "denmark", "Finland": "finland",
   "France": "france", "Germany": "germany", "India": "india", "Ireland": "ireland",
-  "Italy": "italy", "Malaysia": "malaysia", "Mexico": "mexico", "New Zealand": "new-zealand",
+  "Italy": "italy", "Luxembourg": "luxembourg", "Malaysia": "malaysia", "Mexico": "mexico", "New Zealand": "new-zealand",
   "Norway": "norway", "Peru": "peru", "Poland": "poland", "Portugal": "portugal", "Romania": "romania",
   "Saudi Arabia": "saudi-arabia", "Singapore": "singapore", "Slovakia": "slovakia",
   "Spain": "spain", "Sweden": "sweden", "United Arab Emirates": "uae",
@@ -51,7 +51,7 @@ const COUNTRY_DEEP_DIVE_SLUGS = {
 const COUNTRIES_BY_REGION = {
   "Europe": [
     "Belgium", "Croatia", "Denmark", "Finland", "France", "Germany", "Ireland",
-    "Italy", "Norway", "Poland", "Portugal", "Romania", "Slovakia", "Spain",
+    "Italy", "Luxembourg", "Norway", "Poland", "Portugal", "Romania", "Slovakia", "Spain",
     "Sweden", "United Kingdom"
   ],
   "Middle East": [
@@ -87,7 +87,7 @@ const LANG_COOKIE_TTL_SECONDS = 60 * 60 * 24 * 365; // 1 year
 const COUNTRY_NAME_TRANSLATIONS = {
   es: {
     "Belgium": "Bélgica", "Croatia": "Croacia", "Denmark": "Dinamarca", "Finland": "Finlandia", "France": "Francia",
-    "Germany": "Alemania", "Ireland": "Irlanda", "Italy": "Italia", "Norway": "Noruega",
+    "Germany": "Alemania", "Ireland": "Irlanda", "Italy": "Italia", "Luxembourg": "Luxemburgo", "Norway": "Noruega",
     "Poland": "Polonia", "Portugal": "Portugal", "Romania": "Rumania", "Slovakia": "Eslovaquia", "Spain": "España",
     "Sweden": "Suecia", "United Kingdom": "Reino Unido", "Saudi Arabia": "Arabia Saudita",
     "United Arab Emirates": "Emiratos Árabes Unidos", "Australia": "Australia", "China": "China",
@@ -97,7 +97,7 @@ const COUNTRY_NAME_TRANSLATIONS = {
   },
   de: {
     "Belgium": "Belgien", "Croatia": "Kroatien", "Denmark": "Dänemark", "Finland": "Finnland", "France": "Frankreich",
-    "Germany": "Deutschland", "Ireland": "Irland", "Italy": "Italien", "Norway": "Norwegen",
+    "Germany": "Deutschland", "Ireland": "Irland", "Italy": "Italien", "Luxembourg": "Luxemburg", "Norway": "Norwegen",
     "Poland": "Polen", "Portugal": "Portugal", "Romania": "Rumänien", "Slovakia": "Slowakei", "Spain": "Spanien",
     "Sweden": "Schweden", "United Kingdom": "Vereinigtes Königreich", "Saudi Arabia": "Saudi-Arabien",
     "United Arab Emirates": "Vereinigte Arabische Emirate", "Australia": "Australien", "China": "China",
@@ -107,7 +107,7 @@ const COUNTRY_NAME_TRANSLATIONS = {
   },
   fr: {
     "Belgium": "Belgique", "Croatia": "Croatie", "Denmark": "Danemark", "Finland": "Finlande", "France": "France",
-    "Germany": "Allemagne", "Ireland": "Irlande", "Italy": "Italie", "Norway": "Norvège",
+    "Germany": "Allemagne", "Ireland": "Irlande", "Italy": "Italie", "Luxembourg": "Luxembourg", "Norway": "Norvège",
     "Poland": "Pologne", "Portugal": "Portugal", "Romania": "Roumanie", "Slovakia": "Slovaquie", "Spain": "Espagne",
     "Sweden": "Suède", "United Kingdom": "Royaume-Uni", "Saudi Arabia": "Arabie saoudite",
     "United Arab Emirates": "Émirats arabes unis", "Australia": "Australie", "China": "Chine",

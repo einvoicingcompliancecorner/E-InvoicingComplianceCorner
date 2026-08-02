@@ -5,15 +5,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Global E-Invoicing Mandate Tracker — The E-Invoicing Compliance Corner</title>
 <link rel="canonical" href="https://e-invoicingcompliancecorner.com/einvoicing-compliance-tracker.html">
-<meta name="description" content="Track e-invoicing mandates, deadlines, and clearance requirements across 30 countries — Poland's KSeF, France, Italy's SDI, Saudi Arabia's ZATCA, and more — updated monthly, with links to every official government source.">
+<meta name="description" content="Track e-invoicing mandates, deadlines, and clearance requirements across 32 countries — Poland's KSeF, France, Italy's SDI, Saudi Arabia's ZATCA, and more — updated monthly, with links to every official government source.">
 <!-- og:url intentionally omitted until a stable custom domain is in place — update this whole block once the site has a permanent address. -->
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://e-invoicingcompliancecorner.com/einvoicing-compliance-tracker.html">
 <meta property="og:title" content="Global E-Invoicing Mandate Tracker">
-<meta property="og:description" content="Every e-invoicing mandate, deadline, and compliance requirement across 30 countries, tracked in one place and updated monthly.">
+<meta property="og:description" content="Every e-invoicing mandate, deadline, and compliance requirement across 32 countries, tracked in one place and updated monthly.">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Global E-Invoicing Mandate Tracker">
-<meta name="twitter:description" content="Every e-invoicing mandate, deadline, and compliance requirement across 30 countries, tracked in one place and updated monthly.">
+<meta name="twitter:description" content="Every e-invoicing mandate, deadline, and compliance requirement across 32 countries, tracked in one place and updated monthly.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -430,7 +430,7 @@
     <p class="brand-eyebrow" data-i18n="brand.eyebrow">Compliance clearance board</p>
     <h1 class="brand-title display" data-i18n="brand.title">The E-Invoicing<br>Compliance Corner</h1>
     <div class="brand-row">
-      <p class="brand-sub" data-i18n="brand.description">A living tracker of e-invoicing and digital reporting mandates across 30 countries — EU-wide ViDA rules, national CTC systems, and everything in between. Each entry shows the deadline, what you need to do about it, and a direct link to the official government portal, so you can go from "is this relevant to us?" to "here's what to action" in one page.</p>
+      <p class="brand-sub" data-i18n="brand.description">A living tracker of e-invoicing and digital reporting mandates across 32 countries — EU-wide ViDA rules, national CTC systems, and everything in between. Each entry shows the deadline, what you need to do about it, and a direct link to the official government portal, so you can go from "is this relevant to us?" to "here's what to action" in one page.</p>
       <div class="subscriber-perks">
         <h4 data-i18n="perks.heading">Subscribers also get</h4>
         <ul>
@@ -617,6 +617,49 @@ const DATA = [
   },
 
   // ---------------- BELGIUM ----------------
+  {
+    id:'lx-b2g', country:'Luxembourg', flag:'🇱🇺', code:'LU', region:'Europe',
+    system:'B2G e-invoicing mandate fully in force', date:'2023-03-18',
+    desc:'Luxembourg\'s phased B2G e-invoicing rollout completed: all economic operators, including small and newly established businesses, must now issue Peppol BIS Billing 3.0 / EN 16931 e-invoices to Luxembourg public sector bodies.',
+    actions:[
+      'Confirm your Peppol Access Point (or guichet.lu\'s manual upload option) is set up for every public contract you supply',
+      'Structured EN 16931 invoices are required for all public procurement — no threshold applies'
+    ],
+    portals:[{label:'EU Digital Building Blocks — Luxembourg', url:'https://ec.europa.eu/digital-building-blocks/sites/spaces/DIGITAL/pages/467108893/eInvoicing+in+Luxembourg'}]
+  },
+  {
+    id:'lx-b2b-receipt', country:'Luxembourg', flag:'🇱🇺', code:'LU', region:'Europe',
+    system:'Proposed: B2B e-invoice receipt becomes mandatory', date:'2028-01-01',
+    desc:'Under the draft law approved by Luxembourg\'s Council of Government on 17 July 2026, all businesses would be required to be able to receive structured e-invoices for domestic B2B transactions over a Peppol four-corner network, ahead of the issuance obligation.',
+    actions:[
+      'Track the bill through Parliament — this is still a draft law, not yet enacted',
+      'Confirm your invoicing/ERP system can already receive Peppol BIS Billing 3.0 invoices'
+    ],
+    confidence:'expected',
+    portals:[{label:'EU Digital Building Blocks — Luxembourg', url:'https://ec.europa.eu/digital-building-blocks/sites/spaces/DIGITAL/pages/467108893/eInvoicing+in+Luxembourg'}]
+  },
+  {
+    id:'lx-b2b-issue-large', country:'Luxembourg', flag:'🇱🇺', code:'LU', region:'Europe',
+    system:'Proposed: B2B e-invoice issuance for large & medium businesses', date:'2028-07-01',
+    desc:'Large and medium-sized businesses would be required to issue, not just receive, structured domestic B2B e-invoices over Peppol — six months after the receipt obligation takes effect for everyone.',
+    actions:[
+      'Larger suppliers: begin Peppol Access Point onboarding well ahead of this date',
+      'Confirm current company-size classification, since it determines which deadline applies'
+    ],
+    confidence:'expected',
+    portals:[{label:'EU Digital Building Blocks — Luxembourg', url:'https://ec.europa.eu/digital-building-blocks/sites/spaces/DIGITAL/pages/467108893/eInvoicing+in+Luxembourg'}]
+  },
+  {
+    id:'lx-b2b-issue-all', country:'Luxembourg', flag:'🇱🇺', code:'LU', region:'Europe',
+    system:'Proposed: B2B e-invoice issuance becomes universal', date:'2029-01-01',
+    desc:'The remaining businesses, including SMEs, would be required to issue structured domestic B2B e-invoices, completing the phased rollout announced alongside the EU\'s VAT in the Digital Age (ViDA) reforms.',
+    actions:[
+      'SMEs: this is the deadline that applies to you, 18 months after the receipt obligation begins',
+      'No domestic real-time VAT reporting is planned alongside this — Luxembourg is staying with the Peppol interoperability model, not a clearance system'
+    ],
+    confidence:'expected',
+    portals:[{label:'EU Digital Building Blocks — Luxembourg', url:'https://ec.europa.eu/digital-building-blocks/sites/spaces/DIGITAL/pages/467108893/eInvoicing+in+Luxembourg'}]
+  },
   {
     id:'be-mandate', country:'Belgium', flag:'🇧🇪', code:'BE', region:'Europe',
     system:'Mandatory B2B e-invoicing via Peppol', date:'2026-01-01',
@@ -1414,6 +1457,7 @@ const DATA = [
 
 // Countries with a dedicated deep-dive subpage (timeline + technical specs + registration steps)
 const DEEP_DIVES = {
+  'Luxembourg': '/luxembourg',
   'Romania': '/romania',
   'France': '/france',
   'Belgium': '/belgium',

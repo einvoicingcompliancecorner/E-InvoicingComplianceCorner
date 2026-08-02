@@ -78,7 +78,7 @@
     "heading": "Where to go next",
     "card1": { "title": "📘 Understand the mandate types first", "body": "If you haven't already, \"Types of Mandate\" (also under Education) explains the compliance models referenced throughout this page in more depth." },
     "card2": { "title": "🗓️ Ready to start planning?", "body": "\"Preparing for a Mandate\" (under Education) covers who to involve, when to start, and how to approach vendor selection." },
-    "card3": { "title": "🌍 Check your specific country's requirements", "body": "The Deep Dives menu covers the exact technical specification, registration steps, and penalties for each of the 30 jurisdictions tracked here." },
+    "card3": { "title": "🌍 Check your specific country's requirements", "body": "The Deep Dives menu covers the exact technical specification, registration steps, and penalties for each of the 32 jurisdictions tracked here." },
     "card4": { "title": "✅ Find an accredited provider", "body": "\"Government Certified Providers\" (under Education) links directly to the official government registries for accredited service providers, country by country." }
   },
   "footer": { "text": "This page provides general educational context to help scope internal planning and is not legal, tax, or technical implementation advice. Specific requirements vary by country and by your own systems and group structure — consult the relevant country deep dive and a qualified advisor before making implementation decisions." }

@@ -614,5 +614,37 @@
       "Ne supposez pas que la Finlande suivra le même calendrier d'obligation nationale que ses voisins nordiques — à ce jour, aucune date d'obligation nationale n'a été fixée",
       "Consultez cette page périodiquement plutôt que de considérer l'absence actuelle d'obligation comme un état permanent — les préparatifs de 2028 pourraient faire apparaître un calendrier national plus ferme"
     ]
+  },
+  "lx-b2g": {
+    "system": "L'obligation de facturation électronique B2G est pleinement en vigueur",
+    "desc": "Le déploiement progressif de la facturation électronique B2G au Luxembourg est achevé : tous les opérateurs économiques, y compris les petites entreprises et celles nouvellement créées, doivent désormais émettre des factures électroniques Peppol BIS Billing 3.0 / EN 16931 aux organismes publics luxembourgeois.",
+    "actions": [
+      "Vérifiez que votre Access Point Peppol (ou l'option de téléversement manuel de guichet.lu) est configuré pour chaque marché public que vous fournissez",
+      "Des factures structurées EN 16931 sont exigées pour l'ensemble des marchés publics — aucun seuil ne s'applique"
+    ]
+  },
+  "lx-b2b-receipt": {
+    "system": "Proposition : la réception de factures électroniques B2B devient obligatoire",
+    "desc": "Selon le projet de loi approuvé par le Conseil de gouvernement luxembourgeois le 17 juillet 2026, toutes les entreprises seraient tenues de pouvoir recevoir des factures électroniques structurées pour les transactions B2B nationales via un réseau Peppol à quatre coins, avant l'obligation d'émission.",
+    "actions": [
+      "Suivez l'évolution du projet de loi au Parlement — il ne s'agit encore que d'un projet, non encore en vigueur",
+      "Vérifiez que votre système de facturation/ERP peut déjà recevoir des factures Peppol BIS Billing 3.0"
+    ]
+  },
+  "lx-b2b-issue-large": {
+    "system": "Proposition : émission de factures électroniques B2B pour les grandes et moyennes entreprises",
+    "desc": "Les grandes et moyennes entreprises seraient tenues d'émettre, et pas seulement de recevoir, des factures électroniques B2B nationales structurées via Peppol — six mois après l'entrée en vigueur de l'obligation de réception pour tous.",
+    "actions": [
+      "Fournisseurs de grande taille : commencez l'intégration à un Access Point Peppol bien avant cette date",
+      "Vérifiez votre classification actuelle par taille d'entreprise, car elle détermine l'échéance applicable"
+    ]
+  },
+  "lx-b2b-issue-all": {
+    "system": "Proposition : l'émission de factures électroniques B2B devient universelle",
+    "desc": "Les entreprises restantes, y compris les PME, seraient tenues d'émettre des factures électroniques B2B nationales structurées, achevant ainsi le déploiement progressif annoncé dans le cadre des réformes européennes de la TVA à l'ère numérique (ViDA).",
+    "actions": [
+      "PME : c'est l'échéance qui vous concerne, 18 mois après le début de l'obligation de réception",
+      "Aucune déclaration de TVA nationale en temps réel n'est prévue en parallèle — le Luxembourg conserve le modèle d'interopérabilité Peppol plutôt qu'un système de contrôle centralisé"
+    ]
   }
 }

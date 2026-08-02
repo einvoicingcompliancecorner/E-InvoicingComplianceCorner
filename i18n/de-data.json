@@ -614,5 +614,37 @@
       "Gehen Sie nicht davon aus, dass Finnland demselben inländischen Vorgaben-Zeitplan wie seine nordischen Nachbarn folgt — bislang wurde kein inländisches Vorgabendatum festgelegt",
       "Prüfen Sie diese Seite regelmäßig erneut, statt das derzeitige Fehlen einer Vorgabe als dauerhaften Zustand zu behandeln — die Vorbereitungen für 2028 könnten einen konkreteren inländischen Zeitplan zutage fördern"
     ]
+  },
+  "lx-b2g": {
+    "system": "B2G-E-Invoicing-Pflicht vollständig in Kraft",
+    "desc": "Luxemburgs stufenweise Einführung der B2G-E-Rechnung ist abgeschlossen: Alle Wirtschaftsteilnehmer, einschließlich kleiner und neu gegründeter Unternehmen, müssen nun Peppol-BIS-Billing-3.0- / EN-16931-E-Rechnungen an luxemburgische öffentliche Stellen ausstellen.",
+    "actions": [
+      "Bestätigen Sie, dass Ihr Peppol Access Point (oder die manuelle Upload-Option von guichet.lu) für jeden von Ihnen belieferten öffentlichen Auftrag eingerichtet ist",
+      "Strukturierte EN-16931-Rechnungen sind für die gesamte öffentliche Beschaffung erforderlich — es gilt kein Schwellenwert"
+    ]
+  },
+  "lx-b2b-receipt": {
+    "system": "Vorschlag: Empfang von B2B-E-Rechnungen wird verpflichtend",
+    "desc": "Nach dem vom luxemburgischen Regierungsrat am 17. Juli 2026 gebilligten Gesetzentwurf müssten alle Unternehmen in der Lage sein, strukturierte E-Rechnungen für inländische B2B-Transaktionen über ein Peppol-Vier-Ecken-Netzwerk zu empfangen — noch vor der Pflicht zur Ausstellung.",
+    "actions": [
+      "Verfolgen Sie den Gesetzentwurf im Parlament — es handelt sich noch um einen Entwurf, der noch nicht in Kraft ist",
+      "Bestätigen Sie, dass Ihr Rechnungs-/ERP-System bereits Peppol-BIS-Billing-3.0-Rechnungen empfangen kann"
+    ]
+  },
+  "lx-b2b-issue-large": {
+    "system": "Vorschlag: Ausstellung von B2B-E-Rechnungen für große und mittlere Unternehmen",
+    "desc": "Große und mittlere Unternehmen müssten strukturierte inländische B2B-E-Rechnungen über Peppol nicht nur empfangen, sondern auch ausstellen — sechs Monate nachdem die Empfangspflicht für alle in Kraft getreten ist.",
+    "actions": [
+      "Größere Lieferanten: Beginnen Sie das Onboarding beim Peppol Access Point rechtzeitig vor diesem Termin",
+      "Bestätigen Sie Ihre aktuelle Einstufung nach Unternehmensgröße, da diese die geltende Frist bestimmt"
+    ]
+  },
+  "lx-b2b-issue-all": {
+    "system": "Vorschlag: Ausstellung von B2B-E-Rechnungen wird allgemein verpflichtend",
+    "desc": "Die übrigen Unternehmen, einschließlich KMU, müssten strukturierte inländische B2B-E-Rechnungen ausstellen und damit die stufenweise Einführung abschließen, die im Zusammenhang mit den EU-Reformen zur Mehrwertsteuer im digitalen Zeitalter (ViDA) angekündigt wurde.",
+    "actions": [
+      "KMU: Dies ist die für Sie geltende Frist, 18 Monate nach Beginn der Empfangspflicht",
+      "Eine inländische Echtzeit-Umsatzsteuermeldung ist damit nicht geplant — Luxemburg bleibt beim Peppol-Interoperabilitätsmodell und führt kein Clearing-System ein"
+    ]
   }
 }

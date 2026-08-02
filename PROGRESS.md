@@ -167,8 +167,9 @@ to a normal navigation.
 
 ## Current state — what's actually live vs. in progress
 
-- All 31 countries' Stage 4 D1 content and mandate-summary translations
-  are live in production D1.
+- 31 countries' Stage 4 D1 content and mandate-summary translations are
+  live in production D1. **Luxembourg is a 32nd country, fully built but
+  not yet deployed** — see "Luxembourg added" below.
 - **The cutover is fully deployed and live** — `eicc-public` now has the
   `eicc_content` D1 binding and the ASSETS binding, real country URLs
   (e.g. `/spain`, `/croatia?lang=fr`) render dynamically from D1, and
@@ -177,9 +178,73 @@ to a normal navigation.
 - The newsletter/tracker's core static content (all countries' `DATA`
   entries, stories, translations) is live and current.
 
+### Luxembourg added (code complete, deploy pending)
+
+Luxembourg has been fully built out as the site's 32nd country, following
+the same real-research discipline as every other Stage 4 country (B2G
+legal basis, phased rollout, and the 17 July 2026 proposed B2B mandate
+were all sourced from the EU Digital Building Blocks Luxembourg page,
+the Luxembourg government's own e-invoicing information page, and
+VATupdate's coverage — not fabricated):
+
+- `einvoicing-compliance-tracker.html`: 4 new `DATA` entries (`lx-b2g`,
+  `lx-b2b-receipt`, `lx-b2b-issue-large`, `lx-b2b-issue-all`) plus a
+  `DEEP_DIVES` entry — all validated with `node --check` and an HTML
+  parse pass.
+- `countries.js` and `members-worker/src/index.js`'s three hardcoded
+  touchpoints (`COUNTRIES_BY_REGION`, `COUNTRY_NAME_TRANSLATIONS`,
+  `COUNTRY_DEEP_DIVE_SLUGS`) and `shared/deep-dive-render.mjs`'s own
+  slug map all updated in sync.
+- `i18n/{en,es,de,fr}.json` `countryNames`, plus `i18n/{es,de,fr}-data.json`
+  tracker-milestone translations for the 4 new `DATA` entries — all
+  JSON-validated.
+- Hardcoded country-count references (site meta descriptions, the
+  subscribe page, the four education pages, and their i18n files) bumped
+  from a stale "30" to 32 across all 4 languages.
+- D1 migrations `191`–`195` (country row, milestones, deep-dive content,
+  and ES/DE/FR translations for both) and `196`–`197` (one sourced
+  newsletter story on the 17 July 2026 draft B2B law, plus its
+  translations) — replayed locally against a full copy of `schema.sql` +
+  every existing migration with zero Luxembourg-related errors (4
+  pre-existing, unrelated errors from older migrations were also present
+  in this replay and are not new).
+- Luxembourg has no `deep_dive_penalty_rows` table entries — no fixed
+  B2G fine schedule was found in research (non-compliant invoices are
+  rejected/returned unpaid rather than fined under a published scale),
+  so penalties are covered narratively instead, unlike Belgium.
+- **Not yet run against production D1, and the two Workers have not been
+  redeployed** — see the exact commands under "Open items" below.
+
 ---
 
 ## Open items / next steps
+
+### Luxembourg: run migrations + redeploy (highest priority — code is done, only the ship step remains)
+
+From your own machine (this sandbox can't reach the Cloudflare API):
+
+```
+cd members-worker
+wrangler d1 execute eicc-content --remote --file=migrations/191_luxembourg_country.sql
+wrangler d1 execute eicc-content --remote --file=migrations/192_luxembourg_milestones.sql
+wrangler d1 execute eicc-content --remote --file=migrations/193_luxembourg_deepdive_content.sql
+wrangler d1 execute eicc-content --remote --file=migrations/194_luxembourg_milestone_translations.sql
+wrangler d1 execute eicc-content --remote --file=migrations/195_luxembourg_deepdive_translations.sql
+wrangler d1 execute eicc-content --remote --file=migrations/196_luxembourg_story.sql
+wrangler d1 execute eicc-content --remote --file=migrations/197_luxembourg_story_translations.sql
+wrangler deploy
+
+cd ../site-worker
+wrangler deploy
+```
+
+Then spot-check: `/luxembourg` and `/luxembourg?lang=fr` on the public
+site render the deep-dive page; the tracker shows Luxembourg's 4
+timeline entries and it appears in the sidebar/region filter; the
+members-site preferences and archive pages show Luxembourg with correct
+translated names in all 4 languages; the subscribe page's country picker
+includes Luxembourg; and the "32" jurisdiction counts render correctly
+on the tracker, subscribe, and education pages.
 
 ### Stage 4 continuation
 - Stage 4 and the cutover are both complete — nothing outstanding here.
