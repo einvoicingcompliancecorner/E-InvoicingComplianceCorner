@@ -1903,9 +1903,17 @@ async function openDeepDive(slug, opts){
   opts = opts || {};
   const boardView = document.getElementById('boardView');
   const panel = document.getElementById('countryDeepDiveView');
+  const topbarBrand = document.querySelector('.topbar-brand');
   currentDeepDiveSlug = slug;
 
   boardView.style.display = 'none';
+  // The site name/description/subscriber-perks block pushes real
+  // content a long way down and serves no purpose once a specific
+  // country's page is open -- hidden for the duration, restored in
+  // closeDeepDive(). The menus/last-updated on the other side of the
+  // topbar stay visible, so switching to another country or leaving
+  // is still one click away.
+  if(topbarBrand) topbarBrand.style.display = 'none';
   panel.style.display = '';
   panel.innerHTML = '<p style="color:var(--muted); font-family:\'IBM Plex Mono\',monospace; font-size:13px; padding:40px 5vw;">Loading…</p>';
   window.scrollTo(0, 0);
@@ -1961,6 +1969,8 @@ function closeDeepDive(opts){
   opts = opts || {};
   currentDeepDiveSlug = null;
   document.getElementById('boardView').style.display = '';
+  const topbarBrand = document.querySelector('.topbar-brand');
+  if(topbarBrand) topbarBrand.style.display = '';
   const panel = document.getElementById('countryDeepDiveView');
   panel.style.display = 'none';
   panel.innerHTML = '';
