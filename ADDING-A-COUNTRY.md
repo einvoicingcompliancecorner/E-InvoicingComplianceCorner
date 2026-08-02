@@ -39,11 +39,21 @@ Decide up front:
 
 ## Phase 1 — D1 migrations (the bulk of the work)
 
-Number them from the next free number in `members-worker/migrations/`
-(check the directory; don't trust any doc's "next is NNN" line). Follow
-Luxembourg's set (191–197) as the reference shape, plus the Stage 5
-columns. **Validate with the in-memory full-chain replay before touching
-live D1 — this is non-negotiable and has caught real bugs.**
+**Start with the scaffolder** — it generates steps 1 and 2 below from a
+small JSON spec, correctly numbered, idempotent (`INSERT OR IGNORE`
+throughout), with the ES/DE/FR milestone-translation stub parked in
+`migrations/drafts/` where the runner can't apply it until you've
+actually translated it:
+
+```bash
+cd members-worker/migrations
+python3 new_country_scaffold.py path/to/country-spec.json   # see its docstring for the spec shape
+```
+
+Steps 3–4 (deep-dive content, story) are written by hand as before.
+Whether scaffolded or hand-written, **the runner validates the full
+in-memory replay before touching live D1** — the project's
+non-negotiable, now automated rather than remembered.
 
 1. **Country row + name translations**
    ```sql
@@ -144,10 +154,18 @@ computes from live data, but literal prose counts do not:
 ## Phase 4 — Ship
 
 ```bash
-cd members-worker
-wrangler d1 execute eicc-content --remote --file=migrations/NNN_....sql   # each, in order
-cd ../site-worker && wrangler deploy    # ships the static-asset edits (countries.js, i18n, counts)
+cd members-worker/migrations
+python3 apply_migrations.py --remote          # validates, applies only what's pending, records each
+cd ../../site-worker && wrangler deploy       # ships the static-asset edits (countries.js, i18n, counts)
 ```
+
+The runner keeps its bookkeeping in D1's `schema_migrations` table
+(migration 205): it refuses to double-apply (the autoincrement-table
+duplication trap), applies in order, stops at the first failure with an
+accurate record of what got through, and warns on files edited after
+they were applied. **One-time setup on a database that predates the
+table**: `python3 apply_migrations.py --remote --baseline` records every
+existing migration file as already-applied without running anything.
 
 D1-rendered surfaces (board, deep-dive page, menus, preferences,
 archive links) pick the country up within the 5-minute edge cache — no

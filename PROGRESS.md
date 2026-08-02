@@ -994,6 +994,54 @@ next-clearance list and the choice sticks across reloads; switch to
 Spanish and confirm ÚLTIMA LLAMADA / translated countries; the standalone
 mockup file this grew from is not part of the site.
 
+### Country-adding rework, Stages 1-3 re-scoped and built (2 August 2026)
+
+The pre-Stage-4 three-stage plan, re-scoped against the current
+architecture and completed in one pass:
+
+- **Stage 1 — migration tracking (built as planned)**: migration 205
+  creates `schema_migrations` (name / sha256 checksum / applied_at);
+  `migrations/apply_migrations.py` is the runner: always validates the
+  full in-memory replay first (aborting on any error beyond the 4
+  documented pre-existing ones), computes pending from the table,
+  applies strictly in order via wrangler, records each apply, refuses
+  double-applies, warns on checksum drift for files edited after apply,
+  and supports `--dry-run` and `--baseline` (one-time: record all ~205
+  existing files as applied without running them — required first step
+  on the production DB). Tested end-to-end against a fake-wrangler shim
+  over a replayed SQLite copy: baseline, nothing-pending, new-file
+  apply+record, double-apply refusal, drift warning.
+- **Stage 2 — universal INSERT OR IGNORE (re-scoped)**: retrofitting
+  200+ applied migrations was churn with no benefit, and OR IGNORE
+  cannot protect the autoincrement-PK content tables at all — the
+  tracking table is the real re-run safety. OR IGNORE survives as the
+  pattern the scaffolder emits for all new files (every table it
+  touches has a natural PK).
+- **Stage 3 — /admin/add-country endpoint (deliberately NOT built)**:
+  post-198/Stage-5, country creation is migration authoring; an HTTP
+  endpoint would duplicate that path and add an auth surface. Its
+  spirit ships as `migrations/new_country_scaffold.py`: JSON spec in →
+  correctly numbered, idempotent country + milestones migrations out
+  (incl. the Stage 5 on_tracker/portals/confidence columns), with the
+  ES/DE/FR milestone-translation stub generated into
+  `migrations/drafts/` — pre-filled with English but deliberately
+  outside the numbered sequence, so the runner cannot apply
+  untranslated rows; translate, renumber, move up. Spec validation
+  covers region spelling, code/slug shape, ISO dates, unique ids,
+  portals required for board milestones, and same-as-English name
+  warnings. Tested: bad-spec rejection, generation, full-chain replay
+  of generated files, idempotent re-apply, picker/board/slug
+  integration, and runner drafts-exclusion; test country removed.
+
+`ADDING-A-COUNTRY.md` updated: Phase 1 now starts with the scaffolder,
+Phase 4 uses the runner, with the one-time `--baseline` documented.
+
+**First-use note (before adding today's countries):** run
+`python3 apply_migrations.py --remote --baseline` once from
+`members-worker/migrations/` — it creates the table, records history,
+runs nothing. From then on, `python3 apply_migrations.py --remote` is
+the only apply command you need.
+
 ## Open items / next steps
 
 ### Resources menu + open archive: redeploy (code is done, only the ship step remains)
