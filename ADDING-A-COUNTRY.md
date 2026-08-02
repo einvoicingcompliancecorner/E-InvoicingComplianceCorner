@@ -1,15 +1,17 @@
 # Adding a New Country to the Site — Runbook
 
-> **Note:** A separate effort is underway to move the tracker and deep-dive
-> pages onto a dynamic, D1-backed architecture (see
-> `DEEP-DIVE-MIGRATION-CHECKLIST.md`). As of this writing, that work is
-> running in parallel as a verified preview — the live site still uses the
-> static files this runbook describes, for every country including the ones
-> already migrated in the new system. **Follow this document exactly as
-> written until the actual cutover happens.** This runbook will need a
-> significant rewrite once the tracker and deep-dive pages are fully dynamic
-> and the static files are retired — most of the steps below will no longer
-> apply at that point.
+> **Note (updated 2 August 2026):** Deep-dive pages are no longer static
+> HTML files — all 31 countries are now rendered dynamically from D1 (see
+> `DEEP-DIVE-MIGRATION-CHECKLIST.md`). **Phase 2 below is obsolete** —
+> don't create a new static `country-slug.html` file for a new country.
+> Instead, follow `DEEP-DIVE-MIGRATION-CHECKLIST.md`'s per-country content
+> checklist to write the deep-dive content directly into D1. Phases 1, 3,
+> 4, 5, and 6 below are still accurate as written — the tracker itself,
+> `countries.js`, the members-worker touchpoints, translations, and the
+> hardcoded-count problem are all still static/hand-edited and unaffected
+> by the deep-dive cutover. (The cutover's code is committed but the final
+> `wrangler deploy` step is still pending as of this note — see
+> `PROGRESS.md` for current status.)
 
 This document exists because adding one country touches far more places than
 it should. Follow this checklist in order rather than relying on memory —
@@ -48,7 +50,9 @@ Decide up front:
   prefix for the country (e.g. `qa-` for Qatar), matching the pattern of
   existing entries like `sa-wave23`, `uae-phase1`.
 - Add an entry to the `DEEP_DIVES` map (search `const DEEP_DIVES = {`):
-  `"CountryName": "country-slug.html"`.
+  `"CountryName": "/country-slug"` — no `.html`, and a leading slash. This
+  changed 2 August 2026 when the static per-country pages were retired in
+  favor of dynamic D1-backed rendering (see `DEEP-DIVE-MIGRATION-CHECKLIST.md`).
 - **Do not** touch the stats strip or sidebar — both are computed live from
   `DATA`, so they update automatically.
 
@@ -60,12 +64,16 @@ Decide up front:
 
 ## Phase 2 — The deep-dive page
 
-Create `country-slug.html` from scratch, following the structure of an
-existing deep dive (any of the 29 current ones works as a template — pick
-one with a similar compliance model if possible, e.g. Saudi Arabia's for
-another clearance-model Gulf country). This is genuine content writing —
-compliance model classification, timeline, technical specs, portals,
-related links — not a quick data edit. Budget real time for this step.
+**Superseded 2 August 2026** — deep-dive pages are no longer static HTML
+files. Don't create a `country-slug.html` file. Instead, write the same
+content (compliance model classification, timeline, technical specs,
+portals, related links — this is still genuine content writing, not a
+quick data edit; budget real time for it) directly into D1, following
+`DEEP-DIVE-MIGRATION-CHECKLIST.md`'s per-country content-extraction and
+schema checklist. Use an existing migrated country as a content template
+the same way this phase used to point at an existing static page — pick
+one with a similar compliance model if possible (e.g. Saudi Arabia's for
+another clearance-model Gulf country).
 
 ---
 

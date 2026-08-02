@@ -7,13 +7,13 @@ and newsletter story content. It builds on, and cross-references rather
 than repeats, `NEWSLETTER-ARCHIVE-REDESIGN.md` for the per-story schema
 details.
 
-**Status as of 1 August 2026: largely built and substantially exceeded
-in scope for deep-dive content. See "Current status" immediately below
-for what's actually implemented, what diverged from this original plan,
-and what's still outstanding. The rest of this document is preserved as
-the original design record — the reasoning and schema below mostly still
-holds, but the deep-dive piece in particular grew well beyond what was
-scoped here.**
+**Status as of 2 August 2026: built and substantially exceeded in scope
+for deep-dive content, including a full production cutover (code-complete,
+deploy pending). See "Current status" immediately below for what's
+actually implemented, what diverged from this original plan, and what's
+still outstanding. The rest of this document is preserved as the original
+design record — the reasoning and schema below mostly still holds, but the
+deep-dive piece in particular grew well beyond what was scoped here.**
 
 ---
 
@@ -35,8 +35,12 @@ scoped here.**
   translated (EN/ES/DE/FR).
 - The build-time generation script exists
   (`members-worker/migrations/generate_files.py`) and is run before every
-  Cloudflare Pages upload, exactly as this plan specified — the
-  `data-i18n` / `i18n.js` runtime mechanism was never touched.
+  static-asset deploy (`wrangler deploy` from `site-worker/` — this was
+  originally described as a "Cloudflare Pages upload" before the
+  production resource turned out to be a Worker with static assets, not
+  Pages; see "Cutover to production" in `DEEP-DIVE-MIGRATION-CHECKLIST.md`),
+  exactly as this plan specified — the `data-i18n` / `i18n.js` runtime
+  mechanism was never touched.
 
 **Not done — deferred, not abandoned:**
 - **Subscribers remain on KV (`SUBSCRIBERS`)**, not migrated to D1. This
@@ -56,24 +60,26 @@ getting-compliant steps, tabular penalty schedules, lifecycle/pill-list
 cards, and official portal links, each fully bilingual-through-French.
 Full schema reference and lessons learned: `DEEP-DIVE-MIGRATION-CHECKLIST.md`.
 
-Stage 4 status: **16 of 31 tracker countries fully migrated** (content and
+Stage 4 status: **all 31 tracker countries fully migrated** (content and
 translations both verified against the static originals) — Portugal,
 France, Germany, Poland, Spain, Malaysia, United Kingdom, Romania,
-Belgium, Finland, Croatia, Denmark, Ireland, Norway, Slovakia, and Sweden.
-**15 remain**: Australia, Brazil, Canada, Chile, China, European Union,
-India, Italy, Mexico, New Zealand, Peru, Saudi Arabia, Singapore, United
-Arab Emirates, United States.
+Belgium, Finland, Croatia, Denmark, Ireland, Norway, Slovakia, Sweden,
+Australia, China, India, New Zealand, Singapore, Brazil, Mexico, Peru,
+Chile, United States, Canada, European Union, Italy, Saudi Arabia, United
+Arab Emirates. Every country also has a translated `mandate_summary`
+status-banner tile (added 2 August 2026).
 
-Critically, **Stage 4 is not yet live** — the dynamic rendering exists
-only as an unauthenticated preview
-(`/admin/preview/deep-dive?country=X`, `/admin/preview/milestones?country=X`),
-running in parallel with the still-live static HTML deep-dive pages and
-tracker. No cutover has happened. This means the migration plan below's
-step 6 ("update the members-worker's data-access code") has effectively
-already happened for deep-dive *reads* via the preview routes, but the
-production site itself has not been switched over — that cutover is
-still a distinct, pending step once all 31 countries are migrated and the
-preview has been reviewed end-to-end.
+**The cutover itself is code-complete, deploy pending.** The 30 static
+per-country `.html` files have been deleted from the repo, the tracker
+and sitemap point at the new extensionless URLs, and a Worker script
+(`site-worker/src/index.js`) renders every country page from D1 at
+request time with automatic language routing — replacing the
+`/admin/preview/deep-dive?country=X` preview route's role with the real
+production URLs. The one remaining step is running `wrangler deploy` from
+`site-worker/` against the live `eicc-public` Worker (renamed from its
+auto-generated name `winter-fog-ff16`) — see "Cutover to production" in
+`DEEP-DIVE-MIGRATION-CHECKLIST.md` for the full architecture and what's
+left.
 
 ---
 
