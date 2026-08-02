@@ -2754,7 +2754,7 @@ function closeEducationPage(opts){
 // view) that its own <script> implements against the global document
 // -- which won't see anything, since (same reasoning as the archive
 // and Education panels) we deliberately never execute the fetched
-// page's own script. wireFeedbackForm() below ports that same logic
+// page's own script. wireFeedbackForm() below ports the same submit logic
 // to run against the shadow root directly, mirroring feedback.html's
 // own script almost line for line.
 let feedbackPageOpen = false;
@@ -2787,15 +2787,30 @@ function wireFeedbackForm(shadow){
     });
     if(!allValid) return;
 
+    // Real submission -- same endpoint and behaviour as feedback.html's
+    // own standalone handler (the panel fetches that page's markup but
+    // wires it here; keep the two in sync).
+    const submitBtn = form.querySelector('.form-submit');
+    const errEl = shadow.getElementById('fbSubmitError');
+    if(errEl) errEl.style.display = 'none';
+    if(submitBtn) submitBtn.disabled = true;
     try{
-      if(window.storage && typeof window.storage.set === 'function'){
-        await window.storage.set('feedback:'+Date.now(), JSON.stringify(values));
-      }
-    }catch(err){ /* no storage available -- form still "succeeds" for demo purposes, matching feedback.html's own standalone behaviour */ }
-
-    shadow.getElementById('fbSuccessEmail').textContent = values.email;
-    formView.style.display = 'none';
-    successView.style.display = 'block';
+      const body = new URLSearchParams();
+      body.set('email', values.email);
+      body.set('subject', values.subject);
+      body.set('comments', values.comments);
+      body.set('lang', (window.EICC_I18N && window.EICC_I18N.currentLang) || document.documentElement.lang || 'en');
+      const res = await fetch('https://members.e-invoicingcompliancecorner.com/members/feedback', { method: 'POST', body: body });
+      const data = await res.json().catch(()=>({ok:false}));
+      if(!res.ok || !data.ok) throw new Error(data.error || ('http '+res.status));
+      shadow.getElementById('fbSuccessEmail').textContent = values.email;
+      formView.style.display = 'none';
+      successView.style.display = 'block';
+    }catch(err){
+      if(errEl) errEl.style.display = 'block';
+    }finally{
+      if(submitBtn) submitBtn.disabled = false;
+    }
   });
 
   const againBtn = shadow.getElementById('feedbackAnother');
