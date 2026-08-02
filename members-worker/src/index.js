@@ -325,24 +325,34 @@ function t(lang, path) {
 
 function resolveLanguage(request) {
   const url = new URL(request.url);
+  const { value: cookieLang, duplicated: cookieDuplicated } = getCookie(request, LANG_COOKIE);
   const fromQuery = url.searchParams.get("lang");
-  if (fromQuery && SUPPORTED_LANGS.includes(fromQuery)) return { lang: fromQuery, shouldSetCookie: true };
+  if (fromQuery && SUPPORTED_LANGS.includes(fromQuery)) return { lang: fromQuery, shouldSetCookie: true, cookieDuplicated };
 
-  const cookieLang = getCookie(request, LANG_COOKIE);
-  if (cookieLang && SUPPORTED_LANGS.includes(cookieLang)) return { lang: cookieLang, shouldSetCookie: false };
+  if (cookieLang && SUPPORTED_LANGS.includes(cookieLang)) return { lang: cookieLang, shouldSetCookie: false, cookieDuplicated };
 
-  return { lang: "en", shouldSetCookie: false };
+  return { lang: "en", shouldSetCookie: false, cookieDuplicated };
 }
 
-function withLangCookie(response, lang, shouldSetCookie) {
-  if (!shouldSetCookie) return response;
+function withLangCookie(response, lang, shouldSetCookie, cookieDuplicated) {
+  if (!shouldSetCookie && !cookieDuplicated) return response;
   const headers = new Headers(response.headers);
-  // Domain=.e-invoicingcompliancecorner.com (not host-only) is what
-  // makes the shared language banner actually shared across
-  // subdomains -- this same cookie is then visible to
-  // e-invoicingcompliancecorner.com itself too, and vice versa (see
-  // site-worker/src/index.js and i18n.js's writeCookie).
-  headers.append("Set-Cookie", `${LANG_COOKIE}=${lang}; Domain=.e-invoicingcompliancecorner.com; Path=/; Max-Age=${LANG_COOKIE_TTL_SECONDS}; SameSite=Lax`);
+  if (shouldSetCookie) {
+    // Domain=.e-invoicingcompliancecorner.com (not host-only) is what
+    // makes the shared language banner actually shared across
+    // subdomains -- this same cookie is then visible to
+    // e-invoicingcompliancecorner.com itself too, and vice versa (see
+    // site-worker/src/index.js and i18n.js's writeCookie).
+    headers.append("Set-Cookie", `${LANG_COOKIE}=${lang}; Domain=.e-invoicingcompliancecorner.com; Path=/; Max-Age=${LANG_COOKIE_TTL_SECONDS}; SameSite=Lax`);
+  }
+  if (cookieDuplicated) {
+    // Self-heal: the visitor is carrying both a stale host-only
+    // "eicc_lang" cookie (from before Domain scoping existed) and the
+    // current domain-scoped one. getCookie() already reads the
+    // correct (newer) value regardless, but clear the stale host-only
+    // one here too so the browser stops sending two of them.
+    headers.append("Set-Cookie", `${LANG_COOKIE}=; Path=/; Max-Age=0; SameSite=Lax`);
+  }
   return new Response(response.body, { status: response.status, headers });
 }
 
@@ -380,7 +390,7 @@ function renderLangBanner(lang) {
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
-    const { lang, shouldSetCookie } = resolveLanguage(request);
+    const { lang, shouldSetCookie, cookieDuplicated } = resolveLanguage(request);
     try {
       let response;
       if (request.method === "POST" && url.pathname === "/webhooks/lemonsqueezy") {
@@ -428,7 +438,7 @@ export default {
       } else {
         response = new Response("Not found", { status: 404 });
       }
-      return withLangCookie(response, lang, shouldSetCookie);
+      return withLangCookie(response, lang, shouldSetCookie, cookieDuplicated);
     } catch (err) {
       return new Response("Server error — " + err.message, { status: 500 });
     }
@@ -835,7 +845,7 @@ function handleLogout() {
 // GATED ARCHIVE
 // ================================================================
 async function requireSession(request, env) {
-  const cookie = getCookie(request, SESSION_COOKIE);
+  const { value: cookie } = getCookie(request, SESSION_COOKIE);
   if (!cookie) return null;
   const payload = await verifyToken(env.SESSION_SECRET, cookie);
   if (!payload || payload.purpose !== "session") return null;
@@ -1232,10 +1242,27 @@ function timingSafeEqual(a, b) {
   return result === 0;
 }
 
+// Returns the LAST matching cookie value, not the first, and reports
+// whether more than one same-named cookie was present. A browser can
+// send two *different* cookies with the same name at once -- e.g. a
+// stale host-only "eicc_lang" cookie left over from before this site
+// scoped the cookie to Domain=.e-invoicingcompliancecorner.com,
+// sitting alongside the current domain-scoped one. Per RFC 6265 5.4,
+// cookies with equal-length paths are sent oldest-first, so the newer
+// (correct, domain-scoped) cookie is always the LAST occurrence in the
+// Cookie header -- reading the first match is what caused a user's
+// language choice to always revert to whatever the stale cookie held
+// on refresh. See withLangCookie()'s duplicate-clearing logic below
+// for the other half of the fix (actually removing the stale
+// duplicate). Only LANG_COOKIE lookups care about the duplicate flag;
+// SESSION_COOKIE lookups just ignore it.
 function getCookie(request, name) {
   const cookieHeader = request.headers.get("Cookie") || "";
-  const match = cookieHeader.match(new RegExp(`${name}=([^;]+)`));
-  return match ? match[1] : null;
+  const matches = [...cookieHeader.matchAll(new RegExp(`(?:^|; )${name}=([^;]+)`, "g"))];
+  return {
+    value: matches.length ? matches[matches.length - 1][1] : null,
+    duplicated: matches.length > 1,
+  };
 }
 
 function htmlResponse(html) {

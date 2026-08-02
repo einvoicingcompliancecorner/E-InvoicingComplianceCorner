@@ -68,14 +68,44 @@ const COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 365; // 1 year
 // translation files without bloating (or colliding with) the tracker's.
 const CONTENT_NAMESPACE = document.currentScript?.dataset?.namespace || "";
 
+// Reads the LAST matching cookie, not the first. This matters because a
+// browser can hold two *different* cookies with the same name at once --
+// e.g. a stale host-only "eicc_lang" cookie left over from before this
+// site scoped the cookie to Domain=.e-invoicingcompliancecorner.com (see
+// writeCookie below), sitting alongside the current domain-scoped one.
+// Per RFC 6265 5.4, cookies with equal-length paths are sent oldest-
+// first, so the newer (correct, domain-scoped) cookie is always the
+// LAST occurrence in document.cookie -- taking the first match is what
+// caused the "picks English, refresh, back to Spanish" bug: the stale
+// host-only cookie from an earlier visit was always read instead of
+// whatever was just chosen. See clearLegacyHostOnlyCookie() below for
+// the other half of the fix (actually removing the stale duplicate).
 function readCookie(name) {
-  const match = document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]+)`));
-  return match ? decodeURIComponent(match[1]) : null;
+  const re = new RegExp(`(?:^|; )${name}=([^;]+)`, "g");
+  let match, last = null;
+  while ((match = re.exec(document.cookie)) !== null) last = match;
+  return last ? decodeURIComponent(last[1]) : null;
 }
 
 function writeCookie(name, value) {
   try {
     document.cookie = `${name}=${encodeURIComponent(value)}; Domain=${COOKIE_DOMAIN}; Path=/; Max-Age=${COOKIE_MAX_AGE_SECONDS}; SameSite=Lax`;
+  } catch (e) {
+    /* ignore — e.g. cookies disabled */
+  }
+}
+
+// Deletes the host-only variant of a cookie (no Domain attribute), i.e.
+// exactly the kind this site used to set before it started scoping the
+// language cookie to the whole domain. Setting a cookie via document.cookie
+// with no Domain only ever affects the host-only cookie for the exact
+// current host -- it can't touch (or accidentally delete) the real
+// Domain=.e-invoicingcompliancecorner.com cookie, since those are two
+// distinct cookies as far as the browser is concerned. Safe to call
+// unconditionally: a no-op if no stale host-only cookie exists.
+function clearLegacyHostOnlyCookie(name) {
+  try {
+    document.cookie = `${name}=; Path=/; Max-Age=0; SameSite=Lax`;
   } catch (e) {
     /* ignore — e.g. cookies disabled */
   }
@@ -121,6 +151,12 @@ const EICC_I18N = {
   // (harmless redundancy, keeps working if cookies are ever blocked).
   persistLanguage(code) {
     writeCookie(COOKIE_NAME, code);
+    // Clean up any stale host-only duplicate every time we persist (which
+    // happens on every page load via init(), not just an explicit
+    // switch) so the site self-heals for anyone still carrying one from
+    // before the Domain-scoped cookie existed, without needing to clear
+    // cookies by hand.
+    clearLegacyHostOnlyCookie(COOKIE_NAME);
     try {
       window.localStorage.setItem(STORAGE_KEY, code);
     } catch (e) {

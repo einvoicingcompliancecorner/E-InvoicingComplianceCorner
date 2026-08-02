@@ -357,6 +357,61 @@ Two related tracker/members-worker changes, built together:
   `ARCHIVE_PUBLIC` var, the CORS header, and the archive-rendering
   changes. See "Open items" below for the exact commands.
 
+### Language cookie bug fix + deep-dive header portal link (2 August 2026, code complete, deploy pending)
+
+Two unrelated fixes, done together:
+
+- **Bug fix:** picking a language (e.g. English) and refreshing the
+  page kept reverting to Spanish, no matter what was chosen. Root
+  cause: before today, both Workers set the `eicc_lang` cookie
+  host-only (no `Domain=`); the site-wide banner change earlier today
+  switched to `Domain=.e-invoicingcompliancecorner.com` so the choice
+  is shared across subdomains, but never cleared the old host-only
+  cookie. A browser holds both as genuinely separate cookies (same
+  name, different scope) once that happens, and per RFC 6265 §5.4,
+  same-length-path cookies are sent oldest-first — so the stale
+  host-only cookie (from whenever a language was last auto-detected
+  or picked before today) was always the *first* match in the `Cookie`
+  header/`document.cookie`, and every read (`i18n.js`'s `readCookie`,
+  both Workers' `getCookie`) took the first match, permanently
+  shadowing whatever the new domain-scoped cookie actually held.
+  Fixed two ways together: (1) all three cookie readers now take the
+  *last* match instead of the first, which per the same RFC ordering
+  rule is always the newer, correct, domain-scoped cookie — this fixes
+  it immediately, with no extra request round-trip; (2) each reader
+  also now reports if a duplicate was found, and when it is, an
+  explicit `Set-Cookie` clearing just the host-only variant (no
+  `Domain=`, `Max-Age=0`) is sent — client-side on every `persistLanguage()`
+  call (i.e. every page load, via `clearLegacyHostOnlyCookie()`), and
+  server-side on the next response from either Worker — so affected
+  visitors self-heal down to a single cookie within one page load,
+  rather than the fix permanently relying on cookie-ordering behaviour.
+  Verified with targeted Node tests feeding a synthetic duplicate
+  `eicc_lang=es; eicc_lang=en` cookie/header into the actual
+  `getCookie`/`readCookie` functions extracted from the real source
+  (confirming the last-match value and duplicate detection), plus a
+  source-level check that `clearLegacyHostOnlyCookie` never sets
+  `Domain=` (which would delete the *good* cookie instead of the stale
+  one). Re-ran the full existing archive/menu test suite afterward —
+  no regressions.
+- **Feature:** the government portal link on country deep-dive pages
+  moved from a `.portal-row` at the very bottom of the page (below the
+  penalties section, above the footer disclaimer) up into the page
+  header, in a new right-aligned column beneath the existing "Last
+  updated" / "Compliance model" text — same `.portal-btn` pill styling
+  as before, just relocated. Implemented in
+  `shared/deep-dive-render.mjs` (the one shared template used by both
+  `site-worker`'s real country pages and the tracker's in-page shadow-
+  DOM deep-dive panel, so no separate client-side change was needed —
+  the panel just fetches and reuses this same HTML/CSS). The old
+  now-unused `.portal-row` CSS rule was removed along with it. Verified
+  by rendering the real template with mock content and asserting: the
+  portal link is inside the new `.country-meta-col` header column and
+  sits after (beneath) the last-updated/compliance-model text; the old
+  bottom-of-page wrapper is gone; the link appears exactly once (moved,
+  not duplicated); and the new CSS rules are present and correctly
+  scoped. Re-ran the existing tracker HTML parse-validity check too.
+
 ---
 
 ## Open items / next steps

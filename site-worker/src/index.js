@@ -35,10 +35,25 @@ import {
 const LANG_COOKIE = "eicc_lang";
 const LANG_COOKIE_TTL_SECONDS = 60 * 60 * 24 * 365; // 1 year
 
+// Returns the LAST matching cookie value, not the first, and reports
+// whether more than one same-named cookie was present. A browser can
+// send two *different* cookies with the same name at once -- e.g. a
+// stale host-only "eicc_lang" cookie left over from before this site
+// scoped the cookie to Domain=.e-invoicingcompliancecorner.com,
+// sitting alongside the current domain-scoped one. Per RFC 6265 5.4,
+// cookies with equal-length paths are sent oldest-first, so the newer
+// (correct, domain-scoped) cookie is always the LAST occurrence in the
+// Cookie header -- reading the first match is what caused a user's
+// language choice to always revert to whatever the stale cookie held
+// on refresh. See the duplicate-clearing Set-Cookie logic below for
+// the other half of the fix (actually removing the stale duplicate).
 function getCookie(request, name) {
   const cookieHeader = request.headers.get("Cookie") || "";
-  const match = cookieHeader.match(new RegExp(`${name}=([^;]+)`));
-  return match ? match[1] : null;
+  const matches = [...cookieHeader.matchAll(new RegExp(`(?:^|; )${name}=([^;]+)`, "g"))];
+  return {
+    value: matches.length ? matches[matches.length - 1][1] : null,
+    duplicated: matches.length > 1,
+  };
 }
 
 // Parses a standard Accept-Language header ("fr-FR,fr;q=0.9,en;q=0.8")
@@ -71,10 +86,10 @@ async function renderCountryDeepDive(request, env, slug) {
 
   let lang = url.searchParams.get("lang");
   let shouldSetCookie = false;
+  const { value: cookieLang, duplicated: cookieDuplicated } = getCookie(request, LANG_COOKIE);
   if (lang && SUPPORTED_LANGS.includes(lang)) {
     shouldSetCookie = true;
   } else {
-    const cookieLang = getCookie(request, LANG_COOKIE);
     if (cookieLang && SUPPORTED_LANGS.includes(cookieLang)) {
       lang = cookieLang;
     } else {
@@ -110,6 +125,14 @@ async function renderCountryDeepDive(request, env, slug) {
     // too, and vice versa (see members-worker/src/index.js's
     // withLangCookie and i18n.js's writeCookie).
     headers.append("Set-Cookie", `${LANG_COOKIE}=${lang}; Domain=.e-invoicingcompliancecorner.com; Path=/; Max-Age=${LANG_COOKIE_TTL_SECONDS}; SameSite=Lax`);
+  }
+  if (cookieDuplicated) {
+    // Self-heal: the visitor is carrying both a stale host-only
+    // "eicc_lang" cookie (from before Domain scoping existed) and the
+    // current domain-scoped one. getCookie() already reads the correct
+    // (newer) value regardless, but clear the stale host-only one here
+    // too so the browser stops sending two of them on every request.
+    headers.append("Set-Cookie", `${LANG_COOKIE}=; Path=/; Max-Age=0; SameSite=Lax`);
   }
   return new Response(html, { headers });
 }

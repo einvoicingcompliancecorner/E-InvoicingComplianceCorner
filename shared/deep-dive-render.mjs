@@ -434,6 +434,8 @@ export async function renderFullDeepDivePage(countryName, flag, code, region, co
   .country-title{font-size:clamp(28px,4.5vw,42px); margin:0; text-transform:uppercase; line-height:0.95;}
   .country-region{font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--muted); margin-top:6px;}
   .country-meta{font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--muted); text-align:right;}
+  .country-meta-col{display:flex; flex-direction:column; align-items:flex-end; gap:10px;}
+  .portal-row-header{display:flex; flex-wrap:wrap; gap:8px; justify-content:flex-end;}
   .stat-strip{display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:1px; background:var(--line); border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; margin-bottom:36px;}
   .stat-strip .stat{background:var(--ink-2); padding:16px 18px;}
   .stat-strip .stat .num{font-family:'Big Shoulders Display',sans-serif; font-weight:800; font-size:22px; line-height:1.15;}
@@ -487,7 +489,6 @@ export async function renderFullDeepDivePage(countryName, flag, code, region, co
   .penalty-table th{font-family:'IBM Plex Mono',monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:0.06em; color:#6b5f3f;}
   .penalty-table td{color:#241d10;}
   .penalty-card{background:var(--paper); color:#241d10; border-radius:var(--radius); border:1px solid var(--paper-line); padding:16px 18px; grid-column:1 / -1;}
-  .portal-row{display:flex; flex-wrap:wrap; gap:10px; margin:8px 0 40px;}
   .portal-btn{display:inline-block; background:var(--ink-2); border:1px solid var(--line); border-radius:999px; padding:9px 18px; font-family:'IBM Plex Mono',monospace; font-size:12.5px; text-decoration:none; color:var(--text-lo);}
   footer{border-top:1px solid var(--line); padding-top:20px; color:var(--muted); font-size:12px; line-height:1.6;}
 </style>
@@ -507,7 +508,10 @@ ${renderLangBanner(lang)}
         <div class="country-region">${escapeHtml(region)} · ${escapeHtml(code)} · VAT area: EU</div>
       </div>
     </div>
-    <div class="country-meta">${t(lang, "lastUpdatedLabel")}: ${escapeHtml(content.last_updated)}<br>${t(lang, "complianceModelLabel")}: ${escapeHtml(content.compliance_model)}</div>
+    <div class="country-meta-col">
+      <div class="country-meta">${t(lang, "lastUpdatedLabel")}: ${escapeHtml(content.last_updated)}<br>${t(lang, "complianceModelLabel")}: ${escapeHtml(content.compliance_model)}</div>
+      <div class="portal-row-header">${portalsHtml}</div>
+    </div>
   </div>
 
   ${content.mandate_summary ? `<div class="status-banner"><span class="icon">${escapeHtml(content.mandate_summary_icon || "ℹ️")}</span><span>${escapeHtml(content.mandate_summary)}</span></div>` : ""}
@@ -543,8 +547,6 @@ ${renderLangBanner(lang)}
     <p class="section-intro">${escapeHtml(content.penalties_intro)}</p>
     <div class="related-grid">${relatedHtml}</div>
   </div>
-
-  <div class="portal-row">${portalsHtml}</div>
 
   <footer><p>${escapeHtml(content.footer_disclaimer)}</p></footer>
 </div>
