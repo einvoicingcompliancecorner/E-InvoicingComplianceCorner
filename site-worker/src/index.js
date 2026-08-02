@@ -1,26 +1,25 @@
 // ================================================================
-// Cloudflare Pages Function — dynamic, D1-backed country deep-dive pages.
+// Worker — serves e-invoicingcompliancecorner.com.
 // ================================================================
-// Replaces the old hand-written static HTML files (spain.html,
-// croatia.html, etc.) with a single dynamic route. Cloudflare Pages
-// only invokes this Function when no static asset matches the
-// requested path first — since the old per-country .html files have
-// been deleted, every /<slug> request for a known country now lands
-// here instead.
+// This is a Cloudflare "Workers with static assets" project (the
+// production resource is named "winter-fog-ff16"), NOT Cloudflare
+// Pages. Static files (index.html, the tracker, education pages,
+// i18n/, etc.) are served automatically from the [assets] binding
+// configured in wrangler.toml whenever a request matches a real file
+// — this script only runs for requests that don't match any static
+// asset, which today means exactly the 30 country deep-dive slugs
+// (spain, croatia, uae, ...) since their old .html files were deleted.
 //
-// Requires a D1 database binding named `eicc_content` configured on
-// this Pages project (Cloudflare dashboard → Pages project → Settings
-// → Functions → D1 database bindings), pointed at the same `eicc-content`
-// database (id d1d10bd0-e90a-44a3-9494-a63689e8d32e) the members-worker
-// Cloudflare Worker already uses — this is the one manual setup step
-// that can't be done from a repo commit alone.
+// Requires a D1 database binding named `eicc_content` (see
+// wrangler.toml), pointed at the same `eicc-content` database
+// (id d1d10bd0-e90a-44a3-9494-a63689e8d32e) members-worker uses.
 //
 // Language: an explicit ?lang= query param always wins (and refreshes
 // the persistence cookie); otherwise a previously-set cookie is used;
 // otherwise the browser's own Accept-Language header picks the best
 // supported match; otherwise English. This is what makes "route every
-// visitor, in any language, straight to the D1 version" actually work
-// without needing a query param on first visit.
+// visitor, in any language, straight to the D1 version" work without
+// needing a query param on first visit.
 // ================================================================
 
 import {
@@ -30,7 +29,7 @@ import {
   getDeepDiveContent,
   getMilestonesForCountry,
   renderFullDeepDivePage,
-} from "../shared/deep-dive-render.mjs";
+} from "../../shared/deep-dive-render.mjs";
 
 const LANG_COOKIE = "eicc_lang";
 const LANG_COOKIE_TTL_SECONDS = 60 * 60 * 24 * 365; // 1 year
@@ -66,29 +65,16 @@ function renderLangSwitcher(lang, slug) {
   return `<span style="font-family:'IBM Plex Mono',monospace; font-size:11.5px;">🌐${links}</span>`;
 }
 
-export async function onRequest(context) {
-  const { request, env } = context;
-  const url = new URL(request.url);
-
-  // Accept both the clean-URL slug (/spain) and an old-style .html
-  // request (/spain.html) landing here, since a bookmarked or indexed
-  // .html URL with no matching static file also falls through to this
-  // Function — normalize before the lookup either way.
-  let slug = String(context.params.country || "").toLowerCase();
-  if (slug.endsWith(".html")) slug = slug.slice(0, -5);
-
-  const countryName = SLUG_TO_COUNTRY[slug];
-  if (!countryName) {
-    return new Response("Not found", { status: 404 });
-  }
-
+async function renderCountryDeepDive(request, env, slug) {
   if (!env.eicc_content) {
     return new Response(
-      "This page requires a D1 database binding named 'eicc_content' on the Pages project (Settings → Functions → D1 database bindings) — see the comment at the top of functions/[country].js.",
+      "This page requires a D1 database binding named 'eicc_content' on this Worker (Cloudflare dashboard → winter-fog-ff16 → Bindings) — see wrangler.toml.",
       { status: 500 }
     );
   }
   const db = env.eicc_content;
+  const url = new URL(request.url);
+  const countryName = SLUG_TO_COUNTRY[slug];
 
   let lang = url.searchParams.get("lang");
   let shouldSetCookie = false;
@@ -130,3 +116,26 @@ export async function onRequest(context) {
   }
   return new Response(html, { headers });
 }
+
+export default {
+  async fetch(request, env, ctx) {
+    const url = new URL(request.url);
+
+    // Only a single path segment can ever be a country slug
+    // (/spain, /spain.html) — anything else falls straight through to
+    // static assets below.
+    const segments = url.pathname.split("/").filter(Boolean);
+    if (segments.length === 1) {
+      let slug = segments[0].toLowerCase();
+      if (slug.endsWith(".html")) slug = slug.slice(0, -5);
+      if (SLUG_TO_COUNTRY[slug]) {
+        return renderCountryDeepDive(request, env, slug);
+      }
+    }
+
+    // Static assets binding handles everything else (index.html, the
+    // tracker, education pages, i18n/, css/js/images, and the final
+    // not-found fallback for anything that matches nothing at all).
+    return env.ASSETS.fetch(request);
+  },
+};

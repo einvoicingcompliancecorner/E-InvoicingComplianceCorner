@@ -1,0 +1,34 @@
+# ----------------------------------------------------------------
+# This Worker serves the public site at e-invoicingcompliancecorner.com.
+# It is a Cloudflare "Workers with static assets" project (NOT Cloudflare
+# Pages) — the existing production resource is named "winter-fog-ff16"
+# and was originally created via a manual dashboard upload with no git
+# connection, so `name` below must stay "winter-fog-ff16" for
+# `wrangler deploy` to update that same resource rather than creating a
+# new one.
+#
+# Deploy with:
+#   cd site-worker
+#   wrangler deploy
+#
+# (same pattern as members-worker — run from your own machine, since
+# this sandbox can't reach the Cloudflare API directly.)
+# ----------------------------------------------------------------
+name = "winter-fog-ff16"
+main = "src/index.js"
+compatibility_date = "2026-08-02"
+
+# Static assets — everything in the repo root (index.html, the tracker,
+# education pages, i18n/, etc.) except what's excluded in
+# ../.assetsignore (this site-worker/ dir itself, members-worker/,
+# shared/, docs, git metadata).
+[assets]
+directory = "../"
+binding = "ASSETS"
+
+# Same D1 database members-worker already uses — country deep-dive
+# content, translations, tracker milestones, mandate summaries, etc.
+[[d1_databases]]
+binding = "eicc_content"
+database_name = "eicc-content"
+database_id = "d1d10bd0-e90a-44a3-9494-a63689e8d32e"

@@ -779,18 +779,30 @@ on `content.mandate_summary` being present.
 This completes the mandate-summary tile rollout across all 31 tracker countries, in all 4
 supported languages.
 
-## Cutover to production: static pages retired (Cloudflare Pages Functions)
+## Cutover to production: static pages retired (Workers static assets)
 
 Following the mandate-summary rollout above, the 30 hand-written static country
 deep-dive pages (spain.html, croatia.html, etc.) have been retired entirely and
 replaced with a single dynamic route, live on the real production domain rather
 than only the members-subdomain admin preview.
 
-**Architecture:** a new Cloudflare Pages Function, `functions/[country].js`,
-matches any single-segment path (e.g. `/spain`) that has no matching static
-asset — which, now that the 30 static files are deleted, means every real
-country URL. It reads the D1 database directly (binding name `eicc_content`,
-same database as members-worker) and renders the page at request time.
+**Architecture — correction from the first attempt:** the initial version of
+this cutover was built as a Cloudflare Pages Function (`functions/[country].js`),
+on the assumption that the production site was a Cloudflare Pages project.
+Inspecting the live Cloudflare dashboard showed this was wrong: the resource
+actually serving e-invoicingcompliancecorner.com, `winter-fog-ff16`, is a plain
+Cloudflare **Worker with static assets**, deployed by manual dashboard upload
+with no git connection — a different product from Pages, which doesn't support
+the `functions/` file-based routing convention at all. That code was replaced
+with a new `site-worker/` project: a single Worker script
+(`site-worker/src/index.js`) with a `fetch` handler, an `[assets]` binding
+(serving everything in the repo root except the excludes listed in
+`.assetsignore`) and a `eicc_content` D1 binding, deployed the same way
+members-worker is (`wrangler deploy`, run by hand since this sandbox can't
+reach the Cloudflare API). Static assets are matched first by the platform
+automatically (same precedence Pages had); the Worker script only runs for the
+30 country slugs, which have no matching file since their `.html` pages were
+deleted, and falls back to `env.ASSETS.fetch(request)` for anything else.
 
 **Shared rendering code:** `shared/deep-dive-render.mjs` is the new single
 source of truth for `getDeepDiveContent`, `renderFullDeepDivePage`, and their
@@ -827,20 +839,26 @@ English-only with no translation mechanism at all.
   but never had a static page or a tracker link before, and adding one wasn't
   part of this change.
 
-**Manual setup step (can't be done from a repo commit):** the Pages project
-needs a D1 database binding named `eicc_content`, pointed at the `eicc-content`
-database (id `d1d10bd0-e90a-44a3-9494-a63689e8d32e`) — Cloudflare dashboard →
-Pages project → Settings → Functions → D1 database bindings. Until this is
-configured, `functions/[country].js` returns a clear 500 explaining exactly
-that, rather than a confusing generic error.
+**Deploy step:** `cd site-worker && wrangler deploy` from your own machine
+(this sandbox can't reach the Cloudflare API). `wrangler.toml`'s `name` is set
+to `winter-fog-ff16` deliberately, so this updates the existing production
+resource rather than creating a new one — the D1 binding (`eicc_content` →
+`eicc-content`, id `d1d10bd0-e90a-44a3-9494-a63689e8d32e`) and the `ASSETS`
+binding are both declared in that file, so no manual dashboard configuration
+is needed this time; `wrangler deploy` sets them up itself. Until deployed,
+`winter-fog-ff16` still has zero bindings and serves only the old static
+asset set (which, since the 30 country .html files were deleted from the repo
+but the live upload hasn't changed, may currently be stale/missing for those
+URLs on production until this deploy runs).
 
-**Testing:** no live Cloudflare Pages runtime is reachable from this sandbox,
-so verification was: `node --check` syntax validation on all three changed/new
-files, and a genuine integration test running the shared module's actual
-render path against real content in the local D1 mirror via Node's built-in
-`node:sqlite`, wrapped in a small D1-API-compatible shim (`prepare().bind()`
-`.all()`/`.first()`) — 5 country/language combinations (Spain/en, Spain/de,
-Croatia/fr, Malaysia/es, United States/en) all produced valid, complete HTML
-with no template errors. Recommended before relying on this in production:
-`wrangler pages dev` locally, and a spot-check of a handful of live URLs
-post-deploy.
+**Testing:** no live Cloudflare Workers runtime is reachable from this
+sandbox, so verification was: `node --check` syntax validation, and a genuine
+integration test running the new `site-worker/src/index.js` fetch handler
+end-to-end (including its own routing/language logic, not just the shared
+render module) against real content in the local D1 mirror via Node's
+built-in `node:sqlite`, wrapped in a small D1-API-compatible shim
+(`prepare().bind().all()`/`.first()`) and a stubbed `env.ASSETS.fetch`.
+`/spain`, `/index.html` (correctly falls through to the assets stub), and
+`/croatia?lang=fr` (correct language + cookie) all behaved as expected.
+Recommended before fully trusting this in production: `wrangler dev` locally,
+and a spot-check of a handful of live URLs post-deploy.

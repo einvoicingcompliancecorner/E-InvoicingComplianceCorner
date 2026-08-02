@@ -1,0 +1,9 @@
+# Excludes source/config files from the static-assets upload for the
+# site-worker Worker (wrangler.toml: [assets] directory = "../").
+# Gitignore-style syntax.
+site-worker/
+members-worker/
+shared/
+migrations/
+.git/
+*.md
