@@ -376,6 +376,13 @@
   .dropdown-item .dd-icon{font-size:14px;}
 
   /* ===== Nested flyout submenu (Resources > Deep Dives) ===== */
+  /* #resourcesPanel needs overflow:visible (overriding the base
+     .dropdown-panel's overflow:hidden, which exists to clip item
+     hover backgrounds to the rounded corners) -- otherwise the nested
+     flyout below, despite being position:absolute against .dd-flyout,
+     still gets clipped by this ancestor's overflow box and never
+     becomes visible, even though its .open class toggles correctly. */
+  #resourcesPanel{overflow:visible;}
   .dd-flyout{position:relative;}
   .dd-flyout-trigger{justify-content:space-between;}
   .dd-flyout-label{display:flex; align-items:center; gap:9px;}
@@ -595,6 +602,7 @@
 </div>
 
 <div id="countryDeepDiveView" style="display:none;"></div>
+<div id="archiveView" style="display:none;"></div>
 
 <footer>
   <p data-i18n="filters.disclaimer">This tracker reflects publicly available guidance as of July 2026 and is provided for general awareness, not legal or tax advice. E-invoicing thresholds, wave numbers and go-live dates change frequently — confirm your obligations directly on the official government portal linked in each entry, or with your tax advisor, before making compliance decisions.</p>
@@ -2074,12 +2082,220 @@ function closeDeepDive(opts){
     history.pushState({ deepDive: null }, '', '/einvoicing-compliance-tracker.html');
   }
 }
+// ---------- in-page newsletter archive panel ----------
+// Mirrors the country deep-dive panel above, but the archive lives on
+// a different origin (members.e-invoicingcompliancecorner.com), so
+// this fetch is genuinely cross-origin -- members-worker allows it via
+// a narrowly scoped CORS header (see withCors() there) on exactly
+// these two GET routes, nothing else. Unlike the deep-dive pages, the
+// archive is a genuinely interactive page (search box, edition filter,
+// country checkboxes) driven by its own inline script block -- that code
+// can't just be re-executed inside a shadow root as-is, since it looks
+// things up via the global `document`, which doesn't see inside a
+// shadow tree. So instead of injecting and running the fetched script,
+// this ports the same rendering logic here, scoped to operate against
+// the shadow root directly (renderArchiveGrid() below is a close port
+// of members-worker's own renderGrid(), same filtering rules).
+const MEMBERS_ORIGIN = 'https://members.e-invoicingcompliancecorner.com';
+let archiveOpen = false;
+let archiveShadowRoot = null;
+let archiveStoriesData = [];
+let archiveNoIssuesText = '';
+let archiveNoMatchText = '';
+
+function escapeHtmlClient(str){
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function renderArchiveGrid(){
+  if(!archiveShadowRoot) return;
+  const grid = archiveShadowRoot.getElementById('issueGrid');
+  if(!grid) return;
+
+  const searchInput = archiveShadowRoot.getElementById('archiveSearch');
+  const editionSelect = archiveShadowRoot.getElementById('editionFilter');
+  const q = (searchInput ? searchInput.value : '').trim().toLowerCase();
+  const checked = Array.from(archiveShadowRoot.querySelectorAll('.country-filter-cb:checked')).map(cb => cb.value);
+  const edition = editionSelect ? editionSelect.value : 'thisYear';
+
+  // Most recent month present in the data, used for the "Latest
+  // edition" option -- derived from the data itself, same as the
+  // standalone page, so it's always correct regardless of when this
+  // panel is opened relative to when stories were actually published.
+  const mostRecentMonth = archiveStoriesData.length
+    ? archiveStoriesData.reduce((max, s) => s.date.slice(0, 7) > max ? s.date.slice(0, 7) : max, archiveStoriesData[0].date.slice(0, 7))
+    : null;
+  const currentYear = String(new Date().getFullYear());
+
+  const filtered = archiveStoriesData.filter(s => {
+    const matchesSearch = !q || s.title.toLowerCase().includes(q) || s.summary.toLowerCase().includes(q);
+    const matchesCountry = checked.length === 0 || s.countries.some(c => checked.includes(c));
+    const matchesEdition = edition === 'all'
+      || (edition === 'latest' && s.date.slice(0, 7) === mostRecentMonth)
+      || (edition === 'thisYear' && s.date.slice(0, 4) === currentYear);
+    return matchesSearch && matchesCountry && matchesEdition;
+  });
+
+  if(archiveStoriesData.length === 0){
+    grid.innerHTML = '<p class="no-match">' + archiveNoIssuesText + '</p>';
+    return;
+  }
+  if(filtered.length === 0){
+    grid.innerHTML = '<p class="no-match">' + archiveNoMatchText + '</p>';
+    return;
+  }
+  // Issue links point at the real, full standalone issue page on the
+  // members subdomain (not intercepted for a further in-page swap --
+  // Dan asked for the archive LIST to open in the main frame, not
+  // every individual issue too).
+  grid.innerHTML = filtered.map(s => `
+    <a class="issue-card" href="${MEMBERS_ORIGIN}/members/archive/${encodeURIComponent(s.id)}">
+      <div class="issue-date">${escapeHtmlClient(s.date)}</div>
+      <div class="issue-title">${escapeHtmlClient(s.title)}</div>
+      ${s.summary ? `<div class="issue-summary">${escapeHtmlClient(s.summary)}</div>` : ''}
+      ${s.countries.length ? `<div class="issue-country-tags">${s.countries.map(c => `<span>${escapeHtmlClient(c)}</span>`).join('')}</div>` : ''}
+    </a>
+  `).join('');
+}
+
+async function openArchive(opts){
+  opts = opts || {};
+  const boardView = document.getElementById('boardView');
+  const countryPanel = document.getElementById('countryDeepDiveView');
+  const panel = document.getElementById('archiveView');
+  const topbarBrand = document.querySelector('.topbar-brand');
+  archiveOpen = true;
+  // Mutually exclusive with a country deep dive being open.
+  if(currentDeepDiveSlug) closeDeepDive({ skipHistory: true });
+
+  boardView.style.display = 'none';
+  if(topbarBrand) topbarBrand.style.display = 'none';
+  countryPanel.style.display = 'none';
+  countryPanel.innerHTML = '';
+  panel.style.display = '';
+  panel.innerHTML = '<p style="color:var(--muted); font-family:\'IBM Plex Mono\',monospace; font-size:13px; padding:40px 5vw;">Loading…</p>';
+  window.scrollTo(0, 0);
+
+  const lang = (window.EICC_I18N && window.EICC_I18N.currentLang) || 'en';
+  let html;
+  try {
+    const res = await fetch(`${MEMBERS_ORIGIN}/members/archive?lang=${lang}`);
+    if(!res.ok) throw new Error('archive fetch failed: ' + res.status);
+    html = await res.text();
+  } catch(err){
+    console.warn('Falling back to a full navigation for the archive', err);
+    window.location.href = `${MEMBERS_ORIGIN}/members/archive`;
+    return;
+  }
+  if(!archiveOpen) return; // closed again before the fetch resolved
+
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  const styleEl = doc.querySelector('style');
+  const wrap = doc.querySelector('.archive-wrap');
+  if(!wrap){
+    // Most likely means ARCHIVE_PUBLIC has been turned off and this
+    // came back as the login page instead (fetch() follows redirects
+    // transparently) -- fall back to a real navigation rather than
+    // showing something broken.
+    console.warn('Archive response did not contain .archive-wrap, falling back to full navigation');
+    window.location.href = `${MEMBERS_ORIGIN}/members/archive`;
+    return;
+  }
+
+  // Extract the story data + translated strings the original inline
+  // script embedded as plain `const NAME = <json>;` -- JSON.stringify
+  // never emits raw newlines inside the value, so each is reliably one
+  // line and this simple match is safe and exact against our own
+  // known output format.
+  const storiesMatch = html.match(/const ARCHIVE_STORIES = (\[.*?\]);/s);
+  const noIssuesMatch = html.match(/const NO_ISSUES_TEXT = (".*?");/s);
+  const noMatchMatch = html.match(/const NO_MATCH_TEXT = (".*?");/s);
+  archiveStoriesData = storiesMatch ? JSON.parse(storiesMatch[1]) : [];
+  archiveNoIssuesText = noIssuesMatch ? JSON.parse(noIssuesMatch[1]) : '';
+  archiveNoMatchText = noMatchMatch ? JSON.parse(noMatchMatch[1]) : '';
+
+  // Same :root/body -> :host rewrite as the country deep-dive panel
+  // above, for the same reason -- neither selector matches anything
+  // inside a shadow tree otherwise.
+  const scopedCss = (styleEl ? styleEl.textContent : '')
+    .replace(':root{', ':host{')
+    .replace('body{', ':host{');
+
+  // Fix relative /members/... links (e.g. manage-preferences, though
+  // that only ever appears when signed in, which this cross-origin
+  // fetch never is, since cookies aren't sent across origins) so they
+  // resolve against the members subdomain, not this page's own origin.
+  wrap.querySelectorAll('a[href^="/"]').forEach(a => {
+    a.setAttribute('href', MEMBERS_ORIGIN + a.getAttribute('href'));
+  });
+
+  panel.innerHTML = '';
+  const host = document.createElement('div');
+  panel.appendChild(host);
+  const shadow = host.attachShadow({ mode: 'open' });
+  archiveShadowRoot = shadow;
+
+  const closeLabel = (window.EICC_I18N && window.EICC_I18N.t('backLink')) || '← Back to global tracker';
+  shadow.innerHTML = `
+    <style>${scopedCss}</style>
+    <div class="topbar topbar-wide"><a class="back-link" id="archiveCloseLink" href="/einvoicing-compliance-tracker.html">${closeLabel}</a></div>
+    ${wrap.outerHTML}`;
+  shadow.getElementById('archiveCloseLink').addEventListener('click', (e)=>{
+    e.preventDefault();
+    closeArchive();
+  });
+
+  const searchInput = shadow.getElementById('archiveSearch');
+  const editionSelect = shadow.getElementById('editionFilter');
+  if(searchInput) searchInput.addEventListener('input', renderArchiveGrid);
+  if(editionSelect) editionSelect.addEventListener('change', renderArchiveGrid);
+  shadow.querySelectorAll('.country-filter-cb').forEach(cb => {
+    cb.addEventListener('change', renderArchiveGrid);
+  });
+
+  renderArchiveGrid();
+
+  if(!opts.skipHistory){
+    history.pushState({ archive: true }, '', '/einvoicing-compliance-tracker.html?view=archive');
+  }
+}
+
+function closeArchive(opts){
+  opts = opts || {};
+  archiveOpen = false;
+  archiveShadowRoot = null;
+  document.getElementById('boardView').style.display = '';
+  const topbarBrand = document.querySelector('.topbar-brand');
+  if(topbarBrand) topbarBrand.style.display = '';
+  const panel = document.getElementById('archiveView');
+  panel.style.display = 'none';
+  panel.innerHTML = '';
+  if(!opts.skipHistory){
+    history.pushState({ archive: false }, '', '/einvoicing-compliance-tracker.html');
+  }
+}
+
+
+const ARCHIVE_LINK_HREF = MEMBERS_ORIGIN + '/members/archive';
 
 function wireDeepDiveInPagePanel(){
   document.addEventListener('click', (e)=>{
     const link = e.target.closest('a');
     if(!link) return;
-    const slug = slugFromHref(link.getAttribute('href'));
+    const href = link.getAttribute('href');
+
+    // The Resources > Newsletter archive link -- opens the archive
+    // list in the main frame instead of navigating away, same
+    // treatment as a country Deep Dive link.
+    if(href === ARCHIVE_LINK_HREF || href === '/members/archive'){
+      e.preventDefault();
+      document.getElementById('sidebar')?.classList.remove('open');
+      document.getElementById('sidebarOverlay')?.classList.remove('open');
+      openArchive();
+      return;
+    }
+
+    const slug = slugFromHref(href);
     if(!slug) return;
     e.preventDefault();
     document.getElementById('sidebar')?.classList.remove('open');
@@ -2088,19 +2304,35 @@ function wireDeepDiveInPagePanel(){
   });
 
   window.addEventListener('popstate', ()=>{
+    const isArchiveUrl = new URLSearchParams(window.location.search).get('view') === 'archive';
     const slug = slugFromHref(window.location.pathname);
-    if(slug){
+    if(isArchiveUrl){
+      openArchive({ skipHistory: true });
+    } else if(slug){
       openDeepDive(slug, { skipHistory: true });
     } else if(currentDeepDiveSlug){
       closeDeepDive({ skipHistory: true });
+    } else if(archiveOpen){
+      closeArchive({ skipHistory: true });
     }
   });
 
-  // If the language changes while a deep dive is open, re-fetch it in
-  // the new language rather than leaving stale-language content up.
+  // If the language changes while a deep dive or the archive is open,
+  // re-fetch it in the new language rather than leaving stale-language
+  // content up.
   document.addEventListener('eicc:languageChanged', ()=>{
     if(currentDeepDiveSlug) openDeepDive(currentDeepDiveSlug, { skipHistory: true });
+    else if(archiveOpen) openArchive({ skipHistory: true });
   });
+
+  // A direct/bookmarked/shared load of ?view=archive should open the
+  // panel immediately, the same way a direct load of a country's own
+  // URL renders that country's real standalone page (progressive
+  // enhancement's in-page counterpart for a link with no dedicated
+  // tracker-side URL of its own).
+  if(new URLSearchParams(window.location.search).get('view') === 'archive'){
+    openArchive({ skipHistory: true });
+  }
 }
 
 // ---------- init ----------

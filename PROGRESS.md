@@ -248,10 +248,68 @@ Two related tracker/members-worker changes, built together:
   that translation) — renamed to "Formation" to free up "Ressources"
   for the new Resources menu itself, avoiding two identically-labelled
   buttons in the French UI.
+- **Bug fix (same day):** the Deep Dives flyout didn't visually pop out
+  at all, despite its open/close state toggling correctly — the
+  Resources panel it's nested inside has `overflow:hidden` (inherited
+  from the base `.dropdown-panel` rule, there to clip item hover
+  backgrounds to the rounded corners), which was silently clipping the
+  absolutely-positioned flyout child too, even though it's positioned
+  against its own `.dd-flyout` wrapper. Fixed with a `#resourcesPanel{
+  overflow:visible;}` override. Confirmed via computed-style assertion
+  in a jsdom test, since jsdom doesn't do real layout/paint and the
+  earlier class-toggle-only test had missed this.
+- **The newsletter archive now opens in the main frame**, same as a
+  country deep dive, sidebar still visible throughout — not just a
+  live link that navigates away. This was more involved than the deep
+  dive panel because the archive is a genuinely interactive page
+  (search box, edition filter, country checkboxes) driven by its own
+  script, and it lives on a different origin (members subdomain):
+  - `members-worker` now sends `Access-Control-Allow-Origin:
+    https://e-invoicingcompliancecorner.com` on exactly the two
+    archive GET routes (`withCors()`), so the tracker's own JS is
+    allowed to read the response body cross-origin. No other route
+    gets this header.
+  - The tracker doesn't inject and re-run the archive's fetched
+    `<script>` as-is — that script looks things up via the global
+    `document`, which can't see inside a shadow root. Instead,
+    `openArchive()` extracts the embedded `ARCHIVE_STORIES` JSON (and
+    the two translated empty-state strings) straight out of the
+    fetched HTML via a targeted regex against our own known
+    `JSON.stringify` output format, and a new `renderArchiveGrid()`
+    ports the same filtering logic (search + union country match +
+    edition filter) scoped against the shadow root instead of
+    `document`.
+  - Relative `/members/...` links inside the fetched markup (e.g. a
+    signed-in visitor's manage-preferences link) are rewritten to
+    absolute members-subdomain URLs before injection, since the shadow
+    content now lives on the tracker's own origin. Individual issue
+    cards link to the real, full standalone issue page on the members
+    subdomain rather than opening in-page too — only the archive list
+    itself was asked for.
+  - If the fetch fails, or succeeds but the response doesn't contain
+    `.archive-wrap` (which is what happens if `ARCHIVE_PUBLIC` is ever
+    turned off and the request gets transparently redirected to the
+    login page instead), it falls back to a real navigation rather
+    than showing something broken — same defensive pattern the country
+    deep-dive panel already used.
+  - Supports back/forward and a real, shareable URL via a
+    `?view=archive` query param on the tracker's own page (there's no
+    dedicated tracker-side path for it the way countries each have
+    their own slug), detected both on `popstate` and on initial page
+    load.
+  - Validated with a jsdom test that mocks the cross-origin fetch using
+    the *actual* `renderArchiveList()` output (extracted from
+    members-worker's own source and required into the test, not a
+    hand-written approximation) — confirms the panel opens with the
+    sidebar still visible, search and the edition filter both work
+    against the shadow-rendered grid, issue links carry the correct
+    absolute URL, and close restores the board view. A second test
+    confirms the missing-`.archive-wrap` fallback path is reached
+    without an unrelated exception first.
 - **Not yet deployed** — `site-worker` needs a redeploy to pick up the
-  tracker/i18n changes, and `members-worker` needs one for both the new
-  `ARCHIVE_PUBLIC` var and the archive-rendering changes. See "Open
-  items" below for the exact commands.
+  tracker/i18n changes, and `members-worker` needs one for the new
+  `ARCHIVE_PUBLIC` var, the CORS header, and the archive-rendering
+  changes. See "Open items" below for the exact commands.
 
 ---
 
@@ -270,12 +328,19 @@ wrangler deploy
 ```
 
 Then spot-check: the tracker's topbar shows "Resources" (not "Deep
-Dives") as a top-level button, with Deep Dives opening as a flyout
-inside it; a "Newsletter archive" link also appears in Resources and
-opens `/members/archive` without prompting for login; the archive page
-shows the free-access promo banner instead of "Signed in as"; and
-logging in as a real subscriber still shows the normal signed-in view
-with no promo banner.
+Dives") as a top-level button, and clicking it now actually pops the
+Deep Dives flyout out beside it (this was broken until the
+`overflow:visible` fix above — worth specifically re-checking after
+deploy); a "Newsletter archive" link also appears in Resources and
+opens the archive list right there in the main frame, sidebar still
+visible, with search/the edition filter/country checkboxes all working
+against it; clicking an individual issue still opens the full
+standalone issue page normally; the embedded view shows the free-
+access promo banner (this cross-origin fetch never carries a session
+cookie, so it always renders anonymous, even if you're separately
+logged in in another tab — that's expected); and visiting
+`/members/archive` directly while genuinely logged in still shows the
+normal signed-in view with no promo banner.
 
 ### Luxembourg: run migrations + redeploy (highest priority — code is done, only the ship step remains)
 

@@ -346,6 +346,18 @@ function withLangCookie(response, lang, shouldSetCookie) {
   return new Response(response.body, { status: response.status, headers });
 }
 
+// CORS for the two archive GET routes only (see the fetch handler
+// above) -- lets the tracker page's own JS read the response body via
+// fetch() from a different origin, so it can embed the archive
+// in-page the same way it already does for country deep dives.
+// Deliberately scoped to exactly one trusted origin, not "*", and not
+// applied anywhere credentials/session state is involved.
+function withCors(response) {
+  const headers = new Headers(response.headers);
+  headers.set("Access-Control-Allow-Origin", "https://e-invoicingcompliancecorner.com");
+  return new Response(response.body, { status: response.status, headers });
+}
+
 // Shared site-wide language banner -- same markup/colours as the one
 // i18n.js injects on the static pages and shared/deep-dive-render.mjs
 // renders on country pages (2 August 2026). Injected once into
@@ -387,10 +399,15 @@ export default {
       } else if (request.method === "GET" && url.pathname === "/members/verify") {
         response = await handleVerify(request, env, lang);
       } else if (request.method === "GET" && url.pathname === "/members/archive") {
-        response = await handleArchiveList(request, env, lang);
+        // CORS-enabled: the tracker page (a different origin) fetches
+        // this route directly to embed the archive in-page, matching
+        // how country deep dives already load in-page there. Only
+        // these two archive GET routes get CORS -- login, preferences,
+        // and everything else stay same-origin only.
+        response = withCors(await handleArchiveList(request, env, lang));
       } else if (request.method === "GET" && url.pathname.startsWith("/members/archive/")) {
         const slug = decodeURIComponent(url.pathname.replace("/members/archive/", ""));
-        response = await handleArchiveIssue(request, env, slug, lang);
+        response = withCors(await handleArchiveIssue(request, env, slug, lang));
       } else if (request.method === "GET" && url.pathname === "/admin/preview/milestones") {
         response = await handleMilestonesPreview(request, env, lang);
       } else if (request.method === "GET" && url.pathname === "/admin/preview/deep-dive") {
