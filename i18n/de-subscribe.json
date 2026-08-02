@@ -27,7 +27,8 @@
     "stat1": "Erfasste Rechtsordnungen",
     "stat2": "Versandrhythmus",
     "stat3": "Spam zwischen den Ausgaben",
-    "title": "Erfahren Sie sofort, wenn eine Regierung die Regeln ändert"
+    "title": "Erfahren Sie sofort, wenn eine Regierung die Regeln ändert",
+    "trialBadge": "✨ Kostenlos beitreten — keine Zahlung erforderlich"
   },
   "card": {
     "clearAll": "Alle abwählen",
@@ -35,7 +36,7 @@
     "countriesLabel": "Für welche Länder möchten Sie Benachrichtigungen erhalten?",
     "countriesMissing": "Die Länderauswahl ist vorübergehend nicht verfügbar — Sie erhalten trotzdem den vollständigen monatlichen Digest. (Fehlende Datei: countries.js)",
     "eyebrow": "Abonnieren",
-    "fineprint": "Die Zahlung wird von Lemon Squeezy, unserem Handelsvertreter, abgewickelt — sie erheben und führen jede anfallende Umsatzsteuer/GST für diesen Verkauf ab, sodass Ihnen nie separat Steuern berechnet werden. Wir sehen oder speichern Ihre Kartendaten niemals. Siehe unsere <a href=\"privacy-policy.html\" style=\"color:#b5432f; text-decoration:underline;\">Datenschutzerklärung</a>, um zu erfahren, wie Ihre Daten verarbeitet werden.",
+    "fineprint": "Kostenlos — keine Zahlungsdaten erforderlich. Siehe unsere <a href=\"privacy-policy.html\" style=\"color:#b5432f; text-decoration:underline;\">Datenschutzerklärung</a>, um zu erfahren, wie Ihre Daten verarbeitet werden.",
     "form": {
       "company": "Firmenname",
       "companyError": "Firmenname ist erforderlich",
@@ -49,8 +50,8 @@
       "lastNameError": "Nachname ist erforderlich"
     },
     "selectAll": "Alle auswählen",
-    "sub": "Eine E-Mail pro Monat, plus eine kurze Benachrichtigung, wann immer eine neue Ausgabe zu Ihren Ländern erscheint. Ob wiederkehrend oder einmalig, wählen Sie im nächsten, sicheren Schritt.",
-    "submitButton": "Weiter zur sicheren Zahlung",
+    "sub": "Eine E-Mail pro Monat, plus eine kurze Benachrichtigung, wann immer eine neue Ausgabe zu Ihren Ländern erscheint. Völlig kostenlos — keine Zahlung erforderlich.",
+    "submitButton": "Kostenlos abonnieren →",
     "title": "Los geht's"
   },
   "confirm": {

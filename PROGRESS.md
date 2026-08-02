@@ -636,6 +636,91 @@ global `document`.
   regressions. Re-ran the tracker HTML parse-validity and
   inline-script syntax checks too.
 
+### Subscribe went live, free-only, no Lemon Squeezy (2 August 2026, code complete, deploy pending)
+
+Dan asked to remove the "60-day free trial" framing and unhook Lemon
+Squeezy so he can go live with free sign-ups now, deferring any paid
+plan to an unspecified later date once there's a critical mass of
+subscribers. This touched both the frontend page and the backend
+account semantics:
+
+- **Backend (`members-worker/src/index.js`):** `handleStartTrial()`
+  (function/route name kept as-is -- `/members/start-trial` -- to
+  avoid touching a URL the form already posts to) now stores
+  `plan: "free"` with **no `expiresAt`** at all, instead of
+  `plan: "trial"` with a 60-day expiry. `isCurrentlyActive()` only
+  expires an account when *both* its plan is `"onetime"`/`"trial"`
+  *and* it has an `expiresAt` set -- simply never setting `expiresAt`
+  for free sign-ups is what makes them non-expiring, confirmed with a
+  unit test covering: a fresh free sign-up (active forever), a
+  hypothetical legacy `"trial"` record with a past `expiresAt` (still
+  correctly expires -- backward compatible), and one with a future
+  `expiresAt` (still active). The one-signup-per-email guard
+  (`hadTrial`, kept as the internal field name to avoid touching the
+  Lemon Squeezy webhook handler's own references to it) is unchanged.
+  Since the Lemon Squeezy checkout step (the only other place that
+  used to collect first/last name, job title, and company) is gone,
+  `handleStartTrial()` now stores those fields directly against the
+  subscriber record too, rather than collecting and silently
+  discarding them. The "this email already signed up" page and its
+  4-language i18n strings were reworded away from "trial" framing
+  (was: "already had a free 60-day trial... subscribe for full
+  access"; now: "already signed up... use the sign-in link instead"),
+  and its button now points at the login page (`/members`) instead of
+  back to `subscribe.html`, since someone who already has an account
+  should sign in, not sign up again.
+- **Frontend (`subscribe.html`):** removed the Lemon Squeezy checkout
+  step entirely -- the `lemon.js` SDK include, the `checkoutStep` div
+  (confirm-details summary, "Continue to checkout" button, the
+  separate `trialForm`, "Edit my details" link), and the JS that built
+  the Lemon Squeezy checkout URL and toggled between the two steps.
+  What's left is one step: `detailsForm` now posts directly to
+  `/members/start-trial` (`method="POST"
+  action="https://members.e-invoicingcompliancecorner.com/members/start-trial"`)
+  -- its firstName/lastName/email/jobTitle/company fields already had
+  matching `name=` attributes, so only one new hidden `<input
+  name="countries">` was needed, populated from the checked boxes by
+  the existing client-side validation handler just before it calls
+  `form.submit()` (which bypasses the `submit` event so it can't
+  re-enter the same handler). Reworded the trial badge, the form's
+  intro line, and its fineprint (previously about Lemon Squeezy/VAT/
+  card details) to reflect "free, no payment" instead. The trial badge
+  text turned out to have no `benefits.trialBadge` key in any of the 4
+  language JSON files at all (it was only ever the HTML's own
+  unlocalized fallback text) -- added it properly this time, alongside
+  the other updated `card.*` keys, across en/es/de/fr.
+- **Activated the "Subscribe" link,** which was previously disabled
+  (`<span class="dropdown-item coming-soon">`, no `href`, labelled
+  "Subscribe (Coming soon)") in two places: the Menu dropdown and the
+  subscriber-perks callout in the topbar. Both already had `TEMPORARY`
+  comments with exact restore instructions from when they were
+  disabled, which this followed -- real `<a href="subscribe.html">`
+  links now, `coming-soon` class removed, "(Coming soon)" dropped from
+  the label across all 4 languages. The now-unused `.coming-soon` CSS
+  is left in place as a ready-made disabled-item treatment for
+  whatever's next, with an updated comment explaining that (rather
+  than describing it as about to be removed, which it no longer is).
+  `subscribe.html` itself stays a real navigation for now, not an
+  in-page panel like Education/feedback -- that was deliberately
+  deferred earlier specifically because of the Lemon Squeezy SDK; now
+  that it's gone, bringing this one in-page too would be
+  straightforward, but that's a separate ask.
+- Verified with: a jsdom test against the real `subscribe.html`
+  confirming the checkout step and every Lemon-Squeezy-related element
+  are gone, `detailsForm` posts to the correct URL/method, an empty
+  submit is blocked by validation without calling `form.submit()`, and
+  a valid submit populates the hidden countries field correctly before
+  calling the real `form.submit()`; a Node unit test against the real,
+  extracted `handleStartTrial()` confirming the stored record's exact
+  shape (`plan: "free"`, no `expiresAt`, all 4 new fields present) and
+  that a second sign-up with the same email is correctly blocked
+  without a second KV write; and the `isCurrentlyActive()` unit test
+  described above. Re-ran the full existing archive/menu/sidebar/
+  topbar/education/feedback test suite afterward — no regressions.
+  Re-ran HTML parse-validity and inline-script syntax checks on both
+  `subscribe.html` and the tracker, and a syntax check on
+  `members-worker/src/index.js`.
+
 ---
 
 ## Open items / next steps
@@ -724,11 +809,12 @@ on the tracker, subscribe, and education pages.
   Resources menu items
 
 ### Smaller pending items
-- Lemon Squeezy still in test mode — "Copy to Live Mode" not yet done;
-  the Subscribe link is still marked "Coming Soon" on the tracker until
-  this happens. (The Archive link is no longer gated on this — it's now
-  live and open to everyone via the temporary ARCHIVE_PUBLIC promo, see
-  above.)
+- Subscribe is now live and free-only (see "Subscribe went live"
+  above) — Lemon Squeezy is deliberately disconnected, not just
+  pending "Copy to Live Mode." If/when a paid plan is introduced, that
+  Lemon Squeezy setup work (still described in the archived HTML
+  comments this session's commit replaced — see git history around
+  this date) will need doing then.
 - Cloudflare Web Analytics not yet set up
 - Content-monitoring Worker (designed in `CONTENT-MONITORING.md`, never
   built)

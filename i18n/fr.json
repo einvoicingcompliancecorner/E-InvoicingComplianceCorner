@@ -68,7 +68,7 @@
     "lastUpdated": "Dernière mise à jour :",
     "menu": "Menu",
     "resources": "Ressources",
-    "subscribe": "S'abonner (Bientôt disponible)"
+    "subscribe": "S'abonner"
   },
   "navTips": {
     "label": "Comment naviguer sur ce site",
@@ -82,7 +82,7 @@
     "tip4Title": "Les informations anciennes sont rangées à part"
   },
   "perks": {
-    "cta": "S'abonner (Bientôt disponible) →",
+    "cta": "S'abonner →",
     "heading": "Les abonnés bénéficient également de",
     "item1": "Une synthèse mensuelle par e-mail — chaque nouvelle obligation ou changement d'échéance, résumé",
     "item2": "L'accès complet aux archives de la newsletter, pas seulement au numéro du mois",

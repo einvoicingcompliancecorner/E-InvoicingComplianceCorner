@@ -27,7 +27,8 @@
     "stat1": "Juridictions suivies",
     "stat2": "Cadence de la synthèse",
     "stat3": "Spam entre les numéros",
-    "title": "Soyez averti dès qu'un gouvernement change les règles"
+    "title": "Soyez averti dès qu'un gouvernement change les règles",
+    "trialBadge": "✨ Gratuit — aucun paiement requis"
   },
   "card": {
     "clearAll": "Tout désélectionner",
@@ -35,7 +36,7 @@
     "countriesLabel": "Pour quels pays souhaitez-vous recevoir des alertes ?",
     "countriesMissing": "La sélection de pays est temporairement indisponible — vous recevrez tout de même la synthèse mensuelle complète. (Fichier manquant : countries.js)",
     "eyebrow": "S'abonner",
-    "fineprint": "Le paiement est géré par Lemon Squeezy, notre marchand officiel — ils collectent et reversent toute TVA/TPS applicable à cette vente, de sorte que la taxe ne vous est jamais facturée séparément. Nous ne voyons ni ne stockons jamais les détails de votre carte. Consultez notre <a href=\"privacy-policy.html\" style=\"color:#b5432f; text-decoration:underline;\">politique de confidentialité</a> pour savoir comment vos données sont traitées.",
+    "fineprint": "Gratuit — aucune information de paiement requise. Consultez notre <a href=\"privacy-policy.html\" style=\"color:#b5432f; text-decoration:underline;\">politique de confidentialité</a> pour savoir comment vos données sont traitées.",
     "form": {
       "company": "Nom de l'entreprise",
       "companyError": "Le nom de l'entreprise est requis",
@@ -49,8 +50,8 @@
       "lastNameError": "Le nom est requis"
     },
     "selectAll": "Tout sélectionner",
-    "sub": "Un e-mail par mois, plus une courte alerte chaque fois qu'un nouveau numéro concernant vos pays est publié. Vous choisirez paiement récurrent ou unique à l'étape suivante, sécurisée.",
-    "submitButton": "Continuer vers le paiement sécurisé",
+    "sub": "Un e-mail par mois, plus une courte alerte chaque fois qu'un nouveau numéro concernant vos pays est publié. Totalement gratuit — aucun paiement requis.",
+    "submitButton": "S'abonner gratuitement →",
     "title": "Commençons"
   },
   "confirm": {

@@ -68,7 +68,7 @@
     "lastUpdated": "Última actualización:",
     "menu": "Menú",
     "resources": "Recursos",
-    "subscribe": "Suscribirse (Próximamente)"
+    "subscribe": "Suscribirse"
   },
   "navTips": {
     "label": "Cómo navegar por este sitio",
@@ -82,7 +82,7 @@
     "tip4Title": "Lo antiguo queda guardado aparte"
   },
   "perks": {
-    "cta": "Suscribirse (Próximamente) →",
+    "cta": "Suscribirse →",
     "heading": "Los suscriptores también reciben",
     "item1": "Un resumen mensual por correo electrónico — cada nuevo mandato o cambio de fecha límite, resumido",
     "item2": "Acceso completo al archivo del boletín, no solo al número de este mes",

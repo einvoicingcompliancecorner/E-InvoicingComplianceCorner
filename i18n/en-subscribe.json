@@ -27,7 +27,8 @@
     "stat1": "Jurisdictions tracked",
     "stat2": "Digest cadence",
     "stat3": "Spam between issues",
-    "title": "Get notified the moment a government changes the rules"
+    "title": "Get notified the moment a government changes the rules",
+    "trialBadge": "✨ Free to join — no payment required"
   },
   "card": {
     "clearAll": "Clear all",
@@ -35,7 +36,7 @@
     "countriesLabel": "Which countries do you want alerts for?",
     "countriesMissing": "Country selection is temporarily unavailable — you'll still get the full monthly digest. (Missing file: countries.js)",
     "eyebrow": "Subscribe",
-    "fineprint": "Payment is handled by Lemon Squeezy, our merchant of record — they collect and remit any applicable VAT/GST on this sale, so you're never charged tax separately. We never see or store your card details. See our <a href=\"privacy-policy.html\" style=\"color:#b5432f; text-decoration:underline;\">privacy policy</a> for how your data is handled.",
+    "fineprint": "Free to join — no payment details required. See our <a href=\"privacy-policy.html\" style=\"color:#b5432f; text-decoration:underline;\">privacy policy</a> for how your data is handled.",
     "form": {
       "company": "Company name",
       "companyError": "Company name is required",
@@ -49,8 +50,8 @@
       "lastNameError": "Last name is required"
     },
     "selectAll": "Select all",
-    "sub": "One email a month, plus a short alert whenever a new issue covering your countries goes live. You'll choose recurring or one-time payment on the next, secure step.",
-    "submitButton": "Continue to secure payment",
+    "sub": "One email a month, plus a short alert whenever a new issue covering your countries goes live. Completely free to join — no payment required.",
+    "submitButton": "Subscribe for free →",
     "title": "Get started"
   },
   "confirm": {

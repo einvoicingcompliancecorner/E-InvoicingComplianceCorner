@@ -27,7 +27,8 @@
     "stat1": "Jurisdicciones seguidas",
     "stat2": "Cadencia del resumen",
     "stat3": "Spam entre números",
-    "title": "Reciba una notificación en cuanto un gobierno cambie las normas"
+    "title": "Reciba una notificación en cuanto un gobierno cambie las normas",
+    "trialBadge": "✨ Gratis para unirse — no se requiere pago"
   },
   "card": {
     "clearAll": "Borrar todo",
@@ -35,7 +36,7 @@
     "countriesLabel": "¿Sobre qué países desea recibir alertas?",
     "countriesMissing": "La selección de países no está disponible temporalmente — de todas formas recibirá el resumen mensual completo. (Falta el archivo: countries.js)",
     "eyebrow": "Suscríbase",
-    "fineprint": "El pago lo gestiona Lemon Squeezy, nuestro comerciante registrado — ellos recaudan y remiten cualquier IVA/GST aplicable a esta venta, por lo que nunca se le cobra el impuesto por separado. Nunca vemos ni almacenamos los datos de su tarjeta. Consulte nuestra <a href=\"privacy-policy.html\" style=\"color:#b5432f; text-decoration:underline;\">política de privacidad</a> para saber cómo se gestionan sus datos.",
+    "fineprint": "Gratis — no se requieren datos de pago. Consulte nuestra <a href=\"privacy-policy.html\" style=\"color:#b5432f; text-decoration:underline;\">política de privacidad</a> para saber cómo se gestionan sus datos.",
     "form": {
       "company": "Nombre de la empresa",
       "companyError": "El nombre de la empresa es obligatorio",
@@ -49,8 +50,8 @@
       "lastNameError": "Los apellidos son obligatorios"
     },
     "selectAll": "Seleccionar todo",
-    "sub": "Un correo al mes, más una breve alerta cada vez que se publique un nuevo número que cubra sus países. Elegirá pago recurrente o único en el siguiente paso, seguro.",
-    "submitButton": "Continuar al pago seguro",
+    "sub": "Un correo al mes, más una breve alerta cada vez que se publique un nuevo número que cubra sus países. Totalmente gratis — no se requiere pago.",
+    "submitButton": "Suscribirse gratis →",
     "title": "Empecemos"
   },
   "confirm": {

@@ -68,7 +68,7 @@
     "lastUpdated": "Last updated:",
     "menu": "Menu",
     "resources": "Resources",
-    "subscribe": "Subscribe (Coming soon)"
+    "subscribe": "Subscribe"
   },
   "navTips": {
     "label": "Getting around this site",
@@ -82,7 +82,7 @@
     "tip4Title": "Old news is tucked away"
   },
   "perks": {
-    "cta": "Subscribe (Coming soon) →",
+    "cta": "Subscribe →",
     "heading": "Subscribers also get",
     "item1": "A monthly email digest — every new mandate or deadline change, summarised",
     "item2": "Full access to the newsletter archive, not just this month's issue",

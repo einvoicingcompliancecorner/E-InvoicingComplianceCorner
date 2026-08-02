@@ -146,9 +146,9 @@ const WORKER_I18N = {
     },
     checkEmail: { eyebrow: "Almost there", title: "Check your email",
       body: "If that email has an active subscription, a sign-in link is on its way — it expires in 15 minutes and works once. Check spam if it doesn't arrive within a minute or two." },
-    trialAlreadyUsed: { eyebrow: "Already used", title: "This email already had a free trial",
-      body: "Each email address gets one free 60-day trial. If yours has already ended, you can still get full access by subscribing — no trial needed.",
-      ctaButton: "Subscribe now →" },
+    trialAlreadyUsed: { eyebrow: "Already signed up", title: "This email is already signed up",
+      body: "Each email address can only sign up once. If you're having trouble getting in, use the sign-in link below instead.",
+      ctaButton: "Go to sign-in" },
     archive: {
       title: "Newsletter archive", signedInAs: "Signed in as",
       issuesPublished: (n) => `${n} issue${n === 1 ? "" : "s"} published. Search by keyword, or filter to a specific country.`,
@@ -189,9 +189,9 @@ const WORKER_I18N = {
       errorExpired: "Ese enlace ha caducado o no es válido — solicite uno nuevo.",
       errorNoActive: "No hemos encontrado una suscripción activa para ese correo. Si acaba de suscribirse, puede tardar un minuto en sincronizarse — inténtelo de nuevo enseguida.",
     },
-    trialAlreadyUsed: { eyebrow: "Ya utilizado", title: "Este correo ya tuvo una prueba gratuita",
-      body: "Cada dirección de correo electrónico obtiene una prueba gratuita de 60 días. Si la suya ya ha finalizado, aún puede obtener acceso completo suscribiéndose — sin necesidad de otra prueba.",
-      ctaButton: "Suscribirse ahora →" },
+    trialAlreadyUsed: { eyebrow: "Ya registrado", title: "Este correo ya está registrado",
+      body: "Cada dirección de correo solo puede registrarse una vez. Si tiene problemas para acceder, utilice el enlace de inicio de sesión a continuación.",
+      ctaButton: "Ir a iniciar sesión" },
     checkEmail: { eyebrow: "Ya casi está", title: "Revise su correo",
       body: "Si ese correo tiene una suscripción activa, un enlace de acceso está en camino — caduca en 15 minutos y funciona una sola vez. Revise el spam si no llega en uno o dos minutos." },
     archive: {
@@ -234,9 +234,9 @@ const WORKER_I18N = {
       errorExpired: "Dieser Link ist abgelaufen oder ungültig — bitte fordern Sie einen neuen an.",
       errorNoActive: "Wir konnten kein aktives Abonnement für diese E-Mail finden. Falls Sie sich gerade erst angemeldet haben, kann die Synchronisierung einen Moment dauern — versuchen Sie es gleich noch einmal.",
     },
-    trialAlreadyUsed: { eyebrow: "Bereits genutzt", title: "Für diese E-Mail wurde bereits eine kostenlose Testphase genutzt",
-      body: "Jede E-Mail-Adresse erhält eine kostenlose 60-tägige Testphase. Wenn Ihre bereits beendet ist, erhalten Sie dennoch vollen Zugang durch ein Abonnement — keine weitere Testphase nötig.",
-      ctaButton: "Jetzt abonnieren →" },
+    trialAlreadyUsed: { eyebrow: "Bereits registriert", title: "Diese E-Mail ist bereits registriert",
+      body: "Jede E-Mail-Adresse kann sich nur einmal registrieren. Wenn Sie sich nicht anmelden können, verwenden Sie stattdessen den Anmeldelink unten.",
+      ctaButton: "Zur Anmeldung" },
     checkEmail: { eyebrow: "Fast geschafft", title: "Prüfen Sie Ihre E-Mails",
       body: "Falls diese E-Mail ein aktives Abonnement hat, ist ein Anmeldelink unterwegs — er läuft nach 15 Minuten ab und funktioniert einmal. Prüfen Sie den Spam-Ordner, falls er nicht innerhalb weniger Minuten ankommt." },
     archive: {
@@ -279,9 +279,9 @@ const WORKER_I18N = {
       errorExpired: "Ce lien a expiré ou n'est pas valide — veuillez en demander un nouveau.",
       errorNoActive: "Nous n'avons trouvé aucun abonnement actif pour cet e-mail. Si vous venez de vous abonner, la synchronisation peut prendre un instant — réessayez sous peu.",
     },
-    trialAlreadyUsed: { eyebrow: "Déjà utilisé", title: "Cet e-mail a déjà bénéficié d'un essai gratuit",
-      body: "Chaque adresse e-mail bénéficie d'un essai gratuit de 60 jours. Si le vôtre est déjà terminé, vous pouvez tout de même obtenir un accès complet en vous abonnant — aucun nouvel essai nécessaire.",
-      ctaButton: "S'abonner maintenant →" },
+    trialAlreadyUsed: { eyebrow: "Déjà inscrit", title: "Cet e-mail est déjà inscrit",
+      body: "Chaque adresse e-mail ne peut s'inscrire qu'une seule fois. Si vous avez du mal à vous connecter, utilisez plutôt le lien de connexion ci-dessous.",
+      ctaButton: "Aller à la connexion" },
     checkEmail: { eyebrow: "Presque terminé", title: "Consultez vos e-mails",
       body: "Si cet e-mail correspond à un abonnement actif, un lien de connexion est en route — il expire dans 15 minutes et ne fonctionne qu'une fois. Vérifiez vos spams s'il n'arrive pas sous quelques minutes." },
     archive: {
@@ -763,6 +763,16 @@ async function handleLoginRequest(request, env, lang) {
   return htmlResponse(renderCheckEmailPage(lang));
 }
 
+// Despite the function/route name (kept as-is to avoid touching the
+// working endpoint URL that subscribe.html's form already posts to),
+// this no longer grants a time-limited trial -- as of 2 August 2026,
+// Dan is going live with free sign-ups and deliberately deferring any
+// paid plan to an unspecified later date, once there's a critical
+// mass of subscribers (see PROGRESS.md). So this now grants ongoing
+// free access with no expiry: notably, no `expiresAt` is set below.
+// isCurrentlyActive() only expires an account when BOTH its plan is
+// "onetime"/"trial" AND it has an expiresAt set -- omitting expiresAt
+// here is what makes these accounts simply never expire.
 async function handleStartTrial(request, env, lang) {
   const form = await request.formData();
   const email = (form.get("email") || "").toString().toLowerCase().trim();
@@ -775,33 +785,43 @@ async function handleStartTrial(request, env, lang) {
 
   const existing = await getSubscriber(env, email);
 
-  // One free trial per email, permanently — this is the actual blocking
-  // mechanism (see the conversation this was designed in: IP address is
-  // logged alongside the trial record for visibility into any organised
-  // abuse patterns, but isn't used to block on its own, since a shared
-  // office/coffee-shop IP would otherwise wrongly lock out a genuinely
-  // different second customer).
+  // One free sign-up per email, permanently -- this is the actual
+  // blocking mechanism (the `hadTrial` field name predates this
+  // change and is kept as-is to avoid touching the Lemon Squeezy
+  // webhook handler's own references to it, but it now just means
+  // "has already signed up" rather than anything trial-specific). IP
+  // address is logged alongside the record for visibility into any
+  // organised abuse patterns, but isn't used to block on its own,
+  // since a shared office/coffee-shop IP would otherwise wrongly lock
+  // out a genuinely different second customer.
   if (existing?.hadTrial) {
     return htmlResponse(renderTrialAlreadyUsedPage(lang));
   }
 
   const trialStartedAt = Date.now();
-  const expiresAt = trialStartedAt + 60 * 24 * 60 * 60 * 1000; // 60 days
   const signupIp = request.headers.get("CF-Connecting-IP") || "";
 
   await putSubscriber(env, email, {
     active: true,
-    plan: "trial",
+    plan: "free",
     countries,
     hadTrial: true,
     trialStartedAt,
     trialSignupIp: signupIp,
-    expiresAt,
+    // No expiresAt -- see the function comment above.
+    // Now that the Lemon Squeezy checkout step (the only other place
+    // that used to collect these) is gone, the sign-up form's own
+    // firstName/lastName/jobTitle/company fields are stored directly
+    // here instead, rather than being collected and then discarded.
+    firstName: (form.get("firstName") || "").toString().trim(),
+    lastName: (form.get("lastName") || "").toString().trim(),
+    jobTitle: (form.get("jobTitle") || "").toString().trim(),
+    company: (form.get("company") || "").toString().trim(),
   });
 
-  // Send a login link immediately, so starting the trial and actually
-  // getting into the archive is genuinely one step, not two — the whole
-  // point of a low-friction trial is undermined if they then have to
+  // Send a login link immediately, so signing up and actually getting
+  // into the archive is genuinely one step, not two — the whole point
+  // of a low-friction sign-up is undermined if they then have to
   // separately go find the login page and re-type their email.
   const token = await signToken(env.SESSION_SECRET, { email, purpose: "login" }, MAGIC_LINK_TTL_SECONDS);
   const link = `${env.SITE_URL}/members/verify?token=${encodeURIComponent(token)}${lang !== "en" ? `&lang=${lang}` : ""}`;
@@ -1428,7 +1448,7 @@ function renderTrialAlreadyUsedPage(lang) {
       <p class="eyebrow">${t(lang, "trialAlreadyUsed.eyebrow")}</p>
       <h1 class="title">${t(lang, "trialAlreadyUsed.title")}</h1>
       <p class="sub">${t(lang, "trialAlreadyUsed.body")}</p>
-      <a href="https://e-invoicingcompliancecorner.com/subscribe.html" class="form-submit" style="display:inline-block; text-decoration:none; text-align:center; margin-top:10px;">${t(lang, "trialAlreadyUsed.ctaButton")}</a>
+      <a href="/members" class="form-submit" style="display:inline-block; text-decoration:none; text-align:center; margin-top:10px;">${t(lang, "trialAlreadyUsed.ctaButton")}</a>
     </div>
   </div>`;
   return pageShell(body, lang);

@@ -22,43 +22,21 @@
 
 <!--
   ================================================================
-  SETUP NEEDED before this page can take real payments:
+  Paid checkout (Lemon Squeezy) is deliberately disconnected for now
+  (2 August 2026) -- Dan is going live with free sign-ups first and
+  deferring any paid plan to an unspecified later date, once there's
+  a critical mass of subscribers (see PROGRESS.md). This page now has
+  a single step: fill in the form, submit, done -- no payment, no
+  second "confirm details" screen. The submit posts directly to
+  members-worker's /members/start-trial endpoint (kept under that
+  name to avoid touching a working URL -- see the comment on
+  handleStartTrial() in members-worker/src/index.js), which now
+  grants ongoing free access with no expiry.
 
-  This page offers ONE checkout, backed by a single Lemon Squeezy
-  PRODUCT with TWO VARIANTS — a recurring annual subscription and
-  a one-time payment. Recurring vs. one-time is deliberately chosen
-  by the customer on Lemon Squeezy's own checkout page, not on this
-  page — Lemon Squeezy always shows all variants of a product at
-  checkout regardless of which variant's link you share, so asking
-  the customer to choose again here would just be a redundant,
-  slightly annoying second selection.
-
-  1. In Lemon Squeezy, create ONE product with two variants:
-     - "Recurring" — a SUBSCRIPTION variant (billing interval: yearly)
-     - "One-time" — a SINGLE PAYMENT variant
-
-     Both can be priced the same or differently — entirely up to you.
-
-     Why annual (for the recurring variant), not monthly: Lemon
-     Squeezy's fee is 5.5% + $0.50 PER CHARGE. On a $1/month plan
-     billed monthly, that flat $0.50 eats more than half of every
-     payment (12 charges/year). Billing the same low price once a
-     year instead nets you noticeably more, for the same
-     monthly-equivalent price the subscriber sees.
-
-  2. Grab the product's (not a specific variant's) checkout URL from
-     Lemon Squeezy — Products → your product → Share → copy the link.
-     Looks like:
-     https://YOUR-STORE.lemonsqueezy.com/buy/XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
-
-  3. Replace LSQ_CHECKOUT_URL below with that one real URL.
-
-  4. Optional, in the Lemon Squeezy dashboard (Settings → Checkout)
-     for the product:
-     - Set a "Redirect URL" back to this site so buyers land
-       somewhere branded after paying.
-     - Add custom checkout fields if you want to capture Title /
-       Company inside Lemon Squeezy itself, not just in the form below.
+  If/when a paid plan is introduced later, the previous two-step
+  Lemon-Squeezy-checkout flow (git history around this comment, or
+  PROGRESS.md, has the details) can be restored or rebuilt alongside
+  this free tier rather than replacing it outright.
   ================================================================
 -->
 
@@ -260,9 +238,6 @@
   }
 </style>
 
-<!-- Lemon Squeezy overlay checkout script — turns links with class
-     "lemonsqueezy-button" into an in-page checkout overlay on click. -->
-<script src="https://assets.lemonsqueezy.com/lemon.js" defer></script>
 <!-- Shared country/region list — single source of truth, see countries.js -->
 <script src="countries.js"></script>
 </head>
@@ -279,7 +254,7 @@
       <h1 class="benefits-title display" data-i18n="benefits.title">Get notified the moment a government changes the rules</h1>
       <p class="benefits-intro" data-i18n="benefits.intro">E-invoicing thresholds, wave numbers, and go-live dates change constantly — often with little public notice. Subscribe once, and every government update or announcement across the 32 jurisdictions we track lands in your inbox automatically, in plain language, before it catches your team off guard.</p>
 
-      <p class="trial-badge" data-i18n="benefits.trialBadge">✨ 60-day free trial — try the service out first, no payment needed</p>
+      <p class="trial-badge" data-i18n="benefits.trialBadge">✨ Free to join — no payment required</p>
 
       <button type="button" class="sample-issue-link" id="openSampleIssue" data-i18n="benefits.sampleLink">👀 See a real sample issue (January 2026) →</button>
 
@@ -328,9 +303,15 @@
     <div id="detailsStep" class="checkout-step visible">
       <p class="eyebrow" data-i18n="card.eyebrow">Subscribe</p>
       <h1 class="title" data-i18n="card.title">Get started</h1>
-      <p class="sub" data-i18n="card.sub">One email a month, plus a short alert whenever a new issue covering your countries goes live. You'll choose recurring or one-time payment on the next, secure step.</p>
+      <p class="sub" data-i18n="card.sub">One email a month, plus a short alert whenever a new issue covering your countries goes live. Completely free to join — no payment required.</p>
 
-      <form id="detailsForm" novalidate>
+      <!-- Posts directly to members-worker's free sign-up endpoint (see
+           the handleStartTrial() comment in members-worker/src/index.js
+           for why it's still named that). Client-side JS below still
+           validates and shows inline errors first, then populates the
+           hidden countries field and submits for real -- no second
+           "confirm details" screen, no payment step. -->
+      <form id="detailsForm" novalidate method="POST" action="https://members.e-invoicingcompliancecorner.com/members/start-trial">
         <div class="form-row">
           <div class="form-field" id="field-firstName">
             <label for="firstName" data-i18n="card.form.firstName">First name</label>
@@ -372,34 +353,13 @@
         <div class="countries-box" id="countriesBox">
           <!-- Populated dynamically from countries.js — see the script at the bottom of this page -->
         </div>
+        <!-- Populated from the checked boxes above just before this form
+             actually submits -- see detailsForm's submit handler below. -->
+        <input type="hidden" name="countries" id="countriesField">
 
-        <button type="submit" class="form-submit" data-i18n="card.submitButton">Subscribe to Newsletters</button>
-        <p class="form-fineprint" data-i18n="card.fineprint">Payment is handled by Lemon Squeezy, our merchant of record — they collect and remit any applicable VAT/GST on this sale, so you're never charged tax separately. We never see or store your card details. See our <a href="privacy-policy.html" style="color:var(--stamp); text-decoration:underline;">privacy policy</a> for how your data is handled.</p>
+        <button type="submit" class="form-submit" data-i18n="card.submitButton">Subscribe for free →</button>
+        <p class="form-fineprint" data-i18n="card.fineprint">Free to join — no payment details required. See our <a href="privacy-policy.html" style="color:var(--stamp); text-decoration:underline;">privacy policy</a> for how your data is handled.</p>
       </form>
-    </div>
-
-    <!-- STEP 2: confirm details + hand off to Lemon Squeezy, where the -->
-    <!-- customer picks recurring vs. one-time on Lemon Squeezy's own    -->
-    <!-- checkout page — deliberately not asked twice.                  -->
-    <div id="checkoutStep" class="checkout-step">
-      <p class="eyebrow" data-i18n="confirm.eyebrow">One more step</p>
-      <h1 class="title" data-i18n="confirm.title">Confirm your details</h1>
-      <p class="sub"><span data-i18n="confirm.subscribingAs">Subscribing as</span> <strong id="confirmName"></strong> (<span id="confirmEmail"></span>) <span data-i18n="confirm.for">for</span> <span id="confirmCompany"></span>.</p>
-      <p class="sub" style="margin-top:-14px;"><span data-i18n="confirm.alertsFor">Alerts for:</span> <strong id="confirmCountries"></strong></p>
-
-      <a href="#" id="checkoutButton" class="lemonsqueezy-button form-submit" data-i18n="confirm.payButton">Continue to checkout →</a>
-
-      <div style="margin:18px 0; padding-top:18px; border-top:1px dashed var(--paper-line); text-align:center;">
-        <p class="sub" style="margin:0 0 10px; font-size:13px;" data-i18n="confirm.trialIntro">Not ready to pay yet? Try full access free for 60 days.</p>
-        <form id="trialForm" method="POST" action="https://members.e-invoicingcompliancecorner.com/members/start-trial">
-          <input type="hidden" name="email" id="trialEmailField">
-          <input type="hidden" name="countries" id="trialCountriesField">
-          <button type="submit" class="form-submit" style="background:transparent; border:1px solid var(--stamp); color:var(--stamp);" data-i18n="confirm.trialButton">Start my 60-day free trial →</button>
-        </form>
-      </div>
-
-      <span class="edit-link" id="editDetails" data-i18n="confirm.editLink">← Edit my details</span>
-      <p class="form-fineprint" id="confirmFineprint" data-i18n="confirm.fineprint">You'll be taken to a secure Lemon Squeezy checkout window, where you can choose recurring or one-time payment and complete your purchase.</p>
     </div>
 
     </div>
@@ -426,17 +386,12 @@
 </div>
 
 <script>
-// ================================================================
-// SETUP NEEDED: replace this with your Lemon Squeezy checkout URL.
-// Since recurring vs. one-time is chosen on Lemon Squeezy's own
-// checkout page (both are variants of the same product), only one
-// URL is needed here — no separate recurring/one-time distinction
-// on this page at all.
-// ================================================================
-const LSQ_CHECKOUT_URL = "https://einvoicingcompliancecorner.lemonsqueezy.com/checkout/buy/f4b9958e-24d4-419e-81fa-e76ebbe6b225";
+// Paid checkout (Lemon Squeezy) is deliberately disconnected for now --
+// see the HTML comment near the top of this file and the
+// handleStartTrial() comment in members-worker/src/index.js. This is a
+// single-step free sign-up: validate, populate the hidden countries
+// field, then let the real POST to /members/start-trial go through.
 
-const detailsStep = document.getElementById('detailsStep');
-const checkoutStep = document.getElementById('checkoutStep');
 const detailsForm = document.getElementById('detailsForm');
 
 function isValidEmail(v){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); }
@@ -477,8 +432,8 @@ function renderCountryChecklist(){
     EICC_COUNTRIES_BY_REGION[region].forEach(country => {
       const checked = previouslyChecked.has(country) ? 'checked' : '';
       // The submitted VALUE stays the canonical English name (needed for
-      // Lemon Squeezy custom data / subscriber matching) — only the
-      // visible label is translated.
+      // subscriber matching against DEEP_DIVES/DATA elsewhere) — only
+      // the visible label is translated.
       html += `<label class="country-check"><input type="checkbox" value="${country}" ${checked}>${translateCountry(country)}</label>`;
     });
     html += `</div>`;
@@ -526,47 +481,22 @@ detailsForm.addEventListener('submit', async (e)=>{
   });
   if(!allValid) return;
 
-  // Best-effort local record of the lead, independent of the Lemon Squeezy sale record.
+  // Best-effort local record of the lead -- independent of the real
+  // server-side subscriber record members-worker creates below.
   try{
     if(window.storage && typeof window.storage.set === 'function'){
       await window.storage.set('subscriber-lead:'+Date.now(), JSON.stringify({...values, countries: selectedCountries}));
     }
   }catch(err){ /* no storage available — flow still proceeds */ }
 
-  // Build the checkout URL, prefilling email/name and passing the country
-  // selection through as Lemon Squeezy "custom data" — this rides along
-  // inside every Order/Subscription webhook as meta.custom_data.countries,
-  // which the members-worker's webhook handler stores against this
-  // subscriber for future segmentation. Recurring vs. one-time is chosen
-  // by the customer on Lemon Squeezy's own checkout page, not here.
-  const url = new URL(LSQ_CHECKOUT_URL);
-  url.searchParams.set('checkout[email]', values.email);
-  url.searchParams.set('checkout[name]', values.firstName + ' ' + values.lastName);
-  url.searchParams.set('checkout[custom][countries]', selectedCountries.join(','));
-
-  const checkoutBtn = document.getElementById('checkoutButton');
-  checkoutBtn.href = url.toString();
-
-  // Same email/country data as the paid checkout, just for the separate
-  // free-trial path — this bypasses Lemon Squeezy entirely (see the
-  // members-worker's /members/start-trial handler).
-  document.getElementById('trialEmailField').value = values.email;
-  document.getElementById('trialCountriesField').value = selectedCountries.join(',');
-
-  document.getElementById('confirmName').textContent = values.firstName + ' ' + values.lastName;
-  document.getElementById('confirmEmail').textContent = values.email;
-  document.getElementById('confirmCompany').textContent = values.company;
-  document.getElementById('confirmCountries').textContent = selectedCountries.length
-    ? selectedCountries.map(translateCountry).join(', ')
-    : t('confirm.fullDigest', 'the full digest (all 32 jurisdictions)');
-
-  detailsStep.classList.remove('visible');
-  checkoutStep.classList.add('visible');
-});
-
-document.getElementById('editDetails').addEventListener('click', ()=>{
-  checkoutStep.classList.remove('visible');
-  detailsStep.classList.add('visible');
+  // Populate the one hidden field the form doesn't already carry by
+  // name (firstName/lastName/email/jobTitle/company all already have
+  // matching name= attributes members-worker's /start-trial handler
+  // reads directly), then let this validated submit actually go
+  // through as a real POST -- form.submit() bypasses the 'submit'
+  // event entirely, so it won't re-enter this same handler.
+  document.getElementById('countriesField').value = selectedCountries.join(',');
+  detailsForm.submit();
 });
 
 // ---------- sample issue modal ----------

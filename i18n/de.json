@@ -68,7 +68,7 @@
     "lastUpdated": "Zuletzt aktualisiert:",
     "menu": "Menü",
     "resources": "Ressourcen",
-    "subscribe": "Abonnieren (Demnächst)"
+    "subscribe": "Abonnieren"
   },
   "navTips": {
     "label": "So funktioniert diese Seite",
@@ -82,7 +82,7 @@
     "tip4Title": "Altes ist eingeklappt"
   },
   "perks": {
-    "cta": "Abonnieren (Demnächst) →",
+    "cta": "Abonnieren →",
     "heading": "Abonnenten erhalten außerdem",
     "item1": "Einen monatlichen E-Mail-Digest — jede neue Vorgabe oder Friständerung, zusammengefasst",
     "item2": "Vollen Zugriff auf das Newsletter-Archiv, nicht nur die aktuelle Ausgabe",
