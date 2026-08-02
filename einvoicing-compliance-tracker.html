@@ -485,6 +485,7 @@
   </div>
 </div>
 
+<div id="boardView">
 <div class="nav-tips-wrap">
   <p class="nav-tips-label" data-i18n="navTips.label">Getting around this site</p>
   <div class="nav-tips">
@@ -559,6 +560,9 @@
     </div>
   </details>
 </div>
+</div>
+
+<div id="countryDeepDiveView" style="display:none;"></div>
 
 <footer>
   <p data-i18n="filters.disclaimer">This tracker reflects publicly available guidance as of July 2026 and is provided for general awareness, not legal or tax advice. E-invoicing thresholds, wave numbers and go-live dates change frequently — confirm your obligations directly on the official government portal linked in each entry, or with your tax advisor, before making compliance decisions.</p>
@@ -1861,6 +1865,138 @@ function wireAboutModal(){
   document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') close(); });
 }
 
+// ---------- in-page country deep-dive panel ----------
+// Clicking a "Deep Dive" link (sidebar or the Deep Dives menu) used to
+// navigate away to a brand-new page. It now fetches that same page and
+// swaps it into a panel right here on the tracker instead, so the
+// sidebar/menu stay reachable and there's no full page reload. The
+// links themselves still carry their real hrefs (e.g. /spain) as a
+// plain fallback -- if this JS fails, or a crawler/JS-disabled visitor
+// follows the link directly, it navigates normally to the real, fully
+// server-rendered standalone page, completely unaffected by any of
+// this (2 August 2026).
+//
+// Deep-dive pages define their own full-page CSS with several class
+// names that collide with the tracker's own (.stat, .display, .num,
+// .portal-btn, .upcoming, .inforce, .lbl, .portal-row) -- injecting
+// that CSS directly into this page's <head> would silently break the
+// tracker's own styling wherever those names differ. A shadow root
+// keeps the fetched page's styles and markup fully isolated, so
+// neither stylesheet needed auditing or renaming. `:root` and `body`
+// rules in the fetched CSS are rewritten to `:host`, since neither
+// selector matches anything inside a shadow tree -- this is what lets
+// the injected content's own CSS custom properties (--ink, --paper,
+// etc.) and base text/background styling resolve correctly.
+const DEEP_DIVE_SLUGS = new Set(Object.values(DEEP_DIVES).map(u => u.replace(/^\/+/, '')));
+let currentDeepDiveSlug = null;
+
+function slugFromHref(href){
+  if(!href) return null;
+  let pathname;
+  try { pathname = new URL(href, window.location.origin).pathname; }
+  catch(e){ return null; }
+  const slug = pathname.replace(/^\/+|\/+$/g, '');
+  return DEEP_DIVE_SLUGS.has(slug) ? slug : null;
+}
+
+async function openDeepDive(slug, opts){
+  opts = opts || {};
+  const boardView = document.getElementById('boardView');
+  const panel = document.getElementById('countryDeepDiveView');
+  currentDeepDiveSlug = slug;
+
+  boardView.style.display = 'none';
+  panel.style.display = '';
+  panel.innerHTML = '<p style="color:var(--muted); font-family:\'IBM Plex Mono\',monospace; font-size:13px; padding:40px 5vw;">Loading…</p>';
+  window.scrollTo(0, 0);
+
+  const lang = (window.EICC_I18N && window.EICC_I18N.currentLang) || 'en';
+  let html;
+  try {
+    const res = await fetch(`/${slug}?lang=${lang}`);
+    if(!res.ok) throw new Error('deep dive fetch failed: ' + res.status);
+    html = await res.text();
+  } catch(err){
+    console.warn('Falling back to a full navigation for', slug, err);
+    window.location.href = `/${slug}`;
+    return;
+  }
+  // Guard against a slower, now-superseded fetch landing after a newer
+  // one (e.g. clicking two countries in quick succession).
+  if(currentDeepDiveSlug !== slug) return;
+
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  const styleEl = doc.querySelector('style');
+  const wrap = doc.querySelector('.wrap');
+  const topBar = wrap ? wrap.querySelector('.top-bar') : null;
+  if(topBar) topBar.remove(); // replaced by this panel's own close control below
+
+  const scopedCss = (styleEl ? styleEl.textContent : '')
+    .replace(':root{', ':host{')
+    .replace('body{', ':host{');
+
+  panel.innerHTML = '';
+  const host = document.createElement('div');
+  panel.appendChild(host);
+  const shadow = host.attachShadow({ mode: 'open' });
+
+  const closeLabel = (window.EICC_I18N && window.EICC_I18N.t('backLink')) || '← Back to global tracker';
+  shadow.innerHTML = `
+    <style>${scopedCss}</style>
+    <div class="wrap">
+      <div class="top-bar"><a class="back-link" id="deepDiveCloseLink" href="/einvoicing-compliance-tracker.html">${closeLabel}</a></div>
+      ${wrap ? wrap.innerHTML : '<p>Could not load this page.</p>'}
+    </div>`;
+  shadow.getElementById('deepDiveCloseLink').addEventListener('click', (e)=>{
+    e.preventDefault();
+    closeDeepDive();
+  });
+
+  if(!opts.skipHistory){
+    history.pushState({ deepDive: slug }, '', `/${slug}`);
+  }
+}
+
+function closeDeepDive(opts){
+  opts = opts || {};
+  currentDeepDiveSlug = null;
+  document.getElementById('boardView').style.display = '';
+  const panel = document.getElementById('countryDeepDiveView');
+  panel.style.display = 'none';
+  panel.innerHTML = '';
+  if(!opts.skipHistory){
+    history.pushState({ deepDive: null }, '', '/einvoicing-compliance-tracker.html');
+  }
+}
+
+function wireDeepDiveInPagePanel(){
+  document.addEventListener('click', (e)=>{
+    const link = e.target.closest('a');
+    if(!link) return;
+    const slug = slugFromHref(link.getAttribute('href'));
+    if(!slug) return;
+    e.preventDefault();
+    document.getElementById('sidebar')?.classList.remove('open');
+    document.getElementById('sidebarOverlay')?.classList.remove('open');
+    openDeepDive(slug);
+  });
+
+  window.addEventListener('popstate', ()=>{
+    const slug = slugFromHref(window.location.pathname);
+    if(slug){
+      openDeepDive(slug, { skipHistory: true });
+    } else if(currentDeepDiveSlug){
+      closeDeepDive({ skipHistory: true });
+    }
+  });
+
+  // If the language changes while a deep dive is open, re-fetch it in
+  // the new language rather than leaving stale-language content up.
+  document.addEventListener('eicc:languageChanged', ()=>{
+    if(currentDeepDiveSlug) openDeepDive(currentDeepDiveSlug, { skipHistory: true });
+  });
+}
+
 // ---------- init ----------
 renderBoard();
 renderStats();
@@ -1874,6 +2010,7 @@ wireDeepDiveMenu();
 wireEducationMenu();
 wireActionsMenu();
 wireAboutModal();
+wireDeepDiveInPagePanel();
 
 // Re-render everything that shows translated content whenever the
 // active language changes (country/region names, card system/desc/

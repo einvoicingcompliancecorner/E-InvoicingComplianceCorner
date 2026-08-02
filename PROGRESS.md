@@ -142,6 +142,27 @@ so it's visible on the apex domain and the members subdomain alike:
   This also let 4 separate hand-built inline switchers in that file get
   deleted in favor of the one shared version.
 
+### In-page country deep-dive panel (2 August 2026)
+
+Clicking a country's "Deep Dive" link (sidebar or the top "Deep Dives" menu)
+used to navigate away to a brand-new page. It now fetches that same page and
+swaps it into a panel directly on the tracker, so the sidebar/menu stay
+reachable and there's no full page reload — closing it (or the browser back
+button) returns to the board exactly where it was. The links themselves still
+carry real hrefs, so a crawler, a JS-disabled visitor, or anyone who
+middle-clicks/opens in a new tab still gets the real, fully server-rendered
+standalone page, unaffected.
+
+Deep-dive pages and the tracker each define their own full-page CSS, with 8
+overlapping class names between them (`.stat`, `.display`, `.num`, `.lbl`,
+`.upcoming`, `.inforce`, `.portal-btn`, `.portal-row`) that would silently
+collide if injected directly into the tracker's `<head>`. Fetched content is
+injected into a shadow root instead, which fully isolates it — no auditing or
+renaming needed in either stylesheet. Verified with a real jsdom-driven test
+(not just code review): click-through, shadow DOM CSS scoping, the close
+control, browser back/forward via `popstate`, and the fetch-failure fallback
+to a normal navigation.
+
 ---
 
 ## Current state — what's actually live vs. in progress
