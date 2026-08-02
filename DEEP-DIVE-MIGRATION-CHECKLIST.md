@@ -778,3 +778,69 @@ on `content.mandate_summary` being present.
 
 This completes the mandate-summary tile rollout across all 31 tracker countries, in all 4
 supported languages.
+
+## Cutover to production: static pages retired (Cloudflare Pages Functions)
+
+Following the mandate-summary rollout above, the 30 hand-written static country
+deep-dive pages (spain.html, croatia.html, etc.) have been retired entirely and
+replaced with a single dynamic route, live on the real production domain rather
+than only the members-subdomain admin preview.
+
+**Architecture:** a new Cloudflare Pages Function, `functions/[country].js`,
+matches any single-segment path (e.g. `/spain`) that has no matching static
+asset — which, now that the 30 static files are deleted, means every real
+country URL. It reads the D1 database directly (binding name `eicc_content`,
+same database as members-worker) and renders the page at request time.
+
+**Shared rendering code:** `shared/deep-dive-render.mjs` is the new single
+source of truth for `getDeepDiveContent`, `renderFullDeepDivePage`, and their
+supporting helpers — extracted from members-worker/src/index.js, which now
+imports from it instead of defining its own copies. The admin preview routes
+(`/admin/preview/deep-dive`, `/admin/preview/milestones`) are unaffected in
+behaviour; they just source their rendering logic from the shared module now.
+A handful of small, stable primitives (escapeHtml, d1All/d1First,
+translateCountryName + its dictionary) remain deliberately duplicated between
+the shared module and index.js rather than tightly coupling two independently
+deployed Cloudflare projects — consistent with this codebase's existing
+precedent (see the COUNTRY_DEEP_DIVE_SLUGS comment).
+
+**Language routing — the actual point of this cutover:** every visitor, in
+any language, now reaches the D1-rendered version automatically. Priority
+order: explicit `?lang=` query param (and this always refreshes a persistence
+cookie) → existing `eicc_lang` cookie → the browser's own `Accept-Language`
+header, matched against the four supported languages → English as the final
+fallback. This is a genuinely new capability — the retired static pages were
+English-only with no translation mechanism at all.
+
+**URL changes:**
+- Canonical URLs dropped the `.html` extension (`/spain` instead of
+  `/spain.html`), matching Cloudflare Pages' existing clean-URL behaviour and
+  the `<link rel="canonical">` tag the shared renderer now emits. A request to
+  the old `/spain.html` form still resolves correctly — the Function strips a
+  trailing `.html` before its slug lookup — so no static redirect rule was
+  needed to avoid breaking old bookmarks or indexed links.
+- `einvoicing-compliance-tracker.html`'s `DEEP_DIVES` map, `sitemap.xml`, and
+  the members-worker's newsletter-archive deep-dive links were all updated to
+  the new extensionless URLs.
+- European Union was deliberately left out of this cutover's link surface —
+  it has full Stage 4 content in D1 and works correctly if requested directly,
+  but never had a static page or a tracker link before, and adding one wasn't
+  part of this change.
+
+**Manual setup step (can't be done from a repo commit):** the Pages project
+needs a D1 database binding named `eicc_content`, pointed at the `eicc-content`
+database (id `d1d10bd0-e90a-44a3-9494-a63689e8d32e`) — Cloudflare dashboard →
+Pages project → Settings → Functions → D1 database bindings. Until this is
+configured, `functions/[country].js` returns a clear 500 explaining exactly
+that, rather than a confusing generic error.
+
+**Testing:** no live Cloudflare Pages runtime is reachable from this sandbox,
+so verification was: `node --check` syntax validation on all three changed/new
+files, and a genuine integration test running the shared module's actual
+render path against real content in the local D1 mirror via Node's built-in
+`node:sqlite`, wrapped in a small D1-API-compatible shim (`prepare().bind()`
+`.all()`/`.first()`) — 5 country/language combinations (Spain/en, Spain/de,
+Croatia/fr, Malaysia/es, United States/en) all produced valid, complete HTML
+with no template errors. Recommended before relying on this in production:
+`wrangler pages dev` locally, and a spot-check of a handful of live URLs
+post-deploy.

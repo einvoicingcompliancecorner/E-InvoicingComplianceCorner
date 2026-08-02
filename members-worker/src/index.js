@@ -16,6 +16,14 @@
 // See README.md in this folder for full setup instructions.
 // ================================================================
 
+import {
+  getMilestonesForCountry as sharedGetMilestonesForCountry,
+  renderDeepDiveStyleMilestones as sharedRenderDeepDiveStyleMilestones,
+  getDeepDiveContent as sharedGetDeepDiveContent,
+  renderFullDeepDivePage as sharedRenderFullDeepDivePage,
+  deriveFlagFromCode,
+} from "../../shared/deep-dive-render.mjs";
+
 const SESSION_COOKIE = "eicc_session";
 const SESSION_TTL_SECONDS = 60 * 60 * 24 * 30; // 30 days
 const MAGIC_LINK_TTL_SECONDS = 60 * 15; // 15 minutes
@@ -849,39 +857,6 @@ async function handleArchiveIssue(request, env, slug, lang) {
 // files) -- this is a preview route for verifying the architecture
 // before committing to the full migration and cutover.
 // ---------------------------------------------------------------
-async function getMilestonesForCountry(env, countryName, lang) {
-  const rows = await d1All(env, `
-    SELECT m.id, m.date, m.anchor, m.source_url,
-           COALESCE(mt.system, mt_en.system) as system,
-           COALESCE(mt.desc, mt_en.desc) as desc,
-           COALESCE(mt.actions, mt_en.actions) as actions
-    FROM milestones m
-    JOIN countries c ON c.id = m.country_id
-    LEFT JOIN milestone_translations mt ON mt.milestone_id = m.id AND mt.lang = ?
-    LEFT JOIN milestone_translations mt_en ON mt_en.milestone_id = m.id AND mt_en.lang = 'en'
-    WHERE c.name_en = ?
-    ORDER BY m.date ASC
-  `, lang, countryName);
-  return rows.map((r) => ({
-    id: r.id,
-    date: r.date,
-    anchor: !!r.anchor,
-    sourceUrl: r.source_url,
-    system: r.system,
-    desc: r.desc,
-    actions: JSON.parse(r.actions || "[]"),
-  }));
-}
-
-function formatMilestoneDate(dateStr) {
-  const [y, m] = dateStr.split("-");
-  const monthNames = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-  return `${monthNames[parseInt(m, 10) - 1]} ${y}`;
-}
-
-// Tracker-style rendering: matches the tracker's own card structure —
-// active/upcoming milestones in the main list, anchor (settled,
-// historical) milestones in a separate "Established regulations" group.
 function renderTrackerStyleMilestones(milestones, countryName) {
   const active = milestones.filter((m) => !m.anchor);
   const established = milestones.filter((m) => m.anchor);
@@ -906,358 +881,6 @@ function renderTrackerStyleMilestones(milestones, countryName) {
 // Deep-dive-style rendering: matches portugal.html's actual timeline
 // section CSS classes (.rtimeline, .rmonth-marker, .rcard, .rbadge) —
 // same underlying milestone data, genuinely different template.
-function renderDeepDiveStyleMilestones(milestones, lang) {
-  let lastMonthMarker = "";
-  const cards = milestones.map((m) => {
-    const marker = formatMilestoneDate(m.date);
-    const markerHtml = marker !== lastMonthMarker
-      ? `<div class="rmonth-marker">${escapeHtml(marker.split(" ")[1])}</div>`
-      : "";
-    lastMonthMarker = marker;
-    // Badge status depends purely on whether the date has actually
-    // passed -- anchor only controls the tracker's separate grouping
-    // into an active list vs. a collapsed "Established regulations"
-    // section, and has no bearing on whether something is genuinely
-    // in effect yet.
-    const badgeClass = new Date(m.date) <= new Date() ? "inforce" : "upcoming";
-    const badgeLabel = badgeClass === "inforce" ? t(lang, "inEffect") : t(lang, "upcoming");
-    return `${markerHtml}<div class="rcard">
-      <div class="rcard-top"><span class="rcard-date">${escapeHtml(m.date)}</span><span class="rbadge ${badgeClass}">${badgeLabel}</span></div>
-      <div class="rcard-title">${escapeHtml(m.system)}</div>
-      <p class="rcard-desc">${escapeHtml(m.desc)}</p>
-    </div>`;
-  }).join("");
-  return `<div class="rtimeline">${cards}</div>`;
-}
-
-async function getDeepDiveContent(env, countryName, lang) {
-  const page = await d1First(env, `
-    SELECT COALESCE(dpt.compliance_model, dpt_en.compliance_model) as compliance_model,
-           COALESCE(dpt.footer_disclaimer, dpt_en.footer_disclaimer) as footer_disclaimer,
-           COALESCE(dpt.timeline_intro, dpt_en.timeline_intro) as timeline_intro,
-           COALESCE(dpt.file_format_intro, dpt_en.file_format_intro) as file_format_intro,
-           COALESCE(dpt.scope_intro, dpt_en.scope_intro) as scope_intro,
-           COALESCE(dpt.steps_intro, dpt_en.steps_intro) as steps_intro,
-           COALESCE(dpt.penalties_intro, dpt_en.penalties_intro) as penalties_intro,
-           COALESCE(dpt.mandate_summary, dpt_en.mandate_summary) as mandate_summary,
-           COALESCE(dpt.mandate_summary_icon, dpt_en.mandate_summary_icon) as mandate_summary_icon,
-           ddp.last_updated
-    FROM countries c
-    JOIN deep_dive_pages ddp ON ddp.country_id = c.id
-    LEFT JOIN deep_dive_page_translations dpt ON dpt.country_id = c.id AND dpt.lang = ?
-    LEFT JOIN deep_dive_page_translations dpt_en ON dpt_en.country_id = c.id AND dpt_en.lang = 'en'
-    WHERE c.name_en = ?
-  `, lang, countryName);
-  if (!page) return null;
-
-  const stats = await d1All(env, `
-    SELECT COALESCE(dst.stat_value, dst_en.stat_value) as stat_value,
-           COALESCE(dst.stat_label, dst_en.stat_label) as stat_label
-    FROM deep_dive_stats ds
-    JOIN countries c ON c.id = ds.country_id
-    LEFT JOIN deep_dive_stat_translations dst ON dst.stat_id = ds.id AND dst.lang = ?
-    LEFT JOIN deep_dive_stat_translations dst_en ON dst_en.stat_id = ds.id AND dst_en.lang = 'en'
-    WHERE c.name_en = ? ORDER BY ds.sort_order
-  `, lang, countryName);
-
-  const cardRows = await d1All(env, `
-    SELECT dc.section,
-           COALESCE(dct.title, dct_en.title) as title,
-           COALESCE(dct.rows_json, dct_en.rows_json) as rows_json,
-           COALESCE(dct.note, dct_en.note) as note,
-           COALESCE(dct.body, dct_en.body) as body,
-           COALESCE(dct.badge_label, dct_en.badge_label) as badge_label,
-           COALESCE(dct.badge_type, dct_en.badge_type) as badge_type
-    FROM deep_dive_cards dc
-    JOIN countries c ON c.id = dc.country_id
-    LEFT JOIN deep_dive_card_translations dct ON dct.card_id = dc.id AND dct.lang = ?
-    LEFT JOIN deep_dive_card_translations dct_en ON dct_en.card_id = dc.id AND dct_en.lang = 'en'
-    WHERE c.name_en = ? ORDER BY dc.section, dc.sort_order
-  `, lang, countryName);
-  const cards = { file_format: [], scope_transmission: [], penalties_related: [] };
-  for (const r of cardRows) {
-    (cards[r.section] ||= []).push({
-      title: r.title,
-      rows: r.rows_json ? JSON.parse(r.rows_json) : null,
-      note: r.note,
-      body: r.body,
-      badgeLabel: r.badge_label,
-      badgeType: r.badge_type,
-    });
-  }
-
-  const steps = await d1All(env, `
-    SELECT COALESCE(dstt.title, dstt_en.title) as title,
-           COALESCE(dstt.description, dstt_en.description) as description
-    FROM deep_dive_steps dst
-    JOIN countries c ON c.id = dst.country_id
-    LEFT JOIN deep_dive_step_translations dstt ON dstt.step_id = dst.id AND dstt.lang = ?
-    LEFT JOIN deep_dive_step_translations dstt_en ON dstt_en.step_id = dst.id AND dstt_en.lang = 'en'
-    WHERE c.name_en = ? ORDER BY dst.sort_order
-  `, lang, countryName);
-
-  const portals = await d1All(env, `
-    SELECT dp.url, COALESCE(dpt.label, dpt_en.label) as label
-    FROM deep_dive_portals dp
-    JOIN countries c ON c.id = dp.country_id
-    LEFT JOIN deep_dive_portal_translations dpt ON dpt.portal_id = dp.id AND dpt.lang = ?
-    LEFT JOIN deep_dive_portal_translations dpt_en ON dpt_en.portal_id = dp.id AND dpt_en.lang = 'en'
-    WHERE c.name_en = ? ORDER BY dp.sort_order
-  `, lang, countryName);
-
-  // Multiple lifecycle-style pill cards per country are genuinely
-  // possible (Malaysia has two: "Submission methods" and "Validation
-  // lifecycle"), so this queries all cards for the country and their
-  // statuses, grouped by card -- not just one.
-  const lifecycleCardRows = await d1All(env, `
-    SELECT dlc.id, dlc.section, dlc.sort_order, dlc.display_style,
-           COALESCE(dlct.title, dlct_en.title) as title,
-           COALESCE(dlct.intro_text, dlct_en.intro_text) as intro_text,
-           COALESCE(dlct.outro_text, dlct_en.outro_text) as outro_text
-    FROM deep_dive_lifecycle_cards dlc
-    JOIN countries c ON c.id = dlc.country_id
-    LEFT JOIN deep_dive_lifecycle_card_translations dlct ON dlct.card_id = dlc.id AND dlct.lang = ?
-    LEFT JOIN deep_dive_lifecycle_card_translations dlct_en ON dlct_en.card_id = dlc.id AND dlct_en.lang = 'en'
-    WHERE c.name_en = ? ORDER BY dlc.section, dlc.sort_order
-  `, lang, countryName);
-
-  const lifecycleCards = [];
-  for (const row of lifecycleCardRows) {
-    const statuses = await d1All(env, `
-      SELECT dls.is_special, COALESCE(dlst.label, dlst_en.label) as label
-      FROM deep_dive_lifecycle_statuses_v2 dls
-      LEFT JOIN deep_dive_lifecycle_status_v2_translations dlst ON dlst.status_id = dls.id AND dlst.lang = ?
-      LEFT JOIN deep_dive_lifecycle_status_v2_translations dlst_en ON dlst_en.status_id = dls.id AND dlst_en.lang = 'en'
-      WHERE dls.card_id = ? ORDER BY dls.sort_order
-    `, lang, row.id);
-    lifecycleCards.push({ section: row.section, sortOrder: row.sort_order, title: row.title, intro: row.intro_text, outro: row.outro_text, statuses, displayStyle: row.display_style });
-  }
-
-  const penaltyRows = await d1All(env, `
-    SELECT COALESCE(dprt.failure_description, dprt_en.failure_description) as failure_description,
-           COALESCE(dprt.fine_amount, dprt_en.fine_amount) as fine_amount,
-           COALESCE(dprt.annual_cap, dprt_en.annual_cap) as annual_cap
-    FROM deep_dive_penalty_rows dpr
-    JOIN countries c ON c.id = dpr.country_id
-    LEFT JOIN deep_dive_penalty_row_translations dprt ON dprt.row_id = dpr.id AND dprt.lang = ?
-    LEFT JOIN deep_dive_penalty_row_translations dprt_en ON dprt_en.row_id = dpr.id AND dprt_en.lang = 'en'
-    WHERE c.name_en = ? ORDER BY dpr.sort_order
-  `, lang, countryName);
-
-  return { ...page, stats, cards, steps, portals, lifecycleCards, penaltyRows };
-}
-
-
-function renderSpecCard(card) {
-  const rowsHtml = (card.rows || []).map(([k, v]) => `<div class="spec-row"><span class="k">${escapeHtml(k)}</span><span class="v">${escapeHtml(v)}</span></div>`).join("");
-  const badgeHtml = card.badgeLabel ? ` <span class="badge-tag ${escapeHtml(card.badgeType || "")}">${escapeHtml(card.badgeLabel)}</span>` : "";
-  return `<div class="spec-card"><h3>${escapeHtml(card.title)}${badgeHtml}</h3>${rowsHtml}${card.note ? `<p class="note">${escapeHtml(card.note)}</p>` : ""}</div>`;
-}
-
-function renderRelatedCard(card) {
-  return `<div class="related-card"><h4>${escapeHtml(card.title)}</h4><p>${escapeHtml(card.body)}</p></div>`;
-}
-
-// Lifecycle pills render as an extra spec-card appended to the
-// scope_transmission grid, matching France's actual placement --
-// only rendered when a country has lifecycle statuses at all.
-function renderLifecycleCard(card) {
-  if (!card.statuses || card.statuses.length === 0) return "";
-  const itemsHtml = card.displayStyle === "list"
-    ? `<ul class="lifecycle-list">${card.statuses.map((s) => `<li${s.is_special ? ' class="rej"' : ""}>${escapeHtml(s.label)}</li>`).join("")}</ul>`
-    : `<div class="lifecycle">${card.statuses.map((s) => `<span${s.is_special ? ' class="rej"' : ""}>${escapeHtml(s.label)}</span>`).join("")}</div>`;
-  return `<div class="spec-card">
-    ${card.title ? `<h3>${escapeHtml(card.title)}</h3>` : ""}
-    ${card.intro ? `<p class="note" style="margin-top:0; padding-top:0; border-top:none;">${escapeHtml(card.intro)}</p>` : ""}
-    ${itemsHtml}
-    ${card.outro ? `<p class="note">${escapeHtml(card.outro)}</p>` : ""}
-  </div>`;
-}
-
-// Renders every lifecycle card belonging to a given section, in order --
-// a country can have zero, one, or several (Malaysia has two within
-// scope_transmission alone).
-function renderLifecycleCardsForSection(lifecycleCards, section) {
-  return (lifecycleCards || [])
-    .filter((c) => c.section === section)
-    .map(renderLifecycleCard)
-    .join("");
-}
-
-// Genuine tabular penalty schedule, rendered full-width alongside any
-// narrative related-cards in the same grid -- only rendered when a
-// country has a real, sourced fine schedule to cite. Table headers
-// (Failure/Fine/Annual cap) use the tracker's own translation keys.
-function renderPenaltyTable(rows, lang) {
-  if (!rows || rows.length === 0) return "";
-  const rowsHtml = rows.map((r) => `<tr><td>${escapeHtml(r.failure_description)}</td><td>${escapeHtml(r.fine_amount || "—")}</td><td>${escapeHtml(r.annual_cap || "—")}</td></tr>`).join("");
-  return `<div class="penalty-card">
-    <table class="penalty-table">
-      <tr><th>${t(lang, "penaltyFailure")}</th><th>${t(lang, "penaltyFine")}</th><th>${t(lang, "penaltyAnnualCap")}</th></tr>
-      ${rowsHtml}
-    </table>
-  </div>`;
-}
-
-// Full deep-dive page render, sourced entirely from D1 -- structurally
-// matching the static portugal.html this is meant to replace, reusing
-// the exact same CSS. Milestones come from the shared table (same data
-// the tracker itself will read once that side is migrated too).
-async function renderFullDeepDivePage(countryName, flag, code, region, content, milestones, lang) {
-  const timelineHtml = renderDeepDiveStyleMilestones(milestones, lang);
-  const statsHtml = content.stats.map((s) => `<div class="stat"><div class="num display">${escapeHtml(s.stat_value)}</div><div class="lbl">${escapeHtml(s.stat_label)}</div></div>`).join("");
-  const fileFormatHtml = content.cards.file_format.map(renderSpecCard).join("") + renderLifecycleCardsForSection(content.lifecycleCards, "file_format");
-  const scopeHtml = content.cards.scope_transmission.map(renderSpecCard).join("") + renderLifecycleCardsForSection(content.lifecycleCards, "scope_transmission");
-  const relatedHtml = renderPenaltyTable(content.penaltyRows, lang) + content.cards.penalties_related.map(renderRelatedCard).join("");
-  const stepsHtml = content.steps.map((s, i) => `
-    <div class="step"><div class="step-num"></div><div class="step-body"><h4>${escapeHtml(s.title)}</h4><p>${escapeHtml(s.description)}</p></div></div>`).join("");
-  const portalsHtml = content.portals.map((p) => `<a class="portal-btn" href="${escapeHtml(p.url)}" target="_blank" rel="noopener">${escapeHtml(p.label)}</a>`).join("");
-
-  return `<!DOCTYPE html>
-<html lang="${lang}">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>${escapeHtml(translateCountryName(lang, countryName))} E-Invoicing Requirements — The E-Invoicing Compliance Corner</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>
-  :root{
-    --ink:#0f1a2b; --ink-2:#152238; --line:#2b3c5a;
-    --paper:#efe9db; --paper-2:#e4dcc6; --paper-line:#c9bd9e;
-    --text-lo:#f2f0e8; --muted:#93a3c0;
-    --stamp:#b5432f; --stamp-dim:#7c3628;
-    --live-dim:#274a38; --soon:#c98a3a; --soon-dim:#6e4c22;
-    --upcoming-dim:#3a4864; --radius:10px;
-  }
-  *{box-sizing:border-box;} html,body{margin:0;padding:0;}
-  body{background:var(--ink); color:var(--text-lo); font-family:'IBM Plex Sans',sans-serif; line-height:1.55;}
-  .display{font-family:'Big Shoulders Display',sans-serif; font-weight:800;}
-  .wrap{max-width:980px; margin:0 auto; padding:0 5vw 60px;}
-  .back-link{display:inline-flex; align-items:center; gap:6px; margin:24px 0 0; font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:var(--muted); text-decoration:none;}
-  .back-link:hover{color:var(--soon);}
-  .country-head{display:flex; flex-wrap:wrap; gap:18px; align-items:flex-start; justify-content:space-between; padding:18px 0 26px; border-bottom:1px solid var(--line); margin-bottom:28px;}
-  .country-flag{font-size:46px; line-height:1;}
-  .country-eyebrow{font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.16em; text-transform:uppercase; color:var(--soon); margin:0 0 4px;}
-  .country-title{font-size:clamp(28px,4.5vw,42px); margin:0; text-transform:uppercase; line-height:0.95;}
-  .country-region{font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--muted); margin-top:6px;}
-  .country-meta{font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--muted); text-align:right;}
-  .stat-strip{display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:1px; background:var(--line); border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; margin-bottom:36px;}
-  .stat-strip .stat{background:var(--ink-2); padding:16px 18px;}
-  .stat-strip .stat .num{font-family:'Big Shoulders Display',sans-serif; font-weight:800; font-size:22px; line-height:1.15;}
-  .stat-strip .stat .lbl{font-size:10.8px; color:var(--muted); text-transform:uppercase; letter-spacing:0.07em; margin-top:5px;}
-  .status-banner{background:var(--soon-dim); border:1px solid var(--soon); color:#ffe9c7; border-radius:var(--radius); padding:14px 18px; margin-bottom:32px; font-size:13.3px; display:flex; gap:12px; align-items:flex-start;}
-  .status-banner .icon{font-size:18px; line-height:1;}
-  .section{margin-bottom:44px;}
-  .section-head{display:flex; align-items:baseline; gap:12px; margin-bottom:6px;}
-  .section-head .num{color:var(--soon); font-size:13px;}
-  .section-head h2{margin:0; font-size:clamp(20px,3vw,28px); text-transform:uppercase;}
-  .section-intro{color:var(--muted); font-size:14.5px; max-width:760px; margin:0 0 20px;}
-  .rtimeline{position:relative; padding-left:20px; border-left:2px solid var(--line);}
-  .rmonth-marker{font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--soon); text-transform:uppercase; letter-spacing:0.08em; margin:22px 0 8px -20px; padding-left:20px;}
-  .rmonth-marker:first-child{margin-top:0;}
-  .rcard{background:var(--paper); color:#241d10; border:1px solid var(--paper-line); border-radius:var(--radius); padding:14px 18px; margin-bottom:10px;}
-  .rcard-top{display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;}
-  .rcard-date{font-family:'IBM Plex Mono',monospace; font-size:12px; font-weight:600; color:#4a3f22;}
-  .rbadge{font-family:'IBM Plex Mono',monospace; font-size:10px; text-transform:uppercase; letter-spacing:0.06em; padding:3px 9px; border-radius:999px; font-weight:600;}
-  .rbadge.inforce{background:var(--live-dim); color:#bfe6cf;}
-  .rbadge.upcoming{background:var(--upcoming-dim); color:#dbe2ee;}
-  .rcard-title{font-weight:600; margin-bottom:4px;}
-  .rcard-desc{color:#4a4030; font-size:13.5px; margin:0;}
-  .spec-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:14px;}
-  .spec-card{background:var(--paper); color:#241d10; border:1px solid var(--paper-line); border-radius:var(--radius); padding:16px 18px 18px;}
-  .spec-card h3{font-family:'IBM Plex Mono',monospace; font-size:11px; text-transform:uppercase; letter-spacing:0.09em; color:#6b5f3f; margin:0 0 10px; display:flex; align-items:center; gap:8px;}
-  .spec-card h3::after{content:""; flex:1; height:1px; background:var(--paper-line);}
-  .spec-row{display:flex; justify-content:space-between; gap:12px; padding:6px 0; border-top:1px dashed var(--paper-line); font-size:13px;}
-  .spec-row:first-of-type{border-top:none;}
-  .spec-row .k{color:#6b5f3f; flex:0 0 42%;} .spec-row .v{color:#241d10; text-align:right; font-weight:500; flex:1 1 auto; min-width:0; overflow-wrap:break-word; word-break:break-word;}
-  .note{font-size:12.6px; color:#5a5138; margin:10px 0 0; padding-top:10px; border-top:1px dashed var(--paper-line); line-height:1.5;}
-  .badge-tag{display:inline-block; font-family:'IBM Plex Mono',monospace; font-size:9.5px; text-transform:uppercase; letter-spacing:0.06em; padding:2px 7px; border-radius:4px; margin-left:6px; vertical-align:middle;}
-  .badge-tag.confirmed{background:var(--live-dim); color:#bfe6cf;}
-  .badge-tag.pending{background:var(--upcoming-dim); color:#dbe2ee;}
-  .lifecycle{display:flex; flex-wrap:wrap; gap:8px; margin-top:4px;}
-  .lifecycle span{font-family:'IBM Plex Mono',monospace; font-size:11px; background:var(--soon-dim); color:#ffe0b3; padding:5px 11px; border-radius:999px; white-space:nowrap;}
-  .lifecycle span.rej{background:var(--stamp-dim); color:#ffd7cc;}
-  .lifecycle-list{list-style:none; margin:4px 0 0; padding:0; display:flex; flex-direction:column; gap:6px;}
-  .lifecycle-list li{font-size:13px; color:#241d10; padding:6px 10px; background:var(--paper-2); border-radius:6px;}
-  .lifecycle-list li.rej{background:var(--stamp-dim); color:#ffd7cc;}
-  .steps{counter-reset:step; display:flex; flex-direction:column; gap:0;}
-  .step{display:flex; gap:16px; padding:16px 0; border-top:1px dashed var(--line);}
-  .step:first-child{border-top:none;}
-  .step-num{counter-increment:step; flex:0 0 auto; width:30px; height:30px; border-radius:50%; background:var(--soon-dim); color:#ffe0b3; display:flex; align-items:center; justify-content:center; font-family:'Big Shoulders Display',sans-serif; font-weight:800; font-size:14px;}
-  .step-num::before{content:counter(step);}
-  .step-body h4{margin:2px 0 4px; font-size:14.5px;} .step-body p{margin:0; font-size:13.3px; color:var(--muted);}
-  .related-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:14px;}
-  .related-card{background:var(--ink-2); border:1px solid var(--line); border-radius:var(--radius); padding:16px 18px;}
-  .related-card h4{margin:0 0 6px; font-size:14px;} .related-card p{margin:0; color:var(--muted); font-size:13px;}
-  .penalty-table{width:100%; border-collapse:collapse; font-size:13px;}
-  .penalty-table th, .penalty-table td{text-align:left; padding:9px 10px; border-bottom:1px dashed var(--paper-line);}
-  .penalty-table th{font-family:'IBM Plex Mono',monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:0.06em; color:#6b5f3f;}
-  .penalty-table td{color:#241d10;}
-  .penalty-card{background:var(--paper); color:#241d10; border-radius:var(--radius); border:1px solid var(--paper-line); padding:16px 18px; grid-column:1 / -1;}
-  .portal-row{display:flex; flex-wrap:wrap; gap:10px; margin:8px 0 40px;}
-  .portal-btn{display:inline-block; background:var(--ink-2); border:1px solid var(--line); border-radius:999px; padding:9px 18px; font-family:'IBM Plex Mono',monospace; font-size:12.5px; text-decoration:none; color:var(--text-lo);}
-  footer{border-top:1px solid var(--line); padding-top:20px; color:var(--muted); font-size:12px; line-height:1.6;}
-</style>
-</head>
-<body>
-<div class="wrap">
-  <a class="back-link" href="https://e-invoicingcompliancecorner.com/einvoicing-compliance-tracker.html">${t(lang, "backToTracker")}</a>
-  <div class="country-head">
-    <div style="display:flex; gap:16px; align-items:center;">
-      <div class="country-flag">${flag}</div>
-      <div>
-        <p class="country-eyebrow">${t(lang, "countryDeepDiveEyebrow")}</p>
-        <h1 class="country-title display">${escapeHtml(translateCountryName(lang, countryName))}</h1>
-        <div class="country-region">${escapeHtml(region)} · ${escapeHtml(code)} · VAT area: EU</div>
-      </div>
-    </div>
-    <div class="country-meta">${t(lang, "lastUpdatedLabel")}: ${escapeHtml(content.last_updated)}<br>${t(lang, "complianceModelLabel")}: ${escapeHtml(content.compliance_model)}</div>
-  </div>
-
-  ${content.mandate_summary ? `<div class="status-banner"><span class="icon">${escapeHtml(content.mandate_summary_icon || "ℹ️")}</span><span>${escapeHtml(content.mandate_summary)}</span></div>` : ""}
-
-  <div class="stat-strip">${statsHtml}</div>
-
-  <div class="section">
-    <div class="section-head"><span class="num mono">01</span><h2 class="display">${t(lang, "secTimeline")}</h2></div>
-    <p class="section-intro">${escapeHtml(content.timeline_intro)}</p>
-    ${timelineHtml}
-  </div>
-
-  <div class="section">
-    <div class="section-head"><span class="num mono">02</span><h2 class="display">${t(lang, "secFileFormat")}</h2></div>
-    <p class="section-intro">${escapeHtml(content.file_format_intro)}</p>
-    <div class="spec-grid">${fileFormatHtml}</div>
-  </div>
-
-  <div class="section">
-    <div class="section-head"><span class="num mono">03</span><h2 class="display">${t(lang, "secScope")}</h2></div>
-    <p class="section-intro">${escapeHtml(content.scope_intro)}</p>
-    <div class="spec-grid">${scopeHtml}</div>
-  </div>
-
-  <div class="section">
-    <div class="section-head"><span class="num mono">04</span><h2 class="display">${t(lang, "secSteps")}</h2></div>
-    <p class="section-intro">${escapeHtml(content.steps_intro)}</p>
-    <div class="steps">${stepsHtml}</div>
-  </div>
-
-  <div class="section">
-    <div class="section-head"><span class="num mono">05</span><h2 class="display">${t(lang, "secPenalties")}</h2></div>
-    <p class="section-intro">${escapeHtml(content.penalties_intro)}</p>
-    <div class="related-grid">${relatedHtml}</div>
-  </div>
-
-  <div class="portal-row">${portalsHtml}</div>
-
-  <footer><p>${escapeHtml(content.footer_disclaimer)}</p></footer>
-</div>
-</body>
-</html>`;
-}
-
 async function handleDeepDivePreview(request, env, lang) {
   const url = new URL(request.url);
   const countryName = url.searchParams.get("country") || "Portugal";
@@ -1265,19 +888,16 @@ async function handleDeepDivePreview(request, env, lang) {
   const countryRow = await d1First(env, `SELECT code, region FROM countries WHERE name_en = ?`, countryName);
   if (!countryRow) return new Response(`Country "${countryName}" not found.`, { status: 404 });
 
-  const content = await getDeepDiveContent(env, countryName, lang);
+  const content = await sharedGetDeepDiveContent(env.eicc_content, countryName, lang);
   if (!content) return new Response(`No deep-dive content in D1 for "${countryName}" yet.`, { status: 404 });
 
-  const milestones = await getMilestonesForCountry(env, countryName, lang);
-  // Derives the flag emoji from the ISO country code algorithmically
-  // (combining two Unicode regional indicator symbols) rather than a
-  // hardcoded per-country map -- works correctly for every country
-  // without needing to add an entry each time a new one is backfilled.
-  const flag = countryRow.code.toUpperCase().replace(/./g, (ch) =>
-    String.fromCodePoint(127397 + ch.charCodeAt(0))
-  );
+  const milestones = await sharedGetMilestonesForCountry(env.eicc_content, countryName, lang);
+  const flag = deriveFlagFromCode(countryRow.code);
 
-  const html = await renderFullDeepDivePage(countryName, flag, countryRow.code, countryRow.region, content, milestones, lang);
+  const html = await sharedRenderFullDeepDivePage(
+    countryName, flag, countryRow.code, countryRow.region, content, milestones, lang,
+    "https://e-invoicingcompliancecorner.com/einvoicing-compliance-tracker.html", ""
+  );
   // The shared renderLangSwitcher assumes ?lang= is the only query
   // param, which would drop ?country= here -- build links manually so
   // both are preserved, since this preview page has no other way to
@@ -1296,7 +916,7 @@ async function handleDeepDivePreview(request, env, lang) {
 async function handleMilestonesPreview(request, env, lang) {
   const url = new URL(request.url);
   const country = url.searchParams.get("country") || "Portugal";
-  const milestones = await getMilestonesForCountry(env, country, lang);
+  const milestones = await sharedGetMilestonesForCountry(env.eicc_content, country, lang);
 
   if (milestones.length === 0) {
     return new Response(`No milestones found in D1 for "${country}" yet.`, { status: 404 });
@@ -1324,7 +944,7 @@ async function handleMilestonesPreview(request, env, lang) {
       .rcard-title{font-weight:600; margin-bottom:4px;}
       .rcard-desc{color:#4a4030; font-size:13.5px; margin:0;}
     </style>
-    ${renderDeepDiveStyleMilestones(milestones, lang)}
+    ${sharedRenderDeepDiveStyleMilestones(milestones, lang)}
   </div>`;
 
   return htmlResponse(pageShell(body, lang));
@@ -1982,7 +1602,7 @@ function renderIssue(story, lang) {
   const deepDiveLinksHtml = (story.countries || [])
     .filter((c) => COUNTRY_DEEP_DIVE_SLUGS[c.englishName])
     .map((c) => {
-      const url = `https://e-invoicingcompliancecorner.com/${COUNTRY_DEEP_DIVE_SLUGS[c.englishName]}.html`;
+      const url = `https://e-invoicingcompliancecorner.com/${COUNTRY_DEEP_DIVE_SLUGS[c.englishName]}`;
       return `<p style="margin-top:10px;"><a href="${url}" style="color:#b5432f; text-decoration:underline; font-weight:600; font-size:13px;">📖 ${escapeHtml(t(lang, "archive.readDeepDive")(c.displayName))}</a></p>`;
     })
     .join("");
