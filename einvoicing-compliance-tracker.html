@@ -509,9 +509,6 @@
         </div>
       </div>
     </div>
-    <div style="margin-top:10px;">
-      <strong data-i18n="menu.lastUpdated">Last updated:</strong> <span id="todayLabel">—</span>
-    </div>
   </div>
 </div>
 
@@ -1562,12 +1559,6 @@ function monthKey(iso){
 let state = { region:'All', status:'All', q:'' };
 const NOW = today();
 
-// ---------- render: topbar ----------
-function renderTodayLabel(){
-  const d = new Date('2026-07-20T00:00:00');
-  document.getElementById('todayLabel').textContent = d.toLocaleDateString(currentLocale(),{day:'numeric',month:'long',year:'numeric'});
-}
-renderTodayLabel();
 
 // ---------- render: split-flap board ----------
 function renderBoard(){
@@ -3051,7 +3042,6 @@ wireDeepDiveInPagePanel();
 // active language changes (country/region names, card system/desc/
 // actions, filter labels, sidebar, Deep Dives menu).
 document.addEventListener('eicc:languageChanged', ()=>{
-  renderTodayLabel();
   renderBoard();
   renderStats();
   renderFilterButtons();

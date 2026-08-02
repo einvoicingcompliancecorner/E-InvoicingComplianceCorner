@@ -803,6 +803,28 @@ Three follow-ups once Lemon Squeezy was out of the picture.
   tracker, `subscribe.html`, `feedback.html`, and
   `education-mandate-types.html`.
 
+### Removed the main tracker's top-level "Last updated" line (2 August 2026, code complete, deploy pending)
+
+Now that country deep dives (and their own "last updated" + compliance
+model info in the deep-dive header, added earlier this session) open
+in-frame, having the main tracker page's own "Last updated: <date>"
+line visible at the same time as a panel's own date was confusing --
+two different "last updated" dates on screen at once, for two
+different things. Removed the line entirely from `.topbar-brand`
+(which is hidden anyway whenever any in-page panel is open, so it
+was really only ever the *board* view's own date -- redundant with
+each deep dive already stating its own last-updated date up front).
+Also removed the now-unused `renderTodayLabel()` function and its two
+call sites (initial load + the `eicc:languageChanged` re-render list).
+Left the `menu.lastUpdated` i18n key in place in the translation
+files, unused but harmless, same as other orphaned keys elsewhere in
+this project.
+
+Verified: re-ran the full existing regression suite (16 jsdom tests,
+covering the archive, menus, sidebar, topbar, education, feedback, and
+subscribe panels) — no regressions. Re-validated HTML parse-validity
+and inline-script syntax on the tracker.
+
 ---
 
 ## Open items / next steps
