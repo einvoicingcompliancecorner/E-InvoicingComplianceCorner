@@ -303,10 +303,13 @@ function withLangCookie(response, lang, shouldSetCookie, cookieDuplicated) {
   return new Response(response.body, { status: response.status, headers });
 }
 
-// CORS for the two archive GET routes only (see the fetch handler
-// above) -- lets the tracker page's own JS read the response body via
-// fetch() from a different origin, so it can embed the archive
-// in-page the same way it already does for country deep dives.
+// CORS for the cross-origin fetch routes: the two archive GETs (the
+// tracker embeds them in-page) and the feedback POST (feedback.html
+// fetches from the main-site origin; without this header the browser
+// blocks the page's JS from READING the response — the request itself
+// still goes through as a CORS simple request, so a missing wrapper
+// here manifests as "error shown to user, submission actually
+// succeeded", which is exactly the bug this comment commemorates).
 // Deliberately scoped to exactly one trusted origin, not "*", and not
 // applied anywhere credentials/session state is involved.
 function withCors(response) {
@@ -372,7 +375,7 @@ export default {
       } else if (request.method === "GET" && url.pathname === "/members/preferences") {
         response = await handlePreferencesGet(request, env, lang);
       } else if (request.method === "POST" && url.pathname === "/members/feedback") {
-        response = await handleFeedback(request, env);
+        response = withCors(await handleFeedback(request, env));
       } else if (request.method === "POST" && url.pathname === "/members/preferences") {
         response = await handlePreferencesPost(request, env, lang);
       } else if (request.method === "GET" && url.pathname === "/members/unsubscribe-notifications") {
