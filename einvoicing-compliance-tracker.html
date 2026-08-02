@@ -596,6 +596,7 @@
 <div id="archiveView" style="display:none;"></div>
 <div id="educationView" style="display:none;"></div>
 <div id="feedbackView" style="display:none;"></div>
+<div id="subscribeView" style="display:none;"></div>
 
 <footer>
   <p data-i18n="filters.disclaimer">This tracker reflects publicly available guidance as of July 2026 and is provided for general awareness, not legal or tax advice. E-invoicing thresholds, wave numbers and go-live dates change frequently — confirm your obligations directly on the official government portal linked in each entry, or with your tax advisor, before making compliance decisions.</p>
@@ -2059,15 +2060,17 @@ async function openDeepDive(slug, opts){
   const topbarBrand = document.querySelector('.topbar-brand');
   currentDeepDiveSlug = slug;
   // Mutually exclusive with the newsletter archive, the education
-  // panel, and the feedback panel being open -- the reverse of the
-  // equivalent guards in openArchive(), openEducationPage(), and
-  // openFeedbackPage(). Without this, opening a country deep dive
-  // while one of those was already showing left its old content
-  // sitting there too, visible underneath the deep dive panel (all
-  // four are display:'' siblings in the DOM).
+  // panel, the feedback panel, and the subscribe panel being open --
+  // the reverse of the equivalent guards in openArchive(),
+  // openEducationPage(), openFeedbackPage(), and openSubscribePage().
+  // Without this, opening a country deep dive while one of those was
+  // already showing left its old content sitting there too, visible
+  // underneath the deep dive panel (all five are display:'' siblings
+  // in the DOM).
   if(archiveOpen) closeArchive({ skipHistory: true });
   if(currentEducationPage) closeEducationPage({ skipHistory: true });
   if(feedbackPageOpen) closeFeedbackPage({ skipHistory: true });
+  if(subscribePageOpen) closeSubscribePage({ skipHistory: true });
 
   boardView.style.display = 'none';
   // The site name/description/subscriber-perks block pushes real
@@ -2225,10 +2228,11 @@ async function openArchive(opts){
   const topbarBrand = document.querySelector('.topbar-brand');
   archiveOpen = true;
   // Mutually exclusive with a country deep dive, the education panel,
-  // or the feedback panel being open.
+  // the feedback panel, or the subscribe panel being open.
   if(currentDeepDiveSlug) closeDeepDive({ skipHistory: true });
   if(currentEducationPage) closeEducationPage({ skipHistory: true });
   if(feedbackPageOpen) closeFeedbackPage({ skipHistory: true });
+  if(subscribePageOpen) closeSubscribePage({ skipHistory: true });
 
   boardView.style.display = 'none';
   if(topbarBrand) topbarBrand.style.display = 'none';
@@ -2434,12 +2438,13 @@ async function openEducationPage(pageKey, opts){
   const topbarBrand = document.querySelector('.topbar-brand');
   currentEducationPage = pageKey;
   // Mutually exclusive with a country deep dive, the newsletter
-  // archive, or the feedback panel being open -- the reverse of the
-  // equivalent guards added to openDeepDive(), openArchive(), and
-  // openFeedbackPage().
+  // archive, the feedback panel, or the subscribe panel being open --
+  // the reverse of the equivalent guards added to openDeepDive(),
+  // openArchive(), openFeedbackPage(), and openSubscribePage().
   if(currentDeepDiveSlug) closeDeepDive({ skipHistory: true });
   if(archiveOpen) closeArchive({ skipHistory: true });
   if(feedbackPageOpen) closeFeedbackPage({ skipHistory: true });
+  if(subscribePageOpen) closeSubscribePage({ skipHistory: true });
 
   boardView.style.display = 'none';
   if(topbarBrand) topbarBrand.style.display = 'none';
@@ -2605,10 +2610,11 @@ async function openFeedbackPage(opts){
   const panel = document.getElementById('feedbackView');
   const topbarBrand = document.querySelector('.topbar-brand');
   feedbackPageOpen = true;
-  // Mutually exclusive with the other 3 in-page panels.
+  // Mutually exclusive with the other 4 in-page panels.
   if(currentDeepDiveSlug) closeDeepDive({ skipHistory: true });
   if(archiveOpen) closeArchive({ skipHistory: true });
   if(currentEducationPage) closeEducationPage({ skipHistory: true });
+  if(subscribePageOpen) closeSubscribePage({ skipHistory: true });
 
   boardView.style.display = 'none';
   if(topbarBrand) topbarBrand.style.display = 'none';
@@ -2682,6 +2688,229 @@ function closeFeedbackPage(opts){
 }
 
 
+let subscribePageOpen = false;
+let currentSubscribeShadow = null;
+
+let countriesJsLoadPromise = null;
+function loadCountriesJs(){
+  if(typeof EICC_COUNTRIES_BY_REGION !== 'undefined') return Promise.resolve();
+  if(countriesJsLoadPromise) return countriesJsLoadPromise;
+  countriesJsLoadPromise = new Promise((resolve, reject)=>{
+    const script = document.createElement('script');
+    script.src = 'countries.js';
+    script.onload = () => resolve();
+    script.onerror = (err) => { countriesJsLoadPromise = null; reject(err); };
+    document.head.appendChild(script);
+  });
+  return countriesJsLoadPromise;
+}
+
+function isValidSubscribeEmail(v){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); }
+
+function wireSubscribeForm(shadow){
+  const box = shadow.getElementById('countriesBox');
+  if(!box) return; // page didn't load as expected -- nothing to wire up
+
+  function t(key, fallback){
+    return (window.EICC_I18N && window.EICC_I18N.t(key)) || fallback;
+  }
+  function translateCountry(name){
+    const i18n = window.EICC_I18N;
+    return (i18n && i18n.strings && i18n.strings.countryNames && i18n.strings.countryNames[name]) || name;
+  }
+  function translateRegion(name){
+    const i18n = window.EICC_I18N;
+    return (i18n && i18n.strings && i18n.strings.regionNames && i18n.strings.regionNames[name]) || name;
+  }
+
+  function renderCountryChecklist(){
+    if (typeof EICC_COUNTRIES_BY_REGION === 'undefined') {
+      // countries.js didn't load -- fail gracefully rather than
+      // throwing, and let the subscription still go through (just
+      // without per-country alerts), same as subscribe.html's own
+      // standalone fallback.
+      const msg = t('card.countriesMissing', "Country selection is temporarily unavailable \u2014 you'll still get the full monthly digest. (Missing file: countries.js)");
+      box.innerHTML = `<p style="font-size:12px; color:#8a7d5a; padding:8px 0;">${msg}</p>`;
+      return;
+    }
+    const previouslyChecked = new Set(
+      Array.from(box.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value)
+    );
+    const regions = Object.keys(EICC_COUNTRIES_BY_REGION);
+    let html = '';
+    regions.forEach(region => {
+      html += `<div class="region-group"><p class="region-group-label">${translateRegion(region)}</p>`;
+      EICC_COUNTRIES_BY_REGION[region].forEach(country => {
+        const checked = previouslyChecked.has(country) ? 'checked' : '';
+        html += `<label class="country-check"><input type="checkbox" value="${country}" ${checked}>${translateCountry(country)}</label>`;
+      });
+      html += `</div>`;
+    });
+    box.innerHTML = html;
+  }
+  renderCountryChecklist();
+
+  const countryCheckboxes = () => Array.from(box.querySelectorAll('input[type="checkbox"]'));
+  const selectAllBtn = shadow.getElementById('selectAllCountries');
+  const clearAllBtn = shadow.getElementById('clearAllCountries');
+  if(selectAllBtn) selectAllBtn.addEventListener('click', ()=>{ countryCheckboxes().forEach(cb => cb.checked = true); });
+  if(clearAllBtn) clearAllBtn.addEventListener('click', ()=>{ countryCheckboxes().forEach(cb => cb.checked = false); });
+  function getSelectedCountries(){
+    return countryCheckboxes().filter(cb => cb.checked).map(cb => cb.value);
+  }
+
+  const detailsForm = shadow.getElementById('detailsForm');
+  if(detailsForm){
+    detailsForm.addEventListener('submit', (e)=>{
+      e.preventDefault();
+      const values = {
+        firstName: shadow.getElementById('firstName').value.trim(),
+        lastName: shadow.getElementById('lastName').value.trim(),
+        email: shadow.getElementById('email').value.trim(),
+        jobTitle: shadow.getElementById('jobTitle').value.trim(),
+        company: shadow.getElementById('company').value.trim(),
+      };
+      const selectedCountries = getSelectedCountries(); // [] means "send everything"
+
+      const checks = [
+        ['firstName', values.firstName.length > 0],
+        ['lastName', values.lastName.length > 0],
+        ['email', isValidSubscribeEmail(values.email)],
+        ['title', values.jobTitle.length > 0],
+        ['company', values.company.length > 0],
+      ];
+      let allValid = true;
+      checks.forEach(([key, ok])=>{
+        const el = shadow.getElementById('field-'+key);
+        if(el) el.classList.toggle('error', !ok);
+        if(!ok) allValid = false;
+      });
+      if(!allValid) return;
+
+      // The hidden countries field is the one piece of the form that
+      // doesn't already carry a matching name= attribute -- populate
+      // it, then let this validated submit go through as a real POST
+      // to members-worker. This is a genuine cross-origin navigation
+      // away from the tracker (same destination a standalone visit to
+      // subscribe.html would reach) -- form.submit() bypasses the
+      // 'submit' event entirely, so it won't re-enter this handler.
+      shadow.getElementById('countriesField').value = selectedCountries.join(',');
+      detailsForm.submit();
+    });
+  }
+
+  // ---------- sample issue modal ----------
+  const sampleModal = shadow.getElementById('sampleIssueModal');
+  const openSampleBtn = shadow.getElementById('openSampleIssue');
+  const closeSampleBtn = shadow.getElementById('closeSampleIssue');
+  if(sampleModal && openSampleBtn && closeSampleBtn){
+    openSampleBtn.addEventListener('click', ()=>{ sampleModal.classList.add('open'); });
+    function closeSampleModal(){ sampleModal.classList.remove('open'); }
+    closeSampleBtn.addEventListener('click', closeSampleModal);
+    sampleModal.addEventListener('click', (e)=>{
+      if(e.target === sampleModal) closeSampleModal(); // click on the overlay itself, not the card
+    });
+    // The Escape-key close is wired once, globally, in
+    // wireDeepDiveInPagePanel() instead of here -- this function runs
+    // fresh on every panel open, so a document-level listener added
+    // here would pile up across repeated open/close cycles.
+  }
+}
+
+async function openSubscribePage(opts){
+  opts = opts || {};
+  const boardView = document.getElementById('boardView');
+  const panel = document.getElementById('subscribeView');
+  const topbarBrand = document.querySelector('.topbar-brand');
+  subscribePageOpen = true;
+  // Mutually exclusive with the other 4 in-page panels.
+  if(currentDeepDiveSlug) closeDeepDive({ skipHistory: true });
+  if(archiveOpen) closeArchive({ skipHistory: true });
+  if(currentEducationPage) closeEducationPage({ skipHistory: true });
+  if(feedbackPageOpen) closeFeedbackPage({ skipHistory: true });
+
+  boardView.style.display = 'none';
+  if(topbarBrand) topbarBrand.style.display = 'none';
+  panel.style.display = '';
+  panel.innerHTML = '<p style="color:var(--muted); font-family:\'IBM Plex Mono\',monospace; font-size:13px; padding:40px 5vw;">Loading\u2026</p>';
+  window.scrollTo(0, 0);
+
+  let html;
+  try {
+    const res = await fetch('subscribe.html');
+    if(!res.ok) throw new Error('subscribe page fetch failed: ' + res.status);
+    html = await res.text();
+  } catch(err){
+    console.warn('Falling back to a full navigation for subscribe.html', err);
+    window.location.href = 'subscribe.html';
+    return;
+  }
+  if(!subscribePageOpen) return;
+
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  const styleEl = doc.querySelector('style');
+  const wrap = doc.querySelector('.wrap');
+  const backLink = wrap ? wrap.querySelector('.back-link') : null;
+  if(backLink) backLink.remove();
+
+  const scopedCss = (styleEl ? styleEl.textContent : '')
+    .replace(':root{', ':host{')
+    .replace('body{', ':host{');
+
+  panel.innerHTML = '';
+  const host = document.createElement('div');
+  panel.appendChild(host);
+  const shadow = host.attachShadow({ mode: 'open' });
+
+  const closeLabel = (window.EICC_I18N && window.EICC_I18N.t('backLink')) || '\u2190 Back to global tracker';
+  shadow.innerHTML = `
+    <style>${scopedCss}</style>
+    <div class="wrap">
+      <a class="back-link" id="subscribeCloseLink" href="/einvoicing-compliance-tracker.html">${closeLabel}</a>
+      ${wrap ? wrap.innerHTML : '<p>Could not load this page.</p>'}
+    </div>`;
+  shadow.getElementById('subscribeCloseLink').addEventListener('click', (e)=>{
+    e.preventDefault();
+    closeSubscribePage();
+  });
+
+  currentSubscribeShadow = shadow;
+
+  // Country checklist needs countries.js, which the tracker doesn't
+  // load on its own -- fetch it now (best-effort; wireSubscribeForm's
+  // renderCountryChecklist degrades gracefully if it never arrives,
+  // same as subscribe.html's own standalone fallback).
+  try { await loadCountriesJs(); } catch(err) { console.warn('Could not load countries.js', err); }
+  if(!subscribePageOpen) return;
+
+  wireSubscribeForm(shadow);
+  await applyI18nToShadow(shadow, 'subscribe');
+  // subscribePageOpen may have changed while translations were
+  // loading (e.g. the user navigated away already) -- don't let a
+  // stale response overwrite whatever's showing now.
+  if(!subscribePageOpen) return;
+
+  if(!opts.skipHistory){
+    history.pushState({ subscribe: true }, '', '/subscribe.html');
+  }
+}
+
+function closeSubscribePage(opts){
+  opts = opts || {};
+  subscribePageOpen = false;
+  currentSubscribeShadow = null;
+  document.getElementById('boardView').style.display = '';
+  const topbarBrand = document.querySelector('.topbar-brand');
+  if(topbarBrand) topbarBrand.style.display = '';
+  const panel = document.getElementById('subscribeView');
+  panel.style.display = 'none';
+  panel.innerHTML = '';
+  if(!opts.skipHistory){
+    history.pushState({ subscribe: false }, '', '/einvoicing-compliance-tracker.html');
+  }
+}
+
+
 const ARCHIVE_LINK_HREF = MEMBERS_ORIGIN + '/members/archive';
 
 function wireDeepDiveInPagePanel(){
@@ -2722,6 +2951,17 @@ function wireDeepDiveInPagePanel(){
       return;
     }
 
+    // The "Subscribe" links (perks CTA + Menu dropdown item) -- same
+    // in-page treatment, though the form itself still performs a real
+    // cross-origin POST navigation to members-worker once submitted.
+    if(href === 'subscribe.html'){
+      e.preventDefault();
+      document.getElementById('sidebar')?.classList.remove('open');
+      document.getElementById('sidebarOverlay')?.classList.remove('open');
+      openSubscribePage();
+      return;
+    }
+
     const slug = slugFromHref(href);
     if(!slug) return;
     e.preventDefault();
@@ -2735,6 +2975,7 @@ function wireDeepDiveInPagePanel(){
     const slug = slugFromHref(window.location.pathname);
     const eduPage = educationPageFromHref(window.location.pathname);
     const isFeedbackUrl = window.location.pathname.replace(/^\/+/, '') === 'feedback.html';
+    const isSubscribeUrl = window.location.pathname.replace(/^\/+/, '') === 'subscribe.html';
     if(isArchiveUrl){
       openArchive({ skipHistory: true });
     } else if(slug){
@@ -2743,6 +2984,8 @@ function wireDeepDiveInPagePanel(){
       openEducationPage(eduPage, { skipHistory: true });
     } else if(isFeedbackUrl){
       openFeedbackPage({ skipHistory: true });
+    } else if(isSubscribeUrl){
+      openSubscribePage({ skipHistory: true });
     } else if(currentDeepDiveSlug){
       closeDeepDive({ skipHistory: true });
     } else if(archiveOpen){
@@ -2751,6 +2994,8 @@ function wireDeepDiveInPagePanel(){
       closeEducationPage({ skipHistory: true });
     } else if(feedbackPageOpen){
       closeFeedbackPage({ skipHistory: true });
+    } else if(subscribePageOpen){
+      closeSubscribePage({ skipHistory: true });
     }
   });
 
@@ -2762,6 +3007,18 @@ function wireDeepDiveInPagePanel(){
     else if(archiveOpen) openArchive({ skipHistory: true });
     else if(currentEducationPage) openEducationPage(currentEducationPage, { skipHistory: true });
     else if(feedbackPageOpen) openFeedbackPage({ skipHistory: true });
+    else if(subscribePageOpen) openSubscribePage({ skipHistory: true });
+  });
+
+  // The subscribe panel's sample-issue modal needs a global Escape
+  // handler like its standalone-page counterpart. This is registered
+  // once here rather than inside wireSubscribeForm (which runs fresh
+  // on every panel open) to avoid piling up a fresh document-level
+  // listener each time the panel opens and closes.
+  document.addEventListener('keydown', (e)=>{
+    if(e.key !== 'Escape' || !subscribePageOpen || !currentSubscribeShadow) return;
+    const sampleModal = currentSubscribeShadow.getElementById('sampleIssueModal');
+    if(sampleModal && sampleModal.classList.contains('open')) sampleModal.classList.remove('open');
   });
 
   // A direct/bookmarked/shared load of ?view=archive should open the

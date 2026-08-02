@@ -721,6 +721,88 @@ account semantics:
   `subscribe.html` and the tracker, and a syntax check on
   `members-worker/src/index.js`.
 
+### Feedback panel centering fix, stale jurisdiction count, and subscribe brought in-page (2 August 2026, code complete, deploy pending)
+
+Three follow-ups once Lemon Squeezy was out of the picture.
+
+- **Feedback panel wasn't centered.** Same bug class as the earlier
+  newsletter-archive centering fix: `feedback.html`'s standalone page
+  centers its `.wrap` purely via `body{display:flex;
+  align-items:center;}`, and the shadow-DOM embedding's `:host`
+  rewrite only ever converts the *first* literal `body{` match in the
+  stylesheet (the `html,body{margin:0;padding:0;}` reset rule) -- the
+  real centering rule never survives into the panel. Fixed at the
+  root this time rather than patching around it: added `margin:0
+  auto;` directly onto `.wrap` in `feedback.html`'s own stylesheet, a
+  self-contained rule that centers correctly in both the standalone
+  page and the shadow-DOM panel regardless of the `:host`-rewrite
+  quirk. Also widened `.wrap`'s `max-width` from 520px to 1040px
+  (doubled, per the request).
+- **Subscribe page's "28 jurisdictions" stat was stale** -- the site
+  moved to 32 tracked jurisdictions earlier this session (Luxembourg),
+  but `subscribe.html`'s benefit-stat-strip still hardcoded 28. Fixed,
+  and found + fixed the same stale "28" in
+  `education-mandate-types.html`'s stats strip while in there -- same
+  bug, just not the one Dan happened to spot.
+- **Subscribe page brought in-page**, the last of the 5 menu
+  destinations to get this treatment (deep dives, archive, Education,
+  feedback, now subscribe). New `#subscribeView` panel, mutually
+  exclusive with all 4 existing panels (updated every existing
+  `open*()` function's guards symmetrically). Two new wrinkles this
+  page had that the others didn't:
+  - It loads `countries.js` (a plain global, `EICC_COUNTRIES_BY_REGION`)
+    via its own `<script src>` tag, which the tracker page doesn't
+    load at all normally. Added `loadCountriesJs()`, which injects that
+    script tag into the real document `<head>` (once, promise-cached)
+    the first time the panel opens, and lets the checklist renderer
+    degrade gracefully (same message `subscribe.html` itself shows) if
+    it fails to load.
+  - Unlike `feedback.html`'s fetch-based in-panel success view, this
+    form does a **real** POST navigation to
+    `members-worker`'s `/members/start-trial` on submit -- deliberately
+    left as-is, since that's a genuine cross-origin hop to the members
+    subdomain that has to happen regardless of how the form got filled
+    in. The "in-page" benefit here is Browse/filling-in UX before
+    that final submit, not avoiding the navigation entirely.
+  - Ported `renderCountryChecklist()`, select-all/clear-all, form
+    validation + hidden-field population + `form.submit()`, and the
+    sample-issue modal (open/close via button, overlay click, and
+    Escape) into a `wireSubscribeForm(shadow)` function scoped to the
+    shadow root. The modal's Escape-key handler is the one exception --
+    wired once, globally, inside `wireDeepDiveInPagePanel()` (checking
+    a module-level `subscribePageOpen`/`currentSubscribeShadow` pair)
+    rather than inside `wireSubscribeForm()` itself, since that
+    function reruns on every panel open and a `document`-level listener
+    added there would accumulate across repeated open/close cycles.
+  - `subscribe.html` also had the same centering bug as `feedback.html`
+    (`.wrap` relying solely on `body`'s flexbox) -- fixed the same way,
+    `margin:0 auto;` added directly to `.wrap`, before building the
+    panel around it. Also removed a vestigial empty `<style></style>`
+    tag left over from the Lemon Squeezy removal (subscribe.html had
+    two `<style>` blocks; the first, empty one would otherwise have
+    been the one the panel's `doc.querySelector('style')` picked up,
+    silently dropping all the real CSS).
+- Verified with jsdom tests: the feedback panel's scoped CSS now
+  contains `.wrap{margin:0 auto; ...}`; clicking either the perks CTA
+  or the Menu "Subscribe" link opens the subscribe panel with the
+  board/topbar hidden and sidebar intact; the country checklist
+  renders real regions/checkboxes once `countries.js` loads,
+  select-all/clear-all work; an empty submit shows validation errors
+  and does *not* call the real `form.submit()`; a valid submit with a
+  country checked calls the real `form.submit()` and correctly
+  populates the hidden countries field first; the sample-issue modal
+  opens/closes via its button, an overlay click, and the global
+  Escape handler; reopening in Spanish renders the translated title;
+  and the panel is correctly mutually exclusive with the deep-dive and
+  feedback panels in both directions (opening subscribe closes an open
+  deep dive, opening feedback closes an open subscribe, reopening
+  subscribe closes feedback). Re-ran the full existing regression
+  suite (archive, menus, sidebar, topbar, education, feedback,
+  subscribe standalone-page tests) afterward -- no regressions.
+  Re-ran HTML parse-validity and inline-script syntax checks on the
+  tracker, `subscribe.html`, `feedback.html`, and
+  `education-mandate-types.html`.
+
 ---
 
 ## Open items / next steps
