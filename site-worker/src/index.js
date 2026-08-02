@@ -2,7 +2,8 @@
 // Worker — serves e-invoicingcompliancecorner.com.
 // ================================================================
 // This is a Cloudflare "Workers with static assets" project (the
-// production resource is named "winter-fog-ff16"), NOT Cloudflare
+// production resource is named "eicc-public" (renamed from its
+// auto-generated "winter-fog-ff16" default), NOT Cloudflare
 // Pages. Static files (index.html, the tracker, education pages,
 // i18n/, etc.) are served automatically from the [assets] binding
 // configured in wrangler.toml whenever a request matches a real file
@@ -68,7 +69,7 @@ function renderLangSwitcher(lang, slug) {
 async function renderCountryDeepDive(request, env, slug) {
   if (!env.eicc_content) {
     return new Response(
-      "This page requires a D1 database binding named 'eicc_content' on this Worker (Cloudflare dashboard → winter-fog-ff16 → Bindings) — see wrangler.toml.",
+      "This page requires a D1 database binding named 'eicc_content' on this Worker (Cloudflare dashboard → eicc-public → Bindings) — see wrangler.toml.",
       { status: 500 }
     );
   }

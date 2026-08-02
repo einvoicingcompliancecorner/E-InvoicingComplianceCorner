@@ -790,7 +790,8 @@ than only the members-subdomain admin preview.
 this cutover was built as a Cloudflare Pages Function (`functions/[country].js`),
 on the assumption that the production site was a Cloudflare Pages project.
 Inspecting the live Cloudflare dashboard showed this was wrong: the resource
-actually serving e-invoicingcompliancecorner.com, `winter-fog-ff16`, is a plain
+actually serving e-invoicingcompliancecorner.com (dashboard-renamed from its
+auto-generated name `winter-fog-ff16` to `eicc-public`), is a plain
 Cloudflare **Worker with static assets**, deployed by manual dashboard upload
 with no git connection — a different product from Pages, which doesn't support
 the `functions/` file-based routing convention at all. That code was replaced
@@ -841,12 +842,12 @@ English-only with no translation mechanism at all.
 
 **Deploy step:** `cd site-worker && wrangler deploy` from your own machine
 (this sandbox can't reach the Cloudflare API). `wrangler.toml`'s `name` is set
-to `winter-fog-ff16` deliberately, so this updates the existing production
+to `eicc-public` deliberately, so this updates the existing production
 resource rather than creating a new one — the D1 binding (`eicc_content` →
 `eicc-content`, id `d1d10bd0-e90a-44a3-9494-a63689e8d32e`) and the `ASSETS`
 binding are both declared in that file, so no manual dashboard configuration
 is needed this time; `wrangler deploy` sets them up itself. Until deployed,
-`winter-fog-ff16` still has zero bindings and serves only the old static
+`eicc-public` still has zero bindings and serves only the old static
 asset set (which, since the 30 country .html files were deleted from the repo
 but the live upload hasn't changed, may currently be stale/missing for those
 URLs on production until this deploy runs).

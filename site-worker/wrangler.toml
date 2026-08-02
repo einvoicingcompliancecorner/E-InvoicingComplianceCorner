@@ -1,9 +1,10 @@
 # ----------------------------------------------------------------
 # This Worker serves the public site at e-invoicingcompliancecorner.com.
 # It is a Cloudflare "Workers with static assets" project (NOT Cloudflare
-# Pages) — the existing production resource is named "winter-fog-ff16"
+# Pages) — the existing production resource is named "eicc-public" (renamed from its
+# auto-generated "winter-fog-ff16" default)
 # and was originally created via a manual dashboard upload with no git
-# connection, so `name` below must stay "winter-fog-ff16" for
+# connection, so `name` below must stay "eicc-public" for
 # `wrangler deploy` to update that same resource rather than creating a
 # new one.
 #
@@ -14,7 +15,7 @@
 # (same pattern as members-worker — run from your own machine, since
 # this sandbox can't reach the Cloudflare API directly.)
 # ----------------------------------------------------------------
-name = "winter-fog-ff16"
+name = "eicc-public"
 main = "src/index.js"
 compatibility_date = "2026-08-02"
 
