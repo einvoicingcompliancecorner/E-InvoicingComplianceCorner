@@ -26,6 +26,21 @@ compatibility_date = "2026-08-02"
 [assets]
 directory = "../"
 binding = "ASSETS"
+# CRITICAL for the dynamic tracker (Stage 5): by default, requests whose
+# URL matches an existing asset file are served directly by the asset
+# layer and the Worker NEVER RUNS — which is why the tracker silently
+# served its static snapshot on every request while the deep-dive pages
+# (which match no asset file) rendered dynamically fine. These paths are
+# routed worker-first so renderTracker / renderTrackerDataJson actually
+# execute; everything else keeps fast direct asset serving. The glob
+# covers both /einvoicing-compliance-tracker.html and the extensionless
+# form the asset layer canonicalizes to.
+run_worker_first = [
+  "/einvoicing-compliance-tracker*",
+  "/i18n/es-data.json",
+  "/i18n/de-data.json",
+  "/i18n/fr-data.json",
+]
 
 # Same D1 database members-worker already uses — country deep-dive
 # content, translations, tracker milestones, mandate summaries, etc.
