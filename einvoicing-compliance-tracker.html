@@ -601,6 +601,14 @@
 </footer>
 
 <script>
+// ============================================================
+// FALLBACK SNAPSHOT (Stage 5): on the live site, site-worker replaces
+// this entire array at request time with D1 data (milestones WHERE
+// on_tracker = 1 — see site-worker/src/index.js's renderTracker and
+// migrations 201-204). Edit milestone content in D1, NOT here. This
+// static copy only ever renders if the D1 queries fail, so it can go
+// stale gracefully; refresh it occasionally if it drifts far.
+// ============================================================
 const DATA = [
   // ---------------- EUROPEAN UNION (ViDA) ----------------
   {
@@ -1487,6 +1495,8 @@ const DATA = [
 ];
 
 // Countries with a dedicated deep-dive subpage (timeline + technical specs + registration steps)
+// FALLBACK SNAPSHOT (Stage 5): replaced at request time from D1's
+// countries.slug column (migration 198). Edit in D1, not here.
 const DEEP_DIVES = {
   'Luxembourg': '/luxembourg',
   'Romania': '/romania',

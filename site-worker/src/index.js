@@ -35,6 +35,152 @@ import {
 const LANG_COOKIE = "eicc_lang";
 const LANG_COOKIE_TTL_SECONDS = 60 * 60 * 24 * 365; // 1 year
 
+// ================================================================
+// DYNAMIC TRACKER (Stage 5) — the tracker page itself, rendered with
+// D1 data at request time.
+//
+// The approach is "static shell, injected data": the tracker's HTML,
+// CSS, and all of its own client-side JS (board rendering, filters,
+// the in-page panels, menus) stay exactly as authored in the static
+// asset. This Worker only swaps out two inline data blobs before
+// serving — the `const DATA = [...]` milestones array and the
+// `const DEEP_DIVES = {...}` slug map — for equivalents built from D1
+// (milestones WHERE on_tracker = 1, and countries.slug respectively;
+// see migrations 198 and 201–204). Editing milestone content or adding
+// a country in D1 now updates the live board with no HTML regeneration
+// and no redeploy.
+//
+// The static blobs remain in the asset as a graceful-degradation
+// fallback: if the D1 queries fail for any reason, the unmodified
+// static page is served instead (its data snapshot goes stale over
+// time, but only ever matters mid-outage). The same pattern covers
+// /i18n/{lang}-data.json (the board's milestone translations, fetched
+// client-side by i18n.js on language switch): served from
+// milestone_translations, falling back to the static file.
+// ================================================================
+
+const TRACKER_PATH = "/einvoicing-compliance-tracker.html";
+const DATA_JSON_RE = /^\/i18n\/(es|de|fr)-data\.json$/;
+
+async function buildTrackerData(db) {
+  // Ordering matters in one subtle place: the board's region filter
+  // chips render in first-appearance order over DATA. The static array
+  // happens to first-appear regions in exactly Europe → Middle East →
+  // Asia-Pacific → Americas, so the generated array orders by that same
+  // fixed region sequence (then date, then id for determinism) to keep
+  // the chips identical. Everything else on the page either sorts DATA
+  // itself (the board cards, the sidebar) or is order-insensitive (the
+  // stats strip).
+  const { results } = await db.prepare(`
+    SELECT m.id, c.name_en AS country, c.code, c.region, m.date,
+           m.portals, m.confidence,
+           mt.system, mt.desc, mt.actions
+    FROM milestones m
+    JOIN countries c ON c.id = m.country_id
+    LEFT JOIN milestone_translations mt ON mt.milestone_id = m.id AND mt.lang = 'en'
+    WHERE m.on_tracker = 1
+    ORDER BY CASE c.region
+      WHEN 'Europe' THEN 0 WHEN 'Middle East' THEN 1
+      WHEN 'Asia-Pacific' THEN 2 WHEN 'Americas' THEN 3 ELSE 4 END,
+      m.date, m.id
+  `).all();
+  return results.map((r) => {
+    const entry = {
+      id: r.id,
+      country: r.country,
+      flag: deriveFlagFromCode(r.code),
+      code: r.code,
+      region: r.region,
+      system: r.system,
+      date: r.date,
+      desc: r.desc,
+      actions: JSON.parse(r.actions || "[]"),
+      portals: JSON.parse(r.portals || "[]"),
+    };
+    // The board checks `e.confidence==='expected'` — absent keys and
+    // undefined behave identically, so only set it when present, which
+    // also keeps the generated array closer in shape to the static one.
+    if (r.confidence) entry.confidence = r.confidence;
+    return entry;
+  });
+}
+
+async function buildDeepDives(db) {
+  const { results } = await db.prepare(`
+    SELECT name_en, slug FROM countries WHERE slug IS NOT NULL ORDER BY name_en
+  `).all();
+  return Object.fromEntries(results.map((r) => [r.name_en, "/" + r.slug]));
+}
+
+async function renderTracker(request, env) {
+  // Always fetch the static asset first — it's both the shell we inject
+  // into and the complete fallback if anything below throws.
+  const assetResp = await env.ASSETS.fetch(new Request(new URL(TRACKER_PATH, request.url), request));
+  if (!assetResp.ok) return assetResp;
+  const html = await assetResp.text();
+  try {
+    const [data, deepDives] = await Promise.all([
+      buildTrackerData(env.eicc_content),
+      buildDeepDives(env.eicc_content),
+    ]);
+    // Sanity guards: if D1 comes back implausibly empty (e.g. migrations
+    // 201–204 not yet applied, so on_tracker matches nothing), serve the
+    // static page rather than an empty board.
+    if (data.length === 0 || Object.keys(deepDives).length === 0) throw new Error("empty tracker data from D1");
+    // </script> inside a JSON string would terminate the inline script
+    // block early — escape the slash the standard way (JSON-legal, and
+    // JS string semantics are unchanged).
+    const safe = (o) => JSON.stringify(o).replace(/<\//g, "<\\/");
+    // Track replacement success via the callback actually firing — the
+    // injected JSON itself begins with `const DATA = [`, so re-checking
+    // for that substring afterwards would always "find" it. (Caught by
+    // the golden test suite: the original guard did exactly that and
+    // would have made every request fall back to static.)
+    let replacedData = false, replacedDeepDives = false;
+    let out = html.replace(/const DATA = \[[\s\S]*?\n\];/, () => { replacedData = true; return `const DATA = ${safe(data)};`; });
+    out = out.replace(/const DEEP_DIVES = \{[\s\S]*?\n\};/, () => { replacedDeepDives = true; return `const DEEP_DIVES = ${safe(deepDives)};`; });
+    // Both replacements must have actually landed — if the static page's
+    // shape ever changes such that a regex no longer matches, fall back
+    // loudly rather than serving a half-injected page.
+    if (!replacedData || !replacedDeepDives) throw new Error("tracker data blob not replaced");
+    return new Response(out, {
+      headers: {
+        "Content-Type": "text/html; charset=UTF-8",
+        // Same short edge cache as the country deep-dive pages.
+        "Cache-Control": "public, max-age=300",
+      },
+    });
+  } catch (err) {
+    console.error("Dynamic tracker render failed, serving static fallback:", err);
+    return new Response(html, {
+      headers: { "Content-Type": "text/html; charset=UTF-8", "Cache-Control": "public, max-age=60" },
+    });
+  }
+}
+
+async function renderTrackerDataJson(request, env, lang) {
+  try {
+    const { results } = await env.eicc_content.prepare(`
+      SELECT m.id, mt.system, mt.desc, mt.actions
+      FROM milestones m
+      JOIN milestone_translations mt ON mt.milestone_id = m.id AND mt.lang = ?
+      WHERE m.on_tracker = 1
+      ORDER BY m.date, m.id
+    `).bind(lang).all();
+    if (results.length === 0) throw new Error(`no ${lang} tracker translations in D1`);
+    const out = {};
+    for (const r of results) {
+      out[r.id] = { system: r.system, desc: r.desc, actions: JSON.parse(r.actions || "[]") };
+    }
+    return new Response(JSON.stringify(out), {
+      headers: { "Content-Type": "application/json; charset=UTF-8", "Cache-Control": "public, max-age=300" },
+    });
+  } catch (err) {
+    console.error(`Dynamic ${lang}-data.json failed, serving static fallback:`, err);
+    return env.ASSETS.fetch(request);
+  }
+}
+
 // Returns the LAST matching cookie value, not the first, and reports
 // whether more than one same-named cookie was present. A browser can
 // send two *different* cookies with the same name at once -- e.g. a
@@ -140,6 +286,22 @@ async function renderCountryDeepDive(request, env, slug) {
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
+
+    // The tracker page itself renders dynamically from D1 (Stage 5) —
+    // static shell with the DATA/DEEP_DIVES blobs injected at request
+    // time, falling back to the untouched static asset on any D1
+    // failure. See renderTracker above.
+    if (url.pathname === TRACKER_PATH) {
+      return renderTracker(request, env);
+    }
+
+    // The board's per-language milestone translations, fetched by
+    // i18n.js on language switch — served from milestone_translations,
+    // same fallback contract.
+    const dataJsonMatch = url.pathname.match(DATA_JSON_RE);
+    if (dataJsonMatch) {
+      return renderTrackerDataJson(request, env, dataJsonMatch[1]);
+    }
 
     // Only a single path segment can ever be a country slug
     // (/spain, /spain.html) — anything else falls straight through to
