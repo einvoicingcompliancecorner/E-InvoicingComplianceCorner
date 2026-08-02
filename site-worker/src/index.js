@@ -60,7 +60,24 @@ const LANG_COOKIE_TTL_SECONDS = 60 * 60 * 24 * 365; // 1 year
 // ================================================================
 
 const TRACKER_PATH = "/einvoicing-compliance-tracker.html";
+// Cloudflare's static-assets serving can canonicalize .html URLs to
+// extensionless ones (html_handling auto-trailing-slash) — so the same
+// page is reachable at both forms, and the router must treat both as
+// the tracker or the redirect target silently falls through to the
+// plain static asset (no error, no log — just the fallback page).
+const TRACKER_PATHS = new Set([TRACKER_PATH, "/einvoicing-compliance-tracker"]);
 const DATA_JSON_RE = /^\/i18n\/(es|de|fr)-data\.json$/;
+
+// ASSETS.fetch itself may answer with a redirect between the two forms;
+// follow it (once) so callers always end up with the page body.
+async function fetchAssetFollowingRedirect(env, request) {
+  let resp = await env.ASSETS.fetch(request);
+  if (resp.status >= 300 && resp.status < 400) {
+    const loc = resp.headers.get("Location");
+    if (loc) resp = await env.ASSETS.fetch(new Request(new URL(loc, request.url), { headers: request.headers }));
+  }
+  return resp;
+}
 
 async function buildTrackerData(db) {
   // Ordering matters in one subtle place: the board's region filter
@@ -114,8 +131,10 @@ async function buildDeepDives(db) {
 
 async function renderTracker(request, env) {
   // Always fetch the static asset first — it's both the shell we inject
-  // into and the complete fallback if anything below throws.
-  const assetResp = await env.ASSETS.fetch(new Request(new URL(TRACKER_PATH, request.url), request));
+  // into and the complete fallback if anything below throws. Fetch via
+  // the redirect-following helper: asking ASSETS for the .html form can
+  // itself answer with a redirect to the extensionless form.
+  const assetResp = await fetchAssetFollowingRedirect(env, new Request(new URL(TRACKER_PATH, request.url), { headers: request.headers }));
   if (!assetResp.ok) return assetResp;
   const html = await assetResp.text();
   try {
@@ -291,7 +310,7 @@ export default {
     // static shell with the DATA/DEEP_DIVES blobs injected at request
     // time, falling back to the untouched static asset on any D1
     // failure. See renderTracker above.
-    if (url.pathname === TRACKER_PATH) {
+    if (TRACKER_PATHS.has(url.pathname)) {
       return renderTracker(request, env);
     }
 
