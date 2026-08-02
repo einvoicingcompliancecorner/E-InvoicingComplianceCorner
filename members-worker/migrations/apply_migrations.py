@@ -34,12 +34,31 @@ Safety properties:
   you to verify with direct SELECTs rather than trusting rollback
   (see PROGRESS.md's Wrangler caveats).
 """
-import argparse, hashlib, os, re, sqlite3, subprocess, sys, json
+import argparse, hashlib, os, re, shutil, sqlite3, subprocess, sys, json
 from datetime import datetime, timezone
 
 MIGRATIONS_DIR = os.path.dirname(os.path.abspath(__file__))
 WORKER_DIR = os.path.dirname(MIGRATIONS_DIR)
 DB_NAME = "eicc-content"
+
+
+def resolve_wrangler():
+    """Find how to invoke wrangler on this machine.
+    Order: $WRANGLER override (e.g. WRANGLER='npx wrangler') → a
+    'wrangler' binary on PATH → 'npx wrangler' (covers npm-local
+    installs and shell aliases, which subprocess can't see)."""
+    override = os.environ.get("WRANGLER")
+    if override:
+        return override.split()
+    if shutil.which("wrangler"):
+        return ["wrangler"]
+    if shutil.which("npx"):
+        return ["npx", "wrangler"]
+    sys.exit("Could not find wrangler: no 'wrangler' or 'npx' on PATH. "
+             "Install wrangler, or set e.g. WRANGLER='npx wrangler' and re-run.")
+
+
+WRANGLER_CMD = resolve_wrangler()
 TRACKER_MIGRATION = "205_schema_migrations.sql"
 # The four documented pre-existing replay errors (see PROGRESS.md /
 # DEEP-DIVE-MIGRATION-CHECKLIST.md). Anything not in this list aborts.
@@ -81,7 +100,7 @@ def validate_replay():
 
 
 def wrangler(args, capture=True):
-    cmd = ["wrangler"] + args
+    cmd = WRANGLER_CMD + args
     result = subprocess.run(cmd, cwd=WORKER_DIR, capture_output=capture, text=True)
     if result.returncode != 0:
         print(f"wrangler failed: {' '.join(cmd)}")
