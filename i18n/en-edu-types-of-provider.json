@@ -1,5 +1,8 @@
 {
-  "_meta": { "language": "en", "reviewed": true },
+  "_meta": {
+    "language": "en",
+    "reviewed": true
+  },
   "backLink": "← Back to global tracker",
   "header": {
     "eyebrow": "Education",
@@ -7,8 +10,14 @@
     "sub": "\"Get a vendor\" undersells how varied this market actually is. Five genuinely different categories of provider all sell into e-invoicing compliance — understanding which one you're talking to changes what you should expect from them.",
     "lastUpdated": "Last updated:"
   },
-  "statusBanner": { "text": "Company names below are <strong>illustrative examples only</strong> — a small, non-exhaustive sample to make each category concrete, not a recommendation or ranking. Many real providers straddle more than one category." },
-  "stats": { "label1": "Distinct provider categories", "label2": "Categories most programmes actually combine", "label3": "Category that covers everything alone" },
+  "statusBanner": {
+    "text": "Company names below are <strong>illustrative examples only</strong> — a small, non-exhaustive sample to make each category concrete, not a recommendation or ranking. Many real providers straddle more than one category."
+  },
+  "stats": {
+    "label1": "Distinct provider categories",
+    "label2": "Categories most programmes actually combine",
+    "label3": "Category that covers everything alone"
+  },
   "sec1": {
     "heading": "Why the category matters before the name does",
     "intro": "Two providers can both say \"we do e-invoicing\" and mean genuinely different things by it. Knowing which category you're evaluating tells you what questions to actually ask — and what gaps to expect and plan around."
@@ -64,12 +73,30 @@
     "heading": "Side by side",
     "intro": "A rough guide to how the categories typically differ — real providers vary, and several deliberately straddle more than one row.",
     "table": {
-      "h1": "Category", "h2": "Core business", "h3": "Country coverage depth", "h4": "Typical cost model",
-      "r1c1": "ERP Provider", "r1c2": "Full business system, e-invoicing as a module", "r1c3": "Varies — strong in home markets, can lag elsewhere", "r1c4": "Licensing + module fees",
-      "r2c1": "Solution Provider", "r2c2": "AP/AR automation &amp; e-invoice exchange", "r2c3": "Usually broad — this is their specialism", "r2c4": "Per-transaction or subscription",
-      "r3c1": "Tax Compliance Provider", "r3c2": "Indirect tax determination &amp; filing", "r3c3": "Strong where their tax product is established", "r3c4": "Subscription, often bundled with tax",
-      "r4c1": "Technology Provider", "r4c2": "B2B data exchange / EDI middleware", "r4c3": "Strong where EDI trading is already established", "r4c4": "Per-transaction or platform fee",
-      "r5c1": "Consultancy", "r5c2": "Advisory &amp; implementation services", "r5c3": "Advisory reach, not a technical platform itself", "r5c4": "Time-and-materials or fixed-fee project"
+      "h1": "Category",
+      "h2": "Core business",
+      "h3": "Country coverage depth",
+      "h4": "Typical cost model",
+      "r1c1": "ERP Provider",
+      "r1c2": "Full business system, e-invoicing as a module",
+      "r1c3": "Varies — strong in home markets, can lag elsewhere",
+      "r1c4": "Licensing + module fees",
+      "r2c1": "Solution Provider",
+      "r2c2": "AP/AR automation &amp; e-invoice exchange",
+      "r2c3": "Usually broad — this is their specialism",
+      "r2c4": "Per-transaction or subscription",
+      "r3c1": "Tax Compliance Provider",
+      "r3c2": "Indirect tax determination &amp; filing",
+      "r3c3": "Strong where their tax product is established",
+      "r3c4": "Subscription, often bundled with tax",
+      "r4c1": "Technology Provider",
+      "r4c2": "B2B data exchange / EDI middleware",
+      "r4c3": "Strong where EDI trading is already established",
+      "r4c4": "Per-transaction or platform fee",
+      "r5c1": "Consultancy",
+      "r5c2": "Advisory &amp; implementation services",
+      "r5c3": "Advisory reach, not a technical platform itself",
+      "r5c4": "Time-and-materials or fixed-fee project"
     }
   },
   "sec4": {
@@ -77,7 +104,9 @@
     "intro": "Very few real mandate programmes use just one category — most combine two or three, each covering a different part of the problem.",
     "scenarioTitle": "A realistic multinational scenario",
     "scenarioBody": "A group running SAP globally uses its ERP's native compliance module for markets where coverage is mature, brings in a specialist Solution Provider specifically to cover a handful of countries the ERP module doesn't yet support well, and engages a consultancy for a few months to run programme management across the whole rollout and support vendor selection.",
-    "flow1": "ERP module — mature markets", "flow2": "Solution Provider — coverage gaps", "flow3": "Consultancy — programme oversight"
+    "flow1": "ERP module — mature markets",
+    "flow2": "Solution Provider — coverage gaps",
+    "flow3": "Consultancy — programme oversight"
   },
   "sec5": {
     "heading": "Questions worth asking, whichever category you're evaluating",
@@ -99,9 +128,20 @@
   },
   "sec7": {
     "heading": "Where to go next",
-    "card1": { "title": "🗓️ Run the actual selection process", "body": "\"Preparing for a Mandate\" (under Education) covers how to define requirements, run a proof of concept, and scrutinise a contract once you know which category fits." },
-    "card2": { "title": "✅ Check government-verified providers", "body": "\"Government Certified Providers\" links directly to official registries where several countries publish accredited providers by name." },
-    "card3": { "title": "🌍 Check your specific country's requirements", "body": "The Deep Dives menu covers exact technical specifications and registration steps for each of the 32 jurisdictions tracked here." }
+    "card1": {
+      "title": "🗓️ Run the actual selection process",
+      "body": "\"Preparing for a Mandate\" (under Education) covers how to define requirements, run a proof of concept, and scrutinise a contract once you know which category fits."
+    },
+    "card2": {
+      "title": "✅ Check government-verified providers",
+      "body": "\"Government Certified Providers\" links directly to official registries where several countries publish accredited providers by name."
+    },
+    "card3": {
+      "title": "🌍 Check your specific country's requirements",
+      "body": "The Deep Dives menu covers exact technical specifications and registration steps for each of the 33 jurisdictions tracked here."
+    }
   },
-  "footer": { "text": "Company names in this page are illustrative examples only, included to make each category concrete — they are not endorsements, rankings, or a complete market map, and their inclusion does not imply any relationship with this site. Analyst research referenced above is linked for general awareness only; full reports may require a paid subscription or vendor-provided access, and any vendor positioning within them reflects that firm's own methodology and views, not ours. Verify any specific provider's current accreditation and fit for your needs directly before engaging them." }
+  "footer": {
+    "text": "Company names in this page are illustrative examples only, included to make each category concrete — they are not endorsements, rankings, or a complete market map, and their inclusion does not imply any relationship with this site. Analyst research referenced above is linked for general awareness only; full reports may require a paid subscription or vendor-provided access, and any vendor positioning within them reflects that firm's own methodology and views, not ours. Verify any specific provider's current accreditation and fit for your needs directly before engaging them."
+  }
 }

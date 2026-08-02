@@ -12,7 +12,7 @@
     "title": "The E-Invoicing Compliance Corner"
   },
   "brand": {
-    "description": "Ein laufend aktualisierter Überblick über E-Invoicing- und digitale Meldepflichten in 32 Ländern — EU-weite ViDA-Regeln, nationale CTC-Systeme und alles dazwischen. Jeder Eintrag zeigt die Frist, was konkret zu tun ist, und einen direkten Link zum offiziellen Regierungsportal — damit Sie in einem einzigen Blick von \"betrifft uns das?\" zu \"das müssen wir tun\" kommen.",
+    "description": "Ein laufend aktualisierter Überblick über E-Invoicing- und digitale Meldepflichten in 33 Ländern — EU-weite ViDA-Regeln, nationale CTC-Systeme und alles dazwischen. Jeder Eintrag zeigt die Frist, was konkret zu tun ist, und einen direkten Link zum offiziellen Regierungsportal — damit Sie in einem einzigen Blick von \"betrifft uns das?\" zu \"das müssen wir tun\" kommen.",
     "eyebrow": "Compliance-Übersicht",
     "title": "The E-Invoicing<br>Compliance Corner"
   },
@@ -106,6 +106,7 @@
     "Belgium": "Belgien",
     "Croatia": "Kroatien",
     "Denmark": "Dänemark",
+    "Egypt": "Ägypten",
     "France": "Frankreich",
     "Germany": "Deutschland",
     "Ireland": "Irland",

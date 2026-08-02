@@ -1,5 +1,8 @@
 {
-  "_meta": { "language": "es", "reviewed": true },
+  "_meta": {
+    "language": "es",
+    "reviewed": true
+  },
   "backLink": "← Volver al panel general",
   "header": {
     "eyebrow": "Educación",
@@ -7,60 +10,138 @@
     "sub": "Un nuevo mandato de facturación electrónica rara vez se queda solo en TI. Esta página recorre dónde aterriza realmente el impacto en una empresa — técnico, de procesos, financiero y organizativo — para que pueda dimensionar el proyecto real, no solo la compra de software.",
     "lastUpdated": "Última actualización:"
   },
-  "stats": { "label1": "Funciones habitualmente implicadas", "label2": "Algunas ventanas de emisión, antes en días", "label3": "Una factura rechazada puede bloquear un envío" },
+  "stats": {
+    "label1": "Funciones habitualmente implicadas",
+    "label2": "Algunas ventanas de emisión, antes en días",
+    "label3": "Una factura rechazada puede bloquear un envío"
+  },
   "sec1": {
     "heading": "Por qué esto es más que un proyecto de TI",
     "intro": "El error más común al dimensionar la respuesta a un mandato es tratarlo como \"conectar nuestro ERP a un nuevo formato\". En la práctica, la mayoría de los mandatos afectan al menos a cinco funciones simultáneamente — y cada una descubre su parte del trabajo en un momento distinto, normalmente demasiado tarde.",
-    "card1": { "title": "Finanzas y Fiscalidad", "body": "Es responsable de la propia obligación de cumplimiento, y normalmente de la relación con la plataforma o intermediario elegido — pero a menudo carece de visibilidad sobre si el ERP puede realmente producir lo requerido." },
-    "card2": { "title": "TI", "body": "Construye la integración, pero con frecuencia se incorpora solo cuando Finanzas ya se ha comprometido con una fecha límite — dejando poco margen para influir en el alcance o el calendario." },
-    "card3": { "title": "Legal y Protección de Datos", "body": "Necesita opinar sobre la residencia de datos, la transferencia transfronteriza y los términos contractuales con nuevos intermediarios — a menudo la última función consultada, cuando debería ser una de las primeras." },
-    "card4": { "title": "Ventas, Compras y Logística", "body": "Capturan los datos maestros (identificadores fiscales, códigos de clasificación, direcciones) que los sistemas de compensación ahora validan estrictamente — y son quienes lo sienten operativamente cuando un envío queda bloqueado por una factura rechazada." }
+    "card1": {
+      "title": "Finanzas y Fiscalidad",
+      "body": "Es responsable de la propia obligación de cumplimiento, y normalmente de la relación con la plataforma o intermediario elegido — pero a menudo carece de visibilidad sobre si el ERP puede realmente producir lo requerido."
+    },
+    "card2": {
+      "title": "TI",
+      "body": "Construye la integración, pero con frecuencia se incorpora solo cuando Finanzas ya se ha comprometido con una fecha límite — dejando poco margen para influir en el alcance o el calendario."
+    },
+    "card3": {
+      "title": "Legal y Protección de Datos",
+      "body": "Necesita opinar sobre la residencia de datos, la transferencia transfronteriza y los términos contractuales con nuevos intermediarios — a menudo la última función consultada, cuando debería ser una de las primeras."
+    },
+    "card4": {
+      "title": "Ventas, Compras y Logística",
+      "body": "Capturan los datos maestros (identificadores fiscales, códigos de clasificación, direcciones) que los sistemas de compensación ahora validan estrictamente — y son quienes lo sienten operativamente cuando un envío queda bloqueado por una factura rechazada."
+    }
   },
   "sec2": {
     "heading": "Impacto técnico",
     "intro": "Aquí es normalmente donde comienza la planificación — y donde la complejidad real es más fácil de subestimar, especialmente cuando hay más de una jurisdicción implicada.",
-    "card1": { "title": "Enfoque de integración", "body": "Integración directa vía API ERP-plataforma, una capa de middleware/proveedor de servicios (PAC, OSE, Punto de Acceso), o un recurso manual vía portal web para volúmenes bajos — cada uno tiene un perfil distinto de coste, velocidad y mantenimiento.", "note": "La opción de \"portal manual\" a menudo parece gratuita a bajo volumen, y luego se convierte en el cuello de botella en cuanto el volumen crece — modele ambos escenarios." },
-    "card2": { "title": "Fragmentación de formatos", "body": "No existe un formato universal de factura electrónica. UBL, CII, JSON y esquemas específicos de cada país (CFDI, FA(3), e-fapiao) coexisten — una empresa que opera en varios mercados con mandato está, en la práctica, manteniendo varias integraciones técnicas distintas, no una sola." },
-    "card3": { "title": "Calidad de los datos maestros", "body": "Los sistemas de compensación validan en tiempo real los identificadores fiscales, códigos de clasificación de producto/servicio y datos del comprador. Datos que eran \"suficientemente buenos\" para un campo interno del ERP a menudo fallan la validación la primera vez que se encuentran con una plataforma gubernamental.", "note": "Esta es sistemáticamente la mayor fuente de rechazos tempranos — merece la pena dedicar una limpieza de datos específica antes de la puesta en marcha, no después." },
-    "card4": { "title": "Certificados digitales y firma", "body": "Muchos regímenes exigen un certificado digital cualificado para firmar facturas o autenticar llamadas a la API. Los certificados caducan, necesitan procesos de renovación, y a veces hay que delegarlos en un proveedor externo — una tarea administrativa genuinamente continua, no un paso de configuración único." },
-    "card5": { "title": "Resiliencia y contingencia", "body": "¿Qué ocurre cuando la plataforma gubernamental está caída? Varios regímenes definen modos explícitos de contingencia/sin conexión (Offline24 de Polonia, el modo de fallo de Arabia Saudita) — prepararse para esto desde el primer día evita las prisas la primera vez que ocurre de verdad." },
-    "card6": { "title": "Obligaciones de archivo", "body": "Los períodos de conservación de las facturas electrónicas suelen ser más largos, y más específicos por formato, que las normas contables generales (10 años es habitual; algunas categorías duran más). El archivo estructurado original — no una representación impresa o en PDF — es normalmente lo que debe conservarse." }
+    "card1": {
+      "title": "Enfoque de integración",
+      "body": "Integración directa vía API ERP-plataforma, una capa de middleware/proveedor de servicios (PAC, OSE, Punto de Acceso), o un recurso manual vía portal web para volúmenes bajos — cada uno tiene un perfil distinto de coste, velocidad y mantenimiento.",
+      "note": "La opción de \"portal manual\" a menudo parece gratuita a bajo volumen, y luego se convierte en el cuello de botella en cuanto el volumen crece — modele ambos escenarios."
+    },
+    "card2": {
+      "title": "Fragmentación de formatos",
+      "body": "No existe un formato universal de factura electrónica. UBL, CII, JSON y esquemas específicos de cada país (CFDI, FA(3), e-fapiao) coexisten — una empresa que opera en varios mercados con mandato está, en la práctica, manteniendo varias integraciones técnicas distintas, no una sola."
+    },
+    "card3": {
+      "title": "Calidad de los datos maestros",
+      "body": "Los sistemas de compensación validan en tiempo real los identificadores fiscales, códigos de clasificación de producto/servicio y datos del comprador. Datos que eran \"suficientemente buenos\" para un campo interno del ERP a menudo fallan la validación la primera vez que se encuentran con una plataforma gubernamental.",
+      "note": "Esta es sistemáticamente la mayor fuente de rechazos tempranos — merece la pena dedicar una limpieza de datos específica antes de la puesta en marcha, no después."
+    },
+    "card4": {
+      "title": "Certificados digitales y firma",
+      "body": "Muchos regímenes exigen un certificado digital cualificado para firmar facturas o autenticar llamadas a la API. Los certificados caducan, necesitan procesos de renovación, y a veces hay que delegarlos en un proveedor externo — una tarea administrativa genuinamente continua, no un paso de configuración único."
+    },
+    "card5": {
+      "title": "Resiliencia y contingencia",
+      "body": "¿Qué ocurre cuando la plataforma gubernamental está caída? Varios regímenes definen modos explícitos de contingencia/sin conexión (Offline24 de Polonia, el modo de fallo de Arabia Saudita) — prepararse para esto desde el primer día evita las prisas la primera vez que ocurre de verdad."
+    },
+    "card6": {
+      "title": "Obligaciones de archivo",
+      "body": "Los períodos de conservación de las facturas electrónicas suelen ser más largos, y más específicos por formato, que las normas contables generales (10 años es habitual; algunas categorías duran más). El archivo estructurado original — no una representación impresa o en PDF — es normalmente lo que debe conservarse."
+    }
   },
   "sec3": {
     "heading": "Residencia y soberanía de los datos",
     "intro": "Fácil de pasar por alto si la facturación está centralizada en un centro de servicios compartidos — un mandato en un país puede tener implicaciones sobre dónde y cómo se permite procesar esos datos.",
-    "card1": { "title": "¿Dónde residen realmente los datos?", "body": "Algunos modelos de compensación dirigen el contenido de las facturas a través de infraestructura gubernamental o intermediarios acreditados localmente por diseño — merece la pena comprobar si su proveedor elegido procesa y almacena los datos dentro del país en cuestión, o en otro lugar." },
-    "card2": { "title": "Conflictos con centros de servicios compartidos", "body": "Una arquitectura habitual — facturación de muchos países procesada centralmente desde un único centro — puede chocar con la expectativa de un país concreto de que ciertos datos permanezcan locales. Merece la pena comprobarlo explícitamente, mercado por mercado, en lugar de asumir que una plataforma global es automáticamente válida en todas partes." },
-    "card3": { "title": "Mayor visibilidad gubernamental", "body": "Los modelos de compensación y reporte en tiempo real dan a las autoridades fiscales una visibilidad mucho más granular y casi en vivo de las transacciones comerciales de lo que nunca dio la presentación periódica. Algunas empresas plantean esto como una preocupación genuina de sensibilidad competitiva que vale la pena señalar a la dirección, aunque no cambie la obligación de cumplimiento en sí." },
-    "card4": { "title": "Riesgo de dependencia del proveedor", "body": "Los intermediarios específicos de cada país (un PAC, OSE o Punto de Acceso concreto) pueden convertirse silenciosamente en infraestructura crítica. Entienda su vía de salida/migración antes de depender de uno — algunos regímenes incluso exigen a los proveedores un período mínimo de continuidad precisamente por este motivo." }
+    "card1": {
+      "title": "¿Dónde residen realmente los datos?",
+      "body": "Algunos modelos de compensación dirigen el contenido de las facturas a través de infraestructura gubernamental o intermediarios acreditados localmente por diseño — merece la pena comprobar si su proveedor elegido procesa y almacena los datos dentro del país en cuestión, o en otro lugar."
+    },
+    "card2": {
+      "title": "Conflictos con centros de servicios compartidos",
+      "body": "Una arquitectura habitual — facturación de muchos países procesada centralmente desde un único centro — puede chocar con la expectativa de un país concreto de que ciertos datos permanezcan locales. Merece la pena comprobarlo explícitamente, mercado por mercado, en lugar de asumir que una plataforma global es automáticamente válida en todas partes."
+    },
+    "card3": {
+      "title": "Mayor visibilidad gubernamental",
+      "body": "Los modelos de compensación y reporte en tiempo real dan a las autoridades fiscales una visibilidad mucho más granular y casi en vivo de las transacciones comerciales de lo que nunca dio la presentación periódica. Algunas empresas plantean esto como una preocupación genuina de sensibilidad competitiva que vale la pena señalar a la dirección, aunque no cambie la obligación de cumplimiento en sí."
+    },
+    "card4": {
+      "title": "Riesgo de dependencia del proveedor",
+      "body": "Los intermediarios específicos de cada país (un PAC, OSE o Punto de Acceso concreto) pueden convertirse silenciosamente en infraestructura crítica. Entienda su vía de salida/migración antes de depender de uno — algunos regímenes incluso exigen a los proveedores un período mínimo de continuidad precisamente por este motivo."
+    }
   },
   "sec4": {
     "heading": "Cambios en los procesos y flujos documentales",
     "intro": "La parte que más sorprende a los equipos financieros: los flujos de trabajo documentales habituales — notas de crédito, notas de débito, correcciones — no siempre sobreviven intactos a un mandato.",
     "table": {
-      "h1": "Proceso anterior", "h2": "Qué cambia bajo muchos mandatos",
-      "r1k": "Emitir una nota de crédito/débito libremente para corregir un error", "r1v": "En su lugar, un proceso formal de \"factura rectificativa\", a menudo con su propio tipo de documento y reglas de validación — algunos regímenes ya no aceptan notas de corrección ad hoc en absoluto (el KSeF de Polonia retiró la tradicional \"nota korygująca\" en favor de correcciones estructuradas a través de la propia plataforma)",
-      "r2k": "Editar o anular una factura emitida directamente", "r2v": "Una vez compensada/reportada, muchas facturas no pueden editarse legalmente — la única vía es una nota de crédito formal o un nuevo documento rectificativo, incluso para errores menores",
-      "r3k": "Facturar por lotes a fin de mes", "r3v": "Las ventanas de emisión ahora se miden en horas o días (24 horas en Arabia Saudita para el reporte B2C; 5 días hábiles en Rumanía y Eslovaquia) obligan a una emisión casi en tiempo real",
-      "r4k": "Asumir que una factura es válida una vez enviada", "r4v": "Una factura rechazada en un modelo de compensación no tiene ningún efecto legal — en la práctica esto puede retener el envío de mercancías hasta que se resuelva, un problema de cadena de suministro, no solo contable",
-      "r5k": "El comprador acepta una factura implícitamente", "r5v": "Algunos regímenes dan a los compradores una ventana activa de aceptación/rechazo (Malasia: 72 horas) — el silencio no equivale automáticamente a aceptación, y perder esa ventana puede obligar a una nota de crédito/débito completa en lugar de una simple anulación"
+      "h1": "Proceso anterior",
+      "h2": "Qué cambia bajo muchos mandatos",
+      "r1k": "Emitir una nota de crédito/débito libremente para corregir un error",
+      "r1v": "En su lugar, un proceso formal de \"factura rectificativa\", a menudo con su propio tipo de documento y reglas de validación — algunos regímenes ya no aceptan notas de corrección ad hoc en absoluto (el KSeF de Polonia retiró la tradicional \"nota korygująca\" en favor de correcciones estructuradas a través de la propia plataforma)",
+      "r2k": "Editar o anular una factura emitida directamente",
+      "r2v": "Una vez compensada/reportada, muchas facturas no pueden editarse legalmente — la única vía es una nota de crédito formal o un nuevo documento rectificativo, incluso para errores menores",
+      "r3k": "Facturar por lotes a fin de mes",
+      "r3v": "Las ventanas de emisión ahora se miden en horas o días (24 horas en Arabia Saudita para el reporte B2C; 5 días hábiles en Rumanía y Eslovaquia) obligan a una emisión casi en tiempo real",
+      "r4k": "Asumir que una factura es válida una vez enviada",
+      "r4v": "Una factura rechazada en un modelo de compensación no tiene ningún efecto legal — en la práctica esto puede retener el envío de mercancías hasta que se resuelva, un problema de cadena de suministro, no solo contable",
+      "r5k": "El comprador acepta una factura implícitamente",
+      "r5v": "Algunos regímenes dan a los compradores una ventana activa de aceptación/rechazo (Malasia: 72 horas) — el silencio no equivale automáticamente a aceptación, y perder esa ventana puede obligar a una nota de crédito/débito completa en lugar de una simple anulación"
     }
   },
   "sec5": {
     "heading": "Impacto financiero y comercial",
     "intro": "Más allá del coste directo del software de cumplimiento, hay efectos de segundo orden que merece la pena plantear pronto a la dirección financiera.",
-    "card1": { "title": "Estructura de costes de cumplimiento", "body": "Las tarifas por transacción de los intermediarios, las licencias de software, los costes de certificados y el trabajo de integración escalan de forma distinta — un modelo de costes que parece razonable a volumen piloto puede verse muy diferente a volumen de producción completo. Modélelo a escala antes de comprometerse con un proveedor." },
-    "card2": { "title": "Flujo de caja, en ambos sentidos", "body": "Algunos regímenes premian la facturación electrónica conforme con plazos de pago más rápidos (objetivos de pago a 5 días en Nueva Zelanda y en el sector público australiano). Pero una compensación rechazada o retrasada puede igualmente retener el pago — el mismo mecanismo corta en ambas direcciones." },
-    "card3": { "title": "La exposición de su cliente, no solo la suya", "body": "En muchos regímenes, una factura no conforme emitida por usted puede bloquear la propia deducción del IVA soportado o la reclamación de gastos de su cliente. Esto convierte su brecha de cumplimiento en el problema financiero de otro — un riesgo real para la relación, no solo interno." },
-    "card4": { "title": "Fricción de entrada al mercado", "body": "Entrar en un nuevo mercado con mandato ya no es solo una decisión comercial — puede necesitar un registro local, una relación con un intermediario y la integración técnica en marcha antes de poder facturar legalmente a un solo cliente allí." }
+    "card1": {
+      "title": "Estructura de costes de cumplimiento",
+      "body": "Las tarifas por transacción de los intermediarios, las licencias de software, los costes de certificados y el trabajo de integración escalan de forma distinta — un modelo de costes que parece razonable a volumen piloto puede verse muy diferente a volumen de producción completo. Modélelo a escala antes de comprometerse con un proveedor."
+    },
+    "card2": {
+      "title": "Flujo de caja, en ambos sentidos",
+      "body": "Algunos regímenes premian la facturación electrónica conforme con plazos de pago más rápidos (objetivos de pago a 5 días en Nueva Zelanda y en el sector público australiano). Pero una compensación rechazada o retrasada puede igualmente retener el pago — el mismo mecanismo corta en ambas direcciones."
+    },
+    "card3": {
+      "title": "La exposición de su cliente, no solo la suya",
+      "body": "En muchos regímenes, una factura no conforme emitida por usted puede bloquear la propia deducción del IVA soportado o la reclamación de gastos de su cliente. Esto convierte su brecha de cumplimiento en el problema financiero de otro — un riesgo real para la relación, no solo interno."
+    },
+    "card4": {
+      "title": "Fricción de entrada al mercado",
+      "body": "Entrar en un nuevo mercado con mandato ya no es solo una decisión comercial — puede necesitar un registro local, una relación con un intermediario y la integración técnica en marcha antes de poder facturar legalmente a un solo cliente allí."
+    }
   },
   "sec6": {
     "heading": "Preparación organizativa",
     "intro": "El área de impacto más difícil de precisar, y a menudo la que determina si el despliegue técnico realmente transcurre sin problemas.",
-    "card1": { "title": "Un programa, no cinco proyectos", "body": "Que Finanzas, TI, Legal y Ventas/Compras descubran el mandato de forma independiente, cada uno con su propio calendario, es una receta para sorpresas de última hora. Un único responsable multifuncional reduce sustancialmente este riesgo." },
-    "card2": { "title": "Seguimiento del alcance por grupo/filial", "body": "Muchos mandatos se implantan por fases según un umbral de facturación, a veces calculado sobre todo el grupo corporativo en lugar de por entidad (como en las normas de Nueva Zelanda y Malasia). Legal y Finanzas necesitan una visión compartida y actualizada de la estructura del grupo para saber quién está realmente dentro del alcance, y cuándo." },
-    "card3": { "title": "Formación de primera línea", "body": "El personal de entrada de pedidos de ventas y de cuentas por pagar/cobrar es normalmente quien realmente captura los datos maestros más estrictos que exigen estos sistemas — formarlos sobre por qué un identificador fiscal o un código de clasificación importa ahora más que antes se amortiza rápidamente." },
-    "card4": { "title": "Gobernanza continua de los datos", "body": "Una limpieza de datos puntual antes de la puesta en marcha se degrada con el tiempo a medida que se añaden nuevos clientes y proveedores. Un proceso permanente de validación de los datos maestros de socios comerciales mantiene bajas las tasas de rechazo de forma permanente, no solo el primer día." }
+    "card1": {
+      "title": "Un programa, no cinco proyectos",
+      "body": "Que Finanzas, TI, Legal y Ventas/Compras descubran el mandato de forma independiente, cada uno con su propio calendario, es una receta para sorpresas de última hora. Un único responsable multifuncional reduce sustancialmente este riesgo."
+    },
+    "card2": {
+      "title": "Seguimiento del alcance por grupo/filial",
+      "body": "Muchos mandatos se implantan por fases según un umbral de facturación, a veces calculado sobre todo el grupo corporativo en lugar de por entidad (como en las normas de Nueva Zelanda y Malasia). Legal y Finanzas necesitan una visión compartida y actualizada de la estructura del grupo para saber quién está realmente dentro del alcance, y cuándo."
+    },
+    "card3": {
+      "title": "Formación de primera línea",
+      "body": "El personal de entrada de pedidos de ventas y de cuentas por pagar/cobrar es normalmente quien realmente captura los datos maestros más estrictos que exigen estos sistemas — formarlos sobre por qué un identificador fiscal o un código de clasificación importa ahora más que antes se amortiza rápidamente."
+    },
+    "card4": {
+      "title": "Gobernanza continua de los datos",
+      "body": "Una limpieza de datos puntual antes de la puesta en marcha se degrada con el tiempo a medida que se añaden nuevos clientes y proveedores. Un proceso permanente de validación de los datos maestros de socios comerciales mantiene bajas las tasas de rechazo de forma permanente, no solo el primer día."
+    }
   },
   "sec7": {
     "heading": "Preguntas que vale la pena hacerse el primer día",
@@ -76,10 +157,24 @@
   },
   "sec8": {
     "heading": "A dónde ir después",
-    "card1": { "title": "📘 Entienda primero los tipos de mandato", "body": "Si aún no lo ha hecho, \"Tipos de mandato\" (también en Educación) explica con más profundidad los modelos de cumplimiento mencionados en esta página." },
-    "card2": { "title": "🗓️ ¿Listo para empezar a planificar?", "body": "\"Preparación para un mandato\" (en Educación) cubre a quién involucrar, cuándo empezar y cómo abordar la selección de proveedores." },
-    "card3": { "title": "🌍 Consulte los requisitos de su país concreto", "body": "El menú de análisis por país cubre la especificación técnica exacta, los pasos de registro y las sanciones de cada una de las 32 jurisdicciones seguidas aquí." },
-    "card4": { "title": "✅ Encuentre un proveedor acreditado", "body": "\"Proveedores certificados por el gobierno\" (en Educación) enlaza directamente con los registros oficiales del gobierno para proveedores de servicios acreditados, país por país." }
+    "card1": {
+      "title": "📘 Entienda primero los tipos de mandato",
+      "body": "Si aún no lo ha hecho, \"Tipos de mandato\" (también en Educación) explica con más profundidad los modelos de cumplimiento mencionados en esta página."
+    },
+    "card2": {
+      "title": "🗓️ ¿Listo para empezar a planificar?",
+      "body": "\"Preparación para un mandato\" (en Educación) cubre a quién involucrar, cuándo empezar y cómo abordar la selección de proveedores."
+    },
+    "card3": {
+      "title": "🌍 Consulte los requisitos de su país concreto",
+      "body": "El menú de análisis por país cubre la especificación técnica exacta, los pasos de registro y las sanciones de cada una de las 33 jurisdicciones seguidas aquí."
+    },
+    "card4": {
+      "title": "✅ Encuentre un proveedor acreditado",
+      "body": "\"Proveedores certificados por el gobierno\" (en Educación) enlaza directamente con los registros oficiales del gobierno para proveedores de servicios acreditados, país por país."
+    }
   },
-  "footer": { "text": "Esta página ofrece contexto educativo general para ayudar a dimensionar la planificación interna y no constituye asesoramiento legal, fiscal ni de implementación técnica. Los requisitos específicos varían según el país y sus propios sistemas y estructura de grupo — consulte el análisis del país correspondiente y a un asesor cualificado antes de tomar decisiones de implementación." }
+  "footer": {
+    "text": "Esta página ofrece contexto educativo general para ayudar a dimensionar la planificación interna y no constituye asesoramiento legal, fiscal ni de implementación técnica. Los requisitos específicos varían según el país y sus propios sistemas y estructura de grupo — consulte el análisis del país correspondiente y a un asesor cualificado antes de tomar decisiones de implementación."
+  }
 }

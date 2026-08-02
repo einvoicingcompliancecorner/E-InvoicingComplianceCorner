@@ -1,5 +1,8 @@
 {
-  "_meta": { "language": "de", "reviewed": true },
+  "_meta": {
+    "language": "de",
+    "reviewed": true
+  },
   "backLink": "← Zurück zur Übersicht",
   "header": {
     "eyebrow": "Wissen",
@@ -7,60 +10,138 @@
     "sub": "Eine neue E-Invoicing-Vorgabe bleibt selten allein bei der IT. Diese Seite geht durch, wo die Auswirkungen im Unternehmen tatsächlich ankommen — technisch, prozessual, finanziell und organisatorisch —, damit Sie das eigentliche Projekt abschätzen können, nicht nur den Softwarekauf.",
     "lastUpdated": "Zuletzt aktualisiert:"
   },
-  "stats": { "label1": "Typischerweise beteiligte Funktionen", "label2": "Manche Ausstellungsfristen, statt Tagen", "label3": "Abgelehnte Rechnung kann eine Lieferung blockieren" },
+  "stats": {
+    "label1": "Typischerweise beteiligte Funktionen",
+    "label2": "Manche Ausstellungsfristen, statt Tagen",
+    "label3": "Abgelehnte Rechnung kann eine Lieferung blockieren"
+  },
   "sec1": {
     "heading": "Warum das größer ist als ein IT-Projekt",
     "intro": "Der häufigste Fehler bei der Abschätzung einer Vorgabenreaktion ist, sie als \"unser ERP an ein neues Format anschließen\" zu behandeln. In der Praxis betreffen die meisten Vorgaben mindestens fünf Funktionen gleichzeitig — und jede entdeckt ihren Teil der Arbeit zu einem anderen Zeitpunkt, meist zu spät.",
-    "card1": { "title": "Finanzen &amp; Steuern", "body": "Trägt die Compliance-Pflicht selbst und meist die Beziehung zur gewählten Plattform/zum Vermittler — hat aber oft keinen Einblick, ob das ERP das Geforderte tatsächlich liefern kann." },
-    "card2": { "title": "IT", "body": "Baut die Integration, wird aber häufig erst hinzugezogen, nachdem sich Finanzen bereits auf eine Frist festgelegt hat — was wenig Spielraum lässt, Umfang oder Zeitplan zu beeinflussen." },
-    "card3": { "title": "Recht &amp; Datenschutz", "body": "Muss sich zu Datenresidenz, grenzüberschreitender Übermittlung und Vertragsbedingungen mit neuen Vermittlern äußern — oft die zuletzt konsultierte Funktion, obwohl sie eine der ersten sein sollte." },
-    "card4": { "title": "Vertrieb, Einkauf &amp; Logistik", "body": "Erfassen die Stammdaten (Steuernummern, Klassifizierungscodes, Adressen), die Clearing-Systeme nun streng validieren — und spüren es operativ, wenn eine Lieferung wegen einer abgelehnten Rechnung feststeckt." }
+    "card1": {
+      "title": "Finanzen &amp; Steuern",
+      "body": "Trägt die Compliance-Pflicht selbst und meist die Beziehung zur gewählten Plattform/zum Vermittler — hat aber oft keinen Einblick, ob das ERP das Geforderte tatsächlich liefern kann."
+    },
+    "card2": {
+      "title": "IT",
+      "body": "Baut die Integration, wird aber häufig erst hinzugezogen, nachdem sich Finanzen bereits auf eine Frist festgelegt hat — was wenig Spielraum lässt, Umfang oder Zeitplan zu beeinflussen."
+    },
+    "card3": {
+      "title": "Recht &amp; Datenschutz",
+      "body": "Muss sich zu Datenresidenz, grenzüberschreitender Übermittlung und Vertragsbedingungen mit neuen Vermittlern äußern — oft die zuletzt konsultierte Funktion, obwohl sie eine der ersten sein sollte."
+    },
+    "card4": {
+      "title": "Vertrieb, Einkauf &amp; Logistik",
+      "body": "Erfassen die Stammdaten (Steuernummern, Klassifizierungscodes, Adressen), die Clearing-Systeme nun streng validieren — und spüren es operativ, wenn eine Lieferung wegen einer abgelehnten Rechnung feststeckt."
+    }
   },
   "sec2": {
     "heading": "Technische Auswirkungen",
     "intro": "Hier beginnt üblicherweise die Planung — und hier wird die tatsächliche Komplexität am leichtesten unterschätzt, besonders sobald mehr als eine Rechtsordnung betroffen ist.",
-    "card1": { "title": "Integrationsansatz", "body": "Direkte ERP-zu-Plattform-API-Integration, eine Middleware-/Dienstleisterebene (PAC, OSE, Access Point), oder ein manuelles Webportal als Notlösung bei geringem Volumen — jede Variante hat ein anderes Kosten-, Geschwindigkeits- und Wartungsprofil.", "note": "Die \"manuelle Portal\"-Option wirkt bei geringem Volumen oft kostenlos, wird aber zum Engpass, sobald das Volumen wächst — modellieren Sie beide Szenarien." },
-    "card2": { "title": "Format-Fragmentierung", "body": "Es gibt kein universelles E-Rechnungsformat. UBL, CII, JSON und länderspezifische Schemata (CFDI, FA(3), e-fapiao) existieren nebeneinander — ein Unternehmen, das in mehreren Vorgabe-Märkten tätig ist, pflegt realistisch mehrere verschiedene technische Integrationen, nicht eine." },
-    "card3": { "title": "Stammdatenqualität", "body": "Clearing-Systeme validieren Steuernummern, Produkt-/Dienstleistungsklassifizierungscodes und Käuferdaten in Echtzeit. Daten, die für ein internes ERP-Feld \"gut genug\" waren, scheitern oft beim ersten Kontakt mit einer Regierungsplattform an der Validierung.", "note": "Dies ist durchweg die mit Abstand größte Quelle früher Ablehnungen — ein gezielter Datenbereinigungsdurchlauf vor dem Go-Live lohnt sich, nicht erst danach." },
-    "card4": { "title": "Digitale Zertifikate &amp; Signatur", "body": "Viele Regime verlangen ein qualifiziertes digitales Zertifikat zum Signieren von Rechnungen oder zur Authentifizierung von API-Aufrufen. Zertifikate laufen ab, benötigen Erneuerungsprozesse und müssen manchmal an einen Drittanbieter delegiert werden — eine echte laufende Verwaltungsaufgabe, kein einmaliger Einrichtungsschritt." },
-    "card5": { "title": "Resilienz &amp; Notfallplanung", "body": "Was passiert, wenn die Regierungsplattform ausfällt? Mehrere Regime definieren explizite Offline-/Notfallmodi (Polens Offline24, Saudi-Arabiens Ausfallmodus) — dies von Anfang an einzuplanen erspart Hektik, wenn es tatsächlich passiert." },
-    "card6": { "title": "Archivierungspflichten", "body": "Aufbewahrungsfristen für E-Rechnungen sind oft länger und formatspezifischer als allgemeine Buchhaltungsvorschriften (10 Jahre sind üblich; manche Kategorien laufen länger). In der Regel muss die ursprüngliche strukturierte Datei aufbewahrt werden — nicht eine gedruckte oder PDF-Darstellung." }
+    "card1": {
+      "title": "Integrationsansatz",
+      "body": "Direkte ERP-zu-Plattform-API-Integration, eine Middleware-/Dienstleisterebene (PAC, OSE, Access Point), oder ein manuelles Webportal als Notlösung bei geringem Volumen — jede Variante hat ein anderes Kosten-, Geschwindigkeits- und Wartungsprofil.",
+      "note": "Die \"manuelle Portal\"-Option wirkt bei geringem Volumen oft kostenlos, wird aber zum Engpass, sobald das Volumen wächst — modellieren Sie beide Szenarien."
+    },
+    "card2": {
+      "title": "Format-Fragmentierung",
+      "body": "Es gibt kein universelles E-Rechnungsformat. UBL, CII, JSON und länderspezifische Schemata (CFDI, FA(3), e-fapiao) existieren nebeneinander — ein Unternehmen, das in mehreren Vorgabe-Märkten tätig ist, pflegt realistisch mehrere verschiedene technische Integrationen, nicht eine."
+    },
+    "card3": {
+      "title": "Stammdatenqualität",
+      "body": "Clearing-Systeme validieren Steuernummern, Produkt-/Dienstleistungsklassifizierungscodes und Käuferdaten in Echtzeit. Daten, die für ein internes ERP-Feld \"gut genug\" waren, scheitern oft beim ersten Kontakt mit einer Regierungsplattform an der Validierung.",
+      "note": "Dies ist durchweg die mit Abstand größte Quelle früher Ablehnungen — ein gezielter Datenbereinigungsdurchlauf vor dem Go-Live lohnt sich, nicht erst danach."
+    },
+    "card4": {
+      "title": "Digitale Zertifikate &amp; Signatur",
+      "body": "Viele Regime verlangen ein qualifiziertes digitales Zertifikat zum Signieren von Rechnungen oder zur Authentifizierung von API-Aufrufen. Zertifikate laufen ab, benötigen Erneuerungsprozesse und müssen manchmal an einen Drittanbieter delegiert werden — eine echte laufende Verwaltungsaufgabe, kein einmaliger Einrichtungsschritt."
+    },
+    "card5": {
+      "title": "Resilienz &amp; Notfallplanung",
+      "body": "Was passiert, wenn die Regierungsplattform ausfällt? Mehrere Regime definieren explizite Offline-/Notfallmodi (Polens Offline24, Saudi-Arabiens Ausfallmodus) — dies von Anfang an einzuplanen erspart Hektik, wenn es tatsächlich passiert."
+    },
+    "card6": {
+      "title": "Archivierungspflichten",
+      "body": "Aufbewahrungsfristen für E-Rechnungen sind oft länger und formatspezifischer als allgemeine Buchhaltungsvorschriften (10 Jahre sind üblich; manche Kategorien laufen länger). In der Regel muss die ursprüngliche strukturierte Datei aufbewahrt werden — nicht eine gedruckte oder PDF-Darstellung."
+    }
   },
   "sec3": {
     "heading": "Datenresidenz &amp; -souveränität",
     "intro": "Leicht zu übersehen, wenn die Rechnungsstellung in einem Shared Service Center zentralisiert ist — eine Vorgabe in einem Land kann Auswirkungen darauf haben, wo und wie diese Daten verarbeitet werden dürfen.",
-    "card1": { "title": "Wo liegen die Daten tatsächlich?", "body": "Manche Clearing-Modelle leiten Rechnungsinhalte bewusst über staatliche Infrastruktur oder lokal akkreditierte Vermittler — es lohnt sich zu prüfen, ob Ihr gewählter Anbieter Daten innerhalb des betreffenden Landes verarbeitet und speichert, oder anderswo." },
-    "card2": { "title": "Konflikte mit Shared Service Centern", "body": "Eine gängige Architektur — Rechnungsstellung für viele Länder zentral aus einem Hub — kann mit der Erwartung eines bestimmten Landes kollidieren, dass bestimmte Daten lokal bleiben. Es lohnt sich, dies markt für Markt explizit zu prüfen, statt anzunehmen, dass eine globale Plattform überall automatisch passt." },
-    "card3": { "title": "Erhöhte staatliche Sichtbarkeit", "body": "Clearing- und Echtzeit-Meldemodelle geben Steuerbehörden weit granularere, nahezu live Einblicke in Geschäftstransaktionen, als es periodische Meldungen je taten. Manche Unternehmen sehen darin ein echtes wettbewerbssensibles Anliegen, das es wert ist, der Geschäftsleitung mitzuteilen, auch wenn es die Compliance-Pflicht selbst nicht ändert." },
-    "card4": { "title": "Risiko der Anbieterbindung", "body": "Länderspezifische Vermittler (ein bestimmter PAC, OSE oder Access Point) können sich unbemerkt zu tragender Infrastruktur entwickeln. Verstehen Sie Ihren Ausstiegs-/Migrationsweg, bevor Sie von einem abhängig sind — manche Regime schreiben Anbietern genau aus diesem Grund eine Mindest-Fortführungsfrist vor." }
+    "card1": {
+      "title": "Wo liegen die Daten tatsächlich?",
+      "body": "Manche Clearing-Modelle leiten Rechnungsinhalte bewusst über staatliche Infrastruktur oder lokal akkreditierte Vermittler — es lohnt sich zu prüfen, ob Ihr gewählter Anbieter Daten innerhalb des betreffenden Landes verarbeitet und speichert, oder anderswo."
+    },
+    "card2": {
+      "title": "Konflikte mit Shared Service Centern",
+      "body": "Eine gängige Architektur — Rechnungsstellung für viele Länder zentral aus einem Hub — kann mit der Erwartung eines bestimmten Landes kollidieren, dass bestimmte Daten lokal bleiben. Es lohnt sich, dies markt für Markt explizit zu prüfen, statt anzunehmen, dass eine globale Plattform überall automatisch passt."
+    },
+    "card3": {
+      "title": "Erhöhte staatliche Sichtbarkeit",
+      "body": "Clearing- und Echtzeit-Meldemodelle geben Steuerbehörden weit granularere, nahezu live Einblicke in Geschäftstransaktionen, als es periodische Meldungen je taten. Manche Unternehmen sehen darin ein echtes wettbewerbssensibles Anliegen, das es wert ist, der Geschäftsleitung mitzuteilen, auch wenn es die Compliance-Pflicht selbst nicht ändert."
+    },
+    "card4": {
+      "title": "Risiko der Anbieterbindung",
+      "body": "Länderspezifische Vermittler (ein bestimmter PAC, OSE oder Access Point) können sich unbemerkt zu tragender Infrastruktur entwickeln. Verstehen Sie Ihren Ausstiegs-/Migrationsweg, bevor Sie von einem abhängig sind — manche Regime schreiben Anbietern genau aus diesem Grund eine Mindest-Fortführungsfrist vor."
+    }
   },
   "sec4": {
     "heading": "Prozess- und Dokumentenworkflow-Änderungen",
     "intro": "Der Teil, der Finanzteams am härtesten überrascht: vertraute Dokumenten-Workflows — Gutschriften, Lastschriften, Korrekturen — überstehen eine Vorgabe nicht immer unverändert.",
     "table": {
-      "h1": "Alter Prozess", "h2": "Was sich unter vielen Vorgaben ändert",
-      "r1k": "Eine Gutschrift/Lastschrift frei ausstellen, um einen Fehler zu korrigieren", "r1v": "Stattdessen ein formeller \"Korrekturrechnungs\"-Prozess, oft mit eigenem Dokumenttyp und eigenen Validierungsregeln — manche Regime akzeptieren Ad-hoc-Korrekturnotizen überhaupt nicht mehr (Polens KSeF hat die traditionelle \"nota korygująca\" zugunsten strukturierter Korrekturen über die Plattform selbst abgeschafft)",
-      "r2k": "Eine ausgestellte Rechnung direkt bearbeiten oder stornieren", "r2v": "Nach Freigabe/Meldung können viele Rechnungen rechtlich nicht mehr bearbeitet werden — der einzige Weg ist eine formelle Gutschrift oder ein neues Korrekturdokument, selbst bei kleineren Fehlern",
-      "r3k": "Rechnungen zum Monatsende bündeln", "r3v": "Ausstellungsfenster werden nun in Stunden oder Tagen gemessen (24 Stunden in Saudi-Arabien für B2C-Meldungen; 5 Werktage in Rumänien und der Slowakei) und erzwingen eine nahezu Echtzeit-Ausstellung",
-      "r4k": "Annehmen, dass eine Rechnung nach Versand gültig ist", "r4v": "Eine abgelehnte Rechnung hat in einem Clearing-Modell überhaupt keine Rechtswirkung — in der Praxis kann dies den Warenversand bis zur Klärung aufhalten, ein Lieferkettenproblem, nicht nur ein buchhalterisches",
-      "r5k": "Der Käufer akzeptiert eine Rechnung stillschweigend", "r5v": "Manche Regime geben Käufern ein aktives Annahme-/Ablehnungsfenster (Malaysia: 72 Stunden) — Schweigen bedeutet nicht automatisch Annahme, und das Verpassen dieses Fensters kann eine vollständige Gutschrift/Lastschrift statt einer einfachen Stornierung erzwingen"
+      "h1": "Alter Prozess",
+      "h2": "Was sich unter vielen Vorgaben ändert",
+      "r1k": "Eine Gutschrift/Lastschrift frei ausstellen, um einen Fehler zu korrigieren",
+      "r1v": "Stattdessen ein formeller \"Korrekturrechnungs\"-Prozess, oft mit eigenem Dokumenttyp und eigenen Validierungsregeln — manche Regime akzeptieren Ad-hoc-Korrekturnotizen überhaupt nicht mehr (Polens KSeF hat die traditionelle \"nota korygująca\" zugunsten strukturierter Korrekturen über die Plattform selbst abgeschafft)",
+      "r2k": "Eine ausgestellte Rechnung direkt bearbeiten oder stornieren",
+      "r2v": "Nach Freigabe/Meldung können viele Rechnungen rechtlich nicht mehr bearbeitet werden — der einzige Weg ist eine formelle Gutschrift oder ein neues Korrekturdokument, selbst bei kleineren Fehlern",
+      "r3k": "Rechnungen zum Monatsende bündeln",
+      "r3v": "Ausstellungsfenster werden nun in Stunden oder Tagen gemessen (24 Stunden in Saudi-Arabien für B2C-Meldungen; 5 Werktage in Rumänien und der Slowakei) und erzwingen eine nahezu Echtzeit-Ausstellung",
+      "r4k": "Annehmen, dass eine Rechnung nach Versand gültig ist",
+      "r4v": "Eine abgelehnte Rechnung hat in einem Clearing-Modell überhaupt keine Rechtswirkung — in der Praxis kann dies den Warenversand bis zur Klärung aufhalten, ein Lieferkettenproblem, nicht nur ein buchhalterisches",
+      "r5k": "Der Käufer akzeptiert eine Rechnung stillschweigend",
+      "r5v": "Manche Regime geben Käufern ein aktives Annahme-/Ablehnungsfenster (Malaysia: 72 Stunden) — Schweigen bedeutet nicht automatisch Annahme, und das Verpassen dieses Fensters kann eine vollständige Gutschrift/Lastschrift statt einer einfachen Stornierung erzwingen"
     }
   },
   "sec5": {
     "heading": "Finanzielle &amp; kommerzielle Auswirkungen",
     "intro": "Über die direkten Kosten der Compliance-Software hinaus gibt es Effekte zweiter Ordnung, die es wert sind, frühzeitig vor die Finanzleitung zu bringen.",
-    "card1": { "title": "Kostenstruktur der Compliance", "body": "Transaktionsgebühren von Vermittlern, Softwarelizenzen, Zertifikatskosten und Integrationsaufwand skalieren alle unterschiedlich — ein Kostenmodell, das bei Pilotvolumen gut aussieht, kann bei vollem Produktionsvolumen ganz anders aussehen. Modellieren Sie es im Maßstab, bevor Sie sich auf einen Anbieter festlegen." },
-    "card2": { "title": "Cashflow, in beide Richtungen", "body": "Manche Regime belohnen konformes E-Invoicing mit schnelleren Zahlungsfristen (5-Tage-Zahlungsziele in Neuseeland und im australischen öffentlichen Sektor). Aber eine abgelehnte oder verzögerte Freigabe kann die Zahlung ebenso leicht aufhalten — derselbe Mechanismus wirkt in beide Richtungen." },
-    "card3": { "title": "Das Risiko Ihres Kunden, nicht nur Ihres", "body": "In vielen Regimen kann eine nicht konforme Rechnung von Ihnen den eigenen Vorsteuerabzug oder die Ausgabenerstattung Ihres Kunden blockieren. Das macht aus Ihrer Compliance-Lücke dessen finanzielles Problem — ein echtes Beziehungsrisiko, nicht nur ein internes." },
-    "card4": { "title": "Reibung beim Markteintritt", "body": "Der Eintritt in einen neu regulierten Markt ist nicht mehr nur eine Vertriebsentscheidung — Sie benötigen möglicherweise eine lokale Registrierung, eine Vermittlerbeziehung und eine technische Integration, bevor Sie dort auch nur einem einzigen Kunden rechtmäßig eine Rechnung stellen können." }
+    "card1": {
+      "title": "Kostenstruktur der Compliance",
+      "body": "Transaktionsgebühren von Vermittlern, Softwarelizenzen, Zertifikatskosten und Integrationsaufwand skalieren alle unterschiedlich — ein Kostenmodell, das bei Pilotvolumen gut aussieht, kann bei vollem Produktionsvolumen ganz anders aussehen. Modellieren Sie es im Maßstab, bevor Sie sich auf einen Anbieter festlegen."
+    },
+    "card2": {
+      "title": "Cashflow, in beide Richtungen",
+      "body": "Manche Regime belohnen konformes E-Invoicing mit schnelleren Zahlungsfristen (5-Tage-Zahlungsziele in Neuseeland und im australischen öffentlichen Sektor). Aber eine abgelehnte oder verzögerte Freigabe kann die Zahlung ebenso leicht aufhalten — derselbe Mechanismus wirkt in beide Richtungen."
+    },
+    "card3": {
+      "title": "Das Risiko Ihres Kunden, nicht nur Ihres",
+      "body": "In vielen Regimen kann eine nicht konforme Rechnung von Ihnen den eigenen Vorsteuerabzug oder die Ausgabenerstattung Ihres Kunden blockieren. Das macht aus Ihrer Compliance-Lücke dessen finanzielles Problem — ein echtes Beziehungsrisiko, nicht nur ein internes."
+    },
+    "card4": {
+      "title": "Reibung beim Markteintritt",
+      "body": "Der Eintritt in einen neu regulierten Markt ist nicht mehr nur eine Vertriebsentscheidung — Sie benötigen möglicherweise eine lokale Registrierung, eine Vermittlerbeziehung und eine technische Integration, bevor Sie dort auch nur einem einzigen Kunden rechtmäßig eine Rechnung stellen können."
+    }
   },
   "sec6": {
     "heading": "Organisatorische Bereitschaft",
     "intro": "Der am schwersten greifbare Auswirkungsbereich, und oft derjenige, der entscheidet, ob der technische Rollout tatsächlich reibungslos verläuft.",
-    "card1": { "title": "Ein Programm, nicht fünf Projekte", "body": "Wenn Finanzen, IT, Recht und Vertrieb/Einkauf die Vorgabe jeweils unabhängig voneinander, nach ihrem eigenen Zeitplan entdecken, ist das ein Rezept für späte Überraschungen. Ein einzelner funktionsübergreifender Verantwortlicher senkt dieses Risiko deutlich." },
-    "card2": { "title": "Verfolgung des Konzern-/Tochterunternehmens-Umfangs", "body": "Viele Vorgaben werden stufenweise nach Umsatzschwelle eingeführt, manchmal berechnet über den gesamten Konzern statt pro Einheit (wie in den Regeln Neuseelands und Malaysias). Recht und Finanzen benötigen einen gemeinsamen, aktuellen Überblick über die Konzernstruktur, um zu wissen, wer tatsächlich betroffen ist, und wann." },
-    "card3": { "title": "Schulung der Basisebene", "body": "Mitarbeiter in der Auftragserfassung und in Kreditoren-/Debitorenbuchhaltung erfassen meist die strengeren Stammdaten, die diese Systeme verlangen — sie zu schulen, warum eine Steuernummer oder ein Klassifizierungscode jetzt wichtiger ist als früher, zahlt sich schnell aus." },
-    "card4": { "title": "Laufende Datenverwaltung", "body": "Eine einmalige Datenbereinigung vor Go-Live verschlechtert sich mit der Zeit, wenn neue Kunden und Lieferanten hinzukommen. Ein dauerhafter Prozess zur Validierung der Handelspartner-Stammdaten hält die Ablehnungsraten dauerhaft niedrig, nicht nur am ersten Tag." }
+    "card1": {
+      "title": "Ein Programm, nicht fünf Projekte",
+      "body": "Wenn Finanzen, IT, Recht und Vertrieb/Einkauf die Vorgabe jeweils unabhängig voneinander, nach ihrem eigenen Zeitplan entdecken, ist das ein Rezept für späte Überraschungen. Ein einzelner funktionsübergreifender Verantwortlicher senkt dieses Risiko deutlich."
+    },
+    "card2": {
+      "title": "Verfolgung des Konzern-/Tochterunternehmens-Umfangs",
+      "body": "Viele Vorgaben werden stufenweise nach Umsatzschwelle eingeführt, manchmal berechnet über den gesamten Konzern statt pro Einheit (wie in den Regeln Neuseelands und Malaysias). Recht und Finanzen benötigen einen gemeinsamen, aktuellen Überblick über die Konzernstruktur, um zu wissen, wer tatsächlich betroffen ist, und wann."
+    },
+    "card3": {
+      "title": "Schulung der Basisebene",
+      "body": "Mitarbeiter in der Auftragserfassung und in Kreditoren-/Debitorenbuchhaltung erfassen meist die strengeren Stammdaten, die diese Systeme verlangen — sie zu schulen, warum eine Steuernummer oder ein Klassifizierungscode jetzt wichtiger ist als früher, zahlt sich schnell aus."
+    },
+    "card4": {
+      "title": "Laufende Datenverwaltung",
+      "body": "Eine einmalige Datenbereinigung vor Go-Live verschlechtert sich mit der Zeit, wenn neue Kunden und Lieferanten hinzukommen. Ein dauerhafter Prozess zur Validierung der Handelspartner-Stammdaten hält die Ablehnungsraten dauerhaft niedrig, nicht nur am ersten Tag."
+    }
   },
   "sec7": {
     "heading": "Fragen, die sich am ersten Tag lohnen",
@@ -76,10 +157,24 @@
   },
   "sec8": {
     "heading": "Wie es weitergeht",
-    "card1": { "title": "📘 Verstehen Sie zuerst die Arten von Vorgaben", "body": "Falls noch nicht geschehen: \"Arten von Vorgaben\" (ebenfalls unter Wissen) erklärt die auf dieser Seite genannten Compliance-Modelle ausführlicher." },
-    "card2": { "title": "🗓️ Bereit, mit der Planung zu beginnen?", "body": "\"Vorbereitung auf eine Vorgabe\" (unter Wissen) behandelt, wen Sie einbeziehen sollten, wann Sie beginnen sollten und wie Sie die Anbieterauswahl angehen." },
-    "card3": { "title": "🌍 Prüfen Sie die Anforderungen Ihres spezifischen Landes", "body": "Das Menü der Länderanalysen behandelt die genaue technische Spezifikation, Registrierungsschritte und Sanktionen für jede der 32 hier erfassten Rechtsordnungen." },
-    "card4": { "title": "✅ Finden Sie einen akkreditierten Anbieter", "body": "\"Staatlich zertifizierte Anbieter\" (unter Wissen) verlinkt direkt zu den offiziellen Regierungsregistern für akkreditierte Dienstleister, Land für Land." }
+    "card1": {
+      "title": "📘 Verstehen Sie zuerst die Arten von Vorgaben",
+      "body": "Falls noch nicht geschehen: \"Arten von Vorgaben\" (ebenfalls unter Wissen) erklärt die auf dieser Seite genannten Compliance-Modelle ausführlicher."
+    },
+    "card2": {
+      "title": "🗓️ Bereit, mit der Planung zu beginnen?",
+      "body": "\"Vorbereitung auf eine Vorgabe\" (unter Wissen) behandelt, wen Sie einbeziehen sollten, wann Sie beginnen sollten und wie Sie die Anbieterauswahl angehen."
+    },
+    "card3": {
+      "title": "🌍 Prüfen Sie die Anforderungen Ihres spezifischen Landes",
+      "body": "Das Menü der Länderanalysen behandelt die genaue technische Spezifikation, Registrierungsschritte und Sanktionen für jede der 33 hier erfassten Rechtsordnungen."
+    },
+    "card4": {
+      "title": "✅ Finden Sie einen akkreditierten Anbieter",
+      "body": "\"Staatlich zertifizierte Anbieter\" (unter Wissen) verlinkt direkt zu den offiziellen Regierungsregistern für akkreditierte Dienstleister, Land für Land."
+    }
   },
-  "footer": { "text": "Diese Seite bietet allgemeinen Bildungskontext zur Unterstützung der internen Planung und stellt keine Rechts-, Steuer- oder technische Umsetzungsberatung dar. Konkrete Anforderungen variieren je nach Land sowie Ihren eigenen Systemen und Ihrer Konzernstruktur — konsultieren Sie die jeweilige Länderanalyse und einen qualifizierten Berater, bevor Sie Umsetzungsentscheidungen treffen." }
+  "footer": {
+    "text": "Diese Seite bietet allgemeinen Bildungskontext zur Unterstützung der internen Planung und stellt keine Rechts-, Steuer- oder technische Umsetzungsberatung dar. Konkrete Anforderungen variieren je nach Land sowie Ihren eigenen Systemen und Ihrer Konzernstruktur — konsultieren Sie die jeweilige Länderanalyse und einen qualifizierten Berater, bevor Sie Umsetzungsentscheidungen treffen."
+  }
 }

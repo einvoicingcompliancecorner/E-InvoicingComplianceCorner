@@ -12,7 +12,7 @@
     "title": "The E-Invoicing Compliance Corner"
   },
   "brand": {
-    "description": "Un suivi actualisé en continu des obligations de facturation électronique et de télédéclaration dans 32 pays — règles ViDA à l'échelle de l'UE, systèmes nationaux de CTC, et tout ce qui se trouve entre les deux. Chaque entrée indique l'échéance, ce qu'il faut faire, et un lien direct vers le portail officiel du gouvernement, pour passer de \"est-ce que cela nous concerne ?\" à \"voici ce qu'il faut faire\" en une seule page.",
+    "description": "Un suivi actualisé en continu des obligations de facturation électronique et de télédéclaration dans 33 pays — règles ViDA à l'échelle de l'UE, systèmes nationaux de CTC, et tout ce qui se trouve entre les deux. Chaque entrée indique l'échéance, ce qu'il faut faire, et un lien direct vers le portail officiel du gouvernement, pour passer de \"est-ce que cela nous concerne ?\" à \"voici ce qu'il faut faire\" en une seule page.",
     "eyebrow": "Tableau de suivi de conformité",
     "title": "The E-Invoicing<br>Compliance Corner"
   },
@@ -106,6 +106,7 @@
     "Belgium": "Belgique",
     "Croatia": "Croatie",
     "Denmark": "Danemark",
+    "Egypt": "Égypte",
     "France": "France",
     "Germany": "Allemagne",
     "Ireland": "Irlande",

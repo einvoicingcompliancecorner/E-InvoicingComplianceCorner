@@ -1042,6 +1042,54 @@ Phase 4 uses the runner, with the one-time `--baseline` documented.
 runs nothing. From then on, `python3 apply_migrations.py --remote` is
 the only apply command you need.
 
+### Egypt added as country #33 (2 August 2026, code complete, deploy pending)
+
+First country through the new scaffolder + runner workflow, complete in
+one session. Placed in **Middle East** (standard MENA classification;
+the site has no Africa region — flagged and approved by Dan).
+
+- **Migrations 206-208** (scaffolded + hand-translated): country row
+  (slug `egypt`, in_picker), 5 milestones — 4 on the board (universal
+  B2B/B2G mandate in force since April 2023 with the July 2023
+  VAT-deduction cutover, the B2C e-receipt eighth sub-phase under
+  Decision 281/2025, the 1 January 2026 enforcement stage, the EGP
+  250,000 threshold with its passed 31 March deadline) plus the 2020
+  Law 206 anchor — all four languages.
+- **Migrations 209-210**: full deep-dive page (mandate-summary tile,
+  5 stats, 10 cards, 6 steps, 2 ETA portals), penalties as narrative
+  cards suiting Egypt's mixed fixed/daily/consequence-based landscape,
+  all four languages, exact-count and rows_json validation.
+- **Migration 211 — jurisdiction counts, and a significant catch**:
+  D1's `translations` table was stale at **30** — the 31 and 32 bumps
+  were only ever applied to live files, never written back to D1: the
+  exact failure mode migration 024 fixed once before, recurring. 211
+  corrects 40 rows straight to 33, each UPDATE pinned to the exact old
+  value (no-op if already fixed). Live files swept to 33 in the same
+  pass (HTML metas, stat tiles, all i18n JSONs, four languages), with
+  a loose-proximity audit confirming zero stale counts remain anywhere
+  and D1 now byte-identical with live files on shared keys. The sweep
+  itself needed three passes — English "all 32 tracked" and German
+  wide-window phrasings escaped the first patterns — which is exactly
+  why the audit step exists.
+- **Migration 212**: launch story in all four languages ("Egypt joins
+  the tracker: the ETA's regime enters its enforcement era"), sourced
+  to eta.gov.eg, deep-dive link auto-derived from the slug column.
+- **Static files**: countries.js (Middle East, alphabetical), shared
+  slug map (SLUG_TO_COUNTRY derives automatically), i18n countryNames
+  in all 8 files (main + subscribe, four languages).
+
+Deploy (from your machine):
+```
+cd members-worker/migrations
+python3 apply_migrations.py --remote     # applies 206-212, records each
+cd ../../site-worker && wrangler deploy  # ships countries.js, i18n, count updates
+```
+Spot-check: Egypt on the tracker board (arrivals + list views, Middle
+East region), /egypt and /egypt?lang=de render, subscribe picker and
+preferences show Egipto/Ägypten/Égypte, the archive shows the launch
+story with its deep-dive link, and "33" appears on subscribe/education
+pages in all languages.
+
 ## Open items / next steps
 
 ### Resources menu + open archive: redeploy (code is done, only the ship step remains)

@@ -1,5 +1,8 @@
 {
-  "_meta": { "language": "en", "reviewed": true },
+  "_meta": {
+    "language": "en",
+    "reviewed": true
+  },
   "backLink": "← Back to global tracker",
   "header": {
     "eyebrow": "Education",
@@ -7,49 +10,136 @@
     "sub": "Once you understand the mandate model and its likely impact, the practical questions become: who should be in the room, how early should this start, and how do you approach choosing a vendor without regretting it a year later?",
     "lastUpdated": "Last updated:"
   },
-  "stats": { "label1": "Recommended lead time before go-live", "label2": "Typical core working group size", "label3": "Of a well-run vendor selection" },
+  "stats": {
+    "label1": "Recommended lead time before go-live",
+    "label2": "Typical core working group size",
+    "label3": "Of a well-run vendor selection"
+  },
   "sec1": {
     "heading": "Who to include",
     "intro": "A mandate response with no single accountable owner, or with the wrong functions missing from the room, is the most common cause of late surprises. Here's a working group that covers the ground without becoming unwieldy.",
-    "card1": { "title": "Programme sponsor", "body": "A senior Finance or Tax leader with the authority to commit budget and resolve cross-functional disagreements. Without this, the working group can identify problems but not always act on them quickly." },
-    "card2": { "title": "Tax / compliance lead", "body": "Owns the interpretation of the actual legal requirement, tracks scope and deadlines across entities, and is usually the one relationship-managing any external advisors." },
-    "card3": { "title": "IT / integration lead", "body": "Assesses what the current ERP/AP/AR systems can and can't do natively, and owns the technical relationship with whichever vendor or platform gets selected." },
-    "card4": { "title": "Legal &amp; data protection", "body": "Reviews vendor contracts, data residency implications, and cross-border transfer questions — brought in from the start rather than at contract-signing, when it's too late to influence the shape of the deal." },
-    "card5": { "title": "Business/entity owner(s)", "body": "Someone accountable for each affected country or business unit — particularly important in multinationals, where the same mandate can land differently depending on local entity structure and existing systems." },
-    "card6": { "title": "Procurement / vendor management", "body": "Runs the formal RFP process if one is needed, and ensures contract terms (SLAs, exit clauses, liability) get proper commercial scrutiny rather than being accepted as vendor boilerplate." },
+    "card1": {
+      "title": "Programme sponsor",
+      "body": "A senior Finance or Tax leader with the authority to commit budget and resolve cross-functional disagreements. Without this, the working group can identify problems but not always act on them quickly."
+    },
+    "card2": {
+      "title": "Tax / compliance lead",
+      "body": "Owns the interpretation of the actual legal requirement, tracks scope and deadlines across entities, and is usually the one relationship-managing any external advisors."
+    },
+    "card3": {
+      "title": "IT / integration lead",
+      "body": "Assesses what the current ERP/AP/AR systems can and can't do natively, and owns the technical relationship with whichever vendor or platform gets selected."
+    },
+    "card4": {
+      "title": "Legal &amp; data protection",
+      "body": "Reviews vendor contracts, data residency implications, and cross-border transfer questions — brought in from the start rather than at contract-signing, when it's too late to influence the shape of the deal."
+    },
+    "card5": {
+      "title": "Business/entity owner(s)",
+      "body": "Someone accountable for each affected country or business unit — particularly important in multinationals, where the same mandate can land differently depending on local entity structure and existing systems."
+    },
+    "card6": {
+      "title": "Procurement / vendor management",
+      "body": "Runs the formal RFP process if one is needed, and ensures contract terms (SLAs, exit clauses, liability) get proper commercial scrutiny rather than being accepted as vendor boilerplate."
+    },
     "outro": "Keep this group to 6–8 people who meet regularly, with a wider circle (AP/AR team leads, key customers or vendors for testing, external advisors) consulted at specific milestones rather than in every meeting."
   },
   "sec2": {
     "heading": "When to start",
     "intro": "Grace periods and phased thresholds are common, and it's tempting to treat them as the real deadline. In practice, vendor lead times, testing cycles, and cross-functional coordination all take longer than expected — starting early is what actually determines whether go-live is calm or chaotic.",
-    "marker1": "12–18 months before go-live", "marker2": "9–12 months before go-live", "marker3": "6–9 months before go-live",
-    "marker4": "3–6 months before go-live", "marker5": "1–3 months before go-live", "marker6": "Go-live and beyond",
-    "card1": { "date": "Assessment &amp; scoping", "badge": "Start here", "title": "Confirm scope, form the working group, assess current systems", "desc": "Determine which entities are actually in scope and from when, form the core working group above, and get an honest read on what your current ERP/AP/AR systems can and can't do without help." },
-    "card2": { "date": "Vendor selection &amp; solution design", "title": "Run the vendor selection process (see below) and confirm the technical approach", "desc": "This is usually the single most time-consuming phase — treat it as its own project with its own timeline, not a quick procurement exercise." },
-    "card3": { "date": "Build &amp; integration", "title": "Technical integration, master data cleansing, internal process design", "desc": "Master data cleansing in particular benefits from a long runway — it's rarely a quick fix once you actually look at the state of customer/vendor records." },
-    "card4": { "date": "Testing &amp; pilot", "title": "Sandbox/certification testing, then a live pilot with a small transaction subset", "desc": "Deliberately test failure paths — rejections, corrections, offline/contingency modes — not just the happy path where everything validates first time." },
-    "card5": { "date": "Parallel run &amp; cutover prep", "title": "Run old and new processes in parallel, train frontline staff, finalise contingency plans", "desc": "This is also when to brief customers and key vendors on what's changing, if the mandate affects how they'll receive or send invoices to you." },
-    "card6": { "date": "Stabilisation", "title": "Monitor rejection rates closely for the first few weeks", "desc": "Rejection rates typically spike immediately after go-live as real-world data edge cases surface that testing didn't catch — budget attention for this rather than assuming go-live is the finish line." }
+    "marker1": "12–18 months before go-live",
+    "marker2": "9–12 months before go-live",
+    "marker3": "6–9 months before go-live",
+    "marker4": "3–6 months before go-live",
+    "marker5": "1–3 months before go-live",
+    "marker6": "Go-live and beyond",
+    "card1": {
+      "date": "Assessment &amp; scoping",
+      "badge": "Start here",
+      "title": "Confirm scope, form the working group, assess current systems",
+      "desc": "Determine which entities are actually in scope and from when, form the core working group above, and get an honest read on what your current ERP/AP/AR systems can and can't do without help."
+    },
+    "card2": {
+      "date": "Vendor selection &amp; solution design",
+      "title": "Run the vendor selection process (see below) and confirm the technical approach",
+      "desc": "This is usually the single most time-consuming phase — treat it as its own project with its own timeline, not a quick procurement exercise."
+    },
+    "card3": {
+      "date": "Build &amp; integration",
+      "title": "Technical integration, master data cleansing, internal process design",
+      "desc": "Master data cleansing in particular benefits from a long runway — it's rarely a quick fix once you actually look at the state of customer/vendor records."
+    },
+    "card4": {
+      "date": "Testing &amp; pilot",
+      "title": "Sandbox/certification testing, then a live pilot with a small transaction subset",
+      "desc": "Deliberately test failure paths — rejections, corrections, offline/contingency modes — not just the happy path where everything validates first time."
+    },
+    "card5": {
+      "date": "Parallel run &amp; cutover prep",
+      "title": "Run old and new processes in parallel, train frontline staff, finalise contingency plans",
+      "desc": "This is also when to brief customers and key vendors on what's changing, if the mandate affects how they'll receive or send invoices to you."
+    },
+    "card6": {
+      "date": "Stabilisation",
+      "title": "Monitor rejection rates closely for the first few weeks",
+      "desc": "Rejection rates typically spike immediately after go-live as real-world data edge cases surface that testing didn't catch — budget attention for this rather than assuming go-live is the finish line."
+    }
   },
   "sec3": {
     "heading": "Planning a vendor selection process",
     "intro": "Whether you need a full-service compliance platform, a specific country intermediary (a PAC, OSE, or Access Point), or just a module within your existing ERP, the same disciplined process pays off.",
-    "step1": { "title": "Define requirements before talking to any vendor", "body": "Country/format coverage needed, expected transaction volume, required integration method (API vs. portal), and budget range. Going to market without this tends to produce proposals that are hard to compare fairly." },
-    "step2": { "title": "Map the realistic vendor landscape", "body": "Options usually span full-service global compliance platforms, country-specific intermediaries, and native ERP add-on modules — each with different trade-offs on coverage breadth versus depth and cost." },
-    "step3": { "title": "Score on more than price", "body": "Format/country coverage, uptime and support SLAs (including support hours relative to your time zone), security certifications, integration effort required on your side, and — critically — their track record of keeping pace with regulatory changes in the countries you need." },
-    "step4": { "title": "Insist on a proof of concept", "body": "A sandbox test with your own real (or realistic) data surfaces integration friction that a sales demo never will. Treat this as non-negotiable before signing, not an optional nice-to-have." },
-    "step5": { "title": "Scrutinise the contract, not just the product", "body": "Data residency commitments, liability for errors or missed deadlines, minimum continuity periods if you switch providers, and clear exit/data-portability terms — get Legal and Procurement involved in this stage directly, not as a final rubber stamp." },
-    "step6": { "title": "Plan for the next mandate, not just this one", "body": "If you operate in multiple markets, ask how the vendor's roadmap covers countries you don't need yet but might soon — switching providers again in two years is a real cost worth avoiding if a single relationship can reasonably grow with you." }
+    "step1": {
+      "title": "Define requirements before talking to any vendor",
+      "body": "Country/format coverage needed, expected transaction volume, required integration method (API vs. portal), and budget range. Going to market without this tends to produce proposals that are hard to compare fairly."
+    },
+    "step2": {
+      "title": "Map the realistic vendor landscape",
+      "body": "Options usually span full-service global compliance platforms, country-specific intermediaries, and native ERP add-on modules — each with different trade-offs on coverage breadth versus depth and cost."
+    },
+    "step3": {
+      "title": "Score on more than price",
+      "body": "Format/country coverage, uptime and support SLAs (including support hours relative to your time zone), security certifications, integration effort required on your side, and — critically — their track record of keeping pace with regulatory changes in the countries you need."
+    },
+    "step4": {
+      "title": "Insist on a proof of concept",
+      "body": "A sandbox test with your own real (or realistic) data surfaces integration friction that a sales demo never will. Treat this as non-negotiable before signing, not an optional nice-to-have."
+    },
+    "step5": {
+      "title": "Scrutinise the contract, not just the product",
+      "body": "Data residency commitments, liability for errors or missed deadlines, minimum continuity periods if you switch providers, and clear exit/data-portability terms — get Legal and Procurement involved in this stage directly, not as a final rubber stamp."
+    },
+    "step6": {
+      "title": "Plan for the next mandate, not just this one",
+      "body": "If you operate in multiple markets, ask how the vendor's roadmap covers countries you don't need yet but might soon — switching providers again in two years is a real cost worth avoiding if a single relationship can reasonably grow with you."
+    }
   },
   "sec4": {
     "heading": "Common pitfalls",
     "intro": "Patterns worth watching for, based on how these programmes typically go wrong.",
-    "card1": { "title": "⏳ Treating the grace period as the real deadline", "body": "Enforcement holidays exist to ease the transition, not to signal there's no urgency — the underlying technical and process work still needs to happen on the original timeline." },
-    "card2": { "title": "🗂️ Skipping master data cleansing", "body": "The single most common cause of early rejections, and the easiest thing to deprioritise under time pressure — it rarely pays off to skip it." },
-    "card3": { "title": "🙋 No single accountable owner", "body": "When Finance, IT, and Legal each think someone else is driving, gaps surface late — usually right when there's no time left to fix them." },
-    "card4": { "title": "🧪 Only testing the happy path", "body": "Rejections, corrections, and contingency/offline modes are exactly where real operational pain shows up — test these deliberately, not just the case where everything works first time." },
-    "card5": { "title": "🌍 Assuming one market's solution transfers to the next", "body": "A vendor or approach that works well in one country's model doesn't automatically fit another's — re-verify fit market by market rather than assuming." },
-    "card6": { "title": "💸 Comparing vendors on pilot-volume pricing", "body": "Cost structures that look similar at low volume can diverge sharply at real production volume — always model pricing at your actual expected scale." }
+    "card1": {
+      "title": "⏳ Treating the grace period as the real deadline",
+      "body": "Enforcement holidays exist to ease the transition, not to signal there's no urgency — the underlying technical and process work still needs to happen on the original timeline."
+    },
+    "card2": {
+      "title": "🗂️ Skipping master data cleansing",
+      "body": "The single most common cause of early rejections, and the easiest thing to deprioritise under time pressure — it rarely pays off to skip it."
+    },
+    "card3": {
+      "title": "🙋 No single accountable owner",
+      "body": "When Finance, IT, and Legal each think someone else is driving, gaps surface late — usually right when there's no time left to fix them."
+    },
+    "card4": {
+      "title": "🧪 Only testing the happy path",
+      "body": "Rejections, corrections, and contingency/offline modes are exactly where real operational pain shows up — test these deliberately, not just the case where everything works first time."
+    },
+    "card5": {
+      "title": "🌍 Assuming one market's solution transfers to the next",
+      "body": "A vendor or approach that works well in one country's model doesn't automatically fit another's — re-verify fit market by market rather than assuming."
+    },
+    "card6": {
+      "title": "💸 Comparing vendors on pilot-volume pricing",
+      "body": "Cost structures that look similar at low volume can diverge sharply at real production volume — always model pricing at your actual expected scale."
+    }
   },
   "sec5": {
     "heading": "Quick-start checklist",
@@ -65,11 +155,28 @@
   },
   "sec6": {
     "heading": "Where to go next",
-    "card1": { "title": "📘 Not sure which model applies?", "body": "\"Types of Mandate\" (under Education) explains the compliance models referenced throughout this page." },
-    "card2": { "title": "🏗️ Understand the full impact first", "body": "\"Impact of Mandate\" goes deeper on the technical, process, and financial effects this planning work is ultimately responding to." },
-    "card3": { "title": "🌍 Check your specific country's requirements", "body": "The Deep Dives menu covers the exact technical specification, registration steps, and penalties for each of the 32 jurisdictions tracked here." },
-    "card4": { "title": "🏷️ Understand the vendor landscape first", "body": "\"Types of Provider\" (under Education) breaks down the five categories of vendor referenced in the selection process above — ERP, Solution Provider, Tax Compliance, Technology, and Consultancy." },
-    "card5": { "title": "✅ Find an accredited provider", "body": "\"Government Certified Providers\" (under Education) links directly to the official registries referenced in the vendor selection section above." }
+    "card1": {
+      "title": "📘 Not sure which model applies?",
+      "body": "\"Types of Mandate\" (under Education) explains the compliance models referenced throughout this page."
+    },
+    "card2": {
+      "title": "🏗️ Understand the full impact first",
+      "body": "\"Impact of Mandate\" goes deeper on the technical, process, and financial effects this planning work is ultimately responding to."
+    },
+    "card3": {
+      "title": "🌍 Check your specific country's requirements",
+      "body": "The Deep Dives menu covers the exact technical specification, registration steps, and penalties for each of the 33 jurisdictions tracked here."
+    },
+    "card4": {
+      "title": "🏷️ Understand the vendor landscape first",
+      "body": "\"Types of Provider\" (under Education) breaks down the five categories of vendor referenced in the selection process above — ERP, Solution Provider, Tax Compliance, Technology, and Consultancy."
+    },
+    "card5": {
+      "title": "✅ Find an accredited provider",
+      "body": "\"Government Certified Providers\" (under Education) links directly to the official registries referenced in the vendor selection section above."
+    }
   },
-  "footer": { "text": "This page provides general educational guidance based on common patterns in mandate readiness programmes, and is not legal, tax, or procurement advice. Specific timelines and requirements vary by country and by your own systems and organisation — consult the relevant country deep dive and appropriate advisors before committing to a plan." }
+  "footer": {
+    "text": "This page provides general educational guidance based on common patterns in mandate readiness programmes, and is not legal, tax, or procurement advice. Specific timelines and requirements vary by country and by your own systems and organisation — consult the relevant country deep dive and appropriate advisors before committing to a plan."
+  }
 }

@@ -1,5 +1,8 @@
 {
-  "_meta": { "language": "fr", "reviewed": true },
+  "_meta": {
+    "language": "fr",
+    "reviewed": true
+  },
   "backLink": "← Retour au suivi global",
   "header": {
     "eyebrow": "Ressources",
@@ -7,8 +10,14 @@
     "sub": "« Trouver un prestataire » sous-estime à quel point ce marché est réellement varié. Cinq catégories véritablement différentes de prestataires vendent toutes des solutions de conformité de facturation électronique — comprendre à laquelle vous avez affaire change ce que vous devriez en attendre.",
     "lastUpdated": "Dernière mise à jour :"
   },
-  "statusBanner": { "text": "Les noms d'entreprises ci-dessous sont des <strong>exemples purement illustratifs</strong> — un échantillon restreint et non exhaustif pour rendre chaque catégorie concrète, pas une recommandation ni un classement. De nombreux prestataires réels chevauchent plusieurs catégories." },
-  "stats": { "label1": "Catégories de prestataires distinctes", "label2": "Catégories que la plupart des programmes combinent réellement", "label3": "Catégorie qui couvre tout à elle seule" },
+  "statusBanner": {
+    "text": "Les noms d'entreprises ci-dessous sont des <strong>exemples purement illustratifs</strong> — un échantillon restreint et non exhaustif pour rendre chaque catégorie concrète, pas une recommandation ni un classement. De nombreux prestataires réels chevauchent plusieurs catégories."
+  },
+  "stats": {
+    "label1": "Catégories de prestataires distinctes",
+    "label2": "Catégories que la plupart des programmes combinent réellement",
+    "label3": "Catégorie qui couvre tout à elle seule"
+  },
   "sec1": {
     "heading": "Pourquoi la catégorie compte avant le nom",
     "intro": "Deux prestataires peuvent tous deux dire « nous faisons de la facturation électronique » et vouloir dire des choses réellement différentes. Savoir quelle catégorie vous évaluez vous indique quelles questions poser réellement — et quelles lacunes anticiper et planifier."
@@ -64,12 +73,30 @@
     "heading": "Comparaison côte à côte",
     "intro": "Un guide approximatif de la façon dont les catégories diffèrent typiquement — les prestataires réels varient, et plusieurs chevauchent délibérément plus d'une ligne.",
     "table": {
-      "h1": "Catégorie", "h2": "Métier principal", "h3": "Profondeur de couverture pays", "h4": "Modèle de coût typique",
-      "r1c1": "Éditeur d'ERP", "r1c2": "Système d'entreprise complet, facturation électronique en tant que module", "r1c3": "Variable — solide sur les marchés d'origine, peut accuser du retard ailleurs", "r1c4": "Licences + frais de module",
-      "r2c1": "Prestataire de solutions", "r2c2": "Automatisation comptes fournisseurs/clients &amp; échange de factures électroniques", "r2c3": "Généralement large — c'est leur spécialité", "r2c4": "Par transaction ou abonnement",
-      "r3c1": "Prestataire de conformité fiscale", "r3c2": "Détermination et dépôt de la fiscalité indirecte", "r3c3": "Solide là où leur produit fiscal est établi", "r3c4": "Abonnement, souvent groupé avec la fiscalité",
-      "r4c1": "Prestataire technologique", "r4c2": "Échange de données B2B / middleware EDI", "r4c3": "Solide là où le commerce EDI est déjà établi", "r4c4": "Par transaction ou frais de plateforme",
-      "r5c1": "Cabinet de conseil", "r5c2": "Services de conseil &amp; de mise en œuvre", "r5c3": "Portée de conseil, pas une plateforme technique en soi", "r5c4": "Projet en temps et matériel ou à forfait"
+      "h1": "Catégorie",
+      "h2": "Métier principal",
+      "h3": "Profondeur de couverture pays",
+      "h4": "Modèle de coût typique",
+      "r1c1": "Éditeur d'ERP",
+      "r1c2": "Système d'entreprise complet, facturation électronique en tant que module",
+      "r1c3": "Variable — solide sur les marchés d'origine, peut accuser du retard ailleurs",
+      "r1c4": "Licences + frais de module",
+      "r2c1": "Prestataire de solutions",
+      "r2c2": "Automatisation comptes fournisseurs/clients &amp; échange de factures électroniques",
+      "r2c3": "Généralement large — c'est leur spécialité",
+      "r2c4": "Par transaction ou abonnement",
+      "r3c1": "Prestataire de conformité fiscale",
+      "r3c2": "Détermination et dépôt de la fiscalité indirecte",
+      "r3c3": "Solide là où leur produit fiscal est établi",
+      "r3c4": "Abonnement, souvent groupé avec la fiscalité",
+      "r4c1": "Prestataire technologique",
+      "r4c2": "Échange de données B2B / middleware EDI",
+      "r4c3": "Solide là où le commerce EDI est déjà établi",
+      "r4c4": "Par transaction ou frais de plateforme",
+      "r5c1": "Cabinet de conseil",
+      "r5c2": "Services de conseil &amp; de mise en œuvre",
+      "r5c3": "Portée de conseil, pas une plateforme technique en soi",
+      "r5c4": "Projet en temps et matériel ou à forfait"
     }
   },
   "sec4": {
@@ -77,7 +104,9 @@
     "intro": "Très peu de programmes d'obligation réels n'utilisent qu'une seule catégorie — la plupart en combinent deux ou trois, chacune couvrant une partie différente du problème.",
     "scenarioTitle": "Un scénario multinational réaliste",
     "scenarioBody": "Un groupe exploitant SAP à l'échelle mondiale utilise le module de conformité natif de son ERP pour les marchés où la couverture est mature, fait appel à un prestataire de solutions spécialisé spécifiquement pour couvrir une poignée de pays que le module ERP ne prend pas encore bien en charge, et engage un cabinet de conseil pendant quelques mois pour piloter la gestion du programme sur l'ensemble du déploiement et accompagner la sélection des prestataires.",
-    "flow1": "Module ERP — marchés matures", "flow2": "Prestataire de solutions — lacunes de couverture", "flow3": "Conseil — supervision du programme"
+    "flow1": "Module ERP — marchés matures",
+    "flow2": "Prestataire de solutions — lacunes de couverture",
+    "flow3": "Conseil — supervision du programme"
   },
   "sec5": {
     "heading": "Questions à poser, quelle que soit la catégorie que vous évaluez",
@@ -99,9 +128,20 @@
   },
   "sec7": {
     "heading": "Pour aller plus loin",
-    "card1": { "title": "🗓️ Menez le véritable processus de sélection", "body": "« Se préparer à une obligation » (sous Ressources) couvre comment définir les besoins, mener une preuve de concept et examiner un contrat une fois que vous savez quelle catégorie convient." },
-    "card2": { "title": "✅ Consultez les prestataires vérifiés par l'État", "body": "« Prestataires certifiés par l'État » renvoie directement vers les registres officiels où plusieurs pays publient nommément leurs prestataires agréés." },
-    "card3": { "title": "🌍 Consultez les exigences de votre pays précis", "body": "Le menu des analyses par pays couvre les spécifications techniques exactes et les étapes d'immatriculation pour chacune des 32 juridictions suivies ici." }
+    "card1": {
+      "title": "🗓️ Menez le véritable processus de sélection",
+      "body": "« Se préparer à une obligation » (sous Ressources) couvre comment définir les besoins, mener une preuve de concept et examiner un contrat une fois que vous savez quelle catégorie convient."
+    },
+    "card2": {
+      "title": "✅ Consultez les prestataires vérifiés par l'État",
+      "body": "« Prestataires certifiés par l'État » renvoie directement vers les registres officiels où plusieurs pays publient nommément leurs prestataires agréés."
+    },
+    "card3": {
+      "title": "🌍 Consultez les exigences de votre pays précis",
+      "body": "Le menu des analyses par pays couvre les spécifications techniques exactes et les étapes d'immatriculation pour chacune des 33 juridictions suivies ici."
+    }
   },
-  "footer": { "text": "Les noms d'entreprises mentionnés sur cette page sont des exemples purement illustratifs, inclus pour rendre chaque catégorie concrète — ce ne sont ni des recommandations, ni des classements, ni une cartographie complète du marché, et leur mention n'implique aucune relation avec ce site. Les recherches d'analystes mentionnées ci-dessus sont liées à titre purement informatif ; les rapports complets peuvent nécessiter un abonnement payant ou un accès fourni par un prestataire, et tout positionnement de prestataire qui y figure reflète la propre méthodologie et les opinions de ce cabinet, pas les nôtres. Vérifiez directement l'accréditation actuelle et l'adéquation de tout prestataire précis à vos besoins avant de le solliciter." }
+  "footer": {
+    "text": "Les noms d'entreprises mentionnés sur cette page sont des exemples purement illustratifs, inclus pour rendre chaque catégorie concrète — ce ne sont ni des recommandations, ni des classements, ni une cartographie complète du marché, et leur mention n'implique aucune relation avec ce site. Les recherches d'analystes mentionnées ci-dessus sont liées à titre purement informatif ; les rapports complets peuvent nécessiter un abonnement payant ou un accès fourni par un prestataire, et tout positionnement de prestataire qui y figure reflète la propre méthodologie et les opinions de ce cabinet, pas les nôtres. Vérifiez directement l'accréditation actuelle et l'adéquation de tout prestataire précis à vos besoins avant de le solliciter."
+  }
 }
