@@ -523,6 +523,58 @@ pattern already used for country deep dives:
   sidebar/topbar test suite afterward — no regressions. Re-ran the
   tracker HTML parse-validity and inline-script syntax checks too.
 
+### Topbar menus now collapse properly (2 August 2026, code complete, deploy pending)
+
+Dan reported that clicking multiple topbar menus (Resources, Education,
+the "Menu" actions dropdown) left them all expanded at once, and that
+selecting an item inside a menu didn't collapse it. Two separate root
+causes, both in the click-handling for these dropdowns:
+
+- **Multiple menus staying open at once:** each trigger's own
+  `e.stopPropagation()` call -- needed so a menu's *own* toggle isn't
+  immediately undone by its `document`-level "click outside closes it"
+  listener -- had the side effect of also stopping that click from
+  ever bubbling up to *other* menus' `document`-level listeners, since
+  the event never travels past the element that called
+  `stopPropagation()`. So opening Education while Resources was
+  already open never reached Resources' own listener at all, and it
+  stayed open. Fixed with a small shared registry
+  (`topLevelMenuClosers`) of each top-level menu's `close()` function;
+  each trigger now explicitly closes its siblings via
+  `closeOtherTopLevelMenus()` before toggling itself, rather than
+  relying on the click bubbling somewhere else to do it.
+- **Selecting an item not collapsing its menu:** dropdown items are
+  *inside* their menu's container, so the existing "click outside
+  closes it" check (`!menu.contains(e.target)`) never applied to them
+  in the first place -- this was true even before the bug above.
+  Fixed by adding a delegated click listener on each panel that
+  collapses it when a real `<a>` link inside is clicked. The nested
+  Deep Dives flyout inside Resources needed no separate listener of
+  its own: its country links bubble up into the Resources panel's new
+  delegate, which collapses both the flyout and the parent Resources
+  menu together when a country is selected. The flyout's own toggle
+  *button* isn't an `<a>`, so expanding it correctly does not trigger
+  this and collapse the menu out from under the user.
+- The "About this site" item in the Menu dropdown is a `<button>`, not
+  a link, so it keeps its own explicit `close()` call (unchanged,
+  already correct); "Give feedback" (a real `<a>`) is now covered by
+  the same delegate as every other menu.
+- Changed only `einvoicing-compliance-tracker.html` (the 4
+  `wireResourcesMenu()`/`wireDeepDiveMenu()`/`wireEducationMenu()`/
+  `wireActionsMenu()` functions) -- no HTML/CSS changes needed.
+  Verified with a new jsdom test: opening Resources then Education
+  auto-closes Resources; opening the Menu dropdown after that
+  auto-closes Education; at most one top-level menu is ever open at
+  once; selecting an Education link collapses that menu; expanding the
+  nested Deep Dives flyout does *not* collapse its parent Resources
+  menu; and selecting a country inside that flyout collapses both the
+  flyout and the parent Resources menu together. Re-ran the full
+  existing archive/menu/sidebar/topbar/education test suite afterward
+  — no regressions (including the pre-existing Resources/Deep-Dives
+  flyout test, confirming click-outside-closes-it and the nested
+  flyout's own open/close behaviour are both unaffected). Re-ran the
+  tracker HTML parse-validity and inline-script syntax checks too.
+
 ---
 
 ## Open items / next steps

@@ -1893,6 +1893,29 @@ function renderDeepDiveMenu(){
   panel.innerHTML = html;
 }
 
+// The 3 top-level topbar dropdowns (Resources, Education, and the
+// "Menu" actions dropdown) should behave like a normal exclusive menu
+// bar: opening one collapses whichever other one is already open, and
+// selecting a real link inside any of them collapses that menu too.
+// Previously, each trigger's own e.stopPropagation() call -- needed so
+// a menu's *own* open/close toggle isn't immediately undone by the
+// document-level "click outside closes it" listener below -- also had
+// the side effect of stopping that same click from ever bubbling up
+// to *other* menus' document-level listeners, since the event never
+// travels past the element that called stopPropagation(). That's why
+// opening Resources and then Education left both expanded at once:
+// Education's trigger click never reached Resources' own "click
+// outside" listener at all. topLevelMenuClosers collects every
+// top-level menu's close() function so each trigger can explicitly
+// close its siblings itself before toggling, instead of relying on
+// the click bubbling somewhere else to do it.
+const topLevelMenuClosers = [];
+function closeOtherTopLevelMenus(exceptMenuEl){
+  topLevelMenuClosers.forEach(({ menu, close }) => {
+    if(menu !== exceptMenuEl) close();
+  });
+}
+
 function wireResourcesMenu(){
   const menu = document.getElementById('resourcesMenu');
   const trigger = document.getElementById('resourcesTrigger');
@@ -1906,10 +1929,20 @@ function wireResourcesMenu(){
     // pre-expanded the next time the Resources menu is opened.
     flyoutPanel.classList.remove('open');
   }
+  topLevelMenuClosers.push({ menu, close });
 
-  trigger.addEventListener('click', (e)=>{ e.stopPropagation(); toggle(); });
+  trigger.addEventListener('click', (e)=>{ e.stopPropagation(); closeOtherTopLevelMenus(menu); toggle(); });
   document.addEventListener('click', (e)=>{
     if(!menu.contains(e.target)) close();
+  });
+  // Selecting a real link inside this menu -- the newsletter archive
+  // link, or (since the Deep Dives flyout panel is itself nested
+  // inside this one) a country link in the flyout -- collapses the
+  // whole menu, flyout included. The flyout's own toggle *button*
+  // (below) deliberately isn't an <a>, so expanding it doesn't
+  // trigger this and collapse the menu out from under the user.
+  panel.addEventListener('click', (e)=>{
+    if(e.target.closest('a')) close();
   });
 }
 
@@ -1921,6 +1954,13 @@ function wireDeepDiveMenu(){
   function toggle(){ panel.classList.toggle('open'); }
   function close(){ panel.classList.remove('open'); }
 
+  // Deliberately not registered in topLevelMenuClosers -- this is a
+  // nested flyout inside the Resources menu, not a sibling top-level
+  // menu, so opening it shouldn't collapse Resources itself (its
+  // stopPropagation() below already keeps it from doing so), and
+  // closing on item-selection is already handled by the Resources
+  // panel's own delegated listener above (the click bubbles up
+  // through this flyout into that listener).
   trigger.addEventListener('click', (e)=>{ e.stopPropagation(); toggle(); });
   document.addEventListener('click', (e)=>{
     if(!menu.contains(e.target)) close();
@@ -1934,10 +1974,15 @@ function wireEducationMenu(){
 
   function toggle(){ panel.classList.toggle('open'); }
   function close(){ panel.classList.remove('open'); }
+  topLevelMenuClosers.push({ menu, close });
 
-  trigger.addEventListener('click', (e)=>{ e.stopPropagation(); toggle(); });
+  trigger.addEventListener('click', (e)=>{ e.stopPropagation(); closeOtherTopLevelMenus(menu); toggle(); });
   document.addEventListener('click', (e)=>{
     if(!menu.contains(e.target)) close();
+  });
+  // Selecting any of the 5 Education page links collapses the menu.
+  panel.addEventListener('click', (e)=>{
+    if(e.target.closest('a')) close();
   });
 }
 
@@ -1948,10 +1993,18 @@ function wireActionsMenu(){
 
   function toggle(){ panel.classList.toggle('open'); }
   function close(){ panel.classList.remove('open'); }
+  topLevelMenuClosers.push({ menu, close });
 
-  trigger.addEventListener('click', (e)=>{ e.stopPropagation(); toggle(); });
+  trigger.addEventListener('click', (e)=>{ e.stopPropagation(); closeOtherTopLevelMenus(menu); toggle(); });
   document.addEventListener('click', (e)=>{
     if(!menu.contains(e.target)) close();
+  });
+  // Selecting the "Give feedback" link collapses the menu (a real
+  // navigation, so this mostly matters for the moment before the page
+  // unloads). "About this site" is a <button>, not an <a>, so it's
+  // handled by its own listener below instead of this delegate.
+  panel.addEventListener('click', (e)=>{
+    if(e.target.closest('a')) close();
   });
 
   document.getElementById('ddAbout').addEventListener('click', ()=>{
