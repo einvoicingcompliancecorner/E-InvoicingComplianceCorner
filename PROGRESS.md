@@ -456,6 +456,73 @@ three lines each, for 32 countries. Simplified on request:
   suite afterward — no regressions. Re-ran the tracker HTML
   parse-validity and inline-script syntax checks too.
 
+### Education menu pages now open in-page too (2 August 2026, code complete, deploy pending)
+
+The 5 Education menu pages (Types of Mandate, Impact of Mandate,
+Preparing for a Mandate, Types of Provider, Government Certified
+Providers) used to be full page navigations away from the tracker,
+losing the sidebar (and therefore quick access to the country list)
+for the duration. They now open in the same main frame as a country
+deep dive, sidebar still visible, via the same fetch + shadow-DOM
+pattern already used for country deep dives:
+
+- New `openEducationPage()` / `closeEducationPage()` functions in
+  `einvoicing-compliance-tracker.html`, and a third sibling panel
+  container, `#educationView`, alongside the existing
+  `#countryDeepDiveView` and `#archiveView`. All three panels are now
+  mutually exclusive with each other (symmetric guards added in all
+  three open functions).
+- These pages are same-origin static files (unlike the newsletter
+  archive, which lives on the members subdomain and needed CORS) --
+  the fetch itself needed no new server-side changes.
+- One real wrinkle, unlike the country deep-dive pages: deep-dive
+  pages are rendered server-side already in the requested language
+  (`site-worker`'s `renderCountryDeepDive()` takes `?lang=`), but the
+  Education pages are static, English-authored HTML that `i18n.js`
+  translates client-side at runtime by matching `data-i18n="key"`
+  attributes against `i18n/<lang>-<namespace>.json` once its own
+  `<script>` executes on the real standalone page. Since this panel
+  deliberately only fetches and parses raw HTML (never executing the
+  fetched page's own script, same reasoning as the archive panel),
+  that translation step would otherwise never run. Added
+  `applyI18nToShadow()`, a small port of just that one piece of
+  `i18n.js`'s logic (the `data-i18n` / `data-i18n-attr` lookup-and-
+  replace loop from `applyToDom()`), scoped to run against the shadow
+  root directly, fetching the correct per-page namespace file (e.g.
+  `i18n/es-edu-mandate-types.json`) the same way `i18n.js` would.
+  Skipped entirely when the active language is English, since the raw
+  fetched markup's own text already is that.
+- Reused the existing generic click-interception, `popstate`, and
+  `eicc:languageChanged` handling in `wireDeepDiveInPagePanel()` --
+  extended with an `educationPageFromHref()` lookup (an
+  `EDUCATION_PAGES` map of the 5 real page paths to their namespace),
+  mirroring `slugFromHref()`'s existing role for country slugs.
+- Real per-page URLs (e.g. `/education-mandate-types.html`) are used
+  for history, same as country deep dives (not a query param like the
+  archive) -- these already exist as real, directly-loadable standalone
+  pages served by `site-worker`'s static assets binding, so browser
+  back/forward and direct/bookmarked links keep working exactly as
+  before; the in-page panel is purely a progressive enhancement for
+  clicks made from within the tracker itself.
+- One structural difference from the deep-dive pages handled directly:
+  Education pages' own "← Back to global tracker" link is a direct
+  child of `.wrap` (not wrapped in its own `.top-bar` row like the
+  deep-dive pages), so it's located and removed via `.back-link`
+  directly rather than removing a `.top-bar` wrapper.
+- Verified with jsdom tests: clicking an Education menu link opens the
+  panel, hides the board view, hides the topbar's site-description
+  block, and leaves the sidebar untouched and visible; the shadow root
+  contains exactly one `.back-link` (the panel's own close control,
+  not a duplicate of the original page's); the close link restores the
+  board view; switching the active language and reopening the same
+  page correctly fetches and applies the matching namespace's
+  translated title/eyebrow text via `applyI18nToShadow()`; and the new
+  panel is correctly mutually exclusive with the country deep-dive
+  panel in both directions (opening one closes the other, content
+  cleared, not just hidden). Re-ran the full existing archive/menu/
+  sidebar/topbar test suite afterward — no regressions. Re-ran the
+  tracker HTML parse-validity and inline-script syntax checks too.
+
 ---
 
 ## Open items / next steps

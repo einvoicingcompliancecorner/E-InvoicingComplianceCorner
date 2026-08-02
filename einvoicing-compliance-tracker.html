@@ -602,6 +602,7 @@
 
 <div id="countryDeepDiveView" style="display:none;"></div>
 <div id="archiveView" style="display:none;"></div>
+<div id="educationView" style="display:none;"></div>
 
 <footer>
   <p data-i18n="filters.disclaimer">This tracker reflects publicly available guidance as of July 2026 and is provided for general awareness, not legal or tax advice. E-invoicing thresholds, wave numbers and go-live dates change frequently — confirm your obligations directly on the official government portal linked in each entry, or with your tax advisor, before making compliance decisions.</p>
@@ -2011,12 +2012,14 @@ async function openDeepDive(slug, opts){
   const panel = document.getElementById('countryDeepDiveView');
   const topbarBrand = document.querySelector('.topbar-brand');
   currentDeepDiveSlug = slug;
-  // Mutually exclusive with the newsletter archive being open -- the
-  // reverse of the guard in openArchive(). Without this, opening a
-  // country deep dive while the archive was already showing left the
-  // archive's old content sitting there too, visible underneath the
-  // deep dive panel (both are display:'' siblings in the DOM).
+  // Mutually exclusive with the newsletter archive and the education
+  // panel being open -- the reverse of the equivalent guards in
+  // openArchive() and openEducationPage(). Without this, opening a
+  // country deep dive while one of those was already showing left its
+  // old content sitting there too, visible underneath the deep dive
+  // panel (all three are display:'' siblings in the DOM).
   if(archiveOpen) closeArchive({ skipHistory: true });
+  if(currentEducationPage) closeEducationPage({ skipHistory: true });
 
   boardView.style.display = 'none';
   // The site name/description/subscriber-perks block pushes real
@@ -2173,8 +2176,10 @@ async function openArchive(opts){
   const panel = document.getElementById('archiveView');
   const topbarBrand = document.querySelector('.topbar-brand');
   archiveOpen = true;
-  // Mutually exclusive with a country deep dive being open.
+  // Mutually exclusive with a country deep dive or the education
+  // panel being open.
   if(currentDeepDiveSlug) closeDeepDive({ skipHistory: true });
+  if(currentEducationPage) closeEducationPage({ skipHistory: true });
 
   boardView.style.display = 'none';
   if(topbarBrand) topbarBrand.style.display = 'none';
@@ -2299,6 +2304,168 @@ function closeArchive(opts){
   }
 }
 
+// ---------- in-page Education panel ----------
+// Same fetch + shadow-DOM pattern as the country deep-dive panel above
+// (same origin as the tracker itself, real per-page URLs, no CORS
+// needed). The one real difference: deep-dive pages are rendered
+// server-side already in the requested language (site-worker's
+// renderCountryDeepDive() takes ?lang=), but these Education pages are
+// static, single-language-authored HTML files that i18n.js translates
+// client-side at runtime by matching data-i18n="key" attributes
+// against i18n/<lang>-<namespace>.json once its own <script> executes
+// on the real page. Since this panel only fetches and parses raw HTML
+// (deliberately not executing the fetched page's own script -- same
+// reasoning as the archive panel), that translation step never runs
+// on its own. applyI18nToShadow() below ports just that one piece of
+// i18n.js's logic (data-i18n / data-i18n-attr lookup and replacement)
+// to run against the shadow root directly, using the correct
+// per-page namespace file.
+const EDUCATION_PAGES = {
+  '/education-mandate-types.html': { file: 'education-mandate-types.html', namespace: 'edu-mandate-types' },
+  '/education-impact-of-mandate.html': { file: 'education-impact-of-mandate.html', namespace: 'edu-impact-of-mandate' },
+  '/education-preparing-for-mandate.html': { file: 'education-preparing-for-mandate.html', namespace: 'edu-preparing-for-mandate' },
+  '/education-types-of-provider.html': { file: 'education-types-of-provider.html', namespace: 'edu-types-of-provider' },
+  '/education-certified-providers.html': { file: 'education-certified-providers.html', namespace: 'edu-certified-providers' },
+};
+let currentEducationPage = null; // one of the EDUCATION_PAGES keys above, or null
+const educationI18nCache = {}; // "<lang>-<namespace>" -> parsed JSON, avoids refetching within a session
+
+function educationPageFromHref(href){
+  if(!href) return null;
+  let pathname;
+  try { pathname = new URL(href, window.location.origin).pathname; }
+  catch(e){ return null; }
+  return EDUCATION_PAGES[pathname] ? pathname : null;
+}
+
+async function applyI18nToShadow(shadow, namespace){
+  const lang = (window.EICC_I18N && window.EICC_I18N.currentLang) || 'en';
+  if(lang === 'en') return; // the raw fetched HTML's own text already is English
+  const cacheKey = `${lang}-${namespace}`;
+  let data = educationI18nCache[cacheKey];
+  if(!data){
+    try {
+      const res = await fetch(`i18n/${cacheKey}.json`);
+      if(!res.ok) return;
+      data = await res.json();
+      educationI18nCache[cacheKey] = data;
+    } catch(err){
+      console.warn('Could not load translations for', cacheKey, err);
+      return;
+    }
+  }
+  function lookup(keyPath){
+    const parts = keyPath.split('.');
+    let node = data;
+    for(const part of parts){
+      if(node && typeof node === 'object' && part in node) node = node[part];
+      else return null;
+    }
+    return typeof node === 'string' ? node : null;
+  }
+  shadow.querySelectorAll('[data-i18n]').forEach(el=>{
+    const value = lookup(el.getAttribute('data-i18n'));
+    if(value !== null) el.innerHTML = value;
+  });
+  shadow.querySelectorAll('[data-i18n-attr]').forEach(el=>{
+    el.getAttribute('data-i18n-attr').split(',').forEach(pair=>{
+      const [attr, key] = pair.split(':').map(s=>s.trim());
+      const value = key ? lookup(key) : null;
+      if(attr && value !== null) el.setAttribute(attr, value);
+    });
+  });
+}
+
+async function openEducationPage(pageKey, opts){
+  opts = opts || {};
+  const info = EDUCATION_PAGES[pageKey];
+  if(!info){ window.location.href = pageKey; return; }
+  const boardView = document.getElementById('boardView');
+  const panel = document.getElementById('educationView');
+  const topbarBrand = document.querySelector('.topbar-brand');
+  currentEducationPage = pageKey;
+  // Mutually exclusive with a country deep dive or the newsletter
+  // archive being open -- the reverse of the equivalent guards added
+  // to openDeepDive() and openArchive().
+  if(currentDeepDiveSlug) closeDeepDive({ skipHistory: true });
+  if(archiveOpen) closeArchive({ skipHistory: true });
+
+  boardView.style.display = 'none';
+  if(topbarBrand) topbarBrand.style.display = 'none';
+  panel.style.display = '';
+  panel.innerHTML = '<p style="color:var(--muted); font-family:\'IBM Plex Mono\',monospace; font-size:13px; padding:40px 5vw;">Loading…</p>';
+  window.scrollTo(0, 0);
+
+  let html;
+  try {
+    const res = await fetch(info.file);
+    if(!res.ok) throw new Error('education page fetch failed: ' + res.status);
+    html = await res.text();
+  } catch(err){
+    console.warn('Falling back to a full navigation for', pageKey, err);
+    window.location.href = pageKey;
+    return;
+  }
+  // Guard against a slower, now-superseded fetch landing after a newer
+  // one (e.g. clicking two Education links in quick succession).
+  if(currentEducationPage !== pageKey) return;
+
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  const styleEl = doc.querySelector('style');
+  const wrap = doc.querySelector('.wrap');
+  // Unlike the deep-dive pages (whose back-link sits inside its own
+  // .top-bar row), these Education pages' back-link is a direct child
+  // of .wrap -- remove it directly, replaced by this panel's own close
+  // control below.
+  const backLink = wrap ? wrap.querySelector('.back-link') : null;
+  if(backLink) backLink.remove();
+
+  const scopedCss = (styleEl ? styleEl.textContent : '')
+    .replace(':root{', ':host{')
+    .replace('body{', ':host{');
+
+  panel.innerHTML = '';
+  const host = document.createElement('div');
+  panel.appendChild(host);
+  const shadow = host.attachShadow({ mode: 'open' });
+
+  const closeLabel = (window.EICC_I18N && window.EICC_I18N.t('backLink')) || '← Back to global tracker';
+  shadow.innerHTML = `
+    <style>${scopedCss}</style>
+    <div class="wrap">
+      <a class="back-link" id="educationCloseLink" href="/einvoicing-compliance-tracker.html">${closeLabel}</a>
+      ${wrap ? wrap.innerHTML : '<p>Could not load this page.</p>'}
+    </div>`;
+  shadow.getElementById('educationCloseLink').addEventListener('click', (e)=>{
+    e.preventDefault();
+    closeEducationPage();
+  });
+
+  await applyI18nToShadow(shadow, info.namespace);
+  // currentEducationPage may have changed while the translations were
+  // loading (another click landed) -- don't let a stale response
+  // overwrite the newer panel's content.
+  if(currentEducationPage !== pageKey) return;
+
+  if(!opts.skipHistory){
+    history.pushState({ education: pageKey }, '', pageKey);
+  }
+}
+
+function closeEducationPage(opts){
+  opts = opts || {};
+  currentEducationPage = null;
+  document.getElementById('boardView').style.display = '';
+  const topbarBrand = document.querySelector('.topbar-brand');
+  if(topbarBrand) topbarBrand.style.display = '';
+  const panel = document.getElementById('educationView');
+  panel.style.display = 'none';
+  panel.innerHTML = '';
+  if(!opts.skipHistory){
+    history.pushState({ education: null }, '', '/einvoicing-compliance-tracker.html');
+  }
+}
+
 
 const ARCHIVE_LINK_HREF = MEMBERS_ORIGIN + '/members/archive';
 
@@ -2319,6 +2486,18 @@ function wireDeepDiveInPagePanel(){
       return;
     }
 
+    // Education menu links (Types of Mandate, Impact of Mandate,
+    // Preparing for a Mandate, Types of Provider, Government Certified
+    // Providers) -- same in-page treatment as a country deep dive.
+    const eduPage = educationPageFromHref(href);
+    if(eduPage){
+      e.preventDefault();
+      document.getElementById('sidebar')?.classList.remove('open');
+      document.getElementById('sidebarOverlay')?.classList.remove('open');
+      openEducationPage(eduPage);
+      return;
+    }
+
     const slug = slugFromHref(href);
     if(!slug) return;
     e.preventDefault();
@@ -2330,23 +2509,29 @@ function wireDeepDiveInPagePanel(){
   window.addEventListener('popstate', ()=>{
     const isArchiveUrl = new URLSearchParams(window.location.search).get('view') === 'archive';
     const slug = slugFromHref(window.location.pathname);
+    const eduPage = educationPageFromHref(window.location.pathname);
     if(isArchiveUrl){
       openArchive({ skipHistory: true });
     } else if(slug){
       openDeepDive(slug, { skipHistory: true });
+    } else if(eduPage){
+      openEducationPage(eduPage, { skipHistory: true });
     } else if(currentDeepDiveSlug){
       closeDeepDive({ skipHistory: true });
     } else if(archiveOpen){
       closeArchive({ skipHistory: true });
+    } else if(currentEducationPage){
+      closeEducationPage({ skipHistory: true });
     }
   });
 
-  // If the language changes while a deep dive or the archive is open,
-  // re-fetch it in the new language rather than leaving stale-language
-  // content up.
+  // If the language changes while a deep dive, the archive, or an
+  // Education page is open, re-fetch it in the new language rather
+  // than leaving stale-language content up.
   document.addEventListener('eicc:languageChanged', ()=>{
     if(currentDeepDiveSlug) openDeepDive(currentDeepDiveSlug, { skipHistory: true });
     else if(archiveOpen) openArchive({ skipHistory: true });
+    else if(currentEducationPage) openEducationPage(currentEducationPage, { skipHistory: true });
   });
 
   // A direct/bookmarked/shared load of ?view=archive should open the
