@@ -9,9 +9,8 @@
 > 4, 5, and 6 below are still accurate as written — the tracker itself,
 > `countries.js`, the members-worker touchpoints, translations, and the
 > hardcoded-count problem are all still static/hand-edited and unaffected
-> by the deep-dive cutover. (The cutover's code is committed but the final
-> `wrangler deploy` step is still pending as of this note — see
-> `PROGRESS.md` for current status.)
+> by the deep-dive cutover. (The cutover is deployed and live as of
+> 2 August 2026 — see `PROGRESS.md` for current status.)
 
 This document exists because adding one country touches far more places than
 it should. Follow this checklist in order rather than relying on memory —

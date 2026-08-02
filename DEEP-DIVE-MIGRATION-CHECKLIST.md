@@ -840,26 +840,23 @@ English-only with no translation mechanism at all.
   but never had a static page or a tracker link before, and adding one wasn't
   part of this change.
 
-**Deploy step:** `cd site-worker && wrangler deploy` from your own machine
-(this sandbox can't reach the Cloudflare API). `wrangler.toml`'s `name` is set
-to `eicc-public` deliberately, so this updates the existing production
-resource rather than creating a new one — the D1 binding (`eicc_content` →
-`eicc-content`, id `d1d10bd0-e90a-44a3-9494-a63689e8d32e`) and the `ASSETS`
-binding are both declared in that file, so no manual dashboard configuration
-is needed this time; `wrangler deploy` sets them up itself. Until deployed,
-`eicc-public` still has zero bindings and serves only the old static
-asset set (which, since the 30 country .html files were deleted from the repo
-but the live upload hasn't changed, may currently be stale/missing for those
-URLs on production until this deploy runs).
+**Deployed (2 August 2026):** `cd site-worker && wrangler deploy`, run
+from the user's own machine (this sandbox can't reach the Cloudflare API).
+`wrangler.toml`'s `name` was set to `eicc-public` deliberately, so this
+updated the existing production resource rather than creating a new one —
+the D1 binding (`eicc_content` → `eicc-content`, id
+`d1d10bd0-e90a-44a3-9494-a63689e8d32e`) and the `ASSETS` binding were both
+declared in that file, so no manual dashboard configuration was needed;
+`wrangler deploy` set them up itself.
 
-**Testing:** no live Cloudflare Workers runtime is reachable from this
-sandbox, so verification was: `node --check` syntax validation, and a genuine
-integration test running the new `site-worker/src/index.js` fetch handler
-end-to-end (including its own routing/language logic, not just the shared
-render module) against real content in the local D1 mirror via Node's
-built-in `node:sqlite`, wrapped in a small D1-API-compatible shim
-(`prepare().bind().all()`/`.first()`) and a stubbed `env.ASSETS.fetch`.
-`/spain`, `/index.html` (correctly falls through to the assets stub), and
-`/croatia?lang=fr` (correct language + cookie) all behaved as expected.
-Recommended before fully trusting this in production: `wrangler dev` locally,
-and a spot-check of a handful of live URLs post-deploy.
+**Testing:** before deploy, no live Cloudflare Workers runtime was
+reachable from this sandbox, so pre-deploy verification was: `node --check`
+syntax validation, and a genuine integration test running the new
+`site-worker/src/index.js` fetch handler end-to-end (including its own
+routing/language logic, not just the shared render module) against real
+content in the local D1 mirror via Node's built-in `node:sqlite`, wrapped
+in a small D1-API-compatible shim (`prepare().bind().all()`/`.first()`)
+and a stubbed `env.ASSETS.fetch`. `/spain`, `/index.html` (correctly falls
+through to the assets stub), and `/croatia?lang=fr` (correct language +
+cookie) all behaved as expected. **Post-deploy, the user confirmed a live
+spot-check** — the cutover is now fully live in production.

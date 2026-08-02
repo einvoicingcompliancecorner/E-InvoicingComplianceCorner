@@ -102,14 +102,15 @@ Along the way, the shared architecture itself evolved substantially:
 - Inline badge tags on card headings (e.g. the UK's "Confirmed"/"Pending
   Budget 2026")
 
-**The cutover is built, deploy is pending:** the 30 static per-country
-`.html` files have been deleted from the repo, `einvoicing-compliance-tracker.html`
-and `sitemap.xml` point at the new extensionless URLs (`/spain`, not
-`/spain.html`), and a Worker script (`site-worker/src/index.js`) renders
-every country page from D1 at request time, with automatic language
-routing (query param → cookie → `Accept-Language` header → English). See
-`DEEP-DIVE-MIGRATION-CHECKLIST.md`'s "Cutover to production" section for
-the full architecture.
+**The cutover is live (deployed 2 August 2026).** The 30 static
+per-country `.html` files have been deleted from the repo,
+`einvoicing-compliance-tracker.html` and `sitemap.xml` point at the new
+extensionless URLs (`/spain`, not `/spain.html`), and a Worker script
+(`site-worker/src/index.js`) renders every country page from D1 at
+request time, with automatic language routing (query param → cookie →
+`Accept-Language` header → English). Deployed via `wrangler deploy` and
+spot-checked live. See `DEEP-DIVE-MIGRATION-CHECKLIST.md`'s "Cutover to
+production" section for the full architecture.
 
 **Full detail, schema reference, and every lesson learned**: see
 `DEEP-DIVE-MIGRATION-CHECKLIST.md`.
@@ -120,13 +121,11 @@ the full architecture.
 
 - All 31 countries' Stage 4 D1 content and mandate-summary translations
   are live in production D1.
-- The cutover code (site-worker's dynamic country routing, the 30 deleted
-  static pages, the updated tracker/sitemap links) is committed and
-  pushed to `main`, but **not yet deployed**. The last step is running
-  `wrangler deploy` from `site-worker/` (see
-  `DEEP-DIVE-MIGRATION-CHECKLIST.md`). Until that runs, the live
-  `eicc-public` Worker still has no D1 binding and is serving whatever
-  static asset set was last manually uploaded to it.
+- **The cutover is fully deployed and live** — `eicc-public` now has the
+  `eicc_content` D1 binding and the ASSETS binding, real country URLs
+  (e.g. `/spain`, `/croatia?lang=fr`) render dynamically from D1, and
+  static assets (index.html, the tracker, education pages, etc.) serve
+  normally alongside them. Confirmed with a live spot-check post-deploy.
 - The newsletter/tracker's core static content (all countries' `DATA`
   entries, stories, translations) is live and current.
 
@@ -135,9 +134,7 @@ the full architecture.
 ## Open items / next steps
 
 ### Stage 4 continuation
-- Run `wrangler deploy` from `site-worker/` to actually put the cutover
-  live — all code is written, committed, and pushed (see "Current state"
-  above)
+- Stage 4 and the cutover are both complete — nothing outstanding here.
 - Peru is fully migrated to Stage 4, but is still uncovered by newsletter
   stories specifically — a separate, older gap, not a Stage 4 one
 - The tracker's **own** full-page dynamic rendering was never built —

@@ -8,10 +8,10 @@ than repeats, `NEWSLETTER-ARCHIVE-REDESIGN.md` for the per-story schema
 details.
 
 **Status as of 2 August 2026: built and substantially exceeded in scope
-for deep-dive content, including a full production cutover (code-complete,
-deploy pending). See "Current status" immediately below for what's
-actually implemented, what diverged from this original plan, and what's
-still outstanding. The rest of this document is preserved as the original
+for deep-dive content, including a full production cutover — deployed and
+live. See "Current status" immediately below for what's actually
+implemented, what diverged from this original plan, and what's still
+outstanding. The rest of this document is preserved as the original
 design record — the reasoning and schema below mostly still holds, but the
 deep-dive piece in particular grew well beyond what was scoped here.**
 
@@ -69,17 +69,16 @@ Chile, United States, Canada, European Union, Italy, Saudi Arabia, United
 Arab Emirates. Every country also has a translated `mandate_summary`
 status-banner tile (added 2 August 2026).
 
-**The cutover itself is code-complete, deploy pending.** The 30 static
+**The cutover is deployed and live (2 August 2026).** The 30 static
 per-country `.html` files have been deleted from the repo, the tracker
 and sitemap point at the new extensionless URLs, and a Worker script
 (`site-worker/src/index.js`) renders every country page from D1 at
 request time with automatic language routing — replacing the
 `/admin/preview/deep-dive?country=X` preview route's role with the real
-production URLs. The one remaining step is running `wrangler deploy` from
-`site-worker/` against the live `eicc-public` Worker (renamed from its
-auto-generated name `winter-fog-ff16`) — see "Cutover to production" in
-`DEEP-DIVE-MIGRATION-CHECKLIST.md` for the full architecture and what's
-left.
+production URLs. Deployed via `wrangler deploy` against the live
+`eicc-public` Worker (renamed from its auto-generated name
+`winter-fog-ff16`) and spot-checked live — see "Cutover to production" in
+`DEEP-DIVE-MIGRATION-CHECKLIST.md` for the full architecture.
 
 ---
 
