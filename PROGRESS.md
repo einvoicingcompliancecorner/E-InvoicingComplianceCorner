@@ -825,6 +825,51 @@ covering the archive, menus, sidebar, topbar, education, feedback, and
 subscribe panels) — no regressions. Re-validated HTML parse-validity
 and inline-script syntax on the tracker.
 
+### Privacy policy updated for the free, no-Lemon-Squeezy model (2 August 2026, code complete, deploy pending)
+
+`privacy-policy.html` still described the old paid-subscription setup
+(Lemon Squeezy as payment provider/merchant of record, Zapier syncing
+subscription status, a "[FILL IN] email service provider", 12-month
+one-time/recurring plan retention language). Updated it to match the
+actual current, free-only architecture:
+
+- Section 1: "paid monthly compliance newsletter" → "free monthly
+  compliance newsletter".
+- Section 2: removed the "Payment details" row from the data-collected
+  table entirely — no payment details are collected.
+- Section 3 (legal basis): reworded away from "necessary to perform
+  our contract" (billing/cancellation framing) to **consent** for the
+  opt-in free newsletter signup, and **legitimate interest** for
+  feedback submissions.
+- Section 4 (who we share data with): removed the Lemon Squeezy and
+  Zapier bullets outright, and replaced the still-unfilled "[FILL IN:
+  your email service provider]" placeholder with the actual provider
+  in use — checked `members-worker/src/index.js` directly rather than
+  guessing: emails (magic links + monthly newsletter) send via
+  **Resend** (`sendViaResend()`, `RESEND_API_KEY`), and subscriber
+  records live directly in Cloudflare KV, not a separate ESP or a
+  Zapier-synced list. Broadened the Cloudflare bullet to mention
+  subscriber data storage accordingly.
+- Section 5 (retention): dropped the "recurring or within the 12-month
+  one-time period" language (no such plans exist now) — the free
+  subscription simply runs until the subscriber unsubscribes, with no
+  expiry or renewal.
+- Section 6 (international transfers): swapped Lemon Squeezy/Zapier
+  for Resend/Cloudflare, matching Section 4's actual current providers.
+- Bumped the "Last updated" date to 2 August 2026, and added a dated
+  note to the file's own setup comment (which developers see, not
+  site visitors) flagging that Sections 2/3/4/6 will need revisiting
+  again if a paid plan is reintroduced later.
+
+This is still a template needing a solicitor's review before relying
+on it for real (that caveat is unchanged and still prominent on the
+page) — this pass only brings the described data flows back in line
+with what the site actually does today.
+
+Verified: HTML parses cleanly (lenient parser) with balanced tags —
+14 `<div>` / 14 `</div>`. No jsdom test coverage needed — this is a
+static informational page with no interactive behaviour of its own.
+
 ---
 
 ## Open items / next steps
@@ -922,6 +967,5 @@ on the tracker, subscribe, and education pages.
 - Cloudflare Web Analytics not yet set up
 - Content-monitoring Worker (designed in `CONTENT-MONITORING.md`, never
   built)
-- Privacy policy Section 4 has placeholder ESP references needing a fix
 - Translation frameworks for other static site pages and deep-dive pages
   more broadly (separate from the Stage 4 dynamic-architecture effort)
