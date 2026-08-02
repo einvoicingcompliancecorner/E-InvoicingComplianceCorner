@@ -107,7 +107,7 @@ const WORKER_I18N = {
       editionAll: "All editions", editionLatest: "Latest edition", editionThisYear: "This year",
       readDeepDive: (country) => `Read the full ${country} Deep Dive for complete technical detail →`,
       accuracyNote: (date) => `Dates and thresholds above reflect the situation as of ${date} and may have changed since — check the official source and country deep dive below for the latest.`,
-      promoBannerText: "You're viewing the full archive for free, for a limited time — no account needed.",
+      promoBannerText: "You're viewing the full archive for free — no account needed.",
       promoBannerCta: "Subscribe for email alerts →",
     },
     preferences: {
@@ -152,7 +152,7 @@ const WORKER_I18N = {
       editionAll: "Todas las ediciones", editionLatest: "Última edición", editionThisYear: "Este año",
       readDeepDive: (country) => `Lea el análisis completo de ${country} para el detalle técnico completo →`,
       accuracyNote: (date) => `Las fechas y umbrales anteriores reflejan la situación a ${date} y pueden haber cambiado desde entonces — consulte la fuente oficial y el análisis del país a continuación para conocer las últimas novedades.`,
-      promoBannerText: "Está viendo el archivo completo de forma gratuita, por tiempo limitado — no necesita ninguna cuenta.",
+      promoBannerText: "Está viendo el archivo completo de forma gratuita — no necesita ninguna cuenta.",
       promoBannerCta: "Suscríbase para recibir alertas por correo →",
     },
     preferences: {
@@ -197,7 +197,7 @@ const WORKER_I18N = {
       editionAll: "Alle Ausgaben", editionLatest: "Neueste Ausgabe", editionThisYear: "Dieses Jahr",
       readDeepDive: (country) => `Lesen Sie die vollständige Länderanalyse ${country} für alle technischen Details →`,
       accuracyNote: (date) => `Die obigen Daten und Schwellenwerte spiegeln den Stand vom ${date} wider und können sich seither geändert haben — die aktuellsten Informationen finden Sie in der offiziellen Quelle und der Länderanalyse unten.`,
-      promoBannerText: "Sie sehen sich das vollständige Archiv derzeit kostenlos und zeitlich begrenzt an — kein Konto erforderlich.",
+      promoBannerText: "Sie sehen sich das vollständige Archiv derzeit kostenlos an — kein Konto erforderlich.",
       promoBannerCta: "Für E-Mail-Benachrichtigungen abonnieren →",
     },
     preferences: {
@@ -242,7 +242,7 @@ const WORKER_I18N = {
       editionAll: "Toutes les éditions", editionLatest: "Dernière édition", editionThisYear: "Cette année",
       readDeepDive: (country) => `Lire l'analyse complète de ${country} pour tous les détails techniques →`,
       accuracyNote: (date) => `Les dates et seuils ci-dessus reflètent la situation au ${date} et peuvent avoir changé depuis — consultez la source officielle et l'analyse du pays ci-dessous pour les dernières informations.`,
-      promoBannerText: "Vous consultez actuellement l'intégralité des archives gratuitement, pour une durée limitée — aucun compte requis.",
+      promoBannerText: "Vous consultez actuellement l'intégralité des archives gratuitement — aucun compte requis.",
       promoBannerCta: "S'abonner pour recevoir des alertes par e-mail →",
     },
     preferences: {
