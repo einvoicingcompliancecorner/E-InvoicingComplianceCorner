@@ -85,7 +85,7 @@ const COUNTRY_NAME_TRANSLATIONS = {
     "United Arab Emirates": "Emiratos Árabes Unidos", "Australia": "Australia", "China": "China",
     "India": "India", "Malaysia": "Malasia", "New Zealand": "Nueva Zelanda", "Singapore": "Singapur",
     "Brazil": "Brasil", "Canada": "Canadá", "Chile": "Chile", "Mexico": "México", "Peru": "Perú",
-    "United States": "Estados Unidos"
+    "United States": "Estados Unidos", "European Union": "Unión Europea"
   },
   de: {
     "Belgium": "Belgien", "Croatia": "Kroatien", "Denmark": "Dänemark", "Finland": "Finnland", "France": "Frankreich",
@@ -95,7 +95,7 @@ const COUNTRY_NAME_TRANSLATIONS = {
     "United Arab Emirates": "Vereinigte Arabische Emirate", "Australia": "Australien", "China": "China",
     "India": "Indien", "Malaysia": "Malaysia", "New Zealand": "Neuseeland", "Singapore": "Singapur",
     "Brazil": "Brasilien", "Canada": "Kanada", "Chile": "Chile", "Mexico": "Mexiko", "Peru": "Peru",
-    "United States": "Vereinigte Staaten"
+    "United States": "Vereinigte Staaten", "European Union": "Europäische Union"
   },
   fr: {
     "Belgium": "Belgique", "Croatia": "Croatie", "Denmark": "Danemark", "Finland": "Finlande", "France": "France",
@@ -105,7 +105,7 @@ const COUNTRY_NAME_TRANSLATIONS = {
     "United Arab Emirates": "Émirats arabes unis", "Australia": "Australie", "China": "Chine",
     "India": "Inde", "Malaysia": "Malaisie", "New Zealand": "Nouvelle-Zélande", "Singapore": "Singapour",
     "Brazil": "Brésil", "Canada": "Canada", "Chile": "Chili", "Mexico": "Mexique", "Peru": "Pérou",
-    "United States": "États-Unis"
+    "United States": "États-Unis", "European Union": "Union européenne"
   }
 };
 
@@ -1116,7 +1116,7 @@ async function renderFullDeepDivePage(countryName, flag, code, region, content, 
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>${escapeHtml(countryName)} E-Invoicing Requirements — The E-Invoicing Compliance Corner</title>
+<title>${escapeHtml(translateCountryName(lang, countryName))} E-Invoicing Requirements — The E-Invoicing Compliance Corner</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -1205,7 +1205,7 @@ async function renderFullDeepDivePage(countryName, flag, code, region, content, 
       <div class="country-flag">${flag}</div>
       <div>
         <p class="country-eyebrow">${t(lang, "countryDeepDiveEyebrow")}</p>
-        <h1 class="country-title display">${escapeHtml(countryName)}</h1>
+        <h1 class="country-title display">${escapeHtml(translateCountryName(lang, countryName))}</h1>
         <div class="country-region">${escapeHtml(region)} · ${escapeHtml(code)} · VAT area: EU</div>
       </div>
     </div>
