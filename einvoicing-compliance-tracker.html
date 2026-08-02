@@ -366,10 +366,6 @@
   .dropdown-item.dd-country{gap:8px; font-size:12.5px;}
   .dropdown-item.dd-country .flag{font-size:14px;}
   .topbar-menus{display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; align-items:center;}
-  .lang-switcher-inline{font-family:'IBM Plex Mono',monospace; font-size:11.5px; margin-right:4px;}
-  .lang-switcher-inline a{color:var(--muted); text-decoration:none; margin-right:9px; cursor:pointer;}
-  .lang-switcher-inline a.active{color:var(--soon); font-weight:700;}
-  .lang-switcher-inline a:hover{color:var(--text-lo);}
   .dropdown-item{
     width:100%; text-align:left; background:none; border:none; cursor:pointer;
     padding:12px 16px; font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:#241d10;
@@ -453,7 +449,6 @@
   </div>
   <div class="topbar-right">
     <div class="topbar-menus">
-      <div class="lang-switcher-inline" id="langSwitcherInline"></div>
       <div class="actions-menu" id="deepDiveMenu">
         <button class="menu-trigger" id="deepDiveTrigger" data-i18n="menu.deepDives">Deep Dives</button>
         <div class="dropdown-panel wide" id="deepDivePanel"></div>
@@ -1835,30 +1830,6 @@ function wireEducationMenu(){
   });
 }
 
-// ---------- language switcher ----------
-function renderLanguageMenu(){
-  const el = document.getElementById('langSwitcherInline');
-  const langs = window.EICC_SUPPORTED_LANGUAGES || [{code:'en', label:'English'}];
-  const current = (window.EICC_I18N && window.EICC_I18N.currentLang) || 'en';
-  el.innerHTML = '🌐 ' + langs.map(l =>
-    `<a data-lang="${l.code}" class="${l.code === current ? 'active' : ''}">${l.code.toUpperCase()}</a>`
-  ).join('');
-}
-
-function wireLanguageMenu(){
-  const el = document.getElementById('langSwitcherInline');
-  el.addEventListener('click', async (e)=>{
-    const link = e.target.closest('[data-lang]');
-    if(!link) return;
-    const code = link.getAttribute('data-lang');
-    if(window.EICC_I18N) await window.EICC_I18N.setLanguage(code);
-  });
-
-  // Re-render (to move the "active" highlight) whenever the language
-  // changes — including on initial load, if a saved preference applies.
-  document.addEventListener('eicc:languageChanged', renderLanguageMenu);
-}
-
 function wireActionsMenu(){
   const menu = document.getElementById('actionsMenu');
   const trigger = document.getElementById('menuTrigger');
@@ -1898,8 +1869,6 @@ renderTimeline();
 wireSortToggle();
 renderSidebar();
 renderDeepDiveMenu();
-renderLanguageMenu();
-wireLanguageMenu();
 wireMenuToggle();
 wireDeepDiveMenu();
 wireEducationMenu();

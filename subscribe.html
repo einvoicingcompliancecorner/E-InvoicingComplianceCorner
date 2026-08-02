@@ -18,10 +18,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="i18n/i18n.js" data-namespace="subscribe"></script>
 <style>
-  .lang-switcher{font-family:'IBM Plex Mono',monospace; font-size:11.5px; margin:0 0 20px;}
-  .lang-switcher a{color:var(--muted); text-decoration:none; margin-right:10px;}
-  .lang-switcher a.active{color:var(--soon); font-weight:700;}
-  .lang-switcher a:hover{color:var(--text-lo);}
 </style>
 
 <!--
@@ -274,7 +270,6 @@
 <div class="wrap">
 
   <a class="back-link" href="einvoicing-compliance-tracker.html" data-i18n="backLink">← Back to global tracker</a>
-  <div class="lang-switcher" id="langSwitcher"></div>
 
   <div class="layout-grid">
 
@@ -430,18 +425,6 @@
 
 </div>
 
-<script>
-  (function(){
-    const switcher = document.getElementById('langSwitcher');
-    const langs = [{code:'en',label:'EN'},{code:'es',label:'ES'},{code:'de',label:'DE'},{code:'fr',label:'FR'}];
-    function render(){
-      const current = (window.EICC_I18N && window.EICC_I18N.currentLang) || 'en';
-      switcher.innerHTML = '🌐 ' + langs.map(l => `<a href="?lang=${l.code}" class="${l.code===current?'active':''}">${l.label}</a>`).join('');
-    }
-    document.addEventListener('eicc:languageChanged', render);
-    render();
-  })();
-</script>
 <script>
 // ================================================================
 // SETUP NEEDED: replace this with your Lemon Squeezy checkout URL.

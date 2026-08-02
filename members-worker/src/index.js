@@ -329,16 +329,32 @@ function resolveLanguage(request) {
 function withLangCookie(response, lang, shouldSetCookie) {
   if (!shouldSetCookie) return response;
   const headers = new Headers(response.headers);
-  headers.append("Set-Cookie", `${LANG_COOKIE}=${lang}; Path=/; Max-Age=${LANG_COOKIE_TTL_SECONDS}; SameSite=Lax`);
+  // Domain=.e-invoicingcompliancecorner.com (not host-only) is what
+  // makes the shared language banner actually shared across
+  // subdomains -- this same cookie is then visible to
+  // e-invoicingcompliancecorner.com itself too, and vice versa (see
+  // site-worker/src/index.js and i18n.js's writeCookie).
+  headers.append("Set-Cookie", `${LANG_COOKIE}=${lang}; Domain=.e-invoicingcompliancecorner.com; Path=/; Max-Age=${LANG_COOKIE_TTL_SECONDS}; SameSite=Lax`);
   return new Response(response.body, { status: response.status, headers });
 }
 
-function renderLangSwitcher(lang, currentPath) {
+// Shared site-wide language banner -- same markup/colours as the one
+// i18n.js injects on the static pages and shared/deep-dive-render.mjs
+// renders on country pages (2 August 2026). Injected once into
+// pageShell() below, so it covers every members-subdomain page without
+// each render*Page() function building its own switcher. Links carry
+// a plain "?lang=code" href and a tiny inline script upgrades them on
+// load to preserve the current page's own path and other query params
+// (e.g. the archive's ?search=, an issue's own URL).
+function renderLangBanner(lang) {
   const links = SUPPORTED_LANGS.map((code) => {
     const isActive = code === lang;
-    return `<a href="${currentPath}?lang=${code}" style="color:${isActive ? "var(--soon)" : "var(--muted)"}; font-weight:${isActive ? "700" : "400"}; text-decoration:none; margin-left:10px;">${code.toUpperCase()}</a>`;
+    return `<a href="?lang=${code}" data-lang="${code}" style="color:${isActive ? "var(--soon)" : "var(--muted)"}; font-weight:${isActive ? "700" : "400"}; text-decoration:none;">${code.toUpperCase()}</a>`;
   }).join("");
-  return `<span style="font-family:'IBM Plex Mono',monospace; font-size:11.5px;">🌐${links}</span>`;
+  return `<div id="eiccLangBanner" style="background:var(--ink-2); padding:7px 18px; display:flex; align-items:center; justify-content:flex-end; gap:14px; font-family:'IBM Plex Mono',monospace; font-size:11.5px; position:relative; z-index:70;">
+    <span style="color:var(--muted);">🌐</span>${links}
+  </div>
+  <script>(function(){var p=new URLSearchParams(window.location.search);document.querySelectorAll('#eiccLangBanner a[data-lang]').forEach(function(a){p.set('lang',a.getAttribute('data-lang'));a.href=window.location.pathname+'?'+p.toString();});})();</script>`;
 }
 
 export default {
@@ -894,22 +910,17 @@ async function handleDeepDivePreview(request, env, lang) {
   const milestones = await sharedGetMilestonesForCountry(env.eicc_content, countryName, lang);
   const flag = deriveFlagFromCode(countryRow.code);
 
+  // renderFullDeepDivePage now renders the shared site-wide language
+  // banner itself (see shared/deep-dive-render.mjs's renderLangBanner),
+  // whose links preserve whatever other query params are already on
+  // the page (e.g. this route's ?country=) via a small inline script --
+  // this replaced the bespoke switcherBar this preview route used to
+  // build by hand for exactly that reason.
   const html = await sharedRenderFullDeepDivePage(
     countryName, flag, countryRow.code, countryRow.region, content, milestones, lang,
-    "https://e-invoicingcompliancecorner.com/einvoicing-compliance-tracker.html", ""
+    "https://e-invoicingcompliancecorner.com/einvoicing-compliance-tracker.html"
   );
-  // The shared renderLangSwitcher assumes ?lang= is the only query
-  // param, which would drop ?country= here -- build links manually so
-  // both are preserved, since this preview page has no other way to
-  // switch language (unlike real pages, which always link within a
-  // single, parameter-free path).
-  const switcherLinks = SUPPORTED_LANGS.map((code) => {
-    const isActive = code === lang;
-    return `<a href="?country=${encodeURIComponent(countryName)}&lang=${code}" style="color:${isActive ? "#c98a3a" : "#93a3c0"}; font-weight:${isActive ? "700" : "400"}; text-decoration:none; margin-left:10px;">${code.toUpperCase()}</a>`;
-  }).join("");
-  const switcherBar = `<div style="background:#152238; padding:10px 20px; font-family:'IBM Plex Mono',monospace; font-size:12px; color:#93a3c0; text-align:right;">🌐${switcherLinks}</div>`;
-  const htmlWithSwitcher = html.replace("<body>", `<body>${switcherBar}`);
-  return htmlResponse(htmlWithSwitcher);
+  return htmlResponse(html);
 }
 
 
@@ -1297,6 +1308,7 @@ function pageShell(bodyHtml, lang) {
 <style>${BASE_STYLE}</style>
 </head>
 <body>
+${renderLangBanner(lang || "en")}
 ${bodyHtml}
 </body>
 </html>`;
@@ -1306,10 +1318,7 @@ function renderLoginPage(error, lang) {
   lang = lang || "en";
   const body = `
   <div class="wrap">
-    <div style="display:flex; justify-content:space-between; align-items:center;">
-      <a class="back-link" href="https://e-invoicingcompliancecorner.com/einvoicing-compliance-tracker.html" style="margin:0;">${t(lang, "backToTracker")}</a>
-      ${renderLangSwitcher(lang, "/members")}
-    </div>
+    <a class="back-link" href="https://e-invoicingcompliancecorner.com/einvoicing-compliance-tracker.html" style="margin:0;">${t(lang, "backToTracker")}</a>
     <div class="card" style="margin-top:16px;">
       <p class="eyebrow">${t(lang, "login.eyebrow")}</p>
       <h1 class="title">${t(lang, "login.title")}</h1>
@@ -1422,10 +1431,7 @@ function renderArchiveList(stories, regionByCountryName, englishNameByDisplayNam
   const body = `
   <div class="topbar topbar-wide">
     <a class="back-link" href="https://e-invoicingcompliancecorner.com/einvoicing-compliance-tracker.html" style="margin:0;">${t(lang, "backToTracker")}</a>
-    <div style="display:flex; align-items:center; gap:16px;">
-      ${renderLangSwitcher(lang, "/members/archive")}
-      <form method="POST" action="/members/logout"><button type="submit" class="logout-btn">${t(lang, "logout")}</button></form>
-    </div>
+    <form method="POST" action="/members/logout"><button type="submit" class="logout-btn">${t(lang, "logout")}</button></form>
   </div>
   <div class="archive-wrap">
     <div class="archive-head">
@@ -1512,7 +1518,7 @@ function renderArchiveList(stories, regionByCountryName, englishNameByDisplayNam
 
     renderGrid();
   </script>`;
-  return pageShell(body);
+  return pageShell(body, lang);
 }
 
 function renderPreferencesPage(email, selectedCountries, justSaved, notificationsEnabled, lang) {
@@ -1537,10 +1543,7 @@ function renderPreferencesPage(email, selectedCountries, justSaved, notification
   const body = `
   <div class="topbar">
     <a class="back-link" href="/members/archive" style="margin:0;">${t(lang, "backToArchive")}</a>
-    <div style="display:flex; align-items:center; gap:16px;">
-      ${renderLangSwitcher(lang, "/members/preferences")}
-      <form method="POST" action="/members/logout"><button type="submit" class="logout-btn">${t(lang, "logout")}</button></form>
-    </div>
+    <form method="POST" action="/members/logout"><button type="submit" class="logout-btn">${t(lang, "logout")}</button></form>
   </div>
   <div class="wrap">
     <div class="card">
@@ -1618,10 +1621,7 @@ function renderIssue(story, lang) {
   const body = `
   <div class="topbar">
     <a class="back-link" href="/members/archive" style="margin:0;">${t(lang, "backToArchive")}</a>
-    <div style="display:flex; align-items:center; gap:16px;">
-      ${renderLangSwitcher(lang, `/members/archive/${encodeURIComponent(story.id)}`)}
-      <form method="POST" action="/members/logout"><button type="submit" class="logout-btn">${t(lang, "logout")}</button></form>
-    </div>
+    <form method="POST" action="/members/logout"><button type="submit" class="logout-btn">${t(lang, "logout")}</button></form>
   </div>
   <div class="wrap">
     <div class="card">

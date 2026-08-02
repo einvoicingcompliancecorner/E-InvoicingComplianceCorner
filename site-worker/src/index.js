@@ -58,14 +58,6 @@ function pickBestSupportedLanguage(header) {
   return null;
 }
 
-function renderLangSwitcher(lang, slug) {
-  const links = SUPPORTED_LANGS.map((code) => {
-    const isActive = code === lang;
-    return `<a href="/${slug}?lang=${code}" style="color:${isActive ? "#c98a3a" : "#93a3c0"}; font-weight:${isActive ? "700" : "400"}; text-decoration:none; margin-left:10px;">${code.toUpperCase()}</a>`;
-  }).join("");
-  return `<span style="font-family:'IBM Plex Mono',monospace; font-size:11.5px;">🌐${links}</span>`;
-}
-
 async function renderCountryDeepDive(request, env, slug) {
   if (!env.eicc_content) {
     return new Response(
@@ -98,11 +90,10 @@ async function renderCountryDeepDive(request, env, slug) {
 
   const milestones = await getMilestonesForCountry(db, countryName, lang);
   const flag = deriveFlagFromCode(countryRow.code);
-  const langSwitcherHtml = renderLangSwitcher(lang, slug);
 
   const html = await renderFullDeepDivePage(
     countryName, flag, countryRow.code, countryRow.region, content, milestones, lang,
-    "/einvoicing-compliance-tracker.html", langSwitcherHtml
+    "/einvoicing-compliance-tracker.html"
   );
 
   const headers = new Headers({
@@ -113,7 +104,12 @@ async function renderCountryDeepDive(request, env, slug) {
     "Cache-Control": "public, max-age=300",
   });
   if (shouldSetCookie) {
-    headers.append("Set-Cookie", `${LANG_COOKIE}=${lang}; Path=/; Max-Age=${LANG_COOKIE_TTL_SECONDS}; SameSite=Lax`);
+    // Domain=.e-invoicingcompliancecorner.com (not host-only) is what
+    // makes the shared language banner actually shared — this same
+    // cookie is then visible to members.e-invoicingcompliancecorner.com
+    // too, and vice versa (see members-worker/src/index.js's
+    // withLangCookie and i18n.js's writeCookie).
+    headers.append("Set-Cookie", `${LANG_COOKIE}=${lang}; Domain=.e-invoicingcompliancecorner.com; Path=/; Max-Age=${LANG_COOKIE_TTL_SECONDS}; SameSite=Lax`);
   }
   return new Response(html, { headers });
 }

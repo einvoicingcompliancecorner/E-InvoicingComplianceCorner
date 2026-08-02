@@ -2,12 +2,20 @@
 // The E-Invoicing Compliance Corner — i18n loader
 // ================================================================
 // A small, dependency-free loader that:
-//   1. Determines the active language (URL ?lang=, then a saved
-//      preference, then falls back to English).
+//   1. Determines the active language (URL ?lang=, then the shared
+//      eicc_lang cookie, then a legacy localStorage value, then
+//      English).
 //   2. Fetches that language's JSON file from /i18n/<lang>.json.
 //   3. Applies translated text to any element carrying a
 //      data-i18n="section.key" attribute.
-//   4. Shows a visible banner if the active language's content
+//   4. Renders the single, site-wide language banner at the very top
+//      of the page (see renderBanner() below) — the same banner also
+//      appears on the dynamically-rendered pages (country deep dives,
+//      the members subdomain), all reading/writing the same eicc_lang
+//      cookie, so a language choice made anywhere on the site applies
+//      everywhere. This replaced each page's own separate
+//      .lang-switcher / .lang-switcher-inline markup (2 August 2026).
+//   5. Shows a visible banner if the active language's content
 //      hasn't yet been marked as human-reviewed — this is
 //      deliberate: AI-assisted translations should never look
 //      indistinguishable from reviewed ones on a compliance site.
@@ -17,8 +25,11 @@
 //   2. Tag translatable elements: <p data-i18n="brand.description"></p>
 //   3. For attributes (e.g. placeholders), use:
 //        data-i18n-attr="placeholder:search.placeholder"
-//   4. Call window.EICC_I18N.init() once the DOM is ready (or just
-//      let it auto-run on DOMContentLoaded, which it does by default).
+//   4. That's it — the language banner and language detection/loading
+//      run automatically on DOMContentLoaded. Pages with no
+//      data-i18n content at all (e.g. index.html) can still include
+//      this script just to get the shared banner and keep the
+//      language choice consistent site-wide.
 //
 // ADDING A NEW LANGUAGE LATER:
 //   1. Copy i18n/en.json to i18n/<code>.json (e.g. pt.json)
@@ -38,6 +49,16 @@ const SUPPORTED_LANGUAGES = [
 ];
 const DEFAULT_LANGUAGE = "en";
 const STORAGE_KEY = "eicc_lang";
+const COOKIE_NAME = "eicc_lang";
+// Leading dot makes this cookie visible to e-invoicingcompliancecorner.com
+// AND every subdomain (in particular members.e-invoicingcompliancecorner.com)
+// — this is what makes "pick a language once, anywhere" actually work
+// across both Cloudflare Workers behind the site. A page can only ever
+// set a cookie for its own domain or a parent of it, so this only takes
+// effect when the site is loaded on the real custom domain — harmless
+// no-op fallback (silently not set) on a bare *.workers.dev preview URL.
+const COOKIE_DOMAIN = ".e-invoicingcompliancecorner.com";
+const COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 365; // 1 year
 
 // Optional per-page content namespace, set via a data-namespace attribute
 // on this script's own <script> tag, e.g.:
@@ -46,6 +67,19 @@ const STORAGE_KEY = "eicc_lang";
 // the tracker's shared i18n/<lang>.json — lets other pages have their own
 // translation files without bloating (or colliding with) the tracker's.
 const CONTENT_NAMESPACE = document.currentScript?.dataset?.namespace || "";
+
+function readCookie(name) {
+  const match = document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]+)`));
+  return match ? decodeURIComponent(match[1]) : null;
+}
+
+function writeCookie(name, value) {
+  try {
+    document.cookie = `${name}=${encodeURIComponent(value)}; Domain=${COOKIE_DOMAIN}; Path=/; Max-Age=${COOKIE_MAX_AGE_SECONDS}; SameSite=Lax`;
+  } catch (e) {
+    /* ignore — e.g. cookies disabled */
+  }
+}
 
 const EICC_I18N = {
   currentLang: DEFAULT_LANGUAGE,
@@ -59,6 +93,18 @@ const EICC_I18N = {
     if (fromUrl && SUPPORTED_LANGUAGES.some((l) => l.code === fromUrl)) {
       return fromUrl;
     }
+    // The shared cookie is the real source of truth — set by this same
+    // loader and by both server-rendered Workers (site-worker,
+    // members-worker), so it's consistent no matter where the user last
+    // picked a language.
+    const fromCookie = readCookie(COOKIE_NAME);
+    if (fromCookie && SUPPORTED_LANGUAGES.some((l) => l.code === fromCookie)) {
+      return fromCookie;
+    }
+    // Legacy fallback for anyone with a saved preference from before the
+    // cookie existed — read it once and let persistLanguage() below
+    // migrate it into the cookie so this branch stops being needed for
+    // that visitor.
     try {
       const saved = window.localStorage.getItem(STORAGE_KEY);
       if (saved && SUPPORTED_LANGUAGES.some((l) => l.code === saved)) {
@@ -68,6 +114,18 @@ const EICC_I18N = {
       /* localStorage unavailable — fall through to default */
     }
     return DEFAULT_LANGUAGE;
+  },
+
+  // Writes the chosen language to both the shared cookie (so
+  // server-rendered pages on any subdomain see it) and localStorage
+  // (harmless redundancy, keeps working if cookies are ever blocked).
+  persistLanguage(code) {
+    writeCookie(COOKIE_NAME, code);
+    try {
+      window.localStorage.setItem(STORAGE_KEY, code);
+    } catch (e) {
+      /* ignore if localStorage unavailable */
+    }
   },
 
   async loadLanguage(code) {
@@ -178,21 +236,65 @@ const EICC_I18N = {
     }
   },
 
-  async setLanguage(code) {
-    try {
-      window.localStorage.setItem(STORAGE_KEY, code);
-    } catch (e) {
-      /* ignore if localStorage unavailable */
+  // ----------------------------------------------------------------
+  // Shared site-wide language banner — a thin bar at the very top of
+  // every page (above everything else, including the unreviewed-
+  // translation banner). This is the ONE place to change language,
+  // replacing what used to be a separately hand-built .lang-switcher
+  // on every static page. Visually and behaviourally consistent with
+  // the equivalent banner server-rendered on the dynamic country
+  // pages and the members subdomain (see shared/deep-dive-render.mjs
+  // and members-worker/src/index.js's pageShell()) — same markup,
+  // same colours, same active-language highlighting. The only
+  // difference here is that switching language never reloads the
+  // page: it calls setLanguage() directly, same as the old tracker-
+  // only switcher did.
+  // ----------------------------------------------------------------
+  renderBanner() {
+    let bar = document.getElementById("eiccLangBanner");
+    if (!bar) {
+      bar = document.createElement("div");
+      bar.id = "eiccLangBanner";
+      bar.setAttribute(
+        "style",
+        "background:#152238; padding:7px 18px; display:flex; align-items:center; " +
+        "justify-content:flex-end; gap:14px; font-family:'IBM Plex Mono',monospace; " +
+        "font-size:11.5px; position:relative; z-index:70;"
+      );
+      document.body.insertBefore(bar, document.body.firstChild);
+      bar.addEventListener("click", (e) => {
+        const link = e.target.closest("[data-lang]");
+        if (!link) return;
+        e.preventDefault();
+        this.setLanguage(link.getAttribute("data-lang"));
+      });
     }
+    const links = SUPPORTED_LANGUAGES.map(({ code }) => {
+      const active = code === this.currentLang;
+      const color = active ? "#c98a3a" : "#93a3c0";
+      const weight = active ? "700" : "400";
+      return `<a href="?lang=${code}" data-lang="${code}" style="color:${color}; font-weight:${weight}; text-decoration:none;">${code.toUpperCase()}</a>`;
+    }).join("");
+    bar.innerHTML = `<span style="color:#93a3c0;">🌐</span>${links}`;
+  },
+
+  async setLanguage(code) {
+    this.persistLanguage(code);
     await this.loadLanguage(code);
     this.applyToDom();
+    this.renderBanner();
     document.dispatchEvent(new CustomEvent("eicc:languageChanged", { detail: { lang: code } }));
   },
 
   async init() {
     const lang = this.detectLanguage();
+    // Migrate a legacy localStorage-only preference (or a fresh ?lang=
+    // URL visit) into the shared cookie, so the very next page — on
+    // this domain or the members subdomain — already sees it.
+    this.persistLanguage(lang);
     await this.loadLanguage(lang);
     this.applyToDom();
+    this.renderBanner();
     // Dispatch the same event used for manual switches, so any page-specific
     // code that renders dynamic content (cards, boards, sidebars) in the
     // current language also runs once on initial load — not just when the

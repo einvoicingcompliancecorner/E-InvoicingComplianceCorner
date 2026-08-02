@@ -360,13 +360,39 @@ function renderPenaltyTable(rows, lang) {
   </div>`;
 }
 
+// Shared site-wide language banner — a thin bar at the very top of the
+// page, above everything else. Same markup/colours as the banner
+// members-worker's pageShell() renders and the one i18n.js injects on
+// the static pages (2 August 2026) — this is the single, consistent
+// language switcher for the whole site, replacing what used to be a
+// bespoke inline switcher built separately by each caller. Links carry
+// a plain "?lang=code" href (works with JS disabled, drops any other
+// query params) and a tiny inline script upgrades them on load to
+// preserve the current page's other query params (e.g. the preview
+// route's ?country=). Clicking always reloads the page — unlike the
+// static pages, this HTML is baked server-side per request, so there's
+// no way to switch language without a fresh render.
+export function renderLangBanner(lang) {
+  const links = SUPPORTED_LANGS.map((code) => {
+    const active = code === lang;
+    const color = active ? "#c98a3a" : "#93a3c0";
+    const weight = active ? "700" : "400";
+    return `<a href="?lang=${code}" data-lang="${code}" style="color:${color}; font-weight:${weight}; text-decoration:none;">${code.toUpperCase()}</a>`;
+  }).join("");
+  return `<div id="eiccLangBanner" style="background:#152238; padding:7px 18px; display:flex; align-items:center; justify-content:flex-end; gap:14px; font-family:'IBM Plex Mono',monospace; font-size:11.5px; position:relative; z-index:70;">
+    <span style="color:#93a3c0;">🌐</span>${links}
+  </div>
+  <script>(function(){var p=new URLSearchParams(window.location.search);document.querySelectorAll('#eiccLangBanner a[data-lang]').forEach(function(a){p.set('lang',a.getAttribute('data-lang'));a.href=window.location.pathname+'?'+p.toString();});})();</script>`;
+}
+
 // Full deep-dive page render, sourced entirely from D1. `backLinkHref`
 // is parameterised: the Worker's admin preview uses the absolute
-// production tracker URL (different origin), while the Pages Function
-// serving the real page uses a same-origin relative link instead.
-// `langSwitcherHtml` is likewise supplied by the caller since the two
-// runtimes build slightly different switcher markup/links.
-export async function renderFullDeepDivePage(countryName, flag, code, region, content, milestones, lang, backLinkHref, langSwitcherHtml) {
+// production tracker URL (different origin), while the real production
+// page (site-worker) uses a same-origin relative link instead. The
+// language banner itself is no longer a caller-supplied parameter —
+// see renderLangBanner() above — since both runtimes now render the
+// exact same shared banner.
+export async function renderFullDeepDivePage(countryName, flag, code, region, content, milestones, lang, backLinkHref) {
   const timelineHtml = renderDeepDiveStyleMilestones(milestones, lang);
   const statsHtml = content.stats.map((s) => `<div class="stat"><div class="num display">${escapeHtml(s.stat_value)}</div><div class="lbl">${escapeHtml(s.stat_label)}</div></div>`).join("");
   const fileFormatHtml = content.cards.file_format.map(renderSpecCard).join("") + renderLifecycleCardsForSection(content.lifecycleCards, "file_format");
@@ -467,10 +493,10 @@ export async function renderFullDeepDivePage(countryName, flag, code, region, co
 </style>
 </head>
 <body>
+${renderLangBanner(lang)}
 <div class="wrap">
   <div class="top-bar">
     <a class="back-link" href="${backLinkHref}">${t(lang, "backToTracker")}</a>
-    ${langSwitcherHtml || ""}
   </div>
   <div class="country-head">
     <div style="display:flex; gap:16px; align-items:center;">

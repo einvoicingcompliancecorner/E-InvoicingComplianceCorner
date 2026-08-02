@@ -115,6 +115,33 @@ production" section for the full architecture.
 **Full detail, schema reference, and every lesson learned**: see
 `DEEP-DIVE-MIGRATION-CHECKLIST.md`.
 
+### Site-wide language banner (2 August 2026)
+
+Every page used to build its own language switcher separately — the tracker had
+one style (instant switch, no reload), subscribe/feedback/education pages had
+another (reload-based), and index.html/privacy-policy.html had none at all.
+Worse, the two Cloudflare Workers behind the site (site-worker for the public
+site, members-worker for the members subdomain) each persisted the choice in
+a differently-scoped `eicc_lang` cookie, and the static pages persisted it in
+`localStorage` — three unsynced copies of the same preference.
+
+Replaced with one shared banner (a thin bar at the very top of every page)
+and one shared `eicc_lang` cookie, scoped to `.e-invoicingcompliancecorner.com`
+so it's visible on the apex domain and the members subdomain alike:
+- `i18n/i18n.js` now injects the banner and reads/writes the shared cookie
+  (falling back to a legacy `localStorage` value once, then migrating it into
+  the cookie) — covers the tracker, subscribe, feedback, the 5 education
+  pages, and privacy-policy.html (newly added to the i18n system for this).
+  index.html is a pure redirect stub with no meaningful render time, so it
+  was left out deliberately.
+- `shared/deep-dive-render.mjs`'s `renderFullDeepDivePage()` renders the same
+  banner server-side — covers site-worker's real country pages and
+  members-worker's admin deep-dive preview route in one place.
+- `members-worker/src/index.js`'s `pageShell()` renders it too — covers
+  login, the newsletter archive, preferences, and individual issue pages.
+  This also let 4 separate hand-built inline switchers in that file get
+  deleted in favor of the one shared version.
+
 ---
 
 ## Current state — what's actually live vs. in progress
