@@ -142,10 +142,22 @@ def fetch_applied(remote):
 
 
 def record(name, path, remote):
+    record_many([(name, path)], remote)
+
+
+def record_many(name_paths, remote, chunk=50):
+    """Record several migrations in as few wrangler round-trips as
+    possible — each wrangler invocation costs seconds of CLI startup,
+    so the 206-file baseline goes from ~15 minutes to a few seconds.
+    INSERT OR IGNORE makes an interrupted-and-resumed baseline safe."""
     now = datetime.now(timezone.utc).isoformat(timespec="seconds")
-    d1_command(
-        "INSERT INTO schema_migrations (name, checksum, applied_at) "
-        f"VALUES ('{name}', '{checksum(path)}', '{now}')", remote)
+    for i in range(0, len(name_paths), chunk):
+        batch = name_paths[i:i + chunk]
+        values = ", ".join(
+            f"('{name}', '{checksum(path)}', '{now}')" for name, path in batch)
+        d1_command(
+            "INSERT OR IGNORE INTO schema_migrations (name, checksum, applied_at) "
+            f"VALUES {values}", remote)
 
 
 def main():
@@ -173,8 +185,7 @@ def main():
         pending = [f for f in files if f not in applied]
         print(f"Baseline: recording {len(pending)} files as already-applied (running nothing).")
         if not args.dry_run:
-            for f in pending:
-                record(f, os.path.join(MIGRATIONS_DIR, f), args.remote)
+            record_many([(f, os.path.join(MIGRATIONS_DIR, f)) for f in pending], args.remote)
         print("Baseline complete." if not args.dry_run else "(dry run — nothing recorded)")
         return
 
