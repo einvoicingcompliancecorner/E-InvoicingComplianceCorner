@@ -28,42 +28,20 @@ const SESSION_COOKIE = "eicc_session";
 const SESSION_TTL_SECONDS = 60 * 60 * 24 * 30; // 30 days
 const MAGIC_LINK_TTL_SECONDS = 60 * 15; // 15 minutes
 
-// Kept in sync with /countries.js on the static site — see the note at
-// the top of that file. This Worker runs in a separate JS environment
-// and can't load that file directly, so it keeps its own copy here.
-// Maps a country's canonical English name to its deep-dive page filename
-// on the main site. Not a simple lowercase-and-hyphenate transform —
-// several use abbreviated filenames (uae.html, uk.html) — so this is an
-// explicit table rather than a derived one. Countries without an entry
-// here (e.g. European Union, which has no dedicated deep-dive page)
-// simply get no deep-dive link rendered, rather than a broken one.
-const COUNTRY_DEEP_DIVE_SLUGS = {
-  "Australia": "australia", "Belgium": "belgium", "Brazil": "brazil", "Canada": "canada",
-  "Chile": "chile", "China": "china", "Croatia": "croatia", "Denmark": "denmark", "Finland": "finland",
-  "France": "france", "Germany": "germany", "India": "india", "Ireland": "ireland",
-  "Italy": "italy", "Luxembourg": "luxembourg", "Malaysia": "malaysia", "Mexico": "mexico", "New Zealand": "new-zealand",
-  "Norway": "norway", "Peru": "peru", "Poland": "poland", "Portugal": "portugal", "Romania": "romania",
-  "Saudi Arabia": "saudi-arabia", "Singapore": "singapore", "Slovakia": "slovakia",
-  "Spain": "spain", "Sweden": "sweden", "United Arab Emirates": "uae",
-  "United Kingdom": "uk", "United States": "united-states",
-};
-
-const COUNTRIES_BY_REGION = {
-  "Europe": [
-    "Belgium", "Croatia", "Denmark", "Finland", "France", "Germany", "Ireland",
-    "Italy", "Luxembourg", "Norway", "Poland", "Portugal", "Romania", "Slovakia", "Spain",
-    "Sweden", "United Kingdom"
-  ],
-  "Middle East": [
-    "Saudi Arabia", "United Arab Emirates"
-  ],
-  "Asia-Pacific": [
-    "Australia", "China", "India", "Malaysia", "New Zealand", "Singapore"
-  ],
-  "Americas": [
-    "Brazil", "Canada", "Chile", "Mexico", "Peru", "United States"
-  ]
-};
+// Country data (regions, translated display names, deep-dive slugs,
+// picker eligibility) now lives entirely in D1's countries /
+// country_translations tables — see migration
+// 198_country_slugs_and_picker.sql. This Worker used to keep three
+// hardcoded copies here (COUNTRIES_BY_REGION, COUNTRY_NAME_TRANSLATIONS,
+// COUNTRY_DEEP_DIVE_SLUGS), each needing a manual edit per new country;
+// they were deleted in favor of loadCountryPicker() below and slug
+// columns joined into the existing story queries. Adding a country no
+// longer touches this file at all.
+//
+// The fixed presentation order for region groups — a UI choice, not
+// country data, so it stays in code. Any region not listed here (there
+// are none today) would sort after these.
+const REGION_ORDER = ["Europe", "Middle East", "Asia-Pacific", "Americas"];
 
 // ================================================================
 // TRANSLATIONS (EN / ES / DE / FR)
@@ -84,42 +62,11 @@ const LANG_NAMES = { en: "English", es: "Español", de: "Deutsch", fr: "Françai
 const LANG_COOKIE = "eicc_lang";
 const LANG_COOKIE_TTL_SECONDS = 60 * 60 * 24 * 365; // 1 year
 
-const COUNTRY_NAME_TRANSLATIONS = {
-  es: {
-    "Belgium": "Bélgica", "Croatia": "Croacia", "Denmark": "Dinamarca", "Finland": "Finlandia", "France": "Francia",
-    "Germany": "Alemania", "Ireland": "Irlanda", "Italy": "Italia", "Luxembourg": "Luxemburgo", "Norway": "Noruega",
-    "Poland": "Polonia", "Portugal": "Portugal", "Romania": "Rumania", "Slovakia": "Eslovaquia", "Spain": "España",
-    "Sweden": "Suecia", "United Kingdom": "Reino Unido", "Saudi Arabia": "Arabia Saudita",
-    "United Arab Emirates": "Emiratos Árabes Unidos", "Australia": "Australia", "China": "China",
-    "India": "India", "Malaysia": "Malasia", "New Zealand": "Nueva Zelanda", "Singapore": "Singapur",
-    "Brazil": "Brasil", "Canada": "Canadá", "Chile": "Chile", "Mexico": "México", "Peru": "Perú",
-    "United States": "Estados Unidos", "European Union": "Unión Europea"
-  },
-  de: {
-    "Belgium": "Belgien", "Croatia": "Kroatien", "Denmark": "Dänemark", "Finland": "Finnland", "France": "Frankreich",
-    "Germany": "Deutschland", "Ireland": "Irland", "Italy": "Italien", "Luxembourg": "Luxemburg", "Norway": "Norwegen",
-    "Poland": "Polen", "Portugal": "Portugal", "Romania": "Rumänien", "Slovakia": "Slowakei", "Spain": "Spanien",
-    "Sweden": "Schweden", "United Kingdom": "Vereinigtes Königreich", "Saudi Arabia": "Saudi-Arabien",
-    "United Arab Emirates": "Vereinigte Arabische Emirate", "Australia": "Australien", "China": "China",
-    "India": "Indien", "Malaysia": "Malaysia", "New Zealand": "Neuseeland", "Singapore": "Singapur",
-    "Brazil": "Brasilien", "Canada": "Kanada", "Chile": "Chile", "Mexico": "Mexiko", "Peru": "Peru",
-    "United States": "Vereinigte Staaten", "European Union": "Europäische Union"
-  },
-  fr: {
-    "Belgium": "Belgique", "Croatia": "Croatie", "Denmark": "Danemark", "Finland": "Finlande", "France": "France",
-    "Germany": "Allemagne", "Ireland": "Irlande", "Italy": "Italie", "Luxembourg": "Luxembourg", "Norway": "Norvège",
-    "Poland": "Pologne", "Portugal": "Portugal", "Romania": "Roumanie", "Slovakia": "Slovaquie", "Spain": "Espagne",
-    "Sweden": "Suède", "United Kingdom": "Royaume-Uni", "Saudi Arabia": "Arabie saoudite",
-    "United Arab Emirates": "Émirats arabes unis", "Australia": "Australie", "China": "Chine",
-    "India": "Inde", "Malaysia": "Malaisie", "New Zealand": "Nouvelle-Zélande", "Singapore": "Singapour",
-    "Brazil": "Brésil", "Canada": "Canada", "Chile": "Chili", "Mexico": "Mexique", "Peru": "Pérou",
-    "United States": "États-Unis", "European Union": "Union européenne"
-  }
-};
-
-function translateCountryName(lang, name) {
-  return COUNTRY_NAME_TRANSLATIONS[lang]?.[name] || name;
-}
+// Country display names come from D1's country_translations table (via
+// loadCountryPicker() for the preferences page, or joined directly into
+// the archive/story queries) — the hardcoded per-country dictionary that
+// used to live here is gone. Region labels below stay in code: they're
+// 4 fixed UI strings, not per-country data.
 function translateRegionName(lang, name) {
   const map = {
     es: { "Europe": "Europa", "Middle East": "Oriente Medio", "Asia-Pacific": "Asia-Pacífico", "Americas": "América" },
@@ -676,6 +623,36 @@ async function d1First(env, sql, ...params) {
   return await stmt.first();
 }
 
+// The country-of-interest picker's data (the preferences page's region-
+// grouped checkboxes), loaded from D1 — the single source of truth for
+// which countries exist, which region each is in, and each one's
+// translated display name. in_picker = 0 rows (European Union, an
+// umbrella tagging entity for EU-wide stories rather than a subscribable
+// jurisdiction) are excluded, matching countries.js's subscribe-page
+// picker. Ordered by canonical English name within each region — the
+// same ordering the old hardcoded lists had — so non-English pages show
+// translated labels in English alphabetical order, exactly as before.
+// Returns [{ region, countries: [{ englishName, displayName }] }] in
+// REGION_ORDER presentation order.
+async function loadCountryPicker(env, lang) {
+  const rows = await d1All(env, `
+    SELECT c.name_en, c.region, COALESCE(ct.display_name, c.name_en) AS display_name
+    FROM countries c
+    LEFT JOIN country_translations ct ON ct.country_id = c.id AND ct.lang = ?
+    WHERE c.in_picker = 1
+    ORDER BY c.name_en
+  `, lang);
+  const byRegion = {};
+  for (const r of rows) {
+    (byRegion[r.region] ||= []).push({ englishName: r.name_en, displayName: r.display_name });
+  }
+  const orderedRegions = [
+    ...REGION_ORDER.filter((r) => byRegion[r]),
+    ...Object.keys(byRegion).filter((r) => !REGION_ORDER.includes(r)),
+  ];
+  return orderedRegions.map((region) => ({ region, countries: byRegion[region] }));
+}
+
 async function getStoriesWithCountries(env, lang) {
   // One story can have several countries (a handful of genuinely
   // cross-cutting stories do) — fetched separately and grouped, rather
@@ -915,7 +892,7 @@ async function handleArchiveIssue(request, env, slug, lang) {
   if (!row) return new Response("Story not found", { status: 404 });
 
   const countryRows = await d1All(env, `
-    SELECT c.name_en, COALESCE(ct.display_name, c.name_en) as name
+    SELECT c.name_en, c.slug AS deep_dive_slug, COALESCE(ct.display_name, c.name_en) as name
     FROM story_countries sc
     JOIN countries c ON c.id = sc.country_id
     LEFT JOIN country_translations ct ON ct.country_id = c.id AND ct.lang = ?
@@ -928,7 +905,7 @@ async function handleArchiveIssue(request, env, slug, lang) {
     title: row.title_translated || deriveTitleFromHtml(row.html),
     html: row.html,
     sourceUrl: row.source_url,
-    countries: countryRows.map((r) => ({ displayName: r.name, englishName: r.name_en })),
+    countries: countryRows.map((r) => ({ displayName: r.name, englishName: r.name_en, deepDiveSlug: r.deep_dive_slug })),
   };
 
   return htmlResponse(renderIssue(story, email, lang));
@@ -1049,7 +1026,8 @@ async function handlePreferencesGet(request, env, lang) {
   const sub = await getSubscriber(env, email);
   const currentCountries = sub?.countries || [];
   const notificationsEnabled = sub?.notificationsEnabled !== false; // default: enabled
-  return htmlResponse(renderPreferencesPage(email, currentCountries, false, notificationsEnabled, lang));
+  const countryPicker = await loadCountryPicker(env, lang);
+  return htmlResponse(renderPreferencesPage(email, currentCountries, false, notificationsEnabled, lang, countryPicker));
 }
 
 async function handlePreferencesPost(request, env, lang) {
@@ -1063,7 +1041,8 @@ async function handlePreferencesPost(request, env, lang) {
   const existing = await getSubscriber(env, email);
   await putSubscriber(env, email, { ...(existing || {}), countries: selected, notificationsEnabled, updated: Date.now() });
 
-  return htmlResponse(renderPreferencesPage(email, selected, true, notificationsEnabled, lang));
+  const countryPicker = await loadCountryPicker(env, lang);
+  return htmlResponse(renderPreferencesPage(email, selected, true, notificationsEnabled, lang, countryPicker));
 }
 
 // ================================================================
@@ -1463,7 +1442,6 @@ function renderArchiveList(stories, regionByCountryName, englishNameByDisplayNam
   // site (tracker's Deep Dives menu, sidebar, subscribe/preferences
   // pickers), rather than one long flat alphabetical list.
   const allCountries = Array.from(new Set(stories.flatMap((s) => s.countries || [])));
-  const REGION_ORDER = ["Europe", "Middle East", "Asia-Pacific", "Americas"];
   const countriesByRegion = {};
   for (const country of allCountries) {
     const region = regionByCountryName[country] || "Other";
@@ -1618,19 +1596,19 @@ function renderArchiveList(stories, regionByCountryName, englishNameByDisplayNam
   return pageShell(body, lang);
 }
 
-function renderPreferencesPage(email, selectedCountries, justSaved, notificationsEnabled, lang) {
+function renderPreferencesPage(email, selectedCountries, justSaved, notificationsEnabled, lang, countryPicker) {
   lang = lang || "en";
   const selectedSet = new Set(selectedCountries || []);
   const notifChecked = notificationsEnabled !== false ? "checked" : "";
-  const regionGroups = Object.keys(COUNTRIES_BY_REGION)
-    .map((region) => {
-      const checks = COUNTRIES_BY_REGION[region]
-        .map((country) => {
-          const checked = selectedSet.has(country) ? "checked" : "";
+  const regionGroups = (countryPicker || [])
+    .map(({ region, countries }) => {
+      const checks = countries
+        .map(({ englishName, displayName }) => {
+          const checked = selectedSet.has(englishName) ? "checked" : "";
           // The submitted VALUE stays the canonical English name (that's
           // what's stored in KV and matched against issue tags) — only the
           // visible label is translated.
-          return `<label class="country-check"><input type="checkbox" name="countries" value="${escapeHtml(country)}" ${checked}>${escapeHtml(translateCountryName(lang, country))}</label>`;
+          return `<label class="country-check"><input type="checkbox" name="countries" value="${escapeHtml(englishName)}" ${checked}>${escapeHtml(displayName)}</label>`;
         })
         .join("");
       return `<div class="region-group"><p class="region-group-label">${escapeHtml(translateRegionName(lang, region))}</p>${checks}</div>`;
@@ -1695,14 +1673,14 @@ function renderIssue(story, email, lang) {
     ? `<p style="margin-top:18px;"><a href="${escapeHtml(story.sourceUrl)}" target="_blank" rel="noopener" style="color:var(--stamp); text-decoration:underline; font-size:13px;">🔗 ${escapeHtml(t(lang, "archive.officialSource"))}</a></p>`
     : "";
   // Deep-dive links are always rendered below the source link, never
-  // embedded in a story's own HTML — a country with no deep-dive page
-  // (e.g. European Union) is silently skipped rather than linking
-  // somewhere broken. A story tagged with several countries gets one
-  // link per country that actually has a page.
+  // embedded in a story's own HTML — a country with a NULL slug in D1
+  // (e.g. European Union, which has no deep-dive page) is silently
+  // skipped rather than linking somewhere broken. A story tagged with
+  // several countries gets one link per country that actually has a page.
   const deepDiveLinksHtml = (story.countries || [])
-    .filter((c) => COUNTRY_DEEP_DIVE_SLUGS[c.englishName])
+    .filter((c) => c.deepDiveSlug)
     .map((c) => {
-      const url = `https://e-invoicingcompliancecorner.com/${COUNTRY_DEEP_DIVE_SLUGS[c.englishName]}`;
+      const url = `https://e-invoicingcompliancecorner.com/${c.deepDiveSlug}`;
       return `<p style="margin-top:10px;"><a href="${url}" style="color:#b5432f; text-decoration:underline; font-weight:600; font-size:13px;">📖 ${escapeHtml(t(lang, "archive.readDeepDive")(c.displayName))}</a></p>`;
     })
     .join("");

@@ -870,6 +870,65 @@ Verified: HTML parses cleanly (lenient parser) with balanced tags —
 14 `<div>` / 14 `</div>`. No jsdom test coverage needed — this is a
 static informational page with no interactive behaviour of its own.
 
+### members-worker's 3 hardcoded country tables eliminated (2 August 2026, code complete, deploy pending)
+
+The long-deferred architectural cleanup: `members-worker/src/index.js`'s
+three hardcoded duplicates (`COUNTRIES_BY_REGION`,
+`COUNTRY_NAME_TRANSLATIONS`, `COUNTRY_DEEP_DIVE_SLUGS`) — each needing a
+manual edit per new country — are deleted in favor of D1 as the single
+source of truth. Adding a country no longer touches this file at all.
+
+- **Migration 198** (`198_country_slugs_and_picker.sql`) adds two columns
+  to `countries`: `slug` (deep-dive page path, backfilled verbatim from
+  the hand-maintained map in `shared/deep-dive-render.mjs` — verified
+  byte-identical, 31 entries; NULL = no page, EU only) and `in_picker`
+  (default 1; 0 = story-taggable umbrella entity not offered in the
+  country checklists — EU only, preserving the deliberate behaviour that
+  EU is excluded from both the subscribe and preferences pickers). A
+  semantic flag was chosen over every consumer hardcoding
+  `WHERE name_en != 'European Union'`.
+- **Preferences page**: new `loadCountryPicker(env, lang)` (one query,
+  countries + translated display names, `in_picker = 1` only, English-
+  alphabetical within region, `REGION_ORDER` presentation order — now a
+  single module-level constant instead of also being redefined locally in
+  `renderArchiveList`). Both preferences handlers load it and pass it
+  into `renderPreferencesPage`, which no longer reads any globals.
+- **Issue-page deep-dive links**: the existing story-country query gained
+  `c.slug` (zero extra queries); `renderIssue` filters on the carried
+  slug instead of the deleted map. NULL-slug countries are skipped, same
+  contract as the old map's missing-key behaviour.
+- `translateCountryName` and its dictionary deleted; `translateRegionName`
+  (4 fixed UI strings, not per-country data) deliberately kept.
+- Stale cross-reference comments updated in `countries.js` (which still
+  needs manual updates for the *subscribe* page's checklist — that's a
+  static-site file, out of scope here) and `shared/deep-dive-render.mjs`
+  (whose own slug map remains as site-worker's synchronous routing table
+  — a deliberate, documented duplicate, not an accidental one).
+- **Validated before any code was touched**: full migration-chain replay
+  in in-memory SQLite, diffing D1's regions/translations/slugs against
+  all three hardcoded maps — exact parity (EU being D1's one extra row,
+  as expected; the 4 known pre-existing replay errors documented in the
+  Luxembourg section were present, no new ones). Then a golden parity
+  test: the OLD implementation (extracted from git HEAD) and the NEW one
+  run against equivalent inputs — real D1 replay rows, not hand-written
+  data — with the rendered preferences page required byte-identical in
+  all 4 languages, and the issue page byte-identical for a multi-country
+  story including slug-less EU. Plus content sanity checks (31 country
+  checkboxes, no EU option, correct region order, pre-checking works, a
+  real EU-only story renders zero deep-dive links with no broken URL)
+  and `node --check` on all touched files.
+- **Deploy ordering matters**: migration 198 must run against remote D1
+  BEFORE `wrangler deploy` of members-worker, or the preferences and
+  issue pages will 500 on "no such column". See Open items.
+
+Remaining hand-maintained country lists after this change (all outside
+members-worker): `countries.js` (subscribe page checklist),
+`shared/deep-dive-render.mjs`'s slug map (site-worker's routing table),
+the tracker's `DATA` array, and the i18n JSON files. Collapsing any of
+those into D1 is future work with different trade-offs (site-worker's
+routing is deliberately synchronous; the static pages can't query D1 at
+all).
+
 ---
 
 ## Open items / next steps
@@ -914,11 +973,24 @@ wrangler d1 execute eicc-content --remote --file=migrations/194_luxembourg_miles
 wrangler d1 execute eicc-content --remote --file=migrations/195_luxembourg_deepdive_translations.sql
 wrangler d1 execute eicc-content --remote --file=migrations/196_luxembourg_story.sql
 wrangler d1 execute eicc-content --remote --file=migrations/197_luxembourg_story_translations.sql
+wrangler d1 execute eicc-content --remote --file=migrations/198_country_slugs_and_picker.sql
 wrangler deploy
 
 cd ../site-worker
 wrangler deploy
 ```
+
+**Ordering matters for 198**: it MUST run before the `wrangler deploy` of
+members-worker on the line after it (the newly-deployed Worker queries the
+`slug`/`in_picker` columns that 198 creates — deploying first would 500 the
+preferences and issue pages until the migration ran). Running the
+migrations top-to-bottom as listed is already the correct order. Extra
+spot-checks after deploy for 198 specifically: the members-site
+preferences page shows all 31 countries grouped by region (no European
+Union option, Luxembourg present), with your saved selections still
+pre-checked and translated names in es/de/fr; and an individual archive
+issue page for a story tagged to a country (e.g. any Spain story) still
+shows its "read the deep dive" link, while an EU-tagged story shows none.
 
 Then spot-check: `/luxembourg` and `/luxembourg?lang=fr` on the public
 site render the deep-dive page; the tracker shows Luxembourg's 4
@@ -942,9 +1014,11 @@ on the tracker, subscribe, and education pages.
   `/admin/add-country` endpoint) were discussed but superseded in
   priority by the Stage 4 work — still worth doing once Stage 4's
   cutover is complete, since the two efforts overlap
-- Eliminate the 3 hardcoded duplicates in `members-worker/src/index.js`
-  (`COUNTRIES_BY_REGION`, `COUNTRY_NAME_TRANSLATIONS`,
-  `COUNTRY_DEEP_DIVE_SLUGS`) in favor of querying D1 directly
+- ~~Eliminate the 3 hardcoded duplicates in `members-worker/src/index.js`~~
+  — **done 2 August 2026** (see "members-worker's 3 hardcoded country
+  tables eliminated" above; migration 198, deploy pending). The
+  remaining hand-maintained lists (`countries.js`, shared slug map,
+  tracker `DATA`, i18n JSONs) are listed there too
 
 ### Business & strategy (discussed, genuinely undecided)
 - Competitive review of theinvoicinghub.com

@@ -187,14 +187,23 @@ if a new country seems to need one, that's worth flagging explicitly before
 building it, the way the lifecycle-pills/penalty-table schema was discussed
 with the user before being added.
 
-## 7. Current schema reference (as of migration 091)
+## 7. Current schema reference (as of migration 198)
 
-The next new migration should be numbered **168**. Everything below is
-confirmed applied to the live database as of this writing. Rather than
-reconstructing this by reading every migration file in sequence, use this
-as the authoritative map of what exists and what each table is for.
+The next new migration should be numbered **199** (always confirm against
+the actual highest number in `members-worker/migrations/` — this line has
+gone stale before). Everything below is confirmed applied to the live
+database as of this writing. Rather than reconstructing this by reading
+every migration file in sequence, use this as the authoritative map of
+what exists and what each table is for.
 
 **Core content tables** (one row per country, or per country+language):
+- `countries` — one row per tracked jurisdiction: `code`, `name_en`,
+  `region`, plus (migration 198) `slug` (the deep-dive page path, NULL =
+  no page, e.g. European Union) and `in_picker` (0 = story-taggable but
+  not offered in the subscribe/preferences country checklists — EU only).
+  members-worker builds its preferences picker and per-story deep-dive
+  links from these columns directly; it keeps no hardcoded country lists
+  anymore. `country_translations` holds the per-language display names.
 - `milestones` / `milestone_translations` — the tracker timeline entries,
   shared between the tracker's own display and each deep-dive page's
   timeline section (see section 1's "tracker phrasing wins" rule)

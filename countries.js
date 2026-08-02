@@ -14,11 +14,14 @@
 // whatever's added there. When adding a new country to the tracker,
 // add it here too, in the same step, so nothing drifts out of sync.
 //
-// The members-worker (Cloudflare Worker) keeps its own copy of this
-// same list for the "manage preferences" page, since it runs in a
-// separate JavaScript environment and can't load this file directly.
-// Keep members-worker/src/index.js's COUNTRIES_BY_REGION constant
-// in sync with this file whenever you update either one.
+// The members-worker (Cloudflare Worker) used to keep its own copy of
+// this list for the "manage preferences" page — it no longer does: as
+// of migration 198_country_slugs_and_picker.sql it queries D1's
+// countries table directly (see loadCountryPicker() in
+// members-worker/src/index.js), so a new country added to D1 appears
+// on the preferences page automatically. This file still needs updating
+// by hand for the SUBSCRIBE page's checklist, though — keep it in sync
+// with D1's countries table (in_picker = 1 rows) when adding a country.
 // ================================================================
 
 const EICC_COUNTRIES_BY_REGION = {

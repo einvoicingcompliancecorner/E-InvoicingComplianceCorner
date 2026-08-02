@@ -26,10 +26,15 @@
 export const SUPPORTED_LANGS = ["en", "es", "de", "fr"];
 
 // Maps a country's canonical English name to its deep-dive page slug.
-// Kept in sync with members-worker/src/index.js's own copy and
-// countries.js on the static site — see the note there for why this
-// is a hand-maintained table rather than a derived transform (uae,
-// uk, and united-states aren't simple lowercase-and-hyphenate).
+// members-worker's own copy of this map is gone (it reads the slug
+// column D1's countries table gained in migration
+// 198_country_slugs_and_picker.sql) — this map remains as site-worker's
+// synchronous routing table (SLUG_TO_COUNTRY below decides whether an
+// incoming path is a country page at all, before any D1 round-trip) and
+// for the canonical-URL tag rendered further down. Keep it in sync with
+// D1's countries.slug column and countries.js when adding a country.
+// It's a hand-maintained table rather than a derived transform because
+// uae, uk, and united-states aren't simple lowercase-and-hyphenate.
 export const COUNTRY_DEEP_DIVE_SLUGS = {
   "Australia": "australia", "Belgium": "belgium", "Brazil": "brazil", "Canada": "canada",
   "Chile": "chile", "China": "china", "Croatia": "croatia", "Denmark": "denmark", "Finland": "finland",
