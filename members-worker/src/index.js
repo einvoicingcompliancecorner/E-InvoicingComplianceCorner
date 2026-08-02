@@ -160,6 +160,8 @@ const WORKER_I18N = {
       editionAll: "All editions", editionLatest: "Latest edition", editionThisYear: "This year",
       readDeepDive: (country) => `Read the full ${country} Deep Dive for complete technical detail →`,
       accuracyNote: (date) => `Dates and thresholds above reflect the situation as of ${date} and may have changed since — check the official source and country deep dive below for the latest.`,
+      promoBannerText: "You're viewing the full archive for free, for a limited time — no account needed.",
+      promoBannerCta: "Subscribe for email alerts →",
     },
     preferences: {
       title: "Alert preferences",
@@ -203,6 +205,8 @@ const WORKER_I18N = {
       editionAll: "Todas las ediciones", editionLatest: "Última edición", editionThisYear: "Este año",
       readDeepDive: (country) => `Lea el análisis completo de ${country} para el detalle técnico completo →`,
       accuracyNote: (date) => `Las fechas y umbrales anteriores reflejan la situación a ${date} y pueden haber cambiado desde entonces — consulte la fuente oficial y el análisis del país a continuación para conocer las últimas novedades.`,
+      promoBannerText: "Está viendo el archivo completo de forma gratuita, por tiempo limitado — no necesita ninguna cuenta.",
+      promoBannerCta: "Suscríbase para recibir alertas por correo →",
     },
     preferences: {
       title: "Preferencias de alertas",
@@ -246,6 +250,8 @@ const WORKER_I18N = {
       editionAll: "Alle Ausgaben", editionLatest: "Neueste Ausgabe", editionThisYear: "Dieses Jahr",
       readDeepDive: (country) => `Lesen Sie die vollständige Länderanalyse ${country} für alle technischen Details →`,
       accuracyNote: (date) => `Die obigen Daten und Schwellenwerte spiegeln den Stand vom ${date} wider und können sich seither geändert haben — die aktuellsten Informationen finden Sie in der offiziellen Quelle und der Länderanalyse unten.`,
+      promoBannerText: "Sie sehen sich das vollständige Archiv derzeit kostenlos und zeitlich begrenzt an — kein Konto erforderlich.",
+      promoBannerCta: "Für E-Mail-Benachrichtigungen abonnieren →",
     },
     preferences: {
       title: "Benachrichtigungseinstellungen",
@@ -289,6 +295,8 @@ const WORKER_I18N = {
       editionAll: "Toutes les éditions", editionLatest: "Dernière édition", editionThisYear: "Cette année",
       readDeepDive: (country) => `Lire l'analyse complète de ${country} pour tous les détails techniques →`,
       accuracyNote: (date) => `Les dates et seuils ci-dessus reflètent la situation au ${date} et peuvent avoir changé depuis — consultez la source officielle et l'analyse du pays ci-dessous pour les dernières informations.`,
+      promoBannerText: "Vous consultez actuellement l'intégralité des archives gratuitement, pour une durée limitée — aucun compte requis.",
+      promoBannerCta: "S'abonner pour recevoir des alertes par e-mail →",
     },
     preferences: {
       title: "Préférences d'alerte",
@@ -820,19 +828,33 @@ async function requireSession(request, env) {
 }
 
 async function handleArchiveList(request, env, lang) {
-  const email = await requireSession(request, env);
-  if (!email) return redirectToLogin();
+  let email = await requireSession(request, env);
+  if (!email) {
+    // Temporary promo (see ARCHIVE_PUBLIC in wrangler.toml): let
+    // anonymous visitors browse the archive read-only, rather than
+    // bouncing them to the login page, while it's turned on.
+    if (env.ARCHIVE_PUBLIC === "true") {
+      email = null;
+    } else {
+      return redirectToLogin();
+    }
+  }
 
   const { stories, regionByCountryName, englishNameByDisplayName } = await getStoriesWithCountries(env, lang);
-  const subscriber = await getSubscriber(env, email);
-  const preferredCountries = subscriber?.countries || [];
+  const preferredCountries = email ? (await getSubscriber(env, email))?.countries || [] : [];
 
   return htmlResponse(renderArchiveList(stories, regionByCountryName, englishNameByDisplayName, preferredCountries, email, lang));
 }
 
 async function handleArchiveIssue(request, env, slug, lang) {
-  const email = await requireSession(request, env);
-  if (!email) return redirectToLogin();
+  let email = await requireSession(request, env);
+  if (!email) {
+    if (env.ARCHIVE_PUBLIC === "true") {
+      email = null;
+    } else {
+      return redirectToLogin();
+    }
+  }
 
   const row = await d1First(env, `
     SELECT s.id, s.date, s.source_url,
@@ -862,7 +884,7 @@ async function handleArchiveIssue(request, env, slug, lang) {
     countries: countryRows.map((r) => ({ displayName: r.name, englishName: r.name_en })),
   };
 
-  return htmlResponse(renderIssue(story, lang));
+  return htmlResponse(renderIssue(story, email, lang));
 }
 
 // ---------------------------------------------------------------
@@ -1293,6 +1315,7 @@ const BASE_STYLE = `
   .prefs-actions{display:flex; gap:14px; margin:10px 0;}
   .prefs-actions a{font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--stamp); text-decoration:underline; cursor:pointer;}
   .saved-banner{background:var(--live-dim); color:#bfe6cf; border-radius:6px; padding:10px 14px; font-size:12.8px; margin-bottom:16px;}
+  .promo-banner{background:var(--soon); color:#1a1207; border-radius:6px; padding:12px 16px; font-size:13.2px; font-weight:600; margin-bottom:16px; line-height:1.5;}
 `;
 
 function pageShell(bodyHtml, lang) {
@@ -1428,19 +1451,29 @@ function renderArchiveList(stories, regionByCountryName, englishNameByDisplayNam
     }))
   );
 
+  // Anonymous (email === null) means this request came through while
+  // ARCHIVE_PUBLIC's temporary promo is on and the visitor never logged
+  // in — show a "free for now, subscribe for alerts" banner instead of
+  // "Signed in as ___", and skip the logout button and manage-
+  // preferences link, since neither applies without a real session.
+  const isAnonymous = !email;
+  const identityHtml = isAnonymous
+    ? `<div class="promo-banner">${t(lang, "archive.promoBannerText")} <a href="https://e-invoicingcompliancecorner.com/subscribe.html" style="color:inherit; text-decoration:underline; font-weight:700; white-space:nowrap;">${t(lang, "archive.promoBannerCta")}</a></div>`
+    : `<p class="eyebrow">${t(lang, "archive.signedInAs")} ${escapeHtml(email)}</p>`;
+
   const body = `
   <div class="topbar topbar-wide">
     <a class="back-link" href="https://e-invoicingcompliancecorner.com/einvoicing-compliance-tracker.html" style="margin:0;">${t(lang, "backToTracker")}</a>
-    <form method="POST" action="/members/logout"><button type="submit" class="logout-btn">${t(lang, "logout")}</button></form>
+    ${isAnonymous ? "" : `<form method="POST" action="/members/logout"><button type="submit" class="logout-btn">${t(lang, "logout")}</button></form>`}
   </div>
   <div class="archive-wrap">
     <div class="archive-head">
-      <p class="eyebrow">${t(lang, "archive.signedInAs")} ${escapeHtml(email)}</p>
+      ${identityHtml}
       <h1 class="title">${t(lang, "archive.title")}</h1>
       <p class="sub" style="margin-bottom:18px;">${t(lang, "archive.issuesPublished")(stories.length)}</p>
     </div>
 
-    <p class="fineprint" style="margin:0 0 16px;"><a href="/members/preferences" style="color:var(--stamp); text-decoration:underline;">${t(lang, "archive.managePrefs")}</a></p>
+    ${isAnonymous ? "" : `<p class="fineprint" style="margin:0 0 16px;"><a href="/members/preferences" style="color:var(--stamp); text-decoration:underline;">${t(lang, "archive.managePrefs")}</a></p>`}
 
     <div class="archive-toolbar">
       <input type="text" id="archiveSearch" class="archive-search" placeholder="${t(lang, "archive.searchPlaceholder")}">
@@ -1589,7 +1622,7 @@ function renderSimpleMessage(title, subtext, lang) {
   return pageShell(body, lang);
 }
 
-function renderIssue(story, lang) {
+function renderIssue(story, email, lang) {
   lang = lang || "en";
   const countryTagsHtml = (story.countries || []).length
     ? `<div class="issue-country-tags" style="margin:10px 0 0;">${story.countries.map((c) => `<span>${escapeHtml(c.displayName)}</span>`).join("")}</div>`
@@ -1618,12 +1651,18 @@ function renderIssue(story, lang) {
     { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" }
   );
   const accuracyNoteHtml = `<p style="margin-top:14px; font-size:12px; color:#8a7d5a; font-style:italic;">${escapeHtml(t(lang, "archive.accuracyNote")(formattedDate))}</p>`;
+  const isAnonymous = !email;
+  const promoBannerHtml = isAnonymous
+    ? `<div class="promo-banner">${t(lang, "archive.promoBannerText")} <a href="https://e-invoicingcompliancecorner.com/subscribe.html" style="color:inherit; text-decoration:underline; font-weight:700; white-space:nowrap;">${t(lang, "archive.promoBannerCta")}</a></div>`
+    : "";
+
   const body = `
   <div class="topbar">
     <a class="back-link" href="/members/archive" style="margin:0;">${t(lang, "backToArchive")}</a>
-    <form method="POST" action="/members/logout"><button type="submit" class="logout-btn">${t(lang, "logout")}</button></form>
+    ${isAnonymous ? "" : `<form method="POST" action="/members/logout"><button type="submit" class="logout-btn">${t(lang, "logout")}</button></form>`}
   </div>
   <div class="wrap">
+    ${promoBannerHtml}
     <div class="card">
       <p class="eyebrow">${escapeHtml(story.date)}</p>
       <h1 class="title">${escapeHtml(story.title)}</h1>

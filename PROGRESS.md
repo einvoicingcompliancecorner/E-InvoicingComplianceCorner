@@ -215,9 +215,67 @@ VATupdate's coverage — not fabricated):
 - **Not yet run against production D1, and the two Workers have not been
   redeployed** — see the exact commands under "Open items" below.
 
+### Resources menu + temporary open newsletter archive (code complete, deploy pending)
+
+Two related tracker/members-worker changes, built together:
+
+- The tracker's top-level "Deep Dives" button is now a "Resources" menu,
+  with Deep Dives nested inside it as a flyout submenu item (opens
+  beside the Resources panel on desktop; collapses to an inline
+  accordion under 640px). Leaves room to add the previously-discussed
+  accredited-providers list and RFI template as siblings later without
+  a new top-level button each time.
+- The newsletter archive is unhidden and added as a second item in the
+  new Resources menu, linking straight to
+  `https://members.e-invoicingcompliancecorner.com/members/archive`.
+  It's deliberately open to anyone for a period of time — no login or
+  active subscription required — to build page traction, controlled by
+  a new `ARCHIVE_PUBLIC` var in `members-worker/wrangler.toml`
+  (currently `"true"`). Anonymous visitors see a "free for a limited
+  time — subscribe for email alerts" banner in place of the usual
+  "Signed in as ___" line and don't get the logout button or manage-
+  preferences link; genuine signed-in subscribers see the normal view
+  either way, unaffected.
+- To end the promo: set `ARCHIVE_PUBLIC = "false"` (or delete the line)
+  in `members-worker/wrangler.toml` and redeploy. It can also be
+  flipped in the Cloudflare dashboard (Workers & Pages → eicc-members →
+  Settings → Variables) for an instant effect with no redeploy — but
+  the next `wrangler deploy` from this repo will resync from whatever's
+  in `wrangler.toml`, overwriting a dashboard-only change. Fine for a
+  quick end-of-day flip; update the file too if you want it to stick.
+- fr.json's "Education" menu label was "Ressources" before this change
+  (a reasonable French rendering on its own, chosen by whoever set up
+  that translation) — renamed to "Formation" to free up "Ressources"
+  for the new Resources menu itself, avoiding two identically-labelled
+  buttons in the French UI.
+- **Not yet deployed** — `site-worker` needs a redeploy to pick up the
+  tracker/i18n changes, and `members-worker` needs one for both the new
+  `ARCHIVE_PUBLIC` var and the archive-rendering changes. See "Open
+  items" below for the exact commands.
+
 ---
 
 ## Open items / next steps
+
+### Resources menu + open archive: redeploy (code is done, only the ship step remains)
+
+From your own machine (this sandbox can't reach the Cloudflare API):
+
+```
+cd members-worker
+wrangler deploy
+
+cd ../site-worker
+wrangler deploy
+```
+
+Then spot-check: the tracker's topbar shows "Resources" (not "Deep
+Dives") as a top-level button, with Deep Dives opening as a flyout
+inside it; a "Newsletter archive" link also appears in Resources and
+opens `/members/archive` without prompting for login; the archive page
+shows the free-access promo banner instead of "Signed in as"; and
+logging in as a real subscriber still shows the normal signed-in view
+with no promo banner.
 
 ### Luxembourg: run migrations + redeploy (highest priority — code is done, only the ship step remains)
 
@@ -269,14 +327,18 @@ on the tracker, subscribe, and education pages.
 - Pricing reconsideration ($5/$8 vs. current)
 - Vendor registration/advertising feature (country-matched banners
   alongside email alerts, "gold member" placement)
-- Resources menu reorganization: move Deep Dives under it, add a
-  published list of accredited sources, add a vendor-assessment RFI
-  template
+- Resources menu reorganization: Deep Dives has been moved under it
+  (see "Resources menu + temporary open newsletter archive" above,
+  deploy pending) — still open: a published list of accredited
+  sources, and a vendor-assessment RFI template, both as further
+  Resources menu items
 
 ### Smaller pending items
 - Lemon Squeezy still in test mode — "Copy to Live Mode" not yet done;
-  Subscribe/Archive links still marked "Coming Soon" on the tracker
-  until this happens
+  the Subscribe link is still marked "Coming Soon" on the tracker until
+  this happens. (The Archive link is no longer gated on this — it's now
+  live and open to everyone via the temporary ARCHIVE_PUBLIC promo, see
+  above.)
 - Cloudflare Web Analytics not yet set up
 - Content-monitoring Worker (designed in `CONTENT-MONITORING.md`, never
   built)

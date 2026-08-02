@@ -475,6 +475,12 @@
             </button>
             <div class="dropdown-panel wide dd-flyout-panel" id="deepDivePanel"></div>
           </div>
+          <!-- Free, unauthenticated preview while ARCHIVE_PUBLIC is on in
+               members-worker (see wrangler.toml) -- no login required to
+               browse. Revert to the coming-soon treatment used elsewhere
+               on this site if/when the promo period ends and the archive
+               goes back to being subscriber-only. -->
+          <a class="dropdown-item" href="https://members.e-invoicingcompliancecorner.com/members/archive"><span class="dd-icon">📰</span><span data-i18n="menu.archive">Newsletter archive</span></a>
         </div>
       </div>
       <div class="actions-menu" id="educationMenu">
@@ -491,14 +497,16 @@
         <button class="menu-trigger" id="menuTrigger" data-i18n="menu.menu">Menu</button>
         <div class="dropdown-panel" id="dropdownPanel">
           <button class="dropdown-item" id="ddAbout"><span class="dd-icon">ℹ️</span><span data-i18n="menu.about">About this site</span></button>
-          <!-- TEMPORARY: both items below disabled with class="coming-soon"
-               and hrefs removed while Lemon Squeezy account is in test
-               mode, not yet live. Restore both hrefs (subscribe.html, and
-               https://members.e-invoicingcompliancecorner.com/members),
-               remove class="coming-soon" from both, and revert the
-               data-i18n text back to the original wording once live. -->
+          <!-- TEMPORARY: disabled with class="coming-soon" and href
+               removed while Lemon Squeezy account is in test mode, not
+               yet live. Restore href="subscribe.html", remove
+               class="coming-soon", and revert the data-i18n text back
+               to the original wording once live. (Newsletter archive
+               used to be here too -- it now has its own live link
+               under Resources, since it's open to everyone for free
+               during a temporary promo; see wrangler.toml's
+               ARCHIVE_PUBLIC comment.) -->
           <span class="dropdown-item coming-soon"><span class="dd-icon">✉</span><span data-i18n="menu.subscribe">Subscribe (Coming soon)</span></span>
-          <span class="dropdown-item coming-soon"><span class="dd-icon">🔒</span><span data-i18n="menu.archive">Newsletter archive (Coming soon)</span></span>
           <a class="dropdown-item" href="feedback.html"><span class="dd-icon">💬</span><span data-i18n="menu.feedback">Give feedback</span></a>
         </div>
       </div>

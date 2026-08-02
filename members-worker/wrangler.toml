@@ -25,6 +25,25 @@ FROM_EMAIL = "noreply@e-invoicingcompliancecorner.com"
 # Leave as-is if you haven't set up the one-time tier yet.
 ONE_TIME_VARIANT_ID = "1962239"
 
+# Temporary promo toggle (added 2 August 2026): while "true", the
+# newsletter archive (/members/archive and /members/archive/:slug) is
+# viewable by anyone, with no login or active subscription required —
+# a deliberate, time-limited exception to the normal requireSession()
+# gate, to build page traffic. Anonymous visitors see a "free for a
+# limited time, subscribe for alerts" banner instead of the usual
+# "Signed in as ___" line; real subscribers who ARE logged in still
+# see their normal signed-in view either way.
+#
+# To end the promo: set this to "false" (or delete the line) and run
+# `wrangler deploy` again. You can also flip it in the Cloudflare
+# dashboard (Workers & Pages → eicc-members → Settings → Variables)
+# for an IMMEDIATE effect with no redeploy — but note the next time
+# anyone runs `wrangler deploy` from this repo, it will resync from
+# whatever value is written here, overwriting a dashboard-only change.
+# So a dashboard toggle is fine for a quick end-of-day flip, but if
+# you want it to stick permanently, update this file too.
+ARCHIVE_PUBLIC = "true"
+
 # ----------------------------------------------------------------
 # KV namespaces — create these with `wrangler kv namespace create`
 # (see README, Step 2) and paste the IDs it gives you back here.
