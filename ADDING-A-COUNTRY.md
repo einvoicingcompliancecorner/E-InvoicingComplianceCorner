@@ -1,209 +1,192 @@
 # Adding a New Country to the Site — Runbook
 
-> **Note (updated 2 August 2026):** Deep-dive pages are no longer static
-> HTML files — all 31 countries are now rendered dynamically from D1 (see
-> `DEEP-DIVE-MIGRATION-CHECKLIST.md`). **Phase 2 below is obsolete** —
-> don't create a new static `country-slug.html` file for a new country.
-> Instead, follow `DEEP-DIVE-MIGRATION-CHECKLIST.md`'s per-country content
-> checklist to write the deep-dive content directly into D1. Phases 1, 3,
-> 4, 5, and 6 below are still accurate as written — the tracker itself,
-> `countries.js`, the members-worker touchpoints, translations, and the
-> hardcoded-count problem are all still static/hand-edited and unaffected
-> by the deep-dive cutover. (The cutover is deployed and live as of
-> 2 August 2026 — see `PROGRESS.md` for current status.)
+> Rewritten 2 August 2026, superseding the original static-era runbook
+> and its accumulated correction notes. Three architecture changes made
+> the old version materially wrong: **Stage 4** (deep-dive pages render
+> from D1, not static HTML), **migration 198 + the members-worker
+> country refactor** (regions, translated names, picker membership, and
+> deep-dive slugs all live in D1's `countries`/`country_translations`
+> tables — the three hardcoded copies in `members-worker/src/index.js`
+> are gone), and **Stage 5** (the tracker board itself, and its ES/DE/FR
+> milestone translations, render from D1 at request time). The result:
+> most of a country addition is now **one set of D1 migrations**, and
+> members-worker needs no changes at all.
 
-This document exists because adding one country touches far more places than
-it should. Follow this checklist in order rather than relying on memory —
-several of these steps are easy to miss and won't cause an obvious error,
-just a silent inconsistency (a country showing up untranslated in exactly
-one place, a stat that still says "29" after you've added a 30th, etc.).
-
-Work through the phases in order. Each phase lists exactly which file(s)
-to touch and what to put in them.
+Follow the phases in order. The failure mode this doc guards against is
+unchanged: silent inconsistency, not errors — a country appearing
+untranslated in exactly one place, or a stat still saying "32" after
+you've added a 33rd.
 
 ---
 
 ## Before you start
 
 Decide up front:
-- **How many DATA entries does this country need?** Some mandates roll out
-  in a single milestone; others phase in over several waves (like Saudi
-  Arabia's Wave 23/24, or the UAE's pilot → ASP deadline → Phase 1 → Phase 2).
-  Plan all of them now so you're not retrofitting the deep dive later.
-- **Which region does it belong to?** Europe / Middle East / Asia-Pacific /
-  Americas. This must match exactly (case and spelling) everywhere below.
-- **The exact English country name you'll use everywhere.** Pick it once,
-  spell it identically in every file. A mismatch (e.g. "Qatar" vs "State of
-  Qatar") anywhere in this list will silently break matching between the
-  subscribe picker, the members-worker preferences, and the notification
-  system's country-tagging.
+- **How many tracker milestones does this country need?** Some mandates
+  are one milestone; others phase in over waves (Saudi Arabia, UAE,
+  Luxembourg's 4 entries). Plan them all now. Milestones that should
+  appear on the main board get `on_tracker = 1`; deep-dive-timeline-only
+  context entries (anchors, historical steps) stay `0`.
+- **Which region?** Europe / Middle East / Asia-Pacific / Americas —
+  exact case and spelling, everywhere.
+- **The exact English country name.** Pick once, spell identically in
+  every file and migration. A mismatch silently breaks matching between
+  the subscribe picker, preferences, and story tagging.
+- **The URL slug.** Usually lowercase-hyphenated, but abbreviations are
+  fine (`uae`, `uk`) — it's an explicit column, not a derived transform.
 
 ---
 
-## Phase 1 — Core site data
+## Phase 1 — D1 migrations (the bulk of the work)
 
-### 1a. Main tracker — `einvoicing-compliance-tracker.html`
-- Add one object per milestone to the `DATA` array (search `const DATA = [`).
-  Each needs: `id`, `country`, `flag`, `code`, `region`, `system`, `date`,
-  `desc`, `actions[]`, `portals[{label,url}]`. Use a short, unique `id`
-  prefix for the country (e.g. `qa-` for Qatar), matching the pattern of
-  existing entries like `sa-wave23`, `uae-phase1`.
-- Add an entry to the `DEEP_DIVES` map (search `const DEEP_DIVES = {`):
-  `"CountryName": "/country-slug"` — no `.html`, and a leading slash. This
-  changed 2 August 2026 when the static per-country pages were retired in
-  favor of dynamic D1-backed rendering (see `DEEP-DIVE-MIGRATION-CHECKLIST.md`).
-- **Do not** touch the stats strip or sidebar — both are computed live from
-  `DATA`, so they update automatically.
+Number them from the next free number in `members-worker/migrations/`
+(check the directory; don't trust any doc's "next is NNN" line). Follow
+Luxembourg's set (191–197) as the reference shape, plus the Stage 5
+columns. **Validate with the in-memory full-chain replay before touching
+live D1 — this is non-negotiable and has caught real bugs.**
 
-### 1b. Shared country list — `countries.js`
-- Add the country name to the correct region's array. This file is the
-  single source of truth for the subscribe page's country picker.
-
----
-
-## Phase 2 — The deep-dive page
-
-**Superseded 2 August 2026** — deep-dive pages are no longer static HTML
-files. Don't create a `country-slug.html` file. Instead, write the same
-content (compliance model classification, timeline, technical specs,
-portals, related links — this is still genuine content writing, not a
-quick data edit; budget real time for it) directly into D1, following
-`DEEP-DIVE-MIGRATION-CHECKLIST.md`'s per-country content-extraction and
-schema checklist. Use an existing migrated country as a content template
-the same way this phase used to point at an existing static page — pick
-one with a similar compliance model if possible (e.g. Saudi Arabia's for
-another clearance-model Gulf country).
-
----
-
-## Phase 3 — The members-worker (a separate codebase)
-
-File: `members-worker/src/index.js`
-
-- **`COUNTRIES_BY_REGION`** — a hardcoded duplicate of `countries.js` (Workers
-  can't import external JS files). Add the country to the same region here,
-  by hand. If you skip this, the country appears on the public subscribe
-  page but not in the logged-in preferences page — a real, easy-to-miss
-  inconsistency.
-- **`COUNTRY_NAME_TRANSLATIONS`** — add the ES/DE/FR name for the country.
-  Double-check the actual local name isn't just the English name
-  copy-pasted three times — get this from a real source, not assumption.
-  **This is the one genuine duplicate the D1 migration didn't reach** — see
-  Phase 4 below for why the other two copies no longer need hand-editing.
-- **`COUNTRY_DEEP_DIVE_SLUGS`** — added after this runbook was first written,
-  as part of making the newsletter archive's source/deep-dive links
-  auto-rendered rather than hand-embedded. Add `"CountryName": "country-slug"`
-  here too, or any future newsletter story tagged with this country will
-  silently render with no deep-dive link at all — no error, it just won't
-  appear.
-
----
-
-## Phase 4 — Country name translations
-
-**As of the D1 migration, this is genuinely simpler than it used to be —
-only worth two separate updates now, not three.**
-
-1. **D1's `countries` and `country_translations` tables** — insert the new
-   country (code, English name, region) and its ES/DE/FR translated names.
-   This single insert now powers **three** things at once: the tracker's
-   own `i18n/*.json` (regenerated via `generate_files.py`), the subscribe
-   page's `i18n/*-subscribe.json` (same regeneration), and the newsletter
-   archive's own country-tag display and deep-dive-link rendering. This
-   used to be two separate hand-edited JSON files plus a third hardcoded
-   copy — now it's one D1 insert plus running the generation script.
-
-   ```bash
-   npx wrangler d1 execute eicc-content --remote --file=./migrations/XXX_add_country.sql
-   cd members-worker && python3 migrations/generate_files.py --remote --out i18n-generated
-   python3 migrations/compare_generated.py   # confirm nothing else changed unexpectedly
-   # then copy the genuinely new/changed files from i18n-generated/ into the real i18n/ folder
+1. **Country row + name translations**
+   ```sql
+   INSERT INTO countries (code, name_en, region, slug, in_picker)
+     VALUES ('XX', 'CountryName', 'Region', 'country-slug', 1);
+   INSERT INTO country_translations (country_id, lang, display_name)
+     SELECT id, 'en', 'CountryName' FROM countries WHERE code = 'XX';
+   -- + es / de / fr rows (real translations, not the English name
+   --   copy-pasted; verify against a real source)
    ```
+   `slug` NULL would mean "no deep-dive page" (only European Union
+   today); `in_picker = 0` would mean "story-taggable but not offered in
+   the subscribe/preferences checklists" (also EU only). A normal new
+   country wants a slug and `in_picker = 1`.
 
-2. **`members-worker/src/index.js`'s `COUNTRY_NAME_TRANSLATIONS`** — still a
-   separate hardcoded copy (see Phase 3). This is the one piece of the old
-   triple-duplication that D1 hasn't absorbed, since the preferences page
-   reads from this dictionary directly rather than from D1.
+   **This one insert now powers:** the Deep Dives menu + flyout, the
+   sidebar link, the preferences page's checkbox (grouped, translated),
+   the subscribe/archive country handling, and newsletter stories'
+   auto-rendered deep-dive links. None of those are separate edits
+   anymore.
 
-### New DATA entries also need their own translations
-Each new milestone you added to `DATA` in Phase 1 needs a matching entry
-added to `i18n/es-data.json`, `de-data.json`, and `fr-data.json`, keyed by
-the same `id` you used in `DATA`. Same pattern as the other entries —
-`{ "system": "...", "desc": "...", "actions": ["...", "..."] }`. **This
-part is unrelated to the D1 migration and still needs hand-editing** —
-D1 currently covers page-chrome translations and newsletter stories, not
-the tracker's own per-milestone DATA content.
+2. **Milestones + translations** (tracker board and deep-dive timeline)
+   - `milestones`: `id` (short country prefix, e.g. `qa-b2b-wave1`),
+     `country_id`, `date`, `anchor`, `source_url`, **`on_tracker`**
+     (1 = shows on the main board), **`portals`** (JSON array of
+     `{label,url}` — every current board entry has at least one),
+     **`confidence`** (`'expected'` for announced-but-unlegislated
+     dates, renders the "Expected — not final" badge; else NULL).
+   - `milestone_translations`: en/es/de/fr rows with `system`, `desc`,
+     `actions` (JSON array). **The tracker board reads these from D1 at
+     request time (Stage 5)** — there are no `-data.json` files to edit.
 
-Run the same cross-check used throughout this project before moving on:
+3. **Deep-dive content** — follow `DEEP-DIVE-MIGRATION-CHECKLIST.md`'s
+   per-country schema checklist (pages, stats, cards, steps, portals,
+   lifecycle cards, optional penalty rows, the `mandate_summary` tile,
+   all with ES/DE/FR translations). This is genuine content writing —
+   budget real time. Use an existing country with a similar compliance
+   model as the template.
 
-```python
-import re, json
-html = open('einvoicing-compliance-tracker.html').read()
-# confirm every new id has a matching key in each -data.json file
+4. **(Recommended) A launch story** — a sourced newsletter story tagged
+   to the country (see 196–197 for the shape), so subscribers following
+   it actually hear about it. Its deep-dive link renders automatically
+   from the slug column.
+
+---
+
+## Phase 2 — The remaining hand-edited files
+
+These are the only per-country manual touchpoints left, each with a
+documented reason to exist:
+
+- **`countries.js`** — add the name to the correct region array. Feeds
+  the subscribe page's picker (a static page that can't query D1). Keep
+  in sync with `in_picker = 1` rows.
+- **`shared/deep-dive-render.mjs`'s `COUNTRY_DEEP_DIVE_SLUGS`** — add
+  `"CountryName": "country-slug"`. This is site-worker's synchronous
+  routing table (decides whether `/something` is a country page before
+  any D1 round-trip) and feeds the canonical-URL tag. Must match the D1
+  `slug` exactly.
+- **`i18n/{en,es,de,fr}.json` `countryNames`** — used by the tracker's
+  client-side `translateCountry`. Regenerate from D1 rather than
+  hand-editing where possible:
+  ```bash
+  cd members-worker && python3 migrations/generate_files.py --remote --out i18n-generated
+  python3 migrations/compare_generated.py   # confirm only expected diffs
+  # copy the genuinely changed files into the real i18n/ folder
+  ```
+- **Fallback snapshots (optional, recommended occasionally):** the
+  tracker HTML's `const DATA` / `const DEEP_DIVES` blobs and the
+  `i18n/*-data.json` files are served from D1 on the live site and only
+  render if D1 fails. They don't need updating per country — but if
+  they've drifted far, refresh them so a mid-outage fallback isn't
+  ancient.
+
+**members-worker: nothing.** No file in it needs touching for a new
+country.
+
+---
+
+## Phase 3 — The hardcoded jurisdiction-count problem
+
+Still the step most likely to be missed. The tracker's own stat strip
+computes from live data, but literal prose counts do not:
+
+- `subscribe.html` benefit strip, the education pages, site meta
+  descriptions — search every HTML file for the current literal count
+  (e.g. `32`) and update every hit.
+- The same numbers inside all four languages' i18n JSON prose.
+- **D1's `translations` table** — keys like `brand.description`,
+  `benefits.intro`, and education card bodies hold the count in prose.
+  Update them **via a migration**, not just in live files: migration 024
+  exists because count updates were once applied to live files only, and
+  `generate_files.py` faithfully regenerated the stale D1 text back over
+  them.
+
+---
+
+## Phase 4 — Ship
+
+```bash
+cd members-worker
+wrangler d1 execute eicc-content --remote --file=migrations/NNN_....sql   # each, in order
+cd ../site-worker && wrangler deploy    # ships the static-asset edits (countries.js, i18n, counts)
 ```
 
----
-
-## Phase 5 — The hardcoded "29" problem
-
-**This is the step most likely to get missed entirely.** The main tracker's
-own stat strip is computed dynamically from `DATA` and updates itself —
-but several other pages have the country count hardcoded as literal prose,
-and none of them auto-update:
-
-- `subscribe.html` — the benefit stat strip ("29 Jurisdictions tracked")
-- At least four of the five education pages — phrases like "each of the 29
-  jurisdictions tracked here"
-- Possibly `privacy-policy.html` — check for a mention
-
-Search every HTML file for the literal string `29` and update each hit to
-the new total. Do this for every one of the four languages' translation
-JSON files too, wherever that number appears in translated prose (not just
-the English source).
+D1-rendered surfaces (board, deep-dive page, menus, preferences,
+archive links) pick the country up within the 5-minute edge cache — no
+deploy needed for those. The site-worker deploy is only for the Phase
+2/3 static-file edits. If any migration errors, don't trust Wrangler's
+rollback claim — verify with direct `SELECT`s before re-running, and
+mind autoincrement-PK tables where a re-run genuinely duplicates rows
+(see the Luxembourg 193 precedent in `PROGRESS.md`).
 
 ---
 
-## Phase 6 — Testing checklist
+## Phase 5 — Testing checklist
 
-Work through this in order after all of the above:
-
-- [ ] Main tracker: country appears in the region filter, shows up in the
-      timeline, appears in the sidebar's government portals list
-- [ ] Deep Dives menu includes the new country, links to the right page
-- [ ] The deep-dive page loads, and its "← Back to global tracker" link works
-- [ ] Subscribe page's country picker shows the country, correctly
-      translated, in all four languages
-- [ ] members-worker's `/members/preferences` page shows the same country,
-      same translations
-- [ ] Every "29" (or whatever the old count was) is now the new count,
-      across every language
-- [ ] Re-run the key cross-check script against each new/edited JSON file —
-      catches typos in `data-i18n` keys before they become silent gaps
-- [ ] If the country's mandate is genuinely newsworthy, plan to mention it
-      (with a `countries` tag) in the next monthly newsletter issue, so the
-      notification system's country-matching actually reaches subscribers
-      who'll care
+- [ ] Main tracker: milestones on the board (both the arrivals view and
+      list view), country in the region filter and sidebar
+- [ ] Deep Dives menu + flyout include it (alphabetical within region),
+      linking to `/country-slug`
+- [ ] `/country-slug` and `/country-slug?lang=fr` render; "← Back to
+      global tracker" works; the in-page panel opens from the sidebar
+- [ ] Subscribe picker shows it, translated, in all four languages
+- [ ] `/members/preferences` shows it (this now comes from D1
+      automatically — if it's missing, the country row or a
+      `country_translations` row is wrong, not a Worker file)
+- [ ] A story tagged to it shows the auto-rendered deep-dive link in the
+      archive
+- [ ] Every old count is the new count, in every language, **and** the
+      D1 `translations` rows match (round-trip `generate_files.py` +
+      `compare_generated.py` to prove it)
+- [ ] Board milestone cards translate when switching language (proves
+      the `milestone_translations` rows landed)
 
 ---
 
-## Known architectural debt (partially resolved, one piece remains)
+## Remaining architectural debt
 
-**Update, post-D1-migration:** two of the original three duplicate copies
-are now genuinely gone. The D1 `countries`/`country_translations` tables
-are the actual single source of truth for the tracker and subscribe page's
-country names, via the `generate_files.py` build step (see
-`D1-MIGRATION-PLAN.md` and `NEWSLETTER-ARCHIVE-REDESIGN.md` for how and
-why this was built). What used to be described here as a speculative fix
-("could the members-worker fetch the tracker's JSON at request time?") is
-no longer the relevant question — a real database ended up being the
-actual answer.
-
-**One genuine duplicate remains**: `members-worker/src/index.js`'s
-`COUNTRY_NAME_TRANSLATIONS` object still exists as a separate hardcoded
-copy, since the logged-in preferences page reads from it directly rather
-than querying D1. This is a small, known gap — the Worker already has a
-live D1 binding (`env.eicc_content`) it uses for stories, so having the
-preferences page query `country_translations` directly instead of the
-hardcoded object is a genuinely small, well-scoped piece of remaining
-work, not a speculative one. Worth doing if country additions become
-frequent enough that this one remaining hand-edit starts causing drift.
+The per-country hand-edits are down to the three Phase 2 items. Each is
+deliberate: `countries.js` because a static page can't query D1, the
+shared slug map because routing is synchronous by design, and the i18n
+`countryNames` because static pages translate client-side — though that
+one at least regenerates from D1 rather than being independently
+authored. Collapsing any further means changing those design choices,
+not just deleting a duplicate.
