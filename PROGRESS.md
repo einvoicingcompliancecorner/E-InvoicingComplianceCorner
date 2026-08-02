@@ -306,6 +306,19 @@ Two related tracker/members-worker changes, built together:
     absolute URL, and close restores the board view. A second test
     confirms the missing-`.archive-wrap` fallback path is reached
     without an unrelated exception first.
+  - **Bug fix (same day):** opening a country deep dive while the
+    archive was already open left the archive's old content sitting
+    there too, visible underneath the newly-opened deep dive —
+    `openArchive()` already closed a deep dive if one was open first,
+    but `openDeepDive()` never had the reverse guard, so the two
+    panels (siblings in the DOM, both `display:''` when "open") could
+    both end up visible at once. Fixed by adding the same
+    `if(archiveOpen) closeArchive(...)` guard to the top of
+    `openDeepDive()`, mirroring the one already in `openArchive()`.
+    Verified with a jsdom test reproducing the exact repro steps (open
+    archive, then open a country) confirming `archiveView` ends up
+    hidden and cleared, not just the new deep-dive panel showing on
+    top of stale content.
   - **Bug fix (same day):** the embedded archive defaulted to the left
     edge instead of centering. The standalone archive page centers
     `.archive-wrap` via `body{display:flex; align-items:center;}` —

@@ -2009,6 +2009,12 @@ async function openDeepDive(slug, opts){
   const panel = document.getElementById('countryDeepDiveView');
   const topbarBrand = document.querySelector('.topbar-brand');
   currentDeepDiveSlug = slug;
+  // Mutually exclusive with the newsletter archive being open -- the
+  // reverse of the guard in openArchive(). Without this, opening a
+  // country deep dive while the archive was already showing left the
+  // archive's old content sitting there too, visible underneath the
+  // deep dive panel (both are display:'' siblings in the DOM).
+  if(archiveOpen) closeArchive({ skipHistory: true });
 
   boardView.style.display = 'none';
   // The site name/description/subscriber-perks block pushes real
