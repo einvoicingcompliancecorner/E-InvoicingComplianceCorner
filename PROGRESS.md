@@ -412,6 +412,50 @@ Two unrelated fixes, done together:
   not duplicated); and the new CSS rules are present and correctly
   scoped. Re-ran the existing tracker HTML parse-validity check too.
 
+### Sidebar simplified to a plain country list (2 August 2026, code complete, deploy pending)
+
+The tracker's sidebar ("Jump to portal / Government portals") used to
+show, per country: the name, then a link to every government portal
+for that country, then a separate "Country deep dive →" link — up to
+three lines each, for 32 countries. Simplified on request:
+
+- Renamed the sidebar header (`filters.jumpToPortal` /
+  `filters.governmentPortals`) to "Learn more about / Country
+  compliance legislation", across all 4 languages, plus the mobile
+  toggle button (`filters.mobilePortalsToggle`: "☰ Portals" → "☰
+  Countries") and the matching "Nav tips" copy
+  (`navTips.tip3Title`/`tip3Desc`) that used to describe the sidebar as
+  linking to government portals.
+- Removed the per-country government portal link(s) entirely — they're
+  redundant now that the deep-dive page's own header surfaces the
+  portal link prominently (see the fix above).
+- Removed the separate "Country deep dive →" link; the country name
+  itself is now that link, going straight to `DEEP_DIVES[country]`
+  (e.g. `/spain`). No new click-handling code was needed — the
+  existing generic click-interception logic (`slugFromHref()` in
+  `wireDeepDiveInPagePanel()`) already recognizes any `<a>` whose href
+  matches a known deep-dive slug and opens it in-page, regardless of
+  which element it's attached to.
+- European Union has no deep-dive page of its own (covered by its
+  member states' pages instead) — its row correctly falls back to
+  plain, non-linked text rather than a dead link; every other country
+  (31 of 32) is now a single-line link.
+- Net effect: each country in the sidebar collapsed from up to 3 lines
+  down to 1, so the full list is visible with far less scrolling.
+- Implemented in `renderSidebar()` in `einvoicing-compliance-tracker.html`,
+  plus matching CSS (`.c-name` as a real link with a hover state; the
+  old `.sidebar-portal-link` rule removed as unused). Verified with a
+  jsdom test asserting: the header/toggle text changed; zero
+  `.sidebar-portal-link` elements remain; every country row has
+  exactly one child element; exactly one country (European Union)
+  falls back to plain text while the other 31 are real links; Spain's
+  link points to `/spain`; and clicking a country name in the sidebar
+  correctly triggers the existing in-page deep-dive panel (board view
+  hides, deep-dive view shows) via the pre-existing click-interception
+  logic, unchanged. Re-ran the full existing archive/menu/topbar test
+  suite afterward — no regressions. Re-ran the tracker HTML
+  parse-validity and inline-script syntax checks too.
+
 ---
 
 ## Open items / next steps

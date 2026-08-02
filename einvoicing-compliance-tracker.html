@@ -313,17 +313,16 @@
     color:var(--muted); margin:0 0 8px; display:flex; align-items:center; gap:8px;
   }
   .sidebar-continent h3::after{content:""; flex:1; height:1px; background:var(--line);}
-  .sidebar-country{margin-bottom:10px;}
+  .sidebar-country{margin-bottom:7px;}
   .sidebar-country .c-name{
-    font-size:13.5px; font-weight:600; display:flex; align-items:center; gap:7px; margin-bottom:3px; color:var(--text-lo);
+    font-size:13.5px; font-weight:600; display:flex; align-items:center; gap:7px; color:var(--text-lo); text-decoration:none;
   }
   .sidebar-country .c-name .flag{font-size:15px;}
-  .sidebar-portal-link{
-    display:flex; align-items:center; gap:6px;
-    font-size:12px; color:var(--muted); text-decoration:none; padding:3px 0 3px 22px;
-  }
-  .sidebar-portal-link:hover{color:var(--soon);}
-  .sidebar-portal-link::before{content:"↗"; font-size:11px;}
+  /* Only countries with a deep-dive page render <a class="c-name">
+     (see renderSidebar()) -- give those a hover affordance so it
+     reads as clickable; the rare plain-text <div class="c-name">
+     fallback (European Union, no deep dive yet) is left alone. */
+  .sidebar-country a.c-name:hover{color:var(--soon);}
 
   .menu-toggle{
     display:none; position:fixed; top:16px; left:16px; z-index:60;
@@ -427,13 +426,13 @@
 </head>
 <body>
 
-<button class="menu-toggle" id="menuToggle" data-i18n="filters.mobilePortalsToggle">☰ Portals</button>
+<button class="menu-toggle" id="menuToggle" data-i18n="filters.mobilePortalsToggle">☰ Countries</button>
 <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
 <aside class="sidebar" id="sidebar">
   <div class="sidebar-head">
-    <p class="sidebar-eyebrow" data-i18n="filters.jumpToPortal">Jump to portal</p>
-    <h2 data-i18n="filters.governmentPortals">Government portals</h2>
+    <p class="sidebar-eyebrow" data-i18n="filters.jumpToPortal">Learn more about</p>
+    <h2 data-i18n="filters.governmentPortals">Country compliance legislation</h2>
   </div>
   <nav id="sidebarNav"></nav>
 </aside>
@@ -1811,34 +1810,37 @@ function refreshAll(){
 const REGION_ORDER = ['Europe','Middle East','Asia-Pacific','Americas'];
 
 function renderSidebar(){
-  // Group by region -> country, merging unique portals per country
+  // Group by region -> country -- just the country list and its flag
+  // now. Per-country government portal links and the separate "deep
+  // dive" link were both removed here: the deep-dive page itself
+  // already surfaces the government portal link prominently in its
+  // own header (see shared/deep-dive-render.mjs), so repeating it in
+  // the sidebar was redundant, and the country name itself is now the
+  // link straight to that deep dive -- collapsing what used to be up
+  // to three lines per country (name, portal link(s), deep-dive link)
+  // down to one, so the whole country list is visible at a glance.
   const grouped = {};
   DATA.forEach(e=>{
     grouped[e.region] = grouped[e.region] || {};
-    const g = grouped[e.region];
-    if(!g[e.country]) g[e.country] = { flag:e.flag, portals:[] };
-    e.portals.forEach(p=>{
-      if(!g[e.country].portals.some(existing=>existing.url===p.url)){
-        g[e.country].portals.push(p);
-      }
-    });
+    if(!(e.country in grouped[e.region])) grouped[e.region][e.country] = e.flag;
   });
 
   const regions = REGION_ORDER.filter(r=>grouped[r]);
   const i18n = window.EICC_I18N;
-  const deepDiveLabel = (i18n && i18n.t('cardLabels.countryDeepDive')) || 'Country deep dive →';
   let html = '';
   regions.forEach(region=>{
     const regionLabel = i18n ? i18n.translateRegion(region) : region;
     html += `<div class="sidebar-continent"><h3>${regionLabel}</h3>`;
     const countries = Object.keys(grouped[region]).sort();
     countries.forEach(country=>{
-      const info = grouped[region][country];
+      const flag = grouped[region][country];
       const countryLabel = i18n ? i18n.translateCountry(country) : country;
+      const nameInner = `<span class="flag">${flag}</span>${countryLabel}`;
+      // Countries without a deep-dive page yet (e.g. European Union,
+      // which is covered by its member states' own pages) stay plain
+      // text rather than linking somewhere that doesn't exist.
       html += `<div class="sidebar-country">
-        <div class="c-name"><span class="flag">${info.flag}</span>${countryLabel}</div>
-        ${info.portals.map(p=>`<a class="sidebar-portal-link" href="${p.url}" target="_blank" rel="noopener">${p.label}</a>`).join('')}
-        ${DEEP_DIVES[country] ? `<a class="sidebar-portal-link" style="color:var(--soon);" href="${DEEP_DIVES[country]}">${deepDiveLabel}</a>` : ''}
+        ${DEEP_DIVES[country] ? `<a class="c-name" href="${DEEP_DIVES[country]}">${nameInner}</a>` : `<div class="c-name">${nameInner}</div>`}
       </div>`;
     });
     html += `</div>`;
