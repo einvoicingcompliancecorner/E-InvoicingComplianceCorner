@@ -338,7 +338,7 @@ function renderLangBanner(lang) {
 }
 
 export default {
-  async fetch(request, env) {
+  async fetch(request, env, ctx) {
     const url = new URL(request.url);
     const { lang, shouldSetCookie, cookieDuplicated } = resolveLanguage(request);
     try {
@@ -388,7 +388,7 @@ export default {
         // this safely (it's not linked from anywhere in the UI).
         return handleManualNotificationTrigger(request, env);
       } else if (request.method === "POST" && url.pathname === "/admin/run-content-monitor") {
-        return handleManualContentMonitorTrigger(request, env);
+        return handleManualContentMonitorTrigger(request, env, ctx);
       } else {
         response = new Response("Not found", { status: 404 });
       }
@@ -615,7 +615,7 @@ async function runContentMonitor(env) {
   });
 }
 
-async function handleManualContentMonitorTrigger(request, env) {
+async function handleManualContentMonitorTrigger(request, env, ctx) {
   // Same shared-secret guard as the monthly notification's manual
   // trigger — not linked anywhere, exists for testing without waiting
   // for Monday.
@@ -623,8 +623,17 @@ async function handleManualContentMonitorTrigger(request, env) {
   if (!provided || provided !== env.SESSION_SECRET) {
     return new Response("Unauthorized", { status: 401 });
   }
-  await runContentMonitor(env);
-  return new Response("Content monitor run triggered — check `wrangler tail` for logs, and the digest email for results.", { status: 200 });
+  // Fire-and-forget: with dozens of sources checked sequentially at a
+  // deliberately considerate pace (3s spacing + real fetch time each),
+  // a full run can take several minutes. Blocking the HTTP response on
+  // that would look exactly like a hang (and risks the request timing
+  // out before the job finishes) — respond immediately instead, same
+  // as the real cron path already does via ctx.waitUntil.
+  ctx.waitUntil(runContentMonitor(env));
+  return new Response(
+    "Content monitor run started in the background — a full pass over every active source takes a few minutes (rate-limited on purpose). Watch `wrangler tail` for progress, and check the digest email once it completes.",
+    { status: 202 }
+  );
 }
 
 // ================================================================
