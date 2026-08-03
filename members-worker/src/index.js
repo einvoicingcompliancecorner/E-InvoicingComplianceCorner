@@ -27,6 +27,25 @@ import {
 const SESSION_COOKIE = "eicc_session";
 const SESSION_TTL_SECONDS = 60 * 60 * 24 * 30; // 30 days
 const MAGIC_LINK_TTL_SECONDS = 60 * 15; // 15 minutes
+// Separate, deliberately longer TTL for "convenience" login links sent
+// alongside the primary magic link (the welcome email's archive/
+// preferences buttons, the monthly notification's archive button) --
+// these aren't the urgent sign-in action, they're "come back later and
+// this still just works" links. 7 days is generous without being an
+// effectively-permanent credential like the unsub-notifications token
+// (5 years, a different and narrower purpose).
+const CONVENIENCE_LINK_TTL_SECONDS = 60 * 60 * 24 * 7;
+// Guard for handleVerify's optional ?next= redirect target -- NEVER
+// honour an arbitrary redirect from a query param (open-redirect risk).
+// A same-origin relative path is safe regardless of what follows a
+// known-good prefix (the browser can't be sent off-site by anything
+// that doesn't start with "//" or a scheme, both excluded by requiring
+// an exact match or a single-"/"-prefixed startsWith below) -- so
+// individual story pages (/members/archive/<slug>) are allowed via
+// prefix, not just the two exact index pages.
+function isSafeVerifyNextPath(next) {
+  return next === "/members/archive" || next === "/members/preferences" || next.startsWith("/members/archive/");
+}
 
 // Country data (regions, translated display names, deep-dive slugs,
 // picker eligibility) now lives entirely in D1's countries /
@@ -869,7 +888,13 @@ async function sendMonthlyNotifications(env) {
         }
 
         const unsubToken = await signToken(env.SESSION_SECRET, { email, purpose: "unsub-notifications" }, 60 * 60 * 24 * 365 * 5); // 5-year effective validity — this link should still work whenever someone gets around to clicking it
-        await sendMonthlyNotificationEmail(env, email, monthKey, introText, storiesToShow, unsubToken);
+        // Same convenience-link treatment as the welcome email's archive
+        // button (see CONVENIENCE_LINK_TTL_SECONDS): logs the subscriber
+        // in and lands them on the archive, rather than a bare URL that
+        // only works today because of the temporary ARCHIVE_PUBLIC promo.
+        const archiveToken = await signToken(env.SESSION_SECRET, { email, purpose: "login" }, CONVENIENCE_LINK_TTL_SECONDS);
+        const archiveLink = `${env.SITE_URL}/members/verify?token=${encodeURIComponent(archiveToken)}&next=${encodeURIComponent("/members/archive")}`;
+        await sendMonthlyNotificationEmail(env, email, monthKey, introText, storiesToShow, unsubToken, archiveLink);
         sent++;
       } catch (err) {
         console.error(`Failed to notify ${email}:`, err);
@@ -1187,11 +1212,25 @@ async function handleStartTrial(request, env, lang) {
     company: (form.get("company") || "").toString().trim(),
   });
 
+  // The welcome email's "archive" and "preferences" links use a
+  // separate, longer-lived login token (see CONVENIENCE_LINK_TTL_SECONDS)
+  // rather than a bare /members/... URL -- both pages are session-gated
+  // (archive only appears open today because of the temporary
+  // ARCHIVE_PUBLIC promo; preferences always requires a session), so a
+  // bare link would silently stop working the moment this is read from
+  // a browser without an active session, or once the promo ends. These
+  // links log the subscriber in AND land them on the right page,
+  // working the same way regardless of promo state or how long ago
+  // they signed up (within the 7-day window).
+  const convenienceToken = await signToken(env.SESSION_SECRET, { email, purpose: "login" }, CONVENIENCE_LINK_TTL_SECONDS);
+  const archiveLink = `${env.SITE_URL}/members/verify?token=${encodeURIComponent(convenienceToken)}&next=${encodeURIComponent("/members/archive")}`;
+  const prefsLink = `${env.SITE_URL}/members/verify?token=${encodeURIComponent(convenienceToken)}&next=${encodeURIComponent("/members/preferences")}`;
+
   // Two separate emails, sent in this order so the magic link -- the
   // one thing they actually need to act on right now, with a 15-minute
   // clock -- lands as the newest message in their inbox, sitting above
   // the welcome email rather than being buried under it.
-  await sendWelcomeEmail(env, email, (form.get("firstName") || "").toString().trim(), countries);
+  await sendWelcomeEmail(env, email, (form.get("firstName") || "").toString().trim(), countries, archiveLink, prefsLink);
 
   const token = await signToken(env.SESSION_SECRET, { email, purpose: "login" }, MAGIC_LINK_TTL_SECONDS);
   const link = `${env.SITE_URL}/members/verify?token=${encodeURIComponent(token)}${lang !== "en" ? `&lang=${lang}` : ""}`;
@@ -1215,8 +1254,10 @@ async function handleVerify(request, env, lang) {
   }
 
   const sessionToken = await signToken(env.SESSION_SECRET, { email: payload.email, purpose: "session" }, SESSION_TTL_SECONDS);
+  const requestedNext = url.searchParams.get("next") || "";
+  const redirectTo = isSafeVerifyNextPath(requestedNext) ? requestedNext : "/members/archive";
   const headers = new Headers();
-  headers.set("Location", "/members/archive");
+  headers.set("Location", redirectTo);
   headers.append(
     "Set-Cookie",
     `${SESSION_COOKIE}=${sessionToken}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${SESSION_TTL_SECONDS}`
@@ -1519,14 +1560,16 @@ async function handleFeedback(request, env) {
   // Email is best-effort on top of the durable row — sendViaResend logs
   // failures to wrangler tail; the submitter still gets a success,
   // because their message IS safely stored either way.
+  const feedbackBody = `<p style="font-family:'Courier New',Courier,monospace; font-size:12px; color:#8a7d5a; margin:0 0 14px;">From: ${escapeHtml(email)} &bull; lang: ${escapeHtml(lang)} &bull; ${escapeHtml(now)}</p>
+<h2 style="font-family:Georgia,serif; font-size:18px; color:#241d10; margin:0 0 14px;">${escapeHtml(subject)}</h2>
+<p style="font-size:14px; line-height:1.6; color:#4a4030; white-space:pre-wrap;">${escapeHtml(comments)}</p>`;
+  const feedbackFooter = `<p style="margin:0; font-family:'Courier New',Courier,monospace; font-size:10.5px; color:#8a7d5a;">Internal notification only — reply-to is set to the submitter.</p>`;
   await sendViaResend(env, {
     from: env.FROM_EMAIL,
     to: FEEDBACK_TO,
     reply_to: email,
     subject: `[Feedback] ${subject}`,
-    html: `<p style="font-family:monospace; font-size:12px; color:#666; margin:0 0 12px;">From: ${escapeHtml(email)} &bull; lang: ${escapeHtml(lang)} &bull; ${escapeHtml(now)}</p>
-<h2 style="font-family:Georgia,serif; font-size:18px; margin:0 0 14px;">${escapeHtml(subject)}</h2>
-<p style="font-size:14px; line-height:1.6; white-space:pre-wrap;">${escapeHtml(comments)}</p>`,
+    html: buildEmailShell(feedbackBody, feedbackFooter, buildBoldMastheadHtml()),
   });
   return jsonResponse({ ok: true });
 }
@@ -1589,10 +1632,8 @@ function welcomeLinkCard(title, description, href) {
   </div>`;
 }
 
-async function sendWelcomeEmail(env, email, firstName, countries) {
+async function sendWelcomeEmail(env, email, firstName, countries, archiveLink, prefsLink) {
   const greeting = firstName ? `Hi ${escapeHtml(firstName)},` : "Hi there,";
-  const archiveLink = `${env.SITE_URL}/members/archive`;
-  const prefsLink = `${env.SITE_URL}/members/preferences`;
 
   const educationListHtml = Object.entries(WELCOME_LINKS.education)
     .map(([title, href]) => `<li style="margin:0 0 6px;"><a href="${href}" style="color:#241d10;">${escapeHtml(title)}</a></li>`)
@@ -1655,22 +1696,26 @@ async function sendMagicLinkEmail(env, email, link) {
     from: env.FROM_EMAIL,
     to: email,
     subject: "Your sign-in link — The E-Invoicing Compliance Corner",
-    html: buildEmailShell(body, footer),
+    html: buildEmailShell(body, footer, buildBoldMastheadHtml()),
   });
 }
 
-async function sendMonthlyNotificationEmail(env, email, monthKey, introText, stories, unsubToken) {
-  const archiveLink = `${env.SITE_URL}/members/archive`;
+async function sendMonthlyNotificationEmail(env, email, monthKey, introText, stories, unsubToken, archiveLink) {
   const unsubLink = `${env.SITE_URL}/members/unsubscribe-notifications?token=${encodeURIComponent(unsubToken)}`;
 
   const monthLabel = new Date(monthKey + "-01T00:00:00Z").toLocaleDateString("en-US", { month: "long", year: "numeric", timeZone: "UTC" });
 
-  const storyListHtml = stories
-    .map((s) => {
-      const link = `${env.SITE_URL}/members/archive/${encodeURIComponent(s.id)}`;
-      return `<li style="margin:0 0 8px; font-size:14px; line-height:1.5;"><a href="${escapeHtml(link)}" style="color:#241d10; text-decoration:underline;">${escapeHtml(s.title)}</a></li>`;
-    })
-    .join("");
+  // Same convenience-link treatment as the archive index button --
+  // these individual story links are the actual point of this email,
+  // so it matters even more that they keep working regardless of
+  // ARCHIVE_PUBLIC's state or how many days old the email is (within
+  // the 7-day window) rather than dropping the subscriber at a login
+  // wall right when they've decided to read something.
+  const storyListHtml = (await Promise.all(stories.map(async (s) => {
+    const storyToken = await signToken(env.SESSION_SECRET, { email, purpose: "login" }, CONVENIENCE_LINK_TTL_SECONDS);
+    const link = `${env.SITE_URL}/members/verify?token=${encodeURIComponent(storyToken)}&next=${encodeURIComponent(`/members/archive/${s.id}`)}`;
+    return `<li style="margin:0 0 8px; font-size:14px; line-height:1.5;"><a href="${escapeHtml(link)}" style="color:#241d10; text-decoration:underline;">${escapeHtml(s.title)}</a></li>`;
+  }))).join("");
 
   const body = `
     <p style="margin:0 0 6px; font-family:'Courier New',Courier,monospace; font-size:11px; text-transform:uppercase; letter-spacing:1px; color:#c98a3a;">${escapeHtml(monthLabel)}</p>
@@ -1699,7 +1744,7 @@ async function sendMonthlyNotificationEmail(env, email, monthKey, introText, sto
     from: env.FROM_EMAIL,
     to: email,
     subject: `This month's e-invoicing updates — ${monthLabel}`,
-    html: buildEmailShell(body, footer),
+    html: buildEmailShell(body, footer, buildBoldMastheadHtml()),
   });
 }
 

@@ -1406,6 +1406,54 @@ is one-per-email) and confirm two emails arrive — the welcome email
 first, an honest reflection of any countries chosen at sign-up, all
 links live — then the magic-link email on top of it.
 
+### Consistent email branding + a real archive-link bug caught in the same pass (3 August 2026)
+
+Applied the bold masthead (built for the content monitor, then reused
+for the welcome email) to the two remaining system emails: the
+magic-link email and the monthly notification. The internal feedback
+notification (to Dan) wasn't using `buildEmailShell` at all — wrapped
+it properly too, so all five emails this system ever sends now share
+one consistent visual identity.
+
+**A real, pre-existing bug found while checking "does the archive link
+need to change":** both the welcome email's archive/preferences links
+and the monthly notification's archive button + every individual story
+link were bare `/members/...` URLs. `/members/preferences` has always
+required an active session; `/members/archive` only *appears* to work
+without one today because of the temporary `ARCHIVE_PUBLIC` promo.
+Anyone reading the welcome email on a different device than they
+signed up on, or the monthly notification any time after their last
+login, would hit a login wall on links that looked like they should
+just work — and once the promo ends, this breaks for everyone.
+
+**Fix**: a new `CONVENIENCE_LINK_TTL_SECONDS` (7 days) — the same
+signed-token pattern the unsub-notifications link already used
+successfully, just with a shorter, still-generous window rather than
+that link's near-permanent 5 years. `handleVerify` gained an optional,
+carefully allow-listed `?next=` parameter (`isSafeVerifyNextPath`:
+exact match on `/members/archive` or `/members/preferences`, or a
+same-origin prefix match for individual story pages —
+never an off-site or protocol-relative redirect). Every affected link —
+welcome email's archive and preferences buttons, the monthly
+notification's archive button, and critically its per-story links (the
+actual point of that email) — now signs a real login token instead of
+assuming a session exists, so all of them log the subscriber in and
+land on the right page regardless of `ARCHIVE_PUBLIC`'s state or how
+long ago they last visited (within the 7-day window).
+
+Tested: the open-redirect guard itself (off-site and protocol-relative
+URLs rejected, real internal paths incl. per-story slugs accepted),
+`handleVerify` honouring a safe `next=` and safely falling back to the
+archive for an unsafe one, and the full welcome/monthly-notification
+email content end to end. ~78 checks total across 8 test files, all
+passing.
+
+Deploy: `cd members-worker && wrangler deploy`. Spot-check: sign up
+fresh and confirm both welcome-email buttons (archive, preferences)
+log you in and land correctly even from a browser with no existing
+session; trigger the monthly notification manually and confirm its
+archive button and at least one per-story link do the same.
+
 ## Open items / next steps
 
 ### Ship step outstanding (only one)
