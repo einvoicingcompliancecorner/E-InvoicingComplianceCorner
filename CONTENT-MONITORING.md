@@ -238,8 +238,36 @@ helper, and its Cron Trigger config with a second schedule string.
   isolation), `checkOneSource`'s full state machine (baseline →
   unchanged → changed → failed, verified across real state transitions
   with mocked KV/fetch), the digest HTML's content in both a quiet week
-  and an eventful one, and the `scheduled()` dispatcher choosing the
-  right job by cron string.
+  and an eventful one, the `scheduled()` dispatcher choosing the right
+  job by cron string, and the time-budget/cursor mechanics below.
+
+**A real bug found the hard way, then fixed (3 August 2026):** the
+first live manual-trigger test silently failed — the digest email
+never arrived. `wrangler tail` showed why: *"waitUntil() tasks did not
+complete within the allowed time after invocation end and have been
+cancelled."* Cloudflare only grants `ctx.waitUntil()` a short grace
+period once an HTTP response has already been sent — nowhere near
+enough for a sequential loop over 50+ sources with considerate spacing
+between fetches, which takes several minutes. The run was getting
+silently killed partway through, every time, with no error surfaced
+anywhere a human would see it.
+
+**The fix is a self-imposed time budget, not a tuned delay.** Rather
+than guess at exactly where Cloudflare's undocumented ceiling sits (and
+risk hitting it again under different conditions — slower government
+sites, more sources added later, etc.), the run now polices its own
+clock: it stops itself well before any plausible limit (a conservative
+20-second budget), persists a cursor (the next source's id) in KV, and
+resumes from exactly that point on the *next* run — cron or manual —
+rather than always restarting from the top. A source that gets deferred
+this week is simply the first one checked next week; every source still
+gets covered, just not necessarily inside a single run if the full list
+doesn't fit the budget. The digest is explicit about this whenever it
+happens ("N source(s) not reached this run — will be checked first next
+run") — never a silent partial check masquerading as a complete one.
+Fetch spacing was also reduced from 3s to 750ms per source, since 3s
+was needlessly conservative and made the time-budget math far tighter
+than necessary.
 
 **What deliberately did NOT change from this design:** still detection
 only. Nothing here writes to `milestones`, `deep_dive_*`, or `stories`.

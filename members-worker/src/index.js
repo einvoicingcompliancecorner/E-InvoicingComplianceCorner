@@ -431,9 +431,22 @@ export default {
 // it out of both places at once, by design (one registry, one meaning).
 
 const CONTENT_MONITOR_CRON = "0 8 * * 1"; // Monday 08:00 UTC — see wrangler.toml
-const CONTENT_MONITOR_FETCH_DELAY_MS = 3000; // spacing between fetches — considerate of government infrastructure, not a bulk scraper
+const CONTENT_MONITOR_FETCH_DELAY_MS = 750; // spacing between fetches — considerate of government infrastructure, not a bulk scraper
 const CONTENT_MONITOR_USER_AGENT = "EICC-ContentMonitor/1.0 (+https://e-invoicingcompliancecorner.com/about; weekly check for compliance updates)";
 const CONTENT_MONITOR_FETCH_TIMEOUT_MS = 15000;
+// SELF-IMPOSED time budget for a single run. Cloudflare's ctx.waitUntil()
+// only gets a short grace period once the HTTP response has already
+// been sent (discovered the hard way: an earlier version ran all ~50+
+// sources sequentially with a 3s gap, took several minutes, and got
+// silently killed mid-run with NO digest ever sent — "waitUntil() tasks
+// did not complete... and have been cancelled"). Rather than gamble on
+// exactly where that undocumented ceiling sits, the run polices its own
+// clock and stops itself well before any plausible limit, persisting a
+// cursor in KV so the NEXT run picks up exactly where this one left
+// off — every source still gets checked, just possibly a run later
+// than the one that would have needed it.
+const CONTENT_MONITOR_TIME_BUDGET_MS = 20000;
+const CONTENT_MONITOR_CURSOR_KEY = "cursor:next-source-id";
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -550,16 +563,26 @@ function escapeHtmlCM(s) {
   return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
-function buildDigestHtml(results, totalSources) {
+function buildDigestHtml(results, totalSources, skipped) {
+  skipped = skipped || [];
   const changed = results.filter((r) => r.status === "changed");
   const failed = results.filter((r) => r.status === "failed");
   const baseline = results.filter((r) => r.status === "baseline");
   const unchanged = results.filter((r) => r.status === "unchanged");
 
-  let html = `<p style="font-family:monospace; font-size:12px; color:#666;">Content monitor — weekly run, ${new Date().toISOString().slice(0, 10)}. ${totalSources} active sources checked.</p>`;
+  let html = `<p style="font-family:monospace; font-size:12px; color:#666;">Content monitor — weekly run, ${new Date().toISOString().slice(0, 10)}. ${results.length}/${totalSources} active sources checked${skipped.length ? ` (${skipped.length} deferred to next run — see below)` : ""}.</p>`;
+
+  // A self-imposed time budget (not a bug — see CONTENT-MONITORING.md)
+  // means a single run may not reach every source; whatever's left
+  // over is picked up automatically at the start of the next run. This
+  // is always stated plainly rather than silently checking fewer
+  // sources than it claims to.
+  if (skipped.length) {
+    html += `<p style="font-size:13px; color:#8a6d1f;">${skipped.length} source(s) not reached this run (time budget) — will be checked first next run: ${skipped.slice(0, 8).map((s) => escapeHtmlCM(s.country)).join(", ")}${skipped.length > 8 ? `, +${skipped.length - 8} more` : ""}.</p>`;
+  }
 
   if (changed.length === 0 && failed.length === 0) {
-    html += `<p style="font-size:14px;">No changes detected this week across ${unchanged.length} previously-baselined source(s)${baseline.length ? ` (${baseline.length} new source(s) baselined, nothing to compare yet)` : ""}. Nothing to review.</p>`;
+    html += `<p style="font-size:14px;">No changes detected among the sources checked this run${unchanged.length ? ` (${unchanged.length} previously-baselined source(s), unchanged)` : ""}${baseline.length ? ` (${baseline.length} new source(s) baselined, nothing to compare yet)` : ""}. Nothing to review.</p>`;
     return html;
   }
 
@@ -593,25 +616,61 @@ function buildDigestHtml(results, totalSources) {
 }
 
 async function runContentMonitor(env) {
-  const sources = await getActiveTrackingSources(env);
-  if (sources.length === 0) {
+  const allSources = await getActiveTrackingSources(env);
+  if (allSources.length === 0) {
     console.log("Content monitor: no active tracking sources — nothing to check.");
     return;
   }
+
+  // Resume from wherever the previous run's time budget cut it off.
+  // The cursor is a source id; find its position in the current
+  // (stable, ORDER BY-ed) list and rotate the array to start there —
+  // if that source no longer exists (deleted/deactivated since), fall
+  // back to the start. This also self-heals if the source list's
+  // membership or order changes between runs.
+  const storedCursor = await env.CONTENT_MONITOR.get(CONTENT_MONITOR_CURSOR_KEY);
+  let startIndex = storedCursor ? allSources.findIndex((s) => String(s.id) === storedCursor) : -1;
+  if (startIndex === -1) startIndex = 0;
+  const orderedSources = [...allSources.slice(startIndex), ...allSources.slice(0, startIndex)];
+
   const results = [];
-  for (const source of sources) {
+  const skipped = [];
+  const runStart = Date.now();
+  let stoppedEarly = false;
+
+  for (let i = 0; i < orderedSources.length; i++) {
+    if (Date.now() - runStart > CONTENT_MONITOR_TIME_BUDGET_MS) {
+      skipped.push(...orderedSources.slice(i));
+      stoppedEarly = true;
+      break;
+    }
+    const source = orderedSources[i];
     results.push(await checkOneSource(env, source));
-    await sleep(CONTENT_MONITOR_FETCH_DELAY_MS); // considerate spacing — see the constant's comment
+    if (i < orderedSources.length - 1) {
+      await sleep(CONTENT_MONITOR_FETCH_DELAY_MS); // considerate spacing — see the constant's comment
+    }
   }
+
+  // Persist where to resume: the first skipped source next time, or
+  // back to the very start if this run made it through everything —
+  // so a fully-completing run doesn't leave a stale cursor pointing
+  // partway through a list that's since changed.
+  const nextCursor = skipped.length > 0 ? String(skipped[0].id) : null;
+  if (nextCursor) {
+    await env.CONTENT_MONITOR.put(CONTENT_MONITOR_CURSOR_KEY, nextCursor);
+  } else {
+    await env.CONTENT_MONITOR.delete(CONTENT_MONITOR_CURSOR_KEY);
+  }
+
   const changed = results.filter((r) => r.status === "changed").length;
   const failed = results.filter((r) => r.status === "failed").length;
-  console.log(`Content monitor: ${sources.length} checked, ${changed} changed, ${failed} failed.`);
+  console.log(`Content monitor: ${results.length}/${allSources.length} checked (${skipped.length} deferred to next run), ${changed} changed, ${failed} failed.`);
 
   await sendViaResend(env, {
     from: env.FROM_EMAIL,
     to: env.CONTENT_MONITOR_EMAIL,
-    subject: `[Content Monitor] ${changed} changed, ${failed} failed — week of ${new Date().toISOString().slice(0, 10)}`,
-    html: buildDigestHtml(results, sources.length),
+    subject: `[Content Monitor] ${changed} changed, ${failed} failed${stoppedEarly ? `, ${skipped.length} deferred` : ""} — week of ${new Date().toISOString().slice(0, 10)}`,
+    html: buildDigestHtml(results, allSources.length, skipped),
   });
 }
 
