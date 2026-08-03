@@ -2070,10 +2070,72 @@ deploy for this entry itself.
 ### Real open work
 
 1. **Coverage expansion** — Netherlands, Austria, Greece, and
-   Cyprus shipped. Still not tracked: Bulgaria, Czechia, Estonia,
-   Hungary, Latvia, Lithuania, Malta, Slovenia, Iceland,
+   Cyprus shipped. Still not tracked in Europe: Bulgaria, Czechia,
+   Estonia, Hungary, Latvia, Lithuania, Malta, Slovenia, Iceland,
    Liechtenstein. The scaffolder + runner make each addition a
    fraction of the old effort.
+
+   **Middle East coverage evaluated (3 August 2026).** Dan asked for
+   an assessment of which additional Middle Eastern countries are
+   worth adding, based on real upcoming e-invoicing legislation.
+   Currently tracked in this region: Egypt, Saudi Arabia, UAE (3 of
+   36). Live web research (not from training-data recall, since this
+   space moves fast) turned up six more candidates, ranked by how
+   real/dated their legislation is — same bar this project already
+   applies elsewhere (a firm in-force mandate outranks a "discussed
+   but no timeline" one):
+
+   - **Jordan — strongest candidate.** JoFotara e-invoicing has been
+     mandatory since 1 April 2025 (Phase 2), covering B2B, B2G, and
+     B2C, with real fines (up to JOD 500) for non-compliance. This is
+     as concrete and "live" as Greece was when added — no caveats
+     needed.
+   - **Israel — strongest candidate.** A real CTC clearance model
+     (Israeli Tax Agency, real-time invoice approval + allocation
+     number) has been live since May 2024, with a clean, dated,
+     already-legislated phase-down of the mandatory-invoice threshold:
+     NIS 25,000 (May 2024) → 20,000 (Jan 2025) → 10,000 (Jan 2026) →
+     5,000 (Jun 2026). The multi-milestone threshold schedule is
+     exactly the shape this tracker's board already handles well.
+   - **Oman — strong candidate.** Oman Tax Authority's PINT-OM (Peppol
+     5-corner) framework has a genuinely dated, sourced rollout:
+     developer portal Feb 2026, service-provider registration May
+     2026, first wave (100 largest taxpayers) **August 2026** — i.e.
+     imminent — then all large B2B taxpayers by Feb 2027, all
+     VAT-registered taxpayers (incl. SMEs) by Aug 2027, B2G by Aug
+     2028. Real dates all the way out, similar shape to Saudi Arabia's
+     own phased rollout.
+   - **Qatar — good candidate, with an "expected" caveat.** Council of
+     Ministers approved a draft e-invoicing law and regulations on 6
+     May 2026 (General Tax Authority; covers B2B/B2G via clearance,
+     B2C via reporting), targeting 1 January 2027 — but it still needs
+     Shura Council review and the Amir's assent before enactment. This
+     is the same "real, sourced, but not yet law" situation
+     `mandate_scope: 'none'`/`confidence: 'expected'` already handles
+     for Austria's pending B2B proposal.
+   - **Bahrain — not yet, revisit later.** No confirmed mandate or
+     dates; the only recent concrete change is the NBR removing its
+     prior-approval requirement for voluntary e-invoicing (Nov 2023).
+     Government signaled "mandatory e-invoicing" intent back in 2022
+     with nothing since — this reads like Cyprus's twice-abandoned-
+     mandate pattern, not enough to build a real deep-dive around yet.
+   - **Kuwait — not yet, revisit later.** Even less public detail than
+     Bahrain; intentions discussed, no formal timeline. Worth a
+     periodic recheck, not worth building now.
+   - **Iraq, Lebanon — checked, nothing found.** No confirmed mandate
+     or credible timeline turned up; not recommended for now.
+
+   **Recommendation**: add Jordan, Israel, and Oman first (all have
+   real, dated, sourced milestones — Oman's first wave lands this
+   same month, August 2026) via the existing scaffolder + runner
+   workflow, each roughly the same effort as Austria/Greece/Cyprus.
+   Qatar is a reasonable fourth addition with its milestone correctly
+   marked `confidence: 'expected'` until the Shura Council/Amir step
+   completes. Hold off on Bahrain, Kuwait, Iraq, and Lebanon until
+   their own legislation becomes concrete enough to source properly —
+   revisit this evaluation every few months rather than re-researching
+   from scratch, since this space (especially Oman/Qatar) is moving
+   quickly.
 2. **Tracking-source URL audit, continued** — ~40 of 54 sources not
    yet verified for whether they'll ever actually surface real news.
    Two rounds done (Brazil/Australia/Ireland/Poland/Saudi
