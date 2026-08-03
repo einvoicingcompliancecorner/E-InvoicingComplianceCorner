@@ -1602,15 +1602,72 @@ tracker board (Europe, first alphabetically), /austria and
 the archive shows all 3 new stories, /sources lists Austria's 3
 sources, and "34" reads correctly everywhere.
 
+### Greece added as country #36 (3 August 2026, code complete, deploy pending)
+
+Full country build (migrations 237-245). A genuinely different shape
+from Netherlands/Austria's voluntary stories — Greece runs an active
+CLEARANCE mandate via myDATA, with Phase 1 of its domestic B2B
+requirement already in force as of today (2 March 2026), making it one
+of the tracker's more "live" countries rather than a pending-decision
+one.
+
+- **Migrations 237-239**: country row (slug `greece`), 5 milestones —
+  4 on the board (B2G's full 2025 mandate, B2B Phase 1 already in
+  force, Phase 2 arriving October 2026, and the confirmed 2030 ViDA
+  cross-border floor) plus the 2021 myDATA anchor — all four
+  languages. Notable nuances captured: intra-EU B2B remains optional
+  under the mandate (only domestic + non-EU B2B is mandatory), Peppol
+  is not the mandatory B2B exchange route (unlike B2G), and the
+  domestic mandate rests on an EU derogation (Council Implementing
+  Decision (EU) 2025/502).
+- **Migrations 240-241**: full deep-dive page — 5 stats, 9 cards
+  (notably the shared MARK/QR clearance step across B2G/B2B, the free
+  "Timologio" compliance route unusual among peers, and the
+  substantial 50%-of-VAT non-issuance penalty), 5 steps oriented
+  around near-term compliance rather than exploratory readiness
+  (since Phase 1 is already live), 2 portals.
+- **Migrations 243-244**: a 3-story arc (the myDATA reporting-first
+  backgrounder, the Phase 1 launch — doubling as launch coverage —
+  and Phase 2's approach).
+- **Migration 245**: tracking sources (myDATA, AADE main site, EC
+  factsheet) added deliberately. The EC-factsheet page ID was again
+  guessed by pattern before verifying (same risk as Austria) — this
+  time confirmed correct via a genuine search match, not assumed.
+- **Migration 242**: jurisdiction count 34→35, this time verified
+  directly against the true pre-Greece baseline before sweeping
+  (per the lesson from Austria's mid-sweep mistake) — confirmed
+  correct on the first attempt.
+- Static files: countries.js (Europe, between Germany and Ireland),
+  shared slug map, i18n countryNames in all 8 files.
+
+Final audit against the full ADDING-A-COUNTRY.md checklist: all items
+pass — country_translations, milestones, deep-dive content, stories,
+tracking sources, true jurisdiction count, slug/in_picker. Also
+independently confirmed the tracker's live JS "Jurisdictions tracked"
+stat (fixed earlier today for the EU-row bug) correctly computes 35
+with Greece's on-tracker milestones included.
+
+Deploy (from your machine, once ready):
+```
+cd members-worker/migrations && python3 apply_migrations.py --remote
+cd ../../site-worker && npx wrangler deploy
+```
+Both steps needed — the static-file trio (countries.js, i18n,
+slug map) requires the site-worker deploy, same as every country add.
+Spot-check: Greece on the tracker board (Europe, between Germany and
+Ireland), /greece and /greece?lang=de render, subscribe picker shows
+Grecia/Griechenland/Grèce, the archive shows all 3 new stories,
+/sources lists Greece's 3 sources, and "35" reads correctly everywhere.
+
 ## Open items / next steps
 
 ### Real open work
 
-1. **Coverage expansion** — Netherlands and Austria shipped. Still
-   not tracked: Bulgaria, Cyprus, Czechia, Estonia, Greece, Hungary,
-   Latvia, Lithuania, Malta, Slovenia, Iceland, Liechtenstein. The
-   scaffolder + runner make each addition a fraction of the old
-   effort.
+1. **Coverage expansion** — Netherlands, Austria, and Greece
+   shipped. Still not tracked: Bulgaria, Cyprus, Czechia, Estonia,
+   Hungary, Latvia, Lithuania, Malta, Slovenia, Iceland,
+   Liechtenstein. The scaffolder + runner make each addition a
+   fraction of the old effort.
 2. **Tracking-source URL audit, continued** — ~40 of 54 sources not
    yet verified for whether they'll ever actually surface real news.
    Two rounds done (Brazil/Australia/Ireland/Poland/Saudi
