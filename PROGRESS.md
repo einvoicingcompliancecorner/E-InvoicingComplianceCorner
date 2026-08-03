@@ -2608,6 +2608,31 @@ change.
    from scratch, since this space (especially Qatar) is moving
    quickly.
 
+   **Follow-up recheck (3 Aug 2026, later the same day):** Dan asked
+   which Middle East country to roll out next, now that Oman/Jordan
+   (deployed) and Israel (code complete) are all built. Live re-check
+   of Bahrain, Kuwait, Iraq, Lebanon, and Qatar found nothing materially
+   changed from the assessment above — all four "not yet" countries
+   are still stuck at proposal/discussion stage with no confirmed
+   dates, and Qatar's law is still Cabinet-approved-but-unenacted
+   (still needs Shura Council review + the Amir's assent). One genuine
+   new find, not covered in the original evaluation: **Turkey**. e-Fatura
+   has been mandatory since 1 April 2014 (companies over TRY 5 million
+   turnover, plus several sectors regardless of size), making it more
+   mature than every country built this session except South Korea —
+   and it's still actively evolving: the general threshold is TRY 3
+   million for 2026, a lower TRY 500,000 threshold applies to
+   e-commerce/real estate/motor-vehicle/accommodation sectors, and a 1
+   January 2026 change removed the prior monetary floor for mandatory
+   e-Archive issuance entirely. B2B, B2G, and B2C are all in scope.
+   This is the strongest actual candidate right now — stronger than
+   Qatar, since it's enacted and in force rather than pending
+   legislative steps. One open question before building it: Turkey is
+   transcontinental and this tracker's existing "Middle East" region
+   (Egypt, Israel, Jordan, Oman, Saudi Arabia, UAE) is MENA-flavored —
+   worth confirming with Dan whether Turkey belongs in Middle East, a
+   new region, or Europe, before scaffolding it.
+
    **Asia-Pacific coverage evaluated (3 August 2026).** Dan asked for
    an assessment of the best Asia-Pacific country to add next.
    Currently tracked in this region: Australia, China, India, Malaysia,
