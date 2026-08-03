@@ -1686,12 +1686,75 @@ the author section appears below a divider, the LinkedIn link opens
 correctly, and check at least one non-English language to confirm the
 translation renders.
 
+### Cyprus added as country #37 (3 August 2026, code complete, deploy pending)
+
+Full country build (migrations 246-253). The quietest regulatory
+story in the tracker so far — deliberately built with fewer
+milestones (3, only 2 on the board) and fewer stories (2, not the
+usual 3) than every other country, because that's honestly what
+exists, not because anything was rushed. No B2B mandate, no confirmed
+B2G-issuance mandate, and no fabricated "expected" milestone invented
+to pad the board.
+
+- **Migrations 246-248**: country row (slug `cyprus`), 3 milestones —
+  the 2019 central-government B2G receive mandate (anchor, off-board,
+  Law 89(I)/2019), its 2020 extension to sub-central bodies, and the
+  confirmed 2030 ViDA cross-border floor. A genuine pattern of
+  proposed-then-abandoned mandates (a 1 January 2022 target for
+  mandatory B2G issuance, then a similar 2024 push, neither ever
+  enacted) is captured as narrative context in the deep-dive rather
+  than as a board milestone with a date — presenting an abandoned
+  target as a tracked, scheduled item would misrepresent it.
+- **Migrations 249-250**: full deep-dive page — 5 stats, 9 cards built
+  around what's genuinely mandatory today (almost nothing on the
+  supplier side), with a dedicated section framing the twice-
+  abandoned mandate pattern as the one thing worth watching, with
+  appropriate skepticism toward future announcements. 5 steps, 2
+  portals.
+- **Migrations 252-253**: a 2-story arc (the twice-proposed/twice-
+  abandoned pattern, and why 2030 is the only real planning horizon)
+  and tracking sources (Ministry of Finance, gov.cy, EC factsheet).
+- **Real-world verification caught something useful**: the commonly-
+  cited "ARIADNI" government portal name, still used uncritically by
+  several 2025/2026-dated blog sources, has actually been retired —
+  confirmed via a direct redirect notice and the most recent (2025)
+  EC country factsheet, both independently naming `gov.cy` as its
+  replacement. Used the verified current name rather than the stale
+  one multiple recent-looking sources still repeat.
+- **Migration 251**: jurisdiction count 35→36, verified directly
+  against the true pre-Cyprus baseline before sweeping (now standard
+  practice since the Austria mid-sweep mistake) — correct on the
+  first attempt.
+- **Caught and fixed a stray-Cyrillic-character typo** in one French
+  deep-dive translation before shipping ("типique" instead of
+  "typique") — scanned all Cyprus migration files afterward for the
+  same class of error, confirmed clean.
+- Static files: countries.js (Europe, between Croatia and Denmark),
+  shared slug map, i18n countryNames in all 8 files.
+
+Final audit against the full ADDING-A-COUNTRY.md checklist: all items
+pass, correctly reflecting Cyprus's genuinely thinner numbers (3
+milestones, 2 stories) rather than padding to match other countries'
+usual counts.
+
+Deploy (from your machine, once ready):
+```
+cd members-worker/migrations && python3 apply_migrations.py --remote
+cd ../../site-worker && npx wrangler deploy
+```
+Both steps needed — the static-file trio requires the site-worker
+deploy, same as every country add. Spot-check: Cyprus on the tracker
+board (Europe, between Croatia and Denmark), /cyprus and
+/cyprus?lang=de render, subscribe picker shows Chipre/Zypern/Chypre,
+the archive shows both new stories, /sources lists Cyprus's 3 sources,
+and "36" reads correctly everywhere.
+
 ## Open items / next steps
 
 ### Real open work
 
-1. **Coverage expansion** — Netherlands, Austria, and Greece
-   shipped. Still not tracked: Bulgaria, Cyprus, Czechia, Estonia,
+1. **Coverage expansion** — Netherlands, Austria, Greece, and
+   Cyprus shipped. Still not tracked: Bulgaria, Czechia, Estonia,
    Hungary, Latvia, Lithuania, Malta, Slovenia, Iceland,
    Liechtenstein. The scaffolder + runner make each addition a
    fraction of the old effort.
