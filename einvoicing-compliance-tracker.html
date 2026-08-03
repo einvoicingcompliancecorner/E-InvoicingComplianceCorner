@@ -550,6 +550,14 @@
       <div class="actions-menu" id="resourcesMenu">
         <button class="menu-trigger" id="resourcesTrigger" data-i18n="menu.resources">Resources</button>
         <div class="dropdown-panel" id="resourcesPanel">
+          <!-- /sources and /map are both site-worker routes rendered
+               live from D1; no asset file behind either. Both get the
+               same in-page-panel treatment as a country deep dive --
+               see wireDeepDiveInPagePanel() below for the actual
+               click interception (this HTML just carries the real,
+               plain href as a no-JS/crawler fallback). The Map leads
+               the menu per Dan's request (3 Aug 2026). -->
+          <a class="dropdown-item" href="/map"><span class="dd-icon">🗺️</span><span data-i18n="menu.map">The Map</span></a>
           <div class="dd-flyout" id="deepDiveMenu">
             <button class="dropdown-item dd-flyout-trigger" id="deepDiveTrigger">
               <span class="dd-flyout-label"><span class="dd-icon">🔎</span><span data-i18n="menu.deepDives">Deep Dives</span></span>
@@ -563,14 +571,7 @@
                on this site if/when the promo period ends and the archive
                goes back to being subscriber-only. -->
           <a class="dropdown-item" href="https://members.e-invoicingcompliancecorner.com/members/archive"><span class="dd-icon">📰</span><span data-i18n="menu.archive">Newsletter archive</span></a>
-          <!-- /sources and /map are both site-worker routes rendered
-               live from D1; no asset file behind either. Both get the
-               same in-page-panel treatment as a country deep dive --
-               see wireDeepDiveInPagePanel() below for the actual
-               click interception (this HTML just carries the real,
-               plain href as a no-JS/crawler fallback). -->
           <a class="dropdown-item" href="/sources"><span class="dd-icon">📡</span><span data-i18n="menu.sources">Tracking sources</span></a>
-          <a class="dropdown-item" href="/map"><span class="dd-icon">🗺️</span><span data-i18n="menu.map">The Map</span></a>
         </div>
       </div>
       <div class="actions-menu" id="educationMenu">
