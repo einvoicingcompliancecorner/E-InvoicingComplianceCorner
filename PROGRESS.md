@@ -1773,19 +1773,68 @@ and "36" reads correctly everywhere.
    the vendor registration/advertising concept; the two remaining
    Resources ideas (accredited-sources list, vendor-assessment RFI
    template).
-5. **"The Map" — an interactive visual map under Resources** — Dan's
-   reference: Pagero/Thomson Reuters' "Regulatory Atlas"
-   (europe.thomsonreuters.com/uk/compliance/regulatory-updates), a
-   competitor product with a compliance map covering e-invoicing/CTC/
-   tax requirements per country. Genuinely on-subject competition, not
-   a loose analogy. The idea: a visual world/region map (SVG or a
-   lightweight interactive library) that can highlight upcoming
-   mandate changes at a glance and link out to the matching country
-   deep-dive and relevant newsletter-archive stories on click/hover.
-   Still at the "consider adding" stage — needs a design/scope pass
-   (map library choice, mobile behaviour, how "upcoming changes"
-   gets visually encoded — colour by urgency? by confidence tier?)
-   before any build starts.
+5. **"The Map" — an interactive visual map under Resources**
+
+   Two competitor references evaluated (3 August 2026):
+
+   **Pagero/Thomson Reuters "Regulatory Atlas"**
+   (europe.thomsonreuters.com/uk/compliance/regulatory-updates) —
+   turns out to be less a literal map and more a country directory
+   combined with a rolling ticker of recent regulatory headlines
+   ("Cambodia expands...", "Greece submits draft legislation...").
+
+   **Basware's "Global e-Invoicing Compliance Map"**
+   (basware.com/en/compliance-map) — described as literal hover/click
+   per-country interaction, but fetching the real page revealed the
+   actual underlying content: a plain continent-grouped list of
+   country links (Africa/Asia/Europe/North America/Oceania/South
+   America → alphabetical countries → per-country page), almost
+   certainly the accessible/crawlable fallback sitting behind a
+   decorative visual map layer. Basware's Europe list alone has 31
+   countries, several not yet on this tracker (Albania, Andorra,
+   Bulgaria, Czech Republic, Estonia, Hungary, Iceland, Latvia,
+   Liechtenstein, Malta, Serbia, Slovenia, Switzerland) — a coverage
+   consideration for item 1 more than a map-design one.
+
+   **The real finding**: the substance behind both competitors' "maps"
+   is the same region-grouped directory structure this site already
+   has (Deep Dives flyout, subscribe picker, sidebar nav). The map
+   graphic is a decorative front door on an information architecture
+   that's essentially already built — this reframes the feature from
+   "build new navigation" to "build one visual entry point in front
+   of navigation that already exists."
+
+   **A working prototype was built and tested** (not just described) —
+   a real D3 + topojson choropleth using genuine world-atlas topology
+   (never hand-drawn/invented coordinates), Europe-zoomed since 21 of
+   36 tracked countries are there, colored using the tracker board's
+   own existing status language (in force / upcoming / tracked) rather
+   than a new scheme. One concrete, non-theoretical finding from
+   building it: small countries (Luxembourg, Cyprus, Malta) are
+   genuinely hard to see and click at this scale — a real trade-off,
+   not a hypothetical one. A true equal-weight cartogram would solve
+   this but isn't buildable without inventing coordinates, which the
+   visual-design system rules explicitly forbid.
+
+   **Recommended direction**:
+   - Europe-focused map as the visual front door, not a full world map
+     (would be mostly empty ocean given the real regional split:
+     Europe 21, Asia-Pacific 6, Americas 6, Middle East 3)
+   - Non-European regions and mobile viewports fall back to a
+     region-grouped list — not a compromise, but literally what both
+     competitors' own real content reduces to
+   - Reuse the board's existing status categories for map coloring,
+     not a new "urgency" concept
+   - Click behavior reuses the existing in-page deep-dive panel —
+     no new interaction pattern needed
+   - One real architectural decision to make deliberately: this would
+     be the site's first use of an external JS library (D3 + topojson
+     via CDN) — everything else today is hand-written vanilla JS
+
+   Rough effort once the direction is confirmed: half a day to a day —
+   the map itself is the easy part; the real work is the mobile
+   fallback and wiring status colors to live D1 data correctly. Still
+   at the "evaluating references" stage — no build started.
 
 ### Dormant until decided
 
