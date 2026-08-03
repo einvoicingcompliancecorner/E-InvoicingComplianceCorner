@@ -1952,6 +1952,7 @@ function pageShell(bodyHtml, lang) {
 <body>
 ${renderLangBanner(lang || "en")}
 ${bodyHtml}
+<!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "3e7e20959b7f4604a87836fc751c18f3"}'></script><!-- End Cloudflare Web Analytics -->
 </body>
 </html>`;
 }
