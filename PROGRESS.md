@@ -2383,14 +2383,114 @@ wrangler deploy
 `deep-dive-render.mjs`, and i18n/static-HTML jurisdiction-count edits —
 redeploy it the same way you did for Oman, Jordan, and Israel.)
 
+### Vietnam added as country #42 (3 August 2026, code complete, deploy pending)
+
+Full country build (migrations 288-295), the second addition from the
+Asia-Pacific coverage evaluation (South Korea was first). Vietnam's
+mandate is genuinely dual-model — unlike every other country built
+this session, an invoice either carries a GDT-issued code obtained
+before delivery (real-time clearance, the same shape as Jordan/Israel/
+Egypt) or transmits to the tax authority no later than the same day
+without a code (the same shape as South Korea's post-issuance
+reporting). Rather than force one framing, the deep-dive describes
+both flows as two separate lifecycle pill cards. The penalty schedule
+is also structurally new for this tracker: fines escalate by the
+*count* of violating invoices found in an inspection period, not a
+flat or percentage figure.
+
+- **Migrations 288-290** (generated via `new_country_scaffold.py`,
+  then hand-translated): country row (slug `vietnam`, region
+  "Asia-Pacific"), 4 milestones — Decree 123/2020/ND-CP establishing
+  the framework (Dec 2020, anchor, off-board, `mandate_scope: 'none'`),
+  the Nov 2021 pilot across six provinces including Hanoi and Ho Chi
+  Minh City (anchor, off-board, `'none'`), the 1 July 2022 nationwide
+  mandate (on-board, `'b2b'` — paper invoices ceased to be valid), and
+  Decree 70/2025's June 2025 scope expansion to large business
+  households (VND 1 billion+ revenue) and foreign e-commerce suppliers
+  (on-board, `'b2b'`). Sourced from a VATupdate briefing document,
+  china-briefing.com's Decree 70 analysis, vietnamplus.vn, and
+  alitium.com's 2026 penalty-framework article, cross-checked against
+  each other for dates and figures.
+- **Migrations 291-292**: full deep-dive page — a dual-model
+  compliance description, 5 stats, 3 `file_format` cards, **two**
+  separate lifecycle pill cards in `scope_transmission` ("Model 1 —
+  real-time clearance," 4 pills; "Model 2 — same-day reporting," 3
+  pills, explicitly cross-referencing South Korea's post-issuance
+  model as the closer analogue) plus 2 regular cards (scope-since-when;
+  what's covered — exports in, imports explicitly out), a genuine
+  4-row `deep_dive_penalty_rows` table showing the violation-count
+  escalation (VND 500K-1.5M for a single incorrect-timing violation up
+  to VND 50-70M for 100+; VND 1-2M for a single missing invoice up to
+  VND 60-80M for 100+), 3 narrative `penalties_related` cards
+  (volume-scaling explanation; the separate lighter schedule for
+  non-commercial/internal-use invoices; a living-tracker freshness
+  point on Decree 310/2025's January 2026 restructuring), 6 steps, 2
+  portals (the GDT's English portal; the public invoice-lookup system
+  at tracuuhoadon.gdt.gov.vn).
+- **Migration 293**: a 3-story arc — the July 2022 nationwide mandate
+  launch, the June 2025 Decree 70 scope expansion, and the January
+  2026 penalty-framework restructuring.
+- **Migration 294**: tracking sources (the GDT's English portal and
+  the invoice-lookup system — no EC factsheet, since Vietnam isn't an
+  EU member state, matching the Oman/Jordan/Israel/South Korea
+  precedent).
+- **Migration 295**: jurisdiction count 40→41, generated
+  programmatically from migration 287's own key list (same ~10
+  `translations` keys × 4 languages).
+- **Static files**: `countries.js` (Asia-Pacific, appended after South
+  Korea), `shared/deep-dive-render.mjs`'s slug map and
+  `COUNTRY_NAME_TRANSLATIONS` dictionary (Vietnam/Vietnam/Viêt Nam for
+  es/de/fr — French uses the accented two-word form per Larousse's
+  encyclopedia entry).
+- Checked The Map's two hand-maintained lookup tables per
+  ADDING-A-COUNTRY.md's Phase 1 step 6: the world-atlas topology
+  already has a feature named exactly `"Vietnam"`, matching this
+  project's `name_en` — no `TOPO_NAME_OVERRIDES` entry needed, and the
+  shape is a normal full-size country geometry, so no
+  `MARKER_LONLAT_OVERRIDES` fallback is needed either.
+- **Hand-swept the jurisdiction count** across all four languages'
+  `i18n/*.json` files and every static HTML page — 58 occurrences
+  across 31 files (one file, `education-mandate-types.html`, was
+  missed by the first automated pass since it wasn't in the sweep
+  script's file list — caught and fixed by the same stray-"40" grep
+  check that's now a standard part of this workflow).
+- One SQL bug caught and fixed in migration 291: three
+  `penalties_related` narrative cards each had a spurious trailing
+  `, NULL` after the `body` value, making the `VALUES (...)` tuple 7
+  values against the table's 6 declared columns ("7 values for 6
+  columns") — caught by the local replay and fixed by removing the
+  stray `NULL` from each of the three statements.
+- Local migration-chain replay (`apply_migrations.py --local
+  --dry-run`) confirms all 295 files validate cleanly against the
+  full schema history — "Replay validation OK (295 files, only the
+  documented pre-existing errors)." A follow-up structural count check
+  (milestones, stats, cards, lifecycle statuses, penalty rows, steps,
+  portals, all × 4 languages) confirmed every row landed with the
+  correct count on the first clean replay.
+
+Final audit against the full ADDING-A-COUNTRY.md checklist: all items
+pass.
+
+Deploy (from your machine, once ready):
+```
+cd members-worker/migrations
+python3 apply_migrations.py --remote
+cd ..
+wrangler deploy
+```
+(The `site-worker` also needs redeploying to pick up the `countries.js`,
+`deep-dive-render.mjs`, and i18n/static-HTML jurisdiction-count edits —
+redeploy it the same way you did for Oman, Jordan, Israel, and South
+Korea.)
+
 ## Open items / next steps
 
 ### Real open work
 
 1. **Coverage expansion** — Netherlands, Austria, Greece, Cyprus, Oman,
-   Jordan, Israel, and South Korea shipped; South Korea is code
-   complete with deploy pending, the rest deployed and tested (Israel
-   deploy also still pending). Still not
+   Jordan, Israel, South Korea, and Vietnam shipped; South Korea and
+   Vietnam are code complete with deploy pending, the rest deployed
+   and tested (Israel deploy also still pending). Still not
    tracked in Europe: Bulgaria, Czechia,
    Estonia, Hungary, Latvia, Lithuania, Malta, Slovenia, Iceland,
    Liechtenstein. The scaffolder + runner make each addition a
@@ -2550,10 +2650,10 @@ redeploy it the same way you did for Oman, Jordan, and Israel.)
    of Qatar. Hold off on Sri Lanka until it has a confirmed mandatory
    date beyond the pilot, and skip Japan — there's no real invoicing
    mandate there to document.
-   **South Korea is now built** — code complete with deploy pending
-   (see the dated entry above). Vietnam and Taiwan remain the strongest
-   next candidates from this same evaluation whenever coverage expands
-   further into Asia-Pacific.
+   **South Korea and Vietnam are now both built** — both code complete
+   with deploy pending (see the dated entries above). Taiwan remains
+   the strongest next candidate from this same evaluation whenever
+   coverage expands further into Asia-Pacific.
 2. **Tracking-source URL audit, continued** — ~40 of 54 sources not
    yet verified for whether they'll ever actually surface real news.
    Two rounds done (Brazil/Australia/Ireland/Poland/Saudi

@@ -43,7 +43,7 @@ export const COUNTRY_DEEP_DIVE_SLUGS = {
   "Norway": "norway", "Oman": "oman", "Peru": "peru", "Poland": "poland", "Portugal": "portugal", "Romania": "romania",
   "Saudi Arabia": "saudi-arabia", "Singapore": "singapore", "Slovakia": "slovakia", "South Korea": "south-korea",
   "Spain": "spain", "Sweden": "sweden", "United Arab Emirates": "uae",
-  "United Kingdom": "uk", "United States": "united-states",
+  "United Kingdom": "uk", "United States": "united-states", "Vietnam": "vietnam",
 };
 
 export const SLUG_TO_COUNTRY = Object.fromEntries(
@@ -60,6 +60,7 @@ const COUNTRY_NAME_TRANSLATIONS = {
     "Sweden": "Suecia", "United Kingdom": "Reino Unido", "Saudi Arabia": "Arabia Saudita",
     "United Arab Emirates": "Emiratos Árabes Unidos", "Australia": "Australia", "China": "China",
     "India": "India", "Malaysia": "Malasia", "New Zealand": "Nueva Zelanda", "Singapore": "Singapur", "South Korea": "Corea del Sur",
+    "Vietnam": "Vietnam",
     "Brazil": "Brasil", "Canada": "Canadá", "Chile": "Chile", "Mexico": "México", "Peru": "Perú",
     "United States": "Estados Unidos", "European Union": "Unión Europea"
   },
@@ -72,6 +73,7 @@ const COUNTRY_NAME_TRANSLATIONS = {
     "Sweden": "Schweden", "United Kingdom": "Vereinigtes Königreich", "Saudi Arabia": "Saudi-Arabien",
     "United Arab Emirates": "Vereinigte Arabische Emirate", "Australia": "Australien", "China": "China",
     "India": "Indien", "Malaysia": "Malaysia", "New Zealand": "Neuseeland", "Singapore": "Singapur", "South Korea": "Südkorea",
+    "Vietnam": "Vietnam",
     "Brazil": "Brasilien", "Canada": "Kanada", "Chile": "Chile", "Mexico": "Mexiko", "Peru": "Peru",
     "United States": "Vereinigte Staaten", "European Union": "Europäische Union"
   },
@@ -84,6 +86,7 @@ const COUNTRY_NAME_TRANSLATIONS = {
     "Sweden": "Suède", "United Kingdom": "Royaume-Uni", "Saudi Arabia": "Arabie saoudite",
     "United Arab Emirates": "Émirats arabes unis", "Australia": "Australie", "China": "Chine",
     "India": "Inde", "Malaysia": "Malaisie", "New Zealand": "Nouvelle-Zélande", "Singapore": "Singapour", "South Korea": "Corée du Sud",
+    "Vietnam": "Viêt Nam",
     "Brazil": "Brésil", "Canada": "Canada", "Chile": "Chili", "Mexico": "Mexique", "Peru": "Pérou",
     "United States": "États-Unis", "European Union": "Union européenne"
   }
