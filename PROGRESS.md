@@ -1257,20 +1257,34 @@ era and 32 after Egypt — not 32 and 33** as today's earlier commits
 and this file claimed. Migration 211 (Egypt's count-sweep, deployed
 and verified live earlier today) set the site's jurisdiction-count
 text to "33" when the correct value at that time was 32 — a real,
-currently-live off-by-one. Root cause not fully traced (predates
-today's session; the "32" premise for Luxembourg was already in the
-compacted history handed off at session start), but confirmed by
-direct D1 replay at each era (31 → 32 → 33, cross-checked against both
-`slug IS NOT NULL` and `in_picker=1`, which agree with zero
-mismatches). By coincidence, the true post-Netherlands count (33)
-equals the currently-live incorrect value (33), so **no further
-digit change is needed** — the error and the legitimate new addition
-cancel out. An initial migration 221 (sweeping the live "33" to "34")
-was written, found to be built on the false "33 was correct" premise,
-and deleted before being applied anywhere; the live-file edits it
-required were symmetrically reverted. Nothing incorrect was ever
-deployed as a result of this — caught entirely during this session's
-build, before any migration touched production.
+currently-live off-by-one. Confirmed by direct D1 replay at each era
+(31 → 32 → 33, cross-checked against both `slug IS NOT NULL` and
+`in_picker=1`, which agree with zero mismatches).
+
+**Root cause (identified by Dan):** the `countries` table also holds a
+row for the European Union itself — added deliberately, with
+`slug=NULL` and `in_picker=0`, specifically so EU-level directive
+content can be referenced without the EU counting as a tracked
+jurisdiction. `COUNT(*)` on the whole table (32 → 33 → 34) matches the
+erroneous figures exactly; the correct query filters on
+`slug IS NOT NULL` (31 → 32 → 33). Somewhere the prose text was
+generated from the former instead of the latter. No script in the
+repo currently runs the unfiltered count (checked `generate_files.py`
+and grepped site-wide) — this reads as a one-off manual miscount
+rather than a recurring tool bug, but worth remembering: **any future
+"how many countries do we track" query must filter on
+`slug IS NOT NULL` (or `in_picker=1`), never a bare `COUNT(*)` on
+`countries`.**
+
+By coincidence, the true post-Netherlands count (33) equals the
+currently-live incorrect value (33), so **no further digit change is
+needed** — the error and the legitimate new addition cancel out. An
+initial migration 221 (sweeping the live "33" to "34") was written,
+found to be built on the false "33 was correct" premise, and deleted
+before being applied anywhere; the live-file edits it required were
+symmetrically reverted. Nothing incorrect was ever deployed as a
+result of this — caught entirely during this session's build, before
+any migration touched production.
 
 Deploy (from your machine, once you're ready):
 ```
