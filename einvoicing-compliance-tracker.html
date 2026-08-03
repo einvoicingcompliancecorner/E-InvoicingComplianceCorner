@@ -555,6 +555,12 @@
                on this site if/when the promo period ends and the archive
                goes back to being subscriber-only. -->
           <a class="dropdown-item" href="https://members.e-invoicingcompliancecorner.com/members/archive"><span class="dd-icon">📰</span><span data-i18n="menu.archive">Newsletter archive</span></a>
+          <!-- Plain navigation link (NOT an in-page panel -- see the
+               feedback-panel incident in PROGRESS.md: panels need their
+               own wiring in this file, and duplicated wiring drifts).
+               /sources is a site-worker route rendered from D1's
+               tracking_sources tables; no asset file behind it. -->
+          <a class="dropdown-item" href="/sources"><span class="dd-icon">📡</span><span data-i18n="menu.sources">Tracking sources</span></a>
         </div>
       </div>
       <div class="actions-menu" id="educationMenu">

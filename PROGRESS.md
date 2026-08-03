@@ -1158,6 +1158,51 @@ Spot-check: submit real feedback from the site (in-page panel or
 working, and `SELECT * FROM feedback` shows the row. Submissions predating
 this fix are unrecoverable — they never left the browser.
 
+### Tracking-sources page (/sources) — the "sources of truth" registry (2 August 2026, code complete, deploy pending)
+
+Dan's request: a public page listing, per country, the official
+reference URLs used to capture announcements and notifications — the
+site's sources of truth. Built with today's lessons applied:
+
+- **Migration 214**: `tracking_sources` (country_id, url, sort_order,
+  `active`) + `tracking_source_translations` (per-language
+  descriptions), **seeded from `deep_dive_portals`** — 38 sources, all
+  33 countries, 152 translations, verified clean (no dupes) — so the
+  page launches fully populated. The two tables may now diverge
+  deliberately: monitoring wants announcement pages, deep dives want
+  onboarding portals. The `active` column makes this table the
+  designed input for the future content-monitoring Worker
+  (CONTENT-MONITORING.md) — that project's foundation is now laid.
+- **`/sources` is a site-worker route with NO asset file** (also
+  answers /sources.html) — like the country deep-dive pages, the
+  Worker always runs; no run_worker_first entry needed, and D1 edits
+  appear live within the 300s edge cache. Language resolution mirrors
+  the deep-dive pattern exactly (?lang param sets the shared
+  domain-scoped cookie, then cookie, then Accept-Language; duplicate
+  host-only cookie self-heal included). Paper-theme standalone page:
+  region-grouped (Europe → Middle East → Asia-Pacific → Americas),
+  flag + translated country name, linked description + visible URL,
+  4-language UI strings, lang switcher, back link to the tracker.
+- **Menu**: "Tracking sources" (📡) added to the Resources dropdown as
+  a **plain navigation link, deliberately not an in-page panel** (see
+  the feedback-panel duplicated-wiring incident above) — with
+  menu.sources keys in all four i18n files.
+- **Tested**: migration replay (exact counts), the real
+  renderSourcesPage against the replayed dataset via a D1 shim (33
+  countries, 38 links, region order, Egypt/ETA present, ES UI +
+  cookie), tracker script syntax + Stage 5 injection regexes intact
+  after the menu edit, all i18n JSONs valid.
+
+Deploy:
+```
+cd members-worker/migrations && python3 apply_migrations.py --remote   # applies 214
+cd ../../site-worker && wrangler deploy                                # route + menu item
+```
+Spot-check: /sources and /sources?lang=es render grouped and
+translated; the Resources menu shows "Tracking sources" in all four
+languages; source curation from here = UPDATE/INSERT migrations against
+tracking_sources (not deep_dive_portals).
+
 ## Open items / next steps
 
 ### Resources menu + open archive: redeploy (code is done, only the ship step remains)

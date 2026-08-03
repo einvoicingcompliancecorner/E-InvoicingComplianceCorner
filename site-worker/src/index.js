@@ -238,6 +238,148 @@ function pickBestSupportedLanguage(header) {
   return null;
 }
 
+// ================================================================
+// /sources — the "sources of truth" page: the official reference URLs
+// monitored for announcements per tracked country, rendered from D1's
+// tracking_sources tables (migration 214) at request time. Like the
+// country deep-dive routes, this path matches NO asset file, so the
+// Worker always runs — no run_worker_first entry needed.
+// ================================================================
+
+const SOURCES_UI = {
+  en: { title: "Tracking sources", eyebrow: "Sources of truth",
+        intro: "The official government and authority pages we monitor for announcements and notifications, for every jurisdiction in the tracker. Each update on the board and in the newsletter traces back to one of these.",
+        back: "\u2190 Back to global tracker", visit: "Visit source" },
+  es: { title: "Fuentes de seguimiento", eyebrow: "Fuentes de referencia",
+        intro: "Las p\u00e1ginas oficiales de gobiernos y autoridades que supervisamos para captar anuncios y notificaciones, para cada jurisdicci\u00f3n del rastreador. Cada actualizaci\u00f3n del panel y del bolet\u00edn se remonta a una de ellas.",
+        back: "\u2190 Volver al rastreador global", visit: "Visitar fuente" },
+  de: { title: "\u00dcberwachte Quellen", eyebrow: "Referenzquellen",
+        intro: "Die offiziellen Beh\u00f6rden- und Regierungsseiten, die wir f\u00fcr Ank\u00fcndigungen und Meldungen beobachten \u2014 f\u00fcr jede Rechtsordnung im Tracker. Jede Aktualisierung auf der Tafel und im Newsletter geht auf eine dieser Quellen zur\u00fcck.",
+        back: "\u2190 Zur\u00fcck zum globalen Tracker", visit: "Quelle \u00f6ffnen" },
+  fr: { title: "Sources suivies", eyebrow: "Sources de r\u00e9f\u00e9rence",
+        intro: "Les pages officielles des gouvernements et autorit\u00e9s que nous surveillons pour capter les annonces et notifications, pour chaque juridiction du tracker. Chaque mise \u00e0 jour du tableau et de la newsletter remonte \u00e0 l'une d'elles.",
+        back: "\u2190 Retour au tracker mondial", visit: "Voir la source" },
+};
+const SOURCES_REGION_ORDER = ["Europe", "Middle East", "Asia-Pacific", "Americas"];
+
+function escHtml(s) {
+  return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+
+async function renderSourcesPage(request, env) {
+  if (!env.eicc_content) return new Response("Missing D1 binding", { status: 500 });
+  const url = new URL(request.url);
+  let lang = url.searchParams.get("lang");
+  let shouldSetCookie = false;
+  const { value: cookieLang, duplicated: cookieDuplicated } = getCookie(request, LANG_COOKIE);
+  if (lang && SUPPORTED_LANGS.includes(lang)) {
+    shouldSetCookie = true;
+  } else if (cookieLang && SUPPORTED_LANGS.includes(cookieLang)) {
+    lang = cookieLang;
+  } else {
+    lang = pickBestSupportedLanguage(request.headers.get("Accept-Language")) || "en";
+  }
+  const ui = SOURCES_UI[lang] || SOURCES_UI.en;
+
+  const { results } = await env.eicc_content.prepare(`
+    SELECT c.name_en, c.code, c.region, ct.display_name,
+           ts.url, COALESCE(tst.description, tste.description, ts.url) AS description
+    FROM tracking_sources ts
+    JOIN countries c ON c.id = ts.country_id
+    LEFT JOIN country_translations ct ON ct.country_id = c.id AND ct.lang = ?
+    LEFT JOIN tracking_source_translations tst ON tst.source_id = ts.id AND tst.lang = ?
+    LEFT JOIN tracking_source_translations tste ON tste.source_id = ts.id AND tste.lang = 'en'
+    WHERE ts.active = 1
+    ORDER BY CASE c.region
+      WHEN 'Europe' THEN 0 WHEN 'Middle East' THEN 1
+      WHEN 'Asia-Pacific' THEN 2 WHEN 'Americas' THEN 3 ELSE 4 END,
+      c.name_en, ts.sort_order
+  `).bind(lang, lang).all();
+
+  const byRegion = new Map();
+  for (const r of results) {
+    if (!byRegion.has(r.region)) byRegion.set(r.region, new Map());
+    const countries = byRegion.get(r.region);
+    const key = r.name_en;
+    if (!countries.has(key)) countries.set(key, { display: r.display_name || r.name_en, flag: deriveFlagFromCode(r.code), sources: [] });
+    countries.get(key).sources.push({ url: r.url, description: r.description });
+  }
+
+  let body = "";
+  for (const region of [...SOURCES_REGION_ORDER.filter((x) => byRegion.has(x)), ...[...byRegion.keys()].filter((x) => !SOURCES_REGION_ORDER.includes(x))]) {
+    body += `<h2 class="region">${escHtml(region)}</h2>`;
+    for (const [, c] of byRegion.get(region)) {
+      const items = c.sources.map((s) =>
+        `<li><a href="${escHtml(s.url)}" target="_blank" rel="noopener">${escHtml(s.description)}</a><span class="src-url">${escHtml(s.url)}</span></li>`
+      ).join("");
+      body += `<div class="country"><h3><span class="flag" aria-hidden="true">${c.flag}</span>${escHtml(c.display)}</h3><ul>${items}</ul></div>`;
+    }
+  }
+
+  const langLinks = SUPPORTED_LANGS.map((l) =>
+    l === lang ? `<span class="lang-current">${l.toUpperCase()}</span>` : `<a href="/sources?lang=${l}">${l.toUpperCase()}</a>`
+  ).join(" \u00b7 ");
+
+  const html = `<!DOCTYPE html>
+<html lang="${escHtml(lang)}">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>${escHtml(ui.title)} \u2014 The E-Invoicing Compliance Corner</title>
+<meta name="description" content="${escHtml(ui.intro)}">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{ --paper:#efe9db; --paper-2:#e4dcc6; --paper-line:#c9bd9e; --ink:#241d10; --ink-soft:#4a4030; --muted:#8a7d5a; --stamp:#b5432f; }
+*{box-sizing:border-box;}
+body{ margin:0; background:var(--paper); color:var(--ink); font-family:'IBM Plex Sans',sans-serif; }
+.wrap{ max-width:860px; margin:0 auto; padding:40px 20px 70px; }
+.back{ font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:var(--ink-soft); text-decoration:none; }
+.back:hover{ color:var(--stamp); }
+.eyebrow{ font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.22em; text-transform:uppercase; color:var(--stamp); margin:26px 0 6px; }
+h1{ font-family:'Big Shoulders Display',sans-serif; font-weight:800; font-size:40px; letter-spacing:0.04em; margin:0 0 12px; }
+.intro{ font-size:15px; line-height:1.6; color:var(--ink-soft); max-width:640px; margin:0 0 8px; }
+.langs{ font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--muted); margin:14px 0 8px; }
+.langs a{ color:var(--ink-soft); text-decoration:none; } .langs a:hover{ color:var(--stamp); }
+.lang-current{ color:var(--stamp); font-weight:600; }
+h2.region{ font-family:'IBM Plex Mono',monospace; font-size:13px; letter-spacing:0.24em; text-transform:uppercase; color:var(--ink-soft); border-bottom:2px solid var(--paper-line); padding-bottom:8px; margin:38px 0 4px; }
+.country{ border-bottom:1px solid var(--paper-line); padding:16px 0 14px; }
+.country h3{ font-size:17px; margin:0 0 8px; display:flex; align-items:center; gap:9px; }
+.country .flag{ font-size:19px; }
+.country ul{ list-style:none; margin:0; padding:0 0 0 30px; }
+.country li{ margin:0 0 9px; }
+.country li a{ color:var(--ink); font-weight:600; font-size:14.5px; text-decoration:none; border-bottom:1px solid var(--paper-line); }
+.country li a:hover{ color:var(--stamp); border-color:var(--stamp); }
+.src-url{ display:block; font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--muted); word-break:break-all; margin-top:2px; }
+@media(max-width:600px){ h1{font-size:30px;} .country ul{padding-left:0;} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="/einvoicing-compliance-tracker.html">${ui.back}</a>
+  <p class="eyebrow">${escHtml(ui.eyebrow)}</p>
+  <h1>${escHtml(ui.title)}</h1>
+  <p class="intro">${escHtml(ui.intro)}</p>
+  <p class="langs">${langLinks}</p>
+  ${body}
+</div>
+</body>
+</html>`;
+
+  const headers = new Headers({
+    "Content-Type": "text/html; charset=UTF-8",
+    "Cache-Control": "public, max-age=300",
+  });
+  if (shouldSetCookie) {
+    headers.append("Set-Cookie", `${LANG_COOKIE}=${lang}; Domain=.e-invoicingcompliancecorner.com; Path=/; Max-Age=${LANG_COOKIE_TTL_SECONDS}; SameSite=Lax`);
+  }
+  if (cookieDuplicated) {
+    headers.append("Set-Cookie", `${LANG_COOKIE}=; Path=/; Max-Age=0; SameSite=Lax`);
+  }
+  return new Response(html, { headers });
+}
+
 async function renderCountryDeepDive(request, env, slug) {
   if (!env.eicc_content) {
     return new Response(
@@ -320,6 +462,11 @@ export default {
     const dataJsonMatch = url.pathname.match(DATA_JSON_RE);
     if (dataJsonMatch) {
       return renderTrackerDataJson(request, env, dataJsonMatch[1]);
+    }
+
+    // The tracking-sources page — D1-rendered, no asset file behind it.
+    if (url.pathname === "/sources" || url.pathname === "/sources.html") {
+      return renderSourcesPage(request, env);
     }
 
     // Only a single path segment can ever be a country slug
