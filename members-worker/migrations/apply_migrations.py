@@ -163,11 +163,24 @@ def record_many(name_paths, remote, chunk=50):
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--remote", action="store_true", help="target the remote (production) DB")
+    ap.add_argument("--local", action="store_true",
+                    help="explicitly target wrangler's local dev DB (.wrangler/state) -- rarely what you want")
     ap.add_argument("--baseline", action="store_true",
                     help="record ALL current migration files as applied without running them "
                          "(one-time setup on a DB that predates the tracker table)")
     ap.add_argument("--dry-run", action="store_true", help="show what would be applied, change nothing")
     args = ap.parse_args()
+
+    # Refuse to guess the target. Omitting --remote used to silently hit
+    # wrangler's throwaway local dev database and then fail confusingly
+    # on an empty schema ("no such table") -- production was never at
+    # risk, but the error looked alarming. Require an explicit choice.
+    if args.remote == args.local:
+        print("Choose a target explicitly:")
+        print("  --remote   the production D1 database (the normal case)")
+        print("  --local    wrangler's local dev DB in .wrangler/state (rarely wanted)")
+        sys.exit(1)
+    print(f"TARGET: {'REMOTE (production)' if args.remote else 'LOCAL dev database (.wrangler/state)'}")
 
     validate_replay()
 
