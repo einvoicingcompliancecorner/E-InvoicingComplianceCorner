@@ -473,7 +473,7 @@ export async function renderFullDeepDivePage(countryName, flag, code, region, co
   .rcard-title{font-weight:600; margin-bottom:4px;}
   .rcard-desc{color:#4a4030; font-size:13.5px; margin:0;}
   .spec-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:14px;}
-  .spec-card{background:var(--paper); color:#241d10; border:1px solid var(--paper-line); border-radius:var(--radius); padding:16px 18px 18px;}
+  .spec-card{background:var(--paper); color:#241d10; border:1px solid var(--paper-line); border-radius:var(--radius); padding:16px 18px 18px; min-width:0;}
   .spec-card h3{font-family:'IBM Plex Mono',monospace; font-size:11px; text-transform:uppercase; letter-spacing:0.09em; color:#6b5f3f; margin:0 0 10px; display:flex; align-items:center; gap:8px;}
   .spec-card h3::after{content:""; flex:1; height:1px; background:var(--paper-line);}
   .spec-row{display:flex; justify-content:space-between; gap:12px; padding:6px 0; border-top:1px dashed var(--paper-line); font-size:13px;}
@@ -484,7 +484,7 @@ export async function renderFullDeepDivePage(countryName, flag, code, region, co
   .badge-tag.confirmed{background:var(--live-dim); color:#bfe6cf;}
   .badge-tag.pending{background:var(--upcoming-dim); color:#dbe2ee;}
   .lifecycle{display:flex; flex-wrap:wrap; gap:8px; margin-top:4px;}
-  .lifecycle span{font-family:'IBM Plex Mono',monospace; font-size:11px; background:var(--soon-dim); color:#ffe0b3; padding:5px 11px; border-radius:999px; white-space:nowrap;}
+  .lifecycle span{font-family:'IBM Plex Mono',monospace; font-size:11px; background:var(--soon-dim); color:#ffe0b3; padding:5px 11px; border-radius:14px; white-space:normal; max-width:100%; overflow-wrap:break-word; word-break:break-word; line-height:1.4;}
   .lifecycle span.rej{background:var(--stamp-dim); color:#ffd7cc;}
   .lifecycle-list{list-style:none; margin:4px 0 0; padding:0; display:flex; flex-direction:column; gap:6px;}
   .lifecycle-list li{font-size:13px; color:#241d10; padding:6px 10px; background:var(--paper-2); border-radius:6px;}

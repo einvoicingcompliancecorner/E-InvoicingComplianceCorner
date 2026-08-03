@@ -2661,6 +2661,64 @@ static-file changes. The Middle East / North Africa relabel and Turkey
 (Europe, between Sweden and the United Kingdom) are both live on the
 tracker board.
 
+### Turkey deep-dive: lifecycle pills overflowing their card (3 August 2026, code complete, deploy pending)
+
+Dan reported two issues after the Turkey/region-relabel deploy above.
+The second (Middle East/North Africa countries briefly missing from
+the tracker's sidebar) turned out to be a stale page load — Dan
+confirmed a refresh fixed it, consistent with `renderTracker()`'s
+5-minute edge cache (`Cache-Control: public, max-age=300`) on the
+tracker route simply not having rolled over yet right after the
+deploy. No code change needed there.
+
+The first was real: on Turkey's deep-dive page, the "e-Fatura —
+centralized clearance" and "e-Arşiv — post-issuance reporting"
+lifecycle cards under Scope & Transmission render their step-by-step
+flow as rounded "pill" badges (`display_style: 'pills'`, migration
+301). `shared/deep-dive-render.mjs`'s `.lifecycle span` CSS was written
+assuming short 1-3 word labels (`white-space: nowrap`, `border-radius:
+999px`) — true for every prior country using this style. Turkey's
+pills are full sentences instead ("Cleared invoice distributed to the
+registered buyer", "Invoice data reported to GİB, generally the same
+day"), and `nowrap` refused to let that text wrap, forcing each pill
+wider than its card — visibly spilling past the card's edge, and (via
+`.spec-card` sitting in a `minmax(260px,1fr)` CSS grid track with no
+`min-width:0`) potentially forcing the whole grid wider than intended
+on narrow viewports.
+
+Fixed in the shared CSS, not by rewriting Turkey's copy, since this is
+a real layout gap that any future long-label country would hit again:
+
+- `.lifecycle span`: `white-space:nowrap` → `white-space:normal` +
+  `max-width:100%` + `overflow-wrap:break-word` + `word-break:
+  break-word`, so a too-long label wraps onto a second/third line
+  inside its own pill instead of forcing the pill wider than its
+  container. `border-radius` dropped from `999px` (a true stadium
+  shape, which looks odd on a pill tall enough to hold 2-3 lines of
+  text) to `14px` (a normal rounded-rectangle radius that still reads
+  as a pill for the short single-line labels every other country
+  uses).
+- `.spec-card`: added `min-width:0`, since CSS grid items default to a
+  content-based minimum width — without this, a card containing
+  unbreakable content could force its own grid track (and the whole
+  `.spec-grid`) wider than the column budget, which is what let the
+  overflow escape the section boundary rather than staying contained
+  within the card.
+
+Verified by rendering a standalone test page via
+`renderFullDeepDivePage()` with Turkey's actual e-Fatura lifecycle
+card content and screenshotting it in headless Chromium at both a
+1280px desktop width and a 390px mobile width — pills wrap onto
+multiple lines at both sizes with `document.documentElement.scrollWidth
+=== clientWidth` (no horizontal overflow) confirmed at the narrower
+width, where the bug was most visible. Single shared CSS block used by
+both the standalone `/turkey` (etc.) deep-dive page and the tracker's
+in-page deep-dive panel, so one fix covers both surfaces.
+
+**Code complete, deploy pending** — this is a `site-worker`-only static
+asset change (`shared/deep-dive-render.mjs`), no migration. Needs a
+`wrangler deploy` for `site-worker` from Dan's own machine.
+
 ## Open items / next steps
 
 ### Real open work
