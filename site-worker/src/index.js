@@ -500,11 +500,32 @@ const MAP_STYLE = `
   .country-row .dot{width:8px; height:8px; border-radius:50%; flex:0 0 auto;}
   .dot.status-inforce{background:var(--live);} .dot.status-upcoming{background:var(--upcoming);} .dot.status-tracked{background:var(--tracked);}
   .dot.status-b2gonly{background:var(--b2gonly);} .dot.status-nomandate{background:var(--nomandate);}
-  .news-row{display:flex; flex-direction:column; gap:3px; padding:10px 8px; border-bottom:1px solid var(--line); text-decoration:none; color:var(--text-lo); transition:background .1s ease;}
+  .news-row{display:flex; flex-direction:column; gap:3px; padding:10px 8px; border-bottom:1px solid var(--line); text-decoration:none; color:var(--text-lo); transition:background .1s ease; cursor:pointer;}
   .news-row:last-child{border-bottom:none;}
   .news-row:hover{background:var(--ink-3);}
   .news-date{font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:0.05em; text-transform:uppercase; color:var(--soon);}
+  .news-countries{font-size:12px; color:var(--muted);}
   .news-title{font-size:13.5px; line-height:1.4;}
+
+  /* Story pop-out modal -- same interaction pattern (and CSS) as the
+     newsletter archive's own story modal (members-worker/src/index.js),
+     ported here so a click on a news-row item behaves identically
+     rather than leaving the page. */
+  .modal-overlay{
+    display:none; position:fixed; inset:0; z-index:200; background:rgba(6,10,18,0.72);
+    align-items:flex-start; justify-content:center; padding:5vh 5vw 60px; overflow-y:auto;
+  }
+  .modal-overlay.open{display:flex;}
+  .modal-card{
+    position:relative; background:var(--paper); color:#241d10; border-radius:var(--radius);
+    padding:32px; max-width:640px; width:100%; border:1px solid var(--paper-line);
+  }
+  .modal-close{
+    position:absolute; top:14px; right:16px; background:none; border:none; font-size:26px;
+    line-height:1; color:#6b5f3f; cursor:pointer; padding:4px;
+  }
+  .modal-close:hover{color:var(--stamp);}
+  .modal-loading{color:#8a7d5a; font-size:13.5px; font-style:italic;}
   .footer-cta{margin-top:28px; display:flex; flex-wrap:wrap; gap:16px 28px; align-items:center; justify-content:space-between; background:var(--ink-2); border:1px solid var(--line); border-radius:var(--radius); padding:20px 24px;}
   .footer-cta p{margin:0; font-size:14px; color:var(--muted); max-width:520px;}
   .archive-btn{font-family:'IBM Plex Mono',monospace; font-size:12.5px; text-transform:uppercase; letter-spacing:0.08em; background:var(--stamp); color:#fff; padding:11px 20px; border-radius:999px; text-decoration:none; white-space:nowrap; font-weight:600;}
@@ -546,6 +567,12 @@ function mapPageBodyHtml() {
     <p id="footerText"></p>
     <a class="archive-btn" href="https://members.e-invoicingcompliancecorner.com/members/archive" id="archiveBtnLink"></a>
   </div>
+</div>
+<div class="modal-overlay" id="storyModalOverlay">
+  <div class="modal-card">
+    <button class="modal-close" id="storyModalClose" aria-label="Close">&times;</button>
+    <div id="storyModalBody"></div>
+  </div>
 </div>`;
 }
 
@@ -570,7 +597,7 @@ async function renderMapPage(request, env) {
   // side which one the sidebar actually renders (see its header comment).
   const [countries, recentStories] = await Promise.all([
     getMapCountries(env.eicc_content, lang),
-    getRecentStories(env.eicc_content, lang, 8),
+    getRecentStories(env.eicc_content, lang),
   ]);
 
   // </script> inside the JSON would terminate the blob early.

@@ -101,6 +101,24 @@
     return topoPromise;
   }
 
+  // The story pop-out modal's Escape-key handling is wired once at
+  // module scope, not per MapPanel instance -- registering a fresh
+  // document-level listener every time the tracker's in-page panel is
+  // reopened (a fresh MapPanel each time) would accumulate one stale
+  // listener per open/close cycle, same pitfall einvoicing-compliance-
+  // tracker.html's own wireArchiveStoryModal() comment already flags for
+  // exactly this reason. Whichever MapPanel booted most recently is the
+  // only one that can have its modal open, so it's simply the target.
+  let activePanelForEscape = null;
+  let escapeListenerWired = false;
+  function wireGlobalEscapeHandler() {
+    if (escapeListenerWired) return;
+    escapeListenerWired = true;
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && activePanelForEscape) activePanelForEscape.closeStoryModal();
+    });
+  }
+
   class MapPanel {
     constructor(root, opts) {
       this.root = root;
@@ -116,6 +134,8 @@
       this.smallMarkerRegistry = {};
       this.activeRegion = "Europe";
       this._indexCountries();
+      activePanelForEscape = this;
+      wireGlobalEscapeHandler();
       this._boot();
     }
 
@@ -162,7 +182,12 @@
       this.applyStaticText();
       this.buildTabs();
       this.buildSidebar();
-      this.focusSidebarRegion(this.activeRegion);
+      // buildSidebar() already renders for this.activeRegion in
+      // embedded (news) mode; country mode's buildCountryList() builds
+      // all regions unordered, so focusSidebarRegion() still needs to
+      // run once to bring the initial region's block to the front.
+      if (!this.isEmbedded()) this.focusSidebarRegion(this.activeRegion);
+      this.wireStoryModal();
 
       const host = this.$("mapSvgHost");
       loadTopology(this.opts.topologyUrl).then((topo) => {
@@ -185,11 +210,21 @@
     buildSidebar() {
       const root = this.$("sidebarList");
       if (!root) return;
-      if (this.isEmbedded()) this.buildRecentNewsList(root);
+      if (this.isEmbedded()) this.buildRecentNewsList(root, this.activeRegion);
       else this.buildCountryList(root);
     }
 
-    buildRecentNewsList(root) {
+    // `region` filters the pool getRecentStories() already fetched
+    // (see shared/map-data.mjs's header comment on that function) down
+    // to stories touching at least one country in that region -- a
+    // story covering several countries across regions can appear under
+    // more than one tab, which is correct (it's genuinely relevant to
+    // both). Rebuilt on every region-tab switch (see setActiveRegion())
+    // rather than kept as pre-built per-region blocks like
+    // buildCountryList()'s accordion, since there's no need to preserve
+    // DOM state across tabs the way the country list's collapse/expand
+    // toggles do.
+    buildRecentNewsList(root, region) {
       const old = this.$("sidebarBlocks");
       if (old) old.remove();
       const doc = root.ownerDocument;
@@ -198,7 +233,9 @@
       root.appendChild(wrap);
       this.sidebarBlocks = {};
 
-      if (!this.recentStories.length) {
+      const matching = this.recentStories.filter((s) => s.regions.includes(region)).slice(0, 10);
+
+      if (!matching.length) {
         const empty = doc.createElement("p");
         empty.className = "map-note";
         empty.textContent = this.ui().noRecentNews || "";
@@ -206,14 +243,20 @@
         return;
       }
 
-      for (const story of this.recentStories) {
+      for (const story of matching) {
         const row = doc.createElement("a");
         row.className = "news-row";
         row.href = this.storyUrl(story);
         row.target = "_blank";
         row.rel = "noopener";
+        row.addEventListener("click", (e) => {
+          e.preventDefault();
+          this.openStoryModal(story.id);
+        });
+        const countryLabel = story.countries.map((c) => c.flag + " " + c.name).join(", ");
         row.innerHTML =
           '<span class="news-date">' + escHtml(this.formatNewsDate(story.date)) + "</span>" +
+          (countryLabel ? '<span class="news-countries">' + escHtml(countryLabel) + "</span>" : "") +
           '<span class="news-title">' + escHtml(story.title) + "</span>";
         wrap.appendChild(row);
       }
@@ -231,6 +274,58 @@
       } catch (e) {
         return dateStr;
       }
+    }
+
+    // ---------- story pop-out modal ----------
+    // Same interaction and markup contract as the newsletter archive's
+    // own story modal (members-worker's renderArchiveList /
+    // einvoicing-compliance-tracker.html's wireArchiveStoryModal): a
+    // #storyModalOverlay/#storyModalBody/#storyModalClose triplet
+    // (mapPageBodyHtml()) fetches the real story permalink, pulls
+    // `.wrap .card`'s innerHTML out of the response, and drops it into
+    // the modal body -- so a click on a news-row item behaves exactly
+    // like clicking a story in the newsletter archive itself, just
+    // without leaving The Map. Escape/backdrop/close-button handling is
+    // wired once in wireStoryModal(); the Escape listener itself is a
+    // module-level singleton (see wireGlobalEscapeHandler() above).
+    openStoryModal(id) {
+      const overlay = this.$("storyModalOverlay");
+      const modalBody = this.$("storyModalBody");
+      if (!overlay || !modalBody) return;
+      modalBody.innerHTML = '<p class="modal-loading">' + escHtml(this.ui().modalLoading) + "</p>";
+      overlay.classList.add("open");
+      const suffix = this.lang !== "en" ? "?lang=" + this.lang : "";
+      const url = MEMBERS_ORIGIN + "/members/archive/" + encodeURIComponent(id);
+      fetch(url + suffix)
+        .then((res) => {
+          if (!res.ok) throw new Error("fetch failed: " + res.status);
+          return res.text();
+        })
+        .then((html) => {
+          const doc = new DOMParser().parseFromString(html, "text/html");
+          const card = doc.querySelector(".wrap .card");
+          if (!card) throw new Error("story card not found in response");
+          modalBody.innerHTML = card.innerHTML;
+        })
+        .catch((err) => {
+          console.error("The Map: story modal failed to load", err);
+          modalBody.innerHTML = '<p class="modal-loading">' + escHtml(this.ui().modalOfficialSource) + ': <a href="' + url + '">' + url + "</a></p>";
+        });
+    }
+
+    closeStoryModal() {
+      const overlay = this.$("storyModalOverlay");
+      if (overlay) overlay.classList.remove("open");
+    }
+
+    wireStoryModal() {
+      const overlay = this.$("storyModalOverlay");
+      const closeBtn = this.$("storyModalClose");
+      if (!overlay || !closeBtn) return;
+      closeBtn.addEventListener("click", () => this.closeStoryModal());
+      overlay.addEventListener("click", (e) => {
+        if (e.target === overlay) this.closeStoryModal();
+      });
     }
 
     // ---------- sidebar (regions flex to the active map's region) ----------
@@ -339,7 +434,12 @@
       this.$$(".region-tab").forEach((b) => b.classList.toggle("active", b.dataset.region === region));
       this.$$(".region-map-svg").forEach((s) => s.classList.toggle("active", s.dataset.region === region));
       this.updateMapHeadingAndNote(region);
-      this.focusSidebarRegion(region);
+      if (this.isEmbedded()) {
+        const root = this.$("sidebarList");
+        if (root) this.buildRecentNewsList(root, region);
+      } else {
+        this.focusSidebarRegion(region);
+      }
     }
 
     updateMapHeadingAndNote(region) {

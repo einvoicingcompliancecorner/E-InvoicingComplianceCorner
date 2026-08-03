@@ -137,8 +137,16 @@ function deriveStoryTitle(html) {
   return match ? match[1].trim() : "Untitled";
 }
 
-export async function getRecentStories(db, lang, limit = 8) {
-  const { results } = await db.prepare(`
+// `limit` here bounds the whole pool fetched once per page load, not
+// how many are shown at a time -- map-panel.js's buildRecentNewsList()
+// filters this pool down to whichever countries are in the active map
+// region (a story with no country match anywhere in the pool for the
+// currently selected region just doesn't appear), so the pool needs to
+// be large enough to still have several matches per region, not just
+// per site-wide "recent" cutoff. 40 comfortably covers a few weeks of
+// publishing across all 4 regions at this site's current pace.
+export async function getRecentStories(db, lang, limit = 40) {
+  const { results: storyRows } = await db.prepare(`
     SELECT s.id, s.date, s.html_en,
            COALESCE(st.title, NULL) as title_translated,
            COALESCE(st.html, s.html_en) as html
@@ -149,11 +157,44 @@ export async function getRecentStories(db, lang, limit = 8) {
     LIMIT ?
   `).bind(lang, limit).all();
 
-  return results.map((s) => ({
-    id: s.id,
-    date: s.date,
-    title: s.title_translated || deriveStoryTitle(s.html),
-  }));
+  if (!storyRows.length) return [];
+
+  // One story can cover several countries (a handful of genuinely
+  // cross-cutting stories do -- e.g. a shared ViDA milestone) -- fetched
+  // separately and grouped, rather than a join that would duplicate
+  // story rows per country. Mirrors members-worker's
+  // getStoriesWithCountries() query shape.
+  const { results: countryRows } = await db.prepare(`
+    SELECT sc.story_id, c.code, c.name_en, c.region, COALESCE(ct.display_name, c.name_en) as name
+    FROM story_countries sc
+    JOIN countries c ON c.id = sc.country_id
+    LEFT JOIN country_translations ct ON ct.country_id = c.id AND ct.lang = ?
+  `).bind(lang).all();
+
+  const countriesByStory = new Map();
+  for (const row of countryRows) {
+    if (!countriesByStory.has(row.story_id)) countriesByStory.set(row.story_id, []);
+    countriesByStory.get(row.story_id).push({
+      name: row.name,
+      nameEn: row.name_en,
+      region: row.region,
+      flag: deriveFlagFromCode(row.code),
+    });
+  }
+
+  return storyRows.map((s) => {
+    const countries = countriesByStory.get(s.id) || [];
+    return {
+      id: s.id,
+      date: s.date,
+      title: s.title_translated || deriveStoryTitle(s.html),
+      countries,
+      // A story with no linked countries at all (rare) has no region
+      // to be filtered under, and so simply won't surface in any of
+      // the region-filtered views -- see buildRecentNewsList().
+      regions: [...new Set(countries.map((c) => c.region))],
+    };
+  });
 }
 
 export async function getMapCountries(db, lang) {
@@ -217,6 +258,8 @@ export const MAP_UI = {
     allJurisdictions: "All jurisdictions",
     recentNews: "Latest updates",
     noRecentNews: "No recent updates yet.",
+    modalLoading: "Loading…",
+    modalOfficialSource: "Official source",
     jurisdictionsOf: "{count} of {total} tracked jurisdictions",
     tooltipCta: "Click for the full deep dive →",
     footerText: "Every country here links through to its full deep dive. For the underlying research as it's published — new mandates, deadline changes, source-of-truth updates — it's all in the newsletter archive.",
@@ -246,6 +289,8 @@ export const MAP_UI = {
     allJurisdictions: "Todas las jurisdicciones",
     recentNews: "Últimas actualizaciones",
     noRecentNews: "Aún no hay actualizaciones recientes.",
+    modalLoading: "Cargando…",
+    modalOfficialSource: "Fuente oficial",
     jurisdictionsOf: "{count} de {total} jurisdicciones rastreadas",
     tooltipCta: "Haz clic para ver el análisis completo →",
     footerText: "Cada país aquí enlaza a su análisis completo. Para la investigación subyacente a medida que se publica — nuevos mandatos, cambios de plazos, actualizaciones de fuentes — todo está en el archivo del boletín.",
@@ -275,6 +320,8 @@ export const MAP_UI = {
     allJurisdictions: "Alle Länder",
     recentNews: "Neueste Updates",
     noRecentNews: "Noch keine aktuellen Updates.",
+    modalLoading: "Wird geladen…",
+    modalOfficialSource: "Offizielle Quelle",
     jurisdictionsOf: "{count} von {total} erfassten Ländern",
     tooltipCta: "Klicken für die vollständige Länderanalyse →",
     footerText: "Jedes Land hier verlinkt zu seiner vollständigen Länderanalyse. Für die zugrunde liegende Recherche, sobald sie veröffentlicht wird — neue Mandate, Fristenänderungen, aktualisierte Quellen — alles im Newsletter-Archiv.",
@@ -304,6 +351,8 @@ export const MAP_UI = {
     allJurisdictions: "Toutes les juridictions",
     recentNews: "Dernières mises à jour",
     noRecentNews: "Aucune mise à jour récente pour le moment.",
+    modalLoading: "Chargement…",
+    modalOfficialSource: "Source officielle",
     jurisdictionsOf: "{count} sur {total} juridictions suivies",
     tooltipCta: "Cliquez pour l'analyse complète →",
     footerText: "Chaque pays ici renvoie vers son analyse complète. Pour la recherche sous-jacente au fur et à mesure de sa publication — nouveaux mandats, changements d'échéances, mises à jour des sources — tout est dans les archives de la newsletter.",

@@ -1895,6 +1895,79 @@ jurisdictions" with every country; the tracker's embedded panel shows
 "Latest updates" with real newsletter headlines, newest first, each
 opening its full story on the members site in a new tab.
 
+### The Map's "Latest updates" panel: region-filtered, flagged, pop-out (3 August 2026, code complete, deploy pending)
+
+Three refinements to the "Latest updates" list added in the previous
+round (embedded-panel-only, per its own header comment):
+
+- **Filtered to the active map region.** Switching the Europe/Middle
+  East/Asia-Pacific/Americas tab now filters the news list down to
+  stories touching at least one country in that region, instead of
+  showing the same site-wide list regardless of which region is
+  selected. `getRecentStories(db, lang, limit=40)` (`shared/
+  map-data.mjs`) now also joins `story_countries`/`countries` (mirroring
+  members-worker's own `getStoriesWithCountries()` query shape) and
+  returns each story's `countries[]` and derived `regions[]` (the
+  unique set of regions its countries belong to) alongside the existing
+  `id`/`date`/`title`. The pool size went from 8 to 40 specifically
+  because it's now filtered client-side per region rather than shown
+  as one flat list — 8 total split across 4 regions would leave almost
+  nothing to show in the quieter regions. A story spanning countries in
+  two regions (rare, but real) correctly appears under both tabs. A
+  story with no country tag at all (also rare) doesn't appear under any
+  region-filtered tab — an accepted edge case, noted in the code.
+  `map-panel.js`'s `buildRecentNewsList(root, region)` now takes the
+  region explicitly and is called fresh on every `setActiveRegion()`
+  tab switch (news mode rebuilds rather than keeping per-region blocks
+  the way the country list's accordion does, since there's no state
+  worth preserving across tabs here).
+- **Each row now shows the flag(s) and name(s) of the country/countries
+  the story is about**, between the date and the title (e.g. "🇫🇷
+  France", or "🇫🇷 France, 🇸🇦 Saudi Arabia" for a genuinely
+  cross-cutting story) — a new `.news-countries` line, styled to sit
+  between `.news-date` and `.news-title`.
+- **Clicking a story now pops it out in a modal, in place, instead of
+  opening the members-subdomain permalink in a new tab** — matching
+  exactly how clicking a story already behaves in the "Newsletter
+  Archive" panel (`einvoicing-compliance-tracker.html`'s
+  `wireArchiveStoryModal()`). Ported the same interaction into
+  `map-panel.js` itself: a `#storyModalOverlay`/`#storyModalBody`/
+  `#storyModalClose` triplet (added to `mapPageBodyHtml()`, styled with
+  the exact same `.modal-overlay`/`.modal-card`/`.modal-close`/
+  `.modal-loading` CSS members-worker's own archive modal uses) fetches
+  the real story permalink, pulls `.wrap .card`'s innerHTML out of the
+  response, and drops it into the modal body. Falls back to a plain
+  "official source" link if the fetch fails. Closes via the × button,
+  a backdrop click, or Escape. The row's real `href` (opening in a new
+  tab) is kept as the no-JS/middle-click fallback, same convention used
+  for every other in-page link on this site.
+  - One real subtlety caught while wiring this up: Escape-key handling
+    can't be a fresh `document.addEventListener` call inside the
+    MapPanel constructor, since the tracker's in-page panel creates a
+    brand new `MapPanel` instance every time it's reopened — that would
+    accumulate one stale listener per open/close cycle (the exact
+    pitfall `wireArchiveStoryModal()`'s own header comment already
+    flags for the same reason). Fixed by making the Escape listener a
+    module-level singleton, wired once, that always targets whichever
+    `MapPanel` instance booted most recently.
+
+Verified all three with a Playwright script that mocks the members-
+subdomain fetch (`page.route()`, no real network needed) and drives a
+simulated shadow-root panel: Europe correctly shows the France and
+cross-cutting stories and excludes the Saudi-only and untagged ones;
+Middle East shows the inverse; each row's flag+name text matches;
+clicking a row opens the modal with the mocked story's real content
+(not a navigation), and the close button closes it. No console errors.
+
+Not yet deployed — same three files as the prior two Map rounds
+(`site-worker/src/index.js`, `map-panel.js`, `shared/map-data.mjs`), no
+migrations. One `cd site-worker && npx wrangler deploy` picks up
+everything through this round. Spot-check after deploy: switch region
+tabs on the tracker's embedded Map panel and confirm the news list
+changes to match; confirm each headline shows a flag + country name;
+click a headline and confirm it pops out in place rather than opening
+a new tab.
+
 ## Open items / next steps
 
 ### Real open work
