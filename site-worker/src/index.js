@@ -331,35 +331,49 @@ async function renderSourcesPage(request, env) {
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-:root{ --paper:#efe9db; --paper-2:#e4dcc6; --paper-line:#c9bd9e; --ink:#241d10; --ink-soft:#4a4030; --muted:#8a7d5a; --stamp:#b5432f; }
-*{box-sizing:border-box;}
-body{ margin:0; background:var(--paper); color:var(--ink); font-family:'IBM Plex Sans',sans-serif; }
-.wrap{ max-width:860px; margin:0 auto; padding:40px 20px 70px; }
-.back{ font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:var(--ink-soft); text-decoration:none; }
-.back:hover{ color:var(--stamp); }
-.eyebrow{ font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.22em; text-transform:uppercase; color:var(--stamp); margin:26px 0 6px; }
-h1{ font-family:'Big Shoulders Display',sans-serif; font-weight:800; font-size:40px; letter-spacing:0.04em; margin:0 0 12px; }
-.intro{ font-size:15px; line-height:1.6; color:var(--ink-soft); max-width:640px; margin:0 0 8px; }
-.langs{ font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--muted); margin:14px 0 8px; }
-.langs a{ color:var(--ink-soft); text-decoration:none; } .langs a:hover{ color:var(--stamp); }
-.lang-current{ color:var(--stamp); font-weight:600; }
-h2.region{ font-family:'IBM Plex Mono',monospace; font-size:13px; letter-spacing:0.24em; text-transform:uppercase; color:var(--ink-soft); border-bottom:2px solid var(--paper-line); padding-bottom:8px; margin:38px 0 4px; }
-.country{ border-bottom:1px solid var(--paper-line); padding:16px 0 14px; }
-.country h3{ font-size:17px; margin:0 0 8px; display:flex; align-items:center; gap:9px; }
-.country .flag{ font-size:19px; }
-.country ul{ list-style:none; margin:0; padding:0 0 0 30px; }
-.country li{ margin:0 0 9px; }
-.country li a{ color:var(--ink); font-weight:600; font-size:14.5px; text-decoration:none; border-bottom:1px solid var(--paper-line); }
-.country li a:hover{ color:var(--stamp); border-color:var(--stamp); }
-.src-url{ display:block; font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--muted); word-break:break-all; margin-top:2px; }
-@media(max-width:600px){ h1{font-size:30px;} .country ul{padding-left:0;} }
+  /* Same dark shell as the country deep-dive pages (shared/deep-dive-
+     render.mjs) -- and the same structural contract: a single <style>
+     with :root{ and body{ rules (the tracker's in-page injector scopes
+     both to :host{), all content inside .wrap, .top-bar first (the
+     injector strips it and adds its own close control), and the .langs
+     row (stripped in-page too -- the tracker's own language banner
+     takes over there). */
+  :root{
+    --ink:#0f1a2b; --ink-2:#152238; --line:#2b3c5a;
+    --paper:#efe9db; --paper-2:#e4dcc6; --paper-line:#c9bd9e;
+    --text-lo:#f2f0e8; --muted:#93a3c0;
+    --stamp:#b5432f; --stamp-dim:#7c3628; --radius:10px;
+  }
+  *{box-sizing:border-box;} html,body{margin:0;padding:0;}
+  body{background:var(--ink); color:var(--text-lo); font-family:'IBM Plex Sans',sans-serif; line-height:1.55;}
+  .display{font-family:'Big Shoulders Display',sans-serif; font-weight:800;}
+  .wrap{max-width:980px; margin:0 auto; padding:0 5vw 60px;}
+  .top-bar{display:flex; justify-content:space-between; align-items:center; padding-top:20px;}
+  .back-link{font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:var(--muted); text-decoration:none;}
+  .back-link:hover{color:var(--paper);}
+  .eyebrow{font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.22em; text-transform:uppercase; color:var(--stamp); margin:30px 0 6px;}
+  h1{font-size:42px; letter-spacing:0.04em; margin:0 0 12px; color:var(--text-lo);}
+  .intro{font-size:15px; line-height:1.6; color:var(--muted); max-width:660px; margin:0 0 8px;}
+  .langs{font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--muted); margin:14px 0 8px;}
+  .langs a{color:var(--muted); text-decoration:none;} .langs a:hover{color:var(--paper);}
+  .lang-current{color:var(--stamp); font-weight:600;}
+  h2.region{font-family:'IBM Plex Mono',monospace; font-size:13px; letter-spacing:0.24em; text-transform:uppercase; color:var(--muted); border-bottom:1px solid var(--line); padding-bottom:8px; margin:38px 0 4px;}
+  .country{border-bottom:1px solid var(--line); padding:16px 0 14px;}
+  .country h3{font-size:17px; margin:0 0 8px; display:flex; align-items:center; gap:9px; color:var(--text-lo);}
+  .country .flag{font-size:19px;}
+  .country ul{list-style:none; margin:0; padding:0 0 0 30px;}
+  .country li{margin:0 0 9px;}
+  .country li a{color:var(--paper); font-weight:600; font-size:14.5px; text-decoration:none; border-bottom:1px solid var(--line);}
+  .country li a:hover{color:var(--stamp); border-color:var(--stamp);}
+  .src-url{display:block; font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--muted); word-break:break-all; margin-top:2px;}
+  @media(max-width:600px){ h1{font-size:30px;} .country ul{padding-left:0;} }
 </style>
 </head>
 <body>
 <div class="wrap">
-  <a class="back" href="/einvoicing-compliance-tracker.html">${ui.back}</a>
+  <div class="top-bar"><a class="back-link" href="/einvoicing-compliance-tracker.html">${ui.back}</a></div>
   <p class="eyebrow">${escHtml(ui.eyebrow)}</p>
-  <h1>${escHtml(ui.title)}</h1>
+  <h1 class="display">${escHtml(ui.title)}</h1>
   <p class="intro">${escHtml(ui.intro)}</p>
   <p class="langs">${langLinks}</p>
   ${body}

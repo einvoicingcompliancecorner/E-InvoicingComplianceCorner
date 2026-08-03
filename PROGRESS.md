@@ -1183,10 +1183,26 @@ site's sources of truth. Built with today's lessons applied:
   region-grouped (Europe → Middle East → Asia-Pacific → Americas),
   flag + translated country name, linked description + visible URL,
   4-language UI strings, lang switcher, back link to the tracker.
-- **Menu**: "Tracking sources" (📡) added to the Resources dropdown as
-  a **plain navigation link, deliberately not an in-page panel** (see
-  the feedback-panel duplicated-wiring incident above) — with
-  menu.sources keys in all four i18n files.
+- **Menu**: "Tracking sources" (📡) in the Resources dropdown, with
+  menu.sources keys in all four i18n files. Initially shipped as a
+  plain navigation link; per Dan's review, upgraded the same evening
+  to the **full in-page treatment mirroring the country deep dives**
+  (fetch /sources?lang= → strip its own top-bar and standalone langs
+  row → scope CSS to :host in a shadow root → panel with close
+  control, history pushState, popstate open/close branches, mutual
+  exclusion with all five other panels, and the eicc:languageChanged
+  re-fetch — so the tracker's language banner drives it in-frame).
+  The duplicated-wiring risk that ruled panels out for feedback
+  doesn't apply here: the page is static content + links with no
+  form, and the panel injects the server-rendered page rather than
+  re-implementing it. The page itself was also restyled from the
+  paper theme to the **dark deep-dive shell** (Dan's review: it
+  didn't match the site) — same tokens, and the same structural
+  contract the injector relies on (single style element, :root/body
+  rules, .wrap/.top-bar), stated in a comment in the renderer.
+  jsdom-tested: menu click → panel with injected shadow content,
+  stripped chrome, scoped CSS, history, ES re-fetch on language
+  change, close restoring the board.
 - **Tested**: migration replay (exact counts), the real
   renderSourcesPage against the replayed dataset via a D1 shim (33
   countries, 38 links, region order, Egypt/ETA present, ES UI +

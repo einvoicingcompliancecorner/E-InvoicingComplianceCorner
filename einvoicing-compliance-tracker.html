@@ -677,6 +677,7 @@
 <div id="archiveView" style="display:none;"></div>
 <div id="educationView" style="display:none;"></div>
 <div id="feedbackView" style="display:none;"></div>
+<div id="sourcesView" style="display:none;"></div>
 <div id="subscribeView" style="display:none;"></div>
 
 <footer>
@@ -2301,6 +2302,7 @@ async function openDeepDive(slug, opts){
   if(currentEducationPage) closeEducationPage({ skipHistory: true });
   if(feedbackPageOpen) closeFeedbackPage({ skipHistory: true });
   if(subscribePageOpen) closeSubscribePage({ skipHistory: true });
+  if(sourcesPageOpen) closeSourcesPage({ skipHistory: true });
 
   boardView.style.display = 'none';
   // The site name/description/subscriber-perks block pushes real
@@ -2374,6 +2376,93 @@ function closeDeepDive(opts){
     history.pushState({ deepDive: null }, '', '/einvoicing-compliance-tracker.html');
   }
 }
+// ---------- in-page tracking-sources panel ----------
+// Mirrors the country deep-dive panel: fetch the server-rendered
+// /sources page (site-worker, D1 at request time), strip its own
+// top-bar and standalone language row (the tracker's banner takes
+// over in-frame), scope its CSS into a shadow root, and show it in
+// the main frame with history + language-change integration.
+let sourcesPageOpen = false;
+
+async function openSourcesPage(opts){
+  opts = opts || {};
+  const boardView = document.getElementById('boardView');
+  const panel = document.getElementById('sourcesView');
+  const topbarBrand = document.querySelector('.topbar-brand');
+  sourcesPageOpen = true;
+  if(currentDeepDiveSlug) closeDeepDive({ skipHistory: true });
+  if(archiveOpen) closeArchive({ skipHistory: true });
+  if(currentEducationPage) closeEducationPage({ skipHistory: true });
+  if(feedbackPageOpen) closeFeedbackPage({ skipHistory: true });
+  if(subscribePageOpen) closeSubscribePage({ skipHistory: true });
+
+  boardView.style.display = 'none';
+  if(topbarBrand) topbarBrand.style.display = 'none';
+  panel.style.display = '';
+  panel.innerHTML = '<p style="color:var(--muted); font-family:\'IBM Plex Mono\',monospace; font-size:13px; padding:40px 5vw;">Loading…</p>';
+  window.scrollTo(0, 0);
+
+  const lang = (window.EICC_I18N && window.EICC_I18N.currentLang) || 'en';
+  let html;
+  try {
+    const res = await fetch(`/sources?lang=${lang}`);
+    if(!res.ok) throw new Error('sources fetch failed: ' + res.status);
+    html = await res.text();
+  } catch(err){
+    console.warn('Falling back to a full navigation for /sources', err);
+    window.location.href = '/sources';
+    return;
+  }
+  if(!sourcesPageOpen) return; // closed while loading
+
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  const styleEl = doc.querySelector('style');
+  const wrap = doc.querySelector('.wrap');
+  const topBar = wrap ? wrap.querySelector('.top-bar') : null;
+  if(topBar) topBar.remove(); // replaced by this panel's own close control
+  const langsRow = wrap ? wrap.querySelector('.langs') : null;
+  if(langsRow) langsRow.remove(); // the tracker's language banner takes over in-frame
+
+  const scopedCss = (styleEl ? styleEl.textContent : '')
+    .replace(':root{', ':host{')
+    .replace('body{', ':host{');
+
+  panel.innerHTML = '';
+  const host = document.createElement('div');
+  panel.appendChild(host);
+  const shadow = host.attachShadow({ mode: 'open' });
+
+  const closeLabel = (window.EICC_I18N && window.EICC_I18N.t('backLink')) || '← Back to global tracker';
+  shadow.innerHTML = `
+    <style>${scopedCss}</style>
+    <div class="wrap">
+      <div class="top-bar"><a class="back-link" id="sourcesCloseLink" href="/einvoicing-compliance-tracker.html">${closeLabel}</a></div>
+      ${wrap ? wrap.innerHTML : '<p>Could not load this page.</p>'}
+    </div>`;
+  shadow.getElementById('sourcesCloseLink').addEventListener('click', (e)=>{
+    e.preventDefault();
+    closeSourcesPage();
+  });
+
+  if(!opts.skipHistory){
+    history.pushState({ sources: true }, '', '/sources');
+  }
+}
+
+function closeSourcesPage(opts){
+  opts = opts || {};
+  sourcesPageOpen = false;
+  document.getElementById('boardView').style.display = '';
+  const topbarBrand = document.querySelector('.topbar-brand');
+  if(topbarBrand) topbarBrand.style.display = '';
+  const panel = document.getElementById('sourcesView');
+  panel.style.display = 'none';
+  panel.innerHTML = '';
+  if(!opts.skipHistory){
+    history.pushState({ sources: null }, '', '/einvoicing-compliance-tracker.html');
+  }
+}
+
 // ---------- in-page newsletter archive panel ----------
 // Mirrors the country deep-dive panel above, but the archive lives on
 // a different origin (members.e-invoicingcompliancecorner.com), so
@@ -2463,6 +2552,7 @@ async function openArchive(opts){
   if(currentEducationPage) closeEducationPage({ skipHistory: true });
   if(feedbackPageOpen) closeFeedbackPage({ skipHistory: true });
   if(subscribePageOpen) closeSubscribePage({ skipHistory: true });
+  if(sourcesPageOpen) closeSourcesPage({ skipHistory: true });
 
   boardView.style.display = 'none';
   if(topbarBrand) topbarBrand.style.display = 'none';
@@ -2675,6 +2765,7 @@ async function openEducationPage(pageKey, opts){
   if(archiveOpen) closeArchive({ skipHistory: true });
   if(feedbackPageOpen) closeFeedbackPage({ skipHistory: true });
   if(subscribePageOpen) closeSubscribePage({ skipHistory: true });
+  if(sourcesPageOpen) closeSourcesPage({ skipHistory: true });
 
   boardView.style.display = 'none';
   if(topbarBrand) topbarBrand.style.display = 'none';
@@ -2860,6 +2951,7 @@ async function openFeedbackPage(opts){
   if(archiveOpen) closeArchive({ skipHistory: true });
   if(currentEducationPage) closeEducationPage({ skipHistory: true });
   if(subscribePageOpen) closeSubscribePage({ skipHistory: true });
+  if(sourcesPageOpen) closeSourcesPage({ skipHistory: true });
 
   boardView.style.display = 'none';
   if(topbarBrand) topbarBrand.style.display = 'none';
@@ -3073,6 +3165,7 @@ async function openSubscribePage(opts){
   if(archiveOpen) closeArchive({ skipHistory: true });
   if(currentEducationPage) closeEducationPage({ skipHistory: true });
   if(feedbackPageOpen) closeFeedbackPage({ skipHistory: true });
+  if(sourcesPageOpen) closeSourcesPage({ skipHistory: true });
 
   boardView.style.display = 'none';
   if(topbarBrand) topbarBrand.style.display = 'none';
@@ -3164,6 +3257,17 @@ function wireDeepDiveInPagePanel(){
     if(!link) return;
     const href = link.getAttribute('href');
 
+    // The Resources > Tracking sources link -- same in-page treatment
+    // as a country deep dive (the /sources route is server-rendered
+    // from D1 by site-worker).
+    if(href === '/sources'){
+      e.preventDefault();
+      document.getElementById('sidebar')?.classList.remove('open');
+      document.getElementById('sidebarOverlay')?.classList.remove('open');
+      openSourcesPage();
+      return;
+    }
+
     // The Resources > Newsletter archive link -- opens the archive
     // list in the main frame instead of navigating away, same
     // treatment as a country Deep Dive link.
@@ -3221,6 +3325,7 @@ function wireDeepDiveInPagePanel(){
     const eduPage = educationPageFromHref(window.location.pathname);
     const isFeedbackUrl = window.location.pathname.replace(/^\/+/, '') === 'feedback.html';
     const isSubscribeUrl = window.location.pathname.replace(/^\/+/, '') === 'subscribe.html';
+    const isSourcesUrl = window.location.pathname === '/sources' || window.location.pathname === '/sources.html';
     if(isArchiveUrl){
       openArchive({ skipHistory: true });
     } else if(slug){
@@ -3231,6 +3336,8 @@ function wireDeepDiveInPagePanel(){
       openFeedbackPage({ skipHistory: true });
     } else if(isSubscribeUrl){
       openSubscribePage({ skipHistory: true });
+    } else if(isSourcesUrl){
+      openSourcesPage({ skipHistory: true });
     } else if(currentDeepDiveSlug){
       closeDeepDive({ skipHistory: true });
     } else if(archiveOpen){
@@ -3241,6 +3348,8 @@ function wireDeepDiveInPagePanel(){
       closeFeedbackPage({ skipHistory: true });
     } else if(subscribePageOpen){
       closeSubscribePage({ skipHistory: true });
+    } else if(sourcesPageOpen){
+      closeSourcesPage({ skipHistory: true });
     }
   });
 
@@ -3253,6 +3362,7 @@ function wireDeepDiveInPagePanel(){
     else if(currentEducationPage) openEducationPage(currentEducationPage, { skipHistory: true });
     else if(feedbackPageOpen) openFeedbackPage({ skipHistory: true });
     else if(subscribePageOpen) openSubscribePage({ skipHistory: true });
+    else if(sourcesPageOpen) openSourcesPage({ skipHistory: true });
   });
 
   // The subscribe panel's sample-issue modal needs a global Escape
