@@ -1686,7 +1686,13 @@ function renderBoard(){
 
 // ---------- render: stats ----------
 function renderStats(){
-  const countries = new Set(DATA.map(e=>e.country)).size;
+  // "European Union" appears on the board via its own ViDA milestone
+  // (a legitimate reference entry), but it is not itself a tracked
+  // jurisdiction -- excluded here for the same reason the static
+  // jurisdiction-count text excludes it (see PROGRESS.md's root-cause
+  // note from the Netherlands session: a raw count that includes the
+  // EU row inflates the true number by one).
+  const countries = new Set(DATA.map(e=>e.country).filter(c => c !== 'European Union')).size;
   const inforce = DATA.filter(e=>computeStatus(e,NOW)==='inforce').length;
   const soon = DATA.filter(e=>computeStatus(e,NOW)==='soon').length;
   const upcoming = DATA.filter(e=>computeStatus(e,NOW)==='upcoming').length;
