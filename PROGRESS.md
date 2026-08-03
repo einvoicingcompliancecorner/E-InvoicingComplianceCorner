@@ -1968,6 +1968,62 @@ changes to match; confirm each headline shows a flag + country name;
 click a headline and confirm it pops out in place rather than opening
 a new tab.
 
+### The Map's footer CTAs open in-page like everything else (3 August 2026, code complete, deploy pending)
+
+The map's footer had a "Browse the newsletter archive" button that
+always did a real cross-origin navigation, even when The Map was open
+inside the tracker (where every other cross-panel link -- Resources
+menu items, the deep-dive-panel's own footer links, etc. -- opens the
+target as an in-page panel instead). Root cause: the tracker's global
+delegated click listener (`wireDeepDiveInPagePanel()`) can't see clicks
+on anchors inside a shadow root at all (the same event-retargeting
+limitation this project has hit and fixed before -- see
+map-panel.js's own header comment on `navigate`/`closePanel`), so the
+map's footer button, sitting inside the panel's shadow root, was never
+going to be caught by it. Fixed the same way every other shadow-scoped
+interaction on this component already is: a listener wired directly on
+the button itself.
+
+- Added a new `wireFooterCta()` method (called once from `_boot()`,
+  guarded by `isEmbedded()`) that intercepts a click on
+  `#archiveBtnLink` and calls a new `opts.openArchive` callback instead
+  of following the href, when that opt is provided.
+- `einvoicing-compliance-tracker.html`'s `openMapPage()` now passes
+  `openArchive: () => openArchive()` — reusing the tracker's existing
+  archive panel function as-is, which already closes the map panel
+  itself as part of its own mutual-exclusion block (same pattern every
+  other panel transition already follows).
+- Standalone `/map` gets neither opt, so the button stays a plain link
+  there — there's no in-page panel system to open into outside the
+  tracker.
+
+Also added a second footer button, "Subscribe to the newsletter,"
+right next to the archive one (`.footer-cta-buttons` wraps both now),
+using the exact same pattern: `opts.openSubscribe`, wired the same way
+as `openArchive` above, calling the tracker's existing
+`openSubscribePage()` (which likewise already closes the map panel
+itself). Standalone mode falls back to a plain link to `/subscribe.html`.
+Styled as a solid amber button (`.subscribe-btn`, using the page's own
+`--soon`/`--soon-dim` accent colors already used for the active region
+tab) sitting beside the existing red `.archive-btn`, so the two read as
+distinct actions rather than a repeated button. New `subscribeBtn` i18n
+string added in all 4 languages (`shared/map-data.mjs`), matching the
+existing `archiveBtn` string's convention exactly.
+
+Verified with a Playwright script: standalone mode shows both buttons
+as plain links with the correct text/href; simulated panel mode
+confirms a click on either button calls the corresponding opts
+callback and does *not* navigate the page.
+
+Not yet deployed — same four files as the last several Map rounds
+(`site-worker/src/index.js`, `map-panel.js`, `shared/map-data.mjs`,
+`einvoicing-compliance-tracker.html`), no migrations. One
+`cd site-worker && npx wrangler deploy` picks up everything through
+this round. Spot-check after deploy: open the tracker's embedded Map
+panel, click "Browse the newsletter archive" — the archive should open
+in-page, not a new tab/window; click "Subscribe to the newsletter" —
+the subscribe panel should open in-page the same way.
+
 ## Open items / next steps
 
 ### Real open work

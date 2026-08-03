@@ -264,6 +264,7 @@ export const MAP_UI = {
     tooltipCta: "Click for the full deep dive →",
     footerText: "Every country here links through to its full deep dive. For the underlying research as it's published — new mandates, deadline changes, source-of-truth updates — it's all in the newsletter archive.",
     archiveBtn: "Browse the newsletter archive →",
+    subscribeBtn: "Subscribe to the newsletter →",
     regionNames: { "Europe": "Europe", "Middle East": "Middle East", "Asia-Pacific": "Asia-Pacific", "Americas": "Americas" },
     status: { inforce: "In force (B2B)", upcoming: "Upcoming (B2B)", b2gonly: "B2G only — no B2B mandate", nomandate: "No mandate confirmed", tracked: "Tracked — no data yet" },
     legend: [
@@ -295,6 +296,7 @@ export const MAP_UI = {
     tooltipCta: "Haz clic para ver el análisis completo →",
     footerText: "Cada país aquí enlaza a su análisis completo. Para la investigación subyacente a medida que se publica — nuevos mandatos, cambios de plazos, actualizaciones de fuentes — todo está en el archivo del boletín.",
     archiveBtn: "Ver el archivo del boletín →",
+    subscribeBtn: "Suscríbete al boletín →",
     regionNames: { "Europe": "Europa", "Middle East": "Oriente Medio", "Asia-Pacific": "Asia-Pacífico", "Americas": "América" },
     status: { inforce: "Vigente (B2B)", upcoming: "Próximo (B2B)", b2gonly: "Solo B2G — sin mandato B2B", nomandate: "Sin mandato confirmado", tracked: "Rastreado — sin datos aún" },
     legend: [
@@ -326,6 +328,7 @@ export const MAP_UI = {
     tooltipCta: "Klicken für die vollständige Länderanalyse →",
     footerText: "Jedes Land hier verlinkt zu seiner vollständigen Länderanalyse. Für die zugrunde liegende Recherche, sobald sie veröffentlicht wird — neue Mandate, Fristenänderungen, aktualisierte Quellen — alles im Newsletter-Archiv.",
     archiveBtn: "Newsletter-Archiv durchsuchen →",
+    subscribeBtn: "Newsletter abonnieren →",
     regionNames: { "Europe": "Europa", "Middle East": "Naher Osten", "Asia-Pacific": "Asien-Pazifik", "Americas": "Amerika" },
     status: { inforce: "In Kraft (B2B)", upcoming: "Bevorstehend (B2B)", b2gonly: "Nur B2G — kein B2B-Mandat", nomandate: "Kein Mandat bestätigt", tracked: "Erfasst — noch keine Daten" },
     legend: [
@@ -357,6 +360,7 @@ export const MAP_UI = {
     tooltipCta: "Cliquez pour l'analyse complète →",
     footerText: "Chaque pays ici renvoie vers son analyse complète. Pour la recherche sous-jacente au fur et à mesure de sa publication — nouveaux mandats, changements d'échéances, mises à jour des sources — tout est dans les archives de la newsletter.",
     archiveBtn: "Parcourir les archives de la newsletter →",
+    subscribeBtn: "S'abonner à la newsletter →",
     regionNames: { "Europe": "Europe", "Middle East": "Moyen-Orient", "Asia-Pacific": "Asie-Pacifique", "Americas": "Amériques" },
     status: { inforce: "En vigueur (B2B)", upcoming: "À venir (B2B)", b2gonly: "B2G uniquement — aucun mandat B2B", nomandate: "Aucun mandat confirmé", tracked: "Suivi — pas encore de données" },
     legend: [

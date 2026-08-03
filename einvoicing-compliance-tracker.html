@@ -2598,6 +2598,13 @@ async function openMapPage(opts){
     // The panel's own "back to tracker" link/behavior: close this
     // panel and return to the board, rather than navigating away.
     closePanel: () => closeMapPage(),
+    // The footer's archive/subscribe buttons open the tracker's own
+    // existing in-page panels for those, rather than a real navigation
+    // to the members subdomain / subscribe.html -- both functions
+    // already close this map panel themselves (see their own mutual-
+    // exclusion blocks), matching every other cross-panel transition.
+    openArchive: () => openArchive(),
+    openSubscribe: () => openSubscribePage(),
   });
 }
 

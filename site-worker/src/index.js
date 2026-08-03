@@ -528,8 +528,11 @@ const MAP_STYLE = `
   .modal-loading{color:#8a7d5a; font-size:13.5px; font-style:italic;}
   .footer-cta{margin-top:28px; display:flex; flex-wrap:wrap; gap:16px 28px; align-items:center; justify-content:space-between; background:var(--ink-2); border:1px solid var(--line); border-radius:var(--radius); padding:20px 24px;}
   .footer-cta p{margin:0; font-size:14px; color:var(--muted); max-width:520px;}
+  .footer-cta-buttons{display:flex; gap:12px; flex-wrap:wrap;}
   .archive-btn{font-family:'IBM Plex Mono',monospace; font-size:12.5px; text-transform:uppercase; letter-spacing:0.08em; background:var(--stamp); color:#fff; padding:11px 20px; border-radius:999px; text-decoration:none; white-space:nowrap; font-weight:600;}
   .archive-btn:hover{background:var(--stamp-dim);}
+  .subscribe-btn{font-family:'IBM Plex Mono',monospace; font-size:12.5px; text-transform:uppercase; letter-spacing:0.08em; background:var(--soon); color:#1a1207; padding:11px 20px; border-radius:999px; text-decoration:none; white-space:nowrap; font-weight:600;}
+  .subscribe-btn:hover{background:var(--soon-dim); color:var(--paper);}
   .lang-switch{display:flex; gap:6px; margin-top:10px; justify-content:flex-end; flex-wrap:wrap;}
   .lang-btn{font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:0.05em; text-transform:uppercase; background:var(--ink-3); border:1px solid var(--line); color:var(--muted); padding:4px 10px; border-radius:999px; cursor:pointer;}
   .lang-btn:hover{border-color:var(--soon); color:var(--text-lo);}
@@ -565,7 +568,10 @@ function mapPageBodyHtml() {
   </div>
   <div class="footer-cta">
     <p id="footerText"></p>
-    <a class="archive-btn" href="https://members.e-invoicingcompliancecorner.com/members/archive" id="archiveBtnLink"></a>
+    <div class="footer-cta-buttons">
+      <a class="archive-btn" href="https://members.e-invoicingcompliancecorner.com/members/archive" id="archiveBtnLink"></a>
+      <a class="subscribe-btn" href="/subscribe.html" id="subscribeBtnLink"></a>
+    </div>
   </div>
 </div>
 <div class="modal-overlay" id="storyModalOverlay">

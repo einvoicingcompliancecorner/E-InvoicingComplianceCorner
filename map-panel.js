@@ -48,11 +48,19 @@
 //                     passes `(slug) => openDeepDive(slug)` so a click
 //                     opens the existing in-page deep-dive panel
 //                     instead of leaving the page.
-//   archiveUrl / backUrl — base URLs for the two footer/header links
-//                     (differ by runtime: absolute members-subdomain
-//                     URL for the archive either way, but the "back to
-//                     tracker" link's behavior differs between modes —
-//                     see openMapPage()'s override).
+//   archiveUrl / subscribeUrl / backUrl — base URLs for the footer/
+//                     header links (differ by runtime: absolute
+//                     members-subdomain URL for the archive either way,
+//                     but the "back to tracker" link's behavior differs
+//                     between modes — see openMapPage()'s override).
+//   openArchive() / openSubscribe() — called on a click on the footer's
+//                     "Browse the newsletter archive" / "Subscribe to
+//                     the newsletter" buttons. Standalone mode omits
+//                     both (the buttons stay plain links to archiveUrl/
+//                     subscribeUrl). The tracker's panel passes
+//                     `() => openArchive()` / `() => openSubscribePage()`
+//                     so a click opens that existing in-page panel
+//                     instead of leaving the page — see wireFooterCta().
 // ================================================================
 (function (global) {
   "use strict";
@@ -188,6 +196,7 @@
       // run once to bring the initial region's block to the front.
       if (!this.isEmbedded()) this.focusSidebarRegion(this.activeRegion);
       this.wireStoryModal();
+      this.wireFooterCta();
 
       const host = this.$("mapSvgHost");
       loadTopology(this.opts.topologyUrl).then((topo) => {
@@ -326,6 +335,34 @@
       overlay.addEventListener("click", (e) => {
         if (e.target === overlay) this.closeStoryModal();
       });
+    }
+
+    // The footer's "Browse the newsletter archive" and "Subscribe to
+    // the newsletter" buttons open the tracker's own existing in-page
+    // panels for those (openArchive()/openSubscribePage(), passed in as
+    // opts.openArchive/opts.openSubscribe by openMapPage()) instead of
+    // leaving the page -- same idea as navigate()/closePanel() above.
+    // Standalone /map has neither opt, so both buttons stay plain links
+    // (there's no in-page panel system to open into there). Wired once
+    // here rather than in applyStaticText(), which re-runs on every
+    // language switch and would otherwise stack a fresh listener on the
+    // same persistent element each time.
+    wireFooterCta() {
+      if (!this.isEmbedded()) return;
+      const archiveLink = this.$("archiveBtnLink");
+      if (archiveLink && this.opts.openArchive) {
+        archiveLink.addEventListener("click", (e) => {
+          e.preventDefault();
+          this.opts.openArchive();
+        });
+      }
+      const subscribeLink = this.$("subscribeBtnLink");
+      if (subscribeLink && this.opts.openSubscribe) {
+        subscribeLink.addEventListener("click", (e) => {
+          e.preventDefault();
+          this.opts.openSubscribe();
+        });
+      }
     }
 
     // ---------- sidebar (regions flex to the active map's region) ----------
@@ -500,6 +537,10 @@
       set("archiveBtnLink", (el) => {
         el.textContent = u.archiveBtn;
         el.href = (this.opts.archiveUrl || "https://members.e-invoicingcompliancecorner.com/members/archive") + suffix;
+      });
+      set("subscribeBtnLink", (el) => {
+        el.textContent = u.subscribeBtn;
+        el.href = (this.opts.subscribeUrl || "/subscribe.html") + suffix;
       });
       this.buildLegend();
       this.$$(".lang-btn").forEach((b) => b.classList.toggle("active", b.dataset.lang === this.lang));
