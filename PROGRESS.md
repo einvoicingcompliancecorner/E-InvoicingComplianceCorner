@@ -195,7 +195,7 @@ to a normal navigation.
 - The newsletter/tracker's core static content (all countries' `DATA`
   entries, stories, translations) is live and current.
 
-### Luxembourg added (code complete, deploy pending)
+### Luxembourg added (2 August 2026, deployed & verified)
 
 Luxembourg has been fully built out as the site's 32nd country, following
 the same real-research discipline as every other Stage 4 country (B2G
@@ -232,7 +232,7 @@ VATupdate's coverage — not fabricated):
 - **Not yet run against production D1, and the two Workers have not been
   redeployed** — see the exact commands under "Open items" below.
 
-### Resources menu + temporary open newsletter archive (code complete, deploy pending)
+### Resources menu + temporary open newsletter archive (2 August 2026, deployed & verified)
 
 Two related tracker/members-worker changes, built together:
 
@@ -374,7 +374,7 @@ Two related tracker/members-worker changes, built together:
   `ARCHIVE_PUBLIC` var, the CORS header, and the archive-rendering
   changes. See "Open items" below for the exact commands.
 
-### Language cookie bug fix + deep-dive header portal link (2 August 2026, code complete, deploy pending)
+### Language cookie bug fix + deep-dive header portal link (2 August 2026, deployed & verified)
 
 Two unrelated fixes, done together:
 
@@ -429,7 +429,7 @@ Two unrelated fixes, done together:
   not duplicated); and the new CSS rules are present and correctly
   scoped. Re-ran the existing tracker HTML parse-validity check too.
 
-### Sidebar simplified to a plain country list (2 August 2026, code complete, deploy pending)
+### Sidebar simplified to a plain country list (2 August 2026, deployed & verified)
 
 The tracker's sidebar ("Jump to portal / Government portals") used to
 show, per country: the name, then a link to every government portal
@@ -473,7 +473,7 @@ three lines each, for 32 countries. Simplified on request:
   suite afterward — no regressions. Re-ran the tracker HTML
   parse-validity and inline-script syntax checks too.
 
-### Education menu pages now open in-page too (2 August 2026, code complete, deploy pending)
+### Education menu pages now open in-page too (2 August 2026, deployed & verified)
 
 The 5 Education menu pages (Types of Mandate, Impact of Mandate,
 Preparing for a Mandate, Types of Provider, Government Certified
@@ -540,7 +540,7 @@ pattern already used for country deep dives:
   sidebar/topbar test suite afterward — no regressions. Re-ran the
   tracker HTML parse-validity and inline-script syntax checks too.
 
-### Topbar menus now collapse properly (2 August 2026, code complete, deploy pending)
+### Topbar menus now collapse properly (2 August 2026, deployed & verified)
 
 Dan reported that clicking multiple topbar menus (Resources, Education,
 the "Menu" actions dropdown) left them all expanded at once, and that
@@ -592,7 +592,7 @@ causes, both in the click-handling for these dropdowns:
   flyout's own open/close behaviour are both unaffected). Re-ran the
   tracker HTML parse-validity and inline-script syntax checks too.
 
-### Feedback page now opens in-page too (2 August 2026, code complete, deploy pending)
+### Feedback page now opens in-page too (2 August 2026, deployed & verified; submit wiring later replaced — see the feedback-pipeline entry)
 
 Extended the same treatment to `feedback.html`, the 4th and last of
 the menu links to still be a full page navigation (subscribe.html was
@@ -653,7 +653,7 @@ global `document`.
   regressions. Re-ran the tracker HTML parse-validity and
   inline-script syntax checks too.
 
-### Subscribe went live, free-only, no Lemon Squeezy (2 August 2026, code complete, deploy pending)
+### Subscribe went live, free-only, no Lemon Squeezy (2 August 2026, deployed & verified)
 
 Dan asked to remove the "60-day free trial" framing and unhook Lemon
 Squeezy so he can go live with free sign-ups now, deferring any paid
@@ -948,7 +948,7 @@ all).
 
 ---
 
-### Arrivals-board view for the hero (2 August 2026, code complete, deploy pending)
+### Arrivals-board view for the hero (2 August 2026, deployed & verified)
 
 Dan's "Compliance Terminal" concept, reviewed as a standalone mockup and
 then built into the tracker as a second view of the hero's "Next
@@ -1042,7 +1042,7 @@ Phase 4 uses the runner, with the one-time `--baseline` documented.
 runs nothing. From then on, `python3 apply_migrations.py --remote` is
 the only apply command you need.
 
-### Egypt added as country #33 (2 August 2026, code complete, deploy pending)
+### Egypt added as country #33 (2 August 2026, deployed & verified)
 
 First country through the new scaffolder + runner workflow, complete in
 one session. Placed in **Middle East** (standard MENA classification;
@@ -1129,7 +1129,7 @@ asset-backed path, verify the production behaviour differs from the
 static file (e.g. grep for D1-only content), not just that the page
 looks right.
 
-### Feedback form actually wired up (2 August 2026, code complete, deploy pending)
+### Feedback form actually wired up (2 August 2026, deployed & verified)
 
 Dan asked where feedback goes; the answer was **nowhere** — the form was
 demo scaffolding calling a `window.storage` API that doesn't exist in
@@ -1158,7 +1158,7 @@ Spot-check: submit real feedback from the site (in-page panel or
 working, and `SELECT * FROM feedback` shows the row. Submissions predating
 this fix are unrecoverable — they never left the browser.
 
-### Tracking-sources page (/sources) — the "sources of truth" registry (2 August 2026, code complete, deploy pending)
+### Tracking-sources page (/sources) — the "sources of truth" registry (2 August 2026, deployed & verified)
 
 Dan's request: a public page listing, per country, the official
 reference URLs used to capture announcements and notifications — the
@@ -1221,199 +1221,47 @@ tracking_sources (not deep_dive_portals).
 
 ## Open items / next steps
 
-### Resources menu + open archive: redeploy (code is done, only the ship step remains)
+### Ship step outstanding (only one)
 
-From your own machine (this sandbox can't reach the Cloudflare API):
-
+From your machine:
 ```
-cd members-worker
-wrangler deploy
-
-cd ../site-worker
-wrangler deploy
+cd members-worker/migrations && python3 apply_migrations.py --remote   # applies 215 (EC factsheet sources)
+cd ../../site-worker && npx wrangler deploy   # dark-themed /sources + in-frame panel + menu i18n
 ```
+Spot-check: Resources → Tracking sources opens dark and in-frame with
+the language banner driving it; /sources standalone shows the EC
+factsheet rows under 13 European countries within the cache window.
 
-Then spot-check: the tracker's topbar shows "Resources" (not "Deep
-Dives") as a top-level button, and clicking it now actually pops the
-Deep Dives flyout out beside it (this was broken until the
-`overflow:visible` fix above — worth specifically re-checking after
-deploy); a "Newsletter archive" link also appears in Resources and
-opens the archive list right there in the main frame, sidebar still
-visible, with search/the edition filter/country checkboxes all working
-against it; clicking an individual issue still opens the full
-standalone issue page normally; the embedded view shows the free-
-access promo banner (this cross-origin fetch never carries a session
-cookie, so it always renders anonymous, even if you're separately
-logged in in another tab — that's expected); and visiting
-`/members/archive` directly while genuinely logged in still shows the
-normal signed-in view with no promo banner.
+### Real open work
 
-### Luxembourg: run migrations + redeploy (highest priority — code is done, only the ship step remains)
+1. **Content-monitoring Worker** — designed in CONTENT-MONITORING.md,
+   unbuilt. Its input table now exists (tracking_sources, with the
+   `active` column reserved for it), which was most of the schema
+   design. The highest-leverage genuinely-new build on the list.
+2. **Cloudflare Web Analytics** — still no visibility into traffic;
+   ten-minute setup, and it should inform the ARCHIVE_PUBLIC and
+   pricing decisions.
+3. **Coverage expansion candidates** — 14 EC-factsheet countries are
+   not yet tracked: Austria, Bulgaria, Cyprus, Czechia, Estonia,
+   Greece, Hungary, Latvia, Lithuania, Malta, Netherlands, Slovenia,
+   Iceland, Liechtenstein. Netherlands and Austria are the obvious
+   first picks. The scaffolder + runner make each addition a
+   fraction of the old effort (Egypt: one session end to end).
+4. **Sources description curation** — the seeded descriptions are
+   portal names; over time sharpen them into what each source
+   announces (e.g. "ETA decisions and wave announcements"), which is
+   the metadata the monitoring Worker will want.
+5. **Translation frameworks for the remaining static pages** — the
+   pages not yet covered by the i18n system.
+6. **Business threads** (decisions, not code): theinvoicinghub.com
+   competitive review; pricing (free vs the shelved $5/$8 tiers);
+   the vendor registration/advertising concept; the two remaining
+   Resources ideas (accredited-sources list, vendor-assessment RFI
+   template).
 
-From your own machine (this sandbox can't reach the Cloudflare API):
+### Dormant until decided
 
-```
-cd members-worker
-wrangler d1 execute eicc-content --remote --file=migrations/191_luxembourg_country.sql
-wrangler d1 execute eicc-content --remote --file=migrations/192_luxembourg_milestones.sql
-wrangler d1 execute eicc-content --remote --file=migrations/193_luxembourg_deepdive_content.sql
-wrangler d1 execute eicc-content --remote --file=migrations/194_luxembourg_milestone_translations.sql
-wrangler d1 execute eicc-content --remote --file=migrations/195_luxembourg_deepdive_translations.sql
-wrangler d1 execute eicc-content --remote --file=migrations/196_luxembourg_story.sql
-wrangler d1 execute eicc-content --remote --file=migrations/197_luxembourg_story_translations.sql
-wrangler d1 execute eicc-content --remote --file=migrations/198_country_slugs_and_picker.sql
-wrangler deploy
-
-cd ../site-worker
-wrangler deploy
-```
-
-**Ordering matters for 198**: it MUST run before the `wrangler deploy` of
-members-worker on the line after it (the newly-deployed Worker queries the
-`slug`/`in_picker` columns that 198 creates — deploying first would 500 the
-preferences and issue pages until the migration ran). Running the
-migrations top-to-bottom as listed is already the correct order. Extra
-spot-checks after deploy for 198 specifically: the members-site
-preferences page shows all 31 countries grouped by region (no European
-Union option, Luxembourg present), with your saved selections still
-pre-checked and translated names in es/de/fr; and an individual archive
-issue page for a story tagged to a country (e.g. any Spain story) still
-shows its "read the deep dive" link, while an EU-tagged story shows none.
-
-Then spot-check: `/luxembourg` and `/luxembourg?lang=fr` on the public
-site render the deep-dive page; the tracker shows Luxembourg's 4
-timeline entries and it appears in the sidebar/region filter; the
-members-site preferences and archive pages show Luxembourg with correct
-translated names in all 4 languages; the subscribe page's country picker
-includes Luxembourg; and the "32" jurisdiction counts render correctly
-on the tracker, subscribe, and education pages.
-
-### Stage 4 continuation
-- Stage 4 and the cutover are both complete — nothing outstanding here.
-- ~~Peru still uncovered by newsletter stories~~ — done 2 August 2026
-  (migrations 199-200, see above); the story-coverage audit is closed
-- ~~The tracker's own full-page dynamic rendering was never built~~ —
-  **done 2 August 2026 (Stage 5, code complete, deploy pending)**:
-
-### Stage 5: dynamic tracker page (2 August 2026, code complete, deploy pending)
-
-The tracker page itself now renders its milestone data from D1 at
-request time — the last hand-regenerated data surface on the site.
-Approach: **static shell, injected data**. The tracker's HTML/CSS and
-all of its own client-side JS are untouched; `site-worker` intercepts
-`/einvoicing-compliance-tracker.html`, fetches the static asset, and
-swaps exactly two inline blobs before serving — `const DATA = [...]`
-(from `milestones WHERE on_tracker = 1`, new column) and
-`const DEEP_DIVES = {...}` (from `countries.slug`, migration 198).
-`/i18n/{es,de,fr}-data.json` (the board's client-fetched milestone
-translations) are likewise served from `milestone_translations`. Every
-dynamic path falls back to the untouched static asset on any D1
-failure — the static blobs stay in the repo as graceful-degradation
-snapshots, commented as such.
-
-Data model (migrations, run in order):
-- **201**: 3 new `milestones` columns — `on_tracker` (board membership),
-  `portals` (per-card official-source link JSON), `confidence`
-  (the "Expected — not final" badge; 12 entries)
-- **202**: backfill from the static DATA array — exactly the 79 current
-  board entries
-- **203**: EN reconciliation for the 5 drifted milestones, tracker wins
-  with each fact verified: eu-transpose (em-dash escaping artifact),
-  pt-b2g-sme + pt-qes (deep-dive phrasing replaced), mx-cfdi
-  (2014-01-01 — CFDI's legal mandate date; April was only the end of
-  small-taxpayer transition relief), cl-established (2018-01-01 —
-  matches the entry's own "in force since 2018" claim; Chile's Law
-  20.727 phase-in completed Feb 2018)
-- **204**: ES/DE/FR re-alignment of all 79 tracker milestones'
-  translations to the `i18n/*-data.json` wording ("tracker phrasing
-  wins", approved by Dan conditional on factual correctness — a
-  numeric-token audit of all 171 drifted rows confirmed phrasing-only
-  differences, identical dates/figures throughout). Deep-dive timeline
-  wording changes accordingly for those milestones. Non-tracker
-  milestones untouched.
-
-Verification: full-chain replay with 201-204 (no new errors; 79/79
-on_tracker, portals, 12 confidence); EN golden parity — D1 rows exactly
-reproduce all 79 static DATA entries across every field including
-derived flags; translation parity — generated {lang}-data.json
-deep-equals the static files in all 3 languages; the real
-`renderTracker` exercised with a mocked env (injection lands, JSON
-re-parses to 79 entries, region-chip first-appearance order preserved
-via the fixed region ordering in `buildTrackerData`'s SQL, no
-`</script>` breakage, `Cache-Control: max-age=300`); both fallback
-paths tested (D1 error → static page byte-identical; unreplaceable
-asset → served as-is, never half-injected); and a jsdom render-parity
-test — static vs injected pages produce identical card counts, region
-chips, sidebar country counts, and stats-strip numbers. The test suite
-also caught a real bug pre-ship: the original "did the replacement
-land" guard checked for `const DATA = [` after injection, which the
-injected JSON itself begins with — it would have made every request
-silently fall back to static; rewritten to callback flags.
-
-One small deliberate change: the Deep Dives flyout menu now lists
-countries alphabetically within each region (D1 `ORDER BY name_en`)
-instead of the static map's arbitrary insertion order — matching how
-the sidebar already sorts.
-
-Maintenance implications: milestone content edits and new tracker
-entries now go to D1 only (`on_tracker`, `portals`, `confidence` on new
-milestone rows; translations in `milestone_translations`) — no HTML
-regeneration, no `-data.json` edits, no redeploy. The static snapshots
-only matter mid-outage; refresh them occasionally if they drift far.
-`ADDING-A-COUNTRY.md` not yet updated for this — flagged as follow-up.
-
-Deploy (from your machine):
-```
-cd members-worker
-wrangler d1 execute eicc-content --remote --file=migrations/201_tracker_milestone_schema.sql
-wrangler d1 execute eicc-content --remote --file=migrations/202_tracker_backfill.sql
-wrangler d1 execute eicc-content --remote --file=migrations/203_tracker_en_reconciliation.sql
-wrangler d1 execute eicc-content --remote --file=migrations/204_tracker_translation_realignment.sql
-
-cd ../site-worker
-wrangler deploy
-```
-Migrations before the site-worker deploy (the worker queries the new
-columns; the fallback would keep the site working either way, but
-there's no reason to serve fallbacks deliberately). members-worker
-needs no redeploy. Spot-check: the tracker board looks identical
-(79 milestones, same stats strip); switch to Spanish and confirm
-milestone cards translate; a deep-dive timeline (e.g. /germany) shows
-the tracker's wording for shared milestones; and the Deep Dives flyout
-lists countries A-Z within each region.
-
-### Broader architecture (discussed, not yet built)
-- Stages 1-3 of the original country-adding architecture rework (a
-  migration-tracking table, universal `INSERT OR IGNORE`, and a real
-  `/admin/add-country` endpoint) were discussed but superseded in
-  priority by the Stage 4 work — still worth doing once Stage 4's
-  cutover is complete, since the two efforts overlap
-- ~~Eliminate the 3 hardcoded duplicates in `members-worker/src/index.js`~~
-  — **done 2 August 2026** (see "members-worker's 3 hardcoded country
-  tables eliminated" above; migration 198, deploy pending). The
-  remaining hand-maintained lists (`countries.js`, shared slug map,
-  tracker `DATA`, i18n JSONs) are listed there too
-
-### Business & strategy (discussed, genuinely undecided)
-- Competitive review of theinvoicinghub.com
-- Pricing reconsideration ($5/$8 vs. current)
-- Vendor registration/advertising feature (country-matched banners
-  alongside email alerts, "gold member" placement)
-- Resources menu reorganization: Deep Dives has been moved under it
-  (see "Resources menu + temporary open newsletter archive" above,
-  deploy pending) — still open: a published list of accredited
-  sources, and a vendor-assessment RFI template, both as further
-  Resources menu items
-
-### Smaller pending items
-- Subscribe is now live and free-only (see "Subscribe went live"
-  above) — Lemon Squeezy is deliberately disconnected, not just
-  pending "Copy to Live Mode." If/when a paid plan is introduced, that
-  Lemon Squeezy setup work (still described in the archived HTML
-  comments this session's commit replaced — see git history around
-  this date) will need doing then.
-- Cloudflare Web Analytics not yet set up
-- Content-monitoring Worker (designed in `CONTENT-MONITORING.md`, never
-  built)
-- Translation frameworks for other static site pages and deep-dive pages
-  more broadly (separate from the Stage 4 dynamic-architecture effort)
+- Ending the ARCHIVE_PUBLIC promo (one variable flip in
+  members-worker's wrangler.toml + the coming-soon treatment notes in
+  the tracker's Resources comment).
+- Re-hooking Lemon Squeezy if/when a paid tier returns.
