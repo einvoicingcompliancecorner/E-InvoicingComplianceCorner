@@ -33,6 +33,7 @@ import {
 } from "../../shared/deep-dive-render.mjs";
 import {
   getMapCountries,
+  getRecentStories,
   REGION_ORDER,
   REGION_BOUNDS,
   MAP_UI,
@@ -431,10 +432,14 @@ const MAP_STYLE = `
   }
   .display{font-family:'Big Shoulders Display',sans-serif; font-weight:800; letter-spacing:0.01em;}
   .mono{font-family:'IBM Plex Mono',monospace;}
-  .map-topbar{padding:28px 0 20px; border-bottom:1px solid var(--line); display:flex; flex-wrap:wrap; gap:16px 32px; align-items:flex-start; justify-content:space-between;}
-  .map-topbar-brand{flex:1 1 320px; min-width:0;}
+  .map-back-row{padding-top:20px;}
+  .back-link{font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:var(--muted); text-decoration:none;}
+  .back-link:hover{color:var(--paper);}
+  .map-topbar{padding:14px 0 20px; border-bottom:1px solid var(--line); display:flex; flex-wrap:wrap; gap:16px 32px; align-items:flex-start; justify-content:space-between;}
+  .map-topbar-brand{flex:1 1 480px; min-width:0;}
   .brand-eyebrow{font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.18em; text-transform:uppercase; color:var(--soon); margin:0 0 6px;}
-  .brand-title{font-size:clamp(28px,4vw,44px); margin:0; text-transform:uppercase; line-height:0.95;}
+  .brand-title{font-size:clamp(28px,4vw,44px); margin:0; text-transform:uppercase; line-height:0.95; white-space:nowrap;}
+  @media (max-width:640px){ .brand-title{white-space:normal;} }
   .brand-sub{color:var(--muted); font-size:14.5px; max-width:640px; margin:10px 0 0;}
   .map-topbar-right{font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--muted); text-align:right;}
   .map-topbar-right a{color:var(--soon); text-decoration:underline;}
@@ -495,6 +500,11 @@ const MAP_STYLE = `
   .country-row .dot{width:8px; height:8px; border-radius:50%; flex:0 0 auto;}
   .dot.status-inforce{background:var(--live);} .dot.status-upcoming{background:var(--upcoming);} .dot.status-tracked{background:var(--tracked);}
   .dot.status-b2gonly{background:var(--b2gonly);} .dot.status-nomandate{background:var(--nomandate);}
+  .news-row{display:flex; flex-direction:column; gap:3px; padding:10px 8px; border-bottom:1px solid var(--line); text-decoration:none; color:var(--text-lo); transition:background .1s ease;}
+  .news-row:last-child{border-bottom:none;}
+  .news-row:hover{background:var(--ink-3);}
+  .news-date{font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:0.05em; text-transform:uppercase; color:var(--soon);}
+  .news-title{font-size:13.5px; line-height:1.4;}
   .footer-cta{margin-top:28px; display:flex; flex-wrap:wrap; gap:16px 28px; align-items:center; justify-content:space-between; background:var(--ink-2); border:1px solid var(--line); border-radius:var(--radius); padding:20px 24px;}
   .footer-cta p{margin:0; font-size:14px; color:var(--muted); max-width:520px;}
   .archive-btn{font-family:'IBM Plex Mono',monospace; font-size:12.5px; text-transform:uppercase; letter-spacing:0.08em; background:var(--stamp); color:#fff; padding:11px 20px; border-radius:999px; text-decoration:none; white-space:nowrap; font-weight:600;}
@@ -507,6 +517,7 @@ const MAP_STYLE = `
 
 function mapPageBodyHtml() {
   return `
+<div class="map-back-row"><a class="back-link" href="/einvoicing-compliance-tracker.html" id="backToTrackerLink"></a></div>
 <div class="map-topbar">
   <div class="map-topbar-brand">
     <p class="brand-eyebrow" id="brandEyebrow"></p>
@@ -514,7 +525,6 @@ function mapPageBodyHtml() {
     <p class="brand-sub" id="brandSub"></p>
   </div>
   <div class="map-topbar-right">
-    <div><a href="/einvoicing-compliance-tracker.html" id="backToTrackerLink"></a></div>
     <div class="lang-switch" id="langSwitch"></div>
   </div>
 </div>
@@ -553,7 +563,15 @@ async function renderMapPage(request, env) {
     lang = pickBestSupportedLanguage(request.headers.get("Accept-Language")) || "en";
   }
   const ui = MAP_UI[lang] || MAP_UI.en;
-  const countries = await getMapCountries(env.eicc_content, lang);
+  // Both fetched regardless of whether this request is a direct visit to
+  // the standalone page or the tracker's in-page panel fetching this same
+  // URL in the background -- the server can't tell which, so it always
+  // supplies both datasets; map-panel.js's isEmbedded() decides client-
+  // side which one the sidebar actually renders (see its header comment).
+  const [countries, recentStories] = await Promise.all([
+    getMapCountries(env.eicc_content, lang),
+    getRecentStories(env.eicc_content, lang, 8),
+  ]);
 
   // </script> inside the JSON would terminate the blob early.
   const safe = (o) => JSON.stringify(o).replace(/<\//g, "<\\/");
@@ -589,7 +607,7 @@ async function renderMapPage(request, env) {
 </head>
 <body>
 <div class="wrap">${mapPageBodyHtml()}</div>
-<script type="application/json" id="mapDataBlob">${safe({ countries, lang, ui: MAP_UI, regionOrder: REGION_ORDER, regionBounds: REGION_BOUNDS })}</script>
+<script type="application/json" id="mapDataBlob">${safe({ countries, recentStories, lang, ui: MAP_UI, regionOrder: REGION_ORDER, regionBounds: REGION_BOUNDS })}</script>
 <script src="/vendor/d3.min.js"></script>
 <script src="/vendor/topojson-client.min.js"></script>
 <script src="/map-panel.js"></script>
@@ -608,6 +626,7 @@ async function renderMapPage(request, env) {
   var blob = JSON.parse(document.getElementById('mapDataBlob').textContent);
   window.EICCMap.init(document, {
     countries: blob.countries,
+    recentStories: blob.recentStories,
     lang: blob.lang,
     ui: blob.ui,
     regionOrder: blob.regionOrder,

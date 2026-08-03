@@ -1818,6 +1818,83 @@ of page), Portugal/Sweden/Norway/Finland/Luxembourg show their real
 amber "B2G only" color (not black), and the legend's "B2G only" swatch
 is a visible amber pill, not blank.
 
+### The Map: three more UI requests, resolved with one shared component (3 August 2026, code complete, deploy pending)
+
+Three more small UI asks on The Map, all resolved without forking
+`map-panel.js`/`site-worker`'s map render into separate standalone-vs-
+panel versions — the existing `isEmbedded()` signal (`opts.navigate`
+truthy only in the tracker's in-page panel; already used for
+`backToTrackerLink` and, from the previous fix, `buildLangSwitch`) just
+grew two more call sites:
+
+- **"The Compliance Map" heading wrapped to two lines.** It had a
+  hard-coded `<br>` in every language's `titleHtml` (`shared/
+  map-data.mjs`'s `MAP_UI`), not a natural wrap — removed the `<br>` in
+  all four languages, widened `.map-topbar-brand`'s flex-basis
+  (320px → 480px), and added `white-space:nowrap` on `.brand-title`
+  (with a `@media(max-width:640px)` override back to normal wrapping,
+  so it still degrades gracefully on phones instead of overflowing).
+- **The right-hand sidebar's country list is redundant when The Map is
+  opened inside the tracker** (Resources → The Map) — the tracker's own
+  permanent left-hand sidebar already lists every country and already
+  links to its deep dive. But the standalone `/map` page has no such
+  sidebar, and the SVG country shapes have no keyboard/screen-reader
+  path to a deep dive — so the country list there is the only
+  accessible/crawlable way to reach one. Resolved by keeping the
+  country list on standalone `/map` and swapping it for a "Latest
+  updates" recent-news list only when embedded — decided with the user
+  via a clarifying question rather than guessing, since it's a real
+  accessibility trade-off, not just a style choice.
+  - New `getRecentStories(db, lang, limit)` in `shared/map-data.mjs`,
+    querying the same `stories`/`story_translations` tables the
+    newsletter archive already uses (`WHERE s.published = 1 ORDER BY
+    s.date DESC LIMIT ?`) — direct D1 access, no cross-worker fetch,
+    since site-worker and members-worker already share the one
+    `eicc_content` database.
+  - `renderMapPage()` now fetches both `getMapCountries()` and
+    `getRecentStories()` unconditionally and embeds both in the same
+    `#mapDataBlob` — the server can't tell whether a given request is a
+    direct standalone visit or the tracker's in-page panel fetching the
+    same URL in the background, so it always supplies both; the client
+    decides which to render.
+  - `map-panel.js`'s `buildSidebar()` now dispatches to
+    `buildCountryList()` (the untouched original logic, standalone
+    only) or the new `buildRecentNewsList()` (embedded only, via
+    `isEmbedded()`) — each news row links straight to that story's real
+    permalink (`https://members.e-invoicingcompliancecorner.com/
+    members/archive/{id}`), opening in a new tab, same as the existing
+    footer "Archive" button.
+- **"← Back to the tracker" was right-aligned, unlike every other
+  page's top-left back link.** Moved into its own `.map-back-row` above
+  `.map-topbar`, reusing the same `.back-link` look (IBM Plex Mono,
+  muted color, underline-free) the deep-dive/`/sources` pages already
+  use — left-aligned by default now that it's not sharing a flex row
+  with the language switch.
+
+Verified all three with a Playwright script covering both contexts
+(standalone fixture page + a simulated shadow-root panel, built from
+the real `MAP_STYLE`/`mapPageBodyHtml()`/`map-panel.js` source, not
+hand-written mocks): title renders as one line at desktop width in
+both contexts, back link sits flush left in both, standalone still
+shows the full 4-country list, panel shows 3 news rows in the right
+(newest-first) order with correct dates/links/new-tab target, and the
+language switch stays hidden in panel mode. No console errors either
+mode.
+
+Not yet deployed — same as the prior fix, this only touches
+`einvoicing-compliance-tracker.html`, `map-panel.js`,
+`shared/map-data.mjs`, and `site-worker/src/index.js`. No new
+migrations. Needs:
+```
+cd site-worker && npx wrangler deploy
+```
+Spot-check after deploy: "THE COMPLIANCE MAP" reads as one line on
+both `/map` and the tracker's panel; "← Back to the tracker" sits at
+the top-left on both; the standalone page still shows "All
+jurisdictions" with every country; the tracker's embedded panel shows
+"Latest updates" with real newsletter headlines, newest first, each
+opening its full story on the members site in a new tab.
+
 ## Open items / next steps
 
 ### Real open work

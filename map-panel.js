@@ -58,6 +58,8 @@
   "use strict";
 
   const WIDTH = 720, HEIGHT = 620, PAD = 16, SMALL_PX = 18;
+  const MEMBERS_ORIGIN = "https://members.e-invoicingcompliancecorner.com";
+  const NEWS_DATE_LOCALE = { en: "en-GB", es: "es-ES", de: "de-DE", fr: "fr-FR" };
 
   function escHtml(s) {
     return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -108,6 +110,7 @@
       this.uiDict = opts.ui;
       this.lang = opts.lang || "en";
       this.countries = opts.countries || [];
+      this.recentStories = opts.recentStories || [];
       this.byName = new Map();
       this.sidebarBlocks = {};
       this.smallMarkerRegistry = {};
@@ -121,6 +124,19 @@
     $(id) { return this.root.getElementById(id); }
     $$(sel) { return this.root.querySelectorAll(sel); }
     ui() { return this.uiDict[this.lang] || this.uiDict.en; }
+
+    // True only for the tracker's in-page panel (which always passes
+    // navigate() so a country click opens the existing deep-dive panel
+    // instead of leaving the page) -- false for the standalone /map
+    // page. Reused for every place this component's behavior differs
+    // between the two contexts: hiding the panel's own language switch
+    // (buildLangSwitch, the tracker already has one at the top of the
+    // real page), swapping the sidebar's country list for a recent-news
+    // list (buildSidebar -- the tracker's permanent left sidebar already
+    // lists every country and links to its deep dive, so repeating that
+    // here is redundant only in this context), and backToTrackerLink's
+    // close-panel-instead-of-navigate behavior in applyStaticText().
+    isEmbedded() { return !!this.opts.navigate; }
 
     _indexCountries() {
       this.byName.clear();
@@ -159,10 +175,66 @@
       });
     }
 
-    // ---------- sidebar (regions flex to the active map's region) ----------
+    // ---------- sidebar ----------
+    // Standalone /map keeps the full region-grouped country list (its
+    // only accessible/crawlable way to reach a deep dive -- the SVG map
+    // itself has no keyboard/screen-reader path to a country). The
+    // tracker's in-page panel shows recent news instead: its permanent
+    // left sidebar already lists every country and links to its deep
+    // dive, so repeating that list here would be pure duplication.
     buildSidebar() {
       const root = this.$("sidebarList");
       if (!root) return;
+      if (this.isEmbedded()) this.buildRecentNewsList(root);
+      else this.buildCountryList(root);
+    }
+
+    buildRecentNewsList(root) {
+      const old = this.$("sidebarBlocks");
+      if (old) old.remove();
+      const doc = root.ownerDocument;
+      const wrap = doc.createElement("div");
+      wrap.id = "sidebarBlocks";
+      root.appendChild(wrap);
+      this.sidebarBlocks = {};
+
+      if (!this.recentStories.length) {
+        const empty = doc.createElement("p");
+        empty.className = "map-note";
+        empty.textContent = this.ui().noRecentNews || "";
+        wrap.appendChild(empty);
+        return;
+      }
+
+      for (const story of this.recentStories) {
+        const row = doc.createElement("a");
+        row.className = "news-row";
+        row.href = this.storyUrl(story);
+        row.target = "_blank";
+        row.rel = "noopener";
+        row.innerHTML =
+          '<span class="news-date">' + escHtml(this.formatNewsDate(story.date)) + "</span>" +
+          '<span class="news-title">' + escHtml(story.title) + "</span>";
+        wrap.appendChild(row);
+      }
+    }
+
+    storyUrl(story) {
+      const suffix = this.lang !== "en" ? "?lang=" + this.lang : "";
+      return MEMBERS_ORIGIN + "/members/archive/" + encodeURIComponent(story.id) + suffix;
+    }
+
+    formatNewsDate(dateStr) {
+      try {
+        const locale = NEWS_DATE_LOCALE[this.lang] || "en-GB";
+        return new Intl.DateTimeFormat(locale, { day: "numeric", month: "short", year: "numeric" }).format(new Date(dateStr + "T00:00:00Z"));
+      } catch (e) {
+        return dateStr;
+      }
+    }
+
+    // ---------- sidebar (regions flex to the active map's region) ----------
+    buildCountryList(root) {
       const old = this.$("sidebarBlocks");
       if (old) old.remove();
       const doc = root.ownerDocument;
@@ -281,20 +353,18 @@
     }
 
     // ---------- language switch ----------
-    // In panel mode (opts.navigate set -- the tracker's in-page deep-
-    // dive-opening flow, same signal applyStaticText() already uses for
-    // backToTrackerLink below) the page's own EN/ES/DE/FR row is hidden:
-    // the tracker already has ONE language switcher at the top of the
-    // real page, and every other in-page panel (/sources, deep-dive,
-    // archive, education, feedback, subscribe) relies on that single
-    // switcher rather than showing a second one inside the panel itself
-    // -- see the `eicc:languageChanged` listener wired in openMapPage()'s
+    // In panel mode the page's own EN/ES/DE/FR row is hidden: the
+    // tracker already has ONE language switcher at the top of the real
+    // page, and every other in-page panel (/sources, deep-dive, archive,
+    // education, feedback, subscribe) relies on that single switcher
+    // rather than showing a second one inside the panel itself -- see
+    // the `eicc:languageChanged` listener wired in openMapPage()'s
     // caller, which already re-renders this panel on an outer language
     // change. Standalone /map has no outer nav, so it keeps its own.
     buildLangSwitch() {
       const host = this.$("langSwitch");
       if (!host) return;
-      if (this.opts.navigate) {
+      if (this.isEmbedded()) {
         host.style.display = "none";
         host.innerHTML = "";
         return;
@@ -320,12 +390,12 @@
       set("brandEyebrow", (el) => (el.textContent = u.eyebrow));
       set("brandTitle", (el) => (el.innerHTML = u.titleHtml));
       set("brandSub", (el) => (el.textContent = u.subtitle));
-      set("sidebarHeading", (el) => (el.textContent = u.allJurisdictions));
+      set("sidebarHeading", (el) => (el.textContent = this.isEmbedded() ? u.recentNews : u.allJurisdictions));
       set("footerText", (el) => (el.textContent = u.footerText));
       const suffix = this.lang !== "en" ? "?lang=" + this.lang : "";
       set("backToTrackerLink", (el) => {
         el.textContent = u.backToTracker;
-        if (!this.opts.navigate) el.href = (this.opts.backUrl || "/einvoicing-compliance-tracker.html") + suffix;
+        if (!this.isEmbedded()) el.href = (this.opts.backUrl || "/einvoicing-compliance-tracker.html") + suffix;
       });
       set("archiveBtnLink", (el) => {
         el.textContent = u.archiveBtn;

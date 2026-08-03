@@ -116,6 +116,46 @@ const MARKER_LONLAT_OVERRIDES = {
   Singapore: [103.82, 1.35],
 };
 
+// ----------------------------------------------------------------
+// Recent news (the in-page tracker panel's sidebar, replacing the
+// country list there -- see getMapCountries' own header comment and
+// map-panel.js's buildSidebar()/isEmbedded() for why: the tracker's
+// permanent left-hand sidebar already lists every country and already
+// links to its deep dive, so repeating that list inside the map's own
+// sidebar is redundant there. The standalone /map page has no such
+// left sidebar, so it keeps the country list -- this function is only
+// consumed in embedded (panel) mode.
+// ----------------------------------------------------------------
+
+// Mirrors members-worker/src/index.js's own deriveTitleFromHtml() --
+// duplicated rather than imported, since story_translations always
+// has a title for a story's own language in practice, and this is a
+// defensive fallback only (a story published without an 'en'
+// translation row, or requested in a language it has no row for).
+function deriveStoryTitle(html) {
+  const match = /<h3>(?:[^<a-zA-Z]*)([^<]+)<\/h3>/.exec(html || "");
+  return match ? match[1].trim() : "Untitled";
+}
+
+export async function getRecentStories(db, lang, limit = 8) {
+  const { results } = await db.prepare(`
+    SELECT s.id, s.date, s.html_en,
+           COALESCE(st.title, NULL) as title_translated,
+           COALESCE(st.html, s.html_en) as html
+    FROM stories s
+    LEFT JOIN story_translations st ON st.story_id = s.id AND st.lang = ?
+    WHERE s.published = 1
+    ORDER BY s.date DESC
+    LIMIT ?
+  `).bind(lang, limit).all();
+
+  return results.map((s) => ({
+    id: s.id,
+    date: s.date,
+    title: s.title_translated || deriveStoryTitle(s.html),
+  }));
+}
+
 export async function getMapCountries(db, lang) {
   const { results: countryRows } = await db.prepare(`
     SELECT c.id, c.name_en, c.code, c.region, c.slug, ct.display_name
@@ -171,10 +211,12 @@ export const MAP_UI = {
   en: {
     langName: "English",
     eyebrow: "Resources · The Map",
-    titleHtml: "The Compliance<br>Map",
+    titleHtml: "The Compliance Map",
     subtitle: "A visual front door onto every jurisdiction this site tracks, one region at a time — click a country for its full deep dive, or use the list for anywhere.",
     backToTracker: "← Back to the tracker",
     allJurisdictions: "All jurisdictions",
+    recentNews: "Latest updates",
+    noRecentNews: "No recent updates yet.",
     jurisdictionsOf: "{count} of {total} tracked jurisdictions",
     tooltipCta: "Click for the full deep dive →",
     footerText: "Every country here links through to its full deep dive. For the underlying research as it's published — new mandates, deadline changes, source-of-truth updates — it's all in the newsletter archive.",
@@ -198,10 +240,12 @@ export const MAP_UI = {
   es: {
     langName: "Español",
     eyebrow: "Recursos · El Mapa",
-    titleHtml: "El Mapa de<br>Cumplimiento",
+    titleHtml: "El Mapa de Cumplimiento",
     subtitle: "Una puerta de entrada visual a todas las jurisdicciones que rastrea este sitio, una región a la vez — haz clic en un país para ver su análisis completo, o usa la lista para cualquier otro lugar.",
     backToTracker: "← Volver al panel de seguimiento",
     allJurisdictions: "Todas las jurisdicciones",
+    recentNews: "Últimas actualizaciones",
+    noRecentNews: "Aún no hay actualizaciones recientes.",
     jurisdictionsOf: "{count} de {total} jurisdicciones rastreadas",
     tooltipCta: "Haz clic para ver el análisis completo →",
     footerText: "Cada país aquí enlaza a su análisis completo. Para la investigación subyacente a medida que se publica — nuevos mandatos, cambios de plazos, actualizaciones de fuentes — todo está en el archivo del boletín.",
@@ -225,10 +269,12 @@ export const MAP_UI = {
   de: {
     langName: "Deutsch",
     eyebrow: "Ressourcen · Die Karte",
-    titleHtml: "Die Compliance-<br>Karte",
+    titleHtml: "Die Compliance-Karte",
     subtitle: "Ein visueller Einstiegspunkt zu allen von dieser Website erfassten Ländern, jeweils eine Region auf einmal — klicken Sie auf ein Land für die vollständige Länderanalyse, oder nutzen Sie die Liste für alle anderen.",
     backToTracker: "← Zurück zur Übersicht",
     allJurisdictions: "Alle Länder",
+    recentNews: "Neueste Updates",
+    noRecentNews: "Noch keine aktuellen Updates.",
     jurisdictionsOf: "{count} von {total} erfassten Ländern",
     tooltipCta: "Klicken für die vollständige Länderanalyse →",
     footerText: "Jedes Land hier verlinkt zu seiner vollständigen Länderanalyse. Für die zugrunde liegende Recherche, sobald sie veröffentlicht wird — neue Mandate, Fristenänderungen, aktualisierte Quellen — alles im Newsletter-Archiv.",
@@ -252,10 +298,12 @@ export const MAP_UI = {
   fr: {
     langName: "Français",
     eyebrow: "Ressources · La Carte",
-    titleHtml: "La Carte de<br>Conformité",
+    titleHtml: "La Carte de Conformité",
     subtitle: "Une porte d'entrée visuelle vers toutes les juridictions suivies par ce site, une région à la fois — cliquez sur un pays pour son analyse complète, ou utilisez la liste pour n'importe où ailleurs.",
     backToTracker: "← Retour au suivi",
     allJurisdictions: "Toutes les juridictions",
+    recentNews: "Dernières mises à jour",
+    noRecentNews: "Aucune mise à jour récente pour le moment.",
     jurisdictionsOf: "{count} sur {total} juridictions suivies",
     tooltipCta: "Cliquez pour l'analyse complète →",
     footerText: "Chaque pays ici renvoie vers son analyse complète. Pour la recherche sous-jacente au fur et à mesure de sa publication — nouveaux mandats, changements d'échéances, mises à jour des sources — tout est dans les archives de la newsletter.",
