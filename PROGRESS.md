@@ -1831,6 +1831,36 @@ and "36" reads correctly everywhere.
      be the site's first use of an external JS library (D3 + topojson
      via CDN) — everything else today is hand-written vanilla JS
 
+   **Third competitor reference evaluated (3 August 2026): Esker**
+   (cloud.esker.com/fm/einvoicing-compliance-map/) — genuinely
+   different from Pagero and Basware, and worth learning from on two
+   fronts, one good and one cautionary:
+
+   - *Good*: a search result surfaced Esker's own old source code
+     directly, revealing the real data model underneath — a small set
+     of standardized dimensions applied uniformly to every country
+     (mandate status in ~2 tiers, buyer-consent requirement in 3
+     tiers, e-signature/integrity-proof method in 3 tiers, storage-
+     abroad rules), not free-form prose per country. The live page
+     confirms this further: it offers multiple selectable color-coding
+     dimensions ("E-invoicing system" and "Market maturity" both
+     toggle the map's coloring), plus region filter buttons — a
+     genuinely richer interaction model than either Pagero or Basware.
+     If a future version of the map wanted to go beyond a single
+     status color, this structured-dimension approach is the right
+     shape to borrow, since the underlying D1 schema (milestone
+     confidence tiers, dates, country regions) is already reasonably
+     structured itself.
+   - *Cautionary*: unlike Basware, fetching Esker's live page returned
+     almost no crawlable content — everything lives behind the
+     interactive JS map, with no accessible/indexable fallback list at
+     all. A concrete anti-pattern to avoid: whatever gets built here,
+     the existing region-grouped directory (Deep Dives flyout,
+     sidebar, subscribe picker) should stay real, crawlable content in
+     its own right — the map should sit as a decorative layer in front
+     of it, never as a replacement that hides the underlying
+     navigation from anyone without JS or from search engines.
+
    Rough effort once the direction is confirmed: half a day to a day —
    the map itself is the easy part; the real work is the mobile
    fallback and wiring status colors to live D1 data correctly. Still
