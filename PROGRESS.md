@@ -1861,6 +1861,31 @@ and "36" reads correctly everywhere.
      of it, never as a replacement that hides the underlying
      navigation from anyone without JS or from search engines.
 
+   **Fourth competitor reference evaluated (3 August 2026): Tungsten
+   Automation (InvoiceAgility)**
+   (tungstenautomation.com/products/invoiceagility/invoicing-compliance/country-updates)
+   — same no-crawlable-content anti-pattern as Esker, more pronounced:
+   fetching the index page returned almost nothing about the map
+   itself, dominated instead by a lead-generation contact form's
+   country/state dropdowns (a flat alphabetical list of every country
+   on earth, unrelated to the actual compliance content) plus a
+   "please try a different browser" notice — the real interactive map
+   needs specific browser support this fetch never got past.
+
+   The individual country pages are a different story, though, and
+   genuinely worth learning from independent of the map question: a
+   Belgium page snippet showed the richest per-country data model of
+   all four competitors evaluated — VAT rate and currency, e-signature
+   guidance, tax authority name, archiving periods split *by asset
+   type* (movable property: 10yr, immovable: 15yr, real estate
+   construction: 25yr), and clean before/after tables for issuance,
+   reception, and format requirements each split by date threshold.
+   This is closer to a possible future enrichment idea for the
+   existing deep-dive pages (which don't currently carry VAT rate or
+   asset-type-specific archiving detail) than to the map feature
+   itself — worth keeping in mind as a separate thread, not folded
+   into this item.
+
    Rough effort once the direction is confirmed: half a day to a day —
    the map itself is the easy part; the real work is the mobile
    fallback and wiring status colors to live D1 data correctly. Still
