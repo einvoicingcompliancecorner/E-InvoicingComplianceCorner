@@ -2670,11 +2670,82 @@ async function openArchive(opts){
   });
 
   renderArchiveGrid();
+  wireArchiveStoryModal(shadow);
 
   if(!opts.skipHistory){
     history.pushState({ archive: true }, '', '/einvoicing-compliance-tracker.html?view=archive');
   }
 }
+
+// Same pop-out behaviour as the standalone archive page (see
+// members-worker's renderArchiveList/openStory), ported to operate
+// against the shadow root instead of the global `document` -- for the
+// same reason renderArchiveGrid() above is a ported copy rather than
+// the fetched page's own script re-executed as-is. One real
+// difference: this never touches browser history. The standalone
+// page's version calls history.pushState() with a real
+// members.e-invoicingcompliancecorner.com URL, which is fine there
+// since that IS the page's own origin -- but doing the same from here
+// would push a different-origin URL while the address bar shows
+// e-invoicingcompliancecorner.com, which the History API forbids
+// (SecurityError) since it's a cross-origin push, not same-origin.
+// The modal still opens and closes correctly; it just isn't
+// individually bookmarkable from inside this panel, matching how
+// the "About this site" modal also has no history entry of its own.
+function wireArchiveStoryModal(shadow){
+  const overlay = shadow.getElementById('storyModalOverlay');
+  const modalBody = shadow.getElementById('storyModalBody');
+  const modalClose = shadow.getElementById('storyModalClose');
+  const grid = shadow.getElementById('issueGrid');
+  if(!overlay || !modalBody || !modalClose || !grid) return;
+
+  const loadingText = (window.EICC_I18N && window.EICC_I18N.t('archive.loading')) || 'Loading…';
+  const officialSourceText = (window.EICC_I18N && window.EICC_I18N.t('archive.officialSource')) || 'Official source';
+
+  async function openStory(id){
+    modalBody.innerHTML = '<p class="modal-loading">' + escapeHtmlClient(loadingText) + '</p>';
+    overlay.classList.add('open');
+    try{
+      const lang = (window.EICC_I18N && window.EICC_I18N.currentLang) || 'en';
+      const langSuffix = lang !== 'en' ? '?lang=' + lang : '';
+      const res = await fetch(`${MEMBERS_ORIGIN}/members/archive/${encodeURIComponent(id)}${langSuffix}`);
+      if(!res.ok) throw new Error('fetch failed: ' + res.status);
+      const html = await res.text();
+      const doc = new DOMParser().parseFromString(html, 'text/html');
+      const card = doc.querySelector('.wrap .card');
+      if(!card) throw new Error('story card not found in response');
+      modalBody.innerHTML = card.innerHTML;
+    }catch(err){
+      const url = `${MEMBERS_ORIGIN}/members/archive/${encodeURIComponent(id)}`;
+      modalBody.innerHTML = '<p class="modal-loading">' + escapeHtmlClient(officialSourceText) + ': <a href="' + url + '">' + url + '</a></p>';
+    }
+  }
+  function closeStory(){ overlay.classList.remove('open'); }
+
+  grid.addEventListener('click', (e) => {
+    const card = e.target.closest('.issue-card');
+    if(!card) return;
+    e.preventDefault();
+    const href = card.getAttribute('href');
+    const id = decodeURIComponent(href.replace(`${MEMBERS_ORIGIN}/members/archive/`, ''));
+    openStory(id);
+  });
+  modalClose.addEventListener('click', closeStory);
+  overlay.addEventListener('click', (e) => { if(e.target === overlay) closeStory(); });
+  // Escape handling is registered once at page level (see below this
+  // function), not here -- registering a fresh document-level
+  // listener on every openArchive() call would accumulate one stale
+  // listener per open/close cycle, since none of them are ever
+  // removed. The page-level listener checks archiveShadowRoot
+  // dynamically instead, so there's exactly one listener regardless
+  // of how many times the archive panel opens and closes.
+}
+
+document.addEventListener('keydown', (e) => {
+  if(e.key !== 'Escape' || !archiveShadowRoot) return;
+  const overlay = archiveShadowRoot.getElementById('storyModalOverlay');
+  if(overlay && overlay.classList.contains('open')) overlay.classList.remove('open');
+});
 
 function closeArchive(opts){
   opts = opts || {};
