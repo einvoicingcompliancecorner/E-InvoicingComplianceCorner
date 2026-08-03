@@ -1689,6 +1689,19 @@ Grecia/Griechenland/Grèce, the archive shows all 3 new stories,
    Needs the actual bio content from Dan (or a draft for him to edit)
    before building — content first, then the small HTML/CSS addition
    to the existing About modal (einvoicing-compliance-tracker.html).
+6. **"The Map" — an interactive visual map under Resources** — Dan's
+   reference: Pagero/Thomson Reuters' "Regulatory Atlas"
+   (europe.thomsonreuters.com/uk/compliance/regulatory-updates), a
+   competitor product with a compliance map covering e-invoicing/CTC/
+   tax requirements per country. Genuinely on-subject competition, not
+   a loose analogy. The idea: a visual world/region map (SVG or a
+   lightweight interactive library) that can highlight upcoming
+   mandate changes at a glance and link out to the matching country
+   deep-dive and relevant newsletter-archive stories on click/hover.
+   Still at the "consider adding" stage — needs a design/scope pass
+   (map library choice, mobile behaviour, how "upcoming changes"
+   gets visually encoded — colour by urgency? by confidence tier?)
+   before any build starts.
 
 ### Dormant until decided
 
