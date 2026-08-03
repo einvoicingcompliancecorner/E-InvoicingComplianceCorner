@@ -2195,12 +2195,87 @@ via `apply_migrations.py --remote`, `site-worker` redeployed for the
 static-file edits. Jordan live on the tracker board (Middle East,
 between Egypt and Oman), visible in the UI.
 
+### Israel added as country #40 (3 August 2026, code complete, deploy pending)
+
+Full country build (migrations 272-279), the third and final addition
+from the Middle East coverage evaluation above. Israel's SHAAM system
+is a genuinely different mandate mechanic from every other country
+built this session: a domestic-B2B-only clearance mandate phased in
+via a shrinking invoice threshold rather than taxpayer-size waves, and
+enforced through VAT-deduction denial rather than a published fine
+schedule.
+
+- **Migrations 272-273**: country row (slug `israel`, region "Middle
+  East"), 5 milestones — the Economic Efficiency Law's May 2023
+  enactment (anchor, off-board, `mandate_scope: 'none'`), the genuine
+  no-rejection pilot from May 2024 above NIS 25,000, the January 2025
+  threshold drop to NIS 20,000 alongside full ITA scrutiny/refusal
+  powers activating, the accelerated January 2026 drop to NIS 10,000
+  (skipping a planned NIS 15,000 step), and the June 2026 arrival at
+  the permanent NIS 5,000 floor. Sourced from the Israel Tax
+  Authority's own gov.il service pages and cross-checked against
+  VATupdate's dedicated Israel briefing (Jan 2026), Sovos, EDICOM,
+  vatit.com, dddinvoices.com, and flick.network, which independently
+  agree on the threshold schedule and dates.
+- **Migrations 275-276**: full deep-dive page — a centralized clearance
+  model description (SHAAM allocation-number system, domestic B2B
+  only), 5 stats, 3 `file_format` cards, a lifecycle card ("The
+  clearance flow", 5 pills: draft → submit via API/portal → ITA
+  validates → allocation number issued → delivered + reported on VAT
+  return) plus 2 regular cards in `scope_transmission` (the full
+  threshold phase-down table; what's explicitly out of scope —
+  B2C/B2G/cross-border), 3 narrative `penalties_related` cards — no
+  `deep_dive_penalty_rows` table, since no quantified fine figures
+  were found in any source (matching the Egypt/Oman precedent, unlike
+  Jordan's real JOD fine schedule) — instead honestly disclosing that
+  VAT-deduction denial, not a fine schedule, is the real enforcement
+  engine, 6 steps, 2 portals (request an allocation number; verify
+  vendor invoice information).
+- **Migration 277**: a 3-story arc — the May 2024 pilot launch, the
+  January 2025 activation of full ITA scrutiny/refusal powers, and the
+  June 2026 arrival at the permanent NIS 5,000 threshold floor.
+- **Migration 278**: tracking sources (the ITA's two gov.il service
+  pages — no EC factsheet, since Israel isn't an EU member state,
+  matching the Oman/Jordan precedent).
+- **Migration 279**: jurisdiction count 38→39, generated programmatically
+  from migration 271's own key list (same ~10 `translations` keys ×
+  4 languages).
+- **Static files**: `countries.js` (Middle East, alphabetically between
+  Egypt and Jordan), `shared/deep-dive-render.mjs`'s slug map and
+  `COUNTRY_NAME_TRANSLATIONS` dictionary (Israel/Israel/Israël for
+  es/de/fr).
+- **Hand-swept the jurisdiction count** in every static surface
+  `generate_files.py` would otherwise regenerate stale from D1: all
+  four languages' `i18n/*.json` files and every static HTML page — 58
+  occurrences across 31 files, using the same broadened sweep script
+  (including the education-mandate-types.html and subscribe.html stat
+  tiles) established during the Jordan build.
+- Local migration-chain replay (`apply_migrations.py --local
+  --dry-run`) confirms all 279 files validate cleanly against the
+  full schema history — "Replay validation OK (279 files, only the
+  documented pre-existing errors)."
+
+Final audit against the full ADDING-A-COUNTRY.md checklist: all items
+pass.
+
+Deploy (from your machine, once ready):
+```
+cd members-worker/migrations
+python3 apply_migrations.py --remote
+cd ..
+wrangler deploy
+```
+(The `site-worker` also needs redeploying to pick up the `countries.js`,
+`deep-dive-render.mjs`, and i18n/static-HTML jurisdiction-count edits —
+redeploy it the same way you did for Oman and Jordan.)
+
 ## Open items / next steps
 
 ### Real open work
 
 1. **Coverage expansion** — Netherlands, Austria, Greece, Cyprus, Oman,
-   and Jordan shipped, all deployed and tested. Still not
+   Jordan, and Israel shipped; Israel is code complete with deploy
+   pending, the rest deployed and tested. Still not
    tracked in Europe: Bulgaria, Czechia,
    Estonia, Hungary, Latvia, Lithuania, Malta, Slovenia, Iceland,
    Liechtenstein. The scaffolder + runner make each addition a
@@ -2260,8 +2335,9 @@ between Egypt and Oman), visible in the UI.
    real, dated, sourced milestones — Oman's first wave lands this
    same month, August 2026) via the existing scaffolder + runner
    workflow, each roughly the same effort as Austria/Greece/Cyprus.
-   **Oman and Jordan are now both deployed and tested** (see the dated
-   entries above); Israel remains the next candidate.
+   **All three of Oman, Jordan, and Israel are now built** — Oman and
+   Jordan deployed and tested, Israel code complete with deploy
+   pending (see the dated entries above).
    Qatar is a reasonable fourth addition with its milestone correctly
    marked `confidence: 'expected'` until the Shura Council/Amir step
    completes. Hold off on Bahrain, Kuwait, Iraq, and Lebanon until
