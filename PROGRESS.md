@@ -2195,7 +2195,7 @@ via `apply_migrations.py --remote`, `site-worker` redeployed for the
 static-file edits. Jordan live on the tracker board (Middle East,
 between Egypt and Oman), visible in the UI.
 
-### Israel added as country #40 (3 August 2026, code complete, deploy pending)
+### Israel added as country #40 (3 August 2026, deployed & tested)
 
 Full country build (migrations 272-279), the third and final addition
 from the Middle East coverage evaluation above. Israel's SHAAM system
@@ -2258,16 +2258,14 @@ schedule.
 Final audit against the full ADDING-A-COUNTRY.md checklist: all items
 pass.
 
-Deploy (from your machine, once ready):
-```
-cd members-worker/migrations
-python3 apply_migrations.py --remote
-cd ..
-wrangler deploy
-```
-(The `site-worker` also needs redeploying to pick up the `countries.js`,
-`deep-dive-render.mjs`, and i18n/static-HTML jurisdiction-count edits —
-redeploy it the same way you did for Oman and Jordan.)
+**Deployed and tested** (confirmed by Dan): migrations 272-279 applied
+via `apply_migrations.py --remote`, `site-worker` redeployed for the
+`countries.js`, `deep-dive-render.mjs`, and i18n/static-HTML
+jurisdiction-count edits. Israel is live on the tracker board (Middle
+East / North Africa, between Egypt and Jordan), confirmed via the UI.
+This closes out the last country addition that was still awaiting
+deploy confirmation — every country built this session (Netherlands
+through Turkey) is now confirmed live.
 
 ### South Korea added as country #41 (3 August 2026, deployed & tested)
 
@@ -2668,9 +2666,9 @@ tracker board.
 ### Real open work
 
 1. **Coverage expansion** — Netherlands, Austria, Greece, Cyprus, Oman,
-   Jordan, South Korea, Vietnam, and Turkey are all confirmed deployed
-   and tested — Israel (#40) remains the only one still code complete
-   with deploy pending. Still not
+   Jordan, Israel, South Korea, Vietnam, and Turkey are all confirmed
+   deployed and tested — every country added this session is now
+   live. Still not
    tracked in Europe: Bulgaria, Czechia,
    Estonia, Hungary, Latvia, Lithuania, Malta, Slovenia, Iceland,
    Liechtenstein. The scaffolder + runner make each addition a
