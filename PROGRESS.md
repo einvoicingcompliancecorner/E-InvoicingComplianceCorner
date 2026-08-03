@@ -1533,39 +1533,27 @@ normativa page) happened this session alone.
 
 ## Open items / next steps
 
-### Ship step outstanding (only one)
-
-From your machine:
-```
-cd members-worker/migrations && python3 apply_migrations.py --remote   # applies 215 (EC factsheet sources)
-cd ../../site-worker && npx wrangler deploy   # dark-themed /sources + in-frame panel + menu i18n
-```
-Spot-check: Resources → Tracking sources opens dark and in-frame with
-the language banner driving it; /sources standalone shows the EC
-factsheet rows under 13 European countries within the cache window.
-
 ### Real open work
 
-1. **Content-monitoring Worker** — designed in CONTENT-MONITORING.md,
-   unbuilt. Its input table now exists (tracking_sources, with the
-   `active` column reserved for it), which was most of the schema
-   design. The highest-leverage genuinely-new build on the list.
-2. **Cloudflare Web Analytics** — still no visibility into traffic;
+1. **Cloudflare Web Analytics** — still no visibility into traffic;
    ten-minute setup, and it should inform the ARCHIVE_PUBLIC and
-   pricing decisions.
-3. **Coverage expansion candidates** — 14 EC-factsheet countries are
-   not yet tracked: Austria, Bulgaria, Cyprus, Czechia, Estonia,
-   Greece, Hungary, Latvia, Lithuania, Malta, Netherlands, Slovenia,
-   Iceland, Liechtenstein. Netherlands and Austria are the obvious
-   first picks. The scaffolder + runner make each addition a
-   fraction of the old effort (Egypt: one session end to end).
-4. **Sources description curation** — the seeded descriptions are
-   portal names; over time sharpen them into what each source
-   announces (e.g. "ETA decisions and wave announcements"), which is
-   the metadata the monitoring Worker will want.
-5. **Translation frameworks for the remaining static pages** — the
+   pricing decisions below.
+2. **Coverage expansion** — Netherlands shipped. Still not tracked:
+   Austria, Bulgaria, Cyprus, Czechia, Estonia, Greece, Hungary,
+   Latvia, Lithuania, Malta, Slovenia, Iceland, Liechtenstein. Austria
+   is the obvious next pick. The scaffolder + runner make each
+   addition a fraction of the old effort.
+3. **Tracking-source URL audit, continued** — ~40 of 54 sources not
+   yet verified for whether they'll ever actually surface real news.
+   Two rounds done (Brazil/Australia/Ireland/Poland/Saudi
+   Arabia/Portugal fixed; Chile/Romania/Malaysia checked, correctly
+   left as-is). Genuinely slow, real-fetch work — see the dated
+   entries above for the method and the near-misses to avoid
+   repeating (a page can look exactly right by title and still have
+   silently stopped being updated years ago; always verify live).
+4. **Translation frameworks for the remaining static pages** — the
    pages not yet covered by the i18n system.
-6. **Business threads** (decisions, not code): theinvoicinghub.com
+5. **Business threads** (decisions, not code): theinvoicinghub.com
    competitive review; pricing (free vs the shelved $5/$8 tiers);
    the vendor registration/advertising concept; the two remaining
    Resources ideas (accredited-sources list, vendor-assessment RFI
