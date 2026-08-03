@@ -133,6 +133,25 @@ documented reason to exist:
   routing table (decides whether `/something` is a country page before
   any D1 round-trip) and feeds the canonical-URL tag. Must match the D1
   `slug` exactly.
+- **`shared/deep-dive-render.mjs`'s `COUNTRY_NAME_TRANSLATIONS`** — add
+  `es`/`de`/`fr` entries for the new country (real translations, not the
+  English name copy-pasted). Easy to forget precisely because it sits
+  right next to `COUNTRY_DEEP_DIVE_SLUGS` in the same file and looks like
+  it should be covered by the same edit — it isn't; it's a second,
+  separate dictionary. Unlike the country row/name translations in Phase
+  1 step 1 (which live in D1 and power everything else), this one is a
+  deliberately-kept hardcoded duplicate (see the file's own header
+  comment) because the deep-dive page's `<title>` and `<h1>` are
+  rendered by `translateCountryName()` from this file, shared
+  synchronously between members-worker's admin preview and the public
+  `functions/[country].js` Pages Function, neither of which loads it
+  from D1. **Confirmed missing for 6 countries as of 3 Aug 2026** —
+  Austria, Cyprus, Egypt, Greece, Luxembourg, Netherlands — all added
+  after this dictionary was last touched, so their deep-dive pages
+  currently show the English name in the `<title>`/`<h1>` even under
+  `?lang=es|de|fr`, while the rest of the page (timeline, stats, cards —
+  all D1-sourced) translates correctly. Fix those 6 at the same time as
+  whichever country prompted you to read this line.
 - **`i18n/{en,es,de,fr}.json` `countryNames`** — used by the tracker's
   client-side `translateCountry`. Regenerate from D1 rather than
   hand-editing where possible:
@@ -205,6 +224,12 @@ mind autoincrement-PK tables where a re-run genuinely duplicates rows
       linking to `/country-slug`
 - [ ] `/country-slug` and `/country-slug?lang=fr` render; "← Back to
       global tracker" works; the in-page panel opens from the sidebar
+- [ ] On `/country-slug?lang=es`, `?lang=de`, and `?lang=fr`: the
+      `<title>` tag AND the on-page `<h1>` show the translated country
+      name, not the English one — this specifically catches a missing
+      `shared/deep-dive-render.mjs` `COUNTRY_NAME_TRANSLATIONS` entry,
+      which won't show up if you only check that the timeline/stats/cards
+      translate (those come from D1 and will look fine on their own)
 - [ ] Subscribe picker shows it, translated, in all four languages
 - [ ] `/members/preferences` shows it (this now comes from D1
       automatically — if it's missing, the country row or a
