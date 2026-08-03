@@ -281,9 +281,25 @@
     }
 
     // ---------- language switch ----------
+    // In panel mode (opts.navigate set -- the tracker's in-page deep-
+    // dive-opening flow, same signal applyStaticText() already uses for
+    // backToTrackerLink below) the page's own EN/ES/DE/FR row is hidden:
+    // the tracker already has ONE language switcher at the top of the
+    // real page, and every other in-page panel (/sources, deep-dive,
+    // archive, education, feedback, subscribe) relies on that single
+    // switcher rather than showing a second one inside the panel itself
+    // -- see the `eicc:languageChanged` listener wired in openMapPage()'s
+    // caller, which already re-renders this panel on an outer language
+    // change. Standalone /map has no outer nav, so it keeps its own.
     buildLangSwitch() {
       const host = this.$("langSwitch");
       if (!host) return;
+      if (this.opts.navigate) {
+        host.style.display = "none";
+        host.innerHTML = "";
+        return;
+      }
+      host.style.display = "";
       const doc = host.ownerDocument;
       host.innerHTML = "";
       for (const code of ["en", "es", "de", "fr"]) {

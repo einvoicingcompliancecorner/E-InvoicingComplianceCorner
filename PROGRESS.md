@@ -1749,6 +1749,75 @@ board (Europe, between Croatia and Denmark), /cyprus and
 the archive shows both new stories, /sources lists Cyprus's 3 sources,
 and "36" reads correctly everywhere.
 
+### The Map: three deploy-verification bugs found and fixed (3 August 2026, code complete, deploy pending)
+
+The Map's full build (mandate_scope, `/map`, `/map-data.json`) went live
+this session — migrations 254/255 applied, both Workers deployed. Live
+spot-checking against the real site (via a browser, not just curling
+the JSON endpoint) turned up three real bugs, all specific to how the
+in-page tracker panel renders The Map (the standalone `/map` page was
+unaffected by any of these):
+
+- **The tracker's own top-of-page language switcher and the map
+  panel's embedded one were both visible at once** when The Map was
+  opened from Resources → The Map inside the tracker — every other
+  in-page panel (`/sources`, deep-dive, archive, education, feedback,
+  subscribe) relies solely on the tracker's single top-level switcher,
+  none of them render their own. `map-panel.js`'s `buildLangSwitch()`
+  now checks `opts.navigate` (the same signal `applyStaticText()`
+  already uses for `backToTrackerLink` — set only in panel mode, never
+  in standalone mode) and hides `#langSwitch` entirely when true. The
+  panel already re-renders correctly on the tracker's own
+  `eicc:languageChanged` event, so no functionality is lost.
+- **Portugal, Sweden, Norway, Finland, Luxembourg rendered solid black
+  on the map, and the "B2G only" legend swatch was invisible**, but
+  only inside the tracker's in-page panel — the standalone `/map` page
+  rendered every status color correctly. Root cause: `openMapPage()`'s
+  CSS-scoping step (`.replace(':root{', ':host{')`) is a plain string
+  `.replace()`, which only rewrites the *first* match. The map page's
+  stylesheet has **two** `:root{}` blocks — the shared dark-shell one
+  (defining `--ink`, `--line`, etc.) and a second one embedded via
+  `MAP_STYLE` (defining `--live`, `--upcoming`, `--tracked`,
+  `--b2gonly`, `--nomandate`, `--soon`). Only the first got rewritten
+  to `:host{}`; the second stayed a dead `:root{}` rule inside the
+  shadow tree (which matches nothing there), so `--b2gonly` (and
+  `--tracked`/`--nomandate`) never resolved inside the panel —
+  `fill:var(--b2gonly)` fell back to the SVG default of black, and
+  `background:var(--b2gonly)` on the legend swatch fell back to
+  transparent, letting the card background show through. `--live` and
+  `--upcoming` happened to work anyway, purely by accident, because
+  the tracker's own global stylesheet already defines those same two
+  variable names for the arrivals board's status pills, and custom
+  properties inherit through the shadow boundary from the real page.
+  **Fixed at the root** by making the replace global
+  (`.replace(/:root\{/g, ':host{')` / `.replace(/body\{/g, ':host{')`)
+  in all 7 panels that use this exact scoping pattern (deep-dive,
+  sources, map, archive, education, feedback, subscribe) — a pure
+  hardening fix for the other 6, since none of their fetched pages
+  currently have a second `:root{}` block, but the bug class is now
+  closed off everywhere rather than just in the one place it happened
+  to bite.
+- Verified all three fixes with a Playwright script that reproduces
+  `openMapPage()`'s exact fetch → DOMParser → scope → shadow-inject →
+  `EICCMap.init()` sequence against a fixture built from the real
+  `MAP_STYLE`/`mapPageBodyHtml()` source (not a hand-written mock) —
+  confirms `--b2gonly` resolves inside the shadow root, Portugal/Sweden
+  paths render the correct amber fill instead of black, the legend
+  swatch is opaque, and the panel's language switcher is hidden while
+  the standalone page's is untouched (still 4 visible buttons). No
+  console errors either mode.
+
+Not yet deployed — `site-worker` needs a re-deploy to pick up the
+`einvoicing-compliance-tracker.html` and `map-panel.js` changes:
+```
+cd site-worker && npx wrangler deploy
+```
+No new migrations, no D1 changes. Spot-check after deploy: open the
+tracker, Resources → The Map — only one language switcher visible (top
+of page), Portugal/Sweden/Norway/Finland/Luxembourg show their real
+amber "B2G only" color (not black), and the legend's "B2G only" swatch
+is a visible amber pill, not blank.
+
 ## Open items / next steps
 
 ### Real open work

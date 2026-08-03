@@ -2356,8 +2356,8 @@ async function openDeepDive(slug, opts){
   if(topBar) topBar.remove(); // replaced by this panel's own close control below
 
   const scopedCss = (styleEl ? styleEl.textContent : '')
-    .replace(':root{', ':host{')
-    .replace('body{', ':host{');
+    .replace(/:root\{/g, ':host{')
+    .replace(/body\{/g, ':host{');
 
   panel.innerHTML = '';
   const host = document.createElement('div');
@@ -2443,8 +2443,8 @@ async function openSourcesPage(opts){
   if(langsRow) langsRow.remove(); // the tracker's language banner takes over in-frame
 
   const scopedCss = (styleEl ? styleEl.textContent : '')
-    .replace(':root{', ':host{')
-    .replace('body{', ':host{');
+    .replace(/:root\{/g, ':host{')
+    .replace(/body\{/g, ':host{');
 
   panel.innerHTML = '';
   const host = document.createElement('div');
@@ -2562,8 +2562,8 @@ async function openMapPage(opts){
   const dataBlobEl = doc.getElementById('mapDataBlob');
 
   const scopedCss = (styleEl ? styleEl.textContent : '')
-    .replace(':root{', ':host{')
-    .replace('body{', ':host{');
+    .replace(/:root\{/g, ':host{')
+    .replace(/body\{/g, ':host{');
 
   panel.innerHTML = '';
   const host = document.createElement('div');
@@ -3022,8 +3022,8 @@ async function openEducationPage(pageKey, opts){
   if(backLink) backLink.remove();
 
   const scopedCss = (styleEl ? styleEl.textContent : '')
-    .replace(':root{', ':host{')
-    .replace('body{', ':host{');
+    .replace(/:root\{/g, ':host{')
+    .replace(/body\{/g, ':host{');
 
   panel.innerHTML = '';
   const host = document.createElement('div');
@@ -3203,8 +3203,8 @@ async function openFeedbackPage(opts){
   if(backLink) backLink.remove();
 
   const scopedCss = (styleEl ? styleEl.textContent : '')
-    .replace(':root{', ':host{')
-    .replace('body{', ':host{');
+    .replace(/:root\{/g, ':host{')
+    .replace(/body\{/g, ':host{');
 
   panel.innerHTML = '';
   const host = document.createElement('div');
@@ -3418,8 +3418,8 @@ async function openSubscribePage(opts){
   if(backLink) backLink.remove();
 
   const scopedCss = (styleEl ? styleEl.textContent : '')
-    .replace(':root{', ':host{')
-    .replace('body{', ':host{');
+    .replace(/:root\{/g, ':host{')
+    .replace(/body\{/g, ':host{');
 
   panel.innerHTML = '';
   const host = document.createElement('div');
