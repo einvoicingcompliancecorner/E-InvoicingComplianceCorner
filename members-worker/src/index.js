@@ -120,6 +120,7 @@ const WORKER_I18N = {
       issuesPublished: (n) => `${n} issue${n === 1 ? "" : "s"} published. Search by keyword, or filter to a specific country.`,
       searchPlaceholder: "Search issue titles and summaries…",
       noIssuesYet: "No issues published yet — check back after the next monthly send.",
+      loading: "Loading…",
       noMatch: "No issues match your search or filter.",
       managePrefs: "Manage which countries you get alerts for →",
       officialSource: "Official source",
@@ -165,6 +166,7 @@ const WORKER_I18N = {
       issuesPublished: (n) => `${n} número${n === 1 ? "" : "s"} publicado${n === 1 ? "" : "s"}. Busque por palabra clave o filtre por país.`,
       searchPlaceholder: "Buscar en títulos y resúmenes de los números…",
       noIssuesYet: "Aún no se ha publicado ningún número — vuelva después del próximo envío mensual.",
+      loading: "Cargando…",
       noMatch: "Ningún número coincide con su búsqueda o filtro.",
       managePrefs: "Gestione los países sobre los que recibe alertas →",
       officialSource: "Fuente oficial",
@@ -210,6 +212,7 @@ const WORKER_I18N = {
       issuesPublished: (n) => `${n} Ausgabe${n === 1 ? "" : "n"} veröffentlicht. Durchsuchen Sie sie nach Stichwort oder filtern Sie nach Land.`,
       searchPlaceholder: "Ausgabentitel und Zusammenfassungen durchsuchen…",
       noIssuesYet: "Noch keine Ausgabe veröffentlicht — schauen Sie nach dem nächsten monatlichen Versand wieder vorbei.",
+      loading: "Wird geladen…",
       noMatch: "Keine Ausgabe entspricht Ihrer Suche oder Ihrem Filter.",
       managePrefs: "Verwalten Sie, für welche Länder Sie Benachrichtigungen erhalten →",
       officialSource: "Offizielle Quelle",
@@ -255,6 +258,7 @@ const WORKER_I18N = {
       issuesPublished: (n) => `${n} numéro${n === 1 ? "" : "s"} publié${n === 1 ? "" : "s"}. Recherchez par mot-clé ou filtrez par pays.`,
       searchPlaceholder: "Rechercher dans les titres et résumés des numéros…",
       noIssuesYet: "Aucun numéro publié pour l'instant — revenez après le prochain envoi mensuel.",
+      loading: "Chargement…",
       noMatch: "Aucun numéro ne correspond à votre recherche ou filtre.",
       managePrefs: "Gérez les pays pour lesquels vous recevez des alertes →",
       officialSource: "Source officielle",
@@ -1935,6 +1939,25 @@ const BASE_STYLE = `
   .prefs-actions a{font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--stamp); text-decoration:underline; cursor:pointer;}
   .saved-banner{background:var(--live-dim); color:#bfe6cf; border-radius:6px; padding:10px 14px; font-size:12.8px; margin-bottom:16px;}
   .promo-banner{background:var(--soon); color:#1a1207; border-radius:6px; padding:12px 16px; font-size:13.2px; font-weight:600; margin-bottom:16px; line-height:1.5;}
+
+  /* Story pop-out modal (archive) -- same interaction pattern as the
+     tracker's "About this site" overlay: dimmed backdrop, centered
+     card, close on button/backdrop-click/Escape. */
+  .modal-overlay{
+    display:none; position:fixed; inset:0; z-index:200; background:rgba(6,10,18,0.72);
+    align-items:flex-start; justify-content:center; padding:5vh 5vw 60px; overflow-y:auto;
+  }
+  .modal-overlay.open{display:flex;}
+  .modal-card{
+    position:relative; background:var(--paper); color:#241d10; border-radius:var(--radius);
+    padding:32px; max-width:640px; width:100%; border:1px solid var(--paper-line);
+  }
+  .modal-close{
+    position:absolute; top:14px; right:16px; background:none; border:none; font-size:26px;
+    line-height:1; color:#6b5f3f; cursor:pointer; padding:4px;
+  }
+  .modal-close:hover{color:var(--stamp);}
+  .modal-loading{color:#8a7d5a; font-size:13.5px; font-style:italic;}
 `;
 
 function pageShell(bodyHtml, lang) {
@@ -2106,6 +2129,13 @@ function renderArchiveList(stories, regionByCountryName, englishNameByDisplayNam
 
     <div class="issue-grid" id="issueGrid"></div>
   </div>
+
+  <div class="modal-overlay" id="storyModalOverlay">
+    <div class="modal-card">
+      <button class="modal-close" id="storyModalClose" aria-label="Close">&times;</button>
+      <div id="storyModalBody"><p class="modal-loading">${escapeHtml(t(lang, "archive.loading") || "Loading…")}</p></div>
+    </div>
+  </div>
   <script>
     const ARCHIVE_STORIES = ${storiesJson};
     const NO_ISSUES_TEXT = ${JSON.stringify(t(lang, "archive.noIssuesYet"))};
@@ -2169,6 +2199,73 @@ function renderArchiveList(stories, regionByCountryName, englishNameByDisplayNam
     });
 
     renderGrid();
+
+    // ---------- story pop-out modal ----------
+    // Clicking a story used to navigate away to a brand-new page. It
+    // now fetches that same page and shows its content in a modal
+    // right here instead -- same interaction pattern as the tracker's
+    // "About this site" overlay (dimmed backdrop, centered card, close
+    // on button/backdrop-click/Escape/back-button). The card's real
+    // href is left untouched as a plain fallback: if this JS fails, or
+    // a crawler/JS-disabled visitor follows the link directly, it
+    // navigates normally to the real, fully server-rendered standalone
+    // page, completely unaffected by any of this.
+    const storyOverlay = document.getElementById('storyModalOverlay');
+    const storyModalBody = document.getElementById('storyModalBody');
+    const storyModalClose = document.getElementById('storyModalClose');
+    const LOADING_HTML = '<p class="modal-loading">' + escapeHtmlClient(${JSON.stringify(t(lang, "archive.loading"))}) + '</p>';
+
+    async function openStory(id, pushHistory){
+      storyModalBody.innerHTML = LOADING_HTML;
+      storyOverlay.classList.add('open');
+      if(pushHistory !== false){
+        history.pushState({ storyId: id }, '', '/members/archive/' + encodeURIComponent(id));
+      }
+      try{
+        const langSuffix = ${JSON.stringify(lang)} !== 'en' ? '?lang=' + ${JSON.stringify(lang)} : '';
+        const res = await fetch('/members/archive/' + encodeURIComponent(id) + langSuffix);
+        if(!res.ok) throw new Error('fetch failed: ' + res.status);
+        const html = await res.text();
+        const doc = new DOMParser().parseFromString(html, 'text/html');
+        const card = doc.querySelector('.wrap .card');
+        if(!card) throw new Error('story card not found in response');
+        storyModalBody.innerHTML = card.innerHTML;
+      }catch(err){
+        // Honest failure, not a silent blank modal -- the real page is
+        // one click away via the plain link this same card already has.
+        storyModalBody.innerHTML = '<p class="modal-loading">' + escapeHtmlClient(${JSON.stringify(t(lang, "archive.officialSource"))}) + ': <a href="/members/archive/' + encodeURIComponent(id) + '">/members/archive/' + encodeURIComponent(id) + '</a></p>';
+      }
+    }
+
+    function closeStory(pushHistory){
+      storyOverlay.classList.remove('open');
+      if(pushHistory !== false && location.pathname !== '/members/archive'){
+        history.pushState({}, '', '/members/archive');
+      }
+    }
+
+    document.getElementById('issueGrid').addEventListener('click', (e) => {
+      const card = e.target.closest('.issue-card');
+      if(!card) return;
+      e.preventDefault();
+      const id = card.getAttribute('href').replace(/^\\/members\\/archive\\//, '');
+      openStory(decodeURIComponent(id));
+    });
+
+    storyModalClose.addEventListener('click', () => closeStory());
+    storyOverlay.addEventListener('click', (e) => { if(e.target === storyOverlay) closeStory(); });
+    document.addEventListener('keydown', (e) => {
+      if(e.key === 'Escape' && storyOverlay.classList.contains('open')) closeStory();
+    });
+    // Back button while a story is open closes it instead of leaving
+    // the archive entirely, matching pushState's own expectation.
+    window.addEventListener('popstate', (e) => {
+      if(e.state && e.state.storyId){
+        openStory(e.state.storyId, false);
+      }else{
+        storyOverlay.classList.remove('open');
+      }
+    });
   </script>`;
   return pageShell(body, lang);
 }
