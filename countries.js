@@ -31,7 +31,7 @@ const EICC_COUNTRIES_BY_REGION = {
     "Sweden", "United Kingdom"
   ],
   "Middle East": [
-    "Egypt", "Oman", "Saudi Arabia", "United Arab Emirates"
+    "Egypt", "Jordan", "Oman", "Saudi Arabia", "United Arab Emirates"
   ],
   "Asia-Pacific": [
     "Australia", "China", "India", "Malaysia", "New Zealand", "Singapore"

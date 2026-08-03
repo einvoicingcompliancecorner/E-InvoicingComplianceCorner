@@ -2135,12 +2135,84 @@ static-file edits. Oman live on the tracker board (Middle East,
 between Egypt and Saudi Arabia), and "37" reads correctly everywhere
 the old "36" did.
 
+### Jordan added as country #39 (3 August 2026, code complete, deploy pending)
+
+Full country build (migrations 264-271), the second addition from the
+Middle East coverage evaluation above — Jordan's JoFotara is the most
+mature mandate of the three strongest candidates (Jordan/Israel/Oman),
+with real legal enforcement already in force since April 2025 rather
+than a future date.
+
+- **Migrations 264-266**: country row (slug `jordan`, region "Middle
+  East"), 5 milestones — JoFotara's December 2022 voluntary launch
+  (anchor, off-board), January 2023 mandatory onboarding for large
+  taxpayers, the May 2024 universal-registration deadline for every
+  VAT-registered taxpayer (no SME exemption), full legal enforcement
+  across B2B/B2G/B2C from 1 April 2025 (`mandate_scope: 'b2b'` on the
+  in-force milestones), and the May 2025 close of a penalty-waiver
+  grace period. Sourced from the Income and Sales Tax Department
+  (ISTD, istd.gov.jo) and cross-checked against VATupdate, EDICOM, and
+  vatit.com/Flick Network compliance guides, which independently agree
+  on the phase dates.
+- **Migrations 267-268**: full deep-dive page — a centralized clearance
+  CTC model description, 5 stats, 3 `file_format` cards, a lifecycle
+  card ("The clearance flow", 5 pills: draft → submit → ISTD validates
+  → QR/reference issued → delivered) plus 2 regular cards in
+  `scope_transmission`, a genuine 2-row fine-schedule table (`deep_
+  dive_penalty_rows` — JOD 500 per violation escalating to JOD 1,000
+  or imprisonment, a real enough figure to warrant a table rather than
+  narrative-only, per the Saudi/Belgium/Italy precedent) plus 3
+  narrative `penalties_related` cards, 6 steps, 2 portals.
+- **Migration 269**: a 3-story arc — the January 2023 Phase 1
+  onboarding for large taxpayers, the May 2024 universal-registration
+  deadline, and the April 2025 full-enforcement milestone.
+- **Migration 270**: tracking sources (ISTD's own site and the
+  JoFotara registration portal — no EC factsheet, since Jordan isn't
+  an EU member state, matching the Oman precedent).
+- **Migration 271**: jurisdiction count 37→38, verified directly
+  against the true pre-Jordan baseline (migration 263) before
+  sweeping.
+- **Static files**: `countries.js` (Middle East, between Egypt and
+  Oman, alphabetically), `shared/deep-dive-render.mjs`'s slug map and
+  `COUNTRY_NAME_TRANSLATIONS` dictionary (Jordania/Jordanien/Jordanie).
+- **Hand-swept the jurisdiction count** in every static surface
+  `generate_files.py` would otherwise regenerate stale from D1: all
+  four languages' `i18n/*.json` files and every static HTML page — 58
+  occurrences across 31 files, cross-checked against migration 271's
+  own key list, plus the education-mandate-types.html stat tile caught
+  by the same broadened sweep script used for Oman's backfill.
+- Local migration-chain replay (`apply_migrations.py --local
+  --dry-run`) confirms all 271 files validate cleanly against the
+  full schema history — "Replay validation OK (271 files, only the
+  documented pre-existing errors)."
+
+Final audit against the full ADDING-A-COUNTRY.md checklist: all items
+pass.
+
+**Deploy (from your machine, once ready):**
+```bash
+cd members-worker/migrations
+python3 apply_migrations.py --remote
+cd ../../site-worker && wrangler deploy
+```
+This sandbox has no Cloudflare/D1 credentials, so migrations 264-271
+and the site-worker redeploy (needed for the `countries.js`,
+`deep-dive-render.mjs`, i18n, and jurisdiction-count static-file
+edits) both still need to be run from your own machine. After
+deploying, the Phase 5 testing checklist applies as usual — worth
+specifically checking `/jordan?lang=es`/`de`/`fr` for the translated
+`<title>`/`<h1>` (Jordania/Jordanien/Jordanie), the subscribe picker
+showing the same, and that "38" reads correctly everywhere the old
+"37" did.
+
 ## Open items / next steps
 
 ### Real open work
 
 1. **Coverage expansion** — Netherlands, Austria, Greece, Cyprus, and
-   Oman shipped, all deployed and tested. Still not tracked in Europe: Bulgaria, Czechia,
+   Oman shipped, all deployed and tested; Jordan shipped (code
+   complete, deploy pending — see the dated entry above). Still not
+   tracked in Europe: Bulgaria, Czechia,
    Estonia, Hungary, Latvia, Lithuania, Malta, Slovenia, Iceland,
    Liechtenstein. The scaffolder + runner make each addition a
    fraction of the old effort.
@@ -2199,8 +2271,9 @@ the old "36" did.
    real, dated, sourced milestones — Oman's first wave lands this
    same month, August 2026) via the existing scaffolder + runner
    workflow, each roughly the same effort as Austria/Greece/Cyprus.
-   **Oman is now deployed and tested** (see the dated entry above);
-   Jordan and Israel remain the next two candidates.
+   **Oman is now deployed and tested, and Jordan is now built** (code
+   complete, deploy pending — see the dated entries above); Israel
+   remains the next candidate.
    Qatar is a reasonable fourth addition with its milestone correctly
    marked `confidence: 'expected'` until the Shura Council/Amir step
    completes. Hold off on Bahrain, Kuwait, Iraq, and Lebanon until
