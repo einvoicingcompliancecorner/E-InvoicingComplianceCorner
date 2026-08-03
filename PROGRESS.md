@@ -2345,6 +2345,96 @@ redeploy it the same way you did for Oman and Jordan.)
    revisit this evaluation every few months rather than re-researching
    from scratch, since this space (especially Qatar) is moving
    quickly.
+
+   **Asia-Pacific coverage evaluated (3 August 2026).** Dan asked for
+   an assessment of the best Asia-Pacific country to add next.
+   Currently tracked in this region: Australia, China, India, Malaysia,
+   New Zealand, Singapore (6 of 40). Live web research turned up seven
+   more candidates, ranked the same way as the Middle East evaluation
+   above — a firm in-force mandate outranks a dated-but-future one,
+   which outranks a still-draft proposal:
+
+   - **South Korea — strongest candidate, no caveats needed.** The
+     e-Tax Invoice system has been mandatory for all corporations
+     since **January 2011** — 15 years in force — with individual
+     entrepreneurs phased in progressively (current threshold: KRW 80
+     million in prior-year supply, since July 2024). Real-time
+     next-day reporting to NTS Hometax, XML format with PKI digital
+     signatures, and a genuinely graduated penalty schedule (2% of
+     supply value for non-issuance, down to 0.3-0.5% for delayed
+     transmission, capped at KRW 50-100 million except for intentional
+     violations). This is the single most mature, best-documented
+     mandate of any candidate found in this evaluation — more settled
+     than Jordan was when added.
+   - **Vietnam — strong candidate.** E-invoicing has been mandatory
+     nationwide since **1 July 2022** (paper invoices ceased to be
+     valid), covering B2B, B2C retail, and exports, via a dual
+     real-time-clearance/post-audit model reporting same-day to the
+     General Department of Taxation. Recently reinforced rather than
+     relaxed: Decree 70/2025 (effective June 2025) extended scope to
+     foreign digital suppliers and mandated connected POS invoicing
+     for retail. Fully in force, not a future date.
+   - **Taiwan — strong candidate.** The eGUI system has been mandatory
+     for all foreign and domestic companies since **January 2021**,
+     with a format migration already underway (MIG 4.0 available since
+     Jan 2024; older MIG 3.1/3.2 sunset 31 December 2025). Invoices
+     transmit to the Ministry of Finance's platform within 7 days of
+     delivery. In force ~5 years, actively evolving.
+   - **Pakistan — strong candidate, with a caveat on schedule
+     stability.** Verified directly against the government's own SRO
+     69(I)/2025 and SRO 1852(I)/2025 (Federal Board of Revenue, PDF
+     confirmed at download1.fbr.gov.pk) — this is enacted law under
+     the Sales Tax Act 1990, not a proposal. Phased rollout completed
+     by 31 December 2025 (large enterprises/importers 1 Nov 2025 →
+     mid-sized 15 Nov → smaller 1 Dec → all remaining registered
+     persons 31 Dec), with broader enforcement from January 2026 and
+     penalties escalating PKR 500,000 → 3,000,000 for repeat
+     violations. The caveat: multiple compliance guides note FBR has
+     extended these category deadlines more than once already, so the
+     exact per-category dates should be reconfirmed against the
+     current FBR portal before finalizing milestone dates, not just
+     the SROs as first issued.
+   - **Indonesia — strong candidate.** Coretax e-invoicing became
+     mandatory for all VAT-registered taxpayers (PKP) on **31 December
+     2025**, with XML submitted to the tax authority (DJP) for
+     clearance into QR-coded PDFs. Large taxpayers may continue on
+     e-Faktur Desktop/H2H; everyone else uses the Coretax portal. Real
+     penalties: non-creditable VAT, IDR 500,000 late-filing fines, and
+     misreporting penalties up to 100%.
+   - **Philippines — real, dated, but not yet in force.** The BIR's
+     EIS mandate for structured e-invoicing (PDFs no longer qualify)
+     has already had one deadline extension — from March 2026 to
+     **31 December 2026** (Revenue Regulations No. 26-2025) — covering
+     large taxpayers, e-commerce businesses, exporters, and POS users.
+     Similar shape to Oman when it was evaluated: real and dated, but
+     the wave hasn't landed yet, and it's already slipped once.
+   - **Sri Lanka — not yet, revisit later.** Only a pilot phase with
+     API-ready ERP taxpayers is underway, aimed at full pilot
+     deployment by end of 2025 before any broader mandatory phase;
+     no confirmed date yet for VAT-registered entities generally. Reads
+     like Qatar's "real direction, no firm law yet" situation, not
+     Jordan's "already enforced" one.
+   - **Japan — checked, not a real e-invoicing mandate.** The
+     Qualified Invoice System (effective October 2023) governs
+     input-tax-credit eligibility, not invoicing format — Japan
+     explicitly has no obligation to issue e-invoices, and JP PINT/
+     Peppol is a recommended standard for a decentralized 4-corner
+     exchange, not a requirement. No clearance, no e-reporting. Worth
+     knowing about but not a mandate to build a deep-dive around.
+
+   **Recommendation**: add **South Korea** first — it's the most
+   mature, most concretely documented mandate of any candidate here,
+   with none of the "deadline already slipped" or "still a proposal"
+   caveats attached to Pakistan or the Philippines. Vietnam and Taiwan
+   are both strong, already-in-force second and third additions with
+   the same "no caveats" character. Pakistan and Indonesia are real
+   and dated but newer and, in Pakistan's case, worth reconfirming
+   exact per-category dates against the live FBR portal before writing
+   migrations. Philippines is worth adding once its December 2026
+   deadline gets closer, following the same logic that put Oman ahead
+   of Qatar. Hold off on Sri Lanka until it has a confirmed mandatory
+   date beyond the pilot, and skip Japan — there's no real invoicing
+   mandate there to document.
 2. **Tracking-source URL audit, continued** — ~40 of 54 sources not
    yet verified for whether they'll ever actually surface real news.
    Two rounds done (Brazil/Australia/Ireland/Poland/Saudi
