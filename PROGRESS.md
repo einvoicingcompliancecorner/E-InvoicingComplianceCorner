@@ -2024,6 +2024,71 @@ panel, click "Browse the newsletter archive" — the archive should open
 in-page, not a new tab/window; click "Subscribe to the newsletter" —
 the subscribe panel should open in-page the same way.
 
+### ADDING-A-COUNTRY.md updated to cover The Map (2 Aug 2026, cont'd)
+
+Audited the "adding a new country" runbook against everything The Map
+gained across this session's seven rounds (`mandate_scope` was already
+documented from an earlier round; this pass covers the rest). Found
+one real inaccuracy and one undocumented connection:
+
+- **Phase 5's testing checklist claimed** "there's no separate file to
+  edit for a country to show up here [on The Map]... unlike Phase 2's
+  `countries.js` and slug-map duplicates." Not fully true:
+  `shared/map-data.mjs` has two hand-maintained lookup tables,
+  `TOPO_NAME_OVERRIDES` and `MARKER_LONLAT_OVERRIDES`, that a new
+  country occasionally needs. `TOPO_NAME_OVERRIDES` maps this
+  project's `name_en` to the bundled world-atlas topology's own
+  `properties.name` when the two spellings differ — a mismatch means
+  the country's shape silently fails to match and never renders, no
+  error. `MARKER_LONLAT_OVERRIDES` supplies a fallback `[lon, lat]`
+  for a country with no topology feature at all (typical for
+  micro-states) or one too small to reliably render/click.
+  `map-panel.js` already logs `"The Map: no map position for <name> --
+  add a markerLonLat override."` to the console when neither a shape
+  nor an override exists for a country — that console line is the
+  reliable signal, not eyeballing the map among ~190 other shapes.
+- **The Map's "Latest updates" news panel** (added this session, Round
+  6) wasn't connected anywhere in the doc to the existing "tag a
+  launch story to the country" step. No new step is actually required
+  there — the panel reads the same `story_countries` tagging and the
+  country's `region` that already drive the archive's deep-dive link —
+  but a future country-adder had no way to know why their launch story
+  would (or wouldn't) show up in the map's news list.
+
+Fixed both in `ADDING-A-COUNTRY.md`:
+- Added a new **Phase 1 step 6 ("Conditional) The Map's D3 rendering
+  overrides")** documenting `TOPO_NAME_OVERRIDES` and
+  `MARKER_LONLAT_OVERRIDES` — what each is for, the observable symptom
+  if skipped, and that most countries need neither.
+- Reworded step 5 (the launch-story step) to note it's also what feeds
+  the "Latest updates" panel, with no extra step needed.
+- Corrected Phase 5's Map checklist item: replaced the "no separate
+  file to edit" claim with an instruction to check the console for the
+  "no map position" warning and visually confirm the shape/marker
+  renders, attributing any gap to `shared/map-data.mjs`'s overrides
+  rather than a D1 problem.
+- Added a clause to the existing "story tagged to it" checklist item
+  confirming the country also shows (flag + name) in the Map's news
+  panel once a story is tagged.
+- Added a one-line cross-reference in "Before you start"'s country-name
+  bullet: the exact English name also needs to match the topology's
+  spelling, or The Map's shape lookup breaks the same way the picker/
+  preferences/story-tagging match already warns about.
+
+Also updated `members-worker/migrations/new_country_scaffold.py`'s
+closing "Still to do" printout with a new item 6 pointing at the same
+console check, so the scaffolder's own output steers a country-adder
+toward this without needing to already know to look in
+ADDING-A-COUNTRY.md's Phase 1 step 6. Didn't add scaffold-side
+*validation* for the topology overrides (unlike `mandate_scope`,
+which the scaffolder can check mechanically) — whether a name matches
+the topology can only really be confirmed by looking at the rendered
+map, so a printed reminder is the right level of automation here
+rather than a spec field that can't be verified until deploy anyway.
+
+Documentation-only change, no code behavior affected — nothing to
+deploy for this entry itself.
+
 ## Open items / next steps
 
 ### Real open work

@@ -31,7 +31,9 @@ Decide up front:
   exact case and spelling, everywhere.
 - **The exact English country name.** Pick once, spell identically in
   every file and migration. A mismatch silently breaks matching between
-  the subscribe picker, preferences, and story tagging.
+  the subscribe picker, preferences, and story tagging — and, if it
+  doesn't also match the world-atlas topology's own spelling, breaks
+  The Map's shape lookup too (see Phase 1 step 6).
 - **The URL slug.** Usually lowercase-hyphenated, but abbreviations are
   fine (`uae`, `uk`) — it's an explicit column, not a derived transform.
 
@@ -137,7 +139,42 @@ non-negotiable, now automated rather than remembered.
    a short multi-story arc spanning the past 6–12 months rather than a
    single launch post (see the Netherlands' 221–222 for the pattern) —
    especially useful for a country with an active, ongoing policy
-   story rather than one settled event.
+   story rather than one settled event. **This same tagging is also
+   what feeds The Map's "Latest updates" panel** (the news list shown
+   in the tracker's in-page Map view — see step 6 below) — no extra
+   step is needed for that, it rides on the same `story_countries`
+   rows and the country's `region`, but it's worth knowing that a
+   country with no tagged stories yet will simply show an empty
+   "Latest updates" list under its region until one is added.
+
+6. **(Conditional) The Map's D3 rendering overrides** —
+   `shared/map-data.mjs` has two hand-maintained lookup tables that
+   most new countries *won't* need, but a handful will:
+   - **`TOPO_NAME_OVERRIDES`** — the choropleth matches each country to
+     a shape in the bundled world-atlas topology
+     (`vendor/countries-50m.json`) by name (`c.topoName =
+     TOPO_NAME_OVERRIDES[c.name_en] || c.name_en`). If the topology
+     spells the country differently than this project's `name_en`
+     (e.g. a "Republic of X" vs. plain "X" mismatch, or a different
+     English exonym), the match silently fails and the country's shape
+     just won't render or color at all — no error, it's simply absent
+     from the map. Add an entry mapping `name_en` → the topology's own
+     `properties.name` string to fix it.
+   - **`MARKER_LONLAT_OVERRIDES`** — for a country with no feature in
+     the topology at all (common for micro-states) or one whose shape
+     is too small to reliably render or click, this supplies a
+     fallback `[lon, lat]` so a clickable marker still appears in
+     roughly the right place. `map-panel.js` logs `"The Map: no map
+     position for <name> -- add a markerLonLat override."` to the
+     browser console when a country has neither a topology shape nor
+     an override — that console warning is the reliable signal a new
+     country needs one, don't rely on eyeballing the rendered map
+     alone (a missing shape can be easy to miss among ~190 others).
+   - There's no validation step that catches either of these — check
+     the console for the warning above and visually confirm the new
+     country's shape or marker actually appears on `/map` before
+     calling a launch done. Most countries need neither override; add
+     one only if the symptom above shows up.
 
 ---
 
@@ -256,7 +293,9 @@ mind autoincrement-PK tables where a re-run genuinely duplicates rows
       automatically — if it's missing, the country row or a
       `country_translations` row is wrong, not a Worker file)
 - [ ] A story tagged to it shows the auto-rendered deep-dive link in the
-      archive
+      archive, **and** (once at least one such story exists) the
+      country appears — with its flag and name — in The Map's "Latest
+      updates" panel under its region
 - [ ] `/sources` lists the country's tracking sources, in all four
       languages
 - [ ] Every old count is the new count, in every language, **and** the
@@ -272,12 +311,17 @@ mind autoincrement-PK tables where a re-run genuinely duplicates rows
 - [ ] The new country appears on **The Map** (`/map`, and the tracker's
       Resources → The Map in-page panel), in the right region, with a
       status that matches its real-world mandate state — this is
-      entirely D1-driven (`shared/map-data.mjs`), so a correct
-      `mandate_scope` per milestone (Phase 1 step 2) is the only input
-      it needs; there's no separate file to edit for a country to show
-      up here, unlike Phase 2's `countries.js` and slug-map duplicates.
-      Clicking the country on the map opens the same in-page deep-dive
-      panel as everywhere else.
+      almost entirely D1-driven (`shared/map-data.mjs`), so a correct
+      `mandate_scope` per milestone (Phase 1 step 2) is normally the
+      only input it needs. The exception is Phase 1 step 6: check the
+      browser console for `"The Map: no map position for <name>"` and
+      confirm the country's shape (or, for a marker-only country, its
+      pin) actually renders and is clickable — if either is wrong or
+      missing, it's a `TOPO_NAME_OVERRIDES` / `MARKER_LONLAT_OVERRIDES`
+      gap in `shared/map-data.mjs`, not a D1 problem. Clicking the
+      country on the map opens the same in-page deep-dive panel as
+      everywhere else, and (per the story-tagging item above) any
+      tagged story shows up in the region's "Latest updates" list.
 
 ---
 

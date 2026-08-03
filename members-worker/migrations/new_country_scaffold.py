@@ -212,6 +212,9 @@ def main():
     print("  3. countries.js + shared/deep-dive-render.mjs slug map + i18n regen")
     print("  4. The jurisdiction-count sweep (incl. D1 translations table)")
     print("  5. python3 apply_migrations.py --remote   (validates, applies, records)")
+    print("  6. Check /map after deploy: browser console for \"no map position for")
+    print("     <name>\" -- if present, add a TOPO_NAME_OVERRIDES / MARKER_LONLAT_")
+    print("     OVERRIDES entry in shared/map-data.mjs (most countries need neither)")
 
 
 if __name__ == "__main__":
