@@ -563,12 +563,14 @@
                on this site if/when the promo period ends and the archive
                goes back to being subscriber-only. -->
           <a class="dropdown-item" href="https://members.e-invoicingcompliancecorner.com/members/archive"><span class="dd-icon">📰</span><span data-i18n="menu.archive">Newsletter archive</span></a>
-          <!-- Plain navigation link (NOT an in-page panel -- see the
-               feedback-panel incident in PROGRESS.md: panels need their
-               own wiring in this file, and duplicated wiring drifts).
-               /sources is a site-worker route rendered from D1's
-               tracking_sources tables; no asset file behind it. -->
+          <!-- /sources and /map are both site-worker routes rendered
+               live from D1; no asset file behind either. Both get the
+               same in-page-panel treatment as a country deep dive --
+               see wireDeepDiveInPagePanel() below for the actual
+               click interception (this HTML just carries the real,
+               plain href as a no-JS/crawler fallback). -->
           <a class="dropdown-item" href="/sources"><span class="dd-icon">📡</span><span data-i18n="menu.sources">Tracking sources</span></a>
+          <a class="dropdown-item" href="/map"><span class="dd-icon">🗺️</span><span data-i18n="menu.map">The Map</span></a>
         </div>
       </div>
       <div class="actions-menu" id="educationMenu">
@@ -687,6 +689,7 @@
 <div id="feedbackView" style="display:none;"></div>
 <div id="sourcesView" style="display:none;"></div>
 <div id="subscribeView" style="display:none;"></div>
+<div id="mapView" style="display:none;"></div>
 
 <footer>
   <p data-i18n="filters.disclaimer">This tracker reflects publicly available guidance as of July 2026 and is provided for general awareness, not legal or tax advice. E-invoicing thresholds, wave numbers and go-live dates change frequently — confirm your obligations directly on the official government portal linked in each entry, or with your tax advisor, before making compliance decisions.</p>
@@ -2317,6 +2320,7 @@ async function openDeepDive(slug, opts){
   if(feedbackPageOpen) closeFeedbackPage({ skipHistory: true });
   if(subscribePageOpen) closeSubscribePage({ skipHistory: true });
   if(sourcesPageOpen) closeSourcesPage({ skipHistory: true });
+  if(mapPageOpen) closeMapPage({ skipHistory: true });
 
   boardView.style.display = 'none';
   // The site name/description/subscriber-perks block pushes real
@@ -2409,6 +2413,7 @@ async function openSourcesPage(opts){
   if(currentEducationPage) closeEducationPage({ skipHistory: true });
   if(feedbackPageOpen) closeFeedbackPage({ skipHistory: true });
   if(subscribePageOpen) closeSubscribePage({ skipHistory: true });
+  if(mapPageOpen) closeMapPage({ skipHistory: true });
 
   boardView.style.display = 'none';
   if(topbarBrand) topbarBrand.style.display = 'none';
@@ -2474,6 +2479,138 @@ function closeSourcesPage(opts){
   panel.innerHTML = '';
   if(!opts.skipHistory){
     history.pushState({ sources: null }, '', '/einvoicing-compliance-tracker.html');
+  }
+}
+
+// ---------- in-page "The Map" panel ----------
+// Mirrors the sources panel above (fetch the real server-rendered
+// /map page, scope its CSS into a shadow root, show it in the main
+// frame with history integration), with two differences specific to
+// this page:
+//
+//   1. /map has no separate .top-bar to strip -- its own .map-topbar
+//      IS the page chrome (back link + language switch), so it stays
+//      in the injected content rather than being replaced by a panel
+//      close control the way the deep-dive/sources/archive panels do.
+//      The back link's behavior is overridden below to call
+//      closeMapPage() instead of navigating, when running as a panel.
+//   2. The page's own bootstrap <script> (the one that calls
+//      EICCMap.init(document, ...)) is discarded like every other
+//      fetched page's inline script when dropped into a shadow root's
+//      innerHTML -- map-panel.js itself is loaded for real (once, lazily,
+//      on first open) and EICCMap.init(shadow, ...) is called directly
+//      here instead, exactly like wireArchiveStoryModal(shadow) is
+//      called for the archive panel.
+let mapPageOpen = false;
+let mapScriptsPromise = null;
+
+// d3 (~280KB) + topojson-client (~7KB) + map-panel.js are only needed
+// if a visitor actually opens the Map -- loading them unconditionally
+// in <head> would add real weight to every tracker page view. Loaded
+// once, lazily, and cached (module-level promise) so reopening the
+// panel later doesn't re-fetch or re-run them.
+function loadMapScriptsOnce(){
+  if(mapScriptsPromise) return mapScriptsPromise;
+  const load = (src) => new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = src;
+    s.onload = resolve;
+    s.onerror = () => reject(new Error('failed to load ' + src));
+    document.head.appendChild(s);
+  });
+  mapScriptsPromise = load('/vendor/d3.min.js')
+    .then(() => load('/vendor/topojson-client.min.js'))
+    .then(() => load('/map-panel.js'));
+  return mapScriptsPromise;
+}
+
+async function openMapPage(opts){
+  opts = opts || {};
+  const boardView = document.getElementById('boardView');
+  const panel = document.getElementById('mapView');
+  const topbarBrand = document.querySelector('.topbar-brand');
+  mapPageOpen = true;
+  if(currentDeepDiveSlug) closeDeepDive({ skipHistory: true });
+  if(archiveOpen) closeArchive({ skipHistory: true });
+  if(currentEducationPage) closeEducationPage({ skipHistory: true });
+  if(feedbackPageOpen) closeFeedbackPage({ skipHistory: true });
+  if(subscribePageOpen) closeSubscribePage({ skipHistory: true });
+  if(sourcesPageOpen) closeSourcesPage({ skipHistory: true });
+
+  boardView.style.display = 'none';
+  if(topbarBrand) topbarBrand.style.display = 'none';
+  panel.style.display = '';
+  panel.innerHTML = '<p style="color:var(--muted); font-family:\'IBM Plex Mono\',monospace; font-size:13px; padding:40px 5vw;">Loading…</p>';
+  window.scrollTo(0, 0);
+
+  const lang = (window.EICC_I18N && window.EICC_I18N.currentLang) || 'en';
+  let html;
+  try {
+    const [res] = await Promise.all([fetch(`/map?lang=${lang}`), loadMapScriptsOnce()]);
+    if(!res.ok) throw new Error('map fetch failed: ' + res.status);
+    html = await res.text();
+  } catch(err){
+    console.warn('Falling back to a full navigation for /map', err);
+    window.location.href = '/map';
+    return;
+  }
+  if(!mapPageOpen) return; // closed while loading
+
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  const styleEl = doc.querySelector('style');
+  const wrap = doc.querySelector('.wrap');
+  const dataBlobEl = doc.getElementById('mapDataBlob');
+
+  const scopedCss = (styleEl ? styleEl.textContent : '')
+    .replace(':root{', ':host{')
+    .replace('body{', ':host{');
+
+  panel.innerHTML = '';
+  const host = document.createElement('div');
+  panel.appendChild(host);
+  const shadow = host.attachShadow({ mode: 'open' });
+  shadow.innerHTML = `<style>${scopedCss}</style><div class="wrap">${wrap ? wrap.innerHTML : '<p>Could not load this page.</p>'}</div>`;
+
+  if(!opts.skipHistory){
+    history.pushState({ map: true }, '', '/map');
+  }
+
+  if(!dataBlobEl){
+    console.error('The Map: mapDataBlob missing from fetched /map page -- cannot render.');
+    return;
+  }
+  let blob;
+  try { blob = JSON.parse(dataBlobEl.textContent); }
+  catch(err){ console.error('The Map: mapDataBlob is not valid JSON', err); return; }
+
+  window.EICCMap.init(shadow, {
+    countries: blob.countries,
+    lang: blob.lang,
+    ui: blob.ui,
+    regionOrder: blob.regionOrder,
+    regionBounds: blob.regionBounds,
+    topologyUrl: '/vendor/countries-50m.json',
+    fetchCountries: (l) => fetch(`/map-data.json?lang=${l}`).then((r) => r.json()),
+    // A click on a country navigates using the same in-page deep-dive
+    // panel as every other Deep Dive link, rather than a new tab.
+    navigate: (slug) => openDeepDive(slug),
+    // The panel's own "back to tracker" link/behavior: close this
+    // panel and return to the board, rather than navigating away.
+    closePanel: () => closeMapPage(),
+  });
+}
+
+function closeMapPage(opts){
+  opts = opts || {};
+  mapPageOpen = false;
+  document.getElementById('boardView').style.display = '';
+  const topbarBrand = document.querySelector('.topbar-brand');
+  if(topbarBrand) topbarBrand.style.display = '';
+  const panel = document.getElementById('mapView');
+  panel.style.display = 'none';
+  panel.innerHTML = '';
+  if(!opts.skipHistory){
+    history.pushState({ map: null }, '', '/einvoicing-compliance-tracker.html');
   }
 }
 
@@ -2567,6 +2704,7 @@ async function openArchive(opts){
   if(feedbackPageOpen) closeFeedbackPage({ skipHistory: true });
   if(subscribePageOpen) closeSubscribePage({ skipHistory: true });
   if(sourcesPageOpen) closeSourcesPage({ skipHistory: true });
+  if(mapPageOpen) closeMapPage({ skipHistory: true });
 
   boardView.style.display = 'none';
   if(topbarBrand) topbarBrand.style.display = 'none';
@@ -2851,6 +2989,7 @@ async function openEducationPage(pageKey, opts){
   if(feedbackPageOpen) closeFeedbackPage({ skipHistory: true });
   if(subscribePageOpen) closeSubscribePage({ skipHistory: true });
   if(sourcesPageOpen) closeSourcesPage({ skipHistory: true });
+  if(mapPageOpen) closeMapPage({ skipHistory: true });
 
   boardView.style.display = 'none';
   if(topbarBrand) topbarBrand.style.display = 'none';
@@ -3031,12 +3170,13 @@ async function openFeedbackPage(opts){
   const panel = document.getElementById('feedbackView');
   const topbarBrand = document.querySelector('.topbar-brand');
   feedbackPageOpen = true;
-  // Mutually exclusive with the other 4 in-page panels.
+  // Mutually exclusive with the other in-page panels.
   if(currentDeepDiveSlug) closeDeepDive({ skipHistory: true });
   if(archiveOpen) closeArchive({ skipHistory: true });
   if(currentEducationPage) closeEducationPage({ skipHistory: true });
   if(subscribePageOpen) closeSubscribePage({ skipHistory: true });
   if(sourcesPageOpen) closeSourcesPage({ skipHistory: true });
+  if(mapPageOpen) closeMapPage({ skipHistory: true });
 
   boardView.style.display = 'none';
   if(topbarBrand) topbarBrand.style.display = 'none';
@@ -3245,12 +3385,13 @@ async function openSubscribePage(opts){
   const panel = document.getElementById('subscribeView');
   const topbarBrand = document.querySelector('.topbar-brand');
   subscribePageOpen = true;
-  // Mutually exclusive with the other 4 in-page panels.
+  // Mutually exclusive with the other in-page panels.
   if(currentDeepDiveSlug) closeDeepDive({ skipHistory: true });
   if(archiveOpen) closeArchive({ skipHistory: true });
   if(currentEducationPage) closeEducationPage({ skipHistory: true });
   if(feedbackPageOpen) closeFeedbackPage({ skipHistory: true });
   if(sourcesPageOpen) closeSourcesPage({ skipHistory: true });
+  if(mapPageOpen) closeMapPage({ skipHistory: true });
 
   boardView.style.display = 'none';
   if(topbarBrand) topbarBrand.style.display = 'none';
@@ -3353,6 +3494,16 @@ function wireDeepDiveInPagePanel(){
       return;
     }
 
+    // The Resources > The Map link -- same in-page treatment (the
+    // /map route is server-rendered from D1 by site-worker too).
+    if(href === '/map'){
+      e.preventDefault();
+      document.getElementById('sidebar')?.classList.remove('open');
+      document.getElementById('sidebarOverlay')?.classList.remove('open');
+      openMapPage();
+      return;
+    }
+
     // The Resources > Newsletter archive link -- opens the archive
     // list in the main frame instead of navigating away, same
     // treatment as a country Deep Dive link.
@@ -3411,6 +3562,7 @@ function wireDeepDiveInPagePanel(){
     const isFeedbackUrl = window.location.pathname.replace(/^\/+/, '') === 'feedback.html';
     const isSubscribeUrl = window.location.pathname.replace(/^\/+/, '') === 'subscribe.html';
     const isSourcesUrl = window.location.pathname === '/sources' || window.location.pathname === '/sources.html';
+    const isMapUrl = window.location.pathname === '/map' || window.location.pathname === '/map.html';
     if(isArchiveUrl){
       openArchive({ skipHistory: true });
     } else if(slug){
@@ -3423,6 +3575,8 @@ function wireDeepDiveInPagePanel(){
       openSubscribePage({ skipHistory: true });
     } else if(isSourcesUrl){
       openSourcesPage({ skipHistory: true });
+    } else if(isMapUrl){
+      openMapPage({ skipHistory: true });
     } else if(currentDeepDiveSlug){
       closeDeepDive({ skipHistory: true });
     } else if(archiveOpen){
@@ -3435,6 +3589,8 @@ function wireDeepDiveInPagePanel(){
       closeSubscribePage({ skipHistory: true });
     } else if(sourcesPageOpen){
       closeSourcesPage({ skipHistory: true });
+    } else if(mapPageOpen){
+      closeMapPage({ skipHistory: true });
     }
   });
 
@@ -3448,6 +3604,7 @@ function wireDeepDiveInPagePanel(){
     else if(feedbackPageOpen) openFeedbackPage({ skipHistory: true });
     else if(subscribePageOpen) openSubscribePage({ skipHistory: true });
     else if(sourcesPageOpen) openSourcesPage({ skipHistory: true });
+    else if(mapPageOpen) openMapPage({ skipHistory: true });
   });
 
   // The subscribe panel's sample-issue modal needs a global Escape

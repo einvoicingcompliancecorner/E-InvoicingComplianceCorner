@@ -141,12 +141,28 @@ This is where it stays exactly as collaborative as it is today:
 2. In a working session, go through the flagged pages together — same as
    reviewing any other update. Read what actually changed, decide whether
    it's substantive.
-3. If it is: update `DATA` (and its three translation files), update the
-   relevant deep-dive page (and its translations, if that page has been
-   translated), and consider whether it's newsletter-worthy for the next
-   monthly issue — following the exact same source-linking discipline
-   already used throughout this site (link to the actual government page,
-   not just a paraphrase).
+3. If it is: update the milestone data (D1's `milestones` /
+   `milestone_translations` — the tracker board and deep-dive timeline
+   both read these live, see ADDING-A-COUNTRY.md's Stage 5 note), update
+   the relevant deep-dive page (and its translations, if that page has
+   been translated), and consider whether it's newsletter-worthy for the
+   next monthly issue — following the exact same source-linking
+   discipline already used throughout this site (link to the actual
+   government page, not just a paraphrase).
+   - **Re-check `mandate_scope` on every milestone you touch or add**
+     (migration 254; see `ADDING-A-COUNTRY.md`'s Phase 1 step 2 and
+     `255_mandate_scope_backfill.sql`'s header for the `'b2b'` /
+     `'b2g_only'` / `'none'` definitions and worked precedent). This is
+     the field The Map's live status computation reads — a mandate
+     that just moved from "expected" to firm, a country that gained
+     its first real B2B milestone, or a brand-new milestone left at
+     the column's `'b2b'` schema default when it should be
+     `'b2g_only'` or `'none'` will each silently mis-color that
+     country on `/map` until someone happens to notice. There's no
+     separate reminder for this the way the jurisdiction count (Phase
+     3) has one — it rides along with the milestone edit itself, so
+     it's easy to skip precisely because the milestone edit "already
+     felt complete" without it.
 4. If it's a false positive (cosmetic change, unrelated content): no
    action needed, the watcher just did its job by ruling it out.
 

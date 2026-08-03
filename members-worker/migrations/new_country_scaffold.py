@@ -19,6 +19,14 @@ Spec shape:
       "anchor": false,             // deep-dive "established" entry
       "confidence": "expected",    // optional: renders the badge
       "source_url": "https://...", // optional
+      "mandate_scope": "b2b",      // required: 'b2b' | 'b2g_only' | 'none'
+                                    // -- see 254_mandate_scope_schema.sql's
+                                    // header for the definitions. Required
+                                    // (not defaulted) so a new milestone can
+                                    // never silently inherit the column's
+                                    // 'b2b' schema default by omission --
+                                    // The Map's live status computation
+                                    // (shared/map-data.mjs) reads this field.
       "system": "Headline for the milestone",
       "desc": "One-paragraph description.",
       "actions": ["Do this", "Check that"],
@@ -86,7 +94,7 @@ def validate(spec):
         fail("at least one milestone required")
     seen = set()
     for m in spec["milestones"]:
-        for key in ("id", "date", "system", "desc", "actions"):
+        for key in ("id", "date", "system", "desc", "actions", "mandate_scope"):
             if key not in m:
                 fail(f"milestone missing '{key}': {m.get('id', '<no id>')}")
         if m["id"] in seen:
@@ -99,6 +107,11 @@ def validate(spec):
                  f"(every current board entry has one)")
         if m.get("confidence") not in (None, "expected"):
             fail(f"{m['id']}: confidence must be omitted or 'expected'")
+        if m["mandate_scope"] not in ("b2b", "b2g_only", "none"):
+            fail(f"{m['id']}: mandate_scope must be 'b2b', 'b2g_only', or 'none' "
+                 f"(see 254_mandate_scope_schema.sql's header for definitions -- "
+                 f"this drives The Map's live status computation, so guessing "
+                 f"wrong here silently mis-colors the country on /map)")
         for p in m.get("portals", []):
             if not p.get("label") or not str(p.get("url", "")).startswith("https://"):
                 fail(f"{m['id']}: each portal needs a label and an https:// url")
@@ -134,9 +147,9 @@ def gen_milestones_sql(spec):
         conf = f"'{esc(m['confidence'])}'" if m.get("confidence") else "NULL"
         src = f"'{esc(m['source_url'])}'" if m.get("source_url") else "NULL"
         lines.append(
-            f"INSERT OR IGNORE INTO milestones (id, country_id, date, anchor, source_url, on_tracker, portals, confidence) "
+            f"INSERT OR IGNORE INTO milestones (id, country_id, date, anchor, source_url, on_tracker, portals, confidence, mandate_scope) "
             f"SELECT '{esc(m['id'])}', id, '{m['date']}', {1 if m.get('anchor') else 0}, {src}, "
-            f"{1 if m.get('on_tracker') else 0}, '{portals}', {conf} "
+            f"{1 if m.get('on_tracker') else 0}, '{portals}', {conf}, '{esc(m['mandate_scope'])}' "
             f"FROM countries WHERE code = '{esc(spec['code'])}';")
         lines.append(
             f"INSERT OR IGNORE INTO milestone_translations (milestone_id, lang, system, desc, actions) "

@@ -1,0 +1,41 @@
+-- Adds an explicit mandate_scope column to milestones, so "is this a
+-- B2B mandate, a B2G-only requirement, or neither" is a stored fact
+-- rather than something inferred from milestone prose at render time.
+-- This is the field The Map's live status computation reads.
+--
+-- Values:
+--   'b2b'      — this milestone is (part of) a mandate requiring
+--                structured e-invoicing between businesses (issuing
+--                and/or receiving), whether newly establishing that
+--                mandate or extending/enforcing/tightening an existing
+--                one. Systems that cover B2B alongside B2C and/or B2G
+--                (Italy's SDI, Mexico's CFDI, Chile's DTE, Peru's CPE,
+--                China's e-fapiao) count as 'b2b' here, since the B2B
+--                coverage is what this field exists to capture.
+--   'b2g_only' — this milestone is restricted to business-to-government
+--                invoicing (government agencies as the buyer/receiver)
+--                with no general B2B or B2C mandate attached.
+--   'none'     — this milestone is real and binding but is not itself
+--                an e-invoicing-mandate-scope fact: software/format
+--                certification requirements that don't mandate
+--                transmission (Spain's VeriFactu, Portugal's QES layer),
+--                voluntary/pilot programs with no legal mandate, pure
+--                tax-reporting field additions, EU directive transposition
+--                deadlines, or research/consultation milestones with no
+--                legislation.
+--
+-- Default is 'b2b' because most historical milestones are exactly
+-- that; migration 255 backfills the real exceptions (b2g_only / none)
+-- explicitly, row by row, alongside an explicit confirmation of every
+-- other row's 'b2b' value — see that file's header for the full
+-- per-country audit trail.
+--
+-- CONTENT-MONITORING.md documents the ongoing obligation: whenever a
+-- country's milestone data changes (new milestone added, an existing
+-- one's date/text is revised, or a mandate's status changes), verify
+-- and update mandate_scope for every affected milestone as part of
+-- that edit -- this field decays into silent inaccuracy exactly like
+-- the jurisdiction count (Phase 3 of ADDING-A-COUNTRY.md) if updates
+-- to milestone data don't carry it along.
+
+ALTER TABLE milestones ADD COLUMN mandate_scope TEXT NOT NULL DEFAULT 'b2b';

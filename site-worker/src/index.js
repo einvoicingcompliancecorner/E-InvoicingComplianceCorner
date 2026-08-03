@@ -31,6 +31,12 @@ import {
   getMilestonesForCountry,
   renderFullDeepDivePage,
 } from "../../shared/deep-dive-render.mjs";
+import {
+  getMapCountries,
+  REGION_ORDER,
+  REGION_BOUNDS,
+  MAP_UI,
+} from "../../shared/map-data.mjs";
 
 const LANG_COOKIE = "eicc_lang";
 const LANG_COOKIE_TTL_SECONDS = 60 * 60 * 24 * 365; // 1 year
@@ -394,6 +400,251 @@ async function renderSourcesPage(request, env) {
   return new Response(html, { headers });
 }
 
+// ================================================================
+// /map — "The Map", a live D1-rendered choropleth of every tracked
+// jurisdiction's mandate status (shared/map-data.mjs's
+// computeCountryMapStatus, driven by the milestones.mandate_scope
+// column added in migration 254/255). Like /sources and the country
+// deep-dive pages, this matches no asset file, so the Worker always
+// runs here -- no run_worker_first entry needed.
+//
+// The page embeds its own initial-language country data as a
+// <script type="application/json"> blob (inert either way, so it
+// survives being dropped into a shadow root's innerHTML when the
+// tracker's in-page panel fetches this same page -- see
+// einvoicing-compliance-tracker.html's openMapPage()), plus real
+// <script src> tags for d3, topojson-client, and this repo's own
+// map-panel.js. /map-data.json?lang=xx (renderMapDataJson below)
+// serves the same per-language country array for every subsequent
+// language switch, matching the /i18n/{lang}-data.json precedent for
+// the tracker board itself.
+// ================================================================
+
+const MAP_PATHS = new Set(["/map", "/map.html"]);
+const MAP_DATA_JSON_RE = /^\/map-data\.json$/;
+
+const MAP_STYLE = `
+  :root{
+    --live:#3f7d5c; --live-dim:#274a38; --soon:#c98a3a; --soon-dim:#6e4c22;
+    --upcoming:#6b7a95; --upcoming-dim:#3a4864; --tracked:#4a5568; --tracked-dim:#2c333d;
+    --b2gonly:#c98a3a; --b2gonly-dim:#6e4c22; --nomandate:#8a5a75; --nomandate-dim:#4a2f3d;
+  }
+  .display{font-family:'Big Shoulders Display',sans-serif; font-weight:800; letter-spacing:0.01em;}
+  .mono{font-family:'IBM Plex Mono',monospace;}
+  .map-topbar{padding:28px 0 20px; border-bottom:1px solid var(--line); display:flex; flex-wrap:wrap; gap:16px 32px; align-items:flex-start; justify-content:space-between;}
+  .map-topbar-brand{flex:1 1 320px; min-width:0;}
+  .brand-eyebrow{font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.18em; text-transform:uppercase; color:var(--soon); margin:0 0 6px;}
+  .brand-title{font-size:clamp(28px,4vw,44px); margin:0; text-transform:uppercase; line-height:0.95;}
+  .brand-sub{color:var(--muted); font-size:14.5px; max-width:640px; margin:10px 0 0;}
+  .map-topbar-right{font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--muted); text-align:right;}
+  .map-topbar-right a{color:var(--soon); text-decoration:underline;}
+  .map-main{padding:28px 0 60px; max-width:1400px; margin:0 auto;}
+  .layout{display:grid; grid-template-columns:minmax(0,1fr) 340px; gap:24px; align-items:start;}
+  @media (max-width:980px){ .layout{grid-template-columns:1fr;} }
+  .card{background:var(--ink-2); border:1px solid var(--line); border-radius:var(--radius); padding:20px 22px;}
+  .section-heading{font-size:15px; margin:0 0 14px; text-transform:uppercase; display:flex; align-items:baseline; gap:10px;}
+  .section-heading span{font-size:11.5px; color:var(--muted); font-family:'IBM Plex Mono',monospace; text-transform:none; letter-spacing:0.02em;}
+  .region-tabs{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px;}
+  .region-tab{font-family:'IBM Plex Mono',monospace; font-size:11.5px; text-transform:uppercase; letter-spacing:0.06em; background:var(--ink-3); border:1px solid var(--line); color:var(--muted); padding:8px 14px; border-radius:999px; cursor:pointer; transition:all .12s ease; display:flex; align-items:center; gap:7px;}
+  .region-tab:hover{border-color:var(--soon); color:var(--text-lo);}
+  .region-tab.active{background:var(--soon); border-color:var(--soon); color:#1a1207; font-weight:600;}
+  .region-tab .count{opacity:.75; font-size:10.5px;}
+  .map-wrap{position:relative;}
+  .region-map-svg{width:100%; height:auto; display:none; background:var(--ink); border-radius:8px; border:1px solid var(--line);}
+  .region-map-svg.active{display:block;}
+  .geo-country{stroke:var(--ink); stroke-width:0.6; cursor:default; transition:filter .12s ease;}
+  .geo-country.clickable{cursor:pointer;}
+  .geo-country.clickable:hover{filter:brightness(1.28);}
+  .geo-untracked{fill:var(--ink-3); stroke:var(--line); stroke-width:0.5;}
+  .status-inforce{fill:var(--live);} .status-upcoming{fill:var(--upcoming);} .status-tracked{fill:var(--tracked);}
+  .status-b2gonly{fill:var(--b2gonly);} .status-nomandate{fill:var(--nomandate);}
+  .small-country-marker{cursor:pointer;}
+  .small-country-marker circle{stroke:var(--ink); stroke-width:1.2; transition:filter .12s ease;}
+  .small-country-marker:hover circle{filter:brightness(1.3);}
+  .small-country-marker text{font-family:'IBM Plex Mono',monospace; font-size:9.5px; fill:var(--text-lo); letter-spacing:0.02em;}
+  .leader-line{stroke:var(--muted); stroke-width:0.7; stroke-dasharray:2,2; pointer-events:none;}
+  .map-tooltip{position:absolute; pointer-events:none; background:var(--paper); color:#241d10; border-radius:8px; padding:10px 12px; font-size:12.5px; max-width:220px; box-shadow:0 8px 20px rgba(0,0,0,.35); opacity:0; transition:opacity .1s ease; z-index:20;}
+  .map-tooltip .tt-name{font-family:'Big Shoulders Display',sans-serif; font-weight:800; font-size:16px; margin:0 0 3px; text-transform:uppercase;}
+  .map-tooltip .tt-status{font-family:'IBM Plex Mono',monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:0.06em; margin:0 0 6px; display:inline-block; padding:2px 7px; border-radius:999px;}
+  .map-tooltip .tt-status.st-inforce{background:var(--live-dim); color:#bfe6cf;}
+  .map-tooltip .tt-status.st-upcoming{background:var(--upcoming-dim); color:#dbe2ee;}
+  .map-tooltip .tt-status.st-tracked{background:var(--tracked-dim); color:#c7ccd3;}
+  .map-tooltip .tt-status.st-b2gonly{background:var(--b2gonly-dim); color:#ffe0b3;}
+  .map-tooltip .tt-status.st-nomandate{background:var(--nomandate-dim); color:#f0d6e6;}
+  .map-tooltip .tt-cta{font-size:11.5px; color:#6b5f3f; margin:2px 0 0;}
+  .legend{display:flex; flex-wrap:wrap; gap:16px; margin-top:14px; font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--muted);}
+  .legend-item{display:flex; align-items:center; gap:7px;}
+  .legend-swatch{width:12px; height:12px; border-radius:3px; display:inline-block;}
+  .map-note{margin-top:14px; font-size:12px; color:var(--muted); line-height:1.5;}
+  .region-block{margin-bottom:6px; padding:2px 4px 6px; border-radius:8px; transition:background .15s ease;}
+  .region-block:last-child{margin-bottom:0;}
+  .region-block.active-region{background:rgba(201,138,58,0.08);}
+  .region-name-toggle{all:unset; box-sizing:border-box; cursor:pointer; width:100%; font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:0.14em; text-transform:uppercase; color:var(--muted); margin:0 0 6px; padding:4px 4px; border-radius:6px; display:flex; align-items:center; gap:8px;}
+  .region-name-toggle:hover{color:var(--text-lo);}
+  .region-block.active-region .region-name-toggle{color:var(--soon);}
+  .region-name-toggle::after{content:""; flex:1; height:1px; background:var(--line);}
+  .region-count{font-size:10px; opacity:.75; flex:0 0 auto;}
+  .chevron{font-size:9px; flex:0 0 auto; transition:transform .15s ease; display:inline-block;}
+  .region-block.collapsed .chevron{transform:rotate(-90deg);}
+  .region-rows{overflow:hidden; max-height:1200px; opacity:1; transition:max-height .18s ease, opacity .15s ease;}
+  .region-block.collapsed .region-rows{max-height:0; opacity:0; pointer-events:none;}
+  .country-row{display:flex; align-items:center; gap:9px; padding:6px 8px; border-radius:6px; text-decoration:none; font-size:13.5px; color:var(--text-lo); transition:background .1s ease;}
+  .country-row:hover{background:var(--ink-3);}
+  .country-row .flag{font-size:15px;}
+  .country-row .name{flex:1; min-width:0;}
+  .country-row .dot{width:8px; height:8px; border-radius:50%; flex:0 0 auto;}
+  .dot.status-inforce{background:var(--live);} .dot.status-upcoming{background:var(--upcoming);} .dot.status-tracked{background:var(--tracked);}
+  .dot.status-b2gonly{background:var(--b2gonly);} .dot.status-nomandate{background:var(--nomandate);}
+  .footer-cta{margin-top:28px; display:flex; flex-wrap:wrap; gap:16px 28px; align-items:center; justify-content:space-between; background:var(--ink-2); border:1px solid var(--line); border-radius:var(--radius); padding:20px 24px;}
+  .footer-cta p{margin:0; font-size:14px; color:var(--muted); max-width:520px;}
+  .archive-btn{font-family:'IBM Plex Mono',monospace; font-size:12.5px; text-transform:uppercase; letter-spacing:0.08em; background:var(--stamp); color:#fff; padding:11px 20px; border-radius:999px; text-decoration:none; white-space:nowrap; font-weight:600;}
+  .archive-btn:hover{background:var(--stamp-dim);}
+  .lang-switch{display:flex; gap:6px; margin-top:10px; justify-content:flex-end; flex-wrap:wrap;}
+  .lang-btn{font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:0.05em; text-transform:uppercase; background:var(--ink-3); border:1px solid var(--line); color:var(--muted); padding:4px 10px; border-radius:999px; cursor:pointer;}
+  .lang-btn:hover{border-color:var(--soon); color:var(--text-lo);}
+  .lang-btn.active{background:var(--soon); border-color:var(--soon); color:#1a1207; font-weight:600;}
+`;
+
+function mapPageBodyHtml() {
+  return `
+<div class="map-topbar">
+  <div class="map-topbar-brand">
+    <p class="brand-eyebrow" id="brandEyebrow"></p>
+    <h1 class="brand-title display" id="brandTitle"></h1>
+    <p class="brand-sub" id="brandSub"></p>
+  </div>
+  <div class="map-topbar-right">
+    <div><a href="/einvoicing-compliance-tracker.html" id="backToTrackerLink"></a></div>
+    <div class="lang-switch" id="langSwitch"></div>
+  </div>
+</div>
+<div class="map-main">
+  <div class="layout">
+    <div class="card map-wrap">
+      <div class="region-tabs" id="regionTabs"></div>
+      <h2 class="section-heading display" id="mapHeading"></h2>
+      <div id="mapSvgHost"></div>
+      <div class="map-tooltip" id="tooltip"></div>
+      <div class="legend" id="legendHost"></div>
+      <p class="map-note" id="mapNote"></p>
+    </div>
+    <div class="card" id="sidebarList">
+      <h2 class="section-heading display" id="sidebarHeading"></h2>
+    </div>
+  </div>
+  <div class="footer-cta">
+    <p id="footerText"></p>
+    <a class="archive-btn" href="https://members.e-invoicingcompliancecorner.com/members/archive" id="archiveBtnLink"></a>
+  </div>
+</div>`;
+}
+
+async function renderMapPage(request, env) {
+  if (!env.eicc_content) return new Response("Missing D1 binding", { status: 500 });
+  const url = new URL(request.url);
+  let lang = url.searchParams.get("lang");
+  let shouldSetCookie = false;
+  const { value: cookieLang, duplicated: cookieDuplicated } = getCookie(request, LANG_COOKIE);
+  if (lang && SUPPORTED_LANGS.includes(lang)) {
+    shouldSetCookie = true;
+  } else if (cookieLang && SUPPORTED_LANGS.includes(cookieLang)) {
+    lang = cookieLang;
+  } else {
+    lang = pickBestSupportedLanguage(request.headers.get("Accept-Language")) || "en";
+  }
+  const ui = MAP_UI[lang] || MAP_UI.en;
+  const countries = await getMapCountries(env.eicc_content, lang);
+
+  // </script> inside the JSON would terminate the blob early.
+  const safe = (o) => JSON.stringify(o).replace(/<\//g, "<\\/");
+
+  const html = `<!DOCTYPE html>
+<html lang="${escHtml(lang)}">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>${escHtml(ui.eyebrow)} — The E-Invoicing Compliance Corner</title>
+<meta name="description" content="${escHtml(ui.subtitle)}">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  /* Same dark shell as the country deep-dive pages and /sources
+     (shared/deep-dive-render.mjs's structural contract): :root{ and
+     body{ rules -- the tracker's in-page injector rewrites both to
+     :host{ when this page is fetched into the shadow-scoped panel. */
+  :root{
+    --ink:#0f1a2b; --ink-2:#152238; --ink-3:#1c2c48; --line:#2b3c5a;
+    --paper:#efe9db; --paper-2:#e4dcc6; --paper-line:#c9bd9e;
+    --text-lo:#f2f0e8; --muted:#93a3c0;
+    --stamp:#b5432f; --stamp-dim:#7c3628; --radius:10px;
+  }
+  *{box-sizing:border-box;} html,body{margin:0;padding:0;}
+  body{background:var(--ink); color:var(--text-lo); font-family:'IBM Plex Sans',sans-serif; line-height:1.5;}
+  a{color:inherit;}
+  .wrap{max-width:1400px; margin:0 auto; padding:0 5vw 0;}
+  .top-bar{display:none;} /* no separate top-bar here -- .map-topbar IS the header, kept visible in both standalone and in-page-panel modes (unlike /sources, whose whole top-bar is the panel's own close control) */
+  ${MAP_STYLE}
+</style>
+</head>
+<body>
+<div class="wrap">${mapPageBodyHtml()}</div>
+<script type="application/json" id="mapDataBlob">${safe({ countries, lang, ui: MAP_UI, regionOrder: REGION_ORDER, regionBounds: REGION_BOUNDS })}</script>
+<script src="/vendor/d3.min.js"></script>
+<script src="/vendor/topojson-client.min.js"></script>
+<script src="/map-panel.js"></script>
+<script>
+(function(){
+  // Everything this bootstrap needs (country data, UI copy, region
+  // geometry) comes from the single #mapDataBlob JSON island above --
+  // deliberately, so the tracker's in-page map panel (see
+  // einvoicing-compliance-tracker.html's openMapPage()) can extract the
+  // exact same blob from this page's fetched HTML and call
+  // EICCMap.init(shadow, ...) itself. This inline script never runs in
+  // that path (script tags injected via innerHTML don't execute), but
+  // the JSON island does survive -- keeping all init data in that one
+  // inert blob, rather than split between it and plain JS literals
+  // here, is what makes that possible.
+  var blob = JSON.parse(document.getElementById('mapDataBlob').textContent);
+  window.EICCMap.init(document, {
+    countries: blob.countries,
+    lang: blob.lang,
+    ui: blob.ui,
+    regionOrder: blob.regionOrder,
+    regionBounds: blob.regionBounds,
+    topologyUrl: '/vendor/countries-50m.json',
+    fetchCountries: function(lang){
+      return fetch('/map-data.json?lang=' + lang).then(function(r){ return r.json(); });
+    }
+  });
+})();
+</script>
+</body>
+</html>`;
+
+  const headers = new Headers({
+    "Content-Type": "text/html; charset=UTF-8",
+    "Cache-Control": "public, max-age=300",
+  });
+  if (shouldSetCookie) {
+    headers.append("Set-Cookie", `${LANG_COOKIE}=${lang}; Domain=.e-invoicingcompliancecorner.com; Path=/; Max-Age=${LANG_COOKIE_TTL_SECONDS}; SameSite=Lax`);
+  }
+  if (cookieDuplicated) {
+    headers.append("Set-Cookie", `${LANG_COOKIE}=; Path=/; Max-Age=0; SameSite=Lax`);
+  }
+  return new Response(html, { headers });
+}
+
+async function renderMapDataJson(request, env) {
+  if (!env.eicc_content) return new Response("Missing D1 binding", { status: 500 });
+  const url = new URL(request.url);
+  const lang = SUPPORTED_LANGS.includes(url.searchParams.get("lang")) ? url.searchParams.get("lang") : "en";
+  const countries = await getMapCountries(env.eicc_content, lang);
+  return new Response(JSON.stringify(countries), {
+    headers: { "Content-Type": "application/json; charset=UTF-8", "Cache-Control": "public, max-age=300" },
+  });
+}
+
 async function renderCountryDeepDive(request, env, slug) {
   if (!env.eicc_content) {
     return new Response(
@@ -481,6 +732,14 @@ export default {
     // The tracking-sources page — D1-rendered, no asset file behind it.
     if (url.pathname === "/sources" || url.pathname === "/sources.html") {
       return renderSourcesPage(request, env);
+    }
+
+    // The Map — D1-rendered choropleth, no asset file behind it either.
+    if (MAP_PATHS.has(url.pathname)) {
+      return renderMapPage(request, env);
+    }
+    if (MAP_DATA_JSON_RE.test(url.pathname)) {
+      return renderMapDataJson(request, env);
     }
 
     // Only a single path segment can ever be a country slug

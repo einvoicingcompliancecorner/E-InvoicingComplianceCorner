@@ -1891,6 +1891,80 @@ and "36" reads correctly everywhere.
    fallback and wiring status colors to live D1 data correctly. Still
    at the "evaluating references" stage — no build started.
 
+   **Full build completed, prepared for deploy (3 August 2026).**
+   Following two mock-up rounds (region tabs, sidebar-flex, language
+   switching, all verified against real d3/topojson rendering) and an
+   explicit go-ahead to do the real build, this shipped as:
+
+   - **`mandate_scope` added to `milestones`** (migration 254; NOT
+     NULL, default `'b2b'`) — `'b2b'` / `'b2g_only'` / `'none'` per
+     milestone, replacing the mock-up's one-time manual free-text
+     reclassification pass with a real, durable D1 field. Migration
+     255 backfills every current `on_tracker` milestone (97 rows)
+     explicitly, with a full per-country audit trail in that file's
+     header. `ADDING-A-COUNTRY.md` (Phase 1 step 2) and
+     `CONTENT-MONITORING.md` (the update workflow) both now require
+     re-checking this field whenever milestone data changes, and
+     `new_country_scaffold.py` requires it in the spec and validates
+     its value — the "keep this updated as mandates evolve" half of
+     the request, not just the one-time schema addition.
+   - **`shared/map-data.mjs`** — `computeCountryMapStatus()` (the live
+     equivalent of the mock-up's hand-curated status dict; verified to
+     reproduce all 31 previously-known statuses exactly, with one
+     deliberate divergence documented inline for the United States)
+     and `getMapCountries(db, lang)`, which also retires the mock-up's
+     separate `COUNTRY_TRANSLATIONS` dictionary in favor of D1's real
+     `country_translations` table.
+   - **A genuinely new discovery during verification**: replaying
+     migrations 254/255 against a full local in-memory copy of the
+     schema + every migration file (`apply_migrations.py`'s own
+     `validate_replay()`, run directly, no wrangler/network needed)
+     surfaced that Austria, Cyprus, Egypt, Greece, and the Netherlands
+     — all added to D1 *after* `202_tracker_backfill.sql` was written —
+     have real `on_tracker` milestone data the original 79-id audit
+     never saw, and would otherwise have kept the column's `'b2b'`
+     default. Classified all five properly; two (Egypt, Greece) turn
+     out to already have a real, firm, in-force domestic B2B mandate —
+     genuinely more accurate than the mock-up's stale "tracked (no
+     data yet)" placeholder for them, which is exactly what a live
+     D1-rendered map is supposed to deliver over a hand-maintained
+     snapshot. The same replay first caught a more serious modeling
+     bug: `computeCountryMapStatus` was initially fed *every* milestone
+     row per country, not just `on_tracker = 1` ones, which silently
+     forced nearly every country to "inforce" via long-past-dated
+     `on_tracker = 0` anchor rows sitting at the schema default —
+     fixed by filtering `getMapCountries`'s query to `on_tracker = 1`,
+     matching the board's own population.
+   - **`/map`** (`site-worker/src/index.js`) — a real, live D1-rendered,
+     crawlable page (plain `<a href>` sidebar links, no JS-only
+     navigation — the anti-pattern flagged from Esker/Tungsten above),
+     following the exact `/sources` pattern for language/cookie
+     handling. `/map-data.json?lang=xx` serves the same per-language
+     country array for the page's own EN/ES/DE/FR switch.
+   - **`map-panel.js`** — the mock-up's D3/topojson rendering, region
+     tabs, and sidebar-flex logic, ported into a single reusable
+     `EICCMap.init(rootEl, opts)` usable against either `document`
+     (the standalone page) or a `ShadowRoot`. d3, topojson-client, and
+     the world-atlas 50m topology are real static files under
+     `vendor/`, not re-inlined per request like the mock-up.
+   - **The tracker's in-page map panel** (`openMapPage()` /
+     `closeMapPage()`, a new Resources → "The Map" menu item) — the
+     exact same fetch-and-shadow-scope pattern as `/sources`'s panel,
+     with `map-panel.js` lazily loaded on first open (not in `<head>`,
+     to avoid weighing down every tracker page view for a feature most
+     visitors won't open) and called directly against the shadow root
+     — the fetched page's own inline bootstrap script is discarded
+     the way every in-page panel's is. Clicking a country calls the
+     existing `openDeepDive(slug)` directly, per the explicit decision
+     to reuse the existing in-page deep-dive panel rather than a new
+     tab or a bespoke standalone page.
+   - **Not yet done**: this sandbox has no Cloudflare/wrangler
+     credentials (`wrangler whoami` confirms unauthenticated), so
+     migrations 254/255 haven't been applied and neither Worker has
+     been deployed — both are prepared for the next `apply_migrations.py
+     --remote` + `wrangler deploy` (site-worker) run from a machine
+     with real access.
+
 ### Dormant until decided
 
 - Ending the ARCHIVE_PUBLIC promo (one variable flip in

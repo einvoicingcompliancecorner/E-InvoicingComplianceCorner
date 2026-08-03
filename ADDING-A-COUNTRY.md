@@ -81,7 +81,28 @@ non-negotiable, now automated rather than remembered.
      (1 = shows on the main board), **`portals`** (JSON array of
      `{label,url}` — every current board entry has at least one),
      **`confidence`** (`'expected'` for announced-but-unlegislated
-     dates, renders the "Expected — not final" badge; else NULL).
+     dates, renders the "Expected — not final" badge; else NULL),
+     **`mandate_scope`** (migration 254) — `'b2b'` if this milestone is
+     (part of) a mandate requiring structured e-invoicing between
+     businesses, `'b2g_only'` if it's restricted to invoicing the
+     government with no general B2B/B2C mandate attached, or `'none'`
+     if it's real and binding but not itself an e-invoicing-mandate-
+     scope fact (a software/format certification requirement like
+     Spain's VeriFactu, a voluntary/pilot program, a pure tax-reporting
+     field addition). **This is not optional and has no safe default
+     to leave unset** — the column defaults to `'b2b'` for schema
+     reasons (most historical rows are exactly that), but a new
+     milestone left at the default when it should be `'b2g_only'` or
+     `'none'` will silently mis-color the country on **The Map**
+     (`/map`, `shared/map-data.mjs`'s `computeCountryMapStatus()`),
+     the same "silent inconsistency, not errors" failure mode this
+     whole doc guards against elsewhere. See
+     `members-worker/migrations/255_mandate_scope_backfill.sql`'s
+     header comment for the full worked reasoning and precedent calls
+     across every currently-tracked country. If you're using the
+     scaffolder (below), it requires `mandate_scope` in the spec and
+     validates it's one of the three values — it will not let you omit
+     it or guess a fourth value.
    - `milestone_translations`: en/es/de/fr rows with `system`, `desc`,
      `actions` (JSON array). **The tracker board reads these from D1 at
      request time (Stage 5)** — there are no `-data.json` files to edit.
@@ -248,6 +269,15 @@ mind autoincrement-PK tables where a re-run genuinely duplicates rows
       three times; check any *new* counting logic too, not just text.
 - [ ] Board milestone cards translate when switching language (proves
       the `milestone_translations` rows landed)
+- [ ] The new country appears on **The Map** (`/map`, and the tracker's
+      Resources → The Map in-page panel), in the right region, with a
+      status that matches its real-world mandate state — this is
+      entirely D1-driven (`shared/map-data.mjs`), so a correct
+      `mandate_scope` per milestone (Phase 1 step 2) is the only input
+      it needs; there's no separate file to edit for a country to show
+      up here, unlike Phase 2's `countries.js` and slug-map duplicates.
+      Clicking the country on the map opens the same in-page deep-dive
+      panel as everywhere else.
 
 ---
 
