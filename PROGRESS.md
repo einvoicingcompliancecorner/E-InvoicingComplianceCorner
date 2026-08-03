@@ -1362,6 +1362,50 @@ einvoicingcompliancecorner@gmail.com) for the first digest — it should
 report every active tracking source baselining, with nothing to review
 yet. Run it again (or wait a week) to see real change detection kick in.
 
+### New-subscriber welcome email (3 August 2026, code complete, deploy pending)
+
+Signing up previously sent only the bare magic-link email — no
+orientation, no links, nothing explaining what the site actually
+offers. Added a genuinely separate welcome email, sent alongside (not
+merged into) the magic link, since the magic link has one narrow,
+urgent job (click within 15 minutes) that a longer tour would only
+dilute. Sent first, so the magic link — the thing needing immediate
+action — lands as the newest message in the inbox.
+
+Content: a personalised greeting (first name if given, else generic),
+a one-line explanation of what the site does, four link cards (the
+tracker, country deep dives — explained via the sidebar/Deep Dives
+menu since there's no single central deep-dive URL, the newsletter
+archive, and the tracking sources page), all five education pages
+listed by their real menu titles and linked individually, an honest
+statement of the subscriber's chosen countries (or the no-preference
+default, explained plainly) with a preferences-page button, and a
+feedback link in the footer.
+
+Branding: reuses the site's bold masthead (extracted into a shared
+`buildBoldMastheadHtml()`, now used by both this and the content
+monitor's digest, rather than duplicated) via `buildEmailShell`'s
+optional header override — zero change to the existing magic-link and
+monthly-notification emails, which don't pass a header override and
+keep their small default eyebrow exactly as before.
+
+English-only, matching the existing precedent — none of this site's
+transactional email is currently localized.
+
+Tested (16 checks): correct recipient/subject, personalised and
+generic-fallback greetings, every link present and pointing at a real
+URL, all 5 education pages listed and linked, the chosen-countries
+sentence, the bold masthead applied, and — since first name and
+countries are user-supplied — HTML-escaping verified so a subscriber
+typing `<script>` into the sign-up form can't inject anything into
+their own welcome email.
+
+Deploy: `cd members-worker && wrangler deploy`. Spot-check: sign up
+with a test email (a fresh, previously-unused address, since sign-up
+is one-per-email) and confirm two emails arrive — the welcome email
+first, an honest reflection of any countries chosen at sign-up, all
+links live — then the magic-link email on top of it.
+
 ## Open items / next steps
 
 ### Ship step outstanding (only one)

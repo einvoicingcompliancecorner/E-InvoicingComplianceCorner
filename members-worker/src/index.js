@@ -590,10 +590,20 @@ const CM_AMBER = "#c98a3a", CM_STAMP = "#b5432f", CM_LIVE = "#3f7d5c";
 // Display' is listed first as a best-effort for the rare client that
 // does honour it; Arial Black / Impact carry the same bold, condensed,
 // high-impact feel everywhere else, at a matching weight and scale.
-const CM_HEADER_HTML = `
-  <p style="margin:0 0 6px; font-family:'Courier New',Courier,monospace; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:${CM_AMBER};">Compliance clearance board</p>
-  <h1 style="margin:0; font-family:'Big Shoulders Display',Impact,'Arial Narrow',sans-serif; font-weight:900; font-stretch:condensed; font-size:30px; line-height:0.98; text-transform:uppercase; color:#f2f0e8; letter-spacing:-0.2px;">The E-Invoicing<br>Compliance Corner</h1>
-`;
+// Shared bold masthead for any transactional email that wants a strong,
+// on-brand header instead of buildEmailShell's small default eyebrow —
+// currently the content monitor's digest and the new-subscriber welcome
+// email. Mirrors the tracker page's own brand-eyebrow + brand-title
+// copy and proportions as closely as email clients allow (see the
+// content-monitor rebrand notes for why Impact, not Arial Black, is the
+// realistic condensed fallback for 'Big Shoulders Display').
+function buildBoldMastheadHtml() {
+  return `
+    <p style="margin:0 0 6px; font-family:'Courier New',Courier,monospace; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:#c98a3a;">Compliance clearance board</p>
+    <h1 style="margin:0; font-family:'Big Shoulders Display',Impact,'Arial Narrow',sans-serif; font-weight:900; font-stretch:condensed; font-size:30px; line-height:0.98; text-transform:uppercase; color:#f2f0e8; letter-spacing:-0.2px;">The E-Invoicing<br>Compliance Corner</h1>
+  `;
+}
+const CM_HEADER_HTML = buildBoldMastheadHtml();
 
 // Plain-language translation of fetch failures for the digest email.
 // The raw error (HTTP status codes, "Too many redirects" with a
@@ -1177,10 +1187,12 @@ async function handleStartTrial(request, env, lang) {
     company: (form.get("company") || "").toString().trim(),
   });
 
-  // Send a login link immediately, so signing up and actually getting
-  // into the archive is genuinely one step, not two — the whole point
-  // of a low-friction sign-up is undermined if they then have to
-  // separately go find the login page and re-type their email.
+  // Two separate emails, sent in this order so the magic link -- the
+  // one thing they actually need to act on right now, with a 15-minute
+  // clock -- lands as the newest message in their inbox, sitting above
+  // the welcome email rather than being buried under it.
+  await sendWelcomeEmail(env, email, (form.get("firstName") || "").toString().trim(), countries);
+
   const token = await signToken(env.SESSION_SECRET, { email, purpose: "login" }, MAGIC_LINK_TTL_SECONDS);
   const link = `${env.SITE_URL}/members/verify?token=${encodeURIComponent(token)}${lang !== "en" ? `&lang=${lang}` : ""}`;
   await sendMagicLinkEmail(env, email, link);
@@ -1547,6 +1559,82 @@ async function sendViaResend(env, payload) {
     console.error(`Resend send failed — status ${res.status} for ${payload.to}: ${errorBody}`);
   }
   return res.ok;
+}
+
+// Sent once, right after sign-up, alongside (not instead of) the magic
+// link email -- kept as a genuinely separate message rather than
+// merged into it, because the magic link has one narrow, urgent job
+// ("click within 15 minutes") that a long orientation tour would only
+// dilute. This one has no expiry and no call to action beyond reading
+// it, so it can afford to be a proper welcome. English-only for now,
+// matching the existing magic-link and monthly-notification emails --
+// none of this site's transactional email is localized yet.
+const WELCOME_LINKS = {
+  tracker: "https://e-invoicingcompliancecorner.com/einvoicing-compliance-tracker.html",
+  sources: "https://e-invoicingcompliancecorner.com/sources",
+  education: {
+    "Types of Mandate": "https://e-invoicingcompliancecorner.com/education-mandate-types.html",
+    "Impact of Mandate": "https://e-invoicingcompliancecorner.com/education-impact-of-mandate.html",
+    "Preparing for a Mandate": "https://e-invoicingcompliancecorner.com/education-preparing-for-mandate.html",
+    "Types of Provider": "https://e-invoicingcompliancecorner.com/education-types-of-provider.html",
+    "Government Certified Providers": "https://e-invoicingcompliancecorner.com/education-certified-providers.html",
+  },
+  feedback: "https://e-invoicingcompliancecorner.com/feedback.html",
+};
+
+function welcomeLinkCard(title, description, href) {
+  return `<div style="margin:0 0 12px; padding:14px 16px; background-color:#f9f6ee; border-left:3px solid #c98a3a; border-radius:4px;">
+    <p style="margin:0 0 4px; font-family:Georgia,serif; font-size:14.5px; font-weight:bold; color:#241d10;"><a href="${href}" style="color:#241d10; text-decoration:none;">${escapeHtml(title)} →</a></p>
+    <p style="margin:0; font-size:13px; color:#4a4030; line-height:1.5;">${description}</p>
+  </div>`;
+}
+
+async function sendWelcomeEmail(env, email, firstName, countries) {
+  const greeting = firstName ? `Hi ${escapeHtml(firstName)},` : "Hi there,";
+  const archiveLink = `${env.SITE_URL}/members/archive`;
+  const prefsLink = `${env.SITE_URL}/members/preferences`;
+
+  const educationListHtml = Object.entries(WELCOME_LINKS.education)
+    .map(([title, href]) => `<li style="margin:0 0 6px;"><a href="${href}" style="color:#241d10;">${escapeHtml(title)}</a></li>`)
+    .join("");
+
+  const countriesLine = countries.length
+    ? `You told us you're watching <strong>${countries.map(escapeHtml).join(", ")}</strong>.`
+    : `You haven't singled out any specific countries yet, so for now you'll hear about every update, everywhere.`;
+
+  const body = `
+    <p style="margin:0 0 4px; font-family:'Courier New',Courier,monospace; font-size:11px; text-transform:uppercase; letter-spacing:1px; color:#c98a3a;">Welcome aboard</p>
+    <h2 style="margin:0 0 14px; font-size:20px; line-height:1.3; color:#241d10; font-family:Georgia,'Times New Roman',serif;">${greeting} you're all set.</h2>
+    <p style="margin:0 0 22px; font-size:14px; line-height:1.6; color:#4a4030;">The E-Invoicing Compliance Corner tracks e-invoicing and digital reporting mandates across every jurisdiction we cover — deadlines, what you actually need to do about each one, and a direct link to the official government source, so you can always verify it yourself.</p>
+
+    <h3 style="margin:0 0 10px; font-family:Georgia,serif; font-size:15px; color:#241d10;">Where to start</h3>
+    ${welcomeLinkCard("The compliance tracker", "Every mandate at a glance, filterable by region or country — this is the home page and the fastest way to see what's changed.", WELCOME_LINKS.tracker)}
+    ${welcomeLinkCard("Country deep dives", "Click any country in the tracker's sidebar (or the Deep Dives menu) for a full breakdown: compliance model, required format, and a step-by-step action list.", WELCOME_LINKS.tracker)}
+    ${welcomeLinkCard("The newsletter archive", "Every past issue, not just this month's — searchable by keyword and filterable by country and edition.", archiveLink)}
+    ${welcomeLinkCard("Tracking sources", "Curious where our information comes from? Every official government page we monitor, listed by country.", WELCOME_LINKS.sources)}
+
+    <h3 style="margin:22px 0 10px; font-family:Georgia,serif; font-size:15px; color:#241d10;">New to e-invoicing? Start with the education library</h3>
+    <p style="margin:0 0 10px; font-size:13.5px; color:#4a4030;">Five short guides covering the basics, in plain language:</p>
+    <ul style="margin:0 0 22px; padding-left:18px; font-size:13.5px; line-height:1.7;">${educationListHtml}</ul>
+
+    <h3 style="margin:0 0 10px; font-family:Georgia,serif; font-size:15px; color:#241d10;">Your country preferences</h3>
+    <p style="margin:0 0 10px; font-size:13.5px; color:#4a4030; line-height:1.6;">${countriesLine} You can add, remove, or change these any time — nothing is locked in.</p>
+    <table role="presentation" cellpadding="0" cellspacing="0">
+      <tr>
+        <td style="background-color:#b5432f; border-radius:6px;">
+          <a href="${prefsLink}" style="display:inline-block; padding:11px 20px; font-family:'Courier New',Courier,monospace; font-size:12.5px; font-weight:bold; color:#ffffff; text-decoration:none;">Manage my preferences →</a>
+        </td>
+      </tr>
+    </table>`;
+
+  const footer = `<p style="margin:0; font-size:11.5px; color:#8a7d5a; line-height:1.6;">Questions, or spotted something that looks wrong? <a href="${WELCOME_LINKS.feedback}" style="color:#8a7d5a;">Let us know</a> — a real person reads every message.</p>`;
+
+  await sendViaResend(env, {
+    from: env.FROM_EMAIL,
+    to: email,
+    subject: "Welcome to The E-Invoicing Compliance Corner",
+    html: buildEmailShell(body, footer, buildBoldMastheadHtml()),
+  });
 }
 
 async function sendMagicLinkEmail(env, email, link) {
