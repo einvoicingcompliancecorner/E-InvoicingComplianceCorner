@@ -1454,6 +1454,41 @@ log you in and land correctly even from a browser with no existing
 session; trigger the monthly notification manually and confirm its
 archive button and at least one per-story link do the same.
 
+### Tracking-source description curation (3 August 2026, deploy pending)
+
+The seeded descriptions (from the deep_dive_portals bulk seed and the
+215 EC-factsheet sweep) were portal *names* — accurate but unhelpful
+for deciding what a source actually announces. Migration 225 rewrites
+all 54 descriptions to say what kind of update each source carries
+(e.g. "ETA e-invoicing platform notices — wave announcements, threshold
+changes, and technical circulars" instead of "ETA e-invoicing portal"),
+in all four languages.
+
+The 17 EC-factsheet sources (ec.europa.eu/digital-building-blocks)
+share one description via a single `WHERE url LIKE` UPDATE per
+language rather than being individually curated, since they're
+genuinely the same *kind* of source regardless of country. The
+remaining 37 were curated individually, drawing on today's research
+into each country's mandate where applicable (Egypt, Netherlands,
+Poland, Belgium, Spain, Malaysia, Saudi Arabia, Brazil, Australia,
+India) and established general knowledge for the rest.
+
+This is exactly the metadata the content-monitoring Worker's digest
+benefits from now that it's live: a detected change on a source
+described as "wave announcements and threshold changes" carries a
+different implied urgency than one described as "technical bulletins,"
+helping a quick read of the digest triage what's worth a closer look.
+
+Validated: full-chain replay, idempotent re-apply, all 54 EN
+descriptions confirmed no longer matching any of the old generic
+labels, all 216 rows present (54 sources × 4 languages), no
+suspiciously short/truncated descriptions.
+
+Deploy: `cd members-worker/migrations && python3 apply_migrations.py --remote`
+— data only, no worker deploy needed; `/sources` and the content
+monitor's digest will reflect the new descriptions within the 5-minute
+cache window (sources page) or from the next run (digest).
+
 ## Open items / next steps
 
 ### Ship step outstanding (only one)
