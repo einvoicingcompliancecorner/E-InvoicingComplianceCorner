@@ -1219,7 +1219,7 @@ translated; the Resources menu shows "Tracking sources" in all four
 languages; source curation from here = UPDATE/INSERT migrations against
 tracking_sources (not deep_dive_portals).
 
-### Netherlands added as country #34 (2 August 2026, code complete, deploy pending)
+### Netherlands added as country #34 (2 August 2026, deployed & tested)
 
 Full country build via the scaffolder + runner workflow, completed
 before deploying anything (per Dan's request to build first, ship
@@ -1286,19 +1286,14 @@ symmetrically reverted. Nothing incorrect was ever deployed as a
 result of this — caught entirely during this session's build, before
 any migration touched production.
 
-Deploy (from your machine, once you're ready):
-```
-cd members-worker/migrations && python3 apply_migrations.py --remote
-cd ../../site-worker && wrangler deploy
-```
-This one apply covers everything still pending: 215 (EC factsheets)
-and 216-222 (all of Netherlands). Spot-check: Netherlands on the
-tracker board (Europe region, both hero views), /netherlands and
-/netherlands?lang=de render, subscribe picker and preferences show
-Países Bajos/Niederlande/Pays-Bas, the archive shows all 5 new stories
-with working deep-dive links, "33" appears correctly everywhere
-(subscribe, education pages, tracker), and /sources shows the EC
-factsheet rows plus the dark in-frame panel.
+**Deployed and tested** (confirmed by Dan): migrations 215 (EC
+factsheets) and 216-222 (all of Netherlands) applied via
+`apply_migrations.py --remote`, `site-worker` redeployed. Netherlands
+now live on the tracker board, `/netherlands` and `/netherlands?lang=de`
+render, subscribe picker/preferences show Países Bajos/Niederlande/
+Pays-Bas, the archive's 5 new stories and their deep-dive links work,
+the "33" count is correct everywhere, and `/sources` shows the EC
+factsheet rows.
 
 ### Content-monitoring Worker built (2 August 2026, code complete, deploy pending)
 
@@ -1543,7 +1538,7 @@ all 8 of members-worker's render* functions route through. Covers
 login, archive, preferences, and every other members-subdomain page
 in one change rather than needing per-page edits.
 
-### Austria added as country #35 (3 August 2026, code complete, deploy pending)
+### Austria added as country #35 (3 August 2026, deployed & tested)
 
 Full country build (migrations 228-236). Europe's earliest B2G
 adopter in this tracker (federal mandate since 1 January 2014,
@@ -1592,17 +1587,15 @@ one run against Netherlands): all items pass — country_translations,
 milestones, deep-dive content, stories, tracking sources, true
 jurisdiction count, slug/in_picker.
 
-Deploy (from your machine, once ready):
-```
-cd members-worker/migrations && python3 apply_migrations.py --remote
-```
-Data only — no worker deploy needed. Spot-check: Austria on the
-tracker board (Europe, first alphabetically), /austria and
-/austria?lang=de render, subscribe picker shows Österreich/Autriche,
-the archive shows all 3 new stories, /sources lists Austria's 3
-sources, and "34" reads correctly everywhere.
+**Deployed and tested** (confirmed by Dan): migrations 228-236 applied
+via `apply_migrations.py --remote` (data only, no worker deploy
+needed). Austria live on the tracker board (Europe, first
+alphabetically), `/austria` and `/austria?lang=de` render, subscribe
+picker shows Österreich/Autriche, the archive's 3 new stories work,
+`/sources` lists Austria's 3 sources, and "34" reads correctly
+everywhere.
 
-### Greece added as country #36 (3 August 2026, code complete, deploy pending)
+### Greece added as country #36 (3 August 2026, deployed & tested)
 
 Full country build (migrations 237-245). A genuinely different shape
 from Netherlands/Austria's voluntary stories — Greece runs an active
@@ -1647,17 +1640,13 @@ independently confirmed the tracker's live JS "Jurisdictions tracked"
 stat (fixed earlier today for the EU-row bug) correctly computes 35
 with Greece's on-tracker milestones included.
 
-Deploy (from your machine, once ready):
-```
-cd members-worker/migrations && python3 apply_migrations.py --remote
-cd ../../site-worker && npx wrangler deploy
-```
-Both steps needed — the static-file trio (countries.js, i18n,
-slug map) requires the site-worker deploy, same as every country add.
-Spot-check: Greece on the tracker board (Europe, between Germany and
-Ireland), /greece and /greece?lang=de render, subscribe picker shows
-Grecia/Griechenland/Grèce, the archive shows all 3 new stories,
-/sources lists Greece's 3 sources, and "35" reads correctly everywhere.
+**Deployed and tested** (confirmed by Dan): migrations 237-245 applied
+via `apply_migrations.py --remote`, `site-worker` redeployed (the
+static-file trio needed it, same as every country add). Greece live
+on the tracker board (Europe, between Germany and Ireland), `/greece`
+and `/greece?lang=de` render, subscribe picker shows
+Grecia/Griechenland/Grèce, the archive's 3 new stories work, `/sources`
+lists Greece's 3 sources, and "35" reads correctly everywhere.
 
 ### "About the author" added to the About-this-site pop-out (3 August 2026, deployed 3 Aug 2026)
 
@@ -1686,7 +1675,7 @@ the author section appears below a divider, the LinkedIn link opens
 correctly, and check at least one non-English language to confirm the
 translation renders.
 
-### Cyprus added as country #37 (3 August 2026, code complete, deploy pending)
+### Cyprus added as country #37 (3 August 2026, deployed & tested)
 
 Full country build (migrations 246-253). The quietest regulatory
 story in the tracker so far — deliberately built with fewer
@@ -1737,17 +1726,17 @@ pass, correctly reflecting Cyprus's genuinely thinner numbers (3
 milestones, 2 stories) rather than padding to match other countries'
 usual counts.
 
-Deploy (from your machine, once ready):
-```
-cd members-worker/migrations && python3 apply_migrations.py --remote
-cd ../../site-worker && npx wrangler deploy
-```
-Both steps needed — the static-file trio requires the site-worker
-deploy, same as every country add. Spot-check: Cyprus on the tracker
-board (Europe, between Croatia and Denmark), /cyprus and
-/cyprus?lang=de render, subscribe picker shows Chipre/Zypern/Chypre,
-the archive shows both new stories, /sources lists Cyprus's 3 sources,
-and "36" reads correctly everywhere.
+**Deployed and tested** (confirmed by Dan): migrations 246-253 applied
+via `apply_migrations.py --remote`, `site-worker` redeployed (the
+static-file trio needed it, same as every country add). Cyprus live
+on the tracker board (Europe, between Croatia and Denmark), `/cyprus`
+and `/cyprus?lang=de` render, subscribe picker shows
+Chipre/Zypern/Chypre, the archive's 2 new stories work, `/sources`
+lists Cyprus's 3 sources, and "36" reads correctly everywhere — this
+also matches the 36-country figure already used in this doc's
+"One-paragraph summary" and confirmed live via `/map-data.json` in the
+Map's Round 3 entry above, so the count is consistent across all of
+it.
 
 ### The Map: three deploy-verification bugs found and fixed (3 August 2026, deployed 3 Aug 2026)
 
