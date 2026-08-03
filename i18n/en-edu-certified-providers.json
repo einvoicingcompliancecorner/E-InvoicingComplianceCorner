@@ -11,7 +11,7 @@
     "lastUpdated": "Last updated:"
   },
   "statusBanner": {
-    "text": "This is a <strong>starting set of verified links</strong>, not a complete map of all 35 tracked jurisdictions. Every link below was checked directly against the named government/authority's own website. Several countries in this tracker don't run a public accreditation registry at all — see the note in Section 3 before assuming one exists."
+    "text": "This is a <strong>starting set of verified links</strong>, not a complete map of all 36 tracked jurisdictions. Every link below was checked directly against the named government/authority's own website. Several countries in this tracker don't run a public accreditation registry at all — see the note in Section 3 before assuming one exists."
   },
   "stats": {
     "label1": "Countries verified so far",
@@ -85,7 +85,7 @@
     },
     "card3": {
       "title": "🌍 Check your country's specific requirements",
-      "body": "The Deep Dives menu covers exact registration steps, technical specifications, and penalties for each of the 35 jurisdictions tracked here."
+      "body": "The Deep Dives menu covers exact registration steps, technical specifications, and penalties for each of the 36 jurisdictions tracked here."
     },
     "card4": {
       "title": "📬 This list will grow",
