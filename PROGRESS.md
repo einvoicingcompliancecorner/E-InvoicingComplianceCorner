@@ -1543,15 +1543,74 @@ all 8 of members-worker's render* functions route through. Covers
 login, archive, preferences, and every other members-subdomain page
 in one change rather than needing per-page edits.
 
+### Austria added as country #35 (3 August 2026, code complete, deploy pending)
+
+Full country build (migrations 228-236). Europe's earliest B2G
+adopter in this tracker (federal mandate since 1 January 2014,
+IKTKonG §5 — years before the Netherlands' 2017 or most peers) and
+the only country here accepting two entirely distinct formats for the
+same obligation (ebInterface, its own national XML standard since
+2009, or Peppol BIS 3.0 — both EN 16931-aligned since ebInterface 5.0).
+
+- **Migrations 228-230**: country row (slug `austria`), 5 milestones —
+  4 on the board (the 2018 extension to all central contracting
+  authorities, the upcoming ebInterface 7.0 release with formal EN
+  16931 syntax binding, the expected-but-not-yet-published Q3 2026
+  domestic B2B proposal, and the confirmed 2030 ViDA cross-border
+  floor) plus the 2014 B2G anchor — all four languages. Cross-checked
+  against a rigorously-dated (2 July 2026) industry country booklet
+  that explicitly flagged and corrected less careful competing claims
+  about ViDA's adoption date and Austria's own B2B timeline — used
+  its more conservative, better-sourced account throughout.
+- **Migrations 231-232**: full deep-dive page — 5 stats, 9 cards
+  (notably the dual-format acceptance and Land-level B2G variation),
+  5 steps, 2 portals. A dedicated card on the pending Q3 2026 proposal
+  mirrors the Netherlands' equivalent "genuinely undecided" treatment.
+- **Migrations 234-235**: a 3-story arc (the decade-plus B2G
+  backgrounder, the BMF's Peppol signal — doubling as launch coverage
+  — and the ebInterface 7.0 update).
+- **Migration 236**: tracking sources (USP, WKO ebInterface, EC
+  factsheet) added deliberately this time, not left as a gap the way
+  Netherlands' were — exactly the process fix ADDING-A-COUNTRY.md's
+  step 4 exists for. One EC-factsheet URL was initially guessed by
+  extrapolating neighbouring page IDs and turned out wrong (Austria's
+  factsheet uses an older, different page-ID scheme) — caught by
+  verifying against a real search result before shipping, not assumed.
+- **Migration 233**: jurisdiction count 33→34. Caught and fixed a real
+  mistake mid-sweep: initially assumed the pre-Austria baseline was
+  34 and swept straight to 35, but the actual corrected baseline (per
+  the EU-row-inflation fix found during the Netherlands session) was
+  33 — verified directly against that session's own confirmed value
+  before trusting the assumption, reverted the incorrect 35s, and
+  widened the audit regex, which had a blind spot that let the error
+  through silently the first time.
+- Static files: countries.js (Europe, alphabetically first), shared
+  slug map, i18n countryNames in all 8 files.
+
+Final audit against the full ADDING-A-COUNTRY.md checklist (the same
+one run against Netherlands): all items pass — country_translations,
+milestones, deep-dive content, stories, tracking sources, true
+jurisdiction count, slug/in_picker.
+
+Deploy (from your machine, once ready):
+```
+cd members-worker/migrations && python3 apply_migrations.py --remote
+```
+Data only — no worker deploy needed. Spot-check: Austria on the
+tracker board (Europe, first alphabetically), /austria and
+/austria?lang=de render, subscribe picker shows Österreich/Autriche,
+the archive shows all 3 new stories, /sources lists Austria's 3
+sources, and "34" reads correctly everywhere.
+
 ## Open items / next steps
 
 ### Real open work
 
-1. **Coverage expansion** — Netherlands shipped. Still not tracked:
-   Austria, Bulgaria, Cyprus, Czechia, Estonia, Greece, Hungary,
-   Latvia, Lithuania, Malta, Slovenia, Iceland, Liechtenstein. Austria
-   is the obvious next pick. The scaffolder + runner make each
-   addition a fraction of the old effort.
+1. **Coverage expansion** — Netherlands and Austria shipped. Still
+   not tracked: Bulgaria, Cyprus, Czechia, Estonia, Greece, Hungary,
+   Latvia, Lithuania, Malta, Slovenia, Iceland, Liechtenstein. The
+   scaffolder + runner make each addition a fraction of the old
+   effort.
 2. **Tracking-source URL audit, continued** — ~40 of 54 sources not
    yet verified for whether they'll ever actually surface real news.
    Two rounds done (Brazil/Australia/Ireland/Poland/Saudi
