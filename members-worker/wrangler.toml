@@ -65,7 +65,7 @@ id = "5a7d9f86169a4e16852e914346568a9a"
 # id it prints below.
 [[kv_namespaces]]
 binding = "CONTENT_MONITOR"
-id = "da08e7a644a5432ea6948baec5e9930b"
+id = "e028dfd040f64c72a0110bac13b233cf"
 
 # NOTE: the old ISSUES KV binding was removed here — the monthly
 # notification job and the archive both now read from D1 (see
