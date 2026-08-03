@@ -575,26 +575,68 @@ function escapeHtmlCM(s) {
   return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
+// Branded to match the site's established transactional-email look
+// (buildEmailShell — the same dark-ink/cream-card wrapper used for
+// magic-link and monthly-notification emails), rather than the plain
+// unstyled paragraphs this started as. Still strictly an internal tool:
+// no site-facing polish beyond making it quick to scan at a glance.
+const CM_HEADING = "#241d10", CM_BODY = "#4a4030", CM_MUTED = "#8a7d5a";
+const CM_AMBER = "#c98a3a", CM_STAMP = "#b5432f", CM_LIVE = "#3f7d5c";
+
+function cmStatCell(value, label, color) {
+  return `<td align="center" style="padding:10px 4px; background-color:#f5f0e2; border-radius:6px;">
+    <div style="font-family:Georgia,serif; font-size:22px; font-weight:bold; color:${color};">${value}</div>
+    <div style="font-family:'Courier New',Courier,monospace; font-size:9px; letter-spacing:0.5px; text-transform:uppercase; color:${CM_MUTED}; margin-top:2px;">${label}</div>
+  </td>`;
+}
+
+function cmSourceCard(source, accentColor, bodyHtml) {
+  return `<div style="margin:0 0 14px; padding:14px 16px; background-color:#f9f6ee; border-left:3px solid ${accentColor}; border-radius:4px;">
+    <p style="margin:0 0 6px; font-family:Georgia,serif; font-size:14.5px; font-weight:bold; color:${CM_HEADING};">${escapeHtmlCM(source.country)} — ${escapeHtmlCM(source.description || source.url)}</p>
+    <p style="margin:0 0 8px; font-family:'Courier New',Courier,monospace; font-size:11px;"><a href="${escapeHtmlCM(source.url)}" style="color:${CM_MUTED}; text-decoration:none;">${escapeHtmlCM(source.url)}</a></p>
+    ${bodyHtml}
+  </div>`;
+}
+
 function buildDigestHtml(results, totalSources, skipped) {
   skipped = skipped || [];
   const changed = results.filter((r) => r.status === "changed");
   const failed = results.filter((r) => r.status === "failed");
   const baseline = results.filter((r) => r.status === "baseline");
   const unchanged = results.filter((r) => r.status === "unchanged");
+  const dateStr = new Date().toISOString().slice(0, 10);
 
-  let html = `<p style="font-family:monospace; font-size:12px; color:#666;">Content monitor — weekly run, ${new Date().toISOString().slice(0, 10)}. ${results.length}/${totalSources} active sources checked${skipped.length ? ` (${skipped.length} deferred to next run — see below)` : ""}.</p>`;
+  let html = `
+    <p style="margin:0 0 4px; font-family:'Courier New',Courier,monospace; font-size:11px; letter-spacing:1.5px; text-transform:uppercase; color:${CM_AMBER};">Content Monitor</p>
+    <h1 style="margin:0 0 18px; font-family:Georgia,serif; font-size:20px; color:${CM_HEADING};">Weekly source check — ${dateStr}</h1>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:20px;">
+      <tr>
+        ${cmStatCell(`${results.length}/${totalSources}`, "Checked", CM_HEADING)}
+        <td width="6"></td>
+        ${cmStatCell(changed.length, "Changed", changed.length ? CM_AMBER : CM_MUTED)}
+        <td width="6"></td>
+        ${cmStatCell(failed.length, "Failed", failed.length ? CM_STAMP : CM_MUTED)}
+        <td width="6"></td>
+        ${cmStatCell(skipped.length, "Deferred", CM_MUTED)}
+      </tr>
+    </table>`;
 
   // A self-imposed time budget (not a bug — see CONTENT-MONITORING.md)
   // means a single run may not reach every source; whatever's left
   // over is picked up automatically at the start of the next run. This
   // is always stated plainly rather than silently checking fewer
-  // sources than it claims to.
+  // sources than it claims to — kept in the digest even on a quiet run.
   if (skipped.length) {
-    html += `<p style="font-size:13px; color:#8a6d1f;">${skipped.length} source(s) not reached this run (time budget) — will be checked first next run: ${skipped.slice(0, 8).map((s) => escapeHtmlCM(s.country)).join(", ")}${skipped.length > 8 ? `, +${skipped.length - 8} more` : ""}.</p>`;
+    html += `<p style="margin:0 0 18px; padding:10px 14px; background-color:#f5f0e2; border-radius:4px; font-size:12.5px; color:${CM_BODY};">
+      <strong>${skipped.length} source(s) not reached this run</strong> (time budget) — will be checked first next run: ${skipped.slice(0, 8).map((s) => escapeHtmlCM(s.country)).join(", ")}${skipped.length > 8 ? `, +${skipped.length - 8} more` : ""}.
+    </p>`;
   }
 
   if (changed.length === 0 && failed.length === 0) {
-    html += `<p style="font-size:14px;">No changes detected among the sources checked this run${unchanged.length ? ` (${unchanged.length} previously-baselined source(s), unchanged)` : ""}${baseline.length ? ` (${baseline.length} new source(s) baselined, nothing to compare yet)` : ""}. Nothing to review.</p>`;
+    html += `<div style="padding:16px; background-color:#f5f0e2; border-radius:6px; text-align:center;">
+      <p style="margin:0; font-family:Georgia,serif; font-size:15px; color:${CM_HEADING};">Nothing to review this run.</p>
+      <p style="margin:6px 0 0; font-size:12.5px; color:${CM_MUTED};">No changes detected among the sources checked this run${unchanged.length ? ` (${unchanged.length} previously-baselined, unchanged)` : ""}${baseline.length ? ` (${baseline.length} newly baselined, nothing to compare yet)` : ""}.</p>
+    </div>`;
     return html;
   }
 
@@ -603,26 +645,24 @@ function buildDigestHtml(results, totalSources, skipped) {
   // shouldn't silently drop the baseline count just because it's not
   // the "quiet week" case.
   if (baseline.length) {
-    html += `<p style="font-size:13px; color:#666;">${baseline.length} source(s) checked for the first time this run — baseline recorded, no comparison possible yet.</p>`;
+    html += `<p style="margin:0 0 16px; font-size:11.5px; color:${CM_MUTED};">${baseline.length} source(s) checked for the first time this run — baseline recorded, no comparison possible yet.</p>`;
   }
 
   if (changed.length) {
-    html += `<h2 style="font-size:16px;">Changed (${changed.length}) — go look</h2>`;
+    html += `<h2 style="margin:0 0 10px; font-family:Georgia,serif; font-size:15px; color:${CM_HEADING};"><span style="color:${CM_AMBER};">●</span> Changed (${changed.length}) — go look</h2>`;
     for (const r of changed) {
-      html += `<div style="margin:0 0 18px; padding:12px; border-left:3px solid #c98a3a;">
-        <p style="margin:0 0 4px; font-weight:bold;">${escapeHtmlCM(r.source.country)} — ${escapeHtmlCM(r.source.description || r.source.url)}</p>
-        <p style="margin:0 0 8px;"><a href="${escapeHtmlCM(r.source.url)}">${escapeHtmlCM(r.source.url)}</a></p>
-        <p style="margin:0; font-size:12px; color:#666;">Before: …${escapeHtmlCM(r.diff.before)}…</p>
-        <p style="margin:0; font-size:12px; color:#274a38;">After: …${escapeHtmlCM(r.diff.after)}…</p>
-      </div>`;
+      html += cmSourceCard(r.source, CM_AMBER, `
+        <p style="margin:0 0 3px; font-family:'Courier New',Courier,monospace; font-size:11px; color:${CM_MUTED};">Before: …${escapeHtmlCM(r.diff.before)}…</p>
+        <p style="margin:0; font-family:'Courier New',Courier,monospace; font-size:11px; color:${CM_LIVE};">After: …${escapeHtmlCM(r.diff.after)}…</p>
+      `);
     }
   }
   if (failed.length) {
-    html += `<h2 style="font-size:16px;">Couldn't check (${failed.length}) — verify manually</h2><ul>`;
+    html += `<h2 style="margin:18px 0 10px; font-family:Georgia,serif; font-size:15px; color:${CM_HEADING};"><span style="color:${CM_STAMP};">●</span> Couldn't check (${failed.length}) — verify manually</h2>`;
     for (const r of failed) {
-      html += `<li>${escapeHtmlCM(r.source.country)} — <a href="${escapeHtmlCM(r.source.url)}">${escapeHtmlCM(r.source.url)}</a> (${escapeHtmlCM(r.error)})</li>`;
+      html += cmSourceCard(r.source, CM_STAMP, `<p style="margin:0; font-family:'Courier New',Courier,monospace; font-size:11px; color:${CM_STAMP};">${escapeHtmlCM(r.error)}</p>`);
     }
-    html += `</ul><p style="font-size:12px; color:#666;">A failed fetch is NOT treated as "no change" — it's flagged so it doesn't become a silent blind spot. Common causes: the site blocks automated requests, a timeout, or the URL moved.</p>`;
+    html += `<p style="margin:10px 0 0; padding:10px 14px; background-color:#f5f0e2; border-radius:4px; font-size:11.5px; color:${CM_MUTED};">A failed fetch is NOT treated as "no change" — it's flagged so it doesn't become a silent blind spot. Common causes: the site blocks automated requests, a timeout, or the URL moved.</p>`;
   }
   return html;
 }
@@ -678,11 +718,12 @@ async function runContentMonitor(env) {
   const failed = results.filter((r) => r.status === "failed").length;
   console.log(`Content monitor: ${results.length}/${allSources.length} checked (${skipped.length} deferred to next run), ${changed} changed, ${failed} failed.`);
 
+  const footerHtml = `<p style="margin:0; font-family:'Courier New',Courier,monospace; font-size:10.5px; color:${CM_MUTED};">Internal monitoring only — never sent to subscribers. Sources: <a href="https://e-invoicingcompliancecorner.com/sources" style="color:${CM_MUTED};">the tracking sources page</a>.</p>`;
   await sendViaResend(env, {
     from: env.FROM_EMAIL,
     to: env.CONTENT_MONITOR_EMAIL,
     subject: `[Content Monitor] ${changed} changed, ${failed} failed${stoppedEarly ? `, ${skipped.length} deferred` : ""} — week of ${new Date().toISOString().slice(0, 10)}`,
-    html: buildDigestHtml(results, allSources.length, skipped),
+    html: buildEmailShell(buildDigestHtml(results, allSources.length, skipped), footerHtml),
   });
 }
 

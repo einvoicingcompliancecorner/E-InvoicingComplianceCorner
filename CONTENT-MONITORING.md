@@ -350,3 +350,28 @@ scope). This is correctly reported as `failed`, not silently swallowed
 better source URL is found for Brazil (a page on the same domain that
 doesn't trigger the cookie-detection dance), which is a source-curation
 task for a human, not a code fix — see `tracking_sources` for Brazil.
+
+
+---
+
+## Rebranded to match the site's own email language (3 August 2026)
+
+The digest started as plain unstyled paragraphs — functional but
+unappealing, and not recognizably "the site" the way every other
+transactional email already is. Rebuilt around `buildEmailShell`, the
+branded wrapper already used by the magic-link and monthly-notification
+emails (dark-ink header band with the site's wordmark, cream card body,
+dashed-line footer) — reusing an established pattern rather than
+inventing a fourth visual language. Georgia serif for headings, Courier
+New for labels/URLs/error text, the same amber/stamp-red/ink-brown
+palette used throughout the site's other transactional email and the
+`/sources` page.
+
+Content changes: a stat strip up top (Checked / Changed / Failed /
+Deferred as big numbers) replaces the old opening sentence; each
+changed/failed source renders as a bordered card (amber accent for
+changed, stamp red for failed) instead of a bare list; the before/after
+diff snippet gets its own monospace lines; the quiet-week case is now a
+calm centered panel rather than a single line of text. Every substantive
+fact the old version reported is still present — nothing was trimmed
+for the sake of looking nicer, only re-presented.
