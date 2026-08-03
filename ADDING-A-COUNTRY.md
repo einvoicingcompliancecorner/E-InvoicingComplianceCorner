@@ -93,10 +93,30 @@ non-negotiable, now automated rather than remembered.
    budget real time. Use an existing country with a similar compliance
    model as the template.
 
-4. **(Recommended) A launch story** — a sourced newsletter story tagged
+4. **Tracking sources** — add the country's official reference URLs to
+   `tracking_sources` + `tracking_source_translations` (the `/sources`
+   page; migration 214) so it shows up there too. **This is easy to
+   forget** because `/sources` was originally seeded from
+   `deep_dive_portals` as a one-time bulk operation — the Netherlands
+   fell through exactly this gap, added in Phase 3's deep-dive content
+   but never carried over to `tracking_sources`, caught only after the
+   fact (223). Don't rely on any future bulk seed catching a new
+   country automatically; add its sources explicitly, right here,
+   every time. In practice this usually means: the same portal(s) used
+   in the deep-dive's `deep_dive_portals` (a `NOT EXISTS`-guarded
+   INSERT keyed on country + url, same idempotent shape as 215/223),
+   plus the EU factsheet page if the country is an EU/EEA member (see
+   the factsheet listing referenced in 215's commit message for the
+   page-ID-to-country mapping).
+
+5. **(Recommended) A launch story** — a sourced newsletter story tagged
    to the country (see 196–197 for the shape), so subscribers following
    it actually hear about it. Its deep-dive link renders automatically
-   from the slug column.
+   from the slug column. For richer day-one archive presence, consider
+   a short multi-story arc spanning the past 6–12 months rather than a
+   single launch post (see the Netherlands' 221–222 for the pattern) —
+   especially useful for a country with an active, ongoing policy
+   story rather than one settled event.
 
 ---
 
@@ -191,6 +211,8 @@ mind autoincrement-PK tables where a re-run genuinely duplicates rows
       `country_translations` row is wrong, not a Worker file)
 - [ ] A story tagged to it shows the auto-rendered deep-dive link in the
       archive
+- [ ] `/sources` lists the country's tracking sources, in all four
+      languages
 - [ ] Every old count is the new count, in every language, **and** the
       D1 `translations` rows match (round-trip `generate_files.py` +
       `compare_generated.py` to prove it)
