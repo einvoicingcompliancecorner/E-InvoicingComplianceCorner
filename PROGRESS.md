@@ -2472,7 +2472,7 @@ via `apply_migrations.py --remote`, `site-worker` redeployed for the
 static-file edits. Vietnam is live on the tracker board (Asia-Pacific,
 after South Korea), confirmed via the UI.
 
-### Two /sources fixes: South Korea's NTS link, France's FNFE-MPE (3 August 2026, deploy pending)
+### Two /sources fixes: South Korea's NTS link, France's FNFE-MPE (3 August 2026, deployed & tested)
 
 Two small, non-country-add changes to `/sources`, both requested by
 Dan directly and both requiring a judgment call rather than a
@@ -2508,9 +2508,26 @@ errors)," and a structural query against the replayed DB confirmed
 South Korea's source now reads `nts.go.kr/nts/main.do` and France has
 three tracking sources (Chorus Pro, EC factsheet, FNFE-MPE) with all
 four language translations present. Committed and pushed
-(`15d72bd`). Data-only change — no static-file or `site-worker`
-deploy needed, just `apply_migrations.py --remote` from Dan's
-machine.
+(`15d72bd`).
+
+**Deployed and tested** (confirmed by Dan): migration 296 applied via
+`apply_migrations.py --remote`. Data-only change, so no static-file or
+`site-worker` deploy was needed for this one — the `/sources` page
+renders straight from D1.
+
+### Resources menu reordered: The Map now leads (3 August 2026, deployed & tested)
+
+Small, Dan-requested UI tweak: the Resources dropdown in
+`einvoicing-compliance-tracker.html` now lists The Map first, ahead of
+Deep Dives, Newsletter archive, and Tracking sources (previously last).
+Pure markup reorder inside `#resourcesPanel` — `wireResourcesMenu()`,
+`wireDeepDiveMenu()`, and the in-page link interception in
+`wireDeepDiveInPagePanel()` all select their elements by id, not
+position, so no JS changes were needed. Committed (`d9415e2`).
+
+**Deployed and tested** (confirmed by Dan): live via the usual
+`site-worker` static-asset deploy — no migration, no members-worker
+change.
 
 ## Open items / next steps
 
