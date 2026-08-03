@@ -1659,6 +1659,33 @@ Ireland), /greece and /greece?lang=de render, subscribe picker shows
 Grecia/Griechenland/Grèce, the archive shows all 3 new stories,
 /sources lists Greece's 3 sources, and "35" reads correctly everywhere.
 
+### "About the author" added to the About-this-site pop-out (3 August 2026, deploy pending)
+
+A small, low-effort addition per Dan's own effort-evaluation request —
+his bio (25 years in financial software transformation, the last 20+
+in e-invoicing/AP automation, the frustration with no central
+authority defining the roadmap that motivated this site) plus a "feel
+free to connect" line linking his LinkedIn, added below a divider
+inside the existing About modal. No new modal, no new interaction
+pattern — same one that was already there.
+
+4 new i18n keys in all four languages, following the site's existing
+embedded-`<a>`-tag convention (the i18n system applies via `innerHTML`,
+confirmed via the sidebar's own `footerNote` precedent) so the
+LinkedIn link renders as a real clickable link rather than escaped
+text.
+
+Tested: 12 jsdom checks applying the real i18n system to the real
+modal HTML — link renders correctly (real `<a>` tag, correct href/
+target/rel), Spanish translation genuinely swaps in (not just English
+checked), and the original About-the-site content is untouched.
+
+Deploy: `cd site-worker && npx wrangler deploy` (static file only, no
+migrations). Spot-check: open About from the Resources menu, confirm
+the author section appears below a divider, the LinkedIn link opens
+correctly, and check at least one non-English language to confirm the
+translation renders.
+
 ## Open items / next steps
 
 ### Real open work
@@ -1683,13 +1710,7 @@ Grecia/Griechenland/Grèce, the archive shows all 3 new stories,
    the vendor registration/advertising concept; the two remaining
    Resources ideas (accredited-sources list, vendor-assessment RFI
    template).
-5. **"About this site" pop-out: add an "About the author" section** —
-   Dan's LinkedIn (https://www.linkedin.com/in/danielyoung76/), a
-   couple of sentences about him, and a "feel free to connect" line.
-   Needs the actual bio content from Dan (or a draft for him to edit)
-   before building — content first, then the small HTML/CSS addition
-   to the existing About modal (einvoicing-compliance-tracker.html).
-6. **"The Map" — an interactive visual map under Resources** — Dan's
+5. **"The Map" — an interactive visual map under Resources** — Dan's
    reference: Pagero/Thomson Reuters' "Regulatory Atlas"
    (europe.thomsonreuters.com/uk/compliance/regulatory-updates), a
    competitor product with a compliance map covering e-invoicing/CTC/
