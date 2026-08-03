@@ -2269,13 +2269,128 @@ wrangler deploy
 `deep-dive-render.mjs`, and i18n/static-HTML jurisdiction-count edits —
 redeploy it the same way you did for Oman and Jordan.)
 
+### South Korea added as country #41 (3 August 2026, code complete, deploy pending)
+
+Full country build (migrations 280-287), the top pick from the
+Asia-Pacific coverage evaluation above. South Korea's e-Tax Invoice
+system is a genuinely different technical/legal model from every
+clearance-model mandate built this session (Jordan, Israel, Egypt,
+Saudi, UAE, Oman): it's a **post-issuance real-time-reporting**
+mandate, not a clearance one — the invoice is legally valid immediately
+on delivery to the buyer, and next-day transmission to the National Tax
+Service (NTS) is a separate reporting duty, not a precondition for
+validity. Also the most mature mandate added this session: in force
+since January 2011, 15 years running, with none of the "expected" or
+"proposal-stage" caveats attached to some of this session's other
+additions.
+
+- **Migrations 280**: country row (code `KR`, slug `south-korea`,
+  region "Asia-Pacific"), name translations (Corea del Sur/Südkorea/
+  Corée du Sud).
+- **Migrations 281-282**: 6 milestones with full ES/DE/FR translations
+  — the January 2011 corporate mandate (anchor, off-board, since The
+  Map only reads `on_tracker = 1` rows and this is historical context
+  for the deep-dive timeline, not a board entry), then the individual-
+  entrepreneur threshold's four-step fall: KRW 1 billion (Jan 2012) →
+  300 million (Jul 2014) → 200 million (Jul 2022, on-board) → 100
+  million (Jul 2023, on-board, also introduced self-billing invoices)
+  → 80 million (Jul 2024, on-board, current floor). Sourced from
+  Sovos's dedicated e-Tax Invoice history page, cross-checked against
+  VATupdate's July 2026 country booklet, Voxel Group, and Storecove.
+- **Migrations 283-284**: full deep-dive page — a post-issuance
+  real-time-reporting compliance model description (explicitly
+  contrasted with the clearance-model mandates covered elsewhere in
+  this tracker), 5 stats, 3 `file_format` cards (format & standard;
+  identifiers & registration across 5 submission channels; mandatory
+  content & archiving — 5-year retention, self-billing since July
+  2023), a lifecycle pill card titled "The issue-then-report flow" (4
+  pills: invoice issued in signed XML → delivered to buyer, legally
+  valid now → transmitted to NTS by next business day → buyer relies
+  on it for input-VAT deduction) plus 2 regular `scope_transmission`
+  cards (who's in scope and since when; domestic B2B/B2G only —
+  explicitly not B2C, not cross-border/export), a genuine 4-row
+  `deep_dive_penalty_rows` table (non-issuance 2%; paper invoice where
+  e-required 1%; failure to transmit by deadline 1%; delayed
+  issuance/transmission 0.3-0.5% — all capped at KRW 50 million/year,
+  KRW 100 million for large companies, no cap for intentional
+  violations), 3 narrative `penalties_related` cards (VAT-deduction
+  denial as the real second consequence; fifteen years of enforcement
+  framed as maturity, not novelty; a "living tracker" freshness point
+  on a 2026 Korean tax law change raising the fictitious-VAT-invoice
+  penalty from 3% to 4%), 6 steps, 2 portals (hometax.go.kr,
+  nts.go.kr/english/).
+- **Migration 285**: a 3-story arc — the January 2011 corporate launch,
+  the July 2023 threshold drop to KRW 100 million plus the self-billing
+  introduction, and the July 2024 drop to the current KRW 80 million
+  floor.
+- **Migration 286**: tracking sources (NTS's English portal and the
+  Hometax platform itself — no EC factsheet, since South Korea isn't
+  an EU member state, matching the Oman/Jordan/Israel precedent).
+- **Migration 287**: jurisdiction count 39→40, generated
+  programmatically from migration 279's own key list (same ~10
+  `translations` keys × 4 languages).
+- **Static files**: `countries.js` (Asia-Pacific, appended after
+  Singapore), `shared/deep-dive-render.mjs`'s slug map and
+  `COUNTRY_NAME_TRANSLATIONS` dictionary (Corea del Sur/Südkorea/Corée
+  du Sud for es/de/fr).
+- **Hand-swept the jurisdiction count** across all four languages'
+  `i18n/*.json` files and every static HTML page — 58 occurrences
+  across 31 files, same sweep script used for every prior country this
+  session.
+- Checked The Map's two hand-maintained lookup tables per
+  ADDING-A-COUNTRY.md's Phase 1 step 6: the bundled world-atlas
+  topology (`vendor/countries-50m.json`) already has a feature named
+  exactly `"South Korea"`, matching this project's `name_en` — no
+  `TOPO_NAME_OVERRIDES` entry needed, and the shape is a normal
+  full-size country geometry, so no `MARKER_LONLAT_OVERRIDES` fallback
+  is needed either.
+- Confirmed (not a South Korea-specific gap): `i18n/{en,es,de,fr}.json`
+  `countryNames` still has no entry for South Korea — but it also has
+  none for Israel, Jordan, or Oman, so this is a pre-existing gap
+  across every Middle East/Asia-Pacific country added this session,
+  not a regression introduced here. Per ADDING-A-COUNTRY.md, this key
+  is meant to be regenerated from D1 (`generate_files.py --remote`),
+  which this sandbox can't run without live Cloudflare credentials —
+  worth a batch fix from your own machine covering all four countries
+  at once, rather than one-off edits.
+- Two SQL bugs caught and fixed during the build, both in migration
+  283: a copy-paste artifact left an erroneous trailing `FROM
+  countries WHERE name_en = 'South Korea';` clause on 8
+  `deep_dive_card_translations` inserts that should have been plain
+  `VALUES (...)` statements (they key off a scalar
+  `(SELECT MAX(id) FROM deep_dive_cards)` subquery, not a SELECT-based
+  row generation), and the first fix's removal of that clause left
+  those same 8 statements with an unclosed `VALUES (...)` parenthesis,
+  caught by a failed local replay and fixed by re-balancing each
+  statement's parens.
+- Local migration-chain replay (`apply_migrations.py --local
+  --dry-run`) confirms all 287 files validate cleanly against the
+  full schema history — "Replay validation OK (287 files, only the
+  documented pre-existing errors)."
+
+Final audit against the full ADDING-A-COUNTRY.md checklist: all items
+pass (the `countryNames` gap above is a known, pre-existing, optional
+fallback item per the doc's own framing, not a checklist failure).
+
+Deploy (from your machine, once ready):
+```
+cd members-worker/migrations
+python3 apply_migrations.py --remote
+cd ..
+wrangler deploy
+```
+(The `site-worker` also needs redeploying to pick up the `countries.js`,
+`deep-dive-render.mjs`, and i18n/static-HTML jurisdiction-count edits —
+redeploy it the same way you did for Oman, Jordan, and Israel.)
+
 ## Open items / next steps
 
 ### Real open work
 
 1. **Coverage expansion** — Netherlands, Austria, Greece, Cyprus, Oman,
-   Jordan, and Israel shipped; Israel is code complete with deploy
-   pending, the rest deployed and tested. Still not
+   Jordan, Israel, and South Korea shipped; South Korea is code
+   complete with deploy pending, the rest deployed and tested (Israel
+   deploy also still pending). Still not
    tracked in Europe: Bulgaria, Czechia,
    Estonia, Hungary, Latvia, Lithuania, Malta, Slovenia, Iceland,
    Liechtenstein. The scaffolder + runner make each addition a
@@ -2435,6 +2550,10 @@ redeploy it the same way you did for Oman and Jordan.)
    of Qatar. Hold off on Sri Lanka until it has a confirmed mandatory
    date beyond the pilot, and skip Japan — there's no real invoicing
    mandate there to document.
+   **South Korea is now built** — code complete with deploy pending
+   (see the dated entry above). Vietnam and Taiwan remain the strongest
+   next candidates from this same evaluation whenever coverage expands
+   further into Asia-Pacific.
 2. **Tracking-source URL audit, continued** — ~40 of 54 sources not
    yet verified for whether they'll ever actually surface real news.
    Two rounds done (Brazil/Australia/Ireland/Poland/Saudi
