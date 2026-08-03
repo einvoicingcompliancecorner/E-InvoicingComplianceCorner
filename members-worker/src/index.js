@@ -592,7 +592,7 @@ const CM_AMBER = "#c98a3a", CM_STAMP = "#b5432f", CM_LIVE = "#3f7d5c";
 // high-impact feel everywhere else, at a matching weight and scale.
 const CM_HEADER_HTML = `
   <p style="margin:0 0 6px; font-family:'Courier New',Courier,monospace; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:${CM_AMBER};">Compliance clearance board</p>
-  <h1 style="margin:0; font-family:'Big Shoulders Display','Arial Black',Impact,sans-serif; font-weight:900; font-size:30px; line-height:0.98; text-transform:uppercase; color:#f2f0e8; letter-spacing:0.3px;">The E-Invoicing<br>Compliance Corner</h1>
+  <h1 style="margin:0; font-family:'Big Shoulders Display',Impact,'Arial Narrow',sans-serif; font-weight:900; font-stretch:condensed; font-size:30px; line-height:0.98; text-transform:uppercase; color:#f2f0e8; letter-spacing:-0.2px;">The E-Invoicing<br>Compliance Corner</h1>
 `;
 
 // Plain-language translation of fetch failures for the digest email.
