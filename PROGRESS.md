@@ -2065,12 +2065,92 @@ rather than a spec field that can't be verified until deploy anyway.
 Documentation-only change, no code behavior affected — nothing to
 deploy for this entry itself.
 
+### Oman added as country #38 (3 August 2026, code complete, deploy pending)
+
+Full country build (migrations 256-263), following directly from the
+Middle East coverage evaluation above — Oman was the strongest
+"imminent" candidate, with Phase 1 landing this same month.
+
+- **Migrations 256-258**: country row (slug `oman`, region "Middle
+  East"), 6 milestones — the October 2025 Fawtara specification
+  (anchor, off-board), May 2026 ASP registration opening, then four
+  dated phases: Phase 1 (~100 largest taxpayers, 1 August 2026,
+  `mandate_scope: 'b2b'`), Phase 2 (remaining large taxpayers,
+  February 2027), Phase 3 (all remaining VAT-registered taxpayers
+  incl. SMEs, August 2027), and Phase 4 (government-counterparty
+  transactions, `mandate_scope: 'b2g_only'`, August 2028). All sourced
+  from KPMG Oman Tax Flash alerts and the OTA's own Tax Portal.
+- **Migrations 259-260**: full deep-dive page — compliance model
+  described as a decentralised Peppol five-corner model (not a
+  centralised clearance platform, the closest precedent being UAE's
+  own ASP-based system), 5 stats, 3 `file_format` cards, a lifecycle
+  card ("The five corners", 5 pill statuses) plus 2 regular cards in
+  `scope_transmission`, 3 narrative `penalties_related` cards (no
+  penalty-schedule table — none has been published yet), 5 steps, 2
+  portals. Self-caught and fixed a lifecycle-card duplication error
+  mid-build (an erroneous companion `deep_dive_cards` row for the same
+  content) by cross-checking against the real Malaysia migration
+  before it shipped.
+- **Migration 261**: a 3-story arc — the October 2025 Fawtara
+  announcement, the May 2026 ASP registration opening, and the June
+  2026 confirmation of Phase 1's ~100-taxpayer scope.
+- **Migration 262**: tracking sources (OTA's e-Invoicing and
+  Service-Provider portal pages — no EC factsheet, since Oman isn't an
+  EU member state, unlike every recent addition before it).
+- **Migration 263**: jurisdiction count 36→37, verified directly
+  against the true pre-Oman baseline (migration 251) before sweeping.
+- **Resolved a "100 vs 153 taxpayers" discrepancy** in Phase 1's scope:
+  an initial source summary named both figures for the same milestone;
+  cross-checked against KPMG's own Oct 2025 Tax Flash and a VATupdate
+  article, both independently confirming 100. Used 100 throughout.
+- **Static files**: `countries.js` (Middle East, between Egypt and
+  Saudi Arabia), `shared/deep-dive-render.mjs`'s slug map and
+  `COUNTRY_NAME_TRANSLATIONS` dictionary. While in that dictionary,
+  also backfilled 6 other countries missing from it since their own
+  additions (Austria, Cyprus, Egypt, Greece, Luxembourg, Netherlands)
+  — a known, documented gap this doc had already flagged; fixing it
+  alongside Oman's own entry was cheaper than a separate pass later.
+- **Hand-swept the jurisdiction count in every static surface**
+  `generate_files.py` would otherwise regenerate from D1: all four
+  languages' `i18n/*.json` files and every static HTML page
+  (`subscribe.html`, the education pages, `index.html`,
+  `einvoicing-compliance-tracker.html`) carrying the literal "36" in
+  prose or a hardcoded stat tile — 58 occurrences across 32 files,
+  cross-checked against migration 263's own key list so every hit
+  traces back to a real D1 key. Left one unrelated "36" alone (a
+  "36-day reporting window" mention in the tracker's AP/AR guidance —
+  not a jurisdiction count).
+- Local migration-chain replay (`apply_migrations.py --local
+  --dry-run`) confirms all 263 files validate cleanly against the
+  full schema history — "Replay validation OK (263 files, only the
+  documented pre-existing errors)."
+
+Final audit against the full ADDING-A-COUNTRY.md checklist: all items
+pass.
+
+**Deploy (from your machine, once ready):**
+```bash
+cd members-worker/migrations
+python3 apply_migrations.py --remote
+cd ../../site-worker && wrangler deploy
+```
+This sandbox has no Cloudflare/D1 credentials, so migrations 256-263
+and the site-worker redeploy (needed for the `countries.js`,
+`deep-dive-render.mjs`, i18n, and jurisdiction-count static-file
+edits) both still need to be run from your own machine. After
+deploying, the Phase 5 testing checklist applies as usual — worth
+specifically checking `/oman?lang=es`/`de`/`fr` for the translated
+`<title>`/`<h1>` (the `COUNTRY_NAME_TRANSLATIONS` entry this build
+added), the subscribe picker showing Omán/Oman/Oman, and that "37"
+reads correctly everywhere the old "36" did.
+
 ## Open items / next steps
 
 ### Real open work
 
-1. **Coverage expansion** — Netherlands, Austria, Greece, and
-   Cyprus shipped. Still not tracked in Europe: Bulgaria, Czechia,
+1. **Coverage expansion** — Netherlands, Austria, Greece, Cyprus, and
+   Oman shipped (Oman: code complete, deploy pending — see the dated
+   entry above). Still not tracked in Europe: Bulgaria, Czechia,
    Estonia, Hungary, Latvia, Lithuania, Malta, Slovenia, Iceland,
    Liechtenstein. The scaffolder + runner make each addition a
    fraction of the old effort.
@@ -2129,12 +2209,14 @@ deploy for this entry itself.
    real, dated, sourced milestones — Oman's first wave lands this
    same month, August 2026) via the existing scaffolder + runner
    workflow, each roughly the same effort as Austria/Greece/Cyprus.
+   **Oman is now built** (see the dated entry above — code complete,
+   deploy pending); Jordan and Israel remain the next two candidates.
    Qatar is a reasonable fourth addition with its milestone correctly
    marked `confidence: 'expected'` until the Shura Council/Amir step
    completes. Hold off on Bahrain, Kuwait, Iraq, and Lebanon until
    their own legislation becomes concrete enough to source properly —
    revisit this evaluation every few months rather than re-researching
-   from scratch, since this space (especially Oman/Qatar) is moving
+   from scratch, since this space (especially Qatar) is moving
    quickly.
 2. **Tracking-source URL audit, continued** — ~40 of 54 sources not
    yet verified for whether they'll ever actually surface real news.
