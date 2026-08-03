@@ -36,7 +36,7 @@ export const SUPPORTED_LANGS = ["en", "es", "de", "fr"];
 // It's a hand-maintained table rather than a derived transform because
 // uae, uk, and united-states aren't simple lowercase-and-hyphenate.
 export const COUNTRY_DEEP_DIVE_SLUGS = {
-  "Australia": "australia", "Belgium": "belgium", "Brazil": "brazil", "Canada": "canada",
+  "Australia": "australia", "Austria": "austria", "Belgium": "belgium", "Brazil": "brazil", "Canada": "canada",
   "Chile": "chile", "China": "china", "Croatia": "croatia", "Denmark": "denmark", "Egypt": "egypt", "Finland": "finland",
   "France": "france", "Germany": "germany", "India": "india", "Ireland": "ireland",
   "Italy": "italy", "Luxembourg": "luxembourg", "Netherlands": "netherlands", "Malaysia": "malaysia", "Mexico": "mexico", "New Zealand": "new-zealand",
