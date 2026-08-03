@@ -2529,7 +2529,7 @@ position, so no JS changes were needed. Committed (`d9415e2`).
 `site-worker` static-asset deploy — no migration, no members-worker
 change.
 
-### "Middle East" relabeled to "Middle East / North Africa," Turkey added as country #43 under Europe (3 August 2026, code complete, deploy pending)
+### "Middle East" relabeled to "Middle East / North Africa," Turkey added as country #43 under Europe (3 August 2026, deployed & tested)
 
 Two Dan-requested changes landed together: renaming the "Middle East"
 region label everywhere it appears, and building Turkey as a full
@@ -2656,21 +2656,21 @@ accountability shape no other country here has.
 Final audit against the full ADDING-A-COUNTRY.md checklist: all items
 pass.
 
-**Code complete, deploy pending** — this sandbox has no live
-Cloudflare/D1 credentials. Needs, from Dan's own machine: migrations
-297-305 via `apply_migrations.py --remote`, then a `wrangler deploy`
-for both `members-worker` and `site-worker` to pick up the region-
-relabel and Turkey static-file changes.
+**Deployed and tested** (confirmed by Dan): migrations 297-305 applied
+via `apply_migrations.py --remote`, both `members-worker` and
+`site-worker` redeployed to pick up the region-relabel and Turkey
+static-file changes. The Middle East / North Africa relabel and Turkey
+(Europe, between Sweden and the United Kingdom) are both live on the
+tracker board.
 
 ## Open items / next steps
 
 ### Real open work
 
 1. **Coverage expansion** — Netherlands, Austria, Greece, Cyprus, Oman,
-   Jordan, Israel, South Korea, Vietnam, and Turkey shipped; South
-   Korea and Vietnam are now confirmed deployed and tested alongside
-   the rest — Israel (#40) and Turkey (#43) remain code complete with
-   deploy pending. Still not
+   Jordan, South Korea, Vietnam, and Turkey are all confirmed deployed
+   and tested — Israel (#40) remains the only one still code complete
+   with deploy pending. Still not
    tracked in Europe: Bulgaria, Czechia,
    Estonia, Hungary, Latvia, Lithuania, Malta, Slovenia, Iceland,
    Liechtenstein. The scaffolder + runner make each addition a
