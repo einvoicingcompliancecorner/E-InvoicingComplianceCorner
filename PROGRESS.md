@@ -2529,15 +2529,148 @@ position, so no JS changes were needed. Committed (`d9415e2`).
 `site-worker` static-asset deploy — no migration, no members-worker
 change.
 
+### "Middle East" relabeled to "Middle East / North Africa," Turkey added as country #43 under Europe (3 August 2026, code complete, deploy pending)
+
+Two Dan-requested changes landed together: renaming the "Middle East"
+region label everywhere it appears, and building Turkey as a full
+country — the strong candidate surfaced by the same-day Middle East
+recheck, but classified under Europe rather than Middle East/North
+Africa per Dan's explicit instruction (Turkey is transcontinental;
+its e-invoicing regime, EU-accession-candidate status, and every
+prior country immediately alphabetically adjacent to it on this
+tracker all sit in the Europe list).
+
+**Region relabel.** `/sources` (`site-worker/src/index.js`'s
+`renderSourcesPage()`) renders the `countries.region` column directly,
+with no translation layer, while the tracker/subscribe/map UIs
+translate that same raw string via a `regionNames`/`translateRegion()`
+lookup keyed on it — so a display-value-only edit would have left
+`/sources` showing the old label while everywhere else showed the new
+one. Fixed by renaming the canonical string itself everywhere:
+
+- **Migration 297**: renames the `namespace='regions'` translation
+  rows' `key` (all 4 languages) from `'Middle East'` to `'Middle East /
+  North Africa'` (values also updated per language), and updates
+  `countries.region` for all 6 affected countries (Egypt, Israel,
+  Jordan, Oman, Saudi Arabia, UAE).
+- **Static files**: `members-worker/src/index.js` (`REGION_ORDER`,
+  `translateRegionName()`'s three language maps),
+  `site-worker/src/index.js` (`SOURCES_REGION_ORDER`, both CASE-statement
+  literals in `buildTrackerData()` and `renderSourcesPage()`),
+  `shared/map-data.mjs` (`REGION_ORDER`, `REGION_BOUNDS` key, all 4
+  languages' `regionNames` and `regionNotes` dicts), `countries.js`
+  (region key), all 8 `i18n/{en,es,de,fr}{,-subscribe}.json` files'
+  `regionNames` blocks, and `einvoicing-compliance-tracker.html`'s
+  static `DATA` fallback array (6 `region:'Middle East'` entries —
+  Saudi Arabia and UAE only; Egypt/Israel/Jordan/Oman aren't in this
+  legacy outage-fallback snapshot) plus its own `REGION_ORDER`. Verified
+  via grep on every file that no bare "Middle East" string remains.
+
+**Turkey added as country #43.** Sourced from sovos.com's
+"e-Transformation Turkey" page, fiscal-requirements.com's 2026
+threshold article, fonoa.com's Türkiye guide, and VUK/Mükerrer 355
+penalty-law search results. Turkey's e-invoicing regime is genuinely
+dual-system: e-Fatura is a centralized clearance model (seller submits
+UBL-TR XML to the Revenue Administration, GİB, which validates and
+distributes it to the registered recipient — the same shape as
+Jordan/Israel) for registered recipients, while e-Arşiv is a
+post-issuance reporting model (seller delivers directly, then reports
+to GİB same-day — the same shape as South Korea) for everyone else.
+The penalty structure is also structurally new for this tracker: a
+10%-of-invoice-value fine (minimum TRY 2,200) under the Tax Procedure
+Law's Mükerrer Madde 355, applied to **both** the issuer who fails to
+issue and the recipient who accepts a non-compliant invoice — a dual-
+accountability shape no other country here has.
+
+- **Migration 298**: country row (`TR`, `Turkey`, region `Europe`,
+  slug `turkey`, `in_picker=1`) + name translations.
+- **Migration 299-300**: 4 milestones with full translations —
+  e-Fatura mandatory (1 Apr 2014, anchor, off-board, `mandate_scope:
+  'b2b'` — the origin milestone), e-Defter electronic ledgers (2015,
+  off-board, `'none'` — a bookkeeping duty, not an invoicing-scope
+  fact), e-İrsaliye/e-Waybill (1 Jul 2023, on-board, `'none'` — goods
+  movement, tracked against its own threshold), and the 2026 e-Arşiv
+  floor removal + lower general threshold (1 Jan 2026, on-board,
+  `'b2b'` — the milestone driving The Map's "inforce" status, since
+  `computeCountryMapStatus()` only reads `on_tracker=1` rows).
+- **Migrations 301-302**: full deep-dive page — a dual-model
+  compliance description, 5 stats, 3 `file_format` cards, **two**
+  separate lifecycle pill cards in `scope_transmission` ("e-Fatura —
+  centralized clearance," 4 pills; "e-Arşiv — post-issuance
+  reporting," 3 pills, explicitly cross-referencing Jordan/Israel and
+  South Korea as the closer analogues for each) plus 2 regular cards
+  (scope-since-when, with the threshold's fall from TRY 5M at 2014
+  launch to as low as TRY 500K by 2026; what's covered), a 2-row
+  `deep_dive_penalty_rows` table (issuer + recipient, both 10%/min TRY
+  2,200), 3 narrative `penalties_related` cards (the dual-accountability
+  point; the percentage-not-flat-fee point contrasted with Vietnam's
+  count-scaling and Jordan's flat fine; a living-tracker freshness
+  caveat that late e-Arşiv/e-Defter fines don't have a single
+  public-source figure worth publishing), 6 steps, 2 portals (GİB's
+  e-Belge portal; GİB's general site).
+- **Migration 303**: a 3-story arc — the 2014 e-Fatura mandate, the
+  2023 e-İrsaliye mandate, and the 2026 e-Arşiv floor removal.
+- **Migration 304**: tracking sources (GİB's e-Belge portal and
+  general site — no EC factsheet, since Turkey isn't an EU member
+  state, matching the Oman/Jordan/Israel/South Korea/Vietnam
+  precedent).
+- **Migration 305**: jurisdiction count 41→42, generated
+  programmatically from migration 295's own key list (same ~10
+  `translations` keys × 4 languages).
+- **Static files**: `countries.js` (Europe list, inserted alphabetically
+  after Sweden), `shared/deep-dive-render.mjs`'s slug map (`turkey`)
+  and `COUNTRY_NAME_TRANSLATIONS` dictionary (Turquía/Türkei/Turquie).
+- Checked The Map's two hand-maintained lookup tables per
+  ADDING-A-COUNTRY.md's Phase 1 step 6: the world-atlas topology
+  already has a feature named exactly `"Turkey"`, matching this
+  project's `name_en` — no `TOPO_NAME_OVERRIDES` entry needed, and the
+  shape is a normal full-size country geometry, so no
+  `MARKER_LONLAT_OVERRIDES` fallback is needed either. A genuine
+  geographic issue **was** caught and fixed proactively: Turkey's real
+  longitude extent runs to ~45°E (Iğdır Province), but Europe's
+  existing `REGION_BOUNDS` box in `shared/map-data.mjs` capped at
+  35°E, which would have clipped Turkey's shape on The Map's Europe
+  tab — widened the box's east edge from 35 to 46.
+- **Hand-swept the jurisdiction count** across all four languages'
+  `i18n/*.json` files (including the separate per-education-page
+  translation files, e.g. `i18n/en-edu-certified-providers.json`,
+  which the first automated pass initially missed before being added
+  to the sweep's file glob) and every static HTML page — 58
+  occurrences across the same file set as every prior sweep, confirmed
+  via a stray-"41" grep check restricted to jurisdiction-marker
+  context (none found).
+- Local migration-chain replay (`apply_migrations.py --local
+  --dry-run`) confirms all 305 files validate cleanly against the
+  full schema history — "Replay validation OK (305 files, only the
+  documented pre-existing errors)." A follow-up structural query
+  against the replayed in-memory DB confirmed: all 6 prior Middle
+  East countries now show `region = 'Middle East / North Africa'`
+  with no `'Middle East'` leftovers; Turkey's country row shows
+  `region = 'Europe'`, slug `turkey`, `in_picker=1`; Turkey has
+  exactly 4 milestones with the described flags; every deep-dive
+  content table (stats, cards, lifecycle cards+statuses, penalty
+  rows, steps, portals) landed with the correct row count across all
+  4 languages; Turkey has 2 tracking sources each with 4 language
+  descriptions.
+
+Final audit against the full ADDING-A-COUNTRY.md checklist: all items
+pass.
+
+**Code complete, deploy pending** — this sandbox has no live
+Cloudflare/D1 credentials. Needs, from Dan's own machine: migrations
+297-305 via `apply_migrations.py --remote`, then a `wrangler deploy`
+for both `members-worker` and `site-worker` to pick up the region-
+relabel and Turkey static-file changes.
+
 ## Open items / next steps
 
 ### Real open work
 
 1. **Coverage expansion** — Netherlands, Austria, Greece, Cyprus, Oman,
-   Jordan, Israel, South Korea, and Vietnam shipped; South Korea and
-   Vietnam are now confirmed deployed and tested alongside the rest —
-   Israel (#40) remains the only one still code complete with deploy
-   pending. Still not
+   Jordan, Israel, South Korea, Vietnam, and Turkey shipped; South
+   Korea and Vietnam are now confirmed deployed and tested alongside
+   the rest — Israel (#40) and Turkey (#43) remain code complete with
+   deploy pending. Still not
    tracked in Europe: Bulgaria, Czechia,
    Estonia, Hungary, Latvia, Lithuania, Malta, Slovenia, Iceland,
    Liechtenstein. The scaffolder + runner make each addition a

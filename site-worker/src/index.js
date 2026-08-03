@@ -89,8 +89,8 @@ async function fetchAssetFollowingRedirect(env, request) {
 async function buildTrackerData(db) {
   // Ordering matters in one subtle place: the board's region filter
   // chips render in first-appearance order over DATA. The static array
-  // happens to first-appear regions in exactly Europe → Middle East →
-  // Asia-Pacific → Americas, so the generated array orders by that same
+  // happens to first-appear regions in exactly Europe → Middle East /
+  // North Africa → Asia-Pacific → Americas, so the generated array orders by that same
   // fixed region sequence (then date, then id for determinism) to keep
   // the chips identical. Everything else on the page either sorts DATA
   // itself (the board cards, the sidebar) or is order-insensitive (the
@@ -104,7 +104,7 @@ async function buildTrackerData(db) {
     LEFT JOIN milestone_translations mt ON mt.milestone_id = m.id AND mt.lang = 'en'
     WHERE m.on_tracker = 1
     ORDER BY CASE c.region
-      WHEN 'Europe' THEN 0 WHEN 'Middle East' THEN 1
+      WHEN 'Europe' THEN 0 WHEN 'Middle East / North Africa' THEN 1
       WHEN 'Asia-Pacific' THEN 2 WHEN 'Americas' THEN 3 ELSE 4 END,
       m.date, m.id
   `).all();
@@ -267,7 +267,7 @@ const SOURCES_UI = {
         intro: "Les pages officielles des gouvernements et autorit\u00e9s que nous surveillons pour capter les annonces et notifications, pour chaque juridiction du tracker. Chaque mise \u00e0 jour du tableau et de la newsletter remonte \u00e0 l'une d'elles.",
         back: "\u2190 Retour au tracker mondial", visit: "Voir la source" },
 };
-const SOURCES_REGION_ORDER = ["Europe", "Middle East", "Asia-Pacific", "Americas"];
+const SOURCES_REGION_ORDER = ["Europe", "Middle East / North Africa", "Asia-Pacific", "Americas"];
 
 function escHtml(s) {
   return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -298,7 +298,7 @@ async function renderSourcesPage(request, env) {
     LEFT JOIN tracking_source_translations tste ON tste.source_id = ts.id AND tste.lang = 'en'
     WHERE ts.active = 1
     ORDER BY CASE c.region
-      WHEN 'Europe' THEN 0 WHEN 'Middle East' THEN 1
+      WHEN 'Europe' THEN 0 WHEN 'Middle East / North Africa' THEN 1
       WHEN 'Asia-Pacific' THEN 2 WHEN 'Americas' THEN 3 ELSE 4 END,
       c.name_en, ts.sort_order
   `).bind(lang, lang).all();
