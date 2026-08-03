@@ -1531,19 +1531,26 @@ check actual dates) before swapping — three separate "looks perfect,
 turns out stale" near-misses (Chile, Romania, and initially the SII
 normativa page) happened this session alone.
 
+### Cloudflare Web Analytics enabled (3 August 2026)
+
+Zero-code automatic setup worked cleanly for the public site
+(e-invoicingcompliancecorner.com is already Cloudflare-proxied, so it
+was selectable straight from the Web Analytics "Add a site" dropdown
+— no JS snippet, no code changes). Members-worker's separate hostname
+(members.e-invoicingcompliancecorner.com) is not yet covered — same
+process would add it, left as Dan's call whether the archive/
+preferences usage data is worth tracking too.
+
 ## Open items / next steps
 
 ### Real open work
 
-1. **Cloudflare Web Analytics** — still no visibility into traffic;
-   ten-minute setup, and it should inform the ARCHIVE_PUBLIC and
-   pricing decisions below.
-2. **Coverage expansion** — Netherlands shipped. Still not tracked:
+1. **Coverage expansion** — Netherlands shipped. Still not tracked:
    Austria, Bulgaria, Cyprus, Czechia, Estonia, Greece, Hungary,
    Latvia, Lithuania, Malta, Slovenia, Iceland, Liechtenstein. Austria
    is the obvious next pick. The scaffolder + runner make each
    addition a fraction of the old effort.
-3. **Tracking-source URL audit, continued** — ~40 of 54 sources not
+2. **Tracking-source URL audit, continued** — ~40 of 54 sources not
    yet verified for whether they'll ever actually surface real news.
    Two rounds done (Brazil/Australia/Ireland/Poland/Saudi
    Arabia/Portugal fixed; Chile/Romania/Malaysia checked, correctly
@@ -1551,9 +1558,9 @@ normativa page) happened this session alone.
    entries above for the method and the near-misses to avoid
    repeating (a page can look exactly right by title and still have
    silently stopped being updated years ago; always verify live).
-4. **Translation frameworks for the remaining static pages** — the
+3. **Translation frameworks for the remaining static pages** — the
    pages not yet covered by the i18n system.
-5. **Business threads** (decisions, not code): theinvoicinghub.com
+4. **Business threads** (decisions, not code): theinvoicinghub.com
    competitive review; pricing (free vs the shelved $5/$8 tiers);
    the vendor registration/advertising concept; the two remaining
    Resources ideas (accredited-sources list, vendor-assessment RFI
