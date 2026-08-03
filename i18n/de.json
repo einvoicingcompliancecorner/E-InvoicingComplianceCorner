@@ -9,7 +9,11 @@
     "eyebrow": "Über uns",
     "p1": "The E-Invoicing Compliance Corner entstand als Antwort auf die wachsende Komplexität und die rasante Verbreitung von E-Invoicing-Vorgaben weltweit. Ob kleines Unternehmen oder globaler Konzern — dieses Thema kann schwierig und teuer in der Umsetzung sein.",
     "p2": "Diese Seite soll einen kostengünstigen, einfachen Zugang zu verlässlichen Informationen bieten — und Sie laufend benachrichtigen, sobald sich Vorgaben ändern oder neue Gesetze eingeführt werden.",
-    "title": "The E-Invoicing Compliance Corner"
+    "title": "The E-Invoicing Compliance Corner",
+    "authorEyebrow": "Über den Autor",
+    "authorP1": "Ich habe 25 Jahre in der Transformation von Finanzsoftware verbracht, davon über 20 Jahre mit Schwerpunkt auf E-Invoicing und AP-Automatisierung. In den letzten fünf Jahren hat sich die Marktnachfrage deutlich in Richtung Compliance und E-Invoicing-Regulierung verschoben.",
+    "authorP2": "Was mich frustriert, ist das Fehlen einer zentralen Instanz, die den Fahrplan vorgibt — ein Thema, das wirklich schwer zu durchschauen ist. Diese Seite soll diese verstreuten Quellen an einem Ort zusammenführen — mit öffentlichen Informationen, praktischen Ratschlägen und nächsten Schritten.",
+    "authorConnect": "Vernetzen Sie sich gerne mit mir — <a href=\"https://www.linkedin.com/in/danielyoung76/\" target=\"_blank\" rel=\"noopener\" style=\"color:var(--stamp); text-decoration:underline;\">auf LinkedIn</a>."
   },
   "brand": {
     "description": "Ein laufend aktualisierter Überblick über E-Invoicing- und digitale Meldepflichten in 35 Ländern — EU-weite ViDA-Regeln, nationale CTC-Systeme und alles dazwischen. Jeder Eintrag zeigt die Frist, was konkret zu tun ist, und einen direkten Link zum offiziellen Regierungsportal — damit Sie in einem einzigen Blick von \"betrifft uns das?\" zu \"das müssen wir tun\" kommen.",

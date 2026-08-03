@@ -9,7 +9,11 @@
     "eyebrow": "À propos",
     "p1": "The E-Invoicing Compliance Corner a été créé en réponse à la complexité croissante et à la diffusion rapide des obligations de facturation électronique dans le monde. Qu'il s'agisse d'une petite entreprise ou d'un grand groupe international, ce sujet peut être difficile et coûteux à maîtriser.",
     "p2": "Ce site vise à offrir un accès simple et peu coûteux à une information fiable et rapide — ainsi que des alertes continues à chaque évolution des obligations ou nouvelle législation.",
-    "title": "The E-Invoicing Compliance Corner"
+    "title": "The E-Invoicing Compliance Corner",
+    "authorEyebrow": "À propos de l'auteur",
+    "authorP1": "J'ai passé 25 ans dans la transformation des logiciels financiers, dont plus de 20 ans consacrés à la facturation électronique et à l'automatisation des comptes fournisseurs. Ces cinq dernières années, la demande du marché s'est nettement orientée vers la conformité et la réglementation de la facturation électronique.",
+    "authorP2": "Ce qui me frustre, c'est qu'il n'existe pas d'autorité centrale définissant la feuille de route — un sujet réellement difficile à appréhender. Ce site existe pour rassembler ces sources disparates en un seul endroit, avec des informations publiques, des conseils pratiques et les prochaines étapes.",
+    "authorConnect": "N'hésitez pas à me contacter — <a href=\"https://www.linkedin.com/in/danielyoung76/\" target=\"_blank\" rel=\"noopener\" style=\"color:var(--stamp); text-decoration:underline;\">retrouvez-moi sur LinkedIn</a>."
   },
   "brand": {
     "description": "Un suivi actualisé en continu des obligations de facturation électronique et de télédéclaration dans 35 pays — règles ViDA à l'échelle de l'UE, systèmes nationaux de CTC, et tout ce qui se trouve entre les deux. Chaque entrée indique l'échéance, ce qu'il faut faire, et un lien direct vers le portail officiel du gouvernement, pour passer de \"est-ce que cela nous concerne ?\" à \"voici ce qu'il faut faire\" en une seule page.",

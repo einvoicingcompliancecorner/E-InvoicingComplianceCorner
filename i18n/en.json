@@ -9,7 +9,11 @@
     "eyebrow": "About",
     "p1": "The E-Invoicing Compliance Corner was created in response to the growing complexity and rapid spread of e-invoicing mandates worldwide. Whether you're a small business or a global enterprise, this can be a difficult and costly subject to navigate.",
     "p2": "This site aims to provide a low-cost, easy way to access accurate information quickly — and to give you ongoing alerts whenever mandates change or new legislation is introduced.",
-    "title": "The E-Invoicing Compliance Corner"
+    "title": "The E-Invoicing Compliance Corner",
+    "authorEyebrow": "About the author",
+    "authorP1": "I've spent 25 years in financial software transformation, the last 20+ of them focused on e-invoicing and AP automation. Over the past five years, market demand has pivoted sharply toward compliance and e-invoicing regulation.",
+    "authorP2": "What frustrates me is that there's no central authority defining the roadmap — it's a genuinely difficult subject to navigate. This site exists to bring those disparate sources together into one place for public information, practical advice, and next steps.",
+    "authorConnect": "Feel free to connect — <a href=\"https://www.linkedin.com/in/danielyoung76/\" target=\"_blank\" rel=\"noopener\" style=\"color:var(--stamp); text-decoration:underline;\">find me on LinkedIn</a>."
   },
   "brand": {
     "description": "A living tracker of e-invoicing and digital reporting mandates across 35 countries — EU-wide ViDA rules, national CTC systems, and everything in between. Each entry shows the deadline, what you need to do about it, and a direct link to the official government portal, so you can go from \"is this relevant to us?\" to \"here's what to action\" in one page.",
