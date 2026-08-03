@@ -290,3 +290,63 @@ binding (currently a placeholder), then `wrangler deploy`. The first
 Monday run (or a manual trigger via `/admin/run-content-monitor`) will
 baseline every active tracking source; the digest will start reporting
 real changes from the second run onward.
+
+
+---
+
+## A second real bug, caught by the first genuinely completing run (3 August 2026)
+
+The very first live run that actually finished within its time budget
+immediately surfaced a real false positive: Belgium and Croatia's EC
+factsheet pages were flagged as "changed" when nothing regulatory had
+changed at all. The diff showed why — Confluence (the platform behind
+`ec.europa.eu`'s eInvoicing factsheets) embeds a per-request tracing
+blob at the very end of every page's rendered text:
+`{"serverDuration": N, "requestCorrelationId": "hex"}`. Both values are
+different on literally every single page load, regardless of whether
+the actual content changed — exactly the class of "cosmetic churn"
+this tool's design was supposed to filter out, and would have cried
+wolf on all 17 EC-factsheet-sourced pages every week, forever, if left
+unfixed.
+
+**This is the design working, not failing** — this is precisely why
+detection stays separate from publishing: a human read the actual diff
+before anything was taken as fact, immediately recognized it as noise,
+and nothing false ever reached the tracker or a subscriber.
+
+**Fixed**: `extractComparableText` now strips this specific
+Confluence-tracing pattern before hashing, with a regression test
+locking in the exact real text observed. Applied generically (not
+special-cased to one domain), since the same class of problem —
+request IDs, timing metadata, or cache-busting tokens rendered as
+visible text rather than living safely inside a stripped `<script>`
+tag — is a plausible recurrence on other platforms.
+
+**One-time operational note**: because the extraction method itself
+changed, every source's *already-stored* hash (computed under the old,
+noisier extraction) will no longer match a freshly-computed hash even
+where the actual page content is unchanged — guaranteed one-time false
+positives across every previously-baselined source on the next run.
+Since this is still the very first (partial) baseline pass, the clean
+fix is to wipe the `CONTENT_MONITOR` KV namespace once and let every
+source re-baseline fresh under the corrected extraction, rather than
+manually reasoning about which of the first 10 baselined sources are
+now stale:
+```
+wrangler kv key list --namespace-id=<CONTENT_MONITOR namespace id>
+# then delete each hash:<id> key, or simply delete and recreate the
+# namespace if it's easier: wrangler kv namespace delete --namespace-id=...
+# followed by wrangler kv namespace create CONTENT_MONITOR and updating
+# the id in wrangler.toml again.
+```
+
+Also observed in that first run: **Brazil's tracking source
+(`nfe.fazenda.gov.br`) fails with "Too many redirects"** — an ASP.NET
+cookie-support-detection redirect loop that a simple one-shot `fetch()`
+genuinely cannot resolve (it needs a cookie jar carried across
+redirects, which is a meaningfully bigger feature than this tool's
+scope). This is correctly reported as `failed`, not silently swallowed
+— but it will fail the same way every week indefinitely unless a
+better source URL is found for Brazil (a page on the same domain that
+doesn't trigger the cookie-detection dance), which is a source-curation
+task for a human, not a code fix — see `tracking_sources` for Brazil.

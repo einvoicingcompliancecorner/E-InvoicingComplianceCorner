@@ -467,6 +467,18 @@ function extractComparableText(html) {
     .replace(/<[^>]+>/g, " ")
     .replace(/&nbsp;/g, " ")
     .replace(/&amp;/g, "&")
+    // Per-request tracing/analytics noise that changes on EVERY load
+    // regardless of actual content, confirmed empirically (3 August
+    // 2026): Confluence-powered pages (the EC eInvoicing factsheets,
+    // ec.europa.eu) embed a {"serverDuration": N, "requestCorrelationId":
+    // "hex"} blob at the very end of the rendered page — this flagged
+    // Belgium and Croatia as "changed" on the very first live run when
+    // nothing regulatory had changed at all. Stripped generically here
+    // rather than special-cased per domain, since the same class of
+    // problem (request IDs, timing metadata, cache-busting tokens
+    // embedded in visible text rather than a <script> tag) is likely to
+    // recur on other platforms too.
+    .replace(/\{"serverDuration":\s*\d+,\s*"requestCorrelationId":\s*"[a-f0-9]+"\}/gi, " ")
     .replace(/\s+/g, " ")
     .trim();
 }
