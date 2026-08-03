@@ -738,7 +738,7 @@ account semantics:
   `subscribe.html` and the tracker, and a syntax check on
   `members-worker/src/index.js`.
 
-### Feedback panel centering fix, stale jurisdiction count, and subscribe brought in-page (2 August 2026, code complete, deploy pending)
+### Feedback panel centering fix, stale jurisdiction count, and subscribe brought in-page (2 August 2026, deployed 3 Aug 2026)
 
 Three follow-ups once Lemon Squeezy was out of the picture.
 
@@ -820,7 +820,7 @@ Three follow-ups once Lemon Squeezy was out of the picture.
   tracker, `subscribe.html`, `feedback.html`, and
   `education-mandate-types.html`.
 
-### Removed the main tracker's top-level "Last updated" line (2 August 2026, code complete, deploy pending)
+### Removed the main tracker's top-level "Last updated" line (2 August 2026, deployed 3 Aug 2026)
 
 Now that country deep dives (and their own "last updated" + compliance
 model info in the deep-dive header, added earlier this session) open
@@ -842,7 +842,7 @@ covering the archive, menus, sidebar, topbar, education, feedback, and
 subscribe panels) — no regressions. Re-validated HTML parse-validity
 and inline-script syntax on the tracker.
 
-### Privacy policy updated for the free, no-Lemon-Squeezy model (2 August 2026, code complete, deploy pending)
+### Privacy policy updated for the free, no-Lemon-Squeezy model (2 August 2026, deployed 3 Aug 2026)
 
 `privacy-policy.html` still described the old paid-subscription setup
 (Lemon Squeezy as payment provider/merchant of record, Zapier syncing
@@ -1659,7 +1659,7 @@ Ireland), /greece and /greece?lang=de render, subscribe picker shows
 Grecia/Griechenland/Grèce, the archive shows all 3 new stories,
 /sources lists Greece's 3 sources, and "35" reads correctly everywhere.
 
-### "About the author" added to the About-this-site pop-out (3 August 2026, deploy pending)
+### "About the author" added to the About-this-site pop-out (3 August 2026, deployed 3 Aug 2026)
 
 A small, low-effort addition per Dan's own effort-evaluation request —
 his bio (25 years in financial software transformation, the last 20+
@@ -1749,7 +1749,7 @@ board (Europe, between Croatia and Denmark), /cyprus and
 the archive shows both new stories, /sources lists Cyprus's 3 sources,
 and "36" reads correctly everywhere.
 
-### The Map: three deploy-verification bugs found and fixed (3 August 2026, code complete, deploy pending)
+### The Map: three deploy-verification bugs found and fixed (3 August 2026, deployed 3 Aug 2026)
 
 The Map's full build (mandate_scope, `/map`, `/map-data.json`) went live
 this session — migrations 254/255 applied, both Workers deployed. Live
@@ -1807,18 +1807,14 @@ unaffected by any of these):
   the standalone page's is untouched (still 4 visible buttons). No
   console errors either mode.
 
-Not yet deployed — `site-worker` needs a re-deploy to pick up the
-`einvoicing-compliance-tracker.html` and `map-panel.js` changes:
-```
-cd site-worker && npx wrangler deploy
-```
-No new migrations, no D1 changes. Spot-check after deploy: open the
-tracker, Resources → The Map — only one language switcher visible (top
-of page), Portugal/Sweden/Norway/Finland/Luxembourg show their real
-amber "B2G only" color (not black), and the legend's "B2G only" swatch
-is a visible amber pill, not blank.
+**Deployed 3 Aug 2026** via `cd site-worker && npx wrangler deploy`. No
+migrations, no D1 changes were needed. Not yet independently
+spot-checked live (Dan confirmed the deploy went out and picked up
+this and the following three Map rounds; a live look at the tracker's
+Resources → The Map panel to confirm the single language switcher and
+the amber B2G-only fills is still worth doing when convenient).
 
-### The Map: three more UI requests, resolved with one shared component (3 August 2026, code complete, deploy pending)
+### The Map: three more UI requests, resolved with one shared component (3 August 2026, deployed 3 Aug 2026)
 
 Three more small UI asks on The Map, all resolved without forking
 `map-panel.js`/`site-worker`'s map render into separate standalone-vs-
@@ -1881,21 +1877,16 @@ shows the full 4-country list, panel shows 3 news rows in the right
 language switch stays hidden in panel mode. No console errors either
 mode.
 
-Not yet deployed — same as the prior fix, this only touches
-`einvoicing-compliance-tracker.html`, `map-panel.js`,
-`shared/map-data.mjs`, and `site-worker/src/index.js`. No new
-migrations. Needs:
-```
-cd site-worker && npx wrangler deploy
-```
-Spot-check after deploy: "THE COMPLIANCE MAP" reads as one line on
-both `/map` and the tracker's panel; "← Back to the tracker" sits at
-the top-left on both; the standalone page still shows "All
-jurisdictions" with every country; the tracker's embedded panel shows
-"Latest updates" with real newsletter headlines, newest first, each
-opening its full story on the members site in a new tab.
+**Deployed 3 Aug 2026** via the same `cd site-worker && npx wrangler
+deploy` above. Live spot-check still worth doing when convenient:
+"THE COMPLIANCE MAP" reads as one line on both `/map` and the
+tracker's panel; "← Back to the tracker" sits at the top-left on
+both; the standalone page still shows "All jurisdictions" with every
+country; the tracker's embedded panel shows "Latest updates" with real
+newsletter headlines, newest first, each opening its full story on the
+members site in a new tab.
 
-### The Map's "Latest updates" panel: region-filtered, flagged, pop-out (3 August 2026, code complete, deploy pending)
+### The Map's "Latest updates" panel: region-filtered, flagged, pop-out (3 August 2026, deployed 3 Aug 2026)
 
 Three refinements to the "Latest updates" list added in the previous
 round (embedded-panel-only, per its own header comment):
@@ -1959,16 +1950,14 @@ Middle East shows the inverse; each row's flag+name text matches;
 clicking a row opens the modal with the mocked story's real content
 (not a navigation), and the close button closes it. No console errors.
 
-Not yet deployed — same three files as the prior two Map rounds
-(`site-worker/src/index.js`, `map-panel.js`, `shared/map-data.mjs`), no
-migrations. One `cd site-worker && npx wrangler deploy` picks up
-everything through this round. Spot-check after deploy: switch region
-tabs on the tracker's embedded Map panel and confirm the news list
-changes to match; confirm each headline shows a flag + country name;
-click a headline and confirm it pops out in place rather than opening
-a new tab.
+**Deployed 3 Aug 2026** via the same site-worker deploy. Live
+spot-check still worth doing when convenient: switch region tabs on
+the tracker's embedded Map panel and confirm the news list changes to
+match; confirm each headline shows a flag + country name; click a
+headline and confirm it pops out in place rather than opening a new
+tab.
 
-### The Map's footer CTAs open in-page like everything else (3 August 2026, code complete, deploy pending)
+### The Map's footer CTAs open in-page like everything else (3 August 2026, deployed 3 Aug 2026)
 
 The map's footer had a "Browse the newsletter archive" button that
 always did a real cross-origin navigation, even when The Map was open
@@ -2015,14 +2004,12 @@ as plain links with the correct text/href; simulated panel mode
 confirms a click on either button calls the corresponding opts
 callback and does *not* navigate the page.
 
-Not yet deployed — same four files as the last several Map rounds
-(`site-worker/src/index.js`, `map-panel.js`, `shared/map-data.mjs`,
-`einvoicing-compliance-tracker.html`), no migrations. One
-`cd site-worker && npx wrangler deploy` picks up everything through
-this round. Spot-check after deploy: open the tracker's embedded Map
-panel, click "Browse the newsletter archive" — the archive should open
-in-page, not a new tab/window; click "Subscribe to the newsletter" —
-the subscribe panel should open in-page the same way.
+**Deployed 3 Aug 2026** via the same site-worker deploy. Live
+spot-check still worth doing when convenient: open the tracker's
+embedded Map panel, click "Browse the newsletter archive" — the
+archive should open in-page, not a new tab/window; click "Subscribe to
+the newsletter" — the subscribe panel should open in-page the same
+way.
 
 ### ADDING-A-COUNTRY.md updated to cover The Map (2 Aug 2026, cont'd)
 
@@ -2113,7 +2100,9 @@ deploy for this entry itself.
    the vendor registration/advertising concept; the two remaining
    Resources ideas (accredited-sources list, vendor-assessment RFI
    template).
-5. **"The Map" — an interactive visual map under Resources**
+5. ~~**"The Map" — an interactive visual map under Resources**~~ —
+   **done and deployed 3 Aug 2026** (all eight rounds; see the dated
+   entries above). Kept below for the design-research trail.
 
    Two competitor references evaluated (3 August 2026):
 
@@ -2298,12 +2287,12 @@ deploy for this entry itself.
      existing `openDeepDive(slug)` directly, per the explicit decision
      to reuse the existing in-page deep-dive panel rather than a new
      tab or a bespoke standalone page.
-   - **Not yet done**: this sandbox has no Cloudflare/wrangler
-     credentials (`wrangler whoami` confirms unauthenticated), so
-     migrations 254/255 haven't been applied and neither Worker has
-     been deployed — both are prepared for the next `apply_migrations.py
-     --remote` + `wrangler deploy` (site-worker) run from a machine
-     with real access.
+   - **Deployed and confirmed live** later the same session: migrations
+     254/255 applied, both Workers deployed, `/map-data.json?lang=en`
+     checked live showing 36 countries with correct statuses. Rounds
+     4-7's subsequent UI fixes (site-worker-only, no further
+     migrations) were deployed via a follow-up `wrangler deploy` on 3
+     Aug 2026.
 
 ### Dormant until decided
 
