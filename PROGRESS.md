@@ -2135,7 +2135,7 @@ static-file edits. Oman live on the tracker board (Middle East,
 between Egypt and Saudi Arabia), and "37" reads correctly everywhere
 the old "36" did.
 
-### Jordan added as country #39 (3 August 2026, code complete, deploy pending)
+### Jordan added as country #39 (3 August 2026, deployed & tested)
 
 Full country build (migrations 264-271), the second addition from the
 Middle East coverage evaluation above — Jordan's JoFotara is the most
@@ -2189,29 +2189,18 @@ than a future date.
 Final audit against the full ADDING-A-COUNTRY.md checklist: all items
 pass.
 
-**Deploy (from your machine, once ready):**
-```bash
-cd members-worker/migrations
-python3 apply_migrations.py --remote
-cd ../../site-worker && wrangler deploy
-```
-This sandbox has no Cloudflare/D1 credentials, so migrations 264-271
-and the site-worker redeploy (needed for the `countries.js`,
-`deep-dive-render.mjs`, i18n, and jurisdiction-count static-file
-edits) both still need to be run from your own machine. After
-deploying, the Phase 5 testing checklist applies as usual — worth
-specifically checking `/jordan?lang=es`/`de`/`fr` for the translated
-`<title>`/`<h1>` (Jordania/Jordanien/Jordanie), the subscribe picker
-showing the same, and that "38" reads correctly everywhere the old
-"37" did.
+**Deployed and tested** (confirmed by Dan): migrations 264-271 applied
+via `apply_migrations.py --remote`, `site-worker` redeployed for the
+`countries.js`, `deep-dive-render.mjs`, i18n, and jurisdiction-count
+static-file edits. Jordan live on the tracker board (Middle East,
+between Egypt and Oman), visible in the UI.
 
 ## Open items / next steps
 
 ### Real open work
 
-1. **Coverage expansion** — Netherlands, Austria, Greece, Cyprus, and
-   Oman shipped, all deployed and tested; Jordan shipped (code
-   complete, deploy pending — see the dated entry above). Still not
+1. **Coverage expansion** — Netherlands, Austria, Greece, Cyprus, Oman,
+   and Jordan shipped, all deployed and tested. Still not
    tracked in Europe: Bulgaria, Czechia,
    Estonia, Hungary, Latvia, Lithuania, Malta, Slovenia, Iceland,
    Liechtenstein. The scaffolder + runner make each addition a
@@ -2271,9 +2260,8 @@ showing the same, and that "38" reads correctly everywhere the old
    real, dated, sourced milestones — Oman's first wave lands this
    same month, August 2026) via the existing scaffolder + runner
    workflow, each roughly the same effort as Austria/Greece/Cyprus.
-   **Oman is now deployed and tested, and Jordan is now built** (code
-   complete, deploy pending — see the dated entries above); Israel
-   remains the next candidate.
+   **Oman and Jordan are now both deployed and tested** (see the dated
+   entries above); Israel remains the next candidate.
    Qatar is a reasonable fourth addition with its milestone correctly
    marked `confidence: 'expected'` until the Shura Council/Amir step
    completes. Hold off on Bahrain, Kuwait, Iraq, and Lebanon until
