@@ -1531,15 +1531,17 @@ check actual dates) before swapping — three separate "looks perfect,
 turns out stale" near-misses (Chile, Romania, and initially the SII
 normativa page) happened this session alone.
 
-### Cloudflare Web Analytics enabled (3 August 2026)
+### Cloudflare Web Analytics enabled on both hostnames (3 August 2026, members-worker deploy pending)
 
-Zero-code automatic setup worked cleanly for the public site
-(e-invoicingcompliancecorner.com is already Cloudflare-proxied, so it
-was selectable straight from the Web Analytics "Add a site" dropdown
-— no JS snippet, no code changes). Members-worker's separate hostname
-(members.e-invoicingcompliancecorner.com) is not yet covered — same
-process would add it, left as Dan's call whether the archive/
-preferences usage data is worth tracking too.
+Public site: zero-code automatic setup (e-invoicingcompliancecorner.com
+is Cloudflare-proxied, selectable straight from the "Add a site"
+dropdown). Members-worker: automatic setup wasn't available
+(members.e-invoicingcompliancecorner.com is a Worker custom-domain
+route, not its own zone record) — used the manual JS-snippet path
+instead, inserted once into `pageShell()`, the single shared template
+all 8 of members-worker's render* functions route through. Covers
+login, archive, preferences, and every other members-subdomain page
+in one change rather than needing per-page edits.
 
 ## Open items / next steps
 
