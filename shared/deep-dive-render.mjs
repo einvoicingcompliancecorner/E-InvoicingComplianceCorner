@@ -38,7 +38,7 @@ export const SUPPORTED_LANGS = ["en", "es", "de", "fr"];
 export const COUNTRY_DEEP_DIVE_SLUGS = {
   "Australia": "australia", "Austria": "austria", "Belgium": "belgium", "Brazil": "brazil", "Canada": "canada",
   "Chile": "chile", "China": "china", "Croatia": "croatia", "Denmark": "denmark", "Egypt": "egypt", "Finland": "finland",
-  "France": "france", "Germany": "germany", "India": "india", "Ireland": "ireland",
+  "France": "france", "Germany": "germany", "Greece": "greece", "India": "india", "Ireland": "ireland",
   "Italy": "italy", "Luxembourg": "luxembourg", "Netherlands": "netherlands", "Malaysia": "malaysia", "Mexico": "mexico", "New Zealand": "new-zealand",
   "Norway": "norway", "Peru": "peru", "Poland": "poland", "Portugal": "portugal", "Romania": "romania",
   "Saudi Arabia": "saudi-arabia", "Singapore": "singapore", "Slovakia": "slovakia",

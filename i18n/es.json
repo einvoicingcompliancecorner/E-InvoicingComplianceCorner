@@ -12,7 +12,7 @@
     "title": "The E-Invoicing Compliance Corner"
   },
   "brand": {
-    "description": "Un seguimiento actualizado de los mandatos de facturación electrónica y reporte digital en 34 países — normas de ViDA a nivel de la UE, sistemas nacionales de CTC, y todo lo demás. Cada entrada muestra la fecha límite, lo que debe hacer al respecto, y un enlace directo al portal oficial del gobierno, para que pueda pasar de \"¿esto nos afecta?\" a \"esto es lo que hay que hacer\" en una sola página.",
+    "description": "Un seguimiento actualizado de los mandatos de facturación electrónica y reporte digital en 35 países — normas de ViDA a nivel de la UE, sistemas nacionales de CTC, y todo lo demás. Cada entrada muestra la fecha límite, lo que debe hacer al respecto, y un enlace directo al portal oficial del gobierno, para que pueda pasar de \"¿esto nos afecta?\" a \"esto es lo que hay que hacer\" en una sola página.",
     "eyebrow": "Panel de cumplimiento normativo",
     "title": "The E-Invoicing<br>Compliance Corner"
   },
@@ -111,6 +111,7 @@
     "Egypt": "Egipto",
     "France": "Francia",
     "Germany": "Alemania",
+    "Greece": "Grecia",
     "Ireland": "Irlanda",
     "Italy": "Italia",
     "Luxembourg": "Luxemburgo",
