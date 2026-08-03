@@ -1489,6 +1489,48 @@ Deploy: `cd members-worker/migrations && python3 apply_migrations.py --remote`
 monitor's digest will reflect the new descriptions within the 5-minute
 cache window (sources page) or from the next run (digest).
 
+### Tracking-source URL audit, round 2 (3 August 2026) — Portugal fixed, Malaysia/Romania/Chile checked with no action, ~40 remain
+
+Continuing the "does this URL ever surface real news" audit from the
+Brazil/Australia/Ireland/Poland/Saudi Arabia round.
+
+**Fixed**: Portugal (migration 227) — swapped the unverified
+`menu.action?pai=5075` page for the Autoridade Tributária's actual
+"Destaques" feed, confirmed live with continuous dated entries since
+2024 and recurring genuine e-Fatura/SAF-T deadline news.
+
+**Checked, deliberately left as-is** (both are cases where the
+"obvious" better-looking alternative turned out worse on verification
+— logged so the same dead ends aren't re-walked later):
+- **Chile** — SII's own "Normativa Factura Electrónica" list page looks
+  exactly right by title, but its most recent entry is from 2016 while
+  real current resolutions exist elsewhere (a 2025 and a 2026 one seen
+  in passing) — the list has quietly stopped being maintained. Swapping
+  to it would trade a noisy-but-live source for a definitively dead
+  one. No confident better URL found.
+- **Malaysia** — found LHDN's genuine "Kenyataan Media" (press
+  statements) feed, dated through January 2026 — but it's disallowed
+  by `robots.txt`. The monitor respects that by design (see
+  CONTENT-MONITORING.md's "never fetch somewhere a site has said not
+  to" policy) — a robots-blocked source is out of bounds regardless of
+  content quality. No confident allowed alternative found.
+- **Romania** — ANAF's static e-factura info page (static.anaf.ro) is
+  a genuine dated list but hasn't been updated since ~2022 (references
+  only up to Law 139/2022) — same staleness pattern as Chile. Left as
+  the current mfinante.gov.ro page pending a better find.
+
+**~40 sources not yet checked.** This is a genuinely slow, real-fetch
+task (each source takes several search+verify calls to confirm
+properly, not a quick guess) — logged here as an explicit ongoing
+background item rather than attempted in one sitting. Suggested
+approach for whoever picks this up next: prioritise sources shaped like
+"bare authority homepage" (highest risk of either missing real news or
+drowning it in unrelated noise) over sources that are already specific
+sub-pages, and always verify a replacement candidate live (fetch it,
+check actual dates) before swapping — three separate "looks perfect,
+turns out stale" near-misses (Chile, Romania, and initially the SII
+normativa page) happened this session alone.
+
 ## Open items / next steps
 
 ### Ship step outstanding (only one)
