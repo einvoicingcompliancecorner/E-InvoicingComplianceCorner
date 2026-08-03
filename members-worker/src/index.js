@@ -387,6 +387,8 @@ export default {
         // waiting for the actual cron schedule — see README for how to call
         // this safely (it's not linked from anywhere in the UI).
         return handleManualNotificationTrigger(request, env);
+      } else if (request.method === "POST" && url.pathname === "/admin/run-content-monitor") {
+        return handleManualContentMonitorTrigger(request, env);
       } else {
         response = new Response("Not found", { status: 404 });
       }
@@ -397,13 +399,233 @@ export default {
   },
 
   // Cloudflare Workers Cron Trigger entry point — see wrangler.toml's
-  // [triggers] section for the actual schedule. Sends every active
-  // subscriber a short, personalised notification about the current
-  // month's issue, without emailing the full digest content itself.
+  // [triggers] section for the actual schedules. Two independent cron
+  // strings both land here; event.cron tells them apart. Sends every
+  // active subscriber a short, personalised notification about the
+  // current month's issue (monthly), and separately runs the content
+  // monitor's known-page watcher (weekly) — see CONTENT-MONITORING.md
+  // for the full design and why these are deliberately kept separate
+  // from anything that publishes to subscribers.
   async scheduled(event, env, ctx) {
-    ctx.waitUntil(sendMonthlyNotifications(env));
+    if (event.cron === CONTENT_MONITOR_CRON) {
+      ctx.waitUntil(runContentMonitor(env));
+    } else {
+      ctx.waitUntil(sendMonthlyNotifications(env));
+    }
   },
 };
+
+// ================================================================
+// CONTENT MONITOR — the "known-page watcher" from CONTENT-MONITORING.md
+// ================================================================
+// Detection only. This code NEVER writes to milestones, deep-dive
+// content, or stories, and NEVER emails subscribers — see the design
+// doc's framing section for why that line is load-bearing. Its entire
+// output is one internal digest email: "these official pages changed
+// since last week, go look." A human always reads the actual change
+// before anything gets published.
+//
+// Watch list: tracking_sources WHERE active = 1 (migration 214) — the
+// same registry that powers the public /sources page. Adding a source
+// there automatically adds it to monitoring; setting active = 0 pulls
+// it out of both places at once, by design (one registry, one meaning).
+
+const CONTENT_MONITOR_CRON = "0 8 * * 1"; // Monday 08:00 UTC — see wrangler.toml
+const CONTENT_MONITOR_FETCH_DELAY_MS = 3000; // spacing between fetches — considerate of government infrastructure, not a bulk scraper
+const CONTENT_MONITOR_USER_AGENT = "EICC-ContentMonitor/1.0 (+https://e-invoicingcompliancecorner.com/about; weekly check for compliance updates)";
+const CONTENT_MONITOR_FETCH_TIMEOUT_MS = 15000;
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+// Strips a fetched HTML page down to comparable plain text: drop
+// <script>/<style> entirely (their content is never meaningful to a
+// reader and churns constantly — analytics IDs, cache-busting, session
+// tokens), strip all remaining tags, collapse whitespace. This is
+// deliberately crude — the goal is "did the actual information change",
+// not a faithful text rendering, and crude-but-stable beats
+// sophisticated-but-brittle for a diff baseline.
+function extractComparableText(html) {
+  return html
+    .replace(/<script[\s\S]*?<\/script>/gi, " ")
+    .replace(/<style[\s\S]*?<\/style>/gi, " ")
+    .replace(/<!--[\s\S]*?-->/g, " ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+async function sha256Hex(text) {
+  const data = new TextEncoder().encode(text);
+  const digest = await crypto.subtle.digest("SHA-256", data);
+  return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+// A crude before/after diff snippet: find the longest common prefix and
+// suffix, show what's sandwiched between them (truncated). Not a real
+// diff algorithm — just enough context for a human deciding whether to
+// look closer, which is all this needs to be per the design doc.
+function crudeDiffSnippet(oldText, newText, context = 160) {
+  let start = 0;
+  const maxStart = Math.min(oldText.length, newText.length);
+  while (start < maxStart && oldText[start] === newText[start]) start++;
+  let oldEnd = oldText.length, newEnd = newText.length;
+  while (oldEnd > start && newEnd > start && oldText[oldEnd - 1] === newText[newEnd - 1]) {
+    oldEnd--; newEnd--;
+  }
+  const before = oldText.slice(Math.max(start - context, 0), Math.min(oldEnd + context, oldText.length));
+  const after = newText.slice(Math.max(start - context, 0), Math.min(newEnd + context, newText.length));
+  return { before: before.trim(), after: after.trim() };
+}
+
+async function fetchWithTimeout(url, options, timeoutMs) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...options, signal: controller.signal });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function checkOneSource(env, source) {
+  // source: { id, url, country, description }
+  const kvKey = `hash:${source.id}`;
+  let response;
+  try {
+    response = await fetchWithTimeout(source.url, {
+      headers: { "User-Agent": CONTENT_MONITOR_USER_AGENT },
+    }, CONTENT_MONITOR_FETCH_TIMEOUT_MS);
+  } catch (err) {
+    return { source, status: "failed", error: String(err && err.message || err) };
+  }
+  if (!response.ok) {
+    return { source, status: "failed", error: `HTTP ${response.status}` };
+  }
+  let html;
+  try {
+    html = await response.text();
+  } catch (err) {
+    return { source, status: "failed", error: "could not read response body" };
+  }
+  const text = extractComparableText(html);
+  const hash = await sha256Hex(text);
+  const previous = await env.CONTENT_MONITOR.get(kvKey);
+
+  if (previous === null) {
+    // First time seeing this page: establish the baseline silently.
+    // Flagging every source as "changed" on its first-ever check would
+    // make the very first digest useless noise.
+    await env.CONTENT_MONITOR.put(kvKey, JSON.stringify({ hash, text: text.slice(0, 20000), checkedAt: new Date().toISOString() }));
+    return { source, status: "baseline" };
+  }
+
+  let previousParsed;
+  try { previousParsed = JSON.parse(previous); } catch { previousParsed = { hash: previous, text: "" }; }
+
+  await env.CONTENT_MONITOR.put(kvKey, JSON.stringify({ hash, text: text.slice(0, 20000), checkedAt: new Date().toISOString() }));
+
+  if (previousParsed.hash === hash) {
+    return { source, status: "unchanged" };
+  }
+  const diff = crudeDiffSnippet(previousParsed.text || "", text);
+  return { source, status: "changed", diff };
+}
+
+async function getActiveTrackingSources(env) {
+  return d1All(env, `
+    SELECT ts.id, ts.url, c.name_en AS country, tst.description
+    FROM tracking_sources ts
+    JOIN countries c ON c.id = ts.country_id
+    LEFT JOIN tracking_source_translations tst ON tst.source_id = ts.id AND tst.lang = 'en'
+    WHERE ts.active = 1
+    ORDER BY c.name_en, ts.sort_order
+  `);
+}
+
+function escapeHtmlCM(s) {
+  return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+function buildDigestHtml(results, totalSources) {
+  const changed = results.filter((r) => r.status === "changed");
+  const failed = results.filter((r) => r.status === "failed");
+  const baseline = results.filter((r) => r.status === "baseline");
+  const unchanged = results.filter((r) => r.status === "unchanged");
+
+  let html = `<p style="font-family:monospace; font-size:12px; color:#666;">Content monitor — weekly run, ${new Date().toISOString().slice(0, 10)}. ${totalSources} active sources checked.</p>`;
+
+  if (changed.length === 0 && failed.length === 0) {
+    html += `<p style="font-size:14px;">No changes detected this week across ${unchanged.length} previously-baselined source(s)${baseline.length ? ` (${baseline.length} new source(s) baselined, nothing to compare yet)` : ""}. Nothing to review.</p>`;
+    return html;
+  }
+
+  // Baseline note renders regardless of branch below -- a first-ever
+  // run where every source baselines but one also happens to fail
+  // shouldn't silently drop the baseline count just because it's not
+  // the "quiet week" case.
+  if (baseline.length) {
+    html += `<p style="font-size:13px; color:#666;">${baseline.length} source(s) checked for the first time this run — baseline recorded, no comparison possible yet.</p>`;
+  }
+
+  if (changed.length) {
+    html += `<h2 style="font-size:16px;">Changed (${changed.length}) — go look</h2>`;
+    for (const r of changed) {
+      html += `<div style="margin:0 0 18px; padding:12px; border-left:3px solid #c98a3a;">
+        <p style="margin:0 0 4px; font-weight:bold;">${escapeHtmlCM(r.source.country)} — ${escapeHtmlCM(r.source.description || r.source.url)}</p>
+        <p style="margin:0 0 8px;"><a href="${escapeHtmlCM(r.source.url)}">${escapeHtmlCM(r.source.url)}</a></p>
+        <p style="margin:0; font-size:12px; color:#666;">Before: …${escapeHtmlCM(r.diff.before)}…</p>
+        <p style="margin:0; font-size:12px; color:#274a38;">After: …${escapeHtmlCM(r.diff.after)}…</p>
+      </div>`;
+    }
+  }
+  if (failed.length) {
+    html += `<h2 style="font-size:16px;">Couldn't check (${failed.length}) — verify manually</h2><ul>`;
+    for (const r of failed) {
+      html += `<li>${escapeHtmlCM(r.source.country)} — <a href="${escapeHtmlCM(r.source.url)}">${escapeHtmlCM(r.source.url)}</a> (${escapeHtmlCM(r.error)})</li>`;
+    }
+    html += `</ul><p style="font-size:12px; color:#666;">A failed fetch is NOT treated as "no change" — it's flagged so it doesn't become a silent blind spot. Common causes: the site blocks automated requests, a timeout, or the URL moved.</p>`;
+  }
+  return html;
+}
+
+async function runContentMonitor(env) {
+  const sources = await getActiveTrackingSources(env);
+  if (sources.length === 0) {
+    console.log("Content monitor: no active tracking sources — nothing to check.");
+    return;
+  }
+  const results = [];
+  for (const source of sources) {
+    results.push(await checkOneSource(env, source));
+    await sleep(CONTENT_MONITOR_FETCH_DELAY_MS); // considerate spacing — see the constant's comment
+  }
+  const changed = results.filter((r) => r.status === "changed").length;
+  const failed = results.filter((r) => r.status === "failed").length;
+  console.log(`Content monitor: ${sources.length} checked, ${changed} changed, ${failed} failed.`);
+
+  await sendViaResend(env, {
+    from: env.FROM_EMAIL,
+    to: env.CONTENT_MONITOR_EMAIL,
+    subject: `[Content Monitor] ${changed} changed, ${failed} failed — week of ${new Date().toISOString().slice(0, 10)}`,
+    html: buildDigestHtml(results, sources.length),
+  });
+}
+
+async function handleManualContentMonitorTrigger(request, env) {
+  // Same shared-secret guard as the monthly notification's manual
+  // trigger — not linked anywhere, exists for testing without waiting
+  // for Monday.
+  const provided = request.headers.get("X-Admin-Secret");
+  if (!provided || provided !== env.SESSION_SECRET) {
+    return new Response("Unauthorized", { status: 401 });
+  }
+  await runContentMonitor(env);
+  return new Response("Content monitor run triggered — check `wrangler tail` for logs, and the digest email for results.", { status: 200 });
+}
 
 // ================================================================
 // MONTHLY NOTIFICATION JOB — the core of the country-tailored alert

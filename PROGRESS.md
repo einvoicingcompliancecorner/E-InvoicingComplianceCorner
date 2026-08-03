@@ -1300,6 +1300,68 @@ with working deep-dive links, "33" appears correctly everywhere
 (subscribe, education pages, tracker), and /sources shows the EC
 factsheet rows plus the dark in-frame panel.
 
+### Content-monitoring Worker built (2 August 2026, code complete, deploy pending)
+
+The "known-page watcher" designed in CONTENT-MONITORING.md, built as an
+addition to members-worker rather than a new Worker. Detection only —
+matches the design doc's core requirement exactly: nothing here writes
+to milestones, deep-dive content, or stories; its only output is one
+internal weekly digest email telling a human what changed, never
+anything sent to subscribers.
+
+- **Watch list**: `tracking_sources WHERE active = 1` — today's earlier
+  build turned out to be this project's foundation; one registry now
+  serves both the public `/sources` page and monitoring.
+- **Weekly cron** (Monday 08:00 UTC), added as a second schedule string
+  on the same Worker; `event.cron` distinguishes it from the existing
+  monthly notification job in one `scheduled()` handler.
+- **Fetch → strip to comparable text → SHA-256 hash → compare** against
+  a **new, dedicated `CONTENT_MONITOR` KV namespace** (deliberately not
+  reusing `SUBSCRIBERS` — monitoring hashes and subscriber PII shouldn't
+  share a keyspace; caught and corrected during the build, before it
+  shipped).
+- First-ever check per source silently baselines (doesn't fire as
+  "changed"); a failed fetch is reported as `failed`, distinct from
+  `unchanged` — never a silent blind spot, per the design doc's
+  explicit requirement.
+- A crude prefix/suffix diff snippet for human context, not a real diff
+  algorithm.
+- Single weekly digest via the existing Resend integration, to a new
+  `CONTENT_MONITOR_EMAIL` wrangler.toml var — always sends, even on a
+  quiet week, so the email doubles as a heartbeat.
+- Manual trigger: `POST /admin/run-content-monitor`, same
+  `X-Admin-Secret` pattern as the existing notification job's trigger.
+- `robots.txt` treated as a one-time editorial check before setting a
+  source `active = 1` (not a runtime parse per fetch) — the Worker
+  identifies itself with an honest User-Agent string so any site
+  operator can recognize and block it if they choose.
+- Tested: pure functions (text extraction, hashing, diff isolation),
+  `checkOneSource`'s full state machine across real transitions
+  (baseline → unchanged → changed → failed) with mocked KV/fetch, the
+  digest HTML in both a quiet and an eventful week, and the
+  `scheduled()` dispatcher choosing the right job by cron string —
+  26 checks total, all passing.
+
+**One-time setup before this can run for real** (from your machine):
+```
+cd members-worker
+wrangler kv namespace create CONTENT_MONITOR
+```
+Paste the printed `id` into `wrangler.toml`'s `CONTENT_MONITOR` binding
+(currently a placeholder), then:
+```
+wrangler deploy
+```
+Test it immediately without waiting for Monday:
+```
+curl -X POST https://members.e-invoicingcompliancecorner.com/admin/run-content-monitor \
+  -H "X-Admin-Secret: <your SESSION_SECRET value>"
+```
+Check the inbox at CONTENT_MONITOR_EMAIL (defaults to
+einvoicingcompliancecorner@gmail.com) for the first digest — it should
+report every active tracking source baselining, with nothing to review
+yet. Run it again (or wait a week) to see real change detection kick in.
+
 ## Open items / next steps
 
 ### Ship step outstanding (only one)

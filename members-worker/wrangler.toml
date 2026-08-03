@@ -44,6 +44,11 @@ ONE_TIME_VARIANT_ID = "1962239"
 # you want it to stick permanently, update this file too.
 ARCHIVE_PUBLIC = "true"
 
+# Where the weekly content-monitor digest is sent. This is an INTERNAL
+# operator email only -- raw "these government pages changed, go look"
+# material, never sent to subscribers. See CONTENT-MONITORING.md.
+CONTENT_MONITOR_EMAIL = "einvoicingcompliancecorner@gmail.com"
+
 # ----------------------------------------------------------------
 # KV namespaces — create these with `wrangler kv namespace create`
 # (see README, Step 2) and paste the IDs it gives you back here.
@@ -51,6 +56,16 @@ ARCHIVE_PUBLIC = "true"
 [[kv_namespaces]]
 binding = "SUBSCRIBERS"
 id = "5a7d9f86169a4e16852e914346568a9a"
+
+# CONTENT_MONITOR: snapshot hashes for the weekly "known-page watcher"
+# (CONTENT-MONITORING.md). Deliberately a SEPARATE namespace from
+# SUBSCRIBERS -- this stores page-content hashes for monitoring, not
+# subscriber data, and the two shouldn't share a keyspace. One-time
+# setup: `wrangler kv namespace create CONTENT_MONITOR`, then paste the
+# id it prints below.
+[[kv_namespaces]]
+binding = "CONTENT_MONITOR"
+id = "REPLACE_WITH_YOUR_NAMESPACE_ID"
 
 # NOTE: the old ISSUES KV binding was removed here — the monthly
 # notification job and the archive both now read from D1 (see
@@ -84,7 +99,13 @@ database_id = "d1d10bd0-e90a-44a3-9494-a63689e8d32e"
 # Schedule below: 09:00 UTC on the 1st of every month.
 # ----------------------------------------------------------------
 [triggers]
-crons = ["0 9 1 * *"]
+# Two independent schedules on the same Worker -- scheduled() in
+# src/index.js tells them apart via event.cron:
+#   "0 9 1 * *"  -- 09:00 UTC on the 1st of every month: the monthly
+#                   subscriber notification job (unchanged, pre-existing)
+#   "0 8 * * 1"  -- 08:00 UTC every Monday: the content monitor's
+#                   weekly known-page watcher (CONTENT-MONITORING.md)
+crons = ["0 9 1 * *", "0 8 * * 1"]
 
 # ----------------------------------------------------------------
 # Secrets are NOT set here — never put real secrets in this file,

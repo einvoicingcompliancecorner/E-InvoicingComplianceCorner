@@ -182,3 +182,83 @@ to look.
   no new email infrastructure.
 - Comparable in size to the monthly notification job already built —
   not a large addition to the existing stack.
+
+
+---
+
+## Status: built (2 August 2026)
+
+Implemented in `members-worker/src/index.js`, as an addition to the
+existing Worker rather than a separate one (per the "whichever is
+simpler" note above) — reuses its D1 binding, its `sendViaResend`
+helper, and its Cron Trigger config with a second schedule string.
+
+**What shipped, matching this design exactly:**
+- Watch list: `tracking_sources WHERE active = 1` (migration 214) —
+  the same table backing the public `/sources` page. This is a better
+  foundation than the original "~40 URLs embedded in DATA" plan this
+  doc described, since it didn't exist yet when this doc was written;
+  one registry now serves both the public sources page and monitoring,
+  and setting `active = 0` pulls a source out of both at once.
+- Weekly cron, Monday 08:00 UTC (`0 8 * * 1`), dispatched from the same
+  `scheduled()` handler as the existing monthly notification job —
+  `event.cron` tells the two apart.
+- Fetch → strip HTML to comparable text (scripts/styles/comments
+  removed, tags stripped, whitespace collapsed) → SHA-256 hash →
+  compare to the stored hash in a **dedicated** `CONTENT_MONITOR` KV
+  namespace (deliberately separate from `SUBSCRIBERS` — monitoring
+  hashes and subscriber PII shouldn't share a keyspace).
+- A source's first-ever check establishes the baseline silently
+  (doesn't fire as "changed" — that would make the very first digest
+  meaningless noise).
+- A failed fetch is reported as `failed`, distinct from `unchanged` —
+  never silently treated as "no change happened," per this doc's
+  explicit requirement.
+- A crude prefix/suffix diff snippet (not a real diff algorithm — just
+  enough context to help a human decide whether to look closer).
+- Single weekly digest email via the existing Resend integration, to
+  `CONTENT_MONITOR_EMAIL` (a `wrangler.toml` var) — internal only,
+  never to subscribers, exactly as specified. Always sends something,
+  even a quiet week, so the digest itself is a heartbeat that the
+  system is alive.
+- Manual trigger: `POST /admin/run-content-monitor` with the same
+  `X-Admin-Secret` header pattern as the existing notification job's
+  manual trigger — for testing without waiting for Monday.
+- Respecting `robots.txt` and rate-limiting: per this doc's original
+  framing, `robots.txt` suitability is a **one-time check made before
+  setting a source `active = 1`**, not a runtime check on every fetch
+  (parsing robots.txt correctly at runtime is its own can of worms, and
+  the meaningful decision — "is this site OK to poll automatically" —
+  is a one-time editorial judgment, not a per-request one). The Worker
+  identifies itself with an honest, identifiable User-Agent
+  (`EICC-ContentMonitor/1.0 (+.../about; weekly check for compliance
+  updates)`) so any site operator can recognize and block it if they
+  choose. Fetches are spaced 3 seconds apart within a run.
+- Tested: pure functions (text extraction, hashing determinism, diff
+  isolation), `checkOneSource`'s full state machine (baseline →
+  unchanged → changed → failed, verified across real state transitions
+  with mocked KV/fetch), the digest HTML's content in both a quiet week
+  and an eventful one, and the `scheduled()` dispatcher choosing the
+  right job by cron string.
+
+**What deliberately did NOT change from this design:** still detection
+only. Nothing here writes to `milestones`, `deep_dive_*`, or `stories`.
+The weekly digest is exactly what part 1 of this doc describes — "go
+look at this" — and the actual update workflow (part 2 of this doc)
+stays 100% human-reviewed, same as every other content change on this
+site to date. Part B (open-ended discovery of new countries/mandates
+not yet on the radar) remains explicitly out of scope, per this doc's
+original recommendation — that stays a periodic collaborative research
+session, exactly like how Egypt and the Netherlands were found and
+added this session.
+
+**One-time setup needed before this runs for real:**
+```
+cd members-worker
+wrangler kv namespace create CONTENT_MONITOR
+```
+Paste the printed `id` into `wrangler.toml`'s `CONTENT_MONITOR` KV
+binding (currently a placeholder), then `wrangler deploy`. The first
+Monday run (or a manual trigger via `/admin/run-content-monitor`) will
+baseline every active tracking source; the digest will start reporting
+real changes from the second run onward.
