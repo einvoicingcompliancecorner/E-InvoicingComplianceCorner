@@ -1683,6 +1683,12 @@ Grecia/Griechenland/Grèce, the archive shows all 3 new stories,
    the vendor registration/advertising concept; the two remaining
    Resources ideas (accredited-sources list, vendor-assessment RFI
    template).
+5. **"About this site" pop-out: add an "About the author" section** —
+   Dan's LinkedIn (https://www.linkedin.com/in/danielyoung76/), a
+   couple of sentences about him, and a "feel free to connect" line.
+   Needs the actual bio content from Dan (or a draft for him to edit)
+   before building — content first, then the small HTML/CSS addition
+   to the existing About modal (einvoicing-compliance-tracker.html).
 
 ### Dormant until decided
 
