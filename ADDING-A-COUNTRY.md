@@ -215,7 +215,12 @@ mind autoincrement-PK tables where a re-run genuinely duplicates rows
       languages
 - [ ] Every old count is the new count, in every language, **and** the
       D1 `translations` rows match (round-trip `generate_files.py` +
-      `compare_generated.py` to prove it)
+      `compare_generated.py` to prove it) — **the true count always
+      excludes the European Union row** (`slug IS NOT NULL` /
+      `in_picker = 1`, never a bare `COUNT(*)` or unfiltered
+      `DISTINCT` — see the standing warning on the `countries` table
+      in `schema.sql`). This exact mistake has independently recurred
+      three times; check any *new* counting logic too, not just text.
 - [ ] Board milestone cards translate when switching language (proves
       the `milestone_translations` rows landed)
 

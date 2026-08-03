@@ -22,6 +22,22 @@ CREATE TABLE translations (
 -- Countries — single source of truth, replacing the three
 -- hand-maintained duplicate dictionaries flagged in
 -- ADDING-A-COUNTRY.md (tracker, subscribe, members-worker).
+--
+-- *** STANDING WARNING — READ BEFORE COUNTING ROWS IN THIS TABLE ***
+-- This table also holds a row for the European Union itself (needed
+-- so EU-level content — e.g. the ViDA milestone — has somewhere to
+-- attach), deliberately NOT a tracked jurisdiction: its slug is NULL
+-- and in_picker is 0. Any query answering "how many countries/
+-- jurisdictions do we track" MUST filter on slug IS NOT NULL (or
+-- in_picker = 1) — never a bare COUNT(*) or an unfiltered DISTINCT
+-- over this table or anything joined from it (e.g. milestones.country).
+-- This exact mistake has independently recurred three times across
+-- this project: a stale static translation string, a raw COUNT(*)
+-- reasoning error (both found during the Netherlands country add,
+-- 2 August 2026), and a live client-side JS stat on the tracker page
+-- itself (`new Set(DATA.map(e=>e.country)).size` in
+-- einvoicing-compliance-tracker.html — found and fixed 3 August 2026,
+-- after Austria was added). See PROGRESS.md for the full history.
 -- ================================================================
 CREATE TABLE countries (
   id INTEGER PRIMARY KEY,
