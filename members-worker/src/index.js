@@ -2128,12 +2128,12 @@ function renderArchiveList(stories, regionByCountryName, englishNameByDisplayNam
     ${allCountries.length ? `<div id="countryCheckboxes">${checkboxesHtml}</div>` : ""}
 
     <div class="issue-grid" id="issueGrid"></div>
-  </div>
 
-  <div class="modal-overlay" id="storyModalOverlay">
-    <div class="modal-card">
-      <button class="modal-close" id="storyModalClose" aria-label="Close">&times;</button>
-      <div id="storyModalBody"><p class="modal-loading">${escapeHtml(t(lang, "archive.loading") || "Loading…")}</p></div>
+    <div class="modal-overlay" id="storyModalOverlay">
+      <div class="modal-card">
+        <button class="modal-close" id="storyModalClose" aria-label="Close">&times;</button>
+        <div id="storyModalBody"><p class="modal-loading">${escapeHtml(t(lang, "archive.loading") || "Loading…")}</p></div>
+      </div>
     </div>
   </div>
   <script>
