@@ -583,6 +583,36 @@ function escapeHtmlCM(s) {
 const CM_HEADING = "#241d10", CM_BODY = "#4a4030", CM_MUTED = "#8a7d5a";
 const CM_AMBER = "#c98a3a", CM_STAMP = "#b5432f", CM_LIVE = "#3f7d5c";
 
+// Bold masthead matching the tracker page's own brand-eyebrow +
+// brand-title (same copy, same uppercase two-line title) — as close a
+// match as an email can realistically get, since Gmail and most other
+// clients strip custom @font-face/<link> web fonts. 'Big Shoulders
+// Display' is listed first as a best-effort for the rare client that
+// does honour it; Arial Black / Impact carry the same bold, condensed,
+// high-impact feel everywhere else, at a matching weight and scale.
+const CM_HEADER_HTML = `
+  <p style="margin:0 0 6px; font-family:'Courier New',Courier,monospace; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:${CM_AMBER};">Compliance clearance board</p>
+  <h1 style="margin:0; font-family:'Big Shoulders Display','Arial Black',Impact,sans-serif; font-weight:900; font-size:30px; line-height:0.98; text-transform:uppercase; color:#f2f0e8; letter-spacing:0.3px;">The E-Invoicing<br>Compliance Corner</h1>
+`;
+
+// Plain-language translation of fetch failures for the digest email.
+// The raw error (HTTP status codes, "Too many redirects" with a
+// 20-URL chain, abort messages) is exact and useful for debugging, but
+// meaningless to read at a glance in a weekly summary — replaced here
+// with a one-line, common-sense explanation. The raw detail is still
+// shown, just de-emphasized (small, muted, clearly secondary) rather
+// than removed outright, so nothing is lost if it's ever needed.
+function humanizeFetchError(error) {
+  const e = String(error || "");
+  if (/\b403\b/.test(e)) return "This site is blocking automated visits.";
+  if (/\b404\b/.test(e)) return "This page no longer exists at this address — the URL may need updating.";
+  if (/too many redirects/i.test(e)) return "This page gets stuck in a redirect loop and can't be checked automatically.";
+  if (/\b5\d\d\b/.test(e)) return "This site couldn't be reached right now — likely a temporary problem on their end.";
+  if (/\b4\d\d\b/.test(e)) return "This page couldn't be accessed (it may have moved, or now needs a login).";
+  if (/abort|timeout/i.test(e)) return "This site took too long to respond.";
+  return "This site couldn't be checked automatically this time.";
+}
+
 function cmStatCell(value, label, color) {
   return `<td align="center" style="padding:10px 4px; background-color:#f5f0e2; border-radius:6px;">
     <div style="font-family:Georgia,serif; font-size:22px; font-weight:bold; color:${color};">${value}</div>
@@ -628,7 +658,7 @@ function buildDigestHtml(results, totalSources, skipped) {
   // sources than it claims to — kept in the digest even on a quiet run.
   if (skipped.length) {
     html += `<p style="margin:0 0 18px; padding:10px 14px; background-color:#f5f0e2; border-radius:4px; font-size:12.5px; color:${CM_BODY};">
-      <strong>${skipped.length} source(s) not reached this run</strong> (time budget) — will be checked first next run: ${skipped.slice(0, 8).map((s) => escapeHtmlCM(s.country)).join(", ")}${skipped.length > 8 ? `, +${skipped.length - 8} more` : ""}.
+      <strong>We didn't get to ${skipped.length} source(s) this time</strong> — checking sources gradually and considerately means a run occasionally runs out of time. They'll be checked first next time: ${skipped.slice(0, 8).map((s) => escapeHtmlCM(s.country)).join(", ")}${skipped.length > 8 ? `, +${skipped.length - 8} more` : ""}.
     </p>`;
   }
 
@@ -660,7 +690,10 @@ function buildDigestHtml(results, totalSources, skipped) {
   if (failed.length) {
     html += `<h2 style="margin:18px 0 10px; font-family:Georgia,serif; font-size:15px; color:${CM_HEADING};"><span style="color:${CM_STAMP};">●</span> Couldn't check (${failed.length}) — verify manually</h2>`;
     for (const r of failed) {
-      html += cmSourceCard(r.source, CM_STAMP, `<p style="margin:0; font-family:'Courier New',Courier,monospace; font-size:11px; color:${CM_STAMP};">${escapeHtmlCM(r.error)}</p>`);
+      html += cmSourceCard(r.source, CM_STAMP, `
+        <p style="margin:0 0 3px; font-size:12.5px; color:${CM_BODY};">${escapeHtmlCM(humanizeFetchError(r.error))}</p>
+        <p style="margin:0; font-family:'Courier New',Courier,monospace; font-size:10px; color:${CM_MUTED};">(technical detail: ${escapeHtmlCM(r.error.slice(0, 120))})</p>
+      `);
     }
     html += `<p style="margin:10px 0 0; padding:10px 14px; background-color:#f5f0e2; border-radius:4px; font-size:11.5px; color:${CM_MUTED};">A failed fetch is NOT treated as "no change" — it's flagged so it doesn't become a silent blind spot. Common causes: the site blocks automated requests, a timeout, or the URL moved.</p>`;
   }
@@ -723,7 +756,7 @@ async function runContentMonitor(env) {
     from: env.FROM_EMAIL,
     to: env.CONTENT_MONITOR_EMAIL,
     subject: `[Content Monitor] ${changed} changed, ${failed} failed${stoppedEarly ? `, ${skipped.length} deferred` : ""} — week of ${new Date().toISOString().slice(0, 10)}`,
-    html: buildEmailShell(buildDigestHtml(results, allSources.length, skipped), footerHtml),
+    html: buildEmailShell(buildDigestHtml(results, allSources.length, skipped), footerHtml, CM_HEADER_HTML),
   });
 }
 
@@ -1404,15 +1437,21 @@ async function handlePreferencesPost(request, env, lang) {
 // layout, which survives virtually every client. Fonts are a plain
 // monospace/serif web-safe stack rather than the site's actual Google
 // Fonts, since custom web fonts don't reliably render in email at all.
-function buildEmailShell(bodyHtml, footerHtml) {
+function buildEmailShell(bodyHtml, footerHtml, headerHtml) {
+  // headerHtml is optional — omitted, magic-link and monthly-notification
+  // emails keep their existing small eyebrow exactly as before (zero
+  // change to subscriber-facing templates). The content monitor passes
+  // its own bolder masthead (see cmHeaderHtml) matching the tracker
+  // page's actual brand-title treatment more closely.
+  const defaultHeader = `<p style="margin:0; font-family:'Courier New',Courier,monospace; font-size:11px; letter-spacing:1.5px; text-transform:uppercase; color:#c98a3a;">The E-Invoicing Compliance Corner</p>`;
   return `
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#0f1a2b; padding:0; margin:0;">
   <tr>
     <td align="center" style="padding:32px 16px;">
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px; background-color:#efe9db; border-radius:10px;">
         <tr>
-          <td style="background-color:#0f1a2b; padding:18px 28px; border-radius:10px 10px 0 0; border-bottom:3px solid #b5432f;">
-            <p style="margin:0; font-family:'Courier New',Courier,monospace; font-size:11px; letter-spacing:1.5px; text-transform:uppercase; color:#c98a3a;">The E-Invoicing Compliance Corner</p>
+          <td style="background-color:#0f1a2b; padding:22px 28px; border-radius:10px 10px 0 0; border-bottom:3px solid #b5432f;">
+            ${headerHtml || defaultHeader}
           </td>
         </tr>
         <tr>

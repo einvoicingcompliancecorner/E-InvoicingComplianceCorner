@@ -375,3 +375,35 @@ diff snippet gets its own monospace lines; the quiet-week case is now a
 calm centered panel rather than a single line of text. Every substantive
 fact the old version reported is still present — nothing was trimmed
 for the sake of looking nicer, only re-presented.
+
+---
+
+## Small refinements on Dan's feedback (3 August 2026)
+
+1. **Bolder masthead.** The header eyebrow-only treatment felt too
+   quiet. Added an optional `headerHtml` parameter to `buildEmailShell`
+   (defaulting to the old small eyebrow, so the magic-link and monthly-
+   notification emails are completely unaffected) and gave the content
+   monitor its own bold masthead mirroring the tracker page's actual
+   `brand-eyebrow` + `brand-title` copy and proportions. Web fonts
+   don't reliably render in email — 'Big Shoulders Display' is listed
+   first as a best-effort, with Arial Black/Impact as the fallback that
+   carries the same bold, condensed, high-impact feel at a matching
+   size and weight in the clients that will actually render it.
+
+2. **Plain-language failures, not raw errors.** "HTTP 530" or a
+   20-URL-long redirect chain means nothing at a glance. A new
+   `humanizeFetchError()` translates the raw error into a one-line,
+   common-sense explanation (e.g. "This site is blocking automated
+   visits," "This site couldn't be reached right now — likely a
+   temporary problem on their end"), shown as the primary text on each
+   failed-source card. The raw technical detail is still shown — just
+   small and clearly secondary — rather than discarded outright, so
+   nothing is lost if it's ever needed for real troubleshooting.
+
+3. **Plainer deferred-sources wording.** "Not reached this run (time
+   budget)" became "We didn't get to N source(s) this time — checking
+   sources gradually and considerately means a run occasionally runs
+   out of time," answering the "why deferred" question in the same
+   breath rather than requiring the reader to already know what a
+   time budget is.
