@@ -2472,6 +2472,46 @@ via `apply_migrations.py --remote`, `site-worker` redeployed for the
 static-file edits. Vietnam is live on the tracker board (Asia-Pacific,
 after South Korea), confirmed via the UI.
 
+### Two /sources fixes: South Korea's NTS link, France's FNFE-MPE (3 August 2026, deploy pending)
+
+Two small, non-country-add changes to `/sources`, both requested by
+Dan directly and both requiring a judgment call rather than a
+mechanical edit, so both were evaluated with `AskUserQuestion` before
+implementing:
+
+- **South Korea's NTS link was broken.** Dan flagged
+  `https://www.nts.go.kr/nts/main.do` as a possible replacement for
+  `https://www.nts.go.kr/english/` (added in migration 286). Neither
+  URL could be verified directly here (`WebFetch` hit
+  `ROBOTS_DISALLOWED` on both), so this was surfaced to Dan rather
+  than guessed at. Dan confirmed by testing in his own browser: "the
+  source nts.go.kr/english routed to an invalid page." Swapped to
+  `nts.go.kr/nts/main.do`, the URL Dan confirmed works. Plain
+  `UPDATE`, not `INSERT OR IGNORE`, since this corrects an existing
+  row.
+- **France gained a second tracking source: FNFE-MPE**
+  (`https://fnfe-mpe.org/`). Dan asked for it to be evaluated as a
+  trusted source; since `/sources` is framed as "the official
+  government and authority pages we monitor," and FNFE-MPE is a
+  public-private consultation body rather than a government agency,
+  this was surfaced as a choice rather than added automatically. Dan
+  chose "add fnfe-mpe.org alongside Chorus Pro" (not instead of an
+  official gov page, and not all three). Added as a third source next
+  to Chorus Pro and the EC factsheet, with an EN/ES/DE/FR description
+  that's explicit about it being a consultation body, "not a
+  government body itself" — the first source on `/sources` labeled
+  that way.
+
+Migration: `296_sources_nts_and_fnfempe.sql`. Local replay confirms
+"Replay validation OK (296 files, only the documented pre-existing
+errors)," and a structural query against the replayed DB confirmed
+South Korea's source now reads `nts.go.kr/nts/main.do` and France has
+three tracking sources (Chorus Pro, EC factsheet, FNFE-MPE) with all
+four language translations present. Committed and pushed
+(`15d72bd`). Data-only change — no static-file or `site-worker`
+deploy needed, just `apply_migrations.py --remote` from Dan's
+machine.
+
 ## Open items / next steps
 
 ### Real open work
