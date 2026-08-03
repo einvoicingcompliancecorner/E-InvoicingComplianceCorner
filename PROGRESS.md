@@ -2269,7 +2269,7 @@ wrangler deploy
 `deep-dive-render.mjs`, and i18n/static-HTML jurisdiction-count edits —
 redeploy it the same way you did for Oman and Jordan.)
 
-### South Korea added as country #41 (3 August 2026, code complete, deploy pending)
+### South Korea added as country #41 (3 August 2026, deployed & tested)
 
 Full country build (migrations 280-287), the top pick from the
 Asia-Pacific coverage evaluation above. South Korea's e-Tax Invoice
@@ -2372,18 +2372,13 @@ Final audit against the full ADDING-A-COUNTRY.md checklist: all items
 pass (the `countryNames` gap above is a known, pre-existing, optional
 fallback item per the doc's own framing, not a checklist failure).
 
-Deploy (from your machine, once ready):
-```
-cd members-worker/migrations
-python3 apply_migrations.py --remote
-cd ..
-wrangler deploy
-```
-(The `site-worker` also needs redeploying to pick up the `countries.js`,
-`deep-dive-render.mjs`, and i18n/static-HTML jurisdiction-count edits —
-redeploy it the same way you did for Oman, Jordan, and Israel.)
+**Deployed and tested** (confirmed by Dan): migrations 280-287 applied
+via `apply_migrations.py --remote`, `site-worker` redeployed for the
+`countries.js`, `deep-dive-render.mjs`, i18n, and jurisdiction-count
+static-file edits. South Korea is live on the tracker board
+(Asia-Pacific, after Singapore), confirmed via the UI.
 
-### Vietnam added as country #42 (3 August 2026, code complete, deploy pending)
+### Vietnam added as country #42 (3 August 2026, deployed & tested)
 
 Full country build (migrations 288-295), the second addition from the
 Asia-Pacific coverage evaluation (South Korea was first). Vietnam's
@@ -2471,17 +2466,11 @@ flat or percentage figure.
 Final audit against the full ADDING-A-COUNTRY.md checklist: all items
 pass.
 
-Deploy (from your machine, once ready):
-```
-cd members-worker/migrations
-python3 apply_migrations.py --remote
-cd ..
-wrangler deploy
-```
-(The `site-worker` also needs redeploying to pick up the `countries.js`,
-`deep-dive-render.mjs`, and i18n/static-HTML jurisdiction-count edits —
-redeploy it the same way you did for Oman, Jordan, Israel, and South
-Korea.)
+**Deployed and tested** (confirmed by Dan): migrations 288-295 applied
+via `apply_migrations.py --remote`, `site-worker` redeployed for the
+`countries.js`, `deep-dive-render.mjs`, i18n, and jurisdiction-count
+static-file edits. Vietnam is live on the tracker board (Asia-Pacific,
+after South Korea), confirmed via the UI.
 
 ## Open items / next steps
 
@@ -2489,8 +2478,9 @@ Korea.)
 
 1. **Coverage expansion** — Netherlands, Austria, Greece, Cyprus, Oman,
    Jordan, Israel, South Korea, and Vietnam shipped; South Korea and
-   Vietnam are code complete with deploy pending, the rest deployed
-   and tested (Israel deploy also still pending). Still not
+   Vietnam are now confirmed deployed and tested alongside the rest —
+   Israel (#40) remains the only one still code complete with deploy
+   pending. Still not
    tracked in Europe: Bulgaria, Czechia,
    Estonia, Hungary, Latvia, Lithuania, Malta, Slovenia, Iceland,
    Liechtenstein. The scaffolder + runner make each addition a
