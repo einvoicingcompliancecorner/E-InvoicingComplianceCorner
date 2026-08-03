@@ -1219,6 +1219,73 @@ translated; the Resources menu shows "Tracking sources" in all four
 languages; source curation from here = UPDATE/INSERT migrations against
 tracking_sources (not deep_dive_portals).
 
+### Netherlands added as country #34 (2 August 2026, code complete, deploy pending)
+
+Full country build via the scaffolder + runner workflow, completed
+before deploying anything (per Dan's request to build first, ship
+once). Placed in Europe. Deliberately shaped differently from most of
+the tracker: `compliance_model` is voluntary/market-driven, not a
+clearance regime, since B2B e-invoicing remains genuinely optional in
+the Netherlands today.
+
+- **Migrations 216-218** (scaffolded + hand-translated): country row
+  (slug `netherlands`), 5 milestones — 4 on the board (B2G universal
+  since April 2019, B2B's voluntary-but-high-Peppol-adoption status,
+  the March 2026 government report recommending a domestic mandate,
+  and the confirmed 1 July 2030 ViDA cross-border floor) plus the 2017
+  B2G anchor — all four languages.
+- **Migrations 219-220**: full deep-dive page (mandate-summary tile,
+  5 stats, 9 cards, 5 steps, 2 Logius/Peppol-Authority portals).
+  Penalties covered narratively (contractual exclusion + the
+  approaching EU floor) since there's no domestic B2B penalty regime
+  to tabulate — the one page on the site with nothing to fine.
+- **Migrations 221-222**: a 5-story arc spanning Aug 2025 to Jul 2026
+  (the roadmap letter, the EY report's publication, the cabinet's
+  formal endorsement, the still-pending final decision, and a
+  backgrounder on why the mandate doesn't exist yet), giving the new
+  country's archive real depth on day one rather than a single launch
+  post. All four languages, all fact-checked against the milestone
+  dates already on the board.
+- **Static files**: countries.js (Europe, alphabetical), shared slug
+  map, i18n countryNames in all 8 files.
+- Named "Netherlands" (not "The Netherlands") per Dan's explicit
+  instruction, for consistency with the rest of the picker.
+
+**A genuine bug found and fixed while doing the count sweep:** the
+true number of tracked jurisdictions has been **31 at the Luxembourg
+era and 32 after Egypt — not 32 and 33** as today's earlier commits
+and this file claimed. Migration 211 (Egypt's count-sweep, deployed
+and verified live earlier today) set the site's jurisdiction-count
+text to "33" when the correct value at that time was 32 — a real,
+currently-live off-by-one. Root cause not fully traced (predates
+today's session; the "32" premise for Luxembourg was already in the
+compacted history handed off at session start), but confirmed by
+direct D1 replay at each era (31 → 32 → 33, cross-checked against both
+`slug IS NOT NULL` and `in_picker=1`, which agree with zero
+mismatches). By coincidence, the true post-Netherlands count (33)
+equals the currently-live incorrect value (33), so **no further
+digit change is needed** — the error and the legitimate new addition
+cancel out. An initial migration 221 (sweeping the live "33" to "34")
+was written, found to be built on the false "33 was correct" premise,
+and deleted before being applied anywhere; the live-file edits it
+required were symmetrically reverted. Nothing incorrect was ever
+deployed as a result of this — caught entirely during this session's
+build, before any migration touched production.
+
+Deploy (from your machine, once you're ready):
+```
+cd members-worker/migrations && python3 apply_migrations.py --remote
+cd ../../site-worker && wrangler deploy
+```
+This one apply covers everything still pending: 215 (EC factsheets)
+and 216-222 (all of Netherlands). Spot-check: Netherlands on the
+tracker board (Europe region, both hero views), /netherlands and
+/netherlands?lang=de render, subscribe picker and preferences show
+Países Bajos/Niederlande/Pays-Bas, the archive shows all 5 new stories
+with working deep-dive links, "33" appears correctly everywhere
+(subscribe, education pages, tracker), and /sources shows the EC
+factsheet rows plus the dark in-frame panel.
+
 ## Open items / next steps
 
 ### Ship step outstanding (only one)
