@@ -3395,7 +3395,7 @@ output line.
 `/members/archive` page and the in-frame embedded panel — both working
 well; the country filter lists and functions correctly in both.
 
-### Newsletter Archive country filter: balanced columns replaced with a dropdown + "my subscribed countries" toggle (4 August 2026, code complete, deploy pending)
+### Newsletter Archive country filter: balanced columns replaced with a dropdown + "my subscribed countries" toggle (4 August 2026, deployed & tested)
 
 Dan asked, separately from the balanced-columns work above, whether the
 country filter would read cleaner as a single dropdown (default "All
@@ -3488,16 +3488,22 @@ Implemented in both places that render the Archive filter:
   (the one hit for that last string is an unrelated local variable in
   the Preferences page's own country multi-select, untouched by this
   change).
+- No `ADDING-A-COUNTRY.md` update needed for this change: the
+  dropdown's `<optgroup>`s and `PREFERRED_COUNTRIES` are both built
+  from the same live D1 query (`countries.region` +
+  `country_translations` + `story_countries`) the old checkbox version
+  already used, not a hardcoded per-country list. A newly-added country
+  appears automatically once a published story is tagged with it, under
+  the correct region's `<optgroup>`, with its translated display name
+  pulled live the same way every other country's already is — no new
+  step, exactly the same as the old balanced-columns implementation.
 
-**Code complete, deploy pending** — no live Cloudflare credentials in
-this sandbox. Needs `wrangler deploy` for both `members-worker` and
-`site-worker`, then a check of both the standalone `/members/archive`
-page and the in-frame embedded panel (same precedent as the
-balanced-columns bug above: this exact feature has broken in-frame
-before while working standalone) — specifically: the dropdown filters
-correctly, and for a signed-in member with saved country preferences,
-the "Show my subscribed countries" link/chips apply and clear
-correctly in both places.
+**Deployed and tested** (confirmed by Dan): both `members-worker` and
+`site-worker` redeployed. Working successfully — the dropdown, the
+"Show my subscribed countries" link/chips, and the earlier
+balanced-columns-era in-frame bug all confirmed fine this time on both
+the standalone `/members/archive` page and the in-frame embedded
+panel.
 
 ## Open items / next steps
 
