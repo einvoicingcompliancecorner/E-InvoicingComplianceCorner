@@ -1357,7 +1357,7 @@ einvoicingcompliancecorner@gmail.com) for the first digest — it should
 report every active tracking source baselining, with nothing to review
 yet. Run it again (or wait a week) to see real change detection kick in.
 
-### New-subscriber welcome email (3 August 2026, code complete, deploy pending)
+### New-subscriber welcome email (3 August 2026, deployed & tested)
 
 Signing up previously sent only the bare magic-link email — no
 orientation, no links, nothing explaining what the site actually
@@ -1395,13 +1395,12 @@ countries are user-supplied — HTML-escaping verified so a subscriber
 typing `<script>` into the sign-up form can't inject anything into
 their own welcome email.
 
-Deploy: `cd members-worker && wrangler deploy`. Spot-check: sign up
-with a test email (a fresh, previously-unused address, since sign-up
-is one-per-email) and confirm two emails arrive — the welcome email
-first, an honest reflection of any countries chosen at sign-up, all
-links live — then the magic-link email on top of it.
+**Deployed and tested** (confirmed by Dan): `members-worker` redeployed.
+Signing up with a test email sends both emails as designed — the
+welcome email first, an honest reflection of any countries chosen at
+sign-up, all links live — then the magic-link email on top of it.
 
-### Consistent email branding + a real archive-link bug caught in the same pass (3 August 2026)
+### Consistent email branding + a real archive-link bug caught in the same pass (3 August 2026, deployed & tested)
 
 Applied the bold masthead (built for the content monitor, then reused
 for the welcome email) to the two remaining system emails: the
@@ -1443,13 +1442,13 @@ archive for an unsafe one, and the full welcome/monthly-notification
 email content end to end. ~78 checks total across 8 test files, all
 passing.
 
-Deploy: `cd members-worker && wrangler deploy`. Spot-check: sign up
-fresh and confirm both welcome-email buttons (archive, preferences)
-log you in and land correctly even from a browser with no existing
-session; trigger the monthly notification manually and confirm its
-archive button and at least one per-story link do the same.
+**Deployed and tested** (confirmed by Dan): `members-worker` redeployed.
+Both welcome-email buttons (archive, preferences) log the subscriber in
+and land correctly even from a browser with no existing session, and
+the monthly notification's archive button and per-story links do the
+same.
 
-### Tracking-source description curation (3 August 2026, deploy pending)
+### Tracking-source description curation (3 August 2026, deployed & tested)
 
 The seeded descriptions (from the deep_dive_portals bulk seed and the
 215 EC-factsheet sweep) were portal *names* — accurate but unhelpful
@@ -1479,10 +1478,9 @@ descriptions confirmed no longer matching any of the old generic
 labels, all 216 rows present (54 sources × 4 languages), no
 suspiciously short/truncated descriptions.
 
-Deploy: `cd members-worker/migrations && python3 apply_migrations.py --remote`
-— data only, no worker deploy needed; `/sources` and the content
-monitor's digest will reflect the new descriptions within the 5-minute
-cache window (sources page) or from the next run (digest).
+**Deployed and tested** (confirmed by Dan): migration 225 applied via
+`apply_migrations.py --remote`. `/sources` reflects the new
+descriptions live.
 
 ### Tracking-source URL audit, round 2 (3 August 2026) — Portugal fixed, Malaysia/Romania/Chile checked with no action, ~40 remain
 
@@ -1526,7 +1524,7 @@ check actual dates) before swapping — three separate "looks perfect,
 turns out stale" near-misses (Chile, Romania, and initially the SII
 normativa page) happened this session alone.
 
-### Cloudflare Web Analytics enabled on both hostnames (3 August 2026, members-worker deploy pending)
+### Cloudflare Web Analytics enabled on both hostnames (3 August 2026, deployed & tested)
 
 Public site: zero-code automatic setup (e-invoicingcompliancecorner.com
 is Cloudflare-proxied, selectable straight from the "Add a site"
@@ -1537,6 +1535,10 @@ instead, inserted once into `pageShell()`, the single shared template
 all 8 of members-worker's render* functions route through. Covers
 login, archive, preferences, and every other members-subdomain page
 in one change rather than needing per-page edits.
+
+**Deployed and tested** (confirmed by Dan): `members-worker`
+redeployed. Web Analytics is live and collecting data on both
+hostnames.
 
 ### Austria added as country #35 (3 August 2026, deployed & tested)
 
