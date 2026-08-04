@@ -3270,7 +3270,7 @@ via `apply_migrations.py --remote`, both `site-worker` and
 `i18n`/HTML files). Colombia is live on the tracker board (Americas,
 between Chile and Mexico), and it appears correctly in the UI.
 
-### Newsletter Archive country filter: balanced columns (4 August 2026, code complete, deploy pending)
+### Newsletter Archive country filter: balanced columns (4 August 2026, deployed & tested)
 
 Dan flagged that the Newsletter Archive's ("/members/archive") country
 filter checkboxes were laid out one grid column per region
@@ -3334,12 +3334,11 @@ Dan picked **C**. Implemented in `members-worker/src/index.js`,
   than one, and no region label is ever left orphaned at the bottom of
   a column. `node --check src/index.js` passes.
 
-**Code complete, deploy pending** — this sandbox has no live
-Cloudflare/D1 credentials. Needs `wrangler deploy` for `members-worker`
-from Dan's own machine; no migration involved, so no
-`apply_migrations.py` step this time.
+**Deployed and tested** (confirmed by Dan): `members-worker` redeployed;
+the balanced-columns filter is live on the standalone
+`/members/archive` page.
 
-### Bug found before deploy: country filter empty when the Archive opens in-page (4 August 2026, fixed, still deploy pending)
+### Bug found before deploy: country filter empty when the Archive opens in-page (4 August 2026, deployed & tested)
 
 Dan reported the country checkboxes didn't list at all when the
 Newsletter Archive is opened in-frame (the tracker's embedded panel,
@@ -3391,11 +3390,10 @@ Verified by extracting the relevant `<script>` block and running `node
 members-worker's own `const COUNTRY_FILTER_ENTRIES = ${filterEntriesJson};`
 output line.
 
-**Code complete, deploy pending** — same `members-worker` deploy above
-also needs a `site-worker` deploy (`einvoicing-compliance-tracker.html`
-is a static asset) before the in-page fix goes live. Worth deploying
-both together and testing the in-frame Archive specifically before
-calling this one done.
+**Deployed and tested** (confirmed by Dan): `site-worker` redeployed for
+`einvoicing-compliance-tracker.html`. Dan tested both the standalone
+`/members/archive` page and the in-frame embedded panel — both working
+well; the country filter lists and functions correctly in both.
 
 ## Open items / next steps
 
