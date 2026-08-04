@@ -2777,6 +2777,79 @@ approved" to something with enough real substance for a genuine
 deep-dive, the same bar applied to every other country on this
 tracker.
 
+### Czech Republic evaluated for a country add (4 August 2026) — a real candidate, not yet built
+
+Dan asked for an assessment of the Czech Republic, one of the ten
+still-untracked Europe countries flagged in "Real open work" below.
+Live web research (KPMG/EC-factsheet-equivalent sources: Sovos,
+dddinvoices, the EC's own eInvoicing country sheet, VATupdate,
+expats.cz, fiscal-requirements.com) turned up a genuinely textured
+story — thinner on B2B than most tracked Europe countries, but with
+one real, dated, and currently-moving-through-Parliament development
+that makes this a legitimate candidate rather than a "not yet."
+
+**What's confirmed:**
+
+- **B2G: accept-only, not issue-mandatory, since 1 October 2016.**
+  Public contracting authorities above EU procurement thresholds must
+  *accept* EN 16931-compliant e-invoices (Act No. 134/2016 Coll.,
+  transposing EU Directive 2014/55/EU) via the Národní elektronický
+  nástroj (NEN) portal — but suppliers are never required to *issue*
+  one. This is the weakest form of B2G mandate this tracker has seen,
+  matching the EU's bare minimum rather than a genuine issuance
+  requirement (contrast Austria's supplier-side mandate since 2014).
+- **No B2B mandate exists, and none is currently proposed** — every
+  source checked agrees on this explicitly (dddinvoices: "nor have any
+  plans been unveiled").
+- **EET 2.0 — a real-time B2C sales-reporting revival, genuinely
+  moving through Parliament right now.** The original EET (Electronic
+  Registration of Sales, 2016–2020ish, formally repealed 2022/2023)
+  required real-time reporting of cash-register sales to the tax
+  authority. A new government revived it: draft legislation was
+  submitted, and **the Chamber of Deputies has already passed it**
+  (expats.cz, confirmed) — it now moves to the Senate, then President
+  Petr Pavel for final signature. Confirmed effective date **1
+  January 2027**. Scope: in-person B2C sales (cash, card, QR) at
+  restaurants, shops, and service providers; small flat-rate-tax
+  entrepreneurs under CZK 1,000,000 annual revenue are exempt (or can
+  pay a surcharge for exemption). Penalties up to **CZK 500,000**.
+  Projected CZK 14–15 billion in additional annual tax revenue.
+- **Important scope distinction**: EET 2.0 is real-time *sales/receipt*
+  reporting, not a B2B e-invoicing mandate — no structured invoice
+  format, no buyer/seller exchange requirement, no clearance model. Same
+  shape as Spain's VeriFactu (a real, binding anti-fraud/reporting
+  duty that ADDING-A-COUNTRY.md's own guidance says gets
+  `mandate_scope: 'none'`, not `'b2b'`), not South Korea's or Turkey's
+  invoice-reporting systems.
+- **The confirmed EU-wide ViDA floor** (1 July 2030 for cross-border
+  intra-EU B2B e-invoicing/digital reporting, national domestic
+  deadlines extendable to 2035) applies here the same as every other
+  tracked EU member state — not Czech-specific news, but the correct
+  long-horizon milestone once built, same as Cyprus's own 2030 entry.
+
+**Comparison to the nearest precedent — Cyprus (country #37).** Cyprus
+was built with an even thinner story: just a B2G-receive mandate
+(2019/2020), a twice-abandoned B2B-issuance proposal treated as
+narrative only (no invented milestone), and the 2030 ViDA floor — 3
+milestones total, only 2 on the board. Czech Republic clears that same
+bar and adds one genuinely live, currently-in-Parliament development
+(EET 2.0) that Cyprus's story never had — arguably a stronger
+candidate than Cyprus was at build time, even though its B2B picture
+is just as empty.
+
+**Recommendation: build it.** Structure would mirror Cyprus's
+precedent — the 2016 B2G-accept milestone (anchor, off-board,
+`mandate_scope: 'b2g_only'`), an EET 2.0 milestone dated 1 January
+2027 with `confidence: 'expected'` (Senate + presidential signature
+still pending) and `mandate_scope: 'none'` (real and binding, but not
+an invoicing-mandate-scope fact, per the VeriFactu precedent), and the
+2030 ViDA floor. The deep-dive's honest framing: "no B2B e-invoicing
+mandate exists or is proposed; the one real, moving development is a
+B2C point-of-sale reporting revival, not an invoicing requirement" —
+same spirit as Cyprus's own "twice-abandoned mandate" candor. Not yet
+built — this was an evaluation only, per Dan's ask; ready to scaffold
+whenever he wants to proceed.
+
 ## Open items / next steps
 
 ### Real open work
