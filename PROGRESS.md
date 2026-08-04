@@ -2661,7 +2661,7 @@ static-file changes. The Middle East / North Africa relabel and Turkey
 (Europe, between Sweden and the United Kingdom) are both live on the
 tracker board.
 
-### Turkey deep-dive: lifecycle pills overflowing their card (3 August 2026, code complete, deploy pending)
+### Turkey deep-dive: lifecycle pills overflowing their card (3 August 2026, deployed & tested)
 
 Dan reported two issues after the Turkey/region-relabel deploy above.
 The second (Middle East/North Africa countries briefly missing from
@@ -2715,9 +2715,9 @@ width, where the bug was most visible. Single shared CSS block used by
 both the standalone `/turkey` (etc.) deep-dive page and the tracker's
 in-page deep-dive panel, so one fix covers both surfaces.
 
-**Code complete, deploy pending** — this is a `site-worker`-only static
-asset change (`shared/deep-dive-render.mjs`), no migration. Needs a
-`wrangler deploy` for `site-worker` from Dan's own machine.
+**Deployed and tested** (confirmed by Dan): `site-worker` redeployed
+with the updated `shared/deep-dive-render.mjs`. Turkey's lifecycle
+pills wrap correctly on the live site.
 
 ## Open items / next steps
 
