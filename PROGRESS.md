@@ -3858,6 +3858,109 @@ items. No build effort has gone into either; they remain content/
 product ideas awaiting a decision to prioritize, not blocked on
 anything technical.
 
+### Insights (blog/whitepaper/sponsored content) scaffolded (4 August 2026, code complete, deploy pending)
+
+Follow-up to "Business threads evaluated" above: Dan wants to weave in
+owned content (blog posts, whitepapers) and eventually sponsored
+content, with some pieces held back behind a free-to-join "Subscriber
+Content Only" wall to drive subscriptions — but built so it maximizes
+SEO discoverability rather than hiding everything behind a login wall.
+
+**Architecture decision, and why:** the session cookie that gates the
+newsletter archive (`eicc_session`) is host-only to
+`members.e-invoicingcompliancecorner.com` — unlike the domain-scoped
+`eicc_lang` cookie, it is deliberately NOT readable from the root
+domain, and this project's own CORS helper (`withCors()` in
+members-worker) explicitly avoids ever pairing CORS with
+credentials/session state. So rather than inventing a cross-subdomain
+auth mechanism (real security surface for a marginal convenience), the
+split is: a public, SEO-indexable **teaser page on the root domain**
+(site-worker, same "D1-backed, no asset file behind it" pattern as
+`/sources`, `/map`, and the country deep-dives) that shows title/dek/
+opening paragraph to literally everyone including Google, and the
+**full body only ever renders behind a real session check** on the
+members subdomain — reusing `requireSession()`/`isCurrentlyActive()`
+exactly as the archive already does. Sponsored content is never gated
+at all (a sponsor is paying for reach; a wall would defeat that),
+matching the sequencing already recommended for a future vendor-
+sponsorship program.
+
+**What was built:**
+- **Migration 338** (`articles` table): slug, type (`blog`/
+  `whitepaper`), title, dek, teaser_html, body_html, pdf_url, gated,
+  is_sponsored, sponsor_name/url, author, published/published_at.
+  Schema-only — no seed rows; the migration file's own comment shows
+  the INSERT shape for the first real piece. English-first (no
+  translations side table yet — content marketing doesn't carry the
+  same every-jurisdiction/every-language obligation compliance data
+  does; add one later if ES/DE/FR readership justifies it).
+- **`shared/resources-render.mjs`**: the D1 queries plus the article/
+  list HTML fragments, shared by both Workers so neither duplicates
+  the markup — only the outer page shell differs (site-worker's public
+  dark-ink shell vs. members-worker's own `pageShell()`).
+- **site-worker**: `/insights` (hub) and `/insights/<slug>` (public
+  teaser or full piece, depending on `gated`/`is_sponsored`) — new
+  D1-rendered routes, same pattern as `/sources` and `/map`.
+- **members-worker**: `/members/insights/<slug>` — the gated full-body
+  view, same `requireSession()` gate as the archive. Also extended the
+  login flow to preserve where a reader was trying to go: `next` now
+  round-trips through the login form → magic-link token →
+  `/members/verify`'s existing (and unchanged) open-redirect allowlist
+  (`isSafeVerifyNextPath()`, extended to cover `/members/insights/`) —
+  so clicking "Subscribe free to keep reading" on a locked piece and
+  then logging in lands you back on that exact piece, not a generic
+  archive page.
+- **Menu**: "Insights & Whitepapers" added to the tracker's existing
+  Resources dropdown (the same slot the Resources-menu redesign
+  deliberately left open for future siblings — see the accredited-
+  providers/RFI-template entry above), plus the `menu.insights` key in
+  all 4 `i18n/*.json` files.
+- **Sitemap**: `/insights` hub entry added now; individual piece URLs
+  get added by hand as each one publishes, same convention as country
+  pages.
+
+**Deliberately NOT done yet** (flagged rather than guessed at): wiring
+a "new Insights piece" announcement into the monthly newsletter send —
+the convenience-token mechanism it would reuse (see the welcome
+email's archive/preferences links) is compatible with the new
+`/members/insights/` prefix, but deciding when/how new pieces get
+announced is a content-calendar question, not a code one.
+
+**A note on how this got built** — this scaffolding was actually
+written twice: the sandbox's local git checkout had silently reverted
+to a stale commit (654169c, predating Philippines/Colombia/The Map)
+between turns in this same session, the same class of environment
+desync documented earlier in this file. The first pass committed on
+top of that stale base and was caught before push (the push was
+rejected — "remote contains work you do not have locally" — the same
+signal as before). Recovery followed the same procedure: saved the new
+work's file contents via `git show <bad-commit>:<path>`, `git reset
+--hard origin/main` to get back to the true tree, then re-applied each
+edit against the current (not stale) file content rather than
+overwriting — necessary this time because the true tree's
+site-worker/index.js and members-worker/index.js had genuinely moved
+on (The Map feature, archive UI redesign) since the stale base, so a
+blind copy-back would have silently deleted that work. Migration
+number 254 (used in the first pass) turned out to already belong to
+`mandate_scope_schema.sql` in the true tree — renumbered to 338 (the
+real next-available number) before this commit.
+
+Deploy (from your machine, once ready):
+```
+cd members-worker/migrations && python3 apply_migrations.py --remote
+cd ../../site-worker && npx wrangler deploy
+cd ../../members-worker && npx wrangler deploy
+```
+All three needed — the schema change, the new site-worker routes, and
+the new members-worker routes/login-flow change. Spot-check once
+deployed: `/insights` renders (empty list until a first piece is
+inserted); after inserting the migration file's example INSERT with
+`gated = 1`, `/insights/what-changed-in-2026` shows a teaser + "Keep
+reading" link, clicking it prompts a login if not already signed in,
+and lands back on the full piece after verifying; the tracker's
+Resources menu shows the new "Insights & Whitepapers" item in all 4
+languages.
+
 ## Open items / next steps
 
 ### Real open work

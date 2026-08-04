@@ -38,6 +38,13 @@ import {
   REGION_BOUNDS,
   MAP_UI,
 } from "../../shared/map-data.mjs";
+import {
+  getPublishedArticles,
+  getArticleBySlug,
+  renderInsightsListFragment,
+  renderArticleFragment,
+  INSIGHTS_STYLE,
+} from "../../shared/resources-render.mjs";
 
 const LANG_COOKIE = "eicc_lang";
 const LANG_COOKIE_TTL_SECONDS = 60 * 60 * 24 * 365; // 1 year
@@ -271,6 +278,155 @@ const SOURCES_REGION_ORDER = ["Europe", "Middle East / North Africa", "Asia-Paci
 
 function escHtml(s) {
   return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+
+// ================================================================
+// INSIGHTS — public, SEO-indexable blog/whitepaper/sponsored-content
+// hub (see shared/resources-render.mjs for the full design writeup
+// and migrations/338_insights_articles_table.sql for the schema).
+//
+// Same "D1-backed, no asset file behind it" pattern as /sources and
+// the country deep-dives: this Worker only runs because the path
+// matches no static asset, and every visitor (logged in or not) gets
+// a real, crawlable page — gated pieces show a teaser + a link over
+// to members.e-invoicingcompliancecorner.com/members/insights/<slug>,
+// never a blank/redirected page, so Google always has something to
+// index.
+// ================================================================
+const INSIGHTS_UI = {
+  en: { title: "Insights & Whitepapers", eyebrow: "From the Compliance Corner",
+        intro: "Original analysis, recaps, and whitepapers on global e-invoicing mandates — some free to everyone, some for subscribers (still free to join).",
+        back: "← Back to global tracker" },
+  es: { title: "Análisis e informes técnicos", eyebrow: "Desde Compliance Corner",
+        intro: "Análisis originales, resúmenes e informes técnicos sobre los mandatos globales de facturación electrónica — algunos abiertos a todos, otros solo para suscriptores (la suscripción sigue siendo gratuita).",
+        back: "← Volver al rastreador global" },
+  de: { title: "Analysen & Whitepapers", eyebrow: "Aus der Compliance Corner",
+        intro: "Eigene Analysen, Rückblicke und Whitepapers zu globalen E-Invoicing-Pflichten — einige frei zugänglich, andere nur für Abonnenten (weiterhin kostenlos).",
+        back: "← Zurück zum globalen Tracker" },
+  fr: { title: "Analyses et livres blancs", eyebrow: "Depuis la Compliance Corner",
+        intro: "Analyses originales, récapitulatifs et livres blancs sur les obligations mondiales de facturation électronique — certains ouverts à tous, d'autres réservés aux abonnés (l'abonnement reste gratuit).",
+        back: "← Retour au tracker mondial" },
+};
+
+function resolveInsightsLang(request) {
+  const url = new URL(request.url);
+  let lang = url.searchParams.get("lang");
+  let shouldSetCookie = false;
+  const { value: cookieLang, duplicated: cookieDuplicated } = getCookie(request, LANG_COOKIE);
+  if (lang && SUPPORTED_LANGS.includes(lang)) {
+    shouldSetCookie = true;
+  } else if (cookieLang && SUPPORTED_LANGS.includes(cookieLang)) {
+    lang = cookieLang;
+  } else {
+    lang = pickBestSupportedLanguage(request.headers.get("Accept-Language")) || "en";
+  }
+  return { lang, shouldSetCookie, cookieDuplicated };
+}
+
+function insightsPageShell({ titleTag, metaDescription, bodyHtml, lang, backHref }) {
+  return `<!DOCTYPE html>
+<html lang="${escHtml(lang)}">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>${escHtml(titleTag)} — The E-Invoicing Compliance Corner</title>
+<meta name="description" content="${escHtml(metaDescription)}">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  /* Same dark shell as /sources and the country deep-dive pages. */
+  :root{
+    --ink:#0f1a2b; --ink-2:#152238; --line:#2b3c5a;
+    --paper:#efe9db; --paper-2:#e4dcc6; --paper-line:#c9bd9e;
+    --text-lo:#f2f0e8; --muted:#93a3c0;
+    --stamp:#b5432f; --stamp-dim:#7c3628; --radius:10px;
+  }
+  *{box-sizing:border-box;} html,body{margin:0;padding:0;}
+  body{background:var(--ink); color:var(--text-lo); font-family:'IBM Plex Sans',sans-serif; line-height:1.55;}
+  .display{font-family:'Big Shoulders Display',sans-serif; font-weight:800;}
+  .wrap{max-width:820px; margin:0 auto; padding:0 5vw 60px;}
+  .top-bar{display:flex; justify-content:space-between; align-items:center; padding-top:20px;}
+  .back-link{font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:var(--muted); text-decoration:none;}
+  .back-link:hover{color:var(--paper);}
+  .eyebrow{font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.22em; text-transform:uppercase; color:var(--stamp); margin:30px 0 6px;}
+  h1{font-size:42px; letter-spacing:0.04em; margin:0 0 12px; color:var(--text-lo);}
+  .intro{font-size:15px; line-height:1.6; color:var(--muted); max-width:660px; margin:0 0 8px;}
+  .langs{font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--muted); margin:14px 0 8px;}
+  .langs a{color:var(--muted); text-decoration:none;} .langs a:hover{color:var(--paper);}
+  .lang-current{color:var(--stamp); font-weight:600;}
+  ${INSIGHTS_STYLE}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top-bar"><a class="back-link" href="${escHtml(backHref)}">← Back</a></div>
+  ${bodyHtml}
+</div>
+</body>
+</html>`;
+}
+
+async function renderInsightsHub(request, env) {
+  if (!env.eicc_content) return new Response("Missing D1 binding", { status: 500 });
+  const { lang, shouldSetCookie, cookieDuplicated } = resolveInsightsLang(request);
+  const ui = INSIGHTS_UI[lang] || INSIGHTS_UI.en;
+  const articles = await getPublishedArticles(env.eicc_content);
+
+  const langLinks = SUPPORTED_LANGS.map((l) =>
+    l === lang ? `<span class="lang-current">${l.toUpperCase()}</span>` : `<a href="/insights?lang=${l}">${l.toUpperCase()}</a>`
+  ).join(" · ");
+
+  const listFragment = articles.length
+    ? renderInsightsListFragment(articles, lang, { articleHref: (slug) => `/insights/${slug}${lang !== "en" ? `?lang=${lang}` : ""}` })
+    : `<p class="intro">Nothing published yet — check back soon.</p>`;
+
+  const bodyHtml = `
+    <p class="eyebrow">${escHtml(ui.eyebrow)}</p>
+    <h1 class="display">${escHtml(ui.title)}</h1>
+    <p class="intro">${escHtml(ui.intro)}</p>
+    <p class="langs">${langLinks}</p>
+    ${listFragment}`;
+
+  const html = insightsPageShell({
+    titleTag: ui.title, metaDescription: ui.intro, bodyHtml, lang,
+    backHref: "/einvoicing-compliance-tracker.html",
+  });
+
+  const headers = new Headers({ "Content-Type": "text/html; charset=UTF-8", "Cache-Control": "public, max-age=300" });
+  if (shouldSetCookie) headers.append("Set-Cookie", `${LANG_COOKIE}=${lang}; Domain=.e-invoicingcompliancecorner.com; Path=/; Max-Age=${LANG_COOKIE_TTL_SECONDS}; SameSite=Lax`);
+  if (cookieDuplicated) headers.append("Set-Cookie", `${LANG_COOKIE}=; Path=/; Max-Age=0; SameSite=Lax`);
+  return new Response(html, { headers });
+}
+
+async function renderInsightsArticle(request, env, slug) {
+  if (!env.eicc_content) return new Response("Missing D1 binding", { status: 500 });
+  const { lang, shouldSetCookie, cookieDuplicated } = resolveInsightsLang(request);
+  const article = await getArticleBySlug(env.eicc_content, slug);
+  if (!article) return new Response("Not found", { status: 404 });
+
+  // Public page: only actually gate readers when the piece is gated
+  // AND not sponsored (a sponsor is paying for reach — see migration
+  // 254's comment). Everything else renders in full, right here, on
+  // the indexable root domain.
+  const locked = !!article.gated && !article.is_sponsored;
+  const unlockUrl = `https://members.e-invoicingcompliancecorner.com/members/insights/${slug}${lang !== "en" ? `?lang=${lang}` : ""}`;
+
+  const langLinks = SUPPORTED_LANGS.map((l) =>
+    l === lang ? `<span class="lang-current">${l.toUpperCase()}</span>` : `<a href="/insights/${slug}?lang=${l}">${l.toUpperCase()}</a>`
+  ).join(" · ");
+
+  const bodyHtml = `<p class="langs">${langLinks}</p>${renderArticleFragment(article, lang, { locked, unlockUrl })}`;
+
+  const html = insightsPageShell({
+    titleTag: article.title, metaDescription: article.dek, bodyHtml, lang,
+    backHref: "/insights",
+  });
+
+  const headers = new Headers({ "Content-Type": "text/html; charset=UTF-8", "Cache-Control": "public, max-age=300" });
+  if (shouldSetCookie) headers.append("Set-Cookie", `${LANG_COOKIE}=${lang}; Domain=.e-invoicingcompliancecorner.com; Path=/; Max-Age=${LANG_COOKIE_TTL_SECONDS}; SameSite=Lax`);
+  if (cookieDuplicated) headers.append("Set-Cookie", `${LANG_COOKIE}=; Path=/; Max-Age=0; SameSite=Lax`);
+  return new Response(html, { headers });
 }
 
 async function renderSourcesPage(request, env) {
@@ -784,6 +940,16 @@ export default {
     // The tracking-sources page — D1-rendered, no asset file behind it.
     if (url.pathname === "/sources" || url.pathname === "/sources.html") {
       return renderSourcesPage(request, env);
+    }
+
+    // Insights hub + individual articles/whitepapers — D1-rendered,
+    // public and SEO-indexable (see shared/resources-render.mjs).
+    if (url.pathname === "/insights" || url.pathname === "/insights.html") {
+      return renderInsightsHub(request, env);
+    }
+    if (url.pathname.startsWith("/insights/")) {
+      const slug = decodeURIComponent(url.pathname.slice("/insights/".length)).replace(/\.html$/, "");
+      if (slug) return renderInsightsArticle(request, env, slug);
     }
 
     // The Map — D1-rendered choropleth, no asset file behind it either.

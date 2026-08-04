@@ -23,6 +23,11 @@ import {
   renderFullDeepDivePage as sharedRenderFullDeepDivePage,
   deriveFlagFromCode,
 } from "../../shared/deep-dive-render.mjs";
+import {
+  getArticleBySlug as sharedGetArticleBySlug,
+  renderArticleFragment as sharedRenderArticleFragment,
+  INSIGHTS_STYLE,
+} from "../../shared/resources-render.mjs";
 
 const SESSION_COOKIE = "eicc_session";
 const SESSION_TTL_SECONDS = 60 * 60 * 24 * 30; // 30 days
@@ -44,7 +49,8 @@ const CONVENIENCE_LINK_TTL_SECONDS = 60 * 60 * 24 * 7;
 // individual story pages (/members/archive/<slug>) are allowed via
 // prefix, not just the two exact index pages.
 function isSafeVerifyNextPath(next) {
-  return next === "/members/archive" || next === "/members/preferences" || next.startsWith("/members/archive/");
+  return next === "/members/archive" || next === "/members/preferences" || next.startsWith("/members/archive/")
+    || next.startsWith("/members/insights/");
 }
 
 // Country data (regions, translated display names, deep-dive slugs,
@@ -386,7 +392,7 @@ export default {
         // deployment rather than a missing convenience redirect.
         return new Response(null, { status: 302, headers: { Location: "/members" } });
       } else if (request.method === "GET" && url.pathname === "/members") {
-        response = htmlResponse(renderLoginPage(null, lang));
+        response = htmlResponse(renderLoginPage(null, lang, url.searchParams.get("next") || ""));
       } else if (request.method === "POST" && url.pathname === "/members/login") {
         response = await handleLoginRequest(request, env, lang);
       } else if (request.method === "POST" && url.pathname === "/members/start-trial") {
@@ -403,6 +409,13 @@ export default {
       } else if (request.method === "GET" && url.pathname.startsWith("/members/archive/")) {
         const slug = decodeURIComponent(url.pathname.replace("/members/archive/", ""));
         response = withCors(await handleArchiveIssue(request, env, slug, lang));
+      } else if (request.method === "GET" && url.pathname.startsWith("/members/insights/")) {
+        // Same-origin only (no withCors) -- unlike the archive embeds,
+        // nothing fetches this cross-origin; readers arrive via a plain
+        // top-level navigation from the public /insights/<slug> page's
+        // "keep reading" link, or a newsletter convenience link.
+        const slug = decodeURIComponent(url.pathname.replace("/members/insights/", ""));
+        response = await handleArticleFull(request, env, slug, lang);
       } else if (request.method === "GET" && url.pathname === "/admin/preview/milestones") {
         response = await handleMilestonesPreview(request, env, lang);
       } else if (request.method === "GET" && url.pathname === "/admin/preview/deep-dive") {
@@ -1155,9 +1168,11 @@ async function isCurrentlyActive(env, email) {
 async function handleLoginRequest(request, env, lang) {
   const form = await request.formData();
   const email = (form.get("email") || "").toString().toLowerCase().trim();
+  const requestedNext = (form.get("next") || "").toString();
+  const next = isSafeVerifyNextPath(requestedNext) ? requestedNext : "";
 
   if (!email || !email.includes("@")) {
-    return htmlResponse(renderLoginPage(t(lang, "login.errorInvalid"), lang));
+    return htmlResponse(renderLoginPage(t(lang, "login.errorInvalid"), lang, next));
   }
 
   const active = await isCurrentlyActive(env, email);
@@ -1165,7 +1180,7 @@ async function handleLoginRequest(request, env, lang) {
   // active subscriber — this avoids revealing which emails are/aren't customers.
   if (active) {
     const token = await signToken(env.SESSION_SECRET, { email, purpose: "login" }, MAGIC_LINK_TTL_SECONDS);
-    const link = `${env.SITE_URL}/members/verify?token=${encodeURIComponent(token)}${lang !== "en" ? `&lang=${lang}` : ""}`;
+    const link = `${env.SITE_URL}/members/verify?token=${encodeURIComponent(token)}${lang !== "en" ? `&lang=${lang}` : ""}${next ? `&next=${encodeURIComponent(next)}` : ""}`;
     await sendMagicLinkEmail(env, email, link);
   }
 
@@ -1361,6 +1376,40 @@ async function handleArchiveIssue(request, env, slug, lang) {
   return htmlResponse(renderIssue(story, email, lang));
 }
 
+// ================================================================
+// INSIGHTS — gated full-content view. The public teaser lives on the
+// root domain (site-worker's /insights/<slug>, D1-rendered, no login
+// wall — see shared/resources-render.mjs and migration 338). THIS
+// route only ever renders when requireSession()+isCurrentlyActive()
+// both pass, exactly like the gated archive above — same session
+// cookie, same "server genuinely withholds the content" contract
+// (not a client-side hide). No ARCHIVE_PUBLIC-style promo exception
+// here: Insights pieces are either open (gated = 0 in the DB, so the
+// public page already showed the full body and a reader never needs
+// this route at all) or genuinely subscriber-only.
+// ================================================================
+async function handleArticleFull(request, env, slug, lang) {
+  const email = await requireSession(request, env);
+  if (!email) return redirectToLogin(`/members/insights/${slug}`);
+
+  const article = await sharedGetArticleBySlug(env.eicc_content, slug);
+  if (!article) return new Response("Not found", { status: 404 });
+
+  const fragment = sharedRenderArticleFragment(article, lang, { locked: false, unlockUrl: "" });
+  const body = `
+  <div class="topbar">
+    <a class="back-link" href="https://e-invoicingcompliancecorner.com/insights" style="margin:0;">${t(lang, "backToTracker")}</a>
+    <form method="POST" action="/members/logout"><button type="submit" class="logout-btn">${t(lang, "logout")}</button></form>
+  </div>
+  <div class="wrap">
+    <div class="card">
+      <p class="eyebrow">${t(lang, "archive.signedInAs")} ${escapeHtml(email)}</p>
+      ${fragment}
+    </div>
+  </div>`;
+  return htmlResponse(pageShell(body, lang, INSIGHTS_STYLE));
+}
+
 // ---------------------------------------------------------------
 // PROOF-OF-CONCEPT: dynamic milestones, queried live from D1, fed
 // into two genuinely different templates -- the tracker's own card
@@ -1459,8 +1508,9 @@ async function handleMilestonesPreview(request, env, lang) {
 
 
 
-function redirectToLogin() {
-  return new Response(null, { status: 302, headers: { Location: "/members" } });
+function redirectToLogin(next) {
+  const location = next && isSafeVerifyNextPath(next) ? `/members?next=${encodeURIComponent(next)}` : "/members";
+  return new Response(null, { status: 302, headers: { Location: location } });
 }
 
 // ================================================================
@@ -1978,7 +2028,7 @@ const BASE_STYLE = `
   .modal-loading{color:#8a7d5a; font-size:13.5px; font-style:italic;}
 `;
 
-function pageShell(bodyHtml, lang) {
+function pageShell(bodyHtml, lang, extraStyle) {
   return `<!DOCTYPE html>
 <html lang="${lang || "en"}">
 <head>
@@ -1988,7 +2038,7 @@ function pageShell(bodyHtml, lang) {
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>${BASE_STYLE}</style>
+<style>${BASE_STYLE}${extraStyle || ""}</style>
 </head>
 <body>
 ${renderLangBanner(lang || "en")}
@@ -1998,8 +2048,9 @@ ${bodyHtml}
 </html>`;
 }
 
-function renderLoginPage(error, lang) {
+function renderLoginPage(error, lang, next) {
   lang = lang || "en";
+  const safeNext = next && isSafeVerifyNextPath(next) ? next : "";
   const body = `
   <div class="wrap">
     <a class="back-link" href="https://e-invoicingcompliancecorner.com/einvoicing-compliance-tracker.html" style="margin:0;">${t(lang, "backToTracker")}</a>
@@ -2010,6 +2061,7 @@ function renderLoginPage(error, lang) {
       ${error ? `<div class="form-error">${escapeHtml(error)}</div>` : ""}
       <form method="POST" action="/members/login">
         <input type="hidden" name="lang" value="${lang}">
+        ${safeNext ? `<input type="hidden" name="next" value="${escapeHtml(safeNext)}">` : ""}
         <div class="form-field">
           <label for="email">${t(lang, "login.emailLabel")}</label>
           <input type="email" id="email" name="email" required autocomplete="email">

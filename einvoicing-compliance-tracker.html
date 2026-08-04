@@ -572,6 +572,12 @@
                goes back to being subscriber-only. -->
           <a class="dropdown-item" href="https://members.e-invoicingcompliancecorner.com/members/archive"><span class="dd-icon">📰</span><span data-i18n="menu.archive">Newsletter archive</span></a>
           <a class="dropdown-item" href="/sources"><span class="dd-icon">📡</span><span data-i18n="menu.sources">Tracking sources</span></a>
+          <!-- Blog posts, whitepapers, and (ungated) sponsored content
+               -- public and SEO-indexable at /insights, same
+               D1-rendered pattern as /sources and /map. Gated pieces
+               show a teaser here and link to members.* for the full
+               body; see shared/resources-render.mjs and migration 338. -->
+          <a class="dropdown-item" href="/insights"><span class="dd-icon">📚</span><span data-i18n="menu.insights">Insights & Whitepapers</span></a>
         </div>
       </div>
       <div class="actions-menu" id="educationMenu">

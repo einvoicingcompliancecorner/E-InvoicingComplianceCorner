@@ -190,4 +190,12 @@
     <lastmod>2026-08-02</lastmod>
     <priority>0.8</priority>
   </url>
+  <url>
+    <loc>https://e-invoicingcompliancecorner.com/insights</loc>
+    <lastmod>2026-08-04</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <!-- Individual pieces (https://e-invoicingcompliancecorner.com/insights/<slug>)
+       get their own <url> entry here as each one is published, same
+       by-hand convention as the country entries above. -->
 </urlset>
