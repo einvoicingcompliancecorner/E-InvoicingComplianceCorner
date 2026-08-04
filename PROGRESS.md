@@ -3694,6 +3694,170 @@ with the updated `privacy-policy.html` and the four new
 policy page now renders fully translated when a non-English language
 is selected, not just the shared language banner.
 
+### Business threads evaluated (4 August 2026) — decisions needed, nothing built
+
+Dan asked for analysis on open item 4 ("Business threads"): a
+competitive review of theinvoicinghub.com, the pricing question (free
+vs. reviving a paid tier), the vendor registration/advertising
+concept, and the two outstanding Resources ideas. All four are
+genuinely decisions for Dan, not code — this entry is the findings and
+a recommended direction for each, nothing was built or changed.
+
+**1. theinvoicinghub.com competitive review.** Live-fetched their
+homepage, sponsorship page, service-provider directory, and About
+page rather than relying on prior knowledge, since this space moves
+fast and a stale read would be worse than no read. Findings:
+
+- Run by two credible industry-insider co-founders (an e-invoicing
+  consultant/former MD & CTO of e-integration GmbH, and a former
+  Product Manager for EDI & Compliance at Esker), operating 27 months,
+  covering 32 countries. Self-reported traction: 1,500+ monthly unique
+  visitors, 4,000+ newsletter subscribers.
+- Content shape is broader than this tracker: news, per-country
+  profiles, an "E-Invoicing Essentials" glossary/standards section
+  (EN 16931, Peppol), a resource library (case studies, eBooks, market
+  reports, webinars), and consulting services — on top of the
+  country-tracking core this project also does.
+- **Business model is the single most useful finding.** They charge
+  readers nothing — the entire content library, including the country
+  profiles and news, is free with no subscription wall. Revenue comes
+  from two other levers instead: (a) a **vendor directory that's free
+  to list in** ("your company name, country and logo will be visible,
+  entirely for free" — roughly 80+ companies listed, filterable by
+  country), sitting alongside (b) a **two-tier paid sponsorship
+  program** layered on top of that same free directory — Silver
+  (available in every country, no exclusivity) and Gold (one sponsor
+  per country, "the most prominent advertising placements," currently
+  sold in 14 countries). Sponsor placements appear directly on the
+  relevant country pages and news content, not as generic site-wide
+  banners — the same page real-estate this project's own per-country
+  deep-dive pages already have. Pricing itself isn't published; they
+  gate it behind a "request the sponsorship brochure" contact form.
+  They pitch sponsors on reaching a "highly qualified," niche audience
+  and explicitly market themselves as "100% verified & objective"
+  despite selling sponsorship — i.e. they've had to work to keep
+  editorial neutrality credible alongside a vendor-funded revenue
+  model, which is exactly the tension this project would inherit if it
+  followed the same path (see item 3 below).
+- No evidence found of anything resembling either of this project's
+  two Resources ideas — no accreditation-verified provider list (their
+  directory is self-registered/unverified, not curated against actual
+  government accreditation status per country) and no e-invoicing-
+  specific vendor RFI template (generic RFI templates exist everywhere
+  on the web — Asana, ProjectManager, ClickUp, etc. — but none
+  specialized for e-invoicing vendor selection). Both remain genuinely
+  open differentiation opportunities, not things to catch up on.
+
+  **Assessment**: this is a real, credible, more mature competitor —
+  not a thin also-ran like some of the "map" competitors evaluated
+  earlier. It validates that this exact niche (neutral, free,
+  government-sourced e-invoicing tracking) supports a sustainable
+  small-team business, and it validates that vendor sponsorship (not
+  reader subscriptions) is the proven monetization lever in this
+  space. The clearest differentiation angle against them isn't more
+  countries or more content depth — it's this project's stricter
+  sourcing discipline (every milestone traced to an official
+  government/EU source, visible on `/sources`) versus a broader
+  content mix that leans more on aggregated market reports and
+  vendor-contributed material.
+
+**2. Pricing: free vs. the shelved paid tiers.** Checked git history
+directly rather than trusting the open-items list's own shorthand,
+and found a discrepancy worth flagging: the actual numbers that were
+ever wired into `subscribe.html` / Lemon Squeezy were **$10/year
+recurring or $12 one-time** (originally scaffolded as placeholders,
+never changed except a brief £→$ currency swap before launch) — not
+"$5/$8" as the open-items list has been describing it. Correcting
+that shorthand below.
+
+At $10-12/year, the per-subscriber revenue is trivial before even
+accounting for Lemon Squeezy's fee (5.5% + $0.50 per charge — the
+project's own code comments already flagged that a low-ticket monthly
+charge would lose over half its value to that flat $0.50, which is
+exactly why the original design used annual-only billing). Given
+theinvoicinghub's own model above charges readers nothing at all and
+still runs a viable business off vendor sponsorship instead, reviving
+a $10-12/year reader paywall looks like the weaker of the two
+monetization paths available to this project, not the stronger one —
+it would also shrink the subscriber base right as vendor sponsorship
+(which needs a large audience to be worth paying for) becomes the more
+promising lever.
+
+**Recommendation**: keep the free tier as the durable model, not a
+temporary "until critical mass" placeholder — the free tier itself
+*is* what builds the audience that any future vendor-sponsorship
+revenue would depend on. If a paid tier returns, it's probably a
+different product than the shelved one: not a cheap consumer-style
+subscription, but something priced for the *company*, not the
+individual — e.g. a team seat plan, or a structured data-feed/API
+tier for larger compliance/tax teams — sized to reflect that this is
+professional compliance intelligence, not a $10 hobby newsletter.
+
+**3. The vendor registration/advertising concept.** theinvoicinghub's
+existing free-directory + paid-sponsorship-tier structure (above) is
+effectively a live proof of concept for this exact idea, which
+de-risks the "does anyone pay for this in this niche" question. It
+also sharpens the real risks:
+
+- **Neutrality risk.** This project's entire brand is "sourced to
+  official government portals, neutral, free" — visible in every deep
+  dive's sourcing and in `/sources` itself. Vendor sponsorship doesn't
+  have to compromise that (theinvoicinghub keeps directory listings
+  and sponsorship separate from their editorial verdicts), but it has
+  to be built that way deliberately from day one — sponsor placement
+  on a country page, never inside the sourced milestone/penalty
+  content itself.
+- **Audience-size risk.** theinvoicinghub sells sponsorship against
+  1,500+ monthly visitors and 4,000+ subscribers after 27 months. This
+  project doesn't have a comparable published number yet and is still
+  in the "free sign-ups, building toward critical mass" phase (see
+  item 2). Selling sponsorship before there's real traffic to point to
+  is a hard, credibility-damaging sell — vendors are buying reach, and
+  reach requires the audience to exist first.
+
+**Recommendation**: sequence this after the free tier has real
+traction, not in parallel with it. When it's time, mirror the proven
+shape (free, unverified-tier listing to seed the directory and build
+goodwill with vendors early; a paid, exclusivity-based tier once
+there's traffic worth paying for) rather than inventing a new model —
+but differentiate on curation quality by tying it to Resources idea 4
+below (accreditation-verified listings) rather than competing purely
+on directory size against a directory that already has ~80 vendors
+and a 2+ year head start.
+
+**4. Two Resources ideas — accredited-providers list, vendor-
+assessment RFI template.** Both remain genuinely open, validated by
+the competitive review above (neither exists elsewhere in a
+specialized, e-invoicing-specific form):
+
+- **Accredited-providers list.** Not a repeat of theinvoicinghub's
+  self-registered directory — the differentiated version is a list
+  curated against actual government accreditation/certification
+  status per country (e.g. France's registered PDPs, Italy's SDI
+  intermediaries, OpenPeppol's own Access Point directory), matching
+  this project's existing sourcing discipline instead of competing on
+  raw listing count. This also gives the future vendor-sponsorship
+  concept (item 3) a natural, differentiated hook: "verified
+  accredited" as a premium listing tier, rather than "paid to appear
+  first" alone.
+- **Vendor-assessment RFI template.** A genuine gap — no
+  e-invoicing-specific RFI template was found anywhere in this
+  research, only generic RFI templates with no jurisdiction awareness.
+  A template that walks a buyer through exactly the questions this
+  tracker's own data model already answers per country (native
+  coverage vs. partner-routed, clearance vs. reporting model, Peppol
+  Access Point certification, format support) would be both genuinely
+  useful and a natural lead-generation piece, tightly aligned with
+  content this project already has rather than requiring new research
+  from scratch.
+
+Both were already flagged as "previously-discussed" ideas as far back
+as the Resources-menu redesign (2 August 2026) — the menu's flyout
+structure was deliberately left with room for them as future sibling
+items. No build effort has gone into either; they remain content/
+product ideas awaiting a decision to prioritize, not blocked on
+anything technical.
+
 ## Open items / next steps
 
 ### Real open work
@@ -3931,11 +4095,23 @@ is selected, not just the shared language banner.
    and is now built, deployed, and tested — see the dated entry above.
    index.html is a bare redirect stub and doesn't need wiring. No
    further static pages are outstanding.
-4. **Business threads** (decisions, not code): theinvoicinghub.com
-   competitive review; pricing (free vs the shelved $5/$8 tiers);
-   the vendor registration/advertising concept; the two remaining
-   Resources ideas (accredited-sources list, vendor-assessment RFI
-   template).
+4. **Business threads** (decisions, not code) — evaluated 4 August
+   2026, see the dated entry above; still awaiting Dan's decisions,
+   nothing built: theinvoicinghub.com competitive review (a real,
+   credible competitor whose free-reader/paid-vendor-sponsorship model
+   is a validated proof of concept worth following); pricing (the
+   actual shelved numbers were $10/yr recurring or $12 one-time, not
+   "$5/$8" — recommendation is to keep the free tier as the durable
+   model, not a placeholder, and if a paid tier returns, price it for
+   the company/team rather than reviving the old consumer-style
+   subscription); the vendor registration/advertising concept
+   (recommended to sequence after real traffic exists, differentiated
+   via accreditation-verified listings rather than raw directory
+   size); and the two Resources ideas — accredited-providers list
+   (curated against real government accreditation status, not
+   self-registered like the competitor's) and a vendor-assessment RFI
+   template (a genuine content gap — no e-invoicing-specific one found
+   anywhere).
 5. ~~**"The Map" — an interactive visual map under Resources**~~ —
    **done and deployed 3 Aug 2026** (all eight rounds; see the dated
    entries above). Kept below for the design-research trail.
