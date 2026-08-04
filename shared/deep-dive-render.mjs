@@ -37,7 +37,7 @@ export const SUPPORTED_LANGS = ["en", "es", "de", "fr"];
 // uae, uk, and united-states aren't simple lowercase-and-hyphenate.
 export const COUNTRY_DEEP_DIVE_SLUGS = {
   "Australia": "australia", "Austria": "austria", "Belgium": "belgium", "Brazil": "brazil", "Canada": "canada",
-  "Chile": "chile", "China": "china", "Croatia": "croatia", "Cyprus": "cyprus", "Denmark": "denmark", "Egypt": "egypt", "Finland": "finland",
+  "Chile": "chile", "China": "china", "Croatia": "croatia", "Cyprus": "cyprus", "Czech Republic": "czech-republic", "Denmark": "denmark", "Egypt": "egypt", "Finland": "finland",
   "France": "france", "Germany": "germany", "Greece": "greece", "India": "india", "Ireland": "ireland", "Israel": "israel",
   "Italy": "italy", "Jordan": "jordan", "Luxembourg": "luxembourg", "Netherlands": "netherlands", "Malaysia": "malaysia", "Mexico": "mexico", "New Zealand": "new-zealand",
   "Norway": "norway", "Oman": "oman", "Peru": "peru", "Poland": "poland", "Portugal": "portugal", "Romania": "romania",
@@ -52,7 +52,7 @@ export const SLUG_TO_COUNTRY = Object.fromEntries(
 
 const COUNTRY_NAME_TRANSLATIONS = {
   es: {
-    "Austria": "Austria", "Belgium": "Bélgica", "Croatia": "Croacia", "Cyprus": "Chipre", "Denmark": "Dinamarca",
+    "Austria": "Austria", "Belgium": "Bélgica", "Croatia": "Croacia", "Cyprus": "Chipre", "Czech Republic": "República Checa", "Denmark": "Dinamarca",
     "Egypt": "Egipto", "Finland": "Finlandia", "France": "Francia",
     "Germany": "Alemania", "Greece": "Grecia", "Ireland": "Irlanda", "Israel": "Israel", "Italy": "Italia", "Jordan": "Jordania", "Luxembourg": "Luxemburgo",
     "Netherlands": "Países Bajos", "Norway": "Noruega", "Oman": "Omán",
@@ -65,7 +65,7 @@ const COUNTRY_NAME_TRANSLATIONS = {
     "United States": "Estados Unidos", "European Union": "Unión Europea"
   },
   de: {
-    "Austria": "Österreich", "Belgium": "Belgien", "Croatia": "Kroatien", "Cyprus": "Zypern", "Denmark": "Dänemark",
+    "Austria": "Österreich", "Belgium": "Belgien", "Croatia": "Kroatien", "Cyprus": "Zypern", "Czech Republic": "Tschechien", "Denmark": "Dänemark",
     "Egypt": "Ägypten", "Finland": "Finnland", "France": "Frankreich",
     "Germany": "Deutschland", "Greece": "Griechenland", "Ireland": "Irland", "Israel": "Israel", "Italy": "Italien", "Jordan": "Jordanien", "Luxembourg": "Luxemburg",
     "Netherlands": "Niederlande", "Norway": "Norwegen", "Oman": "Oman",
@@ -78,7 +78,7 @@ const COUNTRY_NAME_TRANSLATIONS = {
     "United States": "Vereinigte Staaten", "European Union": "Europäische Union"
   },
   fr: {
-    "Austria": "Autriche", "Belgium": "Belgique", "Croatia": "Croatie", "Cyprus": "Chypre", "Denmark": "Danemark",
+    "Austria": "Autriche", "Belgium": "Belgique", "Croatia": "Croatie", "Cyprus": "Chypre", "Czech Republic": "République tchèque", "Denmark": "Danemark",
     "Egypt": "Égypte", "Finland": "Finlande", "France": "France",
     "Germany": "Allemagne", "Greece": "Grèce", "Ireland": "Irlande", "Israel": "Israël", "Italy": "Italie", "Jordan": "Jordanie", "Luxembourg": "Luxembourg",
     "Netherlands": "Pays-Bas", "Norway": "Norvège", "Oman": "Oman",

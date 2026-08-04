@@ -2850,6 +2850,118 @@ same spirit as Cyprus's own "twice-abandoned mandate" candor. Not yet
 built — this was an evaluation only, per Dan's ask; ready to scaffold
 whenever he wants to proceed.
 
+### Czech Republic added as country #44 (4 August 2026, code complete, deploy pending)
+
+Dan said "yes please" to the evaluation above — built exactly the
+structure recommended there, following the Cyprus (#37) template
+since both countries share the same thin-B2B shape, plus the Turkey
+(#43) template for milestone/mandate_scope conventions.
+
+**Naming decision.** `name_en = 'Czech Republic'` (the dominant form
+across every e-invoicing research source checked — Sovos,
+dddinvoices, the EC's own country sheet, VATupdate, expats.cz,
+fiscal-requirements.com), not `'Czechia'`. This means
+`shared/map-data.mjs` needs a `TOPO_NAME_OVERRIDES` entry
+(`"Czech Republic": "Czechia"`) since `vendor/countries-50m.json`
+spells the topology shape `"Czechia"` — confirmed via direct Python
+inspection of the bundled TopoJSON. Per-language translations verified
+against real government sources: German "Tschechien" (Auswärtiges
+Amt's own country-page title), Spanish "República Checa"
+(exteriores.gob.es's own fact-sheet title), French "République
+tchèque" (France Diplomatie's own page title/URL).
+
+- **Migration 306**: country row (`CZ`, `Czech Republic`, region
+  `Europe`, slug `czech-republic`, `in_picker=1`) + name translations.
+- **Migrations 307-308**: 3 milestones with full translations — the
+  2016 B2G-accept mandate (1 Oct 2016, anchor, off-board,
+  `mandate_scope: 'b2g_only'` — Act No. 134/2016 Coll., transposing
+  Directive 2014/55/EU; confirmed directly against the EC's own
+  country page, which fetches cleanly at
+  `ec.europa.eu/digital-building-blocks/sites/spaces/DIGITAL/pages/467108881/eInvoicing+in+Czech+Republic`
+  and confirms the NEN portal is operated by the Ministry of Regional
+  Development); EET 2.0 (1 Jan 2027, on-board, `confidence: 'expected'`
+  since Senate passage and presidential signature are still pending,
+  `mandate_scope: 'none'` — a real-time B2C point-of-sale
+  sales-reporting revival, not an invoicing mandate, same VeriFactu-
+  style treatment as Turkey's e-Waybill/e-Defter entries; CZK
+  1,000,000 small-entrepreneur exemption threshold, CZK 500,000 max
+  penalty, CZK 14-15bn projected annual revenue — all confirmed via
+  expats.cz, VATupdate, and fiscal-requirements.com); and the 2030
+  ViDA floor (on-board, `mandate_scope: 'b2b'`, matching Cyprus/
+  Austria/Greece/Netherlands).
+- **Migrations 309-310**: full deep-dive page — a compliance-model
+  label distinguishing the empty B2B picture from the live EET 2.0
+  development, 5 stats (including a "CZK 500,000 — a sales-reporting
+  fine, not an invoicing one" stat, deliberately worded to avoid
+  conflating the two regimes), 3 `file_format` cards (noting ISDOC as
+  the one genuinely Czech format element, alongside EDIFACT/UBL 2.1),
+  3 `scope_transmission` cards (network model; what's actually
+  mandatory; an EET 2.0-specific card laying out its scope/date/
+  exemption/legislative-status), 3 `penalties_related` narrative
+  cards (no domestic e-invoicing penalty regime; EET 2.0's penalties
+  are real but for sales reporting; the approaching EU floor), 5
+  steps, 2 portals (EC factsheet; NEN).
+- **Migration 311**: a 2-story arc — EET 2.0 passing the Chamber of
+  Deputies (17 July 2026, matching the bill's confirmed public
+  passage), and the 2030 ViDA floor applying regardless of domestic
+  developments — matching Cyprus's own 2-story count rather than
+  padding to a 3-story norm.
+- **Migration 312**: tracking sources — NEN (`nen.nipez.cz`), the
+  Ministry of Finance (`mfcr.cz`), and the EC's eInvoicing country
+  factsheet (EU member state, matching the established pattern).
+- **Migration 313**: jurisdiction count 42→43, generated
+  programmatically by replaying the full migration chain in-memory and
+  regexing every `translations` row containing a bare "42" — caught
+  all 40 rows (10 keys × 4 languages) cleanly, same shape as migration
+  305's own Turkey sweep.
+- **Static files**: `countries.js` (Europe list, inserted alphabetically
+  between Cyprus and Denmark), `shared/deep-dive-render.mjs`'s slug map
+  (`czech-republic`) and all three `COUNTRY_NAME_TRANSLATIONS`
+  dictionaries, `shared/map-data.mjs`'s `TOPO_NAME_OVERRIDES` entry
+  described above.
+- Checked The Map's two hand-maintained lookup tables per
+  ADDING-A-COUNTRY.md's Phase 1 step 6: `TOPO_NAME_OVERRIDES` entry
+  added (topology spells it "Czechia"); confirmed via direct
+  inspection of the topology's own geometry (`type: Polygon`, one arc
+  group — a normal full-size country shape) that no
+  `MARKER_LONLAT_OVERRIDES` fallback is needed. Europe's existing
+  `REGION_BOUNDS` box already comfortably contains the Czech
+  Republic's real extent (~12-19°E, ~48.5-51°N) — no widening needed
+  (contrast Turkey, which did need this).
+- **Hand-swept the jurisdiction count** across all four languages'
+  `i18n/*.json` files (including the separate per-education-page
+  translation files) and every static HTML page — 32 files updated,
+  confirmed via a stray-"42" grep check restricted to jurisdiction-
+  marker context (none found) and a repo-wide grep for any other
+  "42 countries/jurisdictions"-style phrasing outside the migrations
+  directory (none found).
+- Local migration-chain replay (`apply_migrations.py --remote
+  --dry-run`, which runs the same in-memory replay validation before
+  attempting any live connection) confirms all 313 files validate
+  cleanly against the full schema history — "Replay validation OK
+  (313 files, only the documented pre-existing errors)." A follow-up
+  structural query against the replayed in-memory DB confirmed: Czech
+  Republic's country row is correct; exactly 3 milestones with the
+  described anchor/on_tracker/confidence/mandate_scope flags and 4
+  language translations each; the deep-dive page renders in all 4
+  languages with 5 stats, 9 cards (3 per section) and 36 card
+  translations, 5 steps and 20 step translations, 2 portals and 8
+  portal translations; exactly 2 stories with 8 story translations;
+  exactly 3 tracking sources with 12 source translations; total
+  `countries` row count is 44 (43 real jurisdictions + the standalone
+  EU row), matching the "43" jurisdiction count now swept everywhere.
+
+Final audit against the full ADDING-A-COUNTRY.md checklist: all items
+pass.
+
+**Code complete, deploy pending** — this sandbox has no live
+Cloudflare/D1 credentials (confirmed by the same `CLOUDFLARE_API_TOKEN`
+error every prior country build has hit). Migrations 306-313 need
+`apply_migrations.py --remote` from Dan's own machine, and both
+`site-worker` and `members-worker` need `wrangler deploy` to pick up
+the static-file changes (`countries.js`, `shared/deep-dive-render.mjs`,
+`shared/map-data.mjs`, and the 32 swept `i18n`/HTML files).
+
 ## Open items / next steps
 
 ### Real open work
@@ -2857,8 +2969,10 @@ whenever he wants to proceed.
 1. **Coverage expansion** — Netherlands, Austria, Greece, Cyprus, Oman,
    Jordan, Israel, South Korea, Vietnam, and Turkey are all confirmed
    deployed and tested — every country added this session is now
-   live. Still not
-   tracked in Europe: Bulgaria, Czechia,
+   live. Czech Republic is code complete, deploy pending (see the 4
+   August 2026 entry above). Qatar was evaluated and held back at
+   Dan's choice (thinner than first assessed). Still not
+   tracked in Europe: Bulgaria,
    Estonia, Hungary, Latvia, Lithuania, Malta, Slovenia, Iceland,
    Liechtenstein. The scaffolder + runner make each addition a
    fraction of the old effort.
