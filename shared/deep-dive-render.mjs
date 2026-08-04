@@ -40,7 +40,7 @@ export const COUNTRY_DEEP_DIVE_SLUGS = {
   "Chile": "chile", "China": "china", "Colombia": "colombia", "Croatia": "croatia", "Cyprus": "cyprus", "Czech Republic": "czech-republic", "Denmark": "denmark", "Egypt": "egypt", "Finland": "finland",
   "France": "france", "Germany": "germany", "Greece": "greece", "India": "india", "Ireland": "ireland", "Israel": "israel",
   "Italy": "italy", "Jordan": "jordan", "Luxembourg": "luxembourg", "Netherlands": "netherlands", "Malaysia": "malaysia", "Mexico": "mexico", "New Zealand": "new-zealand",
-  "Norway": "norway", "Oman": "oman", "Peru": "peru", "Poland": "poland", "Portugal": "portugal", "Romania": "romania",
+  "Norway": "norway", "Oman": "oman", "Peru": "peru", "Philippines": "philippines", "Poland": "poland", "Portugal": "portugal", "Romania": "romania",
   "Saudi Arabia": "saudi-arabia", "Singapore": "singapore", "Slovakia": "slovakia", "South Korea": "south-korea",
   "Spain": "spain", "Sweden": "sweden", "Turkey": "turkey", "United Arab Emirates": "uae",
   "United Kingdom": "uk", "United States": "united-states", "Vietnam": "vietnam",
@@ -59,7 +59,7 @@ const COUNTRY_NAME_TRANSLATIONS = {
     "Poland": "Polonia", "Portugal": "Portugal", "Romania": "Rumania", "Slovakia": "Eslovaquia", "Spain": "España",
     "Sweden": "Suecia", "Turkey": "Turquía", "United Kingdom": "Reino Unido", "Saudi Arabia": "Arabia Saudita",
     "United Arab Emirates": "Emiratos Árabes Unidos", "Australia": "Australia", "China": "China",
-    "India": "India", "Malaysia": "Malasia", "New Zealand": "Nueva Zelanda", "Singapore": "Singapur", "South Korea": "Corea del Sur",
+    "India": "India", "Malaysia": "Malasia", "New Zealand": "Nueva Zelanda", "Philippines": "Filipinas", "Singapore": "Singapur", "South Korea": "Corea del Sur",
     "Vietnam": "Vietnam",
     "Argentina": "Argentina", "Brazil": "Brasil", "Canada": "Canadá", "Chile": "Chile", "Colombia": "Colombia", "Mexico": "México", "Peru": "Perú",
     "United States": "Estados Unidos", "European Union": "Unión Europea"
@@ -72,7 +72,7 @@ const COUNTRY_NAME_TRANSLATIONS = {
     "Poland": "Polen", "Portugal": "Portugal", "Romania": "Rumänien", "Slovakia": "Slowakei", "Spain": "Spanien",
     "Sweden": "Schweden", "Turkey": "Türkei", "United Kingdom": "Vereinigtes Königreich", "Saudi Arabia": "Saudi-Arabien",
     "United Arab Emirates": "Vereinigte Arabische Emirate", "Australia": "Australien", "China": "China",
-    "India": "Indien", "Malaysia": "Malaysia", "New Zealand": "Neuseeland", "Singapore": "Singapur", "South Korea": "Südkorea",
+    "India": "Indien", "Malaysia": "Malaysia", "New Zealand": "Neuseeland", "Philippines": "Philippinen", "Singapore": "Singapur", "South Korea": "Südkorea",
     "Vietnam": "Vietnam",
     "Argentina": "Argentinien", "Brazil": "Brasilien", "Canada": "Kanada", "Chile": "Chile", "Colombia": "Kolumbien", "Mexico": "Mexiko", "Peru": "Peru",
     "United States": "Vereinigte Staaten", "European Union": "Europäische Union"
@@ -85,7 +85,7 @@ const COUNTRY_NAME_TRANSLATIONS = {
     "Poland": "Pologne", "Portugal": "Portugal", "Romania": "Roumanie", "Slovakia": "Slovaquie", "Spain": "Espagne",
     "Sweden": "Suède", "Turkey": "Turquie", "United Kingdom": "Royaume-Uni", "Saudi Arabia": "Arabie saoudite",
     "United Arab Emirates": "Émirats arabes unis", "Australia": "Australie", "China": "Chine",
-    "India": "Inde", "Malaysia": "Malaisie", "New Zealand": "Nouvelle-Zélande", "Singapore": "Singapour", "South Korea": "Corée du Sud",
+    "India": "Inde", "Malaysia": "Malaisie", "New Zealand": "Nouvelle-Zélande", "Philippines": "Philippines", "Singapore": "Singapour", "South Korea": "Corée du Sud",
     "Vietnam": "Viêt Nam",
     "Argentina": "Argentine", "Brazil": "Brésil", "Canada": "Canada", "Chile": "Chili", "Colombia": "Colombie", "Mexico": "Mexique", "Peru": "Pérou",
     "United States": "États-Unis", "European Union": "Union européenne"

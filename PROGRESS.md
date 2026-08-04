@@ -3505,6 +3505,128 @@ balanced-columns-era in-frame bug all confirmed fine this time on both
 the standalone `/members/archive` page and the in-frame embedded
 panel.
 
+### Philippines added as country #47 (4 August 2026, code complete, deploy pending)
+
+Dan asked "which are the most interesting other countries — perhaps
+philippines?" — live research surfaced the Philippines (BIR EIS
+mandate, Phase 1 deadline just extended to 31 December 2026 under RR
+26-2025), Taiwan, and an Americas trio (Uruguay/Costa Rica/Ecuador) as
+candidates. Dan asked for a deeper dive on the Philippines before
+committing to build it — that dive covered the legislative timeline, a
+genuinely tiered penalty schedule, the post-issuance (not clearance)
+compliance model, and an honest risk caveat: this mandate has slipped
+more than once. Dan then said "Please build Philippines."
+
+The Philippines is a post-issuance reporting model, closer in shape to
+South Korea than to this tracker's clearance-model countries
+(Colombia, Argentina, Jordan): an invoice is legally valid once it
+reaches the buyer, with sales-data transmission to the BIR a separate,
+later duty. The legal basis dates to 2018's TRAIN Law (RA 10963); a
+2022 pilot with 100 selected large taxpayers ("LT100") then paused for
+roughly two years after technical and capacity problems; RR 11-2025
+formally resumed and expanded the mandate in February 2025 with a 14
+March 2026 deadline; and that deadline was itself superseded before it
+arrived — RR 26-2025 (16 October 2025) pushed Phase 1 to 31 December
+2026. Treated the December 2026 date as the current official target,
+not a settled certainty, given this documented history of slipping.
+
+**4 milestones**, live-researched against the BIR's own regulation
+PDFs (`bir-cdn.bir.gov.ph`), the Official Gazette's RA 10963 page, PwC
+Philippines, Sovos, the Philippine News Agency, and the Department of
+Finance: TRAIN Law/RA 10963 (1 Jan 2018, anchor/off-board,
+`mandate_scope: 'none'` — the enabling law, no live obligation yet),
+RR 8-2022's LT100 pilot (1 Jul 2022, off-board, `mandate_scope:
+'none'` — voluntary, BIR-selected only, later paused for ~2 years),
+RR 11-2025 (27 Feb 2025, off-board, `mandate_scope: 'b2b'` — resumes
+and expands the mandate, sets the taxpayer list actually in force
+today, but its own 14 March 2026 deadline was superseded before it
+arrived, matching this tracker's established anchor/on_tracker
+convention for superseded-vs-current milestones confirmed against
+South Korea's own migration data), and RR 26-2025 (31 Dec 2026,
+on-board, `confidence: 'expected'`, `mandate_scope: 'b2b'` — the
+current Phase 1 deadline). Deliberately did not fabricate a date for
+the unscheduled Phase 2 (medium/small business expansion) — covered
+only in deep-dive narrative and card text, consistent with this
+project's discipline against inventing dates that aren't genuinely
+confirmed.
+
+- **Migration 331**: country row (`PH`, `Philippines`, region
+  `Asia-Pacific`, slug `philippines`, `in_picker=1`) + name
+  translations (Filipinas/Philippinen/Philippines).
+- **Migrations 332-333**: the 4 milestones with full translations.
+  Proper nouns and regulation numbers (RR, BIR, TRAIN Law, LT100, EIS,
+  ESRS, PHP, NIRC) deliberately left untranslated across all 4
+  languages, matching this project's established convention.
+- **Migrations 334-335**: full deep-dive content across 4 languages —
+  5 stats, 8 cards across 3 sections, a lifecycle pill card (the
+  "issue-then-report flow," South Korea's template, since both share a
+  post-issuance model) with 4 status entries, a genuine 5-row penalty
+  table (fines scaling from a flat PHP 1,000-50,000 for a missed
+  invoice up to PHP 500,000-10,000,000 plus 2-10 years' imprisonment
+  for deliberate sales-suppression "zapper" software, with a separate
+  closure-risk penalty — permanent business closure possible after 180
+  days of non-transmission, under NIRC Section 264-A), 6 steps, 2
+  portals. Caught and fixed one internal inconsistency in the English
+  content before translating it: the zapper-software penalty row said
+  "2-4 years'" imprisonment while its sibling card said "2-10 years'"
+  for the same offense — corrected the row to match the higher, more
+  heavily-sourced figure.
+- **Migration 336**: a 2-story arc — the January 2025 Joint
+  Administrative Order (JAO 001-2025) launching a *separate*
+  cross-border e-invoicing/pre-border technical verification system
+  for imports (genuinely distinct from the domestic EIS mandate,
+  explicitly flagged as such in both the story and the deep-dive
+  scope card, to head off the natural confusion between the two), and
+  the October 2025 RR 26-2025 deadline-extension news. Both stories
+  fact-checked against live sources (DOF's own press release for the
+  JAO; Sovos and the Philippine News Agency for the RR 26-2025
+  extension), which is what caught that RR 26-2025 was actually issued
+  16 October 2025, not September as the deep-dive's first draft had
+  it — fixed in migrations 334-335 before this build finished.
+- **Migration 337**: tracking sources — the BIR's own EIS portal and
+  its general eServices hub. No EC factsheet — the Philippines isn't
+  an EU member.
+- **Static files**: `countries.js` (Asia-Pacific, alphabetically
+  between New Zealand and Singapore), `shared/deep-dive-render.mjs`'s
+  slug map + name translations. No `TOPO_NAME_OVERRIDES` needed — the
+  bundled topology already spells it `"Philippines"`, confirmed via
+  direct Python inspection; no `MARKER_LONLAT_OVERRIDES` needed either
+  (the Philippines' landmass is large enough to render/click
+  normally); Asia-Pacific's existing `REGION_BOUNDS` box already
+  comfortably contains its extent.
+- Hand-swept the jurisdiction count across all four languages'
+  `i18n/*.json` files (24 files, 40 replacements) and every static
+  HTML page (`index.html`, `subscribe.html`,
+  `einvoicing-compliance-tracker.html`, and 4 education pages) via a
+  word-boundary-safe sweep — confirmed `einvoicing-compliance-corner`'s
+  own unrelated `line-height:1.45` CSS value was correctly left
+  untouched (a decimal, not a jurisdiction count).
+- Verified via `apply_migrations.py --local --dry-run`: "Replay
+  validation OK (337 files, only the documented pre-existing errors)."
+  A structural query against the replayed in-memory DB confirmed every
+  row/translation count (4 milestones × 4 languages = 16 milestone
+  translations; 5 stats × 4 = 20; 8 cards × 4 = 32; 1 lifecycle card ×
+  4 = 4 with 4 statuses × 4 = 16; 5 penalty rows × 4 = 20; 6 steps × 4
+  = 24; 2 portals × 4 = 8; 2 stories × 4 = 8; 2 tracking sources × 4 =
+  8), a total `countries` row count of 47 (46 real jurisdictions + the
+  standalone EU row), and zero stray "45 jurisdiction/countries/
+  tracked" references remaining anywhere in the `translations` table
+  (40 rows correctly reading "46").
+
+**Code complete, deploy pending** — this sandbox has no live
+Cloudflare/D1/`wrangler` credentials. Dan needs to run
+`apply_migrations.py --remote` (for migrations 331-337) and
+`wrangler deploy` for both `site-worker` and `members-worker` (to pick
+up `countries.js`, `shared/deep-dive-render.mjs`, and the swept
+`i18n`/HTML files) from his own machine, then confirm back before this
+gets marked deployed and tested. Worth testing per the usual Phase 5
+checklist: the tracker board (Asia-Pacific, between New Zealand and
+Singapore), the Deep Dives menu, the translated `<title>`/`<h1>`, the
+subscribe picker, `/members/preferences`, story-tagging surfacing in
+The Map's "Latest updates" panel, `/sources`, the jurisdiction count
+everywhere (now 46), milestone-card translation, and The Map's own
+shape/marker rendering for the Philippines.
+
 ## Open items / next steps
 
 ### Real open work
