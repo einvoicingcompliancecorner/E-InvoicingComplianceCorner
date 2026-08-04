@@ -42,7 +42,7 @@ export const COUNTRY_DEEP_DIVE_SLUGS = {
   "Italy": "italy", "Jordan": "jordan", "Luxembourg": "luxembourg", "Netherlands": "netherlands", "Malaysia": "malaysia", "Mexico": "mexico", "New Zealand": "new-zealand",
   "Norway": "norway", "Oman": "oman", "Peru": "peru", "Philippines": "philippines", "Poland": "poland", "Portugal": "portugal", "Romania": "romania",
   "Saudi Arabia": "saudi-arabia", "Singapore": "singapore", "Slovakia": "slovakia", "South Korea": "south-korea",
-  "Spain": "spain", "Sweden": "sweden", "Turkey": "turkey", "United Arab Emirates": "uae",
+  "Spain": "spain", "Sweden": "sweden", "Taiwan": "taiwan", "Turkey": "turkey", "United Arab Emirates": "uae",
   "United Kingdom": "uk", "United States": "united-states", "Vietnam": "vietnam",
 };
 
@@ -60,7 +60,7 @@ const COUNTRY_NAME_TRANSLATIONS = {
     "Sweden": "Suecia", "Turkey": "Turquía", "United Kingdom": "Reino Unido", "Saudi Arabia": "Arabia Saudita",
     "United Arab Emirates": "Emiratos Árabes Unidos", "Australia": "Australia", "China": "China",
     "India": "India", "Malaysia": "Malasia", "New Zealand": "Nueva Zelanda", "Philippines": "Filipinas", "Singapore": "Singapur", "South Korea": "Corea del Sur",
-    "Vietnam": "Vietnam",
+    "Taiwan": "Taiwán", "Vietnam": "Vietnam",
     "Argentina": "Argentina", "Brazil": "Brasil", "Canada": "Canadá", "Chile": "Chile", "Colombia": "Colombia", "Mexico": "México", "Peru": "Perú",
     "United States": "Estados Unidos", "European Union": "Unión Europea"
   },
@@ -73,7 +73,7 @@ const COUNTRY_NAME_TRANSLATIONS = {
     "Sweden": "Schweden", "Turkey": "Türkei", "United Kingdom": "Vereinigtes Königreich", "Saudi Arabia": "Saudi-Arabien",
     "United Arab Emirates": "Vereinigte Arabische Emirate", "Australia": "Australien", "China": "China",
     "India": "Indien", "Malaysia": "Malaysia", "New Zealand": "Neuseeland", "Philippines": "Philippinen", "Singapore": "Singapur", "South Korea": "Südkorea",
-    "Vietnam": "Vietnam",
+    "Taiwan": "Taiwan", "Vietnam": "Vietnam",
     "Argentina": "Argentinien", "Brazil": "Brasilien", "Canada": "Kanada", "Chile": "Chile", "Colombia": "Kolumbien", "Mexico": "Mexiko", "Peru": "Peru",
     "United States": "Vereinigte Staaten", "European Union": "Europäische Union"
   },
@@ -86,7 +86,7 @@ const COUNTRY_NAME_TRANSLATIONS = {
     "Sweden": "Suède", "Turkey": "Turquie", "United Kingdom": "Royaume-Uni", "Saudi Arabia": "Arabie saoudite",
     "United Arab Emirates": "Émirats arabes unis", "Australia": "Australie", "China": "Chine",
     "India": "Inde", "Malaysia": "Malaisie", "New Zealand": "Nouvelle-Zélande", "Philippines": "Philippines", "Singapore": "Singapour", "South Korea": "Corée du Sud",
-    "Vietnam": "Viêt Nam",
+    "Taiwan": "Taïwan", "Vietnam": "Viêt Nam",
     "Argentina": "Argentine", "Brazil": "Brésil", "Canada": "Canada", "Chile": "Chili", "Colombia": "Colombie", "Mexico": "Mexique", "Peru": "Pérou",
     "United States": "États-Unis", "European Union": "Union européenne"
   }

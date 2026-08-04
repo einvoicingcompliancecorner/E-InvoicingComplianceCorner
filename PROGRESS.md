@@ -3961,6 +3961,111 @@ and lands back on the full piece after verifying; the tracker's
 Resources menu shows the new "Insights & Whitepapers" item in all 4
 languages.
 
+### Taiwan added as country #48 (4 August 2026, code complete, deploy pending)
+
+Dan said "I think I'd like to add another country now." Presented the
+already-vetted candidates from the earlier Philippines-adjacent
+research (Taiwan, Uruguay, Costa Rica, Ecuador) via AskUserQuestion;
+Dan picked Taiwan.
+
+Taiwan's eGUI (electronic Government Uniform Invoice) system is
+another post-issuance transmission model — closer in shape to the
+Philippines/South Korea family than to the clearance-model countries
+(Colombia, Argentina, Jordan). It built up in four distinct stages
+rather than arriving at once: cross-border VAT/eGUI registration for
+foreign digital service providers from 1 May 2017; the universal
+domestic mandate from 1 January 2021 (every business-tax-registered
+entity, B2B and B2C); an amendment to the Business Tax Act (published
+3 September 2024) formalizing 7-day (B2B) / 2-day (B2C) transmission
+deadlines and TWD 1,500-15,000 penalties; and MIG 4.0 becoming the
+sole valid XML format from 1 January 2026, once the legacy MIG
+3.1/3.2 transition period closed on 31 December 2025 — already past
+as of today, not a future/expected milestone. Also surfaced, but
+deliberately built as a **story rather than a milestone**: on 22
+September 2025 Taiwan's Digital Industry Agency became a Peppol
+Authority for cross-border invoicing — explicitly voluntary, so it
+doesn't belong in `milestones` (which represents mandate-scope facts),
+but it's a nice piece of connective tissue since the named Peppol
+network members (Australia, Japan, Malaysia, New Zealand, Singapore,
+UK) are all separately tracked jurisdictions here already.
+
+**4 milestones**, live-researched against ecosio, rtcsuite, EDICOM,
+vatcalc, vatupdate, Taxually, and vatit.com: the 2017 foreign-provider
+VAT/eGUI regime (anchor/off-board, `mandate_scope: 'none'` — the
+cross-border enabling piece, no domestic obligation yet), the 2021
+universal mandate (on-board, `mandate_scope: 'b2b'` — the headline
+date), the 2024 BTA amendment (on-board, `mandate_scope: 'none'` —
+procedural/penalty change, not a scope change, same treatment as
+Argentina's RG 5616/2024 and Czech Republic's EET 2.0), and the 2026
+MIG 4.0 format lock-in (on-board, `mandate_scope: 'none'` — technical
+format upgrade, already passed, no `confidence: 'expected'` flag
+needed).
+
+- **Migration 339**: country row (`TW`, `Taiwan`, region
+  `Asia-Pacific`, slug `taiwan`, `in_picker=1`) + name translations
+  (Taiwán/Taiwan/Taïwan).
+- **Migrations 340-341**: the 4 milestones with full translations.
+  Proper nouns and format/institution names (eGUI, MIG, MOF, BTA, TWD)
+  deliberately left untranslated across all 4 languages.
+- **Migrations 342-343**: full deep-dive content across 4 languages —
+  5 stats, 8 cards across 3 sections (including a dedicated "Cross-
+  border context: Peppol adoption" card naming all 6 network members),
+  a lifecycle pill card (the "issue-then-transmit flow," matching the
+  Philippines/South Korea post-issuance template) with 4 status
+  entries, a 3-row penalty table (TWD 1,500-15,000 for late B2B
+  transmission, late B2C transmission, and inaccurate data,
+  respectively), 5 steps, 1 portal.
+- **Migration 344**: 1 story — the 22 September 2025 Peppol Authority
+  adoption, framed explicitly as voluntary and additive to (not a
+  change of) the domestic mandate, naming Australia/Japan/Malaysia/
+  New Zealand/Singapore/UK as connected network members.
+- **Migration 345**: 1 tracking source — the Ministry of Finance's
+  E-Invoice Platform (`einvoice.nat.gov.tw`), cited by ecosio as the
+  official portal. **Flag for Dan to verify directly from a browser**
+  before this goes live: the sandbox's `WebFetch` got a 403 trying to
+  load it directly (likely bot-blocking, not necessarily a dead link,
+  but not independently confirmed here) — same precedent as South
+  Korea's NTS link earlier in this project's history.
+- **Static files**: `countries.js` (Asia-Pacific, alphabetically
+  between South Korea and Vietnam), `shared/deep-dive-render.mjs`'s
+  slug map + name translations, `i18n/{en,es,de,fr}.json`'s
+  `countryNames` (hand-added — the recommended `generate_files.py
+  --remote` regeneration path isn't runnable from this sandbox, no
+  Cloudflare credentials here). No `TOPO_NAME_OVERRIDES` or
+  `MARKER_LONLAT_OVERRIDES` needed — confirmed via direct Python
+  inspection of the bundled topology that it already has a real
+  `MultiPolygon` feature named exactly `"Taiwan"`.
+- Hand-swept the jurisdiction count across all four languages'
+  `i18n/*.json` files (main + subscribe + 4 education pages, 20 files)
+  and every static HTML page (`index.html`, `subscribe.html`,
+  `einvoicing-compliance-tracker.html`, and 4 education pages).
+- Verified via a standalone Python replay script (reusing
+  `apply_migrations.py`'s own schema-loading + `KNOWN_REPLAY_ERRORS`
+  logic, since this sandbox can't run its `--remote`/`--local` modes
+  directly): "Replay validation OK (346 files, only the documented
+  pre-existing errors)." A structural query against the replayed
+  in-memory DB confirmed every row/translation count (4 milestones ×
+  4 languages = 16; 5 stats × 4 = 20; 8 cards × 4 = 32; 1 lifecycle
+  card × 4 = 4 with 4 statuses × 4 = 16; 3 penalty rows × 4 = 12; 5
+  steps × 4 = 20; 1 portal × 4 = 4; 1 story × 4 = 4; 1 tracking source
+  × 4 = 4), a total `countries` row count of 48 (47 real jurisdictions
+  + the standalone EU row), and zero stray "46 jurisdiction/countries/
+  tracked" references remaining anywhere in the `translations` table
+  (16 rows correctly reading "47").
+
+Deploy (from your machine, once ready):
+```
+cd members-worker/migrations && python3 apply_migrations.py --remote
+cd ../../site-worker && npx wrangler deploy
+cd ../../members-worker && npx wrangler deploy
+```
+No members-worker route or login-flow code was touched for this
+country add (matching ADDING-A-COUNTRY.md's plain-country-add
+callout) — but members-worker still bundles `shared/deep-dive-
+render.mjs` for its own admin preview, so redeploy it too to pick up
+Taiwan's slug map and name-translation entries, same as the
+Philippines build.
+
 ## Open items / next steps
 
 ### Real open work
