@@ -1,0 +1,83 @@
+{
+  "_meta": { "language": "es", "reviewed": true },
+  "backLink": "← Volver al panel general",
+  "header": {
+    "eyebrow": "Legal",
+    "title": "Política de privacidad",
+    "lastUpdated": "Última actualización:"
+  },
+  "fillNotice": "Esta política se ofrece con fines de transparencia y no constituye asesoramiento legal — considere que sea revisada por un abogado.",
+  "s1": {
+    "heading": "1. A quién se aplica esta política",
+    "p1": "Esta política explica qué ocurre con sus datos personales cuando se suscribe al boletín mensual de cumplimiento gratuito, envía comentarios o interactúa de otro modo con este sitio, operado por E-Invoicing Compliance Corner (\"nosotros\"), con sede en el Reino Unido.",
+    "p2": "Si tiene preguntas sobre esta política o desea ejercer alguno de los derechos descritos a continuación, contáctenos en <a href=\"mailto:einvoicingcompliancecorner@gmail.com\">einvoicingcompliancecorner@gmail.com</a>."
+  },
+  "s2": {
+    "heading": "2. Qué datos recopilamos",
+    "table": {
+      "h1": "Datos",
+      "h2": "Cuándo",
+      "h3": "Por qué",
+      "r1c1": "Nombre y apellidos",
+      "r1c2": "Al suscribirse al boletín",
+      "r1c3": "Para dirigirnos a usted personalmente e identificar su cuenta con nuestro proveedor de correo electrónico",
+      "r2c1": "Dirección de correo electrónico",
+      "r2c2": "Al suscribirse al boletín, al enviar comentarios",
+      "r2c3": "Para enviar el boletín, responder a los comentarios y gestionar su suscripción",
+      "r3c1": "Cargo y nombre de la empresa",
+      "r3c2": "Al suscribirse al boletín",
+      "r3c3": "Para conocer a nuestra base de suscriptores — opcional en principio, actualmente obligatorio al suscribirse",
+      "r4c1": "Contenido de los comentarios",
+      "r4c2": "Al enviar el formulario de comentarios",
+      "r4c3": "Para mejorar la precisión y la cobertura del panel de seguimiento"
+    },
+    "p1": "Utilizamos Cloudflare Web Analytics para conocer el tráfico agregado de este sitio — por ejemplo, cuántas páginas se visualizan y cuáles son las más populares. Este sitio no utiliza cookies, identificadores persistentes ni seguimiento entre sitios de usuarios individuales. Cloudflare Web Analytics no utiliza cookies ni le rastrea individualmente ni en otros sitios web; solo informa sobre el tráfico de forma agregada. Si nuestro uso de la analítica cambia de manera que afecte a esto, actualizaremos esta política para reflejarlo de antemano."
+  },
+  "s3": {
+    "heading": "3. Nuestra base legal para el tratamiento",
+    "p1": "Cuando se aplica el RGPD del Reino Unido/UE, tratamos su nombre, correo electrónico, cargo y empresa sobre la base de su <strong>consentimiento</strong> — usted opta por participar al enviar el formulario de suscripción, y puede retirar ese consentimiento (darse de baja) en cualquier momento a través del enlace incluido en cada correo. Tratamos los comentarios que nos envía sobre la base de nuestro <strong>interés legítimo</strong> en mejorar la precisión y la cobertura del panel de seguimiento."
+  },
+  "s4": {
+    "heading": "4. Con quién compartimos los datos",
+    "p1": "Utilizamos un pequeño número de proveedores especializados para gestionar la suscripción y el boletín — no vendemos ni compartimos sus datos con fines publicitarios.",
+    "li1": "<strong>Resend</strong> (nuestro proveedor de envío de correo) — envía enlaces de acceso y el boletín mensual en nuestro nombre. Consulte la <a href=\"https://resend.com/legal/privacy-policy\" target=\"_blank\" rel=\"noopener\">política de privacidad de Resend</a>.",
+    "li2": "<strong>Cloudflare</strong> (alojamiento, almacenamiento de datos de suscriptores y Web Analytics) — aloja este sitio, almacena su registro de suscriptor y proporciona analítica de tráfico agregada y sin cookies. Consulte la <a href=\"https://www.cloudflare.com/privacypolicy/\" target=\"_blank\" rel=\"noopener\">política de privacidad de Cloudflare</a>.",
+    "p2": "Cada uno de estos proveedores es responsable de forma independiente de su propio cumplimiento en materia de protección de datos, y los proveedores de confianza de este tipo suelen ofrecer un Acuerdo de Tratamiento de Datos que cubre precisamente este tipo de relación."
+  },
+  "s5": {
+    "heading": "5. Cuánto tiempo conservamos sus datos",
+    "li1": "<strong>Mientras permanezca suscrito</strong>: su nombre y correo electrónico permanecen en nuestra lista de distribución activa para recibir el boletín. La suscripción es gratuita y actualmente no caduca ni se renueva — permanece suscrito hasta que se da de baja.",
+    "li2": "<strong>Después de darse de baja</strong>: se le elimina de nuestras listas de distribución activas, y sus datos se eliminan en un plazo de 30 días.",
+    "li3": "<strong>Los comentarios enviados</strong> se conservan durante el tiempo razonablemente necesario para actuar sobre ellos, y no se utilizan para ningún otro fin."
+  },
+  "s6": {
+    "heading": "6. Transferencias internacionales",
+    "p1": "Resend y Cloudflare operan infraestructura en varios países, que pueden incluir ubicaciones fuera del Reino Unido/EEE. Cuando esto se aplique, se confía en que estos proveedores mantengan las salvaguardas adecuadas (como las Cláusulas Contractuales Tipo) para dicha transferencia, de conformidad con sus propios términos de privacidad y protección de datos publicados."
+  },
+  "s7": {
+    "heading": "7. Sus derechos",
+    "p1": "Según su ubicación, generalmente tiene derecho a:",
+    "li1": "Solicitar qué datos personales tenemos sobre usted y obtener una copia de ellos",
+    "li2": "Solicitarnos que corrijamos datos inexactos",
+    "li3": "Solicitarnos que eliminemos sus datos (\"derecho de supresión\"), sujeto a las obligaciones legales de conservación descritas anteriormente",
+    "li4": "Oponerse o restringir determinados tratamientos",
+    "li5": "Retirar su consentimiento en cualquier momento cuando nos basemos en él",
+    "li6": "Darse de baja del boletín en cualquier momento a través del enlace incluido en cada correo",
+    "p2": "Para ejercer cualquiera de estos derechos, contáctenos en <a href=\"mailto:einvoicingcompliancecorner@gmail.com\">einvoicingcompliancecorner@gmail.com</a>. Si no está satisfecho con nuestra respuesta, puede presentar una reclamación ante su autoridad local de protección de datos — en el Reino Unido, se trata de la <a href=\"https://ico.org.uk\" target=\"_blank\" rel=\"noopener\">Information Commissioner's Office (ICO)</a>."
+  },
+  "s8": {
+    "heading": "8. Privacidad de los menores",
+    "p1": "Este servicio está destinado a profesionales de empresas y no está dirigido a menores, ni se utiliza a sabiendas para recopilar datos de ellos."
+  },
+  "s9": {
+    "heading": "9. Cambios en esta política",
+    "p1": "Si realizamos cambios sustanciales en la forma en que tratamos sus datos, actualizaremos la fecha de \"última actualización\" indicada arriba y, cuando el cambio sea significativo, notificaremos a los suscriptores activos por correo electrónico."
+  },
+  "s10": {
+    "heading": "10. Contacto",
+    "p1": "E-Invoicing Compliance Corner<br><a href=\"mailto:einvoicingcompliancecorner@gmail.com\">einvoicingcompliancecorner@gmail.com</a><br>Reino Unido"
+  },
+  "footer": {
+    "note": "Esta página es una plantilla general y no constituye asesoramiento legal. Las obligaciones de protección de datos varían según la jurisdicción y los proveedores y procesos específicos que utilice — por favor, haga que la revise un profesional cualificado antes de confiar en ella para una base de clientes real y de pago."
+  }
+}

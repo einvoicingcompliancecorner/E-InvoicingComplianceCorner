@@ -1,0 +1,83 @@
+{
+  "_meta": { "language": "en", "reviewed": true },
+  "backLink": "← Back to global tracker",
+  "header": {
+    "eyebrow": "Legal",
+    "title": "Privacy Policy",
+    "lastUpdated": "Last updated:"
+  },
+  "fillNotice": "This policy is provided for transparency and is not legal advice — consider having it reviewed by a solicitor.",
+  "s1": {
+    "heading": "1. Who this policy covers",
+    "p1": "This policy explains what happens to your personal data when you subscribe to the free monthly compliance newsletter, submit feedback, or otherwise interact with this site, operated by E-Invoicing Compliance Corner (\"we\", \"us\"), based in the United Kingdom.",
+    "p2": "If you have questions about this policy or want to exercise any of the rights described below, contact us at <a href=\"mailto:einvoicingcompliancecorner@gmail.com\">einvoicingcompliancecorner@gmail.com</a>."
+  },
+  "s2": {
+    "heading": "2. What we collect",
+    "table": {
+      "h1": "Data",
+      "h2": "When",
+      "h3": "Why",
+      "r1c1": "First name, last name",
+      "r1c2": "Subscribing to the newsletter",
+      "r1c3": "To address you personally and identify your account with our email provider",
+      "r2c1": "Email address",
+      "r2c2": "Subscribing to the newsletter, sending feedback",
+      "r2c3": "To deliver the newsletter, respond to feedback, and manage your subscription",
+      "r3c1": "Job title, company name",
+      "r3c2": "Subscribing to the newsletter",
+      "r3c3": "To understand our subscriber base — optional in principle, currently required at signup",
+      "r4c1": "Feedback content",
+      "r4c2": "Submitting the feedback form",
+      "r4c3": "To improve the accuracy and coverage of the tracker"
+    },
+    "p1": "We use Cloudflare Web Analytics to understand aggregate traffic to this site — such as how many pages are viewed and which pages are popular. This site has no cookies, no persistent identifiers, and no cross-site tracking of individuals. Cloudflare Web Analytics doesn't use cookies and doesn't track you individually or across other websites; it reports on traffic in aggregate only. If our use of analytics changes in a way that affects this, we'll update this policy to reflect it beforehand."
+  },
+  "s3": {
+    "heading": "3. Our legal basis for processing",
+    "p1": "Where UK/EU GDPR applies, we process your name, email, job title, and company on the basis of your <strong>consent</strong> — you opt in by submitting the sign-up form, and can withdraw that consent (unsubscribe) at any time via the link in every email. We process feedback you submit to us on the basis of our <strong>legitimate interest</strong> in improving the accuracy and coverage of the tracker."
+  },
+  "s4": {
+    "heading": "4. Who we share data with",
+    "p1": "We use a small number of specialist providers to run the subscription and newsletter — we don't sell or share your data for advertising purposes.",
+    "li1": "<strong>Resend</strong> (our email delivery provider) — sends sign-in links and the monthly newsletter on our behalf. See <a href=\"https://resend.com/legal/privacy-policy\" target=\"_blank\" rel=\"noopener\">Resend's privacy policy</a>.",
+    "li2": "<strong>Cloudflare</strong> (hosting, subscriber data storage, and Web Analytics) — hosts this site, stores your subscriber record, and provides aggregate, cookie-free traffic analytics. See <a href=\"https://www.cloudflare.com/privacypolicy/\" target=\"_blank\" rel=\"noopener\">Cloudflare's privacy policy</a>.",
+    "p2": "Each of these providers is independently responsible for their own data protection compliance, and reputable providers of this kind typically offer a Data Processing Agreement covering exactly this kind of arrangement."
+  },
+  "s5": {
+    "heading": "5. How long we keep your data",
+    "li1": "<strong>While you remain subscribed</strong>: your name and email remain on our active mailing list to receive the newsletter. The subscription is free and does not currently expire or renew — you stay subscribed until you unsubscribe.",
+    "li2": "<strong>After you unsubscribe</strong>: you are removed from our active mailing lists, and your data is removed within 30 days.",
+    "li3": "<strong>Feedback submissions</strong> are retained for as long as reasonably needed to act on them, and are not used for any other purpose."
+  },
+  "s6": {
+    "heading": "6. International transfers",
+    "p1": "Resend and Cloudflare operate infrastructure in multiple countries, which may include locations outside the UK/EEA. Where this applies, these providers are relied upon to maintain appropriate safeguards (such as Standard Contractual Clauses) for any such transfer, consistent with their own published privacy and data protection terms."
+  },
+  "s7": {
+    "heading": "7. Your rights",
+    "p1": "Depending on your location, you generally have the right to:",
+    "li1": "Ask what personal data we hold about you and get a copy of it",
+    "li2": "Ask us to correct inaccurate data",
+    "li3": "Ask us to delete your data (\"right to erasure\"), subject to legal retention obligations described above",
+    "li4": "Object to or restrict certain processing",
+    "li5": "Withdraw consent at any time where we rely on it",
+    "li6": "Unsubscribe from the newsletter at any time via the link in every email",
+    "p2": "To exercise any of these, contact <a href=\"mailto:einvoicingcompliancecorner@gmail.com\">einvoicingcompliancecorner@gmail.com</a>. If you're unsatisfied with our response, you can lodge a complaint with your local data protection authority — in the UK, this is the <a href=\"https://ico.org.uk\" target=\"_blank\" rel=\"noopener\">Information Commissioner's Office (ICO)</a>."
+  },
+  "s8": {
+    "heading": "8. Children's privacy",
+    "p1": "This service is intended for business professionals and is not directed at, or knowingly used to collect data from, children."
+  },
+  "s9": {
+    "heading": "9. Changes to this policy",
+    "p1": "If we make material changes to how we handle your data, we'll update the \"last updated\" date above and, where the change is significant, notify active subscribers by email."
+  },
+  "s10": {
+    "heading": "10. Contact",
+    "p1": "E-Invoicing Compliance Corner<br><a href=\"mailto:einvoicingcompliancecorner@gmail.com\">einvoicingcompliancecorner@gmail.com</a><br>United Kingdom"
+  },
+  "footer": {
+    "note": "This page is a general template and does not constitute legal advice. Data protection obligations vary by jurisdiction and by the specific providers and processes you use — please have this reviewed by a qualified professional before relying on it for a real, paying customer base."
+  }
+}

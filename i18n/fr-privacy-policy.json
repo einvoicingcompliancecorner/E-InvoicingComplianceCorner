@@ -1,0 +1,83 @@
+{
+  "_meta": { "language": "fr", "reviewed": true },
+  "backLink": "← Retour au suivi global",
+  "header": {
+    "eyebrow": "Juridique",
+    "title": "Politique de confidentialité",
+    "lastUpdated": "Dernière mise à jour :"
+  },
+  "fillNotice": "Cette politique est fournie à des fins de transparence et ne constitue pas un conseil juridique — envisagez de la faire examiner par un avocat.",
+  "s1": {
+    "heading": "1. À qui s'applique cette politique",
+    "p1": "Cette politique explique ce qui advient de vos données personnelles lorsque vous vous abonnez à la newsletter mensuelle gratuite sur la conformité, envoyez des commentaires, ou interagissez autrement avec ce site, exploité par E-Invoicing Compliance Corner (« nous »), basé au Royaume-Uni.",
+    "p2": "Si vous avez des questions sur cette politique ou souhaitez exercer l'un des droits décrits ci-dessous, contactez-nous à <a href=\"mailto:einvoicingcompliancecorner@gmail.com\">einvoicingcompliancecorner@gmail.com</a>."
+  },
+  "s2": {
+    "heading": "2. Ce que nous collectons",
+    "table": {
+      "h1": "Données",
+      "h2": "Quand",
+      "h3": "Pourquoi",
+      "r1c1": "Prénom, nom",
+      "r1c2": "Lors de l'abonnement à la newsletter",
+      "r1c3": "Pour nous adresser à vous personnellement et identifier votre compte auprès de notre prestataire de messagerie",
+      "r2c1": "Adresse e-mail",
+      "r2c2": "Lors de l'abonnement à la newsletter, lors de l'envoi de commentaires",
+      "r2c3": "Pour transmettre la newsletter, répondre aux commentaires et gérer votre abonnement",
+      "r3c1": "Fonction, nom de l'entreprise",
+      "r3c2": "Lors de l'abonnement à la newsletter",
+      "r3c3": "Pour comprendre notre base d'abonnés — facultatif en principe, actuellement requis lors de l'inscription",
+      "r4c1": "Contenu des commentaires",
+      "r4c2": "Lors de l'envoi du formulaire de commentaires",
+      "r4c3": "Pour améliorer la précision et la couverture du suivi"
+    },
+    "p1": "Nous utilisons Cloudflare Web Analytics pour comprendre le trafic global de ce site — par exemple, combien de pages sont consultées et lesquelles sont les plus populaires. Ce site n'utilise aucun cookie, aucun identifiant persistant et aucun suivi individuel entre sites. Cloudflare Web Analytics n'utilise pas de cookies et ne vous suit pas individuellement ni sur d'autres sites web ; il ne rend compte du trafic que de manière globale. Si notre utilisation des outils d'analyse évolue d'une manière qui affecte ce point, nous mettrons à jour cette politique au préalable pour en tenir compte."
+  },
+  "s3": {
+    "heading": "3. Notre base légale de traitement",
+    "p1": "Lorsque le RGPD britannique/européen s'applique, nous traitons votre nom, votre e-mail, votre fonction et votre entreprise sur la base de votre <strong>consentement</strong> — vous y consentez en soumettant le formulaire d'inscription, et pouvez retirer ce consentement (vous désabonner) à tout moment via le lien présent dans chaque e-mail. Nous traitons les commentaires que vous nous envoyez sur la base de notre <strong>intérêt légitime</strong> à améliorer la précision et la couverture du suivi."
+  },
+  "s4": {
+    "heading": "4. Avec qui nous partageons les données",
+    "p1": "Nous utilisons un petit nombre de prestataires spécialisés pour gérer l'abonnement et la newsletter — nous ne vendons ni ne partageons vos données à des fins publicitaires.",
+    "li1": "<strong>Resend</strong> (notre prestataire de messagerie) — envoie les liens de connexion et la newsletter mensuelle en notre nom. Voir la <a href=\"https://resend.com/legal/privacy-policy\" target=\"_blank\" rel=\"noopener\">politique de confidentialité de Resend</a>.",
+    "li2": "<strong>Cloudflare</strong> (hébergement, stockage des données des abonnés et Web Analytics) — héberge ce site, stocke votre fiche d'abonné et fournit des analyses de trafic globales, sans cookies. Voir la <a href=\"https://www.cloudflare.com/privacypolicy/\" target=\"_blank\" rel=\"noopener\">politique de confidentialité de Cloudflare</a>.",
+    "p2": "Chacun de ces prestataires est responsable de manière indépendante de sa propre conformité en matière de protection des données, et les prestataires réputés de ce type proposent généralement un accord de traitement des données couvrant précisément ce type de relation."
+  },
+  "s5": {
+    "heading": "5. Combien de temps nous conservons vos données",
+    "li1": "<strong>Pendant la durée de votre abonnement</strong> : votre nom et votre e-mail restent sur notre liste de diffusion active afin de recevoir la newsletter. L'abonnement est gratuit et n'expire ni ne se renouvelle actuellement — vous restez abonné jusqu'à ce que vous vous désabonniez.",
+    "li2": "<strong>Après votre désabonnement</strong> : vous êtes retiré de nos listes de diffusion actives, et vos données sont supprimées dans un délai de 30 jours.",
+    "li3": "<strong>Les commentaires envoyés</strong> sont conservés pendant la durée raisonnablement nécessaire pour y donner suite, et ne sont utilisés à aucune autre fin."
+  },
+  "s6": {
+    "heading": "6. Transferts internationaux",
+    "p1": "Resend et Cloudflare exploitent une infrastructure dans plusieurs pays, ce qui peut inclure des sites situés hors du Royaume-Uni/de l'EEE. Le cas échéant, ces prestataires sont réputés maintenir des garanties appropriées (telles que des clauses contractuelles types) pour tout transfert de ce type, conformément à leurs propres conditions de confidentialité et de protection des données publiées."
+  },
+  "s7": {
+    "heading": "7. Vos droits",
+    "p1": "Selon votre lieu de résidence, vous avez généralement le droit de :",
+    "li1": "Demander quelles données personnelles nous détenons à votre sujet et en obtenir une copie",
+    "li2": "Nous demander de corriger des données inexactes",
+    "li3": "Nous demander de supprimer vos données (« droit à l'effacement »), sous réserve des obligations légales de conservation décrites ci-dessus",
+    "li4": "Vous opposer à certains traitements ou en demander la limitation",
+    "li5": "Retirer votre consentement à tout moment lorsque nous nous appuyons sur celui-ci",
+    "li6": "Vous désabonner de la newsletter à tout moment via le lien présent dans chaque e-mail",
+    "p2": "Pour exercer l'un de ces droits, contactez <a href=\"mailto:einvoicingcompliancecorner@gmail.com\">einvoicingcompliancecorner@gmail.com</a>. Si vous n'êtes pas satisfait de notre réponse, vous pouvez déposer une réclamation auprès de votre autorité locale de protection des données — au Royaume-Uni, il s'agit de l'<a href=\"https://ico.org.uk\" target=\"_blank\" rel=\"noopener\">Information Commissioner's Office (ICO)</a>."
+  },
+  "s8": {
+    "heading": "8. Confidentialité des enfants",
+    "p1": "Ce service est destiné aux professionnels et n'est ni ciblé vers les enfants, ni utilisé sciemment pour collecter des données auprès d'eux."
+  },
+  "s9": {
+    "heading": "9. Modifications de cette politique",
+    "p1": "Si nous apportons des modifications importantes à la manière dont nous traitons vos données, nous mettrons à jour la date de « dernière mise à jour » ci-dessus et, lorsque le changement est significatif, nous en informerons les abonnés actifs par e-mail."
+  },
+  "s10": {
+    "heading": "10. Contact",
+    "p1": "E-Invoicing Compliance Corner<br><a href=\"mailto:einvoicingcompliancecorner@gmail.com\">einvoicingcompliancecorner@gmail.com</a><br>Royaume-Uni"
+  },
+  "footer": {
+    "note": "Cette page est un modèle général et ne constitue pas un conseil juridique. Les obligations en matière de protection des données varient selon la juridiction et selon les prestataires et processus spécifiques que vous utilisez — veuillez la faire examiner par un professionnel qualifié avant de vous y fier pour une base de clients réelle et payante."
+  }
+}

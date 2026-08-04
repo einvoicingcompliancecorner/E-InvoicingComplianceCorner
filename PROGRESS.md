@@ -3621,6 +3621,82 @@ via `apply_migrations.py --remote`, both `site-worker` and
 (Asia-Pacific, between New Zealand and Singapore), and the jurisdiction
 count reads correctly at 46.
 
+### Privacy Policy wired into the i18n system (4 August 2026, code complete, deploy pending)
+
+Dan asked for an evaluation of item 3 ("Translation frameworks for
+remaining static pages") and then asked to build it. Audit of all 10
+static HTML pages found 8 already fully wired (the tracker, all 5
+education pages, feedback.html, subscribe.html — each with its own
+`data-namespace` and full `{lang}-{namespace}.json` family). Exactly
+one real gap: **privacy-policy.html** included `i18n/i18n.js` (so it
+got the shared language banner) but had zero `data-i18n` attributes
+and no `i18n/*-privacy-policy.json` files — visitors selecting
+Spanish/German/French got the site chrome in their language but the
+entire ~1,000-word policy body stayed English-only.
+(`index.html` was also unwired, but it's a bare meta-refresh redirect
+stub with no real content — `i18n.js`'s own doc comments call out
+pages like this as fine to leave alone, so it wasn't touched.)
+
+Built following the exact pattern used by feedback.html/subscribe.html:
+
+- Added `data-namespace="privacy-policy"` to the page's `i18n.js`
+  script tag.
+- Tagged all 54 translatable elements with `data-i18n` keys —
+  `backLink`, `header.*`, `fillNotice`, and `s1`..`s10` (heading +
+  paragraphs/list items per section, matching the page's own numbered
+  sections), plus a 3-column, 4-row `s2.table.*` for the "what we
+  collect" mini-table. The "Last updated:" label is translated the
+  same way the education pages already do it (`header.lastUpdated`
+  wraps only the label, the date itself — "2 August 2026" — stays
+  outside the span, unwrapped, exactly like every education page's
+  `header.lastUpdated`/date pattern).
+- Created `i18n/{en,es,de,fr}-privacy-policy.json` (`_meta.reviewed:
+  true` for all four, matching the project's standing convention).
+  Reused existing site-wide translations where they already existed
+  for consistency: "Privacy Policy" → Política de privacidad /
+  Datenschutzerklärung / Politique de confidentialité (already used in
+  each language's tracker `footerNote` key), "United Kingdom" → Reino
+  Unido / Vereinigtes Königreich / Royaume-Uni (already used in the
+  tracker's country-name translations), and `backLink` reusing the
+  exact "← Volver al panel general" / "← Zurück zur Übersicht" / "←
+  Retour au suivi global" strings from every other page's `backLink`
+  key. Embedded HTML (the `<strong>` emphasis in sections 3-5, the
+  `mailto:`/external `<a>` links in sections 1, 4, and 7, the
+  `<br>`-separated contact block in section 10) was kept inline within
+  each translated string, matching how `en.json`'s own `footerNote`
+  key already embeds a live `<a href="privacy-policy.html">` link —
+  `i18n.js` applies translations via `el.innerHTML`, not
+  `textContent`, so this renders correctly.
+- Deliberately did *not* nest a second `data-i18n` element inside
+  section 10's contact paragraph for the country name — no existing
+  page in this codebase nests one `data-i18n` element inside another,
+  and doing so would have been unsafe here: `i18n.js` takes a static
+  snapshot of every `[data-i18n]` element via `querySelectorAll`
+  before applying translations, so setting the outer paragraph's
+  `innerHTML` first would silently destroy the inner element before
+  its own translation could ever apply. Instead "United Kingdom" is
+  simply written inline, per language, as part of the single `s10.p1`
+  value — the same self-contained-string approach the rest of the
+  file already uses everywhere else.
+
+Verified programmatically rather than by eye: parsed the HTML for
+every `data-i18n="..."` key (54 found) and confirmed each one resolves
+to a non-empty string in all four new JSON files (no missing/empty
+keys in any language); validated all four JSON files parse cleanly;
+confirmed HTML tag balance (div/p/h2/table/tr/th/td/ul/li/span all
+open/close matched) after the edit; confirmed the page has no "45"/"46"
+jurisdiction-count text to worry about, so this item is independent of
+the jurisdiction-count sweep.
+
+**Code complete, deploy pending** — this only touches the
+`site-worker`'s static files (`privacy-policy.html` plus 4 new
+`i18n/*.json` files), no D1 migrations, so a single
+`npx wrangler deploy` from `site-worker/` picks it up. Spot-check once
+deployed: visit `/privacy-policy.html?lang=es` (and `de`, `fr`) and
+confirm the whole policy body — not just the language banner — renders
+in the selected language, then confirm `?lang=en` (and no `?lang=`
+param at all) still renders correctly in English.
+
 ## Open items / next steps
 
 ### Real open work
@@ -3851,8 +3927,13 @@ count reads correctly at 46.
    entries above for the method and the near-misses to avoid
    repeating (a page can look exactly right by title and still have
    silently stopped being updated years ago; always verify live).
-3. **Translation frameworks for the remaining static pages** — the
-   pages not yet covered by the i18n system.
+3. ~~**Translation frameworks for the remaining static pages**~~ —
+   evaluated 4 August 2026: of 10 static HTML pages, 8 were already
+   fully wired into i18n; privacy-policy.html was the one real gap
+   (had the shared language banner but zero translated body content)
+   and is now built, code complete with deploy pending — see the dated
+   entry above. index.html is a bare redirect stub and doesn't need
+   wiring. No further static pages are outstanding.
 4. **Business threads** (decisions, not code): theinvoicinghub.com
    competitive review; pricing (free vs the shelved $5/$8 tiers);
    the vendor registration/advertising concept; the two remaining
