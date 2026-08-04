@@ -3961,7 +3961,7 @@ and lands back on the full piece after verifying; the tracker's
 Resources menu shows the new "Insights & Whitepapers" item in all 4
 languages.
 
-### Taiwan added as country #48 (4 August 2026, code complete, deploy pending)
+### Taiwan added as country #48 (4 August 2026, deployed & tested)
 
 Dan said "I think I'd like to add another country now." Presented the
 already-vetted candidates from the earlier Philippines-adjacent
@@ -4053,18 +4053,24 @@ needed).
   tracked" references remaining anywhere in the `translations` table
   (16 rows correctly reading "47").
 
-Deploy (from your machine, once ready):
-```
-cd members-worker/migrations && python3 apply_migrations.py --remote
-cd ../../site-worker && npx wrangler deploy
-cd ../../members-worker && npx wrangler deploy
-```
-No members-worker route or login-flow code was touched for this
-country add (matching ADDING-A-COUNTRY.md's plain-country-add
-callout) — but members-worker still bundles `shared/deep-dive-
-render.mjs` for its own admin preview, so redeploy it too to pick up
-Taiwan's slug map and name-translation entries, same as the
-Philippines build.
+**A note on how this got pushed:** this session's sandbox hit a
+newly-rolled-out git-proxy restriction that blocks `git push` to any
+repo not in the session's "authorized repository set" — confirmed via
+a public Claude Code issue describing the same server-side rollout,
+with no working self-service fix available yet (the error message's
+own suggested fixes, adding the repo to session sources or an
+`add_repo` command, don't exist in the product). Neither the
+session's stored PAT nor a freshly regenerated one got past it, since
+the block happens at the proxy layer before GitHub ever sees a token.
+Worked around it by exporting the one unpushed commit as a git
+bundle (`git bundle create ... origin/main..main`), sending it to Dan,
+and having him fetch/merge/push it from his own machine — a clean
+fast-forward, no conflicts.
+
+**Deployed and tested** (confirmed by Dan): migrations 339-346 applied
+via `apply_migrations.py --remote`, `site-worker` and `members-worker`
+both redeployed. Taiwan is live on the tracker board and confirmed
+visible in the UI.
 
 ## Open items / next steps
 
@@ -4072,8 +4078,9 @@ Philippines build.
 
 1. **Coverage expansion** — Netherlands, Austria, Greece, Cyprus, Oman,
    Jordan, Israel, South Korea, Vietnam, Turkey, Czech Republic,
-   Argentina, Colombia, and Philippines are all confirmed deployed and
-   tested — every country added this session is now live. Qatar was evaluated
+   Argentina, Colombia, Philippines, and Taiwan are all confirmed
+   deployed and tested — every country added this session is now
+   live. Qatar was evaluated
    and held back at Dan's choice (thinner than first assessed). Still
    not tracked in Europe: Bulgaria, Estonia,
    Hungary, Latvia, Lithuania, Malta, Slovenia, Iceland,
@@ -4203,12 +4210,13 @@ Philippines build.
      relaxed: Decree 70/2025 (effective June 2025) extended scope to
      foreign digital suppliers and mandated connected POS invoicing
      for retail. Fully in force, not a future date.
-   - **Taiwan — strong candidate.** The eGUI system has been mandatory
-     for all foreign and domestic companies since **January 2021**,
-     with a format migration already underway (MIG 4.0 available since
-     Jan 2024; older MIG 3.1/3.2 sunset 31 December 2025). Invoices
-     transmit to the Ministry of Finance's platform within 7 days of
-     delivery. In force ~5 years, actively evolving.
+   - **Taiwan — now built and deployed as country #48**, see the dated
+     entry above. The eGUI system has been mandatory for all foreign
+     and domestic companies since **January 2021**, with a format
+     migration already underway (MIG 4.0 mandatory since Jan 2026;
+     older MIG 3.1/3.2 sunset 31 December 2025). Invoices transmit to
+     the Ministry of Finance's platform within 7 days (B2B) or 2 days
+     (B2C) of issuance. In force ~5 years, actively evolving.
    - **Pakistan — strong candidate, with a caveat on schedule
      stability.** Verified directly against the government's own SRO
      69(I)/2025 and SRO 1852(I)/2025 (Federal Board of Revenue, PDF
@@ -4264,9 +4272,9 @@ Philippines build.
    of Qatar. Hold off on Sri Lanka until it has a confirmed mandatory
    date beyond the pilot, and skip Japan — there's no real invoicing
    mandate there to document.
-   **South Korea and Vietnam are now both built** — both code complete
-   with deploy pending (see the dated entries above). Taiwan remains
-   the strongest next candidate from this same evaluation whenever
+   **South Korea, Vietnam, and Taiwan are now all built and deployed**
+   (see the dated entries above). Pakistan and Indonesia are the
+   strongest next candidates from this same evaluation whenever
    coverage expands further into Asia-Pacific.
 
    **Americas coverage evaluated (4 August 2026).** Dan asked for an
