@@ -3035,7 +3035,7 @@ tracker already handles well, if Dan wants to build several Americas
 countries in one pass. **Argentina was built the same day — see the
 dated entry below.**
 
-### Argentina added as country #45 (4 August 2026, code complete, deploy pending)
+### Argentina added as country #45 (4 August 2026, deployed & tested)
 
 Dan said "Please start with Argentina" in response to the evaluation
 above — built exactly the structure recommended there. Argentina is
@@ -3169,30 +3169,30 @@ upgrade and RG 5705 "IVA Simple" pre-filled VAT returns, 2026's RG
 Final audit against the full ADDING-A-COUNTRY.md checklist: all items
 pass.
 
-**Code complete, deploy pending** — this sandbox has no live
-Cloudflare/D1 credentials (confirmed by the same `CLOUDFLARE_API_TOKEN`
-error every prior country build has hit). Migrations 314-321 need
-`apply_migrations.py --remote` from Dan's own machine, and both
-`site-worker` and `members-worker` need `wrangler deploy` to pick up
-the static-file changes (`countries.js`, `shared/deep-dive-render.mjs`,
-and the 32 swept `i18n`/HTML files).
+**Deployed and tested** (confirmed by Dan): migrations 314-321 applied
+via `apply_migrations.py --remote`, both `site-worker` and
+`members-worker` redeployed to pick up the static-file changes
+(`countries.js`, `shared/deep-dive-render.mjs`, and the 32 swept
+`i18n`/HTML files). Argentina is live on the tracker board (Americas,
+first alphabetically), and the jurisdiction count reads correctly at
+44.
 
 ## Open items / next steps
 
 ### Real open work
 
 1. **Coverage expansion** — Netherlands, Austria, Greece, Cyprus, Oman,
-   Jordan, Israel, South Korea, Vietnam, Turkey, and Czech Republic
-   are all confirmed deployed and tested. Argentina (country #45) is
-   code complete, deploy pending (see the 4 August 2026 entry above).
-   Qatar was evaluated and held back at Dan's choice (thinner than
-   first assessed). Still not tracked in Europe: Bulgaria, Estonia,
-   Hungary, Latvia, Lithuania, Malta, Slovenia, Iceland, Liechtenstein.
-   Still not tracked in the Americas: Colombia, Uruguay, Costa Rica,
-   Ecuador, Dominican Republic, Guatemala, Paraguay, Bolivia, Panama,
-   El Salvador (see the Americas evaluation above — Colombia is the
-   next recommended addition). The scaffolder + runner make each
-   addition a fraction of the old effort.
+   Jordan, Israel, South Korea, Vietnam, Turkey, Czech Republic, and
+   Argentina are all confirmed deployed and tested — every country
+   added this session is now live. Qatar was evaluated and held back
+   at Dan's choice (thinner than first assessed). Still not tracked in
+   Europe: Bulgaria, Estonia, Hungary, Latvia, Lithuania, Malta,
+   Slovenia, Iceland, Liechtenstein. Still not tracked in the
+   Americas: Colombia, Uruguay, Costa Rica, Ecuador, Dominican
+   Republic, Guatemala, Paraguay, Bolivia, Panama, El Salvador (see
+   the Americas evaluation above — Colombia is the next recommended
+   addition). The scaffolder + runner make each addition a fraction
+   of the old effort.
 
    **Middle East coverage evaluated (3 August 2026).** Dan asked for
    an assessment of which additional Middle Eastern countries are
@@ -3392,9 +3392,10 @@ and the 32 swept `i18n`/HTML files).
    but not prioritized (**Panama, El Salvador**). See the dated entry
    above for the full ranked write-up and sourcing.
 
-   **Recommendation**: add Argentina and Colombia first. Not yet
-   built — this was an evaluation only, per Dan's ask; ready to
-   scaffold whichever candidate(s) he wants to proceed with.
+   **Recommendation**: add Argentina and Colombia first. **Argentina
+   is now built, deployed, and tested** (see the 4 August 2026 entry
+   above) — Colombia is the next recommended addition; ready to
+   scaffold whenever Dan wants to proceed.
 2. **Tracking-source URL audit, continued** — ~40 of 54 sources not
    yet verified for whether they'll ever actually surface real news.
    Two rounds done (Brazil/Australia/Ireland/Poland/Saudi
