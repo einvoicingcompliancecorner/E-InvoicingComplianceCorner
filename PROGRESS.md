@@ -3395,6 +3395,110 @@ output line.
 `/members/archive` page and the in-frame embedded panel — both working
 well; the country filter lists and functions correctly in both.
 
+### Newsletter Archive country filter: balanced columns replaced with a dropdown + "my subscribed countries" toggle (4 August 2026, code complete, deploy pending)
+
+Dan asked, separately from the balanced-columns work above, whether the
+country filter would read cleaner as a single dropdown (default "All
+Countries") to the left of the existing edition dropdown, rather than a
+block of checkboxes. Mocked this up first
+(`archive-country-dropdown-mockup.html`, sent directly, not committed)
+comparing the current checkboxes against a plain single-select
+dropdown.
+
+Before building it for real, Dan asked whether a single-select would
+break the existing behaviour of pre-checking a signed-in member's saved
+country preferences on page load. Checked the actual code
+(`renderArchiveList()`'s `preferredCountries`/`isPreferred` logic and
+the Preferences page's multi-select checkbox markup) rather than
+assuming: yes, it would — a `<select>` can only represent one chosen
+value at a time, and a member can have several saved countries. Sent a
+second mock-up (`archive-country-hybrid-mockup.html`) proposing a
+hybrid — the dropdown for picking one country at a time, plus a
+separate "Show my subscribed countries (N)" link below the toolbar
+(signed-in members with saved preferences only) that applies their
+full saved list at once, shown as read-only chips since the dropdown
+itself can't display more than one selection. Dan approved the hybrid.
+
+Implemented in both places that render the Archive filter:
+
+- **`members-worker/src/index.js`, `renderArchiveList()`**: the old
+  flattened `filterEntries`/`COUNTRY_FILTER_ENTRIES` data (built for
+  the balanced-columns checkboxes) is gone. In its place:
+  `countryOptionsHtml` builds a real `<optgroup>`-per-region,
+  `<option>`-per-country block server-side for a new
+  `<select id="countryFilter" class="archive-search">` in
+  `.archive-toolbar`, positioned between the search box and the
+  edition dropdown, defaulting to a new `archive.allCountries` i18n
+  string ("All Countries" / "Todos los países" / "Alle Länder" /
+  "Tous les pays"). `preferredDisplayNames` (built the same way the old
+  `isPreferred` check worked, via `englishNameByDisplayName`) ships to
+  the client as `PREFERRED_COUNTRIES` JSON, alongside two new i18n
+  strings shipped as plain JSON constants —
+  `MY_COUNTRIES_LINK_LABEL` (`archive.showMyCountries(n)`, e.g. "Show
+  my subscribed countries (3)") and `SHOW_ALL_COUNTRIES_LABEL`
+  (`archive.showAllCountries`). A new `<div id="myCountriesRow">`
+  sits below the toolbar.
+- Client-side, `getCheckedCountries()` no longer reads checkboxes — it
+  returns `PREFERRED_COUNTRIES` when `myCountriesActive` is on, else
+  whatever single country (or none) the dropdown has selected.
+  `renderMyCountriesRow()` renders either the "show my subscribed
+  countries" link or, once active, the chip row plus a "show all
+  countries" link, and only renders anything at all when
+  `PREFERRED_COUNTRIES.length` is non-zero (anonymous visitors and
+  members with no saved countries see nothing there, same as before).
+  Selecting a specific country in the dropdown cancels
+  `myCountriesActive` via a new `change` listener. The old
+  `computeBalancedColumns()`/`renderBalancedColumns()` and the resize
+  listener that recomputed column counts are removed entirely — a
+  dropdown doesn't need width-based recomputation.
+- Old CSS removed: `.country-check-filter`, `.balanced-columns`,
+  `.balanced-col`. New CSS added: `select.archive-search` (fixed
+  min-width, matching the edition dropdown's sizing), `.my-countries-row`,
+  `.my-countries-link` (+ hover), `.my-chip-row`, `.my-chip`.
+  `.region-group-label` is untouched (still shared with the Preferences
+  page).
+- **`einvoicing-compliance-tracker.html`, `openArchive()`** (the
+  in-frame embedded panel — fixed for this exact same feature area
+  once already this session, see above): ported the same hybrid logic
+  rather than the old balanced-columns port. `openArchive()` now
+  regex-extracts `PREFERRED_COUNTRIES`, `MY_COUNTRIES_LINK_LABEL`, and
+  `SHOW_ALL_COUNTRIES_LABEL` from the fetched HTML (replacing the old
+  `COUNTRY_FILTER_ENTRIES` extraction) into new page-level state
+  (`archivePreferredCountries`, `archiveMyCountriesActive`,
+  `archiveMyCountriesLinkLabel`, `archiveShowAllCountriesLabel`).
+  `activeCountriesShadow()` and `renderMyCountriesRowShadow()` are the
+  shadow-root-scoped equivalents of the two new client functions above
+  — the country dropdown itself needs no porting this time, since it's
+  server-built markup that arrives as part of the fetched
+  `.archive-wrap` HTML (unlike the balanced-columns checkboxes, which
+  were built entirely by client JS that never ran inside the shadow
+  root). `renderArchiveGrid()`'s checked-country line now calls
+  `activeCountriesShadow()` instead of querying `.country-filter-cb`
+  checkboxes. The old `computeBalancedColumns()`,
+  `renderBalancedColumnsShadow()`, and the page-level resize listener
+  that recomputed column counts are all removed.
+- Verified: `node --check` on `members-worker/src/index.js` directly;
+  the client `<script>` embedded in `renderArchiveList()`'s template
+  literal extracted (interpolations stubbed out, nested-template-
+  literal escaping undone) and `node --check`'d separately; the
+  tracker's relevant `<script>` block extracted the same way both
+  pass with no errors. Repo-wide grep confirms no remaining references
+  to `COUNTRY_FILTER_ENTRIES`, `balanced-columns`/`balanced-col`,
+  `country-filter-cb`, `country-check-filter`, or `countryCheckboxes`
+  (the one hit for that last string is an unrelated local variable in
+  the Preferences page's own country multi-select, untouched by this
+  change).
+
+**Code complete, deploy pending** — no live Cloudflare credentials in
+this sandbox. Needs `wrangler deploy` for both `members-worker` and
+`site-worker`, then a check of both the standalone `/members/archive`
+page and the in-frame embedded panel (same precedent as the
+balanced-columns bug above: this exact feature has broken in-frame
+before while working standalone) — specifically: the dropdown filters
+correctly, and for a signed-in member with saved country preferences,
+the "Show my subscribed countries" link/chips apply and clear
+correctly in both places.
+
 ## Open items / next steps
 
 ### Real open work

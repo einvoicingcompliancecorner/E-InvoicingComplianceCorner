@@ -129,6 +129,9 @@ const WORKER_I18N = {
       accuracyNote: (date) => `Dates and thresholds above reflect the situation as of ${date} and may have changed since — check the official source and country deep dive below for the latest.`,
       promoBannerText: "You're viewing the full archive for free — no account needed.",
       promoBannerCta: "Subscribe for email alerts →",
+      allCountries: "All Countries",
+      showMyCountries: (countries) => `Show my subscribed countries (${countries})`,
+      showAllCountries: "Show all countries",
     },
     preferences: {
       title: "Alert preferences",
@@ -175,6 +178,9 @@ const WORKER_I18N = {
       accuracyNote: (date) => `Las fechas y umbrales anteriores reflejan la situación a ${date} y pueden haber cambiado desde entonces — consulte la fuente oficial y el análisis del país a continuación para conocer las últimas novedades.`,
       promoBannerText: "Está viendo el archivo completo de forma gratuita — no necesita ninguna cuenta.",
       promoBannerCta: "Suscríbase para recibir alertas por correo →",
+      allCountries: "Todos los países",
+      showMyCountries: (countries) => `Mostrar mis países suscritos (${countries})`,
+      showAllCountries: "Mostrar todos los países",
     },
     preferences: {
       title: "Preferencias de alertas",
@@ -221,6 +227,9 @@ const WORKER_I18N = {
       accuracyNote: (date) => `Die obigen Daten und Schwellenwerte spiegeln den Stand vom ${date} wider und können sich seither geändert haben — die aktuellsten Informationen finden Sie in der offiziellen Quelle und der Länderanalyse unten.`,
       promoBannerText: "Sie sehen sich das vollständige Archiv derzeit kostenlos an — kein Konto erforderlich.",
       promoBannerCta: "Für E-Mail-Benachrichtigungen abonnieren →",
+      allCountries: "Alle Länder",
+      showMyCountries: (countries) => `Meine abonnierten Länder anzeigen (${countries})`,
+      showAllCountries: "Alle Länder anzeigen",
     },
     preferences: {
       title: "Benachrichtigungseinstellungen",
@@ -267,6 +276,9 @@ const WORKER_I18N = {
       accuracyNote: (date) => `Les dates et seuils ci-dessus reflètent la situation au ${date} et peuvent avoir changé depuis — consultez la source officielle et l'analyse du pays ci-dessous pour les dernières informations.`,
       promoBannerText: "Vous consultez actuellement l'intégralité des archives gratuitement — aucun compte requis.",
       promoBannerCta: "S'abonner pour recevoir des alertes par e-mail →",
+      allCountries: "Tous les pays",
+      showMyCountries: (countries) => `Afficher mes pays suivis (${countries})`,
+      showAllCountries: "Afficher tous les pays",
     },
     preferences: {
       title: "Préférences d'alerte",
@@ -1902,22 +1914,24 @@ const BASE_STYLE = `
   }
   .archive-search:focus{outline:2px solid var(--soon); outline-offset:0;}
   .archive-search::placeholder{color:var(--muted);}
-  .country-check-filter{
-    display:inline-flex; align-items:center; gap:6px; font-family:'IBM Plex Mono',monospace; font-size:11.5px;
-    color:var(--muted); cursor:pointer; user-select:none;
+  select.archive-search{flex:0 0 auto; cursor:pointer; min-width:160px;}
+  /* Country filter: a single dropdown (grouped by region via <optgroup>,
+     "All Countries" default) replaces the old balanced-columns checkbox
+     block -- one country at a time from the dropdown, or, for a signed-in
+     member with saved country preferences, the "my subscribed countries"
+     link below applies their full saved list at once (shown as chips,
+     since a plain <select> can't represent more than one selection). */
+  .my-countries-row{display:flex; align-items:center; gap:10px; margin:12px 0 22px; flex-wrap:wrap;}
+  .my-countries-link{
+    font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--stamp); text-decoration:underline;
+    cursor:pointer; background:none; border:none; padding:0;
   }
-  .country-check-filter:hover{color:var(--text-lo);}
-  .country-check-filter input[type="checkbox"]{accent-color:var(--stamp); cursor:pointer;}
-  /* Country filter: all regions are flattened into one sequence (region
-     label, then its countries) and split client-side (see the
-     renderBalancedColumns() script below) into however many columns fit
-     the available width, so every column ends up with roughly the same
-     number of rows instead of one column per region growing however
-     tall that region happens to be. */
-  .balanced-columns{display:flex; gap:24px; align-items:flex-start; margin-bottom:22px;}
-  .balanced-col{flex:1 1 0; display:flex; flex-direction:column; gap:5px; min-width:0;}
-  .balanced-col .region-group-label{margin-top:12px;}
-  .balanced-col .region-group-label:first-child{margin-top:0;}
+  .my-countries-link:hover{color:#8a2e1f;}
+  .my-chip-row{display:flex; gap:6px; flex-wrap:wrap;}
+  .my-chip{
+    font-family:'IBM Plex Mono',monospace; font-size:10.5px; background:var(--paper-2); color:#6b5f3f;
+    padding:4px 10px; border-radius:999px; display:inline-flex; align-items:center; gap:5px;
+  }
   .issue-grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(300px,1fr)); gap:16px;}
   .issue-card{
     background:var(--paper); border:1px solid var(--paper-line); border-radius:var(--radius);
@@ -2064,21 +2078,39 @@ function renderArchiveList(stories, regionByCountryName, englishNameByDisplayNam
   // or this would silently never match on any non-English page.
   const preferredSet = new Set(preferredCountries || []);
 
-  // Flattened, in the same region order as before, but as plain data
-  // rather than pre-built markup — the client splits this sequence into
-  // however many columns fit the available width (see
-  // renderBalancedColumns() below) so every column ends up with roughly
-  // the same number of rows, rather than one grid column per region
-  // growing however tall that particular region happens to be.
-  const filterEntries = [];
+  // Preferred (saved-subscription) countries, as display names, shipped
+  // to the client for the "show my subscribed countries" toggle -- see
+  // renderMyCountriesRow() in the client script below. Built by walking
+  // countriesByRegion/preferredSet rather than using preferredCountries
+  // directly, so it only ever lists names that both match a real country
+  // appearing on this page AND use the same translated display form as
+  // the dropdown options below (comparisons go through
+  // englishNameByDisplayName since preferredCountries stores canonical
+  // English names, same as everywhere else on the site).
+  const preferredDisplayNames = [];
   for (const region of orderedRegions) {
-    filterEntries.push({ h: translateRegionName(lang, region) });
     for (const c of countriesByRegion[region]) {
-      const isPreferred = preferredSet.has(englishNameByDisplayName[c] || c);
-      filterEntries.push({ v: c, c: isPreferred ? 1 : 0 });
+      if (preferredSet.has(englishNameByDisplayName[c] || c)) preferredDisplayNames.push(c);
     }
   }
-  const filterEntriesJson = JSON.stringify(filterEntries);
+  const preferredCountriesJson = JSON.stringify(preferredDisplayNames);
+  const myCountriesLinkLabel = t(lang, "archive.showMyCountries")(preferredDisplayNames.length);
+  const showAllCountriesLabel = t(lang, "archive.showAllCountries");
+
+  // Single-select country dropdown, grouped by region via <optgroup> --
+  // replaces the old balanced-columns checkbox block. "All Countries" is
+  // the default option. A signed-in member's full saved country list
+  // can't be represented by a single-select at once, so it's applied
+  // instead via the separate "show my subscribed countries" link/chips
+  // built client-side from PREFERRED_COUNTRIES; picking a specific
+  // country from this dropdown cancels that mode (see the client script
+  // below).
+  const countryOptionsHtml = orderedRegions
+    .map((region) => {
+      const options = countriesByRegion[region].map((c) => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join("");
+      return `<optgroup label="${escapeHtml(translateRegionName(lang, region))}">${options}</optgroup>`;
+    })
+    .join("");
 
   // Ship the story data to the client as JSON so search/filter can run
   // instantly without a round-trip to the Worker for every keystroke.
@@ -2118,13 +2150,17 @@ function renderArchiveList(stories, regionByCountryName, englishNameByDisplayNam
 
     <div class="archive-toolbar">
       <input type="text" id="archiveSearch" class="archive-search" placeholder="${t(lang, "archive.searchPlaceholder")}">
+      ${allCountries.length ? `<select id="countryFilter" class="archive-search">
+        <option value="" selected>${t(lang, "archive.allCountries")}</option>
+        ${countryOptionsHtml}
+      </select>` : ""}
       <select id="editionFilter" class="archive-search" style="flex:0 0 auto; cursor:pointer;">
         <option value="thisYear" selected>${t(lang, "archive.editionThisYear")}</option>
         <option value="latest">${t(lang, "archive.editionLatest")}</option>
         <option value="all">${t(lang, "archive.editionAll")}</option>
       </select>
     </div>
-    ${allCountries.length ? `<div id="countryCheckboxes"><div class="balanced-columns" id="balancedColumns"></div></div>` : ""}
+    ${allCountries.length ? `<div id="myCountriesRow" class="my-countries-row"></div>` : ""}
 
     <div class="issue-grid" id="issueGrid"></div>
 
@@ -2137,7 +2173,9 @@ function renderArchiveList(stories, regionByCountryName, englishNameByDisplayNam
   </div>
   <script>
     const ARCHIVE_STORIES = ${storiesJson};
-    const COUNTRY_FILTER_ENTRIES = ${filterEntriesJson};
+    const PREFERRED_COUNTRIES = ${preferredCountriesJson};
+    const MY_COUNTRIES_LINK_LABEL = ${JSON.stringify(myCountriesLinkLabel)};
+    const SHOW_ALL_COUNTRIES_LABEL = ${JSON.stringify(showAllCountriesLabel)};
     const NO_ISSUES_TEXT = ${JSON.stringify(t(lang, "archive.noIssuesYet"))};
     const NO_MATCH_TEXT = ${JSON.stringify(t(lang, "archive.noMatch"))};
 
@@ -2145,8 +2183,40 @@ function renderArchiveList(stories, regionByCountryName, englishNameByDisplayNam
       return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     }
 
+    // ---------- country filter: dropdown + saved-preference toggle ----------
+    // A single <select> (one country, or "All Countries") replaces the
+    // old balanced-columns checkbox block. It can't represent more than
+    // one selection at a time, so a signed-in member's full saved
+    // country list is applied separately via myCountriesActive -- the
+    // "show my subscribed countries" link below the toolbar, rendered
+    // only when PREFERRED_COUNTRIES is non-empty. Picking a specific
+    // country from the dropdown cancels that mode.
+    let myCountriesActive = false;
+
     function getCheckedCountries(){
-      return Array.from(document.querySelectorAll('.country-filter-cb:checked')).map(cb => cb.value);
+      if(myCountriesActive) return PREFERRED_COUNTRIES.slice();
+      const countryFilterEl = document.getElementById('countryFilter');
+      return (countryFilterEl && countryFilterEl.value) ? [countryFilterEl.value] : [];
+    }
+
+    function renderMyCountriesRow(){
+      const row = document.getElementById('myCountriesRow');
+      if(!row || !PREFERRED_COUNTRIES.length) return;
+      if(myCountriesActive){
+        const chips = PREFERRED_COUNTRIES.map(c => \`<span class="my-chip">\${escapeHtmlClient(c)}</span>\`).join('');
+        row.innerHTML = \`<div class="my-chip-row">\${chips}</div><button type="button" class="my-countries-link" id="myCountriesToggle">\${escapeHtmlClient(SHOW_ALL_COUNTRIES_LABEL)}</button>\`;
+      }else{
+        row.innerHTML = \`<button type="button" class="my-countries-link" id="myCountriesToggle">\${escapeHtmlClient(MY_COUNTRIES_LINK_LABEL)}</button>\`;
+      }
+      document.getElementById('myCountriesToggle').addEventListener('click', () => {
+        myCountriesActive = !myCountriesActive;
+        if(myCountriesActive){
+          const countryFilterEl = document.getElementById('countryFilter');
+          if(countryFilterEl) countryFilterEl.value = '';
+        }
+        renderMyCountriesRow();
+        renderGrid();
+      });
     }
 
     // Most recent month present in the data (e.g. "2026-07"), used for
@@ -2194,75 +2264,20 @@ function renderArchiveList(stories, regionByCountryName, englishNameByDisplayNam
 
     document.getElementById('archiveSearch').addEventListener('input', renderGrid);
     document.getElementById('editionFilter').addEventListener('change', renderGrid);
-
-    // ---------- country filter: balanced columns ----------
-    // COUNTRY_FILTER_ENTRIES is the flattened region-label + country
-    // sequence built server-side. It's split into however many columns
-    // fit the container's real width, sized so every column ends up
-    // with roughly the same number of rows -- rather than one column
-    // per region (which made a big region like Europe grow far taller
-    // than the others). Recomputed on resize since the right column
-    // count depends on how much horizontal room is actually available.
-    const filterCheckedValues = new Set(COUNTRY_FILTER_ENTRIES.filter(e => e.c).map(e => e.v));
-
-    function computeBalancedColumns(containerWidth, entries, targetColWidth, gap){
-      let columns = Math.max(1, Math.floor((containerWidth + gap) / (targetColWidth + gap)));
-      columns = Math.min(columns, entries.length || 1);
-      const total = entries.length;
-      const base = Math.floor(total / columns);
-      const remainder = total % columns;
-      // Spread any remainder across the first few columns so no column
-      // ends up with more than one extra row versus another.
-      const sizes = Array.from({ length: columns }, (_, i) => base + (i < remainder ? 1 : 0));
-      // Orphan-avoidance: if a column's last row would be a region
-      // label with nothing under it in that column, push it down into
-      // the next column instead.
-      for(let i = 0; i < columns - 1; i++){
-        let idx = 0;
-        for(let j = 0; j <= i; j++) idx += sizes[j];
-        const lastEntry = entries[idx - 1];
-        if(lastEntry && lastEntry.h !== undefined && sizes[i] > 1){
-          sizes[i] -= 1;
-          sizes[i + 1] += 1;
-        }
-      }
-      const cols = [];
-      let start = 0;
-      for(let i = 0; i < columns; i++){
-        cols.push(entries.slice(start, start + sizes[i]));
-        start += sizes[i];
-      }
-      return cols;
-    }
-
-    function renderBalancedColumns(){
-      const wrapEl = document.getElementById('balancedColumns');
-      if(!wrapEl || !COUNTRY_FILTER_ENTRIES.length) return;
-      const width = wrapEl.clientWidth || wrapEl.parentElement.clientWidth;
-      const cols = computeBalancedColumns(width, COUNTRY_FILTER_ENTRIES, 170, 24);
-      wrapEl.innerHTML = cols.map(colEntries => {
-        const rows = colEntries.map(e => e.h !== undefined
-          ? \`<p class="region-group-label">\${escapeHtmlClient(e.h)}</p>\`
-          : \`<label class="country-check-filter"><input type="checkbox" class="country-filter-cb" value="\${escapeHtmlClient(e.v)}" \${filterCheckedValues.has(e.v) ? "checked" : ""}>\${escapeHtmlClient(e.v)}</label>\`
-        ).join('');
-        return \`<div class="balanced-col">\${rows}</div>\`;
-      }).join('');
-      wrapEl.querySelectorAll('.country-filter-cb').forEach(cb => {
-        cb.addEventListener('change', () => {
-          if(cb.checked) filterCheckedValues.add(cb.value); else filterCheckedValues.delete(cb.value);
-          renderGrid();
-        });
+    const countryFilterEl = document.getElementById('countryFilter');
+    if(countryFilterEl){
+      countryFilterEl.addEventListener('change', () => {
+        // Picking a specific country cancels "my subscribed countries"
+        // mode -- the two are mutually exclusive ways of driving the
+        // same single filter.
+        if(countryFilterEl.value) myCountriesActive = false;
+        renderMyCountriesRow();
+        renderGrid();
       });
     }
 
-    renderBalancedColumns();
+    renderMyCountriesRow();
     renderGrid();
-
-    let filterResizeTimer;
-    window.addEventListener('resize', () => {
-      clearTimeout(filterResizeTimer);
-      filterResizeTimer = setTimeout(renderBalancedColumns, 150);
-    });
 
     // ---------- story pop-out modal ----------
     // Clicking a story used to navigate away to a brand-new page. It

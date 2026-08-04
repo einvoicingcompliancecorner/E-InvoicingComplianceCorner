@@ -2643,66 +2643,46 @@ let archiveShadowRoot = null;
 let archiveStoriesData = [];
 let archiveNoIssuesText = '';
 let archiveNoMatchText = '';
-let archiveFilterEntries = [];
-let archiveFilterCheckedValues = new Set();
+let archivePreferredCountries = [];
+let archiveMyCountriesActive = false;
+let archiveMyCountriesLinkLabel = '';
+let archiveShowAllCountriesLabel = '';
 
 function escapeHtmlClient(str){
   return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-// Ported from members-worker's own computeBalancedColumns() /
-// renderBalancedColumns() -- same reasoning as renderArchiveGrid()
+// Ported from members-worker's own getCheckedCountries()/
+// renderMyCountriesRow() -- same reasoning as renderArchiveGrid()
 // below: the fetched page's own <script> never runs inside this
-// shadow root, and the country-filter checkboxes are now built
-// entirely by that script (not baked into the server HTML the way
-// they used to be), so they have to be rebuilt here too, or the
-// filter section is just empty when the archive is opened in-page.
-function computeBalancedColumns(containerWidth, entries, targetColWidth, gap){
-  let columns = Math.max(1, Math.floor((containerWidth + gap) / (targetColWidth + gap)));
-  columns = Math.min(columns, entries.length || 1);
-  const total = entries.length;
-  const base = Math.floor(total / columns);
-  const remainder = total % columns;
-  const sizes = Array.from({ length: columns }, (_, i) => base + (i < remainder ? 1 : 0));
-  // Orphan-avoidance: if a column's last row would be a region label
-  // with nothing under it in that column, push it down into the next
-  // column instead.
-  for(let i = 0; i < columns - 1; i++){
-    let idx = 0;
-    for(let j = 0; j <= i; j++) idx += sizes[j];
-    const lastEntry = entries[idx - 1];
-    if(lastEntry && lastEntry.h !== undefined && sizes[i] > 1){
-      sizes[i] -= 1;
-      sizes[i + 1] += 1;
-    }
-  }
-  const cols = [];
-  let start = 0;
-  for(let i = 0; i < columns; i++){
-    cols.push(entries.slice(start, start + sizes[i]));
-    start += sizes[i];
-  }
-  return cols;
+// shadow root, so the country dropdown's "show my subscribed
+// countries" toggle has to be rebuilt here too, or that row is just
+// empty when the archive is opened in-page.
+function activeCountriesShadow(){
+  if(archiveMyCountriesActive) return archivePreferredCountries.slice();
+  if(!archiveShadowRoot) return [];
+  const countryFilterEl = archiveShadowRoot.getElementById('countryFilter');
+  return (countryFilterEl && countryFilterEl.value) ? [countryFilterEl.value] : [];
 }
 
-function renderBalancedColumnsShadow(){
+function renderMyCountriesRowShadow(){
   if(!archiveShadowRoot) return;
-  const wrapEl = archiveShadowRoot.getElementById('balancedColumns');
-  if(!wrapEl || !archiveFilterEntries.length) return;
-  const width = wrapEl.clientWidth || (wrapEl.parentElement && wrapEl.parentElement.clientWidth) || 0;
-  const cols = computeBalancedColumns(width, archiveFilterEntries, 170, 24);
-  wrapEl.innerHTML = cols.map(colEntries => {
-    const rows = colEntries.map(e => e.h !== undefined
-      ? `<p class="region-group-label">${escapeHtmlClient(e.h)}</p>`
-      : `<label class="country-check-filter"><input type="checkbox" class="country-filter-cb" value="${escapeHtmlClient(e.v)}" ${archiveFilterCheckedValues.has(e.v) ? "checked" : ""}>${escapeHtmlClient(e.v)}</label>`
-    ).join('');
-    return `<div class="balanced-col">${rows}</div>`;
-  }).join('');
-  wrapEl.querySelectorAll('.country-filter-cb').forEach(cb => {
-    cb.addEventListener('change', () => {
-      if(cb.checked) archiveFilterCheckedValues.add(cb.value); else archiveFilterCheckedValues.delete(cb.value);
-      renderArchiveGrid();
-    });
+  const row = archiveShadowRoot.getElementById('myCountriesRow');
+  if(!row || !archivePreferredCountries.length) return;
+  if(archiveMyCountriesActive){
+    const chips = archivePreferredCountries.map(c => `<span class="my-chip">${escapeHtmlClient(c)}</span>`).join('');
+    row.innerHTML = `<div class="my-chip-row">${chips}</div><button type="button" class="my-countries-link" id="myCountriesToggle">${escapeHtmlClient(archiveShowAllCountriesLabel)}</button>`;
+  }else{
+    row.innerHTML = `<button type="button" class="my-countries-link" id="myCountriesToggle">${escapeHtmlClient(archiveMyCountriesLinkLabel)}</button>`;
+  }
+  row.querySelector('#myCountriesToggle').addEventListener('click', () => {
+    archiveMyCountriesActive = !archiveMyCountriesActive;
+    if(archiveMyCountriesActive){
+      const countryFilterEl = archiveShadowRoot.getElementById('countryFilter');
+      if(countryFilterEl) countryFilterEl.value = '';
+    }
+    renderMyCountriesRowShadow();
+    renderArchiveGrid();
   });
 }
 
@@ -2714,7 +2694,7 @@ function renderArchiveGrid(){
   const searchInput = archiveShadowRoot.getElementById('archiveSearch');
   const editionSelect = archiveShadowRoot.getElementById('editionFilter');
   const q = (searchInput ? searchInput.value : '').trim().toLowerCase();
-  const checked = Array.from(archiveShadowRoot.querySelectorAll('.country-filter-cb:checked')).map(cb => cb.value);
+  const checked = activeCountriesShadow();
   const edition = editionSelect ? editionSelect.value : 'thisYear';
 
   // Most recent month present in the data, used for the "Latest
@@ -2813,12 +2793,16 @@ async function openArchive(opts){
   // line and this simple match is safe and exact against our own
   // known output format.
   const storiesMatch = html.match(/const ARCHIVE_STORIES = (\[.*?\]);/s);
-  const filterEntriesMatch = html.match(/const COUNTRY_FILTER_ENTRIES = (\[.*?\]);/s);
+  const preferredMatch = html.match(/const PREFERRED_COUNTRIES = (\[.*?\]);/s);
+  const myCountriesLabelMatch = html.match(/const MY_COUNTRIES_LINK_LABEL = (".*?");/s);
+  const showAllLabelMatch = html.match(/const SHOW_ALL_COUNTRIES_LABEL = (".*?");/s);
   const noIssuesMatch = html.match(/const NO_ISSUES_TEXT = (".*?");/s);
   const noMatchMatch = html.match(/const NO_MATCH_TEXT = (".*?");/s);
   archiveStoriesData = storiesMatch ? JSON.parse(storiesMatch[1]) : [];
-  archiveFilterEntries = filterEntriesMatch ? JSON.parse(filterEntriesMatch[1]) : [];
-  archiveFilterCheckedValues = new Set(archiveFilterEntries.filter(e => e.c).map(e => e.v));
+  archivePreferredCountries = preferredMatch ? JSON.parse(preferredMatch[1]) : [];
+  archiveMyCountriesActive = false;
+  archiveMyCountriesLinkLabel = myCountriesLabelMatch ? JSON.parse(myCountriesLabelMatch[1]) : '';
+  archiveShowAllCountriesLabel = showAllLabelMatch ? JSON.parse(showAllLabelMatch[1]) : '';
   archiveNoIssuesText = noIssuesMatch ? JSON.parse(noIssuesMatch[1]) : '';
   archiveNoMatchText = noMatchMatch ? JSON.parse(noMatchMatch[1]) : '';
 
@@ -2871,15 +2855,25 @@ async function openArchive(opts){
 
   const searchInput = shadow.getElementById('archiveSearch');
   const editionSelect = shadow.getElementById('editionFilter');
+  const countryFilterEl = shadow.getElementById('countryFilter');
   if(searchInput) searchInput.addEventListener('input', renderArchiveGrid);
   if(editionSelect) editionSelect.addEventListener('change', renderArchiveGrid);
+  if(countryFilterEl){
+    countryFilterEl.addEventListener('change', () => {
+      // Picking a specific country cancels "my subscribed countries"
+      // mode, same as the standalone page.
+      if(countryFilterEl.value) archiveMyCountriesActive = false;
+      renderMyCountriesRowShadow();
+      renderArchiveGrid();
+    });
+  }
 
-  // The country checkboxes aren't part of the fetched markup anymore
-  // (see renderBalancedColumnsShadow() above) -- it builds them into
-  // #balancedColumns and wires their own change listeners itself, so
-  // there's nothing to query-and-wire here the way the older static
-  // checkboxes used to be.
-  renderBalancedColumnsShadow();
+  // The country dropdown itself is part of the fetched markup (it's
+  // server-built <optgroup>/<option> HTML, unlike the old balanced-
+  // columns checkboxes), so there's nothing to rebuild for it here --
+  // only the "show my subscribed countries" row needs porting in,
+  // same reasoning as renderArchiveGrid() above.
+  renderMyCountriesRowShadow();
   renderArchiveGrid();
   wireArchiveStoryModal(shadow);
 
@@ -2956,18 +2950,6 @@ document.addEventListener('keydown', (e) => {
   if(e.key !== 'Escape' || !archiveShadowRoot) return;
   const overlay = archiveShadowRoot.getElementById('storyModalOverlay');
   if(overlay && overlay.classList.contains('open')) overlay.classList.remove('open');
-});
-
-// Same page-level singleton reasoning as the Escape handler above --
-// registered once, checks archiveShadowRoot dynamically, so resizing
-// the browser while the archive panel happens to be open recomputes
-// the country-filter's column count instead of leaving it fixed at
-// whatever width the panel had when it was first opened.
-let archiveFilterResizeTimer;
-window.addEventListener('resize', () => {
-  if(!archiveShadowRoot) return;
-  clearTimeout(archiveFilterResizeTimer);
-  archiveFilterResizeTimer = setTimeout(renderBalancedColumnsShadow, 150);
 });
 
 function closeArchive(opts){
