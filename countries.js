@@ -37,6 +37,6 @@ const EICC_COUNTRIES_BY_REGION = {
     "Australia", "China", "India", "Malaysia", "New Zealand", "Singapore", "South Korea", "Vietnam"
   ],
   "Americas": [
-    "Argentina", "Brazil", "Canada", "Chile", "Mexico", "Peru", "United States"
+    "Argentina", "Brazil", "Canada", "Chile", "Colombia", "Mexico", "Peru", "United States"
   ]
 };

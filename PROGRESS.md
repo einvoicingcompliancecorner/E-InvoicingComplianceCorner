@@ -3032,8 +3032,8 @@ strong second-tier candidates, each anchored by a genuinely live
 2025/2026 development. Dominican Republic, Guatemala, Paraguay, and
 Bolivia all have the "Oman-shaped" phased-rollout narrative this
 tracker already handles well, if Dan wants to build several Americas
-countries in one pass. **Argentina was built the same day — see the
-dated entry below.**
+countries in one pass. **Both Argentina and Colombia are now built —
+see the dated entries below.**
 
 ### Argentina added as country #45 (4 August 2026, deployed & tested)
 
@@ -3177,22 +3177,116 @@ via `apply_migrations.py --remote`, both `site-worker` and
 first alphabetically), and the jurisdiction count reads correctly at
 44.
 
+### Colombia added as country #46 (4 August 2026, code complete, deploy pending)
+
+Dan said "Please proceed to Colombia rollout next" in response to the
+Americas evaluation above, which had flagged Colombia (alongside
+Argentina, already built) as a "no-caveats" top candidate. Colombia's
+DIAN operates one of Latin America's oldest and most complete CTC
+mandates: a real-time CUFE clearance model that has been universal
+since November 2020, steadily broadened into new document types since
+(equivalent documents, 2023-2024), and still receiving genuine
+procedural refinements through April 2026.
+
+**4 milestones**, live-researched against DIAN's own normativa pages
+(`dian.gov.co`, `micrositios.dian.gov.co`), EDICOM, Comarch,
+fiscal-requirements.com, misfacturas.com.co, KPMG Colombia tax-news
+flashes, and several Colombian accounting/compliance blogs (Loggro,
+Sovos, actualicese.com, llbsolutions.com, numrot.com): Resolution
+000010/2018 (6 Feb 2018, effective 1 Sep 2018, anchor/off-board,
+`mandate_scope: 'b2b'` — the first mandatory wave, large taxpayers),
+Resolution 000042/2020 (5 May 2020, final wave 1 Nov 2020, on-board,
+`mandate_scope: 'b2b'` — the "goes universal" milestone, covering every
+VAT/INC-responsible business), Resolution 000165/2023 + 000008/2024
+(rollout completed 1 Nov 2024, on-board, `mandate_scope: 'none'` —
+"documentos equivalentes electrónicos" for POS receipts, utility
+bills, and transport/airline tickets; a document-type expansion rather
+than a B2B invoicing-scope change, the same treatment as Argentina's
+RG 5616/2024 format upgrade), and Resolution 000202/2025 (31 Mar 2025,
+on-board, `mandate_scope: 'none'` — streamlined B2C buyer-data capture
+plus a 48-hour rural transmission window, a procedural refinement of
+the already-universal mandate). Deliberately did **not** build a
+milestone for Resolution 000227/2025 (23 Sep 2025) — DIAN's own
+consolidation of e-invoicing rules alongside 60+ other tax resolutions
+into one unified text is explicitly administrative ("no es una reforma
+que cambie las reglas de forma radical"), not a substantive change, so
+it's covered in the deep-dive narrative and a news story instead of as
+a milestone. Also deliberately did not build a milestone for
+Resolution 000011/2026's regularization mechanism, for the same
+reason — it's an enforcement/remediation tool, not a change to who
+must invoice or when, so it became this build's second story instead.
+
+- **Migration 322**: country row (`CO`, `Colombia`, region `Americas`,
+  slug `colombia`, `in_picker=1`) + name translations.
+- **Migrations 323-324**: the 4 milestones with full translations.
+- **Migrations 325-326**: full deep-dive content across 4 languages —
+  5 stats, 9 cards, a genuine 2-row penalty table (1% formality fine
+  capped at 950 UVT under Article 652; 3-10 day establishment closure,
+  or 5% of the prior month's gross revenue in lieu, under Article 657
+  for not invoicing at all), 5 steps, 2 portals. Called out RADIAN
+  (invoices registrable as negotiable instruments for factoring) as a
+  genuinely distinctive feature this tracker hasn't seen elsewhere, and
+  noted Colombia's UBL 2.1-based format sits much closer to the
+  European EN 16931 world than Argentina's own domestic XML schema
+  does.
+- **Migration 327**: a 2-story arc spanning ~7 months (DIAN's
+  September 2025 regulatory unification, Resolution 000227/2025; the
+  April 2026 "20-REG" e-invoicing regularization mechanism, Resolution
+  000011/2026), matching the established multi-story-arc pattern for
+  countries with ongoing procedural activity rather than one launch
+  event.
+- **Migration 328**: tracking sources — DIAN's e-invoicing system
+  microsite and its dedicated normativa (regulations) page. No EC
+  factsheet — Colombia isn't an EU member.
+- **Migration 329**: jurisdiction count 44→45, generated
+  programmatically by regex-diffing migration 321's own Argentina
+  sweep (bare "44" → "45" across the same 40 `translations` rows).
+- **Static files**: `countries.js` (Americas, alphabetically between
+  Chile and Mexico), `shared/deep-dive-render.mjs`'s slug map + name
+  translations. No `TOPO_NAME_OVERRIDES`/`MARKER_LONLAT_OVERRIDES`
+  needed — the bundled topology already spells it `"Colombia"`,
+  confirmed via direct Python inspection; Americas' existing
+  `REGION_BOUNDS` box already comfortably contains Colombia's extent.
+- Hand-swept the jurisdiction count across all four languages'
+  `i18n/*.json` files and every static HTML page — 32 files, 58
+  replacements via the same word-boundary regex with a negative
+  lookahead for `%` (education-mandate-types.html's unrelated CSS
+  `flex:0 0 43%` correctly left untouched — a pre-existing value from
+  before this session's countries, not something this build's sweep
+  should have touched at all).
+- Verified via `apply_migrations.py --remote --dry-run`: "Replay
+  validation OK (329 files, only the documented pre-existing errors)."
+  A structural query against the replayed in-memory DB (reusing
+  `apply_migrations.py`'s own schema-replay logic) confirmed every
+  row/translation count and a total `countries` row count of 46 (45
+  real jurisdictions + the standalone EU row), plus zero stray "44
+  jurisdiction/countries/tracked" references remaining anywhere in the
+  `translations` table.
+
+**Code complete, deploy pending** — this sandbox has no live
+Cloudflare/D1 credentials. Migrations 322-329 need
+`apply_migrations.py --remote` from Dan's own machine, and both
+`site-worker` and `members-worker` need `wrangler deploy` to pick up
+the static-file changes. Full detail in this entry above.
+
 ## Open items / next steps
 
 ### Real open work
 
 1. **Coverage expansion** — Netherlands, Austria, Greece, Cyprus, Oman,
    Jordan, Israel, South Korea, Vietnam, Turkey, Czech Republic, and
-   Argentina are all confirmed deployed and tested — every country
-   added this session is now live. Qatar was evaluated and held back
-   at Dan's choice (thinner than first assessed). Still not tracked in
-   Europe: Bulgaria, Estonia, Hungary, Latvia, Lithuania, Malta,
-   Slovenia, Iceland, Liechtenstein. Still not tracked in the
-   Americas: Colombia, Uruguay, Costa Rica, Ecuador, Dominican
-   Republic, Guatemala, Paraguay, Bolivia, Panama, El Salvador (see
-   the Americas evaluation above — Colombia is the next recommended
-   addition). The scaffolder + runner make each addition a fraction
-   of the old effort.
+   Argentina are all confirmed deployed and tested. Colombia (country
+   #46) is code complete, deploy pending (see the dated entry above).
+   Qatar was evaluated and held back at Dan's choice (thinner than
+   first assessed). Still not tracked in Europe: Bulgaria, Estonia,
+   Hungary, Latvia, Lithuania, Malta, Slovenia, Iceland,
+   Liechtenstein. Still not tracked in the Americas: Uruguay, Costa
+   Rica, Ecuador, Dominican Republic, Guatemala, Paraguay, Bolivia,
+   Panama, El Salvador (see the Americas evaluation above — Uruguay,
+   Costa Rica, and Ecuador are the strongest remaining candidates,
+   each with a live 2025/2026 development to anchor a milestone on).
+   The scaffolder + runner make each addition a fraction of the old
+   effort.
 
    **Middle East coverage evaluated (3 August 2026).** Dan asked for
    an assessment of which additional Middle Eastern countries are
@@ -3392,10 +3486,12 @@ first alphabetically), and the jurisdiction count reads correctly at
    but not prioritized (**Panama, El Salvador**). See the dated entry
    above for the full ranked write-up and sourcing.
 
-   **Recommendation**: add Argentina and Colombia first. **Argentina
-   is now built, deployed, and tested** (see the 4 August 2026 entry
-   above) — Colombia is the next recommended addition; ready to
-   scaffold whenever Dan wants to proceed.
+   **Recommendation**: add Argentina and Colombia first. **Both are
+   now built** — Argentina is deployed and tested, and Colombia
+   (country #46) is code complete, deploy pending (see the 4 August
+   2026 dated entries above). Uruguay, Costa Rica, and Ecuador are the
+   next recommended additions; ready to scaffold whenever Dan wants to
+   proceed.
 2. **Tracking-source URL audit, continued** — ~40 of 54 sources not
    yet verified for whether they'll ever actually surface real news.
    Two rounds done (Brazil/Australia/Ireland/Poland/Saudi
