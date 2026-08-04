@@ -2721,6 +2721,62 @@ in-page deep-dive panel, so one fix covers both surfaces.
 with the updated `shared/deep-dive-render.mjs`. Turkey's lifecycle
 pills wrap correctly on the live site.
 
+### Qatar re-evaluated for a country add — held back, thinner than first assessed (4 August 2026)
+
+Dan asked to add Qatar as a new country, following the exact same
+ADDING-A-COUNTRY.md workflow used for every prior addition this
+session. Before scaffolding anything, re-researched Qatar's current
+status live (not from the 3 Aug evaluation's notes, since this is
+exactly the kind of fast-moving pre-legislative situation that needs a
+fresh check) — and found it's materially thinner than the original
+"good candidate, expected caveat" assessment suggested.
+
+**What's actually confirmed**, cross-checked across KPMG, PwC,
+fiscal-requirements.com, and e-invoice.app (all four independently
+agree, which is itself notable): Qatar's Council of Ministers approved
+a **draft** e-invoicing law and its executive regulations on **6 May
+2026**, prepared by the Ministry of Finance in coordination with the
+General Tax Authority (GTA). That is the entire confirmed fact set.
+PwC's own words: "no technical or operational specifics have been
+officially released, including which e-invoicing model will be
+selected." KPMG: "scope of entities and transactions covered,
+technical specifications, and implementation timeline are pending."
+fiscal-requirements.com: "No specific implementation timelines or
+technical specifications were provided." None of the four mentions a
+Shura Council referral or the Amir's assent specifically — the
+original evaluation's framing on that point was reasoning about
+Qatar's general legislative process, not a sourced fact about this
+bill.
+
+**One industry source (EDICOM) speculates further** — a Peppol-based
+decentralized architecture, a hybrid clearance-for-B2B/B2G plus
+reporting-for-B2C model, and a phased rollout beginning 1 January
+2027 — but this reads as an informed industry guess rather than
+official confirmation, and none of the more conservative Big-4/tax-
+specialist sources corroborate any of it. Also worth noting for
+context: Qatar has not yet implemented VAT at all, unlike every other
+GCC state already on this tracker (Saudi Arabia, UAE, Oman) — the
+e-invoicing law is explicitly framed as groundwork for a future VAT
+system, not a mandate layered onto an existing one.
+
+**Flagged this to Dan directly** (via `AskUserQuestion`) rather than
+either building a full page around the speculative EDICOM version or
+silently downgrading it without asking: build a thin, honestly-worded
+page now (a single "draft law approved" milestone, explicit about what
+remains undisclosed) vs. hold off like Bahrain/Kuwait vs. build using
+the speculative model labeled as such. **Dan chose to hold off** — so
+Qatar stays unbuilt, joining Bahrain, Kuwait, Iraq, and Lebanon on the
+"not concrete enough yet" list, rather than the "reasonable fourth
+addition" framing the original evaluation gave it. No migrations, no
+static-file changes, nothing to deploy from this session.
+
+**Revisit when**: the executive regulations are published in final
+form, a real implementation date is announced, or GTA issues its own
+implementation guidance — any of which would move Qatar from "draft
+approved" to something with enough real substance for a genuine
+deep-dive, the same bar applied to every other country on this
+tracker.
+
 ## Open items / next steps
 
 ### Real open work
@@ -2788,16 +2844,16 @@ pills wrap correctly on the live site.
    real, dated, sourced milestones — Oman's first wave lands this
    same month, August 2026) via the existing scaffolder + runner
    workflow, each roughly the same effort as Austria/Greece/Cyprus.
-   **All three of Oman, Jordan, and Israel are now built** — Oman and
-   Jordan deployed and tested, Israel code complete with deploy
-   pending (see the dated entries above).
-   Qatar is a reasonable fourth addition with its milestone correctly
-   marked `confidence: 'expected'` until the Shura Council/Amir step
-   completes. Hold off on Bahrain, Kuwait, Iraq, and Lebanon until
-   their own legislation becomes concrete enough to source properly —
-   revisit this evaluation every few months rather than re-researching
-   from scratch, since this space (especially Qatar) is moving
-   quickly.
+   **All three of Oman, Jordan, and Israel are now built** — Oman,
+   Jordan, and Israel are all deployed and tested (see the dated
+   entries above). **Qatar was re-evaluated on 4 August 2026 when Dan
+   asked to add it, and turned out thinner than this original
+   "reasonable fourth addition" framing suggested** — see that dated
+   entry for the fresh findings; Dan chose to hold off building it, so
+   it now sits alongside Bahrain, Kuwait, Iraq, and Lebanon on the
+   "not concrete enough yet" list rather than being built. Revisit this
+   evaluation every few months rather than re-researching from scratch,
+   since this space (especially Qatar) is moving quickly.
 
    **Follow-up recheck (3 Aug 2026, later the same day):** Dan asked
    which Middle East country to roll out next, now that Oman/Jordan
