@@ -3270,6 +3270,75 @@ via `apply_migrations.py --remote`, both `site-worker` and
 `i18n`/HTML files). Colombia is live on the tracker board (Americas,
 between Chile and Mexico), and it appears correctly in the UI.
 
+### Newsletter Archive country filter: balanced columns (4 August 2026, code complete, deploy pending)
+
+Dan flagged that the Newsletter Archive's ("/members/archive") country
+filter checkboxes were laid out one grid column per region
+(`.region-columns` / `.country-checkboxes` in `members-worker/src/
+index.js`), so a big region just grew straight down the page — Europe's
+23 countries stacked into a tall, narrow half-width column while the
+smaller regions (MENA, Asia-Pacific, Americas) sat mostly empty next to
+it.
+
+Explored three options as an HTML mock-up (sent directly to Dan, not
+committed — a one-off comparison, not a durable artifact) before
+touching real code:
+
+- **A — current**: one grid column per region (what's live today).
+- **B — wraps across the page**: each region's checkboxes flow in one
+  wrapping row spanning the full card width, region by region.
+- **C — balanced columns**: all regions flattened into one sequence
+  (region label, then its countries), then split into however many
+  columns fit the available width, sized so every column gets roughly
+  the same number of rows.
+
+Dan picked **C**. Implemented in `members-worker/src/index.js`,
+`renderArchiveList()`:
+
+- Server-side, `filterEntries` now builds the flattened
+  header-then-countries sequence as plain data (`{h: regionLabel}` /
+  `{v: countryName, c: isPreferred}`) instead of pre-built HTML, and
+  ships it to the client as `COUNTRY_FILTER_ENTRIES` JSON (same pattern
+  already used for `ARCHIVE_STORIES`).
+- Client-side, a new `computeBalancedColumns()` measures
+  `#balancedColumns`'s real rendered width, works out how many columns
+  fit at a ~170px target column width (+24px gap), and splits the flat
+  entry list into that many columns as evenly as possible (differing by
+  at most one row). An orphan-avoidance pass pushes a region label down
+  into the next column if it would otherwise land alone at the bottom
+  of a column with none of its countries under it.
+- `renderBalancedColumns()` builds the column markup, re-attaches the
+  `change` listener on every checkbox (needed since the DOM nodes are
+  rebuilt, not just repositioned), and is called on load and again
+  (debounced 150ms) on window resize, so the column count stays correct
+  if the browser is resized rather than being fixed at page-load width.
+- A `filterCheckedValues` Set (seeded from the subscriber's saved
+  preferences, same as before) tracks checked state independently of
+  the DOM, so resizing the window and rebuilding the columns doesn't
+  lose whatever the visitor had checked.
+- Old CSS removed: `.region-columns`, `.country-checkboxes`,
+  `.country-checkboxes.two-col`, `.wide-region` (all were unique to
+  this one picker — confirmed via repo-wide grep, nothing else
+  referenced them). New CSS added: `.balanced-columns` (flex row),
+  `.balanced-col` (flex column, min-width:0 so columns can actually
+  shrink). `.region-group-label` and `.country-check-filter` are
+  unchanged and reused as-is.
+- The Preferences page's own country picker (`renderPreferencesPage()`,
+  `.region-group` / `.country-check`) is untouched — this only affects
+  the Archive's filter checkboxes, a separate picker with separate
+  markup and CSS.
+- Verified with a standalone Node script replicating
+  `computeBalancedColumns()` against the real 4-region/45-country list
+  at several widths (320/480/700/1000/1100px): column count scales
+  sensibly (1 → 2 → 3 → 5), row counts per column never differ by more
+  than one, and no region label is ever left orphaned at the bottom of
+  a column. `node --check src/index.js` passes.
+
+**Code complete, deploy pending** — this sandbox has no live
+Cloudflare/D1 credentials. Needs `wrangler deploy` for `members-worker`
+from Dan's own machine; no migration involved, so no
+`apply_migrations.py` step this time.
+
 ## Open items / next steps
 
 ### Real open work
