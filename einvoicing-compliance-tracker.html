@@ -2643,9 +2643,67 @@ let archiveShadowRoot = null;
 let archiveStoriesData = [];
 let archiveNoIssuesText = '';
 let archiveNoMatchText = '';
+let archiveFilterEntries = [];
+let archiveFilterCheckedValues = new Set();
 
 function escapeHtmlClient(str){
   return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// Ported from members-worker's own computeBalancedColumns() /
+// renderBalancedColumns() -- same reasoning as renderArchiveGrid()
+// below: the fetched page's own <script> never runs inside this
+// shadow root, and the country-filter checkboxes are now built
+// entirely by that script (not baked into the server HTML the way
+// they used to be), so they have to be rebuilt here too, or the
+// filter section is just empty when the archive is opened in-page.
+function computeBalancedColumns(containerWidth, entries, targetColWidth, gap){
+  let columns = Math.max(1, Math.floor((containerWidth + gap) / (targetColWidth + gap)));
+  columns = Math.min(columns, entries.length || 1);
+  const total = entries.length;
+  const base = Math.floor(total / columns);
+  const remainder = total % columns;
+  const sizes = Array.from({ length: columns }, (_, i) => base + (i < remainder ? 1 : 0));
+  // Orphan-avoidance: if a column's last row would be a region label
+  // with nothing under it in that column, push it down into the next
+  // column instead.
+  for(let i = 0; i < columns - 1; i++){
+    let idx = 0;
+    for(let j = 0; j <= i; j++) idx += sizes[j];
+    const lastEntry = entries[idx - 1];
+    if(lastEntry && lastEntry.h !== undefined && sizes[i] > 1){
+      sizes[i] -= 1;
+      sizes[i + 1] += 1;
+    }
+  }
+  const cols = [];
+  let start = 0;
+  for(let i = 0; i < columns; i++){
+    cols.push(entries.slice(start, start + sizes[i]));
+    start += sizes[i];
+  }
+  return cols;
+}
+
+function renderBalancedColumnsShadow(){
+  if(!archiveShadowRoot) return;
+  const wrapEl = archiveShadowRoot.getElementById('balancedColumns');
+  if(!wrapEl || !archiveFilterEntries.length) return;
+  const width = wrapEl.clientWidth || (wrapEl.parentElement && wrapEl.parentElement.clientWidth) || 0;
+  const cols = computeBalancedColumns(width, archiveFilterEntries, 170, 24);
+  wrapEl.innerHTML = cols.map(colEntries => {
+    const rows = colEntries.map(e => e.h !== undefined
+      ? `<p class="region-group-label">${escapeHtmlClient(e.h)}</p>`
+      : `<label class="country-check-filter"><input type="checkbox" class="country-filter-cb" value="${escapeHtmlClient(e.v)}" ${archiveFilterCheckedValues.has(e.v) ? "checked" : ""}>${escapeHtmlClient(e.v)}</label>`
+    ).join('');
+    return `<div class="balanced-col">${rows}</div>`;
+  }).join('');
+  wrapEl.querySelectorAll('.country-filter-cb').forEach(cb => {
+    cb.addEventListener('change', () => {
+      if(cb.checked) archiveFilterCheckedValues.add(cb.value); else archiveFilterCheckedValues.delete(cb.value);
+      renderArchiveGrid();
+    });
+  });
 }
 
 function renderArchiveGrid(){
@@ -2755,9 +2813,12 @@ async function openArchive(opts){
   // line and this simple match is safe and exact against our own
   // known output format.
   const storiesMatch = html.match(/const ARCHIVE_STORIES = (\[.*?\]);/s);
+  const filterEntriesMatch = html.match(/const COUNTRY_FILTER_ENTRIES = (\[.*?\]);/s);
   const noIssuesMatch = html.match(/const NO_ISSUES_TEXT = (".*?");/s);
   const noMatchMatch = html.match(/const NO_MATCH_TEXT = (".*?");/s);
   archiveStoriesData = storiesMatch ? JSON.parse(storiesMatch[1]) : [];
+  archiveFilterEntries = filterEntriesMatch ? JSON.parse(filterEntriesMatch[1]) : [];
+  archiveFilterCheckedValues = new Set(archiveFilterEntries.filter(e => e.c).map(e => e.v));
   archiveNoIssuesText = noIssuesMatch ? JSON.parse(noIssuesMatch[1]) : '';
   archiveNoMatchText = noMatchMatch ? JSON.parse(noMatchMatch[1]) : '';
 
@@ -2812,10 +2873,13 @@ async function openArchive(opts){
   const editionSelect = shadow.getElementById('editionFilter');
   if(searchInput) searchInput.addEventListener('input', renderArchiveGrid);
   if(editionSelect) editionSelect.addEventListener('change', renderArchiveGrid);
-  shadow.querySelectorAll('.country-filter-cb').forEach(cb => {
-    cb.addEventListener('change', renderArchiveGrid);
-  });
 
+  // The country checkboxes aren't part of the fetched markup anymore
+  // (see renderBalancedColumnsShadow() above) -- it builds them into
+  // #balancedColumns and wires their own change listeners itself, so
+  // there's nothing to query-and-wire here the way the older static
+  // checkboxes used to be.
+  renderBalancedColumnsShadow();
   renderArchiveGrid();
   wireArchiveStoryModal(shadow);
 
@@ -2892,6 +2956,18 @@ document.addEventListener('keydown', (e) => {
   if(e.key !== 'Escape' || !archiveShadowRoot) return;
   const overlay = archiveShadowRoot.getElementById('storyModalOverlay');
   if(overlay && overlay.classList.contains('open')) overlay.classList.remove('open');
+});
+
+// Same page-level singleton reasoning as the Escape handler above --
+// registered once, checks archiveShadowRoot dynamically, so resizing
+// the browser while the archive panel happens to be open recomputes
+// the country-filter's column count instead of leaving it fixed at
+// whatever width the panel had when it was first opened.
+let archiveFilterResizeTimer;
+window.addEventListener('resize', () => {
+  if(!archiveShadowRoot) return;
+  clearTimeout(archiveFilterResizeTimer);
+  archiveFilterResizeTimer = setTimeout(renderBalancedColumnsShadow, 150);
 });
 
 function closeArchive(opts){

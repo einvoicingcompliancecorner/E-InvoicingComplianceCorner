@@ -3339,6 +3339,64 @@ Cloudflare/D1 credentials. Needs `wrangler deploy` for `members-worker`
 from Dan's own machine; no migration involved, so no
 `apply_migrations.py` step this time.
 
+### Bug found before deploy: country filter empty when the Archive opens in-page (4 August 2026, fixed, still deploy pending)
+
+Dan reported the country checkboxes didn't list at all when the
+Newsletter Archive is opened in-frame (the tracker's embedded panel,
+`openArchive()` in `einvoicing-compliance-tracker.html`) — even though
+the standalone `/members/archive` page was fine.
+
+Root cause: `openArchive()` fetches the standalone page's HTML and
+injects `.archive-wrap` into a shadow root, but it deliberately never
+re-executes the fetched page's own `<script>` block (documented at the
+top of that function — the script looks things up via the global
+`document`, which can't see inside a shadow tree; `renderArchiveGrid()`
+is already a hand-ported copy of members-worker's `renderGrid()` for
+exactly this reason). Before this session's balanced-columns change,
+that was fine for the country checkboxes specifically, because they
+were static HTML baked directly into `.archive-wrap` by the server —
+the embedded panel only needed to wire `change` listeners onto
+elements that already existed. Now the checkboxes are built entirely
+by client-side JS (`renderBalancedColumns()`, reading
+`COUNTRY_FILTER_ENTRIES`) that only runs inside the fetched script
+block — which the embedded panel never executes — so `#balancedColumns`
+stayed empty every time the Archive was opened in-page.
+
+Fixed by porting the same balanced-column logic into
+`einvoicing-compliance-tracker.html`, mirroring how `renderArchiveGrid()`
+already ports `renderGrid()`:
+
+- `computeBalancedColumns()` — an exact copy of the members-worker
+  version.
+- `renderBalancedColumnsShadow()` — same idea as
+  `renderBalancedColumns()`, but operates against `archiveShadowRoot`
+  instead of `document`, and tracks checked state in a new
+  page-level `archiveFilterCheckedValues` Set (mirroring
+  `archiveStoriesData` and friends).
+- `openArchive()` now also regex-extracts `COUNTRY_FILTER_ENTRIES` from
+  the fetched HTML (same pattern already used for `ARCHIVE_STORIES`),
+  seeds `archiveFilterCheckedValues` from it, and calls
+  `renderBalancedColumnsShadow()` instead of the old
+  `shadow.querySelectorAll('.country-filter-cb').forEach(...)` wiring
+  (which no longer has anything to find at that point, since the
+  checkboxes don't exist until this function builds them).
+- A page-level `resize` listener (singleton, guarded on
+  `archiveShadowRoot` truthiness, same pattern as the existing Escape-key
+  singleton a few lines below) recomputes the column split if the
+  browser is resized while the panel happens to be open — matching the
+  standalone page's own resize handling.
+
+Verified by extracting the relevant `<script>` block and running `node
+--check` against it (passes) and re-confirming the regex against
+members-worker's own `const COUNTRY_FILTER_ENTRIES = ${filterEntriesJson};`
+output line.
+
+**Code complete, deploy pending** — same `members-worker` deploy above
+also needs a `site-worker` deploy (`einvoicing-compliance-tracker.html`
+is a static asset) before the in-page fix goes live. Worth deploying
+both together and testing the in-frame Archive specifically before
+calling this one done.
+
 ## Open items / next steps
 
 ### Real open work
