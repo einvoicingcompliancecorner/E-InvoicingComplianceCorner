@@ -3621,7 +3621,7 @@ via `apply_migrations.py --remote`, both `site-worker` and
 (Asia-Pacific, between New Zealand and Singapore), and the jurisdiction
 count reads correctly at 46.
 
-### Privacy Policy wired into the i18n system (4 August 2026, code complete, deploy pending)
+### Privacy Policy wired into the i18n system (4 August 2026, deployed & tested)
 
 Dan asked for an evaluation of item 3 ("Translation frameworks for
 remaining static pages") and then asked to build it. Audit of all 10
@@ -3688,14 +3688,11 @@ open/close matched) after the edit; confirmed the page has no "45"/"46"
 jurisdiction-count text to worry about, so this item is independent of
 the jurisdiction-count sweep.
 
-**Code complete, deploy pending** — this only touches the
-`site-worker`'s static files (`privacy-policy.html` plus 4 new
-`i18n/*.json` files), no D1 migrations, so a single
-`npx wrangler deploy` from `site-worker/` picks it up. Spot-check once
-deployed: visit `/privacy-policy.html?lang=es` (and `de`, `fr`) and
-confirm the whole policy body — not just the language banner — renders
-in the selected language, then confirm `?lang=en` (and no `?lang=`
-param at all) still renders correctly in English.
+**Deployed and tested** (confirmed by Dan): `site-worker` redeployed
+with the updated `privacy-policy.html` and the four new
+`i18n/*-privacy-policy.json` files. No D1 migration was needed. The
+policy page now renders fully translated when a non-English language
+is selected, not just the shared language banner.
 
 ## Open items / next steps
 
@@ -3931,9 +3928,9 @@ param at all) still renders correctly in English.
    evaluated 4 August 2026: of 10 static HTML pages, 8 were already
    fully wired into i18n; privacy-policy.html was the one real gap
    (had the shared language banner but zero translated body content)
-   and is now built, code complete with deploy pending — see the dated
-   entry above. index.html is a bare redirect stub and doesn't need
-   wiring. No further static pages are outstanding.
+   and is now built, deployed, and tested — see the dated entry above.
+   index.html is a bare redirect stub and doesn't need wiring. No
+   further static pages are outstanding.
 4. **Business threads** (decisions, not code): theinvoicinghub.com
    competitive review; pricing (free vs the shelved $5/$8 tiers);
    the vendor registration/advertising concept; the two remaining
