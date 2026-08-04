@@ -3505,7 +3505,7 @@ balanced-columns-era in-frame bug all confirmed fine this time on both
 the standalone `/members/archive` page and the in-frame embedded
 panel.
 
-### Philippines added as country #47 (4 August 2026, code complete, deploy pending)
+### Philippines added as country #47 (4 August 2026, deployed & tested)
 
 Dan asked "which are the most interesting other countries — perhaps
 philippines?" — live research surfaced the Philippines (BIR EIS
@@ -3613,19 +3613,13 @@ confirmed.
   tracked" references remaining anywhere in the `translations` table
   (40 rows correctly reading "46").
 
-**Code complete, deploy pending** — this sandbox has no live
-Cloudflare/D1/`wrangler` credentials. Dan needs to run
-`apply_migrations.py --remote` (for migrations 331-337) and
-`wrangler deploy` for both `site-worker` and `members-worker` (to pick
-up `countries.js`, `shared/deep-dive-render.mjs`, and the swept
-`i18n`/HTML files) from his own machine, then confirm back before this
-gets marked deployed and tested. Worth testing per the usual Phase 5
-checklist: the tracker board (Asia-Pacific, between New Zealand and
-Singapore), the Deep Dives menu, the translated `<title>`/`<h1>`, the
-subscribe picker, `/members/preferences`, story-tagging surfacing in
-The Map's "Latest updates" panel, `/sources`, the jurisdiction count
-everywhere (now 46), milestone-card translation, and The Map's own
-shape/marker rendering for the Philippines.
+**Deployed and tested** (confirmed by Dan): migrations 331-337 applied
+via `apply_migrations.py --remote`, both `site-worker` and
+`members-worker` redeployed to pick up the static-file changes
+(`countries.js`, `shared/deep-dive-render.mjs`, and the swept
+`i18n`/HTML files). Philippines is live on the tracker board
+(Asia-Pacific, between New Zealand and Singapore), and the jurisdiction
+count reads correctly at 46.
 
 ## Open items / next steps
 
@@ -3633,8 +3627,8 @@ shape/marker rendering for the Philippines.
 
 1. **Coverage expansion** — Netherlands, Austria, Greece, Cyprus, Oman,
    Jordan, Israel, South Korea, Vietnam, Turkey, Czech Republic,
-   Argentina, and Colombia are all confirmed deployed and tested —
-   every country added this session is now live. Qatar was evaluated
+   Argentina, Colombia, and Philippines are all confirmed deployed and
+   tested — every country added this session is now live. Qatar was evaluated
    and held back at Dan's choice (thinner than first assessed). Still
    not tracked in Europe: Bulgaria, Estonia,
    Hungary, Latvia, Lithuania, Malta, Slovenia, Iceland,
