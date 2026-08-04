@@ -36,7 +36,7 @@ export const SUPPORTED_LANGS = ["en", "es", "de", "fr"];
 // It's a hand-maintained table rather than a derived transform because
 // uae, uk, and united-states aren't simple lowercase-and-hyphenate.
 export const COUNTRY_DEEP_DIVE_SLUGS = {
-  "Australia": "australia", "Austria": "austria", "Belgium": "belgium", "Brazil": "brazil", "Canada": "canada",
+  "Argentina": "argentina", "Australia": "australia", "Austria": "austria", "Belgium": "belgium", "Brazil": "brazil", "Canada": "canada",
   "Chile": "chile", "China": "china", "Croatia": "croatia", "Cyprus": "cyprus", "Czech Republic": "czech-republic", "Denmark": "denmark", "Egypt": "egypt", "Finland": "finland",
   "France": "france", "Germany": "germany", "Greece": "greece", "India": "india", "Ireland": "ireland", "Israel": "israel",
   "Italy": "italy", "Jordan": "jordan", "Luxembourg": "luxembourg", "Netherlands": "netherlands", "Malaysia": "malaysia", "Mexico": "mexico", "New Zealand": "new-zealand",
@@ -61,7 +61,7 @@ const COUNTRY_NAME_TRANSLATIONS = {
     "United Arab Emirates": "Emiratos Árabes Unidos", "Australia": "Australia", "China": "China",
     "India": "India", "Malaysia": "Malasia", "New Zealand": "Nueva Zelanda", "Singapore": "Singapur", "South Korea": "Corea del Sur",
     "Vietnam": "Vietnam",
-    "Brazil": "Brasil", "Canada": "Canadá", "Chile": "Chile", "Mexico": "México", "Peru": "Perú",
+    "Argentina": "Argentina", "Brazil": "Brasil", "Canada": "Canadá", "Chile": "Chile", "Mexico": "México", "Peru": "Perú",
     "United States": "Estados Unidos", "European Union": "Unión Europea"
   },
   de: {
@@ -74,7 +74,7 @@ const COUNTRY_NAME_TRANSLATIONS = {
     "United Arab Emirates": "Vereinigte Arabische Emirate", "Australia": "Australien", "China": "China",
     "India": "Indien", "Malaysia": "Malaysia", "New Zealand": "Neuseeland", "Singapore": "Singapur", "South Korea": "Südkorea",
     "Vietnam": "Vietnam",
-    "Brazil": "Brasilien", "Canada": "Kanada", "Chile": "Chile", "Mexico": "Mexiko", "Peru": "Peru",
+    "Argentina": "Argentinien", "Brazil": "Brasilien", "Canada": "Kanada", "Chile": "Chile", "Mexico": "Mexiko", "Peru": "Peru",
     "United States": "Vereinigte Staaten", "European Union": "Europäische Union"
   },
   fr: {
@@ -87,7 +87,7 @@ const COUNTRY_NAME_TRANSLATIONS = {
     "United Arab Emirates": "Émirats arabes unis", "Australia": "Australie", "China": "Chine",
     "India": "Inde", "Malaysia": "Malaisie", "New Zealand": "Nouvelle-Zélande", "Singapore": "Singapour", "South Korea": "Corée du Sud",
     "Vietnam": "Viêt Nam",
-    "Brazil": "Brésil", "Canada": "Canada", "Chile": "Chili", "Mexico": "Mexique", "Peru": "Pérou",
+    "Argentina": "Argentine", "Brazil": "Brésil", "Canada": "Canada", "Chile": "Chili", "Mexico": "Mexique", "Peru": "Pérou",
     "United States": "États-Unis", "European Union": "Union européenne"
   }
 };
