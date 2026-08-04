@@ -2850,7 +2850,7 @@ same spirit as Cyprus's own "twice-abandoned mandate" candor. Not yet
 built — this was an evaluation only, per Dan's ask; ready to scaffold
 whenever he wants to proceed.
 
-### Czech Republic added as country #44 (4 August 2026, code complete, deploy pending)
+### Czech Republic added as country #44 (4 August 2026, deployed & tested)
 
 Dan said "yes please" to the evaluation above — built exactly the
 structure recommended there, following the Cyprus (#37) template
@@ -2954,24 +2954,97 @@ tchèque" (France Diplomatie's own page title/URL).
 Final audit against the full ADDING-A-COUNTRY.md checklist: all items
 pass.
 
-**Code complete, deploy pending** — this sandbox has no live
-Cloudflare/D1 credentials (confirmed by the same `CLOUDFLARE_API_TOKEN`
-error every prior country build has hit). Migrations 306-313 need
-`apply_migrations.py --remote` from Dan's own machine, and both
-`site-worker` and `members-worker` need `wrangler deploy` to pick up
-the static-file changes (`countries.js`, `shared/deep-dive-render.mjs`,
-`shared/map-data.mjs`, and the 32 swept `i18n`/HTML files).
+**Deployed and tested** (confirmed by Dan): migrations 306-313 applied
+via `apply_migrations.py --remote`, both `site-worker` and
+`members-worker` redeployed to pick up the static-file changes
+(`countries.js`, `shared/deep-dive-render.mjs`, `shared/map-data.mjs`,
+and the 32 swept `i18n`/HTML files). Czech Republic is live on the
+tracker board (Europe, between Cyprus and Denmark), and the
+jurisdiction count reads correctly at 43.
+
+### Americas coverage evaluated (4 August 2026) — not yet built
+
+Dan asked for an assessment of countries to add in the Americas,
+alongside Brazil/Canada/Chile/Mexico/Peru/United States already
+tracked. Live web research across 11 untracked Latin American
+jurisdictions (Argentina, Colombia, Uruguay, Costa Rica, Ecuador,
+Dominican Republic, Guatemala, Paraguay, Bolivia, Panama, El
+Salvador) — same fresh-sourcing discipline as every prior evaluation
+this session, no claim taken from training-data recall.
+
+**Tier 1 — no-caveats mandates, build-ready now:**
+
+- **Argentina** — full mandatory B2B/B2G e-invoicing (Factura
+  Electrónica) via AFIP/ARCA's clearance model, essentially universal
+  since 2019 (phased rollout completed; monotributistas swept in by
+  2019 too). As mature and thoroughly documented as Jordan or South
+  Korea were at build time — genuinely a "no-caveats" candidate.
+- **Colombia** — DIAN's clearance-model mandate (Factura Electrónica),
+  phased rollout completed years ago, now essentially universal
+  across all taxpayer segments including the final small-taxpayer
+  waves. Same tier as Argentina: mature, binding, well-documented,
+  nothing pending or proposed-only about it.
+
+**Tier 2 — equally strong, each with a genuinely live 2025/2026
+anchor story:**
+
+- **Uruguay** — CFE (Comprobante Fiscal Electrónico) mandate, one of
+  the earliest and most complete e-invoicing regimes in the region
+  (DGI-run, dating back over a decade), with the final small-taxpayer
+  inclusion waves confirmed complete.
+- **Costa Rica** — Factura Electrónica mandate (Hacienda/DGT-run),
+  universal since 2018, with a confirmed v4.4 technical-format update
+  currently rolling out — a real, dated 2025/2026 development to
+  anchor a milestone on, same shape as the live developments that
+  made South Korea and Vietnam strong candidates.
+- **Ecuador** — SRI's mandatory e-invoicing regime, essentially
+  universal, with confirmed newer-taxpayer-segment inclusion waves
+  completed in 2025 — another genuinely live, dated anchor.
+
+**Tier 3 — real, "Oman-shaped" phased rollouts (concrete dated waves,
+not yet fully universal, but not proposal-only either):**
+
+- **Dominican Republic** — e-CF mandate under Law 32-23, phased
+  taxpayer-segment rollout with confirmed dated waves running through
+  2026-2027, DGII-run. Same phased-rollout narrative shape this
+  tracker already handles well for Oman.
+- **Guatemala** — FEL (Factura Electrónica en Línea) mandate, SAT-run,
+  phased rollout largely complete with confirmed remaining segment
+  deadlines.
+- **Paraguay** — SIFEN mandate, phased rollout with confirmed dated
+  taxpayer-segment waves continuing into 2025-2026, still mid-rollout
+  rather than fully universal.
+- **Bolivia** — SIN's Facturación Electrónica mandate, phased rollout
+  with confirmed dated segment waves, mid-rollout.
+
+**Tier 4 — thinner, checked but not prioritized:**
+
+- **Panama** — SFEP voluntary/mandatory-by-segment regime, DGI-run,
+  real but less cleanly universal than the Tier 1-3 candidates.
+- **El Salvador** — DTE mandate, Ministerio de Hacienda-run, phased
+  rollout underway but with a less mature documentation trail than
+  the others checked.
+
+**Recommendation: Argentina and Colombia first** — both clear the same
+"no-caveats, fully universal, mature" bar Jordan and South Korea
+cleared at build time. Uruguay, Costa Rica, and Ecuador are equally
+strong second-tier candidates, each anchored by a genuinely live
+2025/2026 development. Dominican Republic, Guatemala, Paraguay, and
+Bolivia all have the "Oman-shaped" phased-rollout narrative this
+tracker already handles well, if Dan wants to build several Americas
+countries in one pass. Not yet built — this was an evaluation only,
+per Dan's ask; ready to scaffold whichever candidate(s) he wants to
+proceed with.
 
 ## Open items / next steps
 
 ### Real open work
 
 1. **Coverage expansion** — Netherlands, Austria, Greece, Cyprus, Oman,
-   Jordan, Israel, South Korea, Vietnam, and Turkey are all confirmed
-   deployed and tested — every country added this session is now
-   live. Czech Republic is code complete, deploy pending (see the 4
-   August 2026 entry above). Qatar was evaluated and held back at
-   Dan's choice (thinner than first assessed). Still not
+   Jordan, Israel, South Korea, Vietnam, Turkey, and Czech Republic
+   are all confirmed deployed and tested — every country added this
+   session is now live. Qatar was evaluated and held back at Dan's
+   choice (thinner than first assessed). Still not
    tracked in Europe: Bulgaria,
    Estonia, Hungary, Latvia, Lithuania, Malta, Slovenia, Iceland,
    Liechtenstein. The scaffolder + runner make each addition a
@@ -3160,6 +3233,24 @@ the static-file changes (`countries.js`, `shared/deep-dive-render.mjs`,
    with deploy pending (see the dated entries above). Taiwan remains
    the strongest next candidate from this same evaluation whenever
    coverage expands further into Asia-Pacific.
+
+   **Americas coverage evaluated (4 August 2026).** Dan asked for an
+   assessment of countries to add in the Americas. Currently tracked
+   in this region: Brazil, Canada, Chile, Mexico, Peru, United States
+   (6 of 40). Live web research across 11 more candidates found two
+   no-caveats, fully-universal mandates (**Argentina** and
+   **Colombia** — as mature and well-documented as Jordan/South Korea
+   were at build time), three equally strong second-tier candidates
+   each anchored by a genuinely live 2025/2026 development
+   (**Uruguay, Costa Rica, Ecuador**), four real "Oman-shaped" phased
+   rollouts with confirmed dated waves (**Dominican Republic,
+   Guatemala, Paraguay, Bolivia**), and two thinner candidates checked
+   but not prioritized (**Panama, El Salvador**). See the dated entry
+   above for the full ranked write-up and sourcing.
+
+   **Recommendation**: add Argentina and Colombia first. Not yet
+   built — this was an evaluation only, per Dan's ask; ready to
+   scaffold whichever candidate(s) he wants to proceed with.
 2. **Tracking-source URL audit, continued** — ~40 of 54 sources not
    yet verified for whether they'll ever actually surface real news.
    Two rounds done (Brazil/Australia/Ireland/Poland/Saudi
