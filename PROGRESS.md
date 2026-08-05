@@ -4072,6 +4072,125 @@ via `apply_migrations.py --remote`, `site-worker` and `members-worker`
 both redeployed. Taiwan is live on the tracker board and confirmed
 visible in the UI.
 
+### Hungary added as country #49 (5 August 2026, code complete, deploy pending)
+
+Dan asked to add Hungary as the next new country. Hungary is a
+genuinely different shape from every country built this session:
+Real-Time Invoice Reporting (RTIR), live-researched against the
+International VAT Association's original 2018 launch writeup, Sovos,
+EDICOM, vatit.com, RTC Suite, globalvatcompliance.com, and VATupdate's
+December 2025 briefing, is one of Europe's most mature transaction
+data-reporting regimes — but for most of its history it has been a
+pure DATA-reporting duty, not an e-invoicing mandate: the underlying
+invoice could stay paper or PDF, only its data had to reach NAV
+(Nemzeti Ado- es Vamhivatal) via the Online Szamla system. A genuine
+e-invoicing ISSUANCE mandate only exists for one narrow sector
+(electricity/gas/water B2B, since 1 July 2025), with a further
+receipt-data reporting expansion confirmed for 1 September 2026, and a
+comprehensive future B2B/B2G framework still at the public-consultation
+stage (opened November 2025, updated as a concept paper 31 March
+2026) — real and detailed, but not yet enacted, so built as a story
+rather than a milestone, matching the precedent set by Qatar's draft
+law and Taiwan's voluntary Peppol Authority adoption.
+
+- **Migration 347**: country row (`HU`, `Hungary`, region `Europe`,
+  slug `hungary`, `in_picker=1`) + name translations (Hungria/Ungarn/
+  Hongrie).
+- **Migrations 348-349**: 6 milestones with full translations — RTIR's
+  2018 launch (anchor/off-board, `mandate_scope: 'none'`, original HUF
+  100,000 threshold and manual-invoice grace periods) → the 2020
+  threshold removal (on-board, `mandate_scope: 'none'`) → the 2021
+  scope expansion to B2C/exports/intra-Community (on-board,
+  `mandate_scope: 'none'`) → the July 2025 energy/water B2B e-invoicing
+  mandate (on-board, `mandate_scope: 'b2b'` — the one milestone here
+  that's a genuine issuance mandate, not just a reporting duty) → the
+  September 2026 B2C receipt-reporting expansion (on-board,
+  `mandate_scope: 'none'`) → the confirmed 2030 ViDA cross-border floor
+  (on-board, `mandate_scope: 'b2b'`, same treatment as every other
+  tracked EU member state).
+- **Migrations 350-351**: full deep-dive content across 4 languages —
+  5 stats, 8 cards across 3 sections (including a "what's actually
+  mandatory today, by layer" table separating RTIR reporting from the
+  narrow e-invoicing mandate from the proposed future framework), a
+  lifecycle pill card explicitly framed around RTIR reporting
+  invoice DATA rather than the document itself (distinct from every
+  other lifecycle card built this session), and a genuine 2-row
+  penalty table (HUF 500,000 per RTIR reporting failure; HUF 300,000
+  for ignoring a NAV clarification request within 15 days, in force
+  since 1 January 2025), 5 steps, 2 portals.
+- **Migration 352**: a 3-story arc (the July 2025 energy-sector
+  e-invoicing mandate; the November 2025/March 2026 comprehensive
+  e-invoicing consultation, framed explicitly as a proposal; the
+  imminent September 2026 receipt-reporting deadline alongside the
+  certain 2030 floor) — richer than Czech Republic's 2-story precedent
+  given how much more is genuinely happening in Hungary.
+- **Migration 353**: tracking sources — NAV's Online Szamla portal
+  (the actual RTIR reporting system), NAV's general site, and the EC
+  eInvoicing factsheet (Hungary is an EU member state).
+- **Migration 354**: jurisdiction count 47→48, generated
+  programmatically by regex-diffing migration 346's own Taiwan sweep
+  (bare "47" → "48" across the same translation rows).
+- **Static files**: `countries.js` (Europe, between Greece and
+  Ireland), `shared/deep-dive-render.mjs`'s slug map + name
+  translations. No `TOPO_NAME_OVERRIDES`/`MARKER_LONLAT_OVERRIDES`
+  needed — the bundled topology already has a real feature spelled
+  exactly `"Hungary"`, confirmed via direct Python inspection.
+- Hand-swept the jurisdiction count across all four languages'
+  `i18n/*.json` files and every static HTML page via a word-boundary
+  regex requiring nearby "jurisdiction(s)"/"countr(y/ies)" context
+  (English/French) or "jurisdicci-"/"Rechtsordnung" (Spanish/German)
+  — 24 files, 40 replacements, correctly skipping the unrelated
+  `rgba(181,67,47,...)` CSS color value used in `subscribe.html` and
+  `einvoicing-compliance-tracker.html`. One stat tile
+  (`subscribe.html`'s `<div class="num display">47</div>` "Jurisdictions
+  tracked" figure) needed a direct hand-fix since it has no count-word
+  on the same line for the regex to key off.
+- Note: the `i18n/*.json` `countryNames` client-side dictionary (used
+  by the tracker's `translateCountry`) already had a pre-existing gap
+  for every country added since roughly the Netherlands/Austria/
+  Greece/Cyprus session (Argentina, Colombia, Czech Republic, Israel,
+  Jordan, Oman, Philippines, South Korea, Turkey, Vietnam all missing,
+  confirmed via direct inspection) — Hungary joins that same
+  documented gap rather than being fixed in isolation; a batch fix via
+  `generate_files.py --remote` from a machine with real Cloudflare
+  credentials is still the recommended path, per `ADDING-A-COUNTRY.md`
+  Phase 2.
+- Verified via a standalone Python replay script (reusing
+  `apply_migrations.py`'s own schema-loading + `KNOWN_REPLAY_ERRORS`
+  logic, since this sandbox can't run its `--remote`/`--local` modes
+  directly — no Cloudflare credentials here): "Replay validation OK
+  (354 files, only the documented pre-existing errors)." A structural
+  query against the replayed in-memory DB confirmed every row/
+  translation count (6 milestones × 4 languages = 24; 5 stats × 4 =
+  20; 8 cards × 4 = 32; 1 lifecycle card × 4 = 4 with 4 statuses × 4 =
+  16; 2 penalty rows × 4 = 8; 5 steps × 4 = 20; 2 portals × 4 = 8; 3
+  stories × 4 = 12; 3 tracking sources × 4 = 12), a total `countries`
+  row count of 49 (48 real jurisdictions + the standalone EU row), and
+  zero stray "47 jurisdiction/countries/tracked" references remaining
+  anywhere in the `translations` table or in any static HTML/i18n
+  file.
+
+**Not yet deployed** — this sandbox has no Cloudflare/wrangler
+credentials (`wrangler whoami` would be unauthenticated), so migrations
+347-354 need `apply_migrations.py --remote` and both `site-worker` and
+`members-worker` need a follow-up `wrangler deploy` from your own
+machine, same as every prior country addition this session:
+
+```
+cd members-worker/migrations
+python3 apply_migrations.py --remote
+cd ../../site-worker && wrangler deploy
+```
+
+After deploying, worth a quick check against Phase 5's testing
+checklist in `ADDING-A-COUNTRY.md` — in particular, confirm `/hungary`
+renders in all four languages with the translated `<h1>`, and that
+Hungary shows up correctly on The Map given its unusual mix of a
+near-universal reporting duty and a narrow sector-specific issuance
+mandate (it should read as "tracked" rather than "in force," since
+`mandate_scope: 'b2b'` only applies to the narrow 2025 energy
+milestone and the 2030 ViDA floor, not to RTIR itself).
+
 ## Open items / next steps
 
 ### Real open work
@@ -4079,11 +4198,14 @@ visible in the UI.
 1. **Coverage expansion** — Netherlands, Austria, Greece, Cyprus, Oman,
    Jordan, Israel, South Korea, Vietnam, Turkey, Czech Republic,
    Argentina, Colombia, Philippines, and Taiwan are all confirmed
-   deployed and tested — every country added this session is now
-   live. Qatar was evaluated
+   deployed and tested. **Hungary is code-complete (migrations
+   347-354) but not yet deployed** — see its own dated entry above; it
+   needs `apply_migrations.py --remote` plus a `site-worker` and
+   `members-worker` redeploy from Dan's own machine before it's live.
+   Qatar was evaluated
    and held back at Dan's choice (thinner than first assessed). Still
    not tracked in Europe: Bulgaria, Estonia,
-   Hungary, Latvia, Lithuania, Malta, Slovenia, Iceland,
+   Latvia, Lithuania, Malta, Slovenia, Iceland,
    Liechtenstein. Still not tracked in the Americas: Uruguay, Costa
    Rica, Ecuador, Dominican Republic, Guatemala, Paraguay, Bolivia,
    Panama, El Salvador (see the Americas evaluation above — Uruguay,

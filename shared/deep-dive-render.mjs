@@ -38,7 +38,7 @@ export const SUPPORTED_LANGS = ["en", "es", "de", "fr"];
 export const COUNTRY_DEEP_DIVE_SLUGS = {
   "Argentina": "argentina", "Australia": "australia", "Austria": "austria", "Belgium": "belgium", "Brazil": "brazil", "Canada": "canada",
   "Chile": "chile", "China": "china", "Colombia": "colombia", "Croatia": "croatia", "Cyprus": "cyprus", "Czech Republic": "czech-republic", "Denmark": "denmark", "Egypt": "egypt", "Finland": "finland",
-  "France": "france", "Germany": "germany", "Greece": "greece", "India": "india", "Ireland": "ireland", "Israel": "israel",
+  "France": "france", "Germany": "germany", "Greece": "greece", "Hungary": "hungary", "India": "india", "Ireland": "ireland", "Israel": "israel",
   "Italy": "italy", "Jordan": "jordan", "Luxembourg": "luxembourg", "Netherlands": "netherlands", "Malaysia": "malaysia", "Mexico": "mexico", "New Zealand": "new-zealand",
   "Norway": "norway", "Oman": "oman", "Peru": "peru", "Philippines": "philippines", "Poland": "poland", "Portugal": "portugal", "Romania": "romania",
   "Saudi Arabia": "saudi-arabia", "Singapore": "singapore", "Slovakia": "slovakia", "South Korea": "south-korea",
@@ -54,7 +54,7 @@ const COUNTRY_NAME_TRANSLATIONS = {
   es: {
     "Austria": "Austria", "Belgium": "Bélgica", "Croatia": "Croacia", "Cyprus": "Chipre", "Czech Republic": "República Checa", "Denmark": "Dinamarca",
     "Egypt": "Egipto", "Finland": "Finlandia", "France": "Francia",
-    "Germany": "Alemania", "Greece": "Grecia", "Ireland": "Irlanda", "Israel": "Israel", "Italy": "Italia", "Jordan": "Jordania", "Luxembourg": "Luxemburgo",
+    "Germany": "Alemania", "Greece": "Grecia", "Hungary": "Hungría", "Ireland": "Irlanda", "Israel": "Israel", "Italy": "Italia", "Jordan": "Jordania", "Luxembourg": "Luxemburgo",
     "Netherlands": "Países Bajos", "Norway": "Noruega", "Oman": "Omán",
     "Poland": "Polonia", "Portugal": "Portugal", "Romania": "Rumania", "Slovakia": "Eslovaquia", "Spain": "España",
     "Sweden": "Suecia", "Turkey": "Turquía", "United Kingdom": "Reino Unido", "Saudi Arabia": "Arabia Saudita",
@@ -67,7 +67,7 @@ const COUNTRY_NAME_TRANSLATIONS = {
   de: {
     "Austria": "Österreich", "Belgium": "Belgien", "Croatia": "Kroatien", "Cyprus": "Zypern", "Czech Republic": "Tschechien", "Denmark": "Dänemark",
     "Egypt": "Ägypten", "Finland": "Finnland", "France": "Frankreich",
-    "Germany": "Deutschland", "Greece": "Griechenland", "Ireland": "Irland", "Israel": "Israel", "Italy": "Italien", "Jordan": "Jordanien", "Luxembourg": "Luxemburg",
+    "Germany": "Deutschland", "Greece": "Griechenland", "Hungary": "Ungarn", "Ireland": "Irland", "Israel": "Israel", "Italy": "Italien", "Jordan": "Jordanien", "Luxembourg": "Luxemburg",
     "Netherlands": "Niederlande", "Norway": "Norwegen", "Oman": "Oman",
     "Poland": "Polen", "Portugal": "Portugal", "Romania": "Rumänien", "Slovakia": "Slowakei", "Spain": "Spanien",
     "Sweden": "Schweden", "Turkey": "Türkei", "United Kingdom": "Vereinigtes Königreich", "Saudi Arabia": "Saudi-Arabien",
@@ -80,7 +80,7 @@ const COUNTRY_NAME_TRANSLATIONS = {
   fr: {
     "Austria": "Autriche", "Belgium": "Belgique", "Croatia": "Croatie", "Cyprus": "Chypre", "Czech Republic": "République tchèque", "Denmark": "Danemark",
     "Egypt": "Égypte", "Finland": "Finlande", "France": "France",
-    "Germany": "Allemagne", "Greece": "Grèce", "Ireland": "Irlande", "Israel": "Israël", "Italy": "Italie", "Jordan": "Jordanie", "Luxembourg": "Luxembourg",
+    "Germany": "Allemagne", "Greece": "Grèce", "Hungary": "Hongrie", "Ireland": "Irlande", "Israel": "Israël", "Italy": "Italie", "Jordan": "Jordanie", "Luxembourg": "Luxembourg",
     "Netherlands": "Pays-Bas", "Norway": "Norvège", "Oman": "Oman",
     "Poland": "Pologne", "Portugal": "Portugal", "Romania": "Roumanie", "Slovakia": "Slovaquie", "Spain": "Espagne",
     "Sweden": "Suède", "Turkey": "Turquie", "United Kingdom": "Royaume-Uni", "Saudi Arabia": "Arabie saoudite",
