@@ -335,8 +335,14 @@ export async function getDeepDiveContent(db, countryName, lang) {
 
 function renderSpecCard(card) {
   const rowsHtml = (card.rows || []).map(([k, v]) => `<div class="spec-row"><span class="k">${escapeHtml(k)}</span><span class="v">${escapeHtml(v)}</span></div>`).join("");
+  // file_format/scope_transmission cards are usually rows-based, but a
+  // handful (e.g. Pakistan's "Where actual compliance stands") are
+  // body-only narrative cards with no rows_json at all -- without this,
+  // such a card silently rendered as an empty box (title + no content),
+  // since only renderRelatedCard (penalties_related) used to read .body.
+  const bodyHtml = card.body ? `<p>${escapeHtml(card.body)}</p>` : "";
   const badgeHtml = card.badgeLabel ? ` <span class="badge-tag ${escapeHtml(card.badgeType || "")}">${escapeHtml(card.badgeLabel)}</span>` : "";
-  return `<div class="spec-card"><h3>${escapeHtml(card.title)}${badgeHtml}</h3>${rowsHtml}${card.note ? `<p class="note">${escapeHtml(card.note)}</p>` : ""}</div>`;
+  return `<div class="spec-card"><h3>${escapeHtml(card.title)}${badgeHtml}</h3>${rowsHtml}${bodyHtml}${card.note ? `<p class="note">${escapeHtml(card.note)}</p>` : ""}</div>`;
 }
 
 function renderRelatedCard(card) {

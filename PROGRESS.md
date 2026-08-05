@@ -4582,6 +4582,38 @@ URL and all 4 language titles present.
 — no schema change, no static-file change, no Worker redeploy needed.
 Delivered as a git bundle.
 
+### Bug fix: body-only narrative cards rendered as empty boxes in file_format/scope_transmission sections (5 Aug 2026, code complete, deploy pending)
+
+Dan reported Pakistan's deep-dive Section 3 "Where actual compliance
+stands" card rendering as an empty box — title only, no content. Root
+cause was in `shared/deep-dive-render.mjs`, not the migration data:
+`renderSpecCard()` (used for every `file_format` and `scope_transmission`
+card) only ever rendered `card.rows` and `card.note` — it never read
+`card.body` at all. Only `renderRelatedCard()` (`penalties_related`
+section) did. Pakistan's compliance-gap card is a body-only narrative
+card (`rows_json` NULL, `body` set — exactly the "rows-based spec-cards
+or body-based narrative cards" shape `DEEP-DIVE-MIGRATION-CHECKLIST.md`
+describes as valid) placed in `scope_transmission`, the first time any
+country actually used that combination outside `penalties_related` — so
+the gap existed since this rendering path was written, just never
+triggered until this card.
+
+Confirmed via a direct query against the full replayed database that
+this is the *only* card of its kind site-wide (all 53 countries, all 4
+languages) — not a wider content gap, a single latent code path never
+exercised before. Fixed `renderSpecCard()` to also render `card.body`
+as a paragraph (between rows and note, matching `renderRelatedCard`'s
+own ordering) when present — confirmed zero existing cards have both
+`rows_json` and `body` set simultaneously, so no card double-renders
+under the fix; rows-only cards are byte-identical to before (empty
+`bodyHtml` when `body` is null), confirmed by a standalone Node
+reproduction of both card shapes before and after the change.
+
+**Code complete, deploy pending**: `site-worker` needs `wrangler
+deploy` to ship the `shared/deep-dive-render.mjs` fix — no migration,
+no `members-worker` change, since this is a static-file-only bug (the
+D1 content itself was always correct). Delivered as a git bundle.
+
 ## Open items / next steps
 
 ### Real open work
