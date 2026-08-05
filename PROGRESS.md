@@ -4704,6 +4704,45 @@ both live on the tracker board (Americas). The commit (`747cf4b`) was
 also pushed to the canonical GitHub repo from Dan's machine, confirmed
 via `git ls-remote`.
 
+### 5 Aug 2026 — "Recent & Upcoming" status pill now defaults to "Due soon" (deployed & tested)
+
+Dan asked for the tracker's "Recent & Upcoming" section to show the
+closest milestones by default, rather than everything. The section's
+status filter (`#statusFilters`, the "All / In effect / Due soon /
+Upcoming" pill row) is driven by a single client-side `state.status`
+value initialized on page load — previously `'All'`. Changed the
+initial value to `'Due soon'` (`einvoicing-compliance-tracker.html`,
+`let state = { region:'All', status:'Due soon', q:'' };`), the exact
+key string already used by the pill buttons, `STATUS_MAP`, and
+`renderTimeline()`'s filter check, so no other logic needed to change.
+
+Confirmed this is a pure static-file change with no migration: `/`
+`site-worker`'s `renderTracker()` only regex-replaces the `DATA` and
+`DEEP_DIVES` blobs inside the shipped HTML at request time — it never
+touches the surrounding script, so the new default state ships as-is
+on redeploy. Also confirmed the hero arrivals/list board
+(`renderBoard()`) reads straight from `DATA` and is unaffected by this
+filter, and that "Due soon" (`computeStatus()`'s `soon`, 1-90 days
+out) can never fall into the collapsed "Established regulations"
+bucket (`ESTABLISHED_CUTOFF_DAYS` only catches *past* dates), so that
+section correctly stays hidden by default too rather than showing an
+empty expandable panel.
+
+Verified: extracted and `node --check`'d the inline script after the
+edit (clean); grepped for any other `state.status`/`state = {`/
+`URLSearchParams` reference that might re-initialize or override the
+default (none found — the only writers are the pill click handlers,
+which set it generically from the clicked button's key).
+
+**Deployed and tested** (confirmed by Dan): committed as two commits
+(`cb73f66` documentation-only status-marker sync, `69d35a7` the actual
+default-pill change), bundled together, applied by Dan, `site-worker`
+redeployed. No D1 migration involved. Both commits also confirmed
+pushed to the canonical GitHub repo — Dan's `git log --oneline -5`
+shows `HEAD -> main, origin/main, origin/HEAD` all aligned at
+`69d35a7`, cross-checked via `git ls-remote`/`git fetch` against
+`neworigin/main`.
+
 ## Open items / next steps
 
 ### Real open work
