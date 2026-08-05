@@ -4406,7 +4406,7 @@ fault.
 both live and visible on the tracker board and in the subscribe page's
 country menu, and confirmed rendering correctly on `/map`.
 
-### Pakistan and Ecuador added as countries #52 and #53 (5 August 2026, code complete, deploy pending)
+### Pakistan and Ecuador added as countries #52 and #53 (5 August 2026, deployed & tested)
 
 Dan asked "what are the next eligible countries to add?", then chose
 Pakistan and Ecuador from the list. Rather than build straight off
@@ -4514,13 +4514,14 @@ with a direct Node `--check` + module-load smoke test after editing
 (52 total slug entries across both files, matching the new
 jurisdiction count exactly).
 
-**Code complete, deploy pending**: all 15 migrations (371-385) need
-`apply_migrations.py --remote` from Dan's own machine (no Cloudflare
-credentials in this sandbox), followed by `wrangler deploy` on both
-`site-worker` and `members-worker` to ship the `countries.js`/
-`deep-dive-render.mjs` static-file edits. Delivered as a git bundle
-for Dan to pull and push from his own machine, per this project's
-standing git-push-restricted-sandbox workaround.
+**Deployed and tested** (confirmed by Dan): all 15 migrations
+(371-385) applied via `apply_migrations.py --remote`, both
+`site-worker` and `members-worker` redeployed to pick up the
+`countries.js`/`deep-dive-render.mjs` static-file edits. Pakistan and
+Ecuador are both live on the tracker board, in the subscribe page's
+country menu, and confirmed rendering correctly. Delivered as a git
+bundle for Dan to pull and push from his own machine, per this
+project's standing git-push-restricted-sandbox workaround.
 
 ## Open items / next steps
 
@@ -4529,10 +4530,9 @@ standing git-push-restricted-sandbox workaround.
 1. **Coverage expansion** — Netherlands, Austria, Greece, Cyprus, Oman,
    Jordan, Israel, South Korea, Vietnam, Turkey, Czech Republic,
    Argentina, Colombia, Philippines, Taiwan, Hungary (#49), Indonesia
-   (#50), Japan (#51), and now **Pakistan (#52) and Ecuador (#53)**
-   are code-complete (Pakistan/Ecuador: deploy pending — see the dated
-   entry above) — every country added this project's history is built.
-   Myanmar was evaluated and held back (no real mandate found). Qatar was evaluated
+   (#50), Japan (#51), Pakistan (#52), and Ecuador (#53) are all
+   confirmed deployed and tested — every country added this project's
+   history is now live. Myanmar was evaluated and held back (no real mandate found). Qatar was evaluated
    and held back at Dan's choice (thinner than first assessed). Still
    not tracked in Europe: Bulgaria, Estonia,
    Latvia, Lithuania, Malta, Slovenia, Iceland,
