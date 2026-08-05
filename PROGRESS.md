@@ -4616,6 +4616,25 @@ with the `shared/deep-dive-render.mjs` fix — no migration, no
 `members-worker` change needed. Pakistan's "Where actual compliance
 stands" card now renders correctly on the live deep-dive.
 
+**Follow-up (5 Aug 2026, code complete, deploy pending):** Dan
+reported the newly-visible text rendered in a visibly different style
+from the rest of the card. Root cause: the `<p>` added by the fix
+above had no CSS class, so it fell back to `body`'s unstyled default
+(no explicit base `font-size`, so ~16px browser default) instead of
+the 13px sizing every other piece of card content uses (`.spec-row`
+is 13px, `.note` is 12.6px, `.related-card p` is 13px) — same
+font-family throughout (inherited `IBM Plex Sans`), so the mismatch
+read as size/weight, not literally a different typeface. Added a
+dedicated `.spec-card p.body-text` rule (13px, `line-height:1.6`,
+matching `.spec-row .v`'s `#241d10` text color since this is primary
+card content, not muted annotation like `.note`) and gave the
+generated paragraph that class. Verified via the same standalone Node
+render reproduction, and confirmed `.spec-card p.body-text` doesn't
+collide with the pre-existing `.related-card p` rule (different
+parent class, so no specificity conflict). Full replay still clean
+(389 files). `site-worker` needs another `wrangler deploy` — still no
+migration involved, this is CSS-only.
+
 ## Open items / next steps
 
 ### Real open work

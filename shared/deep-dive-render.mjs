@@ -340,7 +340,7 @@ function renderSpecCard(card) {
   // body-only narrative cards with no rows_json at all -- without this,
   // such a card silently rendered as an empty box (title + no content),
   // since only renderRelatedCard (penalties_related) used to read .body.
-  const bodyHtml = card.body ? `<p>${escapeHtml(card.body)}</p>` : "";
+  const bodyHtml = card.body ? `<p class="body-text">${escapeHtml(card.body)}</p>` : "";
   const badgeHtml = card.badgeLabel ? ` <span class="badge-tag ${escapeHtml(card.badgeType || "")}">${escapeHtml(card.badgeLabel)}</span>` : "";
   return `<div class="spec-card"><h3>${escapeHtml(card.title)}${badgeHtml}</h3>${rowsHtml}${bodyHtml}${card.note ? `<p class="note">${escapeHtml(card.note)}</p>` : ""}</div>`;
 }
@@ -485,6 +485,7 @@ export async function renderFullDeepDivePage(countryName, flag, code, region, co
   .spec-row{display:flex; justify-content:space-between; gap:12px; padding:6px 0; border-top:1px dashed var(--paper-line); font-size:13px;}
   .spec-row:first-of-type{border-top:none;}
   .spec-row .k{color:#6b5f3f; flex:0 0 42%;} .spec-row .v{color:#241d10; text-align:right; font-weight:500; flex:1 1 auto; min-width:0; overflow-wrap:break-word; word-break:break-word;}
+  .spec-card p.body-text{font-size:13px; line-height:1.6; color:#241d10; margin:4px 0 0;}
   .note{font-size:12.6px; color:#5a5138; margin:10px 0 0; padding-top:10px; border-top:1px dashed var(--paper-line); line-height:1.5;}
   .badge-tag{display:inline-block; font-family:'IBM Plex Mono',monospace; font-size:9.5px; text-transform:uppercase; letter-spacing:0.06em; padding:2px 7px; border-radius:4px; margin-left:6px; vertical-align:middle;}
   .badge-tag.confirmed{background:var(--live-dim); color:#bfe6cf;}
