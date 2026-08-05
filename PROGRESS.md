@@ -4635,6 +4635,68 @@ parent class, so no specificity conflict). Full replay still clean
 (389 files). `site-worker` needs another `wrangler deploy` — still no
 migration involved, this is CSS-only.
 
+### 5 Aug 2026 — Uruguay (#54) and Costa Rica (#55) added as new tracked jurisdictions
+
+Following the Pakistan/Ecuador precedent, Dan asked for a deep-research
+evaluation of two more Americas candidates before committing to a
+build; Uruguay and Costa Rica were selected (from a shortlist that also
+included Bulgaria) and each got an independent, live-sourced research
+pass via a subagent, explicitly tasked with verifying/deepening the
+project's existing lighter-touch draft evaluation and flagging any
+unsupported claims. Both passes caught real corrections:
+
+- **Uruguay** — the draft's "exemptions closed 1 July 2024" and its
+  "UYU 10,000 to several hundred thousand" penalty range both traced to
+  an uncited vendor blog and could not be verified. The actual
+  primary-source picture (Resolución DGI 2548/023 + DGI's own 28 Nov
+  2024 announcement) is a **31 December 2024 deadline, universal
+  obligation from 1 January 2025**, with DGI's own reported figure of
+  **98% of documentation already electronic** at that point — a
+  stronger, better-sourced stat than the original draft's. The founding
+  decree (36/012, Art. 17) defers to Uruguay's *general* Código
+  Tributario penalty regime rather than setting CFE-specific fines, so
+  the deep-dive's penalties section is written qualitatively (Arts. 95,
+  97, 110) rather than citing the unverified peso range.
+- **Costa Rica** — "mandatory since 2018" was sharpened to the actual
+  anchor (Resolution DGT-R-012-2018, staggered Sept-Nov 2018 rollout by
+  taxpayer ID digit, with healthcare/professional sectors mandated
+  earlier in Jan-May 2018). The CNPT Art. 85/85-bis/86 penalty
+  citations are corroborated by multiple independent sources including
+  a real 2024 DGT enforcement report (₡253M+ fined across 279
+  taxpayers) but weren't independently pulled from pgrweb.go.cr's live
+  legal text — flagged as a caveat on the penalties card rather than
+  presented as fully primary-sourced. The "Q4 2026 corporate-ID-format
+  change" was confirmed real (Decreto Ejecutivo 44648-MJ, alphanumeric
+  cédula jurídica) with a more precise date found — **1 November 2026**
+  for the e-invoicing production cutover — though marked `confidence:
+  'expected'` on that milestone since the broader cédula rollout
+  timeline is described elsewhere as not fully finalized.
+
+Built following the exact `ADDING-A-COUNTRY.md` sequence: migrations
+390-396 (Uruguay: country/translations, 6 milestones, deep-dive content
+— stats/cards/lifecycle/penalty-rows/steps/portals — across all 4
+languages, 2 stories, tracking sources) and 397-403 (Costa Rica: same
+shape, 7 milestones, 2 stories), then 404 (jurisdiction-count bump
+52→54, generated mechanically by replaying the full chain in-memory and
+diffing the post-385 current text rather than hand-editing, to avoid
+the count-drift mistake migration 024 exists to fix). `countries.js`'s
+Americas array and `shared/deep-dive-render.mjs`'s
+`COUNTRY_DEEP_DIVE_SLUGS` + `COUNTRY_NAME_TRANSLATIONS` updated for
+both countries (alphabetical placement: Costa Rica between Colombia and
+Ecuador, Uruguay after United States). Checked `vendor/countries-50m.json`'s
+topology directly — both "Uruguay" and "Costa Rica" match `name_en`
+exactly, so no `TOPO_NAME_OVERRIDES`/`MARKER_LONLAT_OVERRIDES` entries
+needed. Verified via full in-memory replay (404 migration files, only
+the 4 documented pre-existing errors) plus direct structural queries
+confirming exact 4-language translation-row parity across every table
+for both countries and zero cards with both `rows_json` and `body` set
+(the precondition of the Pakistan rendering bug fixed earlier this
+session).
+
+**Deploy pending Dan's confirmation** — migrations 390-404 and the
+`countries.js`/`deep-dive-render.mjs` edits are committed and bundled,
+not yet applied to live D1/deployed.
+
 ## Open items / next steps
 
 ### Real open work
@@ -4643,16 +4705,16 @@ migration involved, this is CSS-only.
    Jordan, Israel, South Korea, Vietnam, Turkey, Czech Republic,
    Argentina, Colombia, Philippines, Taiwan, Hungary (#49), Indonesia
    (#50), Japan (#51), Pakistan (#52), and Ecuador (#53) are all
-   confirmed deployed and tested — every country added this project's
-   history is now live. Myanmar was evaluated and held back (no real mandate found). Qatar was evaluated
+   confirmed deployed and tested. Uruguay (#54) and Costa Rica (#55)
+   have been built (migrations 390-404, committed and bundled for Dan
+   to apply) — see the dated section below for the full build summary;
+   **deployment status pending Dan's confirmation.** Myanmar was
+   evaluated and held back (no real mandate found). Qatar was evaluated
    and held back at Dan's choice (thinner than first assessed). Still
    not tracked in Europe: Bulgaria, Estonia,
    Latvia, Lithuania, Malta, Slovenia, Iceland,
-   Liechtenstein. Still not tracked in the Americas: Uruguay, Costa
-   Rica, Dominican Republic, Guatemala, Paraguay, Bolivia,
-   Panama, El Salvador (see the Americas evaluation above — Uruguay and
-   Costa Rica are the strongest remaining candidates, each with a live
-   2025/2026 development to anchor a milestone on).
+   Liechtenstein. Still not tracked in the Americas: Dominican
+   Republic, Guatemala, Paraguay, Bolivia, Panama, El Salvador.
    The scaffolder + runner make each addition a fraction of the old
    effort.
 
