@@ -4296,14 +4296,108 @@ tier returns" open item below as no longer viable via that specific
 platform; a future paid tier, if the business case changes, would need
 to start from Stripe or Paddle instead, informed by this rejection.
 
+### Indonesia and Japan added as countries #50 and #51 (5 August 2026, code complete, deploy pending)
+
+Dan asked to evaluate two APAC candidates, initially offered as Pakistan
++ Indonesia (per the 4 August Asia-Pacific evaluation), but substituted
+Myanmar for Pakistan and asked for an evaluation pass first. Research
+found Myanmar has no real, dated, sourced e-invoicing legislation (every
+source checked — Axway's global tracker, EY's June 2026 developments
+tracker, VDB Loi's Myanmar Tax Booklet 2025-2027 — either omits Myanmar
+or describes it as "early stages... broader implementation expected in
+coming years") — held back, doesn't clear this project's bar. Indonesia
+reconfirmed as strong. Dan also floated Japan mid-research; evaluated
+and found real but structurally different from a typical mandate — Japan
+has no e-invoicing issuance requirement, only a mandatory paper-or-
+electronic tax-invoice registration regime (the Qualified Invoice
+System) with an entirely voluntary electronic standard (JP PINT/Peppol)
+layered on top. Dan confirmed **both as full builds**.
+
+**Indonesia (migrations 356-362).** Coretax e-invoicing, live-researched
+against vatcalc.com, fiscal-requirements.com, hanumaglobal.com,
+muc.co.id, and DJP's own site (pajak.go.id). A genuinely two-era story:
+e-Faktur Pajak required electronic VAT invoices in phases from 2014,
+reaching full nationwide coverage 1 July 2016 — already a real, close-
+to-universal e-invoicing mandate for eight years before Coretax existed.
+DJP's Coretax platform launched 1 January 2025; **PER-11/PJ/2025** (22
+May 2025) moved the invoice upload deadline to the 20th of the
+following month; and from **31 December 2025** Coretax became fully
+enforced, shifting Indonesia to a genuine real-time clearance model —
+DJP approval is now a legal precondition for a valid invoice, not a
+post-creation check, and uncleared invoices can't support the buyer's
+VAT input tax credit. 6 milestones (`mandate_scope: 'b2b'` throughout,
+since this is a real issuance/clearance mandate, not data-reporting-only
+like Hungary's RTIR), 5 stats, 8 cards across 3 sections including a
+5-step Coretax clearance-flow lifecycle card, 2 genuine penalty rows
+(IDR 500,000 fixed late-return fine; up to 100% of underpaid VAT for
+misreporting), 6 steps, 2 portals, 3 stories, 2 tracking sources, all
+4 languages. `mandate_summary` 79 words / `timeline_intro` 54 words —
+comfortably inside the post-355 length guideline.
+
+**Japan (migrations 363-369).** A genuinely distinct shape for this
+tracker — the first APAC country with no e-invoicing issuance mandate
+at all, closer in spirit to Australia/Finland/the US than to a
+clearance-model country. Live-researched against Japan's Digital Agency
+(digital.go.jp), the National Tax Agency (nta.go.jp), Peppol.org, and
+EDICOM. What's real and dated: the **Qualified Invoice System** (適格
+請求書等保存方式) took effect **1 October 2023** — a mandatory
+registration/documentation regime tied to consumption-tax input credit
+(14-digit T-number, specific invoice content), but paper and PDF
+invoices remain fully valid; nothing requires electronic issuance.
+Registration opened 1 October 2021, the same month Japan's Digital
+Agency (established September 2021) became the country's official
+Peppol Authority. **JP PINT**, Japan's voluntary Peppol PINT BIS
+Billing-compliant e-invoicing standard, reached v1.1.3 as of 8 June
+2026 — real and actively maintained, but entirely optional. A
+transitional input-tax-credit relief schedule for purchases from
+non-registered suppliers is already tapering: 80% (2023-2026) → 70%
+(from Oct 2026) → 50% (from Oct 2028) → 30% (from Oct 2030), sourced
+directly from an NTA PDF. All 6 milestones use `mandate_scope: 'none'`
+(no B2B/B2G issuance mandate to color on the Map). No
+`deep_dive_penalty_rows` — Japan's enforcement is economic (lost input-
+tax-credit appeal for buyers), not fine-based, matching the Finland/UK/
+New Zealand/US precedent for countries with no real fine schedule;
+covered entirely in 4 narrative penalties_related cards instead. 5
+stats, 9 cards across 3 sections including a 5-step voluntary JP PINT/
+Peppol lifecycle card (explicitly framed as optional at every step), 5
+steps, 2 portals, 3 stories, 2 tracking sources, all 4 languages.
+`mandate_summary` 89 words / `timeline_intro` 52 words.
+
+**Shared work**: `countries.js` (Asia-Pacific region list) and
+`shared/deep-dive-render.mjs` (`COUNTRY_DEEP_DIVE_SLUGS` +
+`COUNTRY_NAME_TRANSLATIONS` for es/de/fr) updated for both countries.
+No `shared/map-data.mjs` override needed — both use standard world-atlas
+names. **Migration 370** bumps the jurisdiction-count copy (10 keys × 4
+languages) from 48 to 50, following the exact pattern of migrations 346
+and 354.
+
+Full in-memory SQLite replay of all 370 migration files (schema.sql +
+every migration in lexicographic filename order, matching
+`apply_migrations.py`'s own ordering) passed cleanly: only the same 4
+pre-existing documented errors (`050b_portugal_missing_milestone.sql`,
+`070_add_lifecycle_title_column.sql`, `072_split_poland_lifecycle_text.sql`,
+`082_malaysia_deepdive_content.sql`), zero new ones. Both countries'
+milestone/stat/card/step/portal/tracking-source counts match exactly
+across all 4 languages.
+
+**Not yet deployed** — code complete and replay-validated in this cloud
+sandbox, but not yet applied to the live D1 database or deployed to
+either Cloudflare Worker. Per the git-proxy restriction documented
+above, this session cannot push directly; delivered to Dan as a git
+bundle for him to pull and push from his own machine, then apply via
+`apply_migrations.py --remote` and deploy both `site-worker` and
+`members-worker`, the same workflow used for Hungary.
+
 ## Open items / next steps
 
 ### Real open work
 
 1. **Coverage expansion** — Netherlands, Austria, Greece, Cyprus, Oman,
    Jordan, Israel, South Korea, Vietnam, Turkey, Czech Republic,
-   Argentina, Colombia, Philippines, Taiwan, and now **Hungary (#49)**
-   are all confirmed deployed and tested. Qatar was evaluated
+   Argentina, Colombia, Philippines, Taiwan, Hungary (#49), and now
+   **Indonesia (#50) and Japan (#51)** are all code-complete (Indonesia
+   and Japan pending deploy — see the dated section above). Myanmar was
+   evaluated and held back (no real mandate found). Qatar was evaluated
    and held back at Dan's choice (thinner than first assessed). Still
    not tracked in Europe: Bulgaria, Estonia,
    Latvia, Lithuania, Malta, Slovenia, Iceland,
