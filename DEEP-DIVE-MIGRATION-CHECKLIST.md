@@ -211,6 +211,21 @@ what exists and what each table is for.
   per language, holding `compliance_model`, `footer_disclaimer`, and the
   5 section-intro fields (`timeline_intro`, `file_format_intro`,
   `scope_intro`, `steps_intro`, `penalties_intro`)
+  **Length target for `mandate_summary` (the top-of-page tile, see the
+  "Mandate summary tile" section below) and `timeline_intro` (the text
+  directly under the compliance timeline): keep `mandate_summary` to
+  roughly 2-4 sentences / 50-100 words, and `timeline_intro` to roughly
+  2-3 sentences / 30-60 words, in English.** These crept from a ~40-60
+  word / ~20-35 word norm (the first 30+ countries added) up to 150-190
+  words each by the time Czech Republic through Hungary were built —
+  flagged by Dan and corrected in migration 355 (which also documents
+  the trimmed baseline for those six countries). ES/DE/FR translations
+  naturally run 15-40% longer than English for the same content — that's
+  normal, not drift; judge against the English word count. When writing
+  a new country's content, err toward *less* elaboration than the most
+  recent country you're using as a reference — nuance belongs in the
+  cards and steps below, which have no comparable length pressure,
+  not in these two intro fields.
 - `deep_dive_stats` / `deep_dive_stat_translations` — the stat-strip
 - `deep_dive_cards` / `deep_dive_card_translations` — spec-cards (rows-based)
   and related-cards (body-based) across the 3 sections (`file_format`,
