@@ -35,8 +35,18 @@ across global jurisdictions in English, Spanish, German, and French.
   — shared by both Workers
 - Payments: Lemon Squeezy (still in test mode — see Open Items)
 - Email: Resend
-- Repo: `https://github.com/danielyoung76/E-InvoicingComplianceCorner`
-  (public, `main` branch)
+- Repo: **as of 5 August 2026, migrated to
+  `https://github.com/einvoicingcompliancecorner/E-InvoicingComplianceCorner`**
+  (`main` branch) — the full commit history was pushed there via a git
+  bundle from Dan's machine (see the Hungary/repo-migration entry
+  below for why: this sandbox's git proxy blocks pushes to any repo
+  outside its own authorized set, unrelated to which account owns the
+  repo). The old `danielyoung76/E-InvoicingComplianceCorner` location
+  is no longer the canonical one — a new session should clone from the
+  `einvoicingcompliancecorner` org going forward and ask Dan for a
+  fresh PAT scoped to it if push access is needed from inside a
+  sandbox (which, per the note below, won't actually work from this
+  sandbox regardless of the PAT's validity).
 
 ---
 
@@ -4072,7 +4082,7 @@ via `apply_migrations.py --remote`, `site-worker` and `members-worker`
 both redeployed. Taiwan is live on the tracker board and confirmed
 visible in the UI.
 
-### Hungary added as country #49 (5 August 2026, code complete, deploy pending)
+### Hungary added as country #49 (5 August 2026, deployed & tested)
 
 Dan asked to add Hungary as the next new country. Hungary is a
 genuinely different shape from every country built this session:
@@ -4170,26 +4180,77 @@ law and Taiwan's voluntary Peppol Authority adoption.
   anywhere in the `translations` table or in any static HTML/i18n
   file.
 
-**Not yet deployed** — this sandbox has no Cloudflare/wrangler
-credentials (`wrangler whoami` would be unauthenticated), so migrations
-347-354 need `apply_migrations.py --remote` and both `site-worker` and
-`members-worker` need a follow-up `wrangler deploy` from your own
-machine, same as every prior country addition this session:
+**A note on how this got deployed and how the repo got migrated:**
+this sandbox has no Cloudflare/wrangler credentials, and separately
+this session discovered a hard constraint worth documenting for future
+sessions: the sandbox's git proxy blocks `git push` to *any* GitHub
+repo outside "this session's authorized repository set" — confirmed
+this isn't specific to `danielyoung76/E-InvoicingComplianceCorner` or
+to any one account; a fresh PAT (fine-grained and classic, tested
+against a brand-new repo under a different GitHub account) hit the
+identical proxy-level 403 both times. The proxy overrides whatever
+credential is embedded in the remote URL rather than merely failing to
+inject its own, so no token fixes it from inside this sandbox.
+
+Worked around it the same way as Taiwan's push earlier this project's
+history — a git bundle handed to Dan, applied from his own machine —
+except this time Dan also used it as an opportunity to migrate the
+whole project to a new repo: **`einvoicingcompliancecorner/`
+`E-InvoicingComplianceCorner`** (a full 383-commit history bundle,
+not just the diff, pushed clean since the new repo started empty).
+Dan then cloned fresh from that new repo location and ran the actual
+deploy from there:
 
 ```
 cd members-worker/migrations
-python3 apply_migrations.py --remote
-cd ../../site-worker && wrangler deploy
+python3 apply_migrations.py --remote   # migrations 347-354
+cd ../../site-worker && npx wrangler deploy
+cd ../members-worker && npx wrangler deploy
 ```
 
-After deploying, worth a quick check against Phase 5's testing
-checklist in `ADDING-A-COUNTRY.md` — in particular, confirm `/hungary`
-renders in all four languages with the translated `<h1>`, and that
-Hungary shows up correctly on The Map given its unusual mix of a
-near-universal reporting duty and a narrow sector-specific issuance
-mandate (it should read as "tracked" rather than "in force," since
-`mandate_scope: 'b2b'` only applies to the narrow 2025 energy
-milestone and the 2030 ViDA floor, not to RTIR itself).
+**Deployed and tested** (confirmed by Dan): Hungary is live. See the
+next entry below for a follow-up content fix applied the same day.
+
+### Deep-dive description length: trimmed 6 countries + added a guideline (5 August 2026, deployed & tested)
+
+Dan flagged that the deep-dive `mandate_summary` (top-of-page tile)
+and `timeline_intro` (text under the compliance timeline) had been
+getting progressively longer with each recent country — Hungary's
+`timeline_intro` had reached 191 words / 1283 characters. Measured
+this precisely by replaying the full migration chain and computing
+word/character counts per country in insertion order: the first 30+
+countries held a tight ~40-60 word / ~20-35 word band, then Netherlands
+onward began climbing, and Czech Republic through Hungary had roughly
+tripled (146-191 words for `mandate_summary`/`timeline_intro`
+combined, up from the original design intent of "2-4 sentences" per
+the mandate-summary tile's own migration-188 description). Root cause:
+no length target was ever documented, so as countries got more
+nuanced, explanatory detail kept accumulating with nothing pulling it
+back down.
+
+Dan chose a "looser cap" (~90/50 words) over matching the original
+tighter baseline, and asked to trim all six affected countries in one
+pass rather than just the newest: **Czech Republic, Argentina,
+Colombia, Philippines, Taiwan, Hungary**. Migration 355 rewrites
+`mandate_summary` and `timeline_intro` for all 4 languages across all
+six — condensed rewrites preserving every date, resolution/regulation
+number, and figure from the original text, no facts cut. Landed at
+roughly 90-110 words (`mandate_summary`) and 50-90 words
+(`timeline_intro`) in the replayed result, with Spanish/French running
+naturally longer than English as expected. Also added an explicit
+length guideline to `DEEP-DIVE-MIGRATION-CHECKLIST.md` (next to the
+schema's field list) so future country additions don't repeat the
+drift — judged against English word count, since ES/DE/FR inflation
+over English is normal.
+
+Pure D1 content `UPDATE` — no schema change, no static-file change, no
+Worker redeploy needed. Verified via a full 355-file replay (0 new
+errors) before handing off as a second bundle on top of the Hungary
+commit.
+
+**Deployed and tested** (confirmed by Dan): migration 355 applied via
+`apply_migrations.py --remote` from the new repo location. No
+redeploy needed for a pure content change.
 
 ## Open items / next steps
 
@@ -4197,12 +4258,8 @@ milestone and the 2030 ViDA floor, not to RTIR itself).
 
 1. **Coverage expansion** — Netherlands, Austria, Greece, Cyprus, Oman,
    Jordan, Israel, South Korea, Vietnam, Turkey, Czech Republic,
-   Argentina, Colombia, Philippines, and Taiwan are all confirmed
-   deployed and tested. **Hungary is code-complete (migrations
-   347-354) but not yet deployed** — see its own dated entry above; it
-   needs `apply_migrations.py --remote` plus a `site-worker` and
-   `members-worker` redeploy from Dan's own machine before it's live.
-   Qatar was evaluated
+   Argentina, Colombia, Philippines, Taiwan, and now **Hungary (#49)**
+   are all confirmed deployed and tested. Qatar was evaluated
    and held back at Dan's choice (thinner than first assessed). Still
    not tracked in Europe: Bulgaria, Estonia,
    Latvia, Lithuania, Malta, Slovenia, Iceland,
