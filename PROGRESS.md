@@ -4252,6 +4252,50 @@ commit.
 `apply_migrations.py --remote` from the new repo location. No
 redeploy needed for a pure content change.
 
+## Lemon Squeezy store application rejected — paid tier shelved (5 August 2026)
+
+Dan received a rejection email from Lemon Squeezy on the site's store
+application: "After reviewing the information in your application and
+any extra information you supplied, unfortunately, we cannot approve
+your store application... We have to assess the totality of data and
+are guided by regulations imposed on us by Stripe, PayPal and card
+companies." No specific reason given, and the email explicitly frames
+it as more than a simple ToS-list match.
+
+Checked Lemon Squeezy's own linked prohibited-categories page for a
+plausible cause rather than speculating blind: their restricted list
+explicitly names **"legal"** (under Financial & Legal Services) and
+**"consulting"** (under Professional Services) as prohibited
+categories. This project's own description — "informing visitors of
+changes to e-Invoicing mandates, legislation and making
+**recommendations of actions they should be taking to remain
+compliant**" — plausibly reads as advisory/consulting-adjacent to an
+automated or manual MoR risk review, even though the actual product is
+a compliance-news/tracking newsletter (sourced-to-government, not
+individualized legal advice). This is a hypothesis, not a confirmed
+reason — Lemon Squeezy didn't specify one — but it's the most likely
+fit against their own stated categories.
+
+Given a choice between appealing/clarifying with Lemon Squeezy, trying
+Paddle (another Merchant of Record, different review process but
+similar risk profile), switching to Stripe directly (not a MoR, so
+less strict on advisory-adjacent categories but pushes VAT/tax
+handling onto the business itself), or shelving the paid tier
+entirely, **Dan chose to shelve it** — consistent with the "Business
+threads evaluated" analysis from 4 August 2026, which had already
+recommended keeping the free tier as the durable model given
+theinvoicinghub.com's free-reader/vendor-sponsorship precedent and
+Lemon Squeezy's fee structure making low-ticket billing marginal even
+before this rejection.
+
+No code or content changed — the live site was already free-only with
+Lemon Squeezy checkout disconnected since 2 August 2026 (see that
+dated entry), so this rejection doesn't affect anything currently
+live. It does close out the "Re-hooking Lemon Squeezy if/when a paid
+tier returns" open item below as no longer viable via that specific
+platform; a future paid tier, if the business case changes, would need
+to start from Stripe or Paddle instead, informed by this rejection.
+
 ## Open items / next steps
 
 ### Real open work
@@ -4706,4 +4750,8 @@ redeploy needed for a pure content change.
 - Ending the ARCHIVE_PUBLIC promo (one variable flip in
   members-worker's wrangler.toml + the coming-soon treatment notes in
   the tracker's Resources comment).
-- Re-hooking Lemon Squeezy if/when a paid tier returns.
+- ~~Re-hooking Lemon Squeezy if/when a paid tier returns.~~ Resolved 5
+  August 2026: Lemon Squeezy rejected the store application and Dan
+  chose to shelve the paid tier rather than pursue Paddle/Stripe as
+  alternatives — see the dated entry above. If a paid tier is
+  reconsidered later, start from Stripe or Paddle, not Lemon Squeezy.
