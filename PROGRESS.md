@@ -4616,7 +4616,7 @@ with the `shared/deep-dive-render.mjs` fix — no migration, no
 `members-worker` change needed. Pakistan's "Where actual compliance
 stands" card now renders correctly on the live deep-dive.
 
-**Follow-up (5 Aug 2026, code complete, deploy pending):** Dan
+**Follow-up (5 Aug 2026, deployed & tested):** Dan
 reported the newly-visible text rendered in a visibly different style
 from the rest of the card. Root cause: the `<p>` added by the fix
 above had no CSS class, so it fell back to `body`'s unstyled default
@@ -4632,8 +4632,11 @@ generated paragraph that class. Verified via the same standalone Node
 render reproduction, and confirmed `.spec-card p.body-text` doesn't
 collide with the pre-existing `.related-card p` rule (different
 parent class, so no specificity conflict). Full replay still clean
-(389 files). `site-worker` needs another `wrangler deploy` — still no
-migration involved, this is CSS-only.
+(389 files).
+
+**Deployed and tested** (confirmed by Dan, alongside the Uruguay/Costa
+Rica deploy below): `site-worker` redeployed with the CSS fix — no
+migration involved, this was CSS-only.
 
 ### 5 Aug 2026 — Uruguay (#54) and Costa Rica (#55) added as new tracked jurisdictions
 
@@ -4693,9 +4696,13 @@ for both countries and zero cards with both `rows_json` and `body` set
 (the precondition of the Pakistan rendering bug fixed earlier this
 session).
 
-**Deploy pending Dan's confirmation** — migrations 390-404 and the
-`countries.js`/`deep-dive-render.mjs` edits are committed and bundled,
-not yet applied to live D1/deployed.
+**Deployed and tested** (confirmed by Dan): migrations 390-404 applied
+via `apply_migrations.py --remote`, both `site-worker` and
+`members-worker` redeployed to pick up the `countries.js`/
+`deep-dive-render.mjs` static-file changes. Uruguay and Costa Rica are
+both live on the tracker board (Americas). The commit (`747cf4b`) was
+also pushed to the canonical GitHub repo from Dan's machine, confirmed
+via `git ls-remote`.
 
 ## Open items / next steps
 
@@ -4704,11 +4711,9 @@ not yet applied to live D1/deployed.
 1. **Coverage expansion** — Netherlands, Austria, Greece, Cyprus, Oman,
    Jordan, Israel, South Korea, Vietnam, Turkey, Czech Republic,
    Argentina, Colombia, Philippines, Taiwan, Hungary (#49), Indonesia
-   (#50), Japan (#51), Pakistan (#52), and Ecuador (#53) are all
-   confirmed deployed and tested. Uruguay (#54) and Costa Rica (#55)
-   have been built (migrations 390-404, committed and bundled for Dan
-   to apply) — see the dated section below for the full build summary;
-   **deployment status pending Dan's confirmation.** Myanmar was
+   (#50), Japan (#51), Pakistan (#52), Ecuador (#53), Uruguay (#54),
+   and Costa Rica (#55) are all confirmed deployed and tested — every
+   country added this project's history is now live. Myanmar was
    evaluated and held back (no real mandate found). Qatar was evaluated
    and held back at Dan's choice (thinner than first assessed). Still
    not tracked in Europe: Bulgaria, Estonia,
