@@ -4523,7 +4523,7 @@ country menu, and confirmed rendering correctly. Delivered as a git
 bundle for Dan to pull and push from his own machine, per this
 project's standing git-push-restricted-sandbox workaround.
 
-### France: DGFiP's official practical guide incorporated into the deep-dive + a new story (5 Aug 2026, code complete, deploy pending)
+### France: DGFiP's official practical guide incorporated into the deep-dive + a new story (5 Aug 2026, deployed & tested)
 
 Dan shared DGFiP's official practical e-invoicing guide
 (`guide_pratique_facturation_electronique.pdf`, impots.gouv.fr) and
@@ -4577,12 +4577,14 @@ language), `last_updated` reads `2026-08-05`, and the new story is
 linked to France via `story_countries` with the correct source PDF
 URL and all 4 language titles present.
 
-**Code complete, deploy pending**: migrations 386-389 need
-`apply_migrations.py --remote` from Dan's own machine. Pure D1 content
-— no schema change, no static-file change, no Worker redeploy needed.
-Delivered as a git bundle.
+**Deployed and tested** (confirmed by Dan): migrations 386-389 applied
+via `apply_migrations.py --remote`. Pure D1 content — no schema
+change, no static-file change, so no Worker redeploy was needed for
+this one. The updated Legal basis citation, the new guide-quote card,
+and the new story are all live on the France deep-dive and in the
+archive.
 
-### Bug fix: body-only narrative cards rendered as empty boxes in file_format/scope_transmission sections (5 Aug 2026, code complete, deploy pending)
+### Bug fix: body-only narrative cards rendered as empty boxes in file_format/scope_transmission sections (5 Aug 2026, deployed & tested)
 
 Dan reported Pakistan's deep-dive Section 3 "Where actual compliance
 stands" card rendering as an empty box — title only, no content. Root
@@ -4609,10 +4611,10 @@ under the fix; rows-only cards are byte-identical to before (empty
 `bodyHtml` when `body` is null), confirmed by a standalone Node
 reproduction of both card shapes before and after the change.
 
-**Code complete, deploy pending**: `site-worker` needs `wrangler
-deploy` to ship the `shared/deep-dive-render.mjs` fix — no migration,
-no `members-worker` change, since this is a static-file-only bug (the
-D1 content itself was always correct). Delivered as a git bundle.
+**Deployed and tested** (confirmed by Dan): `site-worker` redeployed
+with the `shared/deep-dive-render.mjs` fix — no migration, no
+`members-worker` change needed. Pakistan's "Where actual compliance
+stands" card now renders correctly on the live deep-dive.
 
 ## Open items / next steps
 
