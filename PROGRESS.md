@@ -4523,6 +4523,65 @@ country menu, and confirmed rendering correctly. Delivered as a git
 bundle for Dan to pull and push from his own machine, per this
 project's standing git-push-restricted-sandbox workaround.
 
+### France: DGFiP's official practical guide incorporated into the deep-dive + a new story (5 Aug 2026, code complete, deploy pending)
+
+Dan shared DGFiP's official practical e-invoicing guide
+(`guide_pratique_facturation_electronique.pdf`, impots.gouv.fr) and
+asked whether it had anything pertinent for a France news article.
+Reviewed it directly (`WebFetch`) and cross-checked against the
+existing France deep-dive and all three existing France stories
+(Feb 24 pilot-opens, Jul 10 no-delay-confirmed, Jul 28
+readiness-numbers) before concluding what was genuinely new rather
+than a repeat: most headline facts (1 Sep 2026 go-live, 1 Sep 2027 for
+smaller businesses, the soft-landing enforcement posture) were already
+covered, but the guide added three things not yet on the site — a
+named three-principle framework for the startup-phase tolerance, a
+verbatim DGFiP quote confirming non-electronic invoices stay valid
+("Une facture reçue par mail, PDF ou papier ne doit pas être écartée
+au seul motif..."), and a sharper legal citation (CGI Article 1737 IV
+bis specifically requires a three-month formal notice before a
+non-reception penalty applies — the site previously only cited 1737
+and 1788 D generically).
+
+**Migration 386** (English): updates the existing "📎 Legal basis"
+penalties_related card to add the Article 1737 IV bis citation
+(matched to the existing card via its English title, not a hardcoded
+ID — the same join pattern the France ES/DE/FR translations already
+use), and adds a new 4th penalties_related card carrying the verbatim
+French quote plus its English gloss and the guide's three explicit
+tolerance conditions. `deep_dive_pages.last_updated` bumped to
+2026-08-05. **Migration 387**: ES/DE/FR translations for both the
+updated card and the new card — each language gets its own idiomatic
+wording around the quote, not a duplicated repeat of the French text
+(the French translation itself just states the quote directly, since
+translating a French quote into French would be redundant).
+**Migration 388**: a new story, dated 2026-08-05, reviewing the guide
+directly ~4 weeks before go-live — framed as "here's DGFiP's own
+written position," not as a new-publication event, since this guide
+is very likely the same "practical 29-question guide" the 10 July
+story already referenced secondhand; `source_url` is the actual PDF
+Dan shared, per his explicit instruction to cite the source file
+itself. **Migration 389**: ES/DE/FR story translations.
+
+All four migrations generated via
+`members-worker/migrations/generate_france_guide_update.py` (matches
+the existing `generate_france_stories.py` precedent) to avoid
+hand-escaping quote characters across 4 languages. Verified via the
+same full in-memory SQLite replay used throughout this project (389
+files, only the 4 documented pre-existing errors, zero new ones), plus
+a direct structural query confirming: the Legal basis card's body
+contains "IV bis" in all 4 languages, the new card exists at
+`sort_order = 3` with all 4 language translations attached to the
+*same* `card_id` (not accidentally creating duplicate cards per
+language), `last_updated` reads `2026-08-05`, and the new story is
+linked to France via `story_countries` with the correct source PDF
+URL and all 4 language titles present.
+
+**Code complete, deploy pending**: migrations 386-389 need
+`apply_migrations.py --remote` from Dan's own machine. Pure D1 content
+— no schema change, no static-file change, no Worker redeploy needed.
+Delivered as a git bundle.
+
 ## Open items / next steps
 
 ### Real open work
