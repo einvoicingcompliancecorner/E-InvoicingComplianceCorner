@@ -4406,24 +4406,141 @@ fault.
 both live and visible on the tracker board and in the subscribe page's
 country menu, and confirmed rendering correctly on `/map`.
 
+### Pakistan and Ecuador added as countries #52 and #53 (5 August 2026, code complete, deploy pending)
+
+Dan asked "what are the next eligible countries to add?", then chose
+Pakistan and Ecuador from the list. Rather than build straight off
+that initial pass, Dan asked for a first evaluation round, then
+explicitly asked for a **second, deeper research pass** on both
+("more extensive research to make sure you have all of the
+information / accurate information") before authorizing a build —
+that second pass surfaced two corrections that materially changed
+the final copy, both written into the deep-dive content itself, not
+just noted separately.
+
+**Pakistan (migrations 371-377).** FBR's Digital Invoicing regime,
+live-researched against FBR's own SRO PDFs, the Sales Tax Act text,
+and Finance Act/Finance Bill text. 6 milestones: the Feb 2024 FMCG
+pilot (anchor/off-board), the Jan 2025 Digital Invoicing Framework
+(`mandate_scope: 'none'` — the enabling framework, not a scope
+change), the Nov 2025 corporate-wave mandate and the Dec 2025
+full-rollout flagship (both `mandate_scope: 'b2b'`), a Feb 2026
+service-sector draft (`confidence: 'expected'`), and a Jun 2026
+Finance Bill enforcement milestone (`mandate_scope: 'none'` —
+procedural). **The deeper research pass's key finding**: real,
+sourced compliance-gap evidence indicating FBR's own enforcement of
+the Dec 2025 full-rollout target lagged the legal deadline — written
+directly into that milestone's copy as an honest "where actual
+compliance stands" caveat, not glossed over as if the mandate were
+cleanly in force. A second finding — the widely-repeated
+500k/1M/2M/3M PKR penalty ladder circulating in secondary sources
+doesn't match FBR's actual Sales Tax Act Section 33 Serial 24/25/25AA
+figures — is explicitly debunked in a dedicated penalties card, with
+the real figures used in the 3 penalty rows instead. Also flagged as
+a genuine open question, not glossed over: whether Pakistan's 31 July
+2026 full-adoption target was actually met — no source (primary or
+secondary) confirms either way as of this writing, so the relevant
+story is framed as "target date passed, outcome unconfirmed" rather
+than asserting compliance. 5 stats, 3 file_format cards, 2
+scope_transmission cards (including the honest compliance-gap card),
+4 penalties_related cards, 1 five-step lifecycle card, 3 penalty
+rows, 6 steps, 2 portals (FBR Digital Invoicing page + general FBR
+site — no EU factsheet exists for Pakistan), 3 stories (the
+corporate-wave rollout, the compliance-gap finding, and a current-
+development story on the Jul 2026 crackdown). `mandate_summary` 78
+words / `timeline_intro` 48 words.
+
+**Ecuador (migrations 378-384).** SRI's e-invoicing regime — one of
+the longest-running mandates evaluated for this tracker, live-
+researched against SRI's own resolution PDFs (where reachable — see
+below), AVL Abogados client alerts, and other secondary confirmation.
+6 milestones: the 2014 first mandate (anchor/off-board), a 2018 base
+resolution (`mandate_scope: 'none'`), the Nov 2022 flagship going
+universal (`mandate_scope: 'b2b'`, with the RIMPE Negocios Populares
+small-taxpayer carve-out explicitly noted, not silently omitted), a
+Nov 2024 emergency relaxation (`mandate_scope: 'none'`), a Jan 2026
+real-time-transmission flagship, and a Jun 2026 traceability decree
+(both `mandate_scope: 'none'`). **The deeper research pass's key
+finding**: the Jan 2026 milestone is correctly framed as *closing* the
+Nov 2024 emergency relaxation and restoring real-time transmission,
+not introducing real-time reporting as a new concept — the first-pass
+research had this backwards, and it was corrected before build. 5
+stats, 3 file_format cards (including a hedge note on a genuine
+technical-model ambiguity in the clearance sequence), 2
+scope_transmission cards, 3 penalties_related cards (including one
+clarifying the RIMPE carve-out doesn't mean zero compliance risk), 1
+five-step lifecycle card (self-computed-key clearance flow), 4
+penalty rows (RBU-based, in USD, from the confirmed primary-source
+table), 6 steps, 2 portals (SRI e-invoicing page + general SRI site),
+3 stories (the 2022 universal-coverage milestone, the 2024 emergency
+relaxation, and a current-development story on the Jan 2026 closure +
+Jun 2026 Decree 398). `mandate_summary` 73 words / `timeline_intro`
+45 words. **Known blocked source**: SRI's Boletín 072 PDF returned a
+`PROXY_REJECTED` (403) on every fetch attempt (both the research
+subagent and a direct retry) — worked around via the AVL Abogados
+secondary confirmation instead; flag for Dan to try from a browser
+directly if he wants primary-source-only sourcing here.
+
+**Shared work**: `countries.js` (Pakistan → Asia-Pacific, between New
+Zealand and Philippines; Ecuador → Americas, between Colombia and
+Mexico) and `shared/deep-dive-render.mjs` (`COUNTRY_DEEP_DIVE_SLUGS` +
+`COUNTRY_NAME_TRANSLATIONS` for es/de/fr) updated for both countries.
+No `shared/map-data.mjs` override needed — direct inspection of the
+bundled world-atlas topology confirmed real, substantial geometry for
+both (`Pakistan`: Polygon; `Ecuador`: 9-part MultiPolygon), matching
+their `name_en` exactly. `i18n/{en,es,de,fr}.json` `countryNames` not
+hand-added — same known, pre-existing gap this doc has already noted
+for every country added since Indonesia/Japan and several before that
+(South Korea, Israel, Jordan, Oman); the `generate_files.py --remote`
+regeneration path isn't runnable from this sandbox (no Cloudflare
+credentials here). **Migration 385** bumps the jurisdiction-count copy
+(10 keys × 4 languages) from 50 to 52, following the exact pattern of
+migrations 346, 354, and 370 — generated by parsing 370's own
+SET-values as the new WHERE-baseline (a first-pass naive line-level
+"50"→"52" substitution would have left stale "48" WHERE clauses;
+caught and fixed before verification).
+
+Full in-memory SQLite replay of all 385 migration files (schema.sql +
+every migration in lexicographic filename order, matching
+`apply_migrations.py`'s own ordering) passed cleanly: only the same 4
+pre-existing documented errors (`050b_portugal_missing_milestone.sql`,
+`070_add_lifecycle_title_column.sql`, `072_split_poland_lifecycle_text.sql`,
+`082_malaysia_deepdive_content.sql`), zero new ones. Both countries'
+milestone/stat/card/step/portal/tracking-source counts, mandate_scope
+values, and translation completeness verified directly via SQL query
+against the replayed database, not just taken on the build subagents'
+own word. `countries.js` and `deep-dive-render.mjs` both re-verified
+with a direct Node `--check` + module-load smoke test after editing
+(52 total slug entries across both files, matching the new
+jurisdiction count exactly).
+
+**Code complete, deploy pending**: all 15 migrations (371-385) need
+`apply_migrations.py --remote` from Dan's own machine (no Cloudflare
+credentials in this sandbox), followed by `wrangler deploy` on both
+`site-worker` and `members-worker` to ship the `countries.js`/
+`deep-dive-render.mjs` static-file edits. Delivered as a git bundle
+for Dan to pull and push from his own machine, per this project's
+standing git-push-restricted-sandbox workaround.
+
 ## Open items / next steps
 
 ### Real open work
 
 1. **Coverage expansion** — Netherlands, Austria, Greece, Cyprus, Oman,
    Jordan, Israel, South Korea, Vietnam, Turkey, Czech Republic,
-   Argentina, Colombia, Philippines, Taiwan, Hungary (#49), and now
-   **Indonesia (#50) and Japan (#51)** are all confirmed deployed and
-   tested — every country added this project's history is now live.
+   Argentina, Colombia, Philippines, Taiwan, Hungary (#49), Indonesia
+   (#50), Japan (#51), and now **Pakistan (#52) and Ecuador (#53)**
+   are code-complete (Pakistan/Ecuador: deploy pending — see the dated
+   entry above) — every country added this project's history is built.
    Myanmar was evaluated and held back (no real mandate found). Qatar was evaluated
    and held back at Dan's choice (thinner than first assessed). Still
    not tracked in Europe: Bulgaria, Estonia,
    Latvia, Lithuania, Malta, Slovenia, Iceland,
    Liechtenstein. Still not tracked in the Americas: Uruguay, Costa
-   Rica, Ecuador, Dominican Republic, Guatemala, Paraguay, Bolivia,
-   Panama, El Salvador (see the Americas evaluation above — Uruguay,
-   Costa Rica, and Ecuador are the strongest remaining candidates,
-   each with a live 2025/2026 development to anchor a milestone on).
+   Rica, Dominican Republic, Guatemala, Paraguay, Bolivia,
+   Panama, El Salvador (see the Americas evaluation above — Uruguay and
+   Costa Rica are the strongest remaining candidates, each with a live
+   2025/2026 development to anchor a milestone on).
    The scaffolder + runner make each addition a fraction of the old
    effort.
 

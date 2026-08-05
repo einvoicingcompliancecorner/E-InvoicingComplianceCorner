@@ -37,10 +37,10 @@ export const SUPPORTED_LANGS = ["en", "es", "de", "fr"];
 // uae, uk, and united-states aren't simple lowercase-and-hyphenate.
 export const COUNTRY_DEEP_DIVE_SLUGS = {
   "Argentina": "argentina", "Australia": "australia", "Austria": "austria", "Belgium": "belgium", "Brazil": "brazil", "Canada": "canada",
-  "Chile": "chile", "China": "china", "Colombia": "colombia", "Croatia": "croatia", "Cyprus": "cyprus", "Czech Republic": "czech-republic", "Denmark": "denmark", "Egypt": "egypt", "Finland": "finland",
+  "Chile": "chile", "China": "china", "Colombia": "colombia", "Croatia": "croatia", "Cyprus": "cyprus", "Czech Republic": "czech-republic", "Denmark": "denmark", "Ecuador": "ecuador", "Egypt": "egypt", "Finland": "finland",
   "France": "france", "Germany": "germany", "Greece": "greece", "Hungary": "hungary", "India": "india", "Indonesia": "indonesia", "Ireland": "ireland", "Israel": "israel",
   "Italy": "italy", "Japan": "japan", "Jordan": "jordan", "Luxembourg": "luxembourg", "Netherlands": "netherlands", "Malaysia": "malaysia", "Mexico": "mexico", "New Zealand": "new-zealand",
-  "Norway": "norway", "Oman": "oman", "Peru": "peru", "Philippines": "philippines", "Poland": "poland", "Portugal": "portugal", "Romania": "romania",
+  "Norway": "norway", "Oman": "oman", "Pakistan": "pakistan", "Peru": "peru", "Philippines": "philippines", "Poland": "poland", "Portugal": "portugal", "Romania": "romania",
   "Saudi Arabia": "saudi-arabia", "Singapore": "singapore", "Slovakia": "slovakia", "South Korea": "south-korea",
   "Spain": "spain", "Sweden": "sweden", "Taiwan": "taiwan", "Turkey": "turkey", "United Arab Emirates": "uae",
   "United Kingdom": "uk", "United States": "united-states", "Vietnam": "vietnam",
@@ -59,9 +59,9 @@ const COUNTRY_NAME_TRANSLATIONS = {
     "Poland": "Polonia", "Portugal": "Portugal", "Romania": "Rumania", "Slovakia": "Eslovaquia", "Spain": "España",
     "Sweden": "Suecia", "Turkey": "Turquía", "United Kingdom": "Reino Unido", "Saudi Arabia": "Arabia Saudita",
     "United Arab Emirates": "Emiratos Árabes Unidos", "Australia": "Australia", "China": "China",
-    "India": "India", "Indonesia": "Indonesia", "Japan": "Japón", "Malaysia": "Malasia", "New Zealand": "Nueva Zelanda", "Philippines": "Filipinas", "Singapore": "Singapur", "South Korea": "Corea del Sur",
+    "India": "India", "Indonesia": "Indonesia", "Japan": "Japón", "Malaysia": "Malasia", "New Zealand": "Nueva Zelanda", "Pakistan": "Pakistán", "Philippines": "Filipinas", "Singapore": "Singapur", "South Korea": "Corea del Sur",
     "Taiwan": "Taiwán", "Vietnam": "Vietnam",
-    "Argentina": "Argentina", "Brazil": "Brasil", "Canada": "Canadá", "Chile": "Chile", "Colombia": "Colombia", "Mexico": "México", "Peru": "Perú",
+    "Argentina": "Argentina", "Brazil": "Brasil", "Canada": "Canadá", "Chile": "Chile", "Colombia": "Colombia", "Ecuador": "Ecuador", "Mexico": "México", "Peru": "Perú",
     "United States": "Estados Unidos", "European Union": "Unión Europea"
   },
   de: {
@@ -72,9 +72,9 @@ const COUNTRY_NAME_TRANSLATIONS = {
     "Poland": "Polen", "Portugal": "Portugal", "Romania": "Rumänien", "Slovakia": "Slowakei", "Spain": "Spanien",
     "Sweden": "Schweden", "Turkey": "Türkei", "United Kingdom": "Vereinigtes Königreich", "Saudi Arabia": "Saudi-Arabien",
     "United Arab Emirates": "Vereinigte Arabische Emirate", "Australia": "Australien", "China": "China",
-    "India": "Indien", "Indonesia": "Indonesien", "Japan": "Japan", "Malaysia": "Malaysia", "New Zealand": "Neuseeland", "Philippines": "Philippinen", "Singapore": "Singapur", "South Korea": "Südkorea",
+    "India": "Indien", "Indonesia": "Indonesien", "Japan": "Japan", "Malaysia": "Malaysia", "New Zealand": "Neuseeland", "Pakistan": "Pakistan", "Philippines": "Philippinen", "Singapore": "Singapur", "South Korea": "Südkorea",
     "Taiwan": "Taiwan", "Vietnam": "Vietnam",
-    "Argentina": "Argentinien", "Brazil": "Brasilien", "Canada": "Kanada", "Chile": "Chile", "Colombia": "Kolumbien", "Mexico": "Mexiko", "Peru": "Peru",
+    "Argentina": "Argentinien", "Brazil": "Brasilien", "Canada": "Kanada", "Chile": "Chile", "Colombia": "Kolumbien", "Ecuador": "Ecuador", "Mexico": "Mexiko", "Peru": "Peru",
     "United States": "Vereinigte Staaten", "European Union": "Europäische Union"
   },
   fr: {
@@ -85,9 +85,9 @@ const COUNTRY_NAME_TRANSLATIONS = {
     "Poland": "Pologne", "Portugal": "Portugal", "Romania": "Roumanie", "Slovakia": "Slovaquie", "Spain": "Espagne",
     "Sweden": "Suède", "Turkey": "Turquie", "United Kingdom": "Royaume-Uni", "Saudi Arabia": "Arabie saoudite",
     "United Arab Emirates": "Émirats arabes unis", "Australia": "Australie", "China": "Chine",
-    "India": "Inde", "Indonesia": "Indonésie", "Japan": "Japon", "Malaysia": "Malaisie", "New Zealand": "Nouvelle-Zélande", "Philippines": "Philippines", "Singapore": "Singapour", "South Korea": "Corée du Sud",
+    "India": "Inde", "Indonesia": "Indonésie", "Japan": "Japon", "Malaysia": "Malaisie", "New Zealand": "Nouvelle-Zélande", "Pakistan": "Pakistan", "Philippines": "Philippines", "Singapore": "Singapour", "South Korea": "Corée du Sud",
     "Taiwan": "Taïwan", "Vietnam": "Viêt Nam",
-    "Argentina": "Argentine", "Brazil": "Brésil", "Canada": "Canada", "Chile": "Chili", "Colombia": "Colombie", "Mexico": "Mexique", "Peru": "Pérou",
+    "Argentina": "Argentine", "Brazil": "Brésil", "Canada": "Canada", "Chile": "Chili", "Colombia": "Colombie", "Ecuador": "Équateur", "Mexico": "Mexique", "Peru": "Pérou",
     "United States": "États-Unis", "European Union": "Union européenne"
   }
 };
