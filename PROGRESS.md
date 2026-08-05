@@ -4296,7 +4296,7 @@ tier returns" open item below as no longer viable via that specific
 platform; a future paid tier, if the business case changes, would need
 to start from Stripe or Paddle instead, informed by this rejection.
 
-### Indonesia and Japan added as countries #50 and #51 (5 August 2026, code complete, deploy pending)
+### Indonesia and Japan added as countries #50 and #51 (5 August 2026, deployed & tested)
 
 Dan asked to evaluate two APAC candidates, initially offered as Pakistan
 + Indonesia (per the 4 August Asia-Pacific evaluation), but substituted
@@ -4380,13 +4380,31 @@ pre-existing documented errors (`050b_portugal_missing_milestone.sql`,
 milestone/stat/card/step/portal/tracking-source counts match exactly
 across all 4 languages.
 
-**Not yet deployed** — code complete and replay-validated in this cloud
-sandbox, but not yet applied to the live D1 database or deployed to
-either Cloudflare Worker. Per the git-proxy restriction documented
-above, this session cannot push directly; delivered to Dan as a git
-bundle for him to pull and push from his own machine, then apply via
-`apply_migrations.py --remote` and deploy both `site-worker` and
-`members-worker`, the same workflow used for Hungary.
+**A note on a wrangler-auth hiccup hit during apply:** `apply_migrations.py --remote`
+initially hung indefinitely right after printing the replay-validation
+line — turned out to be a real Cloudflare API call (`fetch_applied()`,
+querying the remote `schema_migrations` table), not part of the local
+replay check, silently stuck. Direct testing (`npx wrangler d1 execute
+eicc-content --remote --command "SELECT 1"`) isolated it to a stale/
+invalid wrangler OAuth session (`[code: 7403]`) — a fresh `npx wrangler
+login` fixed it. Migrations 356-367 then applied cleanly, but
+`368_japan_stories.sql` hit a second, unrelated, transient failure
+(`[code: 10000]`, generic auth error specifically on the `/import` API
+endpoint `d1 execute --file` uses, distinct from the `/query` endpoint
+the plain `--command` test above hit) — nothing was left half-applied
+(D1 rolls back a failed file-import cleanly), and simply re-running
+`apply_migrations.py --remote` picked up at 368 and completed the
+remaining 3 files without incident. Worth knowing for next time: a
+`--remote` run hanging or erroring mid-batch isn't necessarily a sign
+of a broken migration — check `wrangler whoami` and a plain `d1
+execute --command` test first before assuming the SQL itself is at
+fault.
+
+**Deployed and tested** (confirmed by Dan): all 15 migrations
+(356-370) applied via `apply_migrations.py --remote`, both
+`site-worker` and `members-worker` redeployed. Indonesia and Japan are
+both live and visible on the tracker board and in the subscribe page's
+country menu, and confirmed rendering correctly on `/map`.
 
 ## Open items / next steps
 
@@ -4395,9 +4413,9 @@ bundle for him to pull and push from his own machine, then apply via
 1. **Coverage expansion** — Netherlands, Austria, Greece, Cyprus, Oman,
    Jordan, Israel, South Korea, Vietnam, Turkey, Czech Republic,
    Argentina, Colombia, Philippines, Taiwan, Hungary (#49), and now
-   **Indonesia (#50) and Japan (#51)** are all code-complete (Indonesia
-   and Japan pending deploy — see the dated section above). Myanmar was
-   evaluated and held back (no real mandate found). Qatar was evaluated
+   **Indonesia (#50) and Japan (#51)** are all confirmed deployed and
+   tested — every country added this project's history is now live.
+   Myanmar was evaluated and held back (no real mandate found). Qatar was evaluated
    and held back at Dan's choice (thinner than first assessed). Still
    not tracked in Europe: Bulgaria, Estonia,
    Latvia, Lithuania, Malta, Slovenia, Iceland,
