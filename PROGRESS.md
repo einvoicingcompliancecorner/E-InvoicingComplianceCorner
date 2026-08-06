@@ -5347,7 +5347,7 @@ by diffing before/after (4-line minimal diff per file, same formatting
 preserved) rather than via the generator itself, since this sandbox has
 no `wrangler` credentials.
 
-## 6 Aug 2026 (cont'd, again) — author bio updated; Education-panel font bug fixed across all 7 in-page panels
+## 6 Aug 2026 (cont'd, again) — author bio updated; Education-panel font bug fixed across all 7 in-page panels (deployed & confirmed live)
 
 **Author bio (`about.authorP1`/`about.authorP2`)** — Dan supplied replacement
 copy for the "About the author" pop-out (the same text that had been added
@@ -5395,6 +5395,8 @@ parses with no syntax errors after all 7 edits.
 
 Static-file-only change (`einvoicing-compliance-tracker.html`), no
 migration — deploy is a single `wrangler deploy` from `site-worker/`.
+Confirmed deployed the same day: Dan pulled and pushed the bundle, and
+`site-worker`'s `git log` shows `main`/`origin/main` at `114af60`.
 
 **Also from this session, not yet built into the real site**: Dan asked for
 a mock-up of a new home-page carousel filling empty real estate on the main
