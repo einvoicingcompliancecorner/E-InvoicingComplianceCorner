@@ -114,6 +114,61 @@
   .topbar-right{font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--muted); text-align:right; display:flex; flex-direction:column; align-items:flex-end; flex:0 0 auto; margin-left:auto;}
   .topbar-right strong{color:var(--text-lo); display:block; font-size:13px;}
 
+  /* ===== Feature carousel (header promo, approved mock-up 6 Aug 2026) =====
+     Rotates links to the map, newsletter archive, and subscribe page,
+     plus a "coming soon" slide for future Insights & Whitepapers
+     content. A "Sponsor This Site" slide exists in wireFeatureCarousel()
+     below but is commented out until there's an actual sponsorship
+     model to link to. */
+  .site-carousel{
+    width:360px; max-width:40vw; background:var(--ink-2); border:1px solid var(--line); border-radius:10px;
+    margin-top:14px; overflow:hidden; position:relative; align-self:flex-end;
+  }
+  .site-carousel .car-track{display:flex; transition:transform .5s ease;}
+  .site-carousel .car-slide{
+    flex:0 0 100%; display:flex; gap:14px; align-items:flex-start; padding:16px 16px 14px;
+    text-decoration:none; color:inherit; cursor:pointer; box-sizing:border-box; min-height:118px;
+  }
+  .site-carousel .car-slide:hover{background:rgba(255,255,255,0.03);}
+
+  /* Per-topic thumbnail -- richer hand-authored SVG illustration (not a
+     stock photo/download): gradients + a soft glow filter for depth,
+     all kept inside the site's dark-navy/steel-blue family so it blends
+     with the card rather than looking like a bright inserted photo.
+     Map = a night-lights-style glowing cluster over a stylized Europe
+     silhouette; News = an angled folded-paper masthead; Subscribe = a
+     glowing envelope; Featured Content = an open book with a spine glow. */
+  .site-carousel .car-thumb{
+    flex:0 0 84px; width:84px; height:84px; border-radius:9px; overflow:hidden;
+    box-shadow:0 2px 10px rgba(0,0,0,0.35);
+  }
+  .site-carousel .car-thumb svg{width:100%; height:100%; display:block;}
+  .site-carousel .car-body{flex:1; min-width:0; padding-top:2px;}
+
+  .site-carousel .car-eyebrow{
+    font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.14em; text-transform:uppercase;
+    color:var(--soon); margin:0 0 4px;
+  }
+  .site-carousel .car-title{font-family:'Big Shoulders Display',sans-serif; font-weight:700; font-size:18px; margin:0 0 4px; text-transform:uppercase; color:var(--text-lo); line-height:1.05;}
+  .site-carousel .car-desc{font-size:11.5px; color:var(--muted); margin:0; line-height:1.4;}
+  .site-carousel .car-dots{display:flex; gap:6px; justify-content:center; padding:10px 0 12px;}
+  .site-carousel .car-dot{width:6px; height:6px; border-radius:50%; background:var(--line); border:none; cursor:pointer; padding:0;}
+  .site-carousel .car-dot.active{background:var(--stamp); width:16px; border-radius:3px; transition:width .25s;}
+  /* Coming-soon slides aren't links -- no destination exists yet, so
+     they shouldn't look or act clickable. Same treatment as this
+     page's own .dropdown-item.coming-soon / .perks-cta.coming-soon. */
+  .site-carousel .car-slide.coming-soon-slide{cursor:default; pointer-events:none;}
+  .site-carousel .car-slide.coming-soon-slide .car-eyebrow{color:var(--muted);}
+
+  /* Desktop-only: below 900px this matches the sidebar's own collapse
+     breakpoint (see the sidebar's own @media(max-width:900px) further
+     down) -- the header stacks and there's no longer any spare real
+     estate for a promo card, so it's hidden outright rather than
+     squeezed in. */
+  @media (max-width:900px){
+    .site-carousel{display:none;}
+  }
+
   /* ===== Hero / split-flap board ===== */
   .hero{
     padding:26px 5vw 8px;
@@ -602,6 +657,19 @@
           <a class="dropdown-item" href="feedback.html"><span class="dd-icon">💬</span><span data-i18n="menu.feedback">Give feedback</span></a>
         </div>
       </div>
+    </div>
+
+    <!-- Feature carousel: rotates links to the map, newsletter archive,
+         and subscribe page, plus a "coming soon" slide for future
+         Insights & Whitepapers content. Hrefs match exactly what
+         wireDeepDiveInPagePanel() intercepts, so these links open
+         in-frame automatically -- no extra wiring needed. Hidden on
+         mobile (<900px, see .site-carousel's own media query) since
+         there's no spare real estate once the header stacks. Built and
+         wired by wireFeatureCarousel() below. -->
+    <div class="site-carousel" id="siteCarousel">
+      <div class="car-track" id="carTrack"></div>
+      <div class="car-dots" id="carDots"></div>
     </div>
   </div>
 </div>
@@ -2096,6 +2164,187 @@ function renderSidebar(){
     html += `</div>`;
   });
   document.getElementById('sidebarNav').innerHTML = html;
+}
+
+// ---------- header feature carousel (approved mock-up, 6 Aug 2026) ----------
+// Rotates through a handful of promo slides in the header's spare real
+// estate. Each slide is a plain <a href> (or a non-clickable <div> for
+// "coming soon" slides) built into #siteCarousel below -- the hrefs are
+// written to match exactly what wireDeepDiveInPagePanel() intercepts,
+// so clicking a slide opens the matching in-page panel automatically,
+// the same as any other link on this page. No target="_blank" and no
+// click handler of its own here, so that interception isn't bypassed.
+function wireFeatureCarousel(){
+  const track = document.getElementById('carTrack');
+  const dotsWrap = document.getElementById('carDots');
+  const carousel = document.getElementById('siteCarousel');
+  if(!track || !dotsWrap || !carousel) return;
+
+  // Thumbnail art: hand-authored inline SVG illustrations, one per
+  // topic, each self-contained with its own <defs> (gradients + a glow
+  // filter) so they can be copy-pasted independently -- not stock
+  // photos/downloads. All colors are literals from the site's own
+  // dark-navy/steel-blue family (#050a13 / #182a4c / #33487a / #cfe6ff
+  // for glow highlights, plus a small amber accent matching --soon).
+  const THUMB_MAP = `<svg viewBox="0 0 84 84">
+    <defs>
+      <radialGradient id="carBgGlowM" cx="50%" cy="38%" r="75%">
+        <stop offset="0%" stop-color="#182a4c"/><stop offset="100%" stop-color="#050a13"/>
+      </radialGradient>
+      <radialGradient id="carLandGrad" cx="40%" cy="30%" r="80%">
+        <stop offset="0%" stop-color="#2c4270"/><stop offset="100%" stop-color="#0f1a30"/>
+      </radialGradient>
+      <filter id="carDotGlowM" x="-200%" y="-200%" width="500%" height="500%">
+        <feGaussianBlur stdDeviation="1.1" result="b"/>
+        <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+    </defs>
+    <rect width="84" height="84" rx="10" fill="url(#carBgGlowM)"/>
+    <path d="M20,55 L28,45 L24,32 L36,26 L46,14 L58,16 L64,26 L58,36 L66,46 L58,58 L60,70 L48,74 L42,64 L46,56 L36,52 L30,60 L22,64 Z" fill="url(#carLandGrad)"/>
+    <path d="M46,64 L50,62 L52,72 L48,76 Z" fill="url(#carLandGrad)"/>
+    <path d="M52,74 L57,73 L56,78 L51,77 Z" fill="url(#carLandGrad)"/>
+    <g filter="url(#carDotGlowM)">
+      <g fill="#cfe6ff">
+        <circle cx="39" cy="27" r="1.3"/><circle cx="42" cy="24" r="1"/><circle cx="36" cy="30" r="0.9"/><circle cx="44" cy="29" r="0.8"/>
+        <circle cx="26" cy="41" r="1.2"/><circle cx="23" cy="45" r="0.9"/><circle cx="29" cy="46" r="0.8"/>
+        <circle cx="48" cy="57" r="1.2"/><circle cx="51" cy="61" r="0.9"/><circle cx="45" cy="61" r="0.8"/>
+        <circle cx="58" cy="27" r="0.9"/><circle cx="61" cy="32" r="0.7"/><circle cx="33" cy="40" r="0.7"/>
+        <circle cx="55" cy="45" r="0.8"/><circle cx="41" cy="46" r="0.7"/><circle cx="24" cy="55" r="0.7"/>
+      </g>
+      <g fill="#e8b565">
+        <circle cx="40" cy="26" r="1.4"/><circle cx="27" cy="43" r="1.2"/><circle cx="49" cy="59" r="1.2"/>
+      </g>
+    </g>
+  </svg>`;
+
+  const THUMB_NEWS = `<svg viewBox="0 0 84 84">
+    <defs>
+      <radialGradient id="carBgGlowN" cx="50%" cy="38%" r="75%">
+        <stop offset="0%" stop-color="#182a4c"/><stop offset="100%" stop-color="#050a13"/>
+      </radialGradient>
+      <linearGradient id="carPaperGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#33487a"/><stop offset="100%" stop-color="#111c33"/>
+      </linearGradient>
+    </defs>
+    <rect width="84" height="84" rx="10" fill="url(#carBgGlowN)"/>
+    <g transform="rotate(-7 42 42)">
+      <rect x="12" y="8" width="58" height="70" rx="2" fill="url(#carPaperGrad)"/>
+      <text x="18" y="25" font-family="'Big Shoulders Display',sans-serif" font-weight="800" font-size="15" fill="#e3edff" letter-spacing="0.5">NEWS</text>
+      <line x1="17" y1="30" x2="65" y2="30" stroke="#5b76a8" stroke-width="1"/>
+      <rect x="17" y="36" width="19" height="16" fill="#0b1526" stroke="#4a5f8a" stroke-width="0.6"/>
+      <text x="40" y="41" font-family="'IBM Plex Mono',monospace" font-size="5.2" font-weight="700" fill="#9fb3d9">EXTRA!</text>
+      <text x="40" y="48" font-family="'IBM Plex Mono',monospace" font-size="5.2" font-weight="700" fill="#9fb3d9">EXTRA!</text>
+      <line x1="17" y1="57" x2="65" y2="57" stroke="#4a5f8a" stroke-width="0.7"/>
+      <line x1="17" y1="62" x2="65" y2="62" stroke="#4a5f8a" stroke-width="0.7"/>
+      <line x1="17" y1="67" x2="50" y2="67" stroke="#4a5f8a" stroke-width="0.7"/>
+      <line x1="17" y1="72" x2="60" y2="72" stroke="#4a5f8a" stroke-width="0.7"/>
+    </g>
+  </svg>`;
+
+  const THUMB_SUBSCRIBE = `<svg viewBox="0 0 84 84">
+    <defs>
+      <radialGradient id="carBgGlowS" cx="50%" cy="38%" r="75%">
+        <stop offset="0%" stop-color="#182a4c"/><stop offset="100%" stop-color="#050a13"/>
+      </radialGradient>
+      <linearGradient id="carEnvGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#33487a"/><stop offset="100%" stop-color="#131f38"/>
+      </linearGradient>
+      <filter id="carDotGlowS" x="-200%" y="-200%" width="500%" height="500%">
+        <feGaussianBlur stdDeviation="1" result="b"/>
+        <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+    </defs>
+    <rect width="84" height="84" rx="10" fill="url(#carBgGlowS)"/>
+    <rect x="14" y="26" width="56" height="38" rx="4" fill="url(#carEnvGrad)"/>
+    <path d="M14,28 L42,52 L70,28" stroke="#0b1526" stroke-width="1.6" fill="none"/>
+    <g filter="url(#carDotGlowS)" fill="#cfe6ff">
+      <circle cx="63" cy="16" r="1.6"/><circle cx="70" cy="12" r="1.1"/><circle cx="75" cy="8" r="0.8"/>
+    </g>
+  </svg>`;
+
+  const THUMB_BOOK = `<svg viewBox="0 0 84 84">
+    <defs>
+      <radialGradient id="carBgGlowB" cx="50%" cy="38%" r="75%">
+        <stop offset="0%" stop-color="#182a4c"/><stop offset="100%" stop-color="#050a13"/>
+      </radialGradient>
+      <linearGradient id="carPageGradL" x1="100%" y1="0%" x2="0%" y2="0%">
+        <stop offset="0%" stop-color="#33487a"/><stop offset="100%" stop-color="#141f39"/>
+      </linearGradient>
+      <linearGradient id="carPageGradR" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#33487a"/><stop offset="100%" stop-color="#141f39"/>
+      </linearGradient>
+      <filter id="carDotGlowBk" x="-200%" y="-200%" width="500%" height="500%">
+        <feGaussianBlur stdDeviation="1" result="b"/>
+        <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+    </defs>
+    <rect width="84" height="84" rx="10" fill="url(#carBgGlowB)"/>
+    <path d="M42,26 C33,20 20,18 12,22 L12,62 C20,58 33,60 42,66 Z" fill="url(#carPageGradL)"/>
+    <path d="M42,26 C51,20 64,18 72,22 L72,62 C64,58 51,60 42,66 Z" fill="url(#carPageGradR)"/>
+    <line x1="42" y1="26" x2="42" y2="66" stroke="#0b1526" stroke-width="1"/>
+    <g filter="url(#carDotGlowBk)"><circle cx="42" cy="25" r="1.6" fill="#cfe6ff"/></g>
+    <line x1="20" y1="34" x2="34" y2="31" stroke="#5b76a8" stroke-width="0.8"/>
+    <line x1="20" y1="40" x2="34" y2="37" stroke="#5b76a8" stroke-width="0.8"/>
+    <line x1="20" y1="46" x2="32" y2="43" stroke="#5b76a8" stroke-width="0.8"/>
+    <line x1="50" y1="31" x2="64" y2="34" stroke="#5b76a8" stroke-width="0.8"/>
+    <line x1="50" y1="37" x2="64" y2="40" stroke="#5b76a8" stroke-width="0.8"/>
+    <line x1="50" y1="43" x2="62" y2="46" stroke="#5b76a8" stroke-width="0.8"/>
+  </svg>`;
+
+  // Content: the only thing you'd edit to change slides, order, copy,
+  // links, or thumbnail art. Hrefs below ('/map', '/members/archive',
+  // 'subscribe.html') are written to match EXACTLY what
+  // wireDeepDiveInPagePanel() checks for above -- that's a single
+  // delegated document-level listener, so it catches clicks on these
+  // slides automatically. Don't add target="_blank" or a click handler
+  // here, or you'll bypass the in-page panel and get a real standalone
+  // navigation instead.
+  const SLIDES = [
+    {thumb:THUMB_MAP, eyebrow:'Explore', title:'View the Map', desc:'See every mandate status worldwide at a glance, color-coded by stage.', href:'/map'},
+    {thumb:THUMB_NEWS, eyebrow:'Catch up', title:'View the News', desc:'Browse the full newsletter archive — every past announcement, searchable.', href:'/members/archive'},
+    {thumb:THUMB_SUBSCRIBE, eyebrow:'Stay ahead', title:'Subscribe', desc:'Get a monthly digest the moment a mandate or deadline changes.', href:'subscribe.html'},
+    // Sponsor This Site -- parked for now per Dan's request (6 Aug 2026).
+    // Uncomment when there's an actual sponsorship model/page to link to:
+    // {thumb:THUMB_SUBSCRIBE, eyebrow:'Coming soon', title:'Sponsor This Site', desc:'Reach a compliance-focused audience across every tracked jurisdiction.', href:'feedback.html'},
+    // No href -- there's no Featured Content page/section yet, so this
+    // slide is deliberately non-clickable (matches this page's own
+    // .dropdown-item.coming-soon / .perks-cta.coming-soon treatment).
+    // Give it a real href once there's an actual destination to send
+    // people to -- it'll pick up in-page-panel treatment automatically
+    // too, same as the other slides.
+    {thumb:THUMB_BOOK, eyebrow:'Coming soon', title:'Featured Content', desc:'Insights & Whitepapers, curated — nothing published yet.', href:null},
+  ];
+  const ROTATE_MS = 3500;
+
+  track.innerHTML = SLIDES.map(s => {
+    const tag = s.href ? 'a' : 'div';
+    const hrefAttr = s.href ? ` href="${s.href}"` : '';
+    const cls = s.href ? 'car-slide' : 'car-slide coming-soon-slide';
+    return `<${tag} class="${cls}"${hrefAttr}>
+        <div class="car-thumb" aria-hidden="true">${s.thumb}</div>
+        <div class="car-body">
+          <p class="car-eyebrow">${s.eyebrow}</p>
+          <p class="car-title">${s.title}</p>
+          <p class="car-desc">${s.desc}</p>
+        </div>
+      </${tag}>`;
+  }).join('');
+  dotsWrap.innerHTML = SLIDES.map((_,i) => `<button class="car-dot${i===0?' active':''}" data-i="${i}" aria-label="Slide ${i+1}"></button>`).join('');
+
+  let idx = 0;
+  const dots = [...dotsWrap.querySelectorAll('.car-dot')];
+  function go(i){
+    idx = (i + SLIDES.length) % SLIDES.length;
+    track.style.transform = `translateX(-${idx*100}%)`;
+    dots.forEach((d,j) => d.classList.toggle('active', j===idx));
+  }
+  let timer = setInterval(() => go(idx+1), ROTATE_MS);
+  function resetTimer(){ clearInterval(timer); timer = setInterval(() => go(idx+1), ROTATE_MS); }
+  dots.forEach(d => d.addEventListener('click', (e) => { e.preventDefault(); go(+d.dataset.i); resetTimer(); }));
+
+  // Pause on hover so it doesn't rotate out from under a reading user.
+  carousel.addEventListener('mouseenter', () => clearInterval(timer));
+  carousel.addEventListener('mouseleave', resetTimer);
 }
 
 // ---------- mobile menu toggle ----------
@@ -3762,6 +4011,7 @@ wireDeepDiveMenu();
 wireEducationMenu();
 wireActionsMenu();
 wireAboutModal();
+wireFeatureCarousel();
 wireDeepDiveInPagePanel();
 
 // Re-render everything that shows translated content whenever the

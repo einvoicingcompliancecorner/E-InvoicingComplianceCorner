@@ -5414,6 +5414,51 @@ mock-up file (`carousel-mockup-preview.html`) — Dan has not yet asked for it
 to be integrated into `einvoicing-compliance-tracker.html`, so it remains
 unbuilt in the real site pending that instruction.
 
+## 6 Aug 2026 (cont'd, again) — header feature carousel built into the real site
+
+Dan asked to go ahead and build the previously-approved carousel mock-up
+into the real site. Ported `carousel-mockup-preview.html` (see the earlier
+6 Aug 2026 entry for its design history — the empty real estate on the main
+tracker's header, hand-authored SVG thumbnails after Dan flagged the first
+icon-badge pass as "too icon/emoji", desktop-only) directly into
+`einvoicing-compliance-tracker.html`:
+
+- CSS added next to the existing `.topbar-right` rules (all values reuse
+  the site's own custom properties -- `--ink-2`, `--line`, `--text-lo`,
+  `--muted`, `--stamp`, `--soon` -- no new color literals introduced except
+  inside the SVG thumbnails themselves, which were already confined to the
+  dark-navy/steel-blue family in the mock-up).
+- Markup added inside `.topbar-right`, as a sibling after `.topbar-menus`
+  (matching the mock-up's structure exactly) -- three real slides (View the
+  Map → `/map`, View the News → `/members/archive`, Subscribe →
+  `subscribe.html`) plus a non-clickable "Featured Content" coming-soon
+  slide. Sponsor This Site stays commented out in the JS pending an actual
+  sponsorship model, per Dan's 6 Aug instruction.
+- JS ported into a new `wireFeatureCarousel()` function (SVG gradient/filter
+  IDs renamed with a `car` prefix to avoid collisions with any other
+  inline SVG on the page) and called from the page's own init sequence,
+  right after `wireAboutModal()` and before `wireDeepDiveInPagePanel()`.
+
+**No new click-interception code needed** -- the carousel's `/map`,
+`/members/archive`, and `subscribe.html` hrefs were deliberately written to
+match exactly what `wireDeepDiveInPagePanel()`'s existing delegated
+document-level click listener already checks for, so the carousel's links
+get in-page-panel treatment automatically. Verified this live, not just
+assumed: injected the carousel's CSS/HTML/JS into the actual production
+page via a scripted browser session, clicked "View the Map", and confirmed
+it opened the in-page Map panel (the tracker board area swapped to "The
+Compliance Map" with a "← Back to the tracker" link, page title/history
+updated) rather than performing a real navigation. Also confirmed the
+`@media(max-width:900px)` rule hides the carousel cleanly at mobile widths
+(resized to 700px, no leftover gap in the header), and checked the browser
+console for errors during all of the above (none).
+
+Syntax-checked the full inline script block after the edit (same
+`new Function()` parse check used earlier this session) -- no errors.
+
+Static-file-only change (`einvoicing-compliance-tracker.html`), no
+migration -- deploy is a single `wrangler deploy` from `site-worker/`.
+
 ## Open items / next steps
 
 ### Real open work
