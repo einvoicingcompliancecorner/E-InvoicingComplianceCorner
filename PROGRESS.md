@@ -5245,6 +5245,108 @@ story — comparable to other mature/static B2G-only entries already on
 the tracker, worth adding for completeness rather than urgency. Neither
 has been built yet — this is evaluation only, awaiting Dan's go-ahead.
 
+## 6 Aug 2026 (cont'd, again) — Slovenia and Iceland built, awaiting deploy
+
+Dan authorized building both countries evaluated earlier today ("Please
+build both - Iceland can appear as B2G only in the map"). Built following
+`ADDING-A-COUNTRY.md`'s full process, migrations 412-424, with the same
+independent-verification discipline as this session's citation-audit work
+— every URL used as a milestone `source_url`, deep-dive portal, or
+tracking source was fetched and confirmed live in this session, not
+carried over unverified from the earlier evaluation pass alone.
+
+**Slovenia (SI)** — two-tier regime, both tiers real and dated:
+- `si-b2g-2015` (anchor + on_tracker, `mandate_scope: 'b2g_only'`): the
+  long-standing public-sector obligation, sourced to a gov.si notice
+  (stopbirokraciji.gov.si) plus UJP's own e-Racuni portal.
+- `si-zierded-enacted` (anchor only, deep-dive timeline context): ZIERDED's
+  Official Gazette publication, 6 Nov 2025 (Uradni list RS, st. 85/2025).
+- `si-epath-providers-2027` and `si-b2b-mandatory-2028` (on_tracker,
+  `mandate_scope: 'b2b'`, confidence NULL since this is enacted, not
+  draft, law): the two-stage rollout. Art. 24/25 penalty figures
+  (EUR 1,000-3,000 core; EUR 500-1,500 consumer-invoice) independently
+  re-fetched from the gazette text in this session, including the exact
+  Art. 25 breakdown the earlier evaluation pass hadn't drilled into.
+- Deep-dive content flags the one real gap from the evaluation (UJP is
+  the B2G hub operator, not a confirmed OpenPeppol Peppol Authority) and
+  deliberately omits two secondary-only claims (a ZZI "Exchange Hub", a
+  FURS "miniBlagajna" tool) that couldn't be corroborated on a primary
+  page in this round either.
+- Map status: **"upcoming"** (firm B2B milestones enacted but not yet in
+  force) — verified via a local replay of `computeCountryMapStatus()`'s
+  logic against the built migrations.
+- One story: ZIERDED's enactment (a real, dated news event). No second
+  story was invented.
+
+**Iceland (IS)** — B2G-only, deliberately built so it maps correctly:
+- `is-reg44-2019` (anchor only) plus `is-b2g-state-2019` and
+  `is-b2g-municipal-2020` (both on_tracker, `mandate_scope: 'b2g_only'`,
+  dates already past today) — this on_tracker pairing is what makes
+  `computeCountryMapStatus()` resolve to **"b2gonly"** rather than
+  "tracked" (Iceland has no B2B milestone, so without an on_tracker
+  b2g_only entry the map would show it as a bare "tracked" pin) — this
+  was Dan's explicit instruction and was verified by replaying the
+  status logic locally, not just asserted.
+- No `deep_dive_penalty_rows` — no statutory penalty regime exists,
+  confirmed by the EU Commission's own (self-flagged "NO VERIFICATION")
+  Iceland country sheet; penalties_related uses narrative cards only,
+  matching the Japan/Finland/UK/New Zealand/US precedent.
+- The vendor-only "1 July 2026 BII-to-Peppol-BIS-3.0 retirement" claim
+  flagged as unverifiable in the evaluation was checked again from
+  scratch in this build and still traces to no primary source — it
+  appears nowhere in the shipped content, including in a dedicated card
+  that names and rejects it explicitly so a future editor doesn't
+  reintroduce it from a vendor blog.
+- No story: nothing in Iceland's e-invoicing history has changed since
+  the 2019-2020 rollout completed, and this project's sourcing standard
+  doesn't stretch to inventing a news event to hang a story on.
+
+**Both countries**: full EN/ES/DE/FR deep-dive content (pages, 4-5 stats,
+7 cards each, 4-5 steps, 2-3 portals), full 4-language milestone
+translations, tracking-source entries (Slovenia: gazette + UJP portal +
+EU factsheet; Iceland: regulation text + Fjarsysla rikisins + EU
+factsheet, flagged as itself unverified per the Commission's own status
+table), `countries.js` and `shared/deep-dive-render.mjs`'s two lookup
+tables updated, i18n `countryNames` dictionaries updated by hand in all
+8 affected JSON files (the `generate_files.py --remote` regeneration
+script needs live `wrangler` D1 access this sandbox doesn't have — see
+below), and the jurisdiction-count sweep (54 -> 56, migration 424,
+verified against the actual pre-migration DB state rather than assumed).
+Full in-memory replay across all 424 migrations: 0 errors beyond the 4
+long-documented pre-existing ones.
+
+**One side finding, not fixed here (pre-existing, out of scope for this
+build)**: the hand-maintained `countryNames` dictionaries inside
+`i18n/*.json` (as opposed to `shared/deep-dive-render.mjs`'s own,
+separately-maintained dictionary, which *is* current) are missing
+roughly 17 countries added over the project's history — Jordan, Israel,
+Oman, Czech Republic, Hungary, Turkey, Costa Rica, Uruguay, and others.
+These are a silent-fallback-to-English gap (the tracker board and
+subscribe page just show the untranslated name on ES/DE/FR pages for an
+unlisted country), not a broken page — but worth a dedicated cleanup
+pass via `generate_files.py --remote` once run against live D1, rather
+than papering over it by hand-listing 17 more entries as a side effect
+of this build.
+
+**Deploy needs two steps this time, not one** — `countries.js` and
+`shared/deep-dive-render.mjs` are static files the `site-worker` Worker
+serves directly, so a content-only `apply_migrations.py --remote` run
+is not sufficient by itself:
+1. `python3 apply_migrations.py --remote` (from `members-worker/`) —
+   applies migrations 412-424.
+2. `wrangler deploy` from `site-worker/` — ships the static-file edits
+   (`countries.js`, `shared/deep-dive-render.mjs`, the 8 `i18n/*.json`
+   files) so the new countries appear on the subscribe page, deep-dive
+   routing, and translated country names.
+
+Not yet done, pending a live D1 connection: running
+`generate_files.py --remote` + `compare_generated.py` to confirm the
+by-hand i18n edits above match what the generator itself would produce
+(ADDING-A-COUNTRY.md's Phase 2 step) — the by-hand edits were verified
+by diffing before/after (4-line minimal diff per file, same formatting
+preserved) rather than via the generator itself, since this sandbox has
+no `wrangler` credentials.
+
 ## Open items / next steps
 
 ### Real open work
@@ -5254,15 +5356,17 @@ has been built yet — this is evaluation only, awaiting Dan's go-ahead.
    Argentina, Colombia, Philippines, Taiwan, Hungary (#49), Indonesia
    (#50), Japan (#51), Pakistan (#52), Ecuador (#53), Uruguay (#54),
    and Costa Rica (#55) are all confirmed deployed and tested — every
-   country added this project's history is now live. Myanmar was
-   evaluated and held back (no real mandate found). Qatar was evaluated
-   and held back at Dan's choice (thinner than first assessed). Still
-   not tracked in Europe: Bulgaria, Estonia,
-   Latvia, Lithuania, Malta, Slovenia, Iceland,
-   Liechtenstein. Still not tracked in the Americas: Dominican
-   Republic, Guatemala, Paraguay, Bolivia, Panama, El Salvador.
-   The scaffolder + runner make each addition a fraction of the old
-   effort.
+   country added this project's history (through Costa Rica) is now
+   live. Slovenia and Iceland (built 6 Aug 2026, see the entry above)
+   are ready but **not yet confirmed deployed** — pending Dan pulling,
+   pushing, applying the migrations, and redeploying `site-worker`.
+   Myanmar was evaluated and held back (no real mandate found). Qatar
+   was evaluated and held back at Dan's choice (thinner than first
+   assessed). Still not tracked in Europe: Bulgaria, Estonia, Latvia,
+   Lithuania, Malta, Liechtenstein. Still not tracked in the Americas:
+   Dominican Republic, Guatemala, Paraguay, Bolivia, Panama,
+   El Salvador. The scaffolder + runner make each addition a fraction
+   of the old effort.
 
    **Middle East coverage evaluated (3 August 2026).** Dan asked for
    an assessment of which additional Middle Eastern countries are
