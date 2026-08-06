@@ -5767,8 +5767,9 @@ next picks. Nothing in this list has been built -- this is evaluation
 only, matching the pattern already established for Middle East/Asia-
 Pacific/Americas coverage above.
 
-## 6 Aug 2026 (cont'd, again) — Serbia (#57) and Latvia (#58) built; a
-## long-standing "48 countries" static/D1 drift bug found and fixed
+## 6 Aug 2026 (cont'd, again) — Serbia (#57) and Latvia (#58) built,
+## deployed & confirmed live; a long-standing "48 countries" static/D1
+## drift bug found and fixed
 
 Per Dan's "Yes, please do serbia and latvia," both were built following
 `ADDING-A-COUNTRY.md`'s runbook, using Slovenia/Iceland (412-424) as the
@@ -5876,12 +5877,13 @@ translatable row, no orphaned or missing translations; total non-EU
 confirm zero remaining stale country-count references anywhere in
 `i18n/*.json` or `*.html`.
 
-**Status: built, replay-validated, not yet shipped.** Needs, from Dan's
-own machine: `python3 apply_migrations.py --remote` (from
-`members-worker/migrations/`) to apply migrations 425-432 (D1), then
-`wrangler deploy` from `site-worker/` to ship the static-asset edits
-(`countries.js`, `shared/deep-dive-render.mjs`, all edited `i18n/*.json`
-and `*.html` files). Jurisdiction count goes from 56 to 58.
+**Status: deployed and confirmed live.** Dan applied
+`python3 apply_migrations.py --remote` (from `members-worker/`, migrations
+425-436) and `wrangler deploy` from `site-worker/`, shipping the static-
+asset edits (`countries.js`, `shared/deep-dive-render.mjs`, all edited
+`i18n/*.json` and `*.html` files). Jurisdiction count is now 58, and both
+Serbia and Latvia are live on the site alongside the corrected header
+count.
 
 ## Open items / next steps
 
@@ -5892,14 +5894,15 @@ and `*.html` files). Jurisdiction count goes from 56 to 58.
    Argentina, Colombia, Philippines, Taiwan, Hungary (#49), Indonesia
    (#50), Japan (#51), Pakistan (#52), Ecuador (#53), Uruguay (#54),
    and Costa Rica (#55) are all confirmed deployed and tested. Slovenia
-   and Iceland (built 6 Aug 2026, see the entry above) are now also
-   **confirmed deployed** — Dan confirmed both the migrations and the
-   `site-worker` deploy went out, and both countries appear live on the
-   site. Every country added this project's history (through Iceland,
-   #57) is now live. Myanmar was evaluated and held back (no real
-   mandate found). Qatar
+   and Iceland, and now Serbia and Latvia too (see the entry above), are
+   also **confirmed deployed** — Dan confirmed both the
+   migrations and the `site-worker` deploy went out for each, and all
+   four countries appear live on the site, along with the corrected
+   58-country header text. Every country added this project's history
+   (through Latvia, #58) is now live. Myanmar was evaluated and held back
+   (no real mandate found). Qatar
    was evaluated and held back at Dan's choice (thinner than first
-   assessed). Still not tracked in Europe: Bulgaria, Estonia, Latvia,
+   assessed). Still not tracked in Europe: Bulgaria, Estonia,
    Lithuania, Malta, Liechtenstein. Still not tracked in the Americas:
    Dominican Republic, Guatemala, Paraguay, Bolivia, Panama,
    El Salvador. The scaffolder + runner make each addition a fraction
