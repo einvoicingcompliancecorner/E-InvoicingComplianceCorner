@@ -151,8 +151,15 @@
     overflow:hidden; position:relative; display:flex; flex-direction:column;
   }
   .site-carousel .car-track{display:flex; flex:1; transition:transform .5s ease;}
+  /* Slide content is centered as a group within the box (6 Aug 2026, per
+     Dan's request) -- .car-body no longer flex-grows to fill the row
+     (it now has a capped flex-basis instead), so justify-content:center
+     here has real extra space to distribute once .site-carousel is much
+     wider than a single thumb+text group needs (see .perks-row's
+     flex-grow above). align-items:center replaces the old flex-start so
+     the group is centered vertically too, not just pinned to the top. */
   .site-carousel .car-slide{
-    flex:0 0 100%; display:flex; gap:14px; align-items:flex-start; padding:16px 16px 14px;
+    flex:0 0 100%; display:flex; gap:16px; align-items:center; justify-content:center; padding:16px 16px 14px;
     text-decoration:none; color:inherit; cursor:pointer; box-sizing:border-box; min-height:118px;
   }
   .site-carousel .car-slide:hover{background:rgba(255,255,255,0.03);}
@@ -163,20 +170,29 @@
      with the card rather than looking like a bright inserted photo.
      Map = a night-lights-style glowing cluster over a stylized Europe
      silhouette; News = an angled folded-paper masthead; Subscribe = a
-     glowing envelope; Featured Content = an open book with a spine glow. */
+     glowing envelope; Featured Content = an open book with a spine glow.
+     Sized up from the original 84px (6 Aug 2026, per Dan's request). */
   .site-carousel .car-thumb{
-    flex:0 0 84px; width:84px; height:84px; border-radius:9px; overflow:hidden;
+    flex:0 0 104px; width:104px; height:104px; border-radius:10px; overflow:hidden;
     box-shadow:0 2px 10px rgba(0,0,0,0.35);
   }
   .site-carousel .car-thumb svg{width:100%; height:100%; display:block;}
-  .site-carousel .car-body{flex:1; min-width:0; padding-top:2px;}
+  /* Capped flex-basis (not flex:1) so the text column doesn't stretch
+     to fill the whole (now much wider) box -- that's what leaves real
+     extra space for .car-slide's justify-content:center to center the
+     thumb+text group as a unit, rather than the group staying pinned to
+     the left edge with a big gap on the right (6 Aug 2026, per Dan's
+     request). flex-shrink:1 still lets it narrow on smaller viewports. */
+  .site-carousel .car-body{flex:0 1 360px; min-width:0; padding-top:2px;}
 
+  /* Font sizes bumped up from 10/18/11.5px (6 Aug 2026, per Dan's
+     request), alongside the larger thumbnail above. */
   .site-carousel .car-eyebrow{
-    font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.14em; text-transform:uppercase;
-    color:var(--soon); margin:0 0 4px;
+    font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.14em; text-transform:uppercase;
+    color:var(--soon); margin:0 0 5px;
   }
-  .site-carousel .car-title{font-family:'Big Shoulders Display',sans-serif; font-weight:700; font-size:18px; margin:0 0 4px; text-transform:uppercase; color:var(--text-lo); line-height:1.05;}
-  .site-carousel .car-desc{font-size:11.5px; color:var(--muted); margin:0; line-height:1.4;}
+  .site-carousel .car-title{font-family:'Big Shoulders Display',sans-serif; font-weight:700; font-size:21px; margin:0 0 5px; text-transform:uppercase; color:var(--text-lo); line-height:1.05;}
+  .site-carousel .car-desc{font-size:13px; color:var(--muted); margin:0; line-height:1.4;}
   .site-carousel .car-dots{display:flex; gap:6px; justify-content:center; padding:10px 0 12px;}
   .site-carousel .car-dot{width:6px; height:6px; border-radius:50%; background:var(--line); border:none; cursor:pointer; padding:0;}
   .site-carousel .car-dot.active{background:var(--stamp); width:16px; border-radius:3px; transition:width .25s;}
@@ -2363,7 +2379,7 @@ function wireFeatureCarousel(){
     // too, same as the other slides.
     {thumb:THUMB_BOOK, i18nKey:'featured', eyebrow:'Coming soon', title:'Featured Content', desc:'Insights & Whitepapers, curated — nothing published yet.', href:null},
   ];
-  const ROTATE_MS = 3500;
+  const ROTATE_MS = 5000; // 5s per slide, per Dan's request (6 Aug 2026) -- was 3.5s
 
   track.innerHTML = SLIDES.map(s => {
     const tag = s.href ? 'a' : 'div';
@@ -2618,6 +2634,18 @@ async function openDeepDive(slug, opts){
   const boardView = document.getElementById('boardView');
   const panel = document.getElementById('countryDeepDiveView');
   const topbarBrand = document.querySelector('.topbar-brand');
+  // .brand-row (the description, the subscriber-perks box, and the
+  // feature carousel) used to be nested inside .topbar-brand, so hiding
+  // topbarBrand alone used to hide all of it together. The 6 Aug 2026
+  // header restructure (splitting .topbar into .topbar-header-row + a
+  // full-width .brand-row, so the carousel could flex-grow to the same
+  // right edge as "Getting Around This Site") made .brand-row a sibling
+  // instead -- hidden here explicitly so opening any in-page panel
+  // still clears the whole header block, not just the eyebrow/title
+  // (Dan reported the intro text, perks box, and carousel all staying
+  // visible above the panel, 6 Aug 2026). Every other open*Page()/
+  // close*Page() pair below does the same thing for the same reason.
+  const brandRow = document.querySelector('.brand-row');
   currentDeepDiveSlug = slug;
   // Mutually exclusive with the newsletter archive, the education
   // panel, the feedback panel, and the subscribe panel being open --
@@ -2642,6 +2670,7 @@ async function openDeepDive(slug, opts){
   // topbar stay visible, so switching to another country or leaving
   // is still one click away.
   if(topbarBrand) topbarBrand.style.display = 'none';
+  if(brandRow) brandRow.style.display = 'none';
   panel.style.display = '';
   panel.innerHTML = '<p style="color:var(--muted); font-family:\'IBM Plex Mono\',monospace; font-size:13px; padding:40px 5vw;">Loading…</p>';
   window.scrollTo(0, 0);
@@ -2701,7 +2730,9 @@ function closeDeepDive(opts){
   currentDeepDiveSlug = null;
   document.getElementById('boardView').style.display = '';
   const topbarBrand = document.querySelector('.topbar-brand');
+  const brandRow = document.querySelector('.brand-row'); // see openDeepDive() for why this is hidden alongside topbarBrand
   if(topbarBrand) topbarBrand.style.display = '';
+  if(brandRow) brandRow.style.display = '';
   const panel = document.getElementById('countryDeepDiveView');
   panel.style.display = 'none';
   panel.innerHTML = '';
@@ -2722,6 +2753,7 @@ async function openSourcesPage(opts){
   const boardView = document.getElementById('boardView');
   const panel = document.getElementById('sourcesView');
   const topbarBrand = document.querySelector('.topbar-brand');
+  const brandRow = document.querySelector('.brand-row'); // see openDeepDive() for why this is hidden alongside topbarBrand
   sourcesPageOpen = true;
   if(currentDeepDiveSlug) closeDeepDive({ skipHistory: true });
   if(archiveOpen) closeArchive({ skipHistory: true });
@@ -2732,6 +2764,7 @@ async function openSourcesPage(opts){
 
   boardView.style.display = 'none';
   if(topbarBrand) topbarBrand.style.display = 'none';
+  if(brandRow) brandRow.style.display = 'none';
   panel.style.display = '';
   panel.innerHTML = '<p style="color:var(--muted); font-family:\'IBM Plex Mono\',monospace; font-size:13px; padding:40px 5vw;">Loading…</p>';
   window.scrollTo(0, 0);
@@ -2791,7 +2824,9 @@ function closeSourcesPage(opts){
   sourcesPageOpen = false;
   document.getElementById('boardView').style.display = '';
   const topbarBrand = document.querySelector('.topbar-brand');
+  const brandRow = document.querySelector('.brand-row'); // see openDeepDive() for why this is hidden alongside topbarBrand
   if(topbarBrand) topbarBrand.style.display = '';
+  if(brandRow) brandRow.style.display = '';
   const panel = document.getElementById('sourcesView');
   panel.style.display = 'none';
   panel.innerHTML = '';
@@ -2847,6 +2882,7 @@ async function openMapPage(opts){
   const boardView = document.getElementById('boardView');
   const panel = document.getElementById('mapView');
   const topbarBrand = document.querySelector('.topbar-brand');
+  const brandRow = document.querySelector('.brand-row'); // see openDeepDive() for why this is hidden alongside topbarBrand
   mapPageOpen = true;
   if(currentDeepDiveSlug) closeDeepDive({ skipHistory: true });
   if(archiveOpen) closeArchive({ skipHistory: true });
@@ -2857,6 +2893,7 @@ async function openMapPage(opts){
 
   boardView.style.display = 'none';
   if(topbarBrand) topbarBrand.style.display = 'none';
+  if(brandRow) brandRow.style.display = 'none';
   panel.style.display = '';
   panel.innerHTML = '<p style="color:var(--muted); font-family:\'IBM Plex Mono\',monospace; font-size:13px; padding:40px 5vw;">Loading…</p>';
   window.scrollTo(0, 0);
@@ -2934,7 +2971,9 @@ function closeMapPage(opts){
   mapPageOpen = false;
   document.getElementById('boardView').style.display = '';
   const topbarBrand = document.querySelector('.topbar-brand');
+  const brandRow = document.querySelector('.brand-row'); // see openDeepDive() for why this is hidden alongside topbarBrand
   if(topbarBrand) topbarBrand.style.display = '';
+  if(brandRow) brandRow.style.display = '';
   const panel = document.getElementById('mapView');
   panel.style.display = 'none';
   panel.innerHTML = '';
@@ -3083,6 +3122,7 @@ async function openArchive(opts){
   const countryPanel = document.getElementById('countryDeepDiveView');
   const panel = document.getElementById('archiveView');
   const topbarBrand = document.querySelector('.topbar-brand');
+  const brandRow = document.querySelector('.brand-row'); // see openDeepDive() for why this is hidden alongside topbarBrand
   archiveOpen = true;
   // Mutually exclusive with a country deep dive, the education panel,
   // the feedback panel, or the subscribe panel being open.
@@ -3095,6 +3135,7 @@ async function openArchive(opts){
 
   boardView.style.display = 'none';
   if(topbarBrand) topbarBrand.style.display = 'none';
+  if(brandRow) brandRow.style.display = 'none';
   countryPanel.style.display = 'none';
   countryPanel.innerHTML = '';
   panel.style.display = '';
@@ -3302,7 +3343,9 @@ function closeArchive(opts){
   archiveShadowRoot = null;
   document.getElementById('boardView').style.display = '';
   const topbarBrand = document.querySelector('.topbar-brand');
+  const brandRow = document.querySelector('.brand-row'); // see openDeepDive() for why this is hidden alongside topbarBrand
   if(topbarBrand) topbarBrand.style.display = '';
+  if(brandRow) brandRow.style.display = '';
   const panel = document.getElementById('archiveView');
   panel.style.display = 'none';
   panel.innerHTML = '';
@@ -3390,6 +3433,7 @@ async function openEducationPage(pageKey, opts){
   const boardView = document.getElementById('boardView');
   const panel = document.getElementById('educationView');
   const topbarBrand = document.querySelector('.topbar-brand');
+  const brandRow = document.querySelector('.brand-row'); // see openDeepDive() for why this is hidden alongside topbarBrand
   currentEducationPage = pageKey;
   // Mutually exclusive with a country deep dive, the newsletter
   // archive, the feedback panel, or the subscribe panel being open --
@@ -3404,6 +3448,7 @@ async function openEducationPage(pageKey, opts){
 
   boardView.style.display = 'none';
   if(topbarBrand) topbarBrand.style.display = 'none';
+  if(brandRow) brandRow.style.display = 'none';
   panel.style.display = '';
   panel.innerHTML = '<p style="color:var(--muted); font-family:\'IBM Plex Mono\',monospace; font-size:13px; padding:40px 5vw;">Loading…</p>';
   window.scrollTo(0, 0);
@@ -3475,7 +3520,9 @@ function closeEducationPage(opts){
   currentEducationPage = null;
   document.getElementById('boardView').style.display = '';
   const topbarBrand = document.querySelector('.topbar-brand');
+  const brandRow = document.querySelector('.brand-row'); // see openDeepDive() for why this is hidden alongside topbarBrand
   if(topbarBrand) topbarBrand.style.display = '';
+  if(brandRow) brandRow.style.display = '';
   const panel = document.getElementById('educationView');
   panel.style.display = 'none';
   panel.innerHTML = '';
@@ -3586,6 +3633,7 @@ async function openFeedbackPage(opts){
   const boardView = document.getElementById('boardView');
   const panel = document.getElementById('feedbackView');
   const topbarBrand = document.querySelector('.topbar-brand');
+  const brandRow = document.querySelector('.brand-row'); // see openDeepDive() for why this is hidden alongside topbarBrand
   feedbackPageOpen = true;
   // Mutually exclusive with the other in-page panels.
   if(currentDeepDiveSlug) closeDeepDive({ skipHistory: true });
@@ -3597,6 +3645,7 @@ async function openFeedbackPage(opts){
 
   boardView.style.display = 'none';
   if(topbarBrand) topbarBrand.style.display = 'none';
+  if(brandRow) brandRow.style.display = 'none';
   panel.style.display = '';
   panel.innerHTML = '<p style="color:var(--muted); font-family:\'IBM Plex Mono\',monospace; font-size:13px; padding:40px 5vw;">Loading…</p>';
   window.scrollTo(0, 0);
@@ -3660,7 +3709,9 @@ function closeFeedbackPage(opts){
   feedbackPageOpen = false;
   document.getElementById('boardView').style.display = '';
   const topbarBrand = document.querySelector('.topbar-brand');
+  const brandRow = document.querySelector('.brand-row'); // see openDeepDive() for why this is hidden alongside topbarBrand
   if(topbarBrand) topbarBrand.style.display = '';
+  if(brandRow) brandRow.style.display = '';
   const panel = document.getElementById('feedbackView');
   panel.style.display = 'none';
   panel.innerHTML = '';
@@ -3804,6 +3855,7 @@ async function openSubscribePage(opts){
   const boardView = document.getElementById('boardView');
   const panel = document.getElementById('subscribeView');
   const topbarBrand = document.querySelector('.topbar-brand');
+  const brandRow = document.querySelector('.brand-row'); // see openDeepDive() for why this is hidden alongside topbarBrand
   subscribePageOpen = true;
   // Mutually exclusive with the other in-page panels.
   if(currentDeepDiveSlug) closeDeepDive({ skipHistory: true });
@@ -3815,6 +3867,7 @@ async function openSubscribePage(opts){
 
   boardView.style.display = 'none';
   if(topbarBrand) topbarBrand.style.display = 'none';
+  if(brandRow) brandRow.style.display = 'none';
   panel.style.display = '';
   panel.innerHTML = '<p style="color:var(--muted); font-family:\'IBM Plex Mono\',monospace; font-size:13px; padding:40px 5vw;">Loading\u2026</p>';
   window.scrollTo(0, 0);
@@ -3888,7 +3941,9 @@ function closeSubscribePage(opts){
   currentSubscribeShadow = null;
   document.getElementById('boardView').style.display = '';
   const topbarBrand = document.querySelector('.topbar-brand');
+  const brandRow = document.querySelector('.brand-row'); // see openDeepDive() for why this is hidden alongside topbarBrand
   if(topbarBrand) topbarBrand.style.display = '';
+  if(brandRow) brandRow.style.display = '';
   const panel = document.getElementById('subscribeView');
   panel.style.display = 'none';
   panel.innerHTML = '';

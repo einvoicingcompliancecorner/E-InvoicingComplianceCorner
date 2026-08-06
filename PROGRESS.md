@@ -5542,6 +5542,65 @@ Static-file-only change (`einvoicing-compliance-tracker.html` +
 `i18n/*.json`), no migration -- deploy is a single `wrangler deploy` from
 `site-worker/`.
 
+## 6 Aug 2026 (cont'd, again) — carousel: header-hide regression fixed; slides centered/enlarged; rotation slowed
+
+Three follow-up fixes on the carousel, reported/requested the same day:
+
+**1. Bug fix: opening a carousel link left the page heading, description,
+perks box, and carousel itself visible behind the opened panel.** Dan
+reported this and noted it behaved differently from opening the same panel
+via the menu link. Root cause: every in-page panel (`openMapPage`,
+`openSourcesPage`, `openArchive`, `openEducationPage`, `openFeedbackPage`,
+`openSubscribePage`, `openDeepDive`, and their matching `close*` functions
+-- 7 pairs, 14 functions total) hides/restores the header via
+`document.querySelector('.topbar-brand').style.display = 'none' / ''`.
+That was written back when `.brand-row` (description + perks box +
+carousel) was nested *inside* `.topbar-brand`, so hiding the parent hid
+everything together. The same-day topbar restructure above (flexing the
+carousel to the full page width) pulled `.brand-row` out to be a *sibling*
+of `.topbar-brand` instead of a child -- so the existing hide logic only
+ever hid the eyebrow/title, and `.brand-row`'s contents were stranded
+visible. Fixed by adding a matching `document.querySelector('.brand-row')`
+hide/show alongside every one of the 14 existing `topbarBrand` toggles.
+
+Verified live against production: reproduced the bug first (clicked a
+carousel slide, confirmed via screenshot that the description/perks/
+carousel remained visible above the opened Newsletter Archive panel while
+only the eyebrow/title correctly hid), then patched the fix onto the
+live page's already-global `open*`/`close*` functions (they're top-level
+function declarations, so reachable as `window.openMapPage` etc.) by
+wrapping each to additionally toggle `.brand-row`, clicked into "The
+Map" panel, and confirmed via `getComputedStyle`-equivalent checks that
+both `.topbar-brand` and `.brand-row` report `display:none` and
+`offsetParent === null` while the panel is open, then confirmed both
+fully restore (`display:''`, visible again) after clicking "← Back to
+the tracker".
+
+**2. Carousel content centered; thumbnail and text enlarged.** Dan asked
+for the thumbnail image and text to be centered in the (now much wider)
+carousel box, with both a little larger. `.car-slide` gained
+`justify-content:center` (new) and `align-items:flex-start` →`center`;
+`.car-body` changed from `flex:1` (which claimed all remaining row width
+and left nothing for centering to redistribute) to a capped `flex:0 1
+360px`, so the thumb+text group now centers as a unit instead of pinning
+to the left edge. Thumbnail grew 84px → 104px; eyebrow 10px → 11px; title
+18px → 21px; description 11.5px → 13px.
+
+Verified live: injected the new rules as `!important` overrides on top of
+the deployed CSS and measured `getBoundingClientRect()` on the thumbnail
+and body -- the midpoint between the thumbnail's left edge and the body's
+right edge landed at exactly the same x-coordinate as the carousel box's
+own midpoint (1363px, both), confirming true horizontal centering rather
+than an approximate visual match.
+
+**3. Rotation slowed.** `ROTATE_MS` (the auto-advance interval in
+`wireFeatureCarousel()`) changed from 3500ms to 5000ms per Dan's request,
+giving each slide 5 seconds before advancing instead of 3.5.
+
+Static-file-only change (`einvoicing-compliance-tracker.html` only this
+round -- no i18n file changes), no migration -- deploy is a single
+`wrangler deploy` from `site-worker/`.
+
 ## Open items / next steps
 
 ### Real open work
