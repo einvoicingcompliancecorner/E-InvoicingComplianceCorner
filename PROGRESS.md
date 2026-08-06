@@ -5414,7 +5414,7 @@ mock-up file (`carousel-mockup-preview.html`) — Dan has not yet asked for it
 to be integrated into `einvoicing-compliance-tracker.html`, so it remains
 unbuilt in the real site pending that instruction.
 
-## 6 Aug 2026 (cont'd, again) — header feature carousel built into the real site
+## 6 Aug 2026 (cont'd, again) — header feature carousel built into the real site (deployed & confirmed live)
 
 Dan asked to go ahead and build the previously-approved carousel mock-up
 into the real site. Ported `carousel-mockup-preview.html` (see the earlier
@@ -5458,6 +5458,8 @@ Syntax-checked the full inline script block after the edit (same
 
 Static-file-only change (`einvoicing-compliance-tracker.html`), no
 migration -- deploy is a single `wrangler deploy` from `site-worker/`.
+Confirmed deployed the same day: Dan pulled and pushed the bundle, and
+`site-worker`'s `git log` shows `main`/`origin/main` at `708afa2`.
 
 ## Open items / next steps
 
