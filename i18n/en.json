@@ -17,7 +17,7 @@
   },
   "brand": {
     "description": "A living tracker of e-invoicing and digital reporting mandates across 58 countries — EU-wide ViDA rules, national CTC systems, and everything in between. Each entry shows the deadline, what you need to do about it, and a direct link to the official government portal, so you can go from \"is this relevant to us?\" to \"here's what to action\" in one page.",
-    "eyebrow": "Compliance clearance board",
+    "eyebrow": "Compliance tracker board",
     "title": "The E-Invoicing<br>Compliance Corner"
   },
   "carousel": {
@@ -32,7 +32,10 @@
     "subscribeDesc": "Get a monthly digest the moment a mandate or deadline changes.",
     "featuredEyebrow": "Coming soon",
     "featuredTitle": "Featured Content",
-    "featuredDesc": "Insights & Whitepapers, curated — nothing published yet."
+    "featuredDesc": "Insights & Whitepapers, curated — nothing published yet.",
+    "preparingEyebrow": "Get ready",
+    "preparingTitle": "Preparing for a Mandate",
+    "preparingDesc": "What to do before a mandate takes effect — timelines, vendor selection, and internal readiness."
   },
   "cardLabels": {
     "actionChecklist": "Action checklist",
@@ -89,7 +92,8 @@
     "lastUpdated": "Last updated:",
     "menu": "Menu",
     "resources": "Resources",
-    "subscribe": "Subscribe"
+    "subscribe": "Subscribe",
+    "navHelp": "Navigation Help"
   },
   "navTips": {
     "label": "Getting around this site",
@@ -100,7 +104,8 @@
     "tip3Desc": "The Newsletter Archive (in the Resources menu) is fully searchable — look up past announcements and notifications by keyword, or filter by country and edition.",
     "tip3Title": "Catch up on past announcements",
     "tip4Desc": "The timeline shows recent and upcoming changes by default — long-settled regulations live in the collapsed section below it.",
-    "tip4Title": "Old news is tucked away"
+    "tip4Title": "Old news is tucked away",
+    "eyebrow": "Help"
   },
   "perks": {
     "cta": "Subscribe →",

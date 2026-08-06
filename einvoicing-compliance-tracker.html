@@ -84,11 +84,11 @@
   /* The perks box keeps its old ~520px content-driven width (flex-grow:0,
      so it never grows past that even though .perks-row now has a lot
      more room); the carousel flex-grows to consume whatever's left in
-     the row, reaching the same right edge as .nav-tips-wrap and other
-     full-width sections below (6 Aug 2026, per Dan's request --
-     previously both were capped at an equal 520px, leaving empty space
-     to the right of the carousel). align-items:stretch (the flex
-     default, stated explicitly) still keeps both boxes equal height. */
+     the row, reaching the same right edge as other full-width sections
+     below (6 Aug 2026, per Dan's request -- previously both were capped
+     at an equal 520px, leaving empty space to the right of the
+     carousel). align-items:stretch (the flex default, stated
+     explicitly) still keeps both boxes equal height. */
   .perks-row{display:flex; flex-wrap:wrap; gap:16px; align-items:stretch;}
   .perks-row .subscriber-perks{flex:0 1 520px;}
   .perks-row .site-carousel{flex:1 1 320px;}
@@ -122,18 +122,16 @@
     color:var(--muted) !important; cursor:default; pointer-events:none;
   }
 
-  /* ===== Navigation tips ===== */
-  .nav-tips-wrap{padding:22px 5vw 4px;}
-  .nav-tips-label{
-    font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.16em; text-transform:uppercase;
-    color:var(--muted); margin:0 0 12px; display:flex; align-items:center; gap:10px;
-  }
-  .nav-tips-label::after{content:""; flex:1; height:1px; background:var(--line);}
-  .nav-tips{display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:1px; background:var(--line); border:1px solid var(--line); border-radius:var(--radius); overflow:hidden;}
-  .tip-card{background:var(--ink-2); padding:16px 18px; display:flex; gap:12px; align-items:flex-start;}
+  /* ===== Navigation tips (moved into the Navigation Help pop-out,
+     6 Aug 2026 -- see #navHelpOverlay below; these classes are only
+     used inside that modal now, so they're styled for its light
+     "paper" card directly rather than the dark topbar they used to
+     sit in) ===== */
+  .nav-tips{display:grid; grid-template-columns:1fr; gap:10px;}
+  .tip-card{background:var(--paper-2); border:1px solid var(--paper-line); border-radius:8px; padding:14px 16px; display:flex; gap:12px; align-items:flex-start;}
   .tip-icon{font-size:19px; line-height:1.2; flex:0 0 auto;}
-  .tip-title{font-size:13px; font-weight:600; color:var(--text-lo); margin:0 0 4px;}
-  .tip-desc{font-size:12px; color:var(--muted); line-height:1.5; margin:0;}
+  .tip-title{font-size:13px; font-weight:600; color:#241d10; margin:0 0 4px;}
+  .tip-desc{font-size:12px; color:#4a4030; line-height:1.5; margin:0;}
   .topbar-right{font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--muted); text-align:right; display:flex; flex-direction:column; align-items:flex-end; flex:0 0 auto; margin-left:auto;}
   .topbar-right strong{color:var(--text-lo); display:block; font-size:13px;}
 
@@ -624,10 +622,53 @@
   </div>
 </div>
 
+<!-- Same 4 tips that used to sit as a full-width strip above the
+     arrivals board ("Getting Around This Site") -- moved into this
+     pop-out (6 Aug 2026, per Dan's request) so the board is more
+     visible by default, reachable instead via the Menu ▸ Navigation
+     Help item. Same data-i18n keys as before, just re-homed. -->
+<div class="modal-overlay" id="navHelpOverlay">
+  <div class="modal-card">
+    <button class="modal-close" id="navHelpModalClose" aria-label="Close">&times;</button>
+    <p class="modal-eyebrow" data-i18n="navTips.eyebrow">Help</p>
+    <h2 class="modal-title" data-i18n="navTips.label">Getting around this site</h2>
+    <div class="nav-tips">
+      <div class="tip-card">
+        <span class="tip-icon">🔎</span>
+        <div>
+          <p class="tip-title" data-i18n="navTips.tip1Title">Filter to what matters to you</p>
+          <p class="tip-desc" data-i18n="navTips.tip1Desc">Use the region and status pills, or the search box, to narrow the timeline down to your markets.</p>
+        </div>
+      </div>
+      <div class="tip-card">
+        <span class="tip-icon">📖</span>
+        <div>
+          <p class="tip-title" data-i18n="navTips.tip2Title">Go deep on a country</p>
+          <p class="tip-desc" data-i18n="navTips.tip2Desc">The "Deep Dives" menu links to a full technical breakdown — file formats, transmission protocols, registration steps, and penalties.</p>
+        </div>
+      </div>
+      <div class="tip-card">
+        <span class="tip-icon">📰</span>
+        <div>
+          <p class="tip-title" data-i18n="navTips.tip3Title">Catch up on past announcements</p>
+          <p class="tip-desc" data-i18n="navTips.tip3Desc">The Newsletter Archive (in the Resources menu) is fully searchable — look up past announcements and notifications by keyword, or filter by country and edition.</p>
+        </div>
+      </div>
+      <div class="tip-card">
+        <span class="tip-icon">📜</span>
+        <div>
+          <p class="tip-title" data-i18n="navTips.tip4Title">Old news is tucked away</p>
+          <p class="tip-desc" data-i18n="navTips.tip4Desc">The timeline shows recent and upcoming changes by default — long-settled regulations live in the collapsed section below it.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="topbar">
   <div class="topbar-header-row">
     <div class="topbar-brand">
-      <p class="brand-eyebrow" data-i18n="brand.eyebrow">Compliance clearance board</p>
+      <p class="brand-eyebrow" data-i18n="brand.eyebrow">Compliance tracker board</p>
       <h1 class="brand-title display" data-i18n="brand.title">The E-Invoicing<br>Compliance Corner</h1>
     </div>
     <div class="topbar-right">
@@ -679,6 +720,12 @@
         <button class="menu-trigger" id="menuTrigger" data-i18n="menu.menu">Menu</button>
         <div class="dropdown-panel" id="dropdownPanel">
           <button class="dropdown-item" id="ddAbout"><span class="dd-icon">ℹ️</span><span data-i18n="menu.about">About this site</span></button>
+          <!-- Pop-out with the same content that used to be the
+               "Getting Around This Site" strip above the arrivals
+               board -- moved here (6 Aug 2026, per Dan's request) so
+               the board has more room and the tips are still one
+               click away. Same open/close mechanics as ddAbout. -->
+          <button class="dropdown-item" id="ddNavHelp"><span class="dd-icon">🧭</span><span data-i18n="menu.navHelp">Navigation Help</span></button>
           <!-- Newsletter archive used to be here too -- it now has its
                own live link under Resources, since it's open to
                everyone for free during a temporary promo; see
@@ -731,39 +778,10 @@
 </div>
 
 <div id="boardView">
-<div class="nav-tips-wrap">
-  <p class="nav-tips-label" data-i18n="navTips.label">Getting around this site</p>
-  <div class="nav-tips">
-    <div class="tip-card">
-      <span class="tip-icon">🔎</span>
-      <div>
-        <p class="tip-title" data-i18n="navTips.tip1Title">Filter to what matters to you</p>
-        <p class="tip-desc" data-i18n="navTips.tip1Desc">Use the region and status pills, or the search box, to narrow the timeline down to your markets.</p>
-      </div>
-    </div>
-    <div class="tip-card">
-      <span class="tip-icon">📖</span>
-      <div>
-        <p class="tip-title" data-i18n="navTips.tip2Title">Go deep on a country</p>
-        <p class="tip-desc" data-i18n="navTips.tip2Desc">The "Deep Dives" menu links to a full technical breakdown — file formats, transmission protocols, registration steps, and penalties.</p>
-      </div>
-    </div>
-    <div class="tip-card">
-      <span class="tip-icon">📰</span>
-      <div>
-        <p class="tip-title" data-i18n="navTips.tip3Title">Catch up on past announcements</p>
-        <p class="tip-desc" data-i18n="navTips.tip3Desc">The Newsletter Archive (in the Resources menu) is fully searchable — look up past announcements and notifications by keyword, or filter by country and edition.</p>
-      </div>
-    </div>
-    <div class="tip-card">
-      <span class="tip-icon">📜</span>
-      <div>
-        <p class="tip-title" data-i18n="navTips.tip4Title">Old news is tucked away</p>
-        <p class="tip-desc" data-i18n="navTips.tip4Desc">The timeline shows recent and upcoming changes by default — long-settled regulations live in the collapsed section below it.</p>
-      </div>
-    </div>
-  </div>
-</div>
+<!-- The "Getting Around This Site" strip that used to live here was
+     moved into a Menu ▸ Navigation Help pop-out (6 Aug 2026, per
+     Dan's request) to give the arrivals board more visibility --
+     see #navHelpOverlay above and wireNavHelpModal() below. -->
 
 <div class="hero">
   <p class="hero-label">
@@ -2347,6 +2365,38 @@ function wireFeatureCarousel(){
     <line x1="50" y1="43" x2="62" y2="46" stroke="#5b76a8" stroke-width="0.8"/>
   </svg>`;
 
+  // Checklist/clipboard icon for the "Preparing for a Mandate" slide
+  // (6 Aug 2026, per Dan's request) -- same construction as the other
+  // thumbs above (radial-gradient background, glow filter on the
+  // highlighted checkmarks), just a clipboard with a checklist instead
+  // of a map/newspaper/envelope/book.
+  const THUMB_PREPARE = `<svg viewBox="0 0 84 84">
+    <defs>
+      <radialGradient id="carBgGlowP" cx="50%" cy="38%" r="75%">
+        <stop offset="0%" stop-color="#182a4c"/><stop offset="100%" stop-color="#050a13"/>
+      </radialGradient>
+      <linearGradient id="carBoardGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#33487a"/><stop offset="100%" stop-color="#141f39"/>
+      </linearGradient>
+      <filter id="carDotGlowP" x="-200%" y="-200%" width="500%" height="500%">
+        <feGaussianBlur stdDeviation="1" result="b"/>
+        <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+    </defs>
+    <rect width="84" height="84" rx="10" fill="url(#carBgGlowP)"/>
+    <rect x="20" y="14" width="44" height="60" rx="4" fill="url(#carBoardGrad)"/>
+    <rect x="32" y="10" width="20" height="10" rx="3" fill="#0b1526"/>
+    <rect x="35" y="12" width="14" height="6" rx="2" fill="#5b76a8"/>
+    <g filter="url(#carDotGlowP)" stroke="#cfe6ff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M27,32 L31,36 L38,27"/>
+      <path d="M27,48 L31,52 L38,43"/>
+    </g>
+    <path d="M27,64 L31,68 L38,59" stroke="#e8b565" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <line x1="43" y1="30" x2="57" y2="30" stroke="#5b76a8" stroke-width="2" stroke-linecap="round"/>
+    <line x1="43" y1="46" x2="57" y2="46" stroke="#5b76a8" stroke-width="2" stroke-linecap="round"/>
+    <line x1="43" y1="62" x2="57" y2="62" stroke="#5b76a8" stroke-width="2" stroke-linecap="round"/>
+  </svg>`;
+
   // Content: the only thing you'd edit to change slides, order, copy,
   // links, or thumbnail art. Hrefs below ('/map', '/members/archive',
   // 'subscribe.html') are written to match EXACTLY what
@@ -2354,7 +2404,11 @@ function wireFeatureCarousel(){
   // delegated document-level listener, so it catches clicks on these
   // slides automatically. Don't add target="_blank" or a click handler
   // here, or you'll bypass the in-page panel and get a real standalone
-  // navigation instead.
+  // navigation instead. The "preparing" slide's href
+  // (education-preparing-for-mandate.html) also gets in-page-panel
+  // treatment automatically -- educationPageFromHref() above already
+  // intercepts every Education page link site-wide, this is just
+  // another anchor pointing at one of them.
   //
   // i18nKey is the carousel.<key>Eyebrow/Title/Desc prefix in
   // i18n/*.json -- eyebrow/title/desc below are the English fallback
@@ -2366,6 +2420,7 @@ function wireFeatureCarousel(){
     {thumb:THUMB_MAP, i18nKey:'map', eyebrow:'Explore', title:'View the Map', desc:'See every mandate status worldwide at a glance, color-coded by stage.', href:'/map'},
     {thumb:THUMB_NEWS, i18nKey:'news', eyebrow:'Catch up', title:'View the News', desc:'Browse the full newsletter archive — every past announcement, searchable.', href:'/members/archive'},
     {thumb:THUMB_SUBSCRIBE, i18nKey:'subscribe', eyebrow:'Stay ahead', title:'Subscribe', desc:'Get a monthly digest the moment a mandate or deadline changes.', href:'subscribe.html'},
+    {thumb:THUMB_PREPARE, i18nKey:'preparing', eyebrow:'Get ready', title:'Preparing for a Mandate', desc:'What to do before a mandate takes effect — timelines, vendor selection, and internal readiness.', href:'education-preparing-for-mandate.html'},
     // Sponsor This Site -- parked for now per Dan's request (6 Aug 2026).
     // Uncomment when there's an actual sponsorship model/page to link to
     // (and add matching carousel.sponsorEyebrow/Title/Desc keys to
@@ -2571,8 +2626,9 @@ function wireActionsMenu(){
   });
   // Selecting the "Give feedback" link collapses the menu (a real
   // navigation, so this mostly matters for the moment before the page
-  // unloads). "About this site" is a <button>, not an <a>, so it's
-  // handled by its own listener below instead of this delegate.
+  // unloads). "About this site"/"Navigation Help" are <button>s, not
+  // <a>s, so they're each handled by their own listener below instead
+  // of this delegate.
   panel.addEventListener('click', (e)=>{
     if(e.target.closest('a')) close();
   });
@@ -2581,12 +2637,33 @@ function wireActionsMenu(){
     close();
     document.getElementById('aboutOverlay').classList.add('open');
   });
+  document.getElementById('ddNavHelp').addEventListener('click', ()=>{
+    close();
+    document.getElementById('navHelpOverlay').classList.add('open');
+  });
 }
 
 // ---------- about modal ----------
 function wireAboutModal(){
   const overlay = document.getElementById('aboutOverlay');
   const closeBtn = document.getElementById('aboutModalClose');
+
+  function close(){ overlay.classList.remove('open'); }
+
+  closeBtn.addEventListener('click', close);
+  overlay.addEventListener('click', (e)=>{ if(e.target===overlay) close(); });
+  document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') close(); });
+}
+
+// ---------- navigation help modal ----------
+// Same open/close mechanics as wireAboutModal() above, just a second,
+// independent overlay/close-button pair (6 Aug 2026, per Dan's
+// request -- this used to be the "Getting Around This Site" strip
+// above the arrivals board; see #navHelpOverlay's markup near
+// #aboutOverlay for the moved content).
+function wireNavHelpModal(){
+  const overlay = document.getElementById('navHelpOverlay');
+  const closeBtn = document.getElementById('navHelpModalClose');
 
   function close(){ overlay.classList.remove('open'); }
 
@@ -4122,6 +4199,7 @@ wireDeepDiveMenu();
 wireEducationMenu();
 wireActionsMenu();
 wireAboutModal();
+wireNavHelpModal();
 wireFeatureCarousel();
 wireDeepDiveInPagePanel();
 

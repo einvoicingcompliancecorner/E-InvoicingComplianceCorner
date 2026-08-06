@@ -32,7 +32,10 @@
     "subscribeDesc": "Erhalten Sie eine monatliche Zusammenfassung, sobald sich eine Vorgabe oder Frist ändert.",
     "featuredEyebrow": "Demnächst",
     "featuredTitle": "Ausgewählte Inhalte",
-    "featuredDesc": "Analysen & Whitepapers, kuratiert — noch nichts veröffentlicht."
+    "featuredDesc": "Analysen & Whitepapers, kuratiert — noch nichts veröffentlicht.",
+    "preparingEyebrow": "Vorbereiten",
+    "preparingTitle": "Vorbereitung auf eine Vorgabe",
+    "preparingDesc": "Was vor Inkrafttreten einer Vorgabe zu tun ist — Fristen, Anbieterauswahl und interne Vorbereitung."
   },
   "cardLabels": {
     "actionChecklist": "Maßnahmen-Checkliste",
@@ -89,7 +92,8 @@
     "lastUpdated": "Zuletzt aktualisiert:",
     "menu": "Menü",
     "resources": "Ressourcen",
-    "subscribe": "Abonnieren"
+    "subscribe": "Abonnieren",
+    "navHelp": "Navigationshilfe"
   },
   "navTips": {
     "label": "So funktioniert diese Seite",
@@ -100,7 +104,8 @@
     "tip3Desc": "Das Newsletter-Archiv (im Menü Ressourcen) ist voll durchsuchbar — finden Sie frühere Meldungen und Benachrichtigungen per Stichwort oder filtern Sie nach Land und Ausgabe.",
     "tip3Title": "Frühere Meldungen nachlesen",
     "tip4Desc": "Die Zeitleiste zeigt standardmäßig aktuelle und bevorstehende Änderungen — längst etablierte Vorschriften finden Sie im eingeklappten Bereich weiter unten.",
-    "tip4Title": "Altes ist eingeklappt"
+    "tip4Title": "Altes ist eingeklappt",
+    "eyebrow": "Hilfe"
   },
   "perks": {
     "cta": "Abonnieren →",

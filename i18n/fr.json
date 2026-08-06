@@ -32,7 +32,10 @@
     "subscribeDesc": "Recevez un résumé mensuel dès qu'un mandat ou une échéance change.",
     "featuredEyebrow": "Bientôt disponible",
     "featuredTitle": "Contenu à la Une",
-    "featuredDesc": "Analyses et livres blancs, sélectionnés — rien de publié pour l'instant."
+    "featuredDesc": "Analyses et livres blancs, sélectionnés — rien de publié pour l'instant.",
+    "preparingEyebrow": "Se préparer",
+    "preparingTitle": "Se préparer à une obligation",
+    "preparingDesc": "Ce qu'il faut faire avant l'entrée en vigueur d'une obligation — délais, sélection des prestataires et préparation interne."
   },
   "cardLabels": {
     "actionChecklist": "Liste d'actions",
@@ -89,7 +92,8 @@
     "lastUpdated": "Dernière mise à jour :",
     "menu": "Menu",
     "resources": "Ressources",
-    "subscribe": "S'abonner"
+    "subscribe": "S'abonner",
+    "navHelp": "Aide à la navigation"
   },
   "navTips": {
     "label": "Comment naviguer sur ce site",
@@ -100,7 +104,8 @@
     "tip3Desc": "Les Archives de la newsletter (dans le menu Ressources) sont entièrement consultables : recherchez les annonces et notifications passées par mot-clé, ou filtrez par pays et édition.",
     "tip3Title": "Retrouvez les annonces passées",
     "tip4Desc": "La chronologie affiche par défaut les changements récents et à venir — les réglementations bien établies depuis longtemps se trouvent dans la section repliée ci-dessous.",
-    "tip4Title": "Les informations anciennes sont rangées à part"
+    "tip4Title": "Les informations anciennes sont rangées à part",
+    "eyebrow": "Aide"
   },
   "perks": {
     "cta": "S'abonner →",

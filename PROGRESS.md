@@ -5885,6 +5885,62 @@ asset edits (`countries.js`, `shared/deep-dive-render.mjs`, all edited
 Serbia and Latvia are live on the site alongside the corrected header
 count.
 
+## 6 Aug 2026 (cont'd, again) — tracker header: "Navigation Help" pop-out replaces the "Getting Around This Site" strip; new "Preparing for a Mandate" carousel slide; heading renamed to "Compliance tracker board" (code complete, deploy pending)
+
+Three small Dan-requested tweaks to `einvoicing-compliance-tracker.html`,
+none touching D1 — pure static-file changes to the tracker page and its
+4 i18n files.
+
+**"Getting Around This Site" moved into a pop-out.** Dan wanted the
+arrivals board more visible without losing the 4 navigation tips
+entirely. The full-width `.nav-tips-wrap` strip that used to sit
+directly above the arrivals board is gone from the page flow; its
+exact same 4 tip-cards (same `data-i18n` keys, so no translation work
+needed) now live inside a new `#navHelpOverlay` modal, built on the
+identical open/close pattern as the existing "About this site" modal
+(`wireNavHelpModal()`, mirroring `wireAboutModal()`). Reached via a new
+"Navigation Help" item in the Menu dropdown (`#ddNavHelp`, next to
+"About this site"). The tip-cards are re-themed for the modal's light
+"paper" card (they used to sit on the dark topbar background) — new
+`carousel.eyebrow`-style `navTips.eyebrow` key ("Help") added above the
+existing `navTips.label` heading. New i18n keys: `menu.navHelp`,
+`navTips.eyebrow`, all 4 languages.
+
+**New carousel slide: "Preparing for a Mandate".** Added as the 4th
+slide (after Subscribe, before the "Featured Content" coming-soon
+placeholder), linking to `education-preparing-for-mandate.html` —
+picks up the site's existing in-page-panel treatment for free, since
+`educationPageFromHref()` already intercepts every Education page link
+site-wide; no extra click-handling needed. New hand-authored inline
+SVG thumbnail (`THUMB_PREPARE`, a clipboard with a checklist) matching
+the existing thumbnails' construction (radial-gradient background,
+glow filter on the highlighted checkmarks, same site color palette).
+New i18n keys: `carousel.preparingEyebrow` ("Get ready"),
+`carousel.preparingTitle` ("Preparing for a Mandate"),
+`carousel.preparingDesc`, all 4 languages.
+
+**Heading renamed.** `brand.eyebrow` ("The E-Invoicing Compliance
+Corner"'s small caption above the title) changed from "Compliance
+clearance board" to "Compliance tracker board" — English only; the
+ES/DE/FR translations were already phrased generically ("Panel de
+cumplimiento normativo", "Compliance-Übersicht", "Tableau de suivi de
+conformité") and never said "clearance" in the first place, so none of
+the 3 needed a matching edit.
+
+**Verification**: `node --check` on the extracted inline script (0
+errors). Headless-Chromium click-through via Playwright (both
+`file://` and a local HTTP server) confirmed: the nav-tips strip no
+longer renders in the page body; the Menu ▸ Navigation Help item opens
+a modal with all 4 tip-cards intact; the modal closes via its × button;
+the carousel now shows 5 slides including "Preparing for a Mandate";
+and clicking that slide correctly opens the Education panel in-page
+(confirmed via pushState, not a real reload — `#boardView`/
+`#menuTrigger` still present in the DOM afterward) exactly like the
+pre-existing Education-menu link to the same page.
+
+**Status: code complete, not yet shipped.** Pure static-asset change —
+needs only `wrangler deploy` from `site-worker/`, no D1 migration.
+
 ## Open items / next steps
 
 ### Real open work

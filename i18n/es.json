@@ -32,7 +32,10 @@
     "subscribeDesc": "Reciba un resumen mensual en el momento en que cambie un mandato o una fecha límite.",
     "featuredEyebrow": "Próximamente",
     "featuredTitle": "Contenido Destacado",
-    "featuredDesc": "Análisis e informes técnicos, seleccionados — nada publicado todavía."
+    "featuredDesc": "Análisis e informes técnicos, seleccionados — nada publicado todavía.",
+    "preparingEyebrow": "Prepárese",
+    "preparingTitle": "Preparación para un mandato",
+    "preparingDesc": "Qué hacer antes de que un mandato entre en vigor — plazos, selección de proveedores y preparación interna."
   },
   "cardLabels": {
     "actionChecklist": "Lista de acciones",
@@ -89,7 +92,8 @@
     "lastUpdated": "Última actualización:",
     "menu": "Menú",
     "resources": "Recursos",
-    "subscribe": "Suscribirse"
+    "subscribe": "Suscribirse",
+    "navHelp": "Ayuda de navegación"
   },
   "navTips": {
     "label": "Cómo navegar por este sitio",
@@ -100,7 +104,8 @@
     "tip3Desc": "El Archivo del boletín (en el menú Recursos) permite búsquedas completas: consulte anuncios y notificaciones anteriores por palabra clave, o filtre por país y edición.",
     "tip3Title": "Póngase al día con anuncios anteriores",
     "tip4Desc": "La línea de tiempo muestra los cambios recientes y próximos de forma predeterminada — las normativas ya asentadas desde hace tiempo están en la sección plegada de abajo.",
-    "tip4Title": "Lo antiguo queda guardado aparte"
+    "tip4Title": "Lo antiguo queda guardado aparte",
+    "eyebrow": "Ayuda"
   },
   "perks": {
     "cta": "Suscribirse →",
