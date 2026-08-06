@@ -521,8 +521,8 @@
       <img src="/images/dan-young.png" alt="Dan Young" width="64" height="64" style="width:64px; height:64px; border-radius:50%; object-fit:cover; flex-shrink:0; border:2px solid var(--paper-line);">
       <p class="modal-eyebrow" data-i18n="about.authorEyebrow" style="margin:0;">About the author</p>
     </div>
-    <p data-i18n="about.authorP1">I've spent 25 years in financial software transformation, the last 20+ of them focused on e-invoicing and AP automation. Over the past five years, market demand has pivoted sharply toward compliance and e-invoicing regulation.</p>
-    <p data-i18n="about.authorP2">What frustrates me is that there's no central authority defining the roadmap — it's a genuinely difficult subject to navigate. This site exists to bring those disparate sources together into one place for public information, practical advice, and next steps.</p>
+    <p data-i18n="about.authorP1">I've spent 25 years in financial software transformation, the last 20+ years focused on e-invoicing and AP automation. Over the past five years, market demand has pivoted sharply toward compliance and e-invoicing regulation, as organisations try and tackle the complexity of B2B eInvoicing compliance.</p>
+    <p data-i18n="about.authorP2">Sadly, there is no central authority defining the roadmap — it's become a genuinely difficult subject to navigate. This site exists to bring those disparate sources together into one place for public information, practical advice, and next steps.</p>
     <p data-i18n="about.authorConnect" style="margin-top:14px;">Feel free to connect — <a href="https://www.linkedin.com/in/danielyoung76/" target="_blank" rel="noopener" style="color:var(--stamp); text-decoration:underline;">find me on LinkedIn</a>.</p>
   </div>
 </div>
@@ -2362,7 +2362,10 @@ async function openDeepDive(slug, opts){
   const topBar = wrap ? wrap.querySelector('.top-bar') : null;
   if(topBar) topBar.remove(); // replaced by this panel's own close control below
 
-  const scopedCss = (styleEl ? styleEl.textContent : '')
+  // PANEL_FONT_IMPORT (see its own comment near MEMBERS_ORIGIN) gives
+  // this shadow root its own guaranteed route to the site's fonts,
+  // rather than relying on inheriting them from the parent document.
+  const scopedCss = PANEL_FONT_IMPORT + (styleEl ? styleEl.textContent : '')
     .replace(/:root\{/g, ':host{')
     .replace(/body\{/g, ':host{');
 
@@ -2449,7 +2452,10 @@ async function openSourcesPage(opts){
   const langsRow = wrap ? wrap.querySelector('.langs') : null;
   if(langsRow) langsRow.remove(); // the tracker's language banner takes over in-frame
 
-  const scopedCss = (styleEl ? styleEl.textContent : '')
+  // PANEL_FONT_IMPORT (see its own comment near MEMBERS_ORIGIN) gives
+  // this shadow root its own guaranteed route to the site's fonts,
+  // rather than relying on inheriting them from the parent document.
+  const scopedCss = PANEL_FONT_IMPORT + (styleEl ? styleEl.textContent : '')
     .replace(/:root\{/g, ':host{')
     .replace(/body\{/g, ':host{');
 
@@ -2568,7 +2574,10 @@ async function openMapPage(opts){
   const wrap = doc.querySelector('.wrap');
   const dataBlobEl = doc.getElementById('mapDataBlob');
 
-  const scopedCss = (styleEl ? styleEl.textContent : '')
+  // PANEL_FONT_IMPORT (see its own comment near MEMBERS_ORIGIN) gives
+  // this shadow root its own guaranteed route to the site's fonts,
+  // rather than relying on inheriting them from the parent document.
+  const scopedCss = PANEL_FONT_IMPORT + (styleEl ? styleEl.textContent : '')
     .replace(/:root\{/g, ':host{')
     .replace(/body\{/g, ':host{');
 
@@ -2643,6 +2652,26 @@ function closeMapPage(opts){
 // this ports the same rendering logic here, scoped to operate against
 // the shadow root directly (renderArchiveGrid() below is a close port
 // of members-worker's own renderGrid(), same filtering rules).
+// The fetch-a-page-into-a-shadow-root pattern used by openDeepDive(),
+// openSourcesPage(), openMapPage(), openArchive(), openEducationPage(),
+// openFeedbackPage(), and openSubscribePage() only carries the fetched
+// page's inline <style> block into the shadow root -- it discards that
+// page's <head>, including its own Google Fonts <link>. In practice the
+// shadow tree usually still renders in the right fonts, since this page
+// already loads the same three families -- but that's relying on the
+// browser sharing already-loaded font resources across the shadow
+// boundary rather than the shadow root having its own guaranteed route
+// to them, and Dan reported the Education panels specifically falling
+// back to a default sans-serif (Arial) in a couple of the "light" cream
+// boxes near the top when opened in-page (6 Aug 2026) -- not reproduced
+// when the same page is loaded standalone. Prepending this @import to
+// each panel's scoped CSS makes the shadow root self-sufficient for its
+// fonts instead of depending on that inheritance, which is the fix
+// applied to openEducationPage() below. The other six open*Page()
+// functions share the exact same gap and would benefit from the same
+// one-line fix if the same symptom shows up there too.
+const PANEL_FONT_IMPORT = "@import url('https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');\n";
+
 const MEMBERS_ORIGIN = 'https://members.e-invoicingcompliancecorner.com';
 let archiveOpen = false;
 let archiveShadowRoot = null;
@@ -2830,7 +2859,11 @@ async function openArchive(opts){
   // needs the same treatment as .archive-wrap to keep its left edge
   // aligned with the content underneath it, not flush against the
   // full-width container's own edge.
-  const scopedCss = (styleEl ? styleEl.textContent : '')
+  //
+  // PANEL_FONT_IMPORT (see its own comment near MEMBERS_ORIGIN) gives
+  // this shadow root its own guaranteed route to the site's fonts,
+  // rather than relying on inheriting them from the parent document.
+  const scopedCss = PANEL_FONT_IMPORT + (styleEl ? styleEl.textContent : '')
     .replace(':root{', ':host{')
     .replace('body{', ':host{')
     + '\n.archive-wrap, .topbar-wide{margin:0 auto;}';
@@ -3094,7 +3127,13 @@ async function openEducationPage(pageKey, opts){
   const backLink = wrap ? wrap.querySelector('.back-link') : null;
   if(backLink) backLink.remove();
 
-  const scopedCss = (styleEl ? styleEl.textContent : '')
+  // PANEL_FONT_IMPORT (see its own comment above, near MEMBERS_ORIGIN)
+  // gives this shadow root its own guaranteed route to the site's three
+  // fonts, rather than counting on inheriting them from the parent
+  // document -- fixes the Education panels' "light" cream boxes
+  // rendering in a fallback sans-serif (Arial) instead of IBM Plex Sans
+  // when opened in-page (6 Aug 2026).
+  const scopedCss = PANEL_FONT_IMPORT + (styleEl ? styleEl.textContent : '')
     .replace(/:root\{/g, ':host{')
     .replace(/body\{/g, ':host{');
 
@@ -3275,7 +3314,10 @@ async function openFeedbackPage(opts){
   const backLink = wrap ? wrap.querySelector('.back-link') : null;
   if(backLink) backLink.remove();
 
-  const scopedCss = (styleEl ? styleEl.textContent : '')
+  // PANEL_FONT_IMPORT (see its own comment near MEMBERS_ORIGIN) gives
+  // this shadow root its own guaranteed route to the site's fonts,
+  // rather than relying on inheriting them from the parent document.
+  const scopedCss = PANEL_FONT_IMPORT + (styleEl ? styleEl.textContent : '')
     .replace(/:root\{/g, ':host{')
     .replace(/body\{/g, ':host{');
 
@@ -3490,7 +3532,10 @@ async function openSubscribePage(opts){
   const backLink = wrap ? wrap.querySelector('.back-link') : null;
   if(backLink) backLink.remove();
 
-  const scopedCss = (styleEl ? styleEl.textContent : '')
+  // PANEL_FONT_IMPORT (see its own comment near MEMBERS_ORIGIN) gives
+  // this shadow root its own guaranteed route to the site's fonts,
+  // rather than relying on inheriting them from the parent document.
+  const scopedCss = PANEL_FONT_IMPORT + (styleEl ? styleEl.textContent : '')
     .replace(/:root\{/g, ':host{')
     .replace(/body\{/g, ':host{');
 

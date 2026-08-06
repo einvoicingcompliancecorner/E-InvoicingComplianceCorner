@@ -5347,6 +5347,68 @@ by diffing before/after (4-line minimal diff per file, same formatting
 preserved) rather than via the generator itself, since this sandbox has
 no `wrangler` credentials.
 
+## 6 Aug 2026 (cont'd, again) — author bio updated; Education-panel font bug fixed across all 7 in-page panels
+
+**Author bio (`about.authorP1`/`about.authorP2`)** — Dan supplied replacement
+copy for the "About the author" pop-out (the same text that had been added
+3 Aug 2026), refreshing the framing around why he built the site. Updated in
+`einvoicing-compliance-tracker.html`'s HTML fallback text and in all four
+`i18n/*.json` files (`en`, and hand-translated into `es`/`de`/`fr` matching
+the existing translation register); `EN` remains authoritative per
+`_meta.reviewedNote`. Static-file-only change, no migration.
+
+**Education-panel font bug** — Dan reported the "light" cream boxes near the
+top of the Education pages rendering in a fallback sans-serif (Arial)
+instead of the site's `IBM Plex Sans`, but only when opened as an in-page
+panel from the main tracker, not when the same page loads standalone
+(a clarifying detail Dan added mid-investigation that redirected the
+diagnosis away from the standalone `education-*.html` pages' own CSS,
+which checked out fine, toward the shared shadow-DOM panel-opening code).
+
+Root cause: `open*Page()` builds each in-page panel by fetching the
+standalone page's HTML, then carrying only its inline `<style>` block into
+a new shadow root — the fetched page's `<head>`, and with it its own Google
+Fonts `<link>`, is discarded. This works in practice only because the
+parent tracker page happens to already load the same three font families,
+so the shadow tree has been relying on implicit, undocumented sharing of
+already-loaded font resources across the shadow boundary rather than having
+its own guaranteed route to them. (`getComputedStyle()` checks confirmed
+`font-family: "IBM Plex Sans", sans-serif` was correctly declared and
+inherited in both the standalone and in-panel contexts either way, so this
+is a defensive, spec-compliant fix for a real architectural gap rather than
+a confirmed reproduction of a rendering-level font substitution — screenshot
+comparisons at the tested sizes were inconclusive through compression, and
+Dan's direct, specific report was trusted over continuing to chase an
+unconfirmed root cause.)
+
+Fix: a new shared `PANEL_FONT_IMPORT` constant (a CSS `@import` of the same
+Google Fonts URL already loaded in the main page's `<head>`), prepended to
+each panel's scoped CSS before it's injected into the shadow root — giving
+every shadow root its own self-contained font-loading route instead of
+depending on inheritance. Applied to all 7 panel-opening functions that
+share this pattern, not just Education — Dan confirmed via a direct
+question that the same latent gap should be fixed everywhere rather than
+left for Education alone: `openDeepDive()`, `openSourcesPage()`,
+`openMapPage()`, `openArchive()`, `openEducationPage()`, `openFeedbackPage()`,
+and `openSubscribePage()`. Verified the full inline-script block still
+parses with no syntax errors after all 7 edits.
+
+Static-file-only change (`einvoicing-compliance-tracker.html`), no
+migration — deploy is a single `wrangler deploy` from `site-worker/`.
+
+**Also from this session, not yet built into the real site**: Dan asked for
+a mock-up of a new home-page carousel filling empty real estate on the main
+tracker (rotating links to the map, newsletter archive, subscribe, and a
+"Featured Content — coming soon" slide; "Sponsor This Site" designed but
+hidden pending a sponsorship model). Iterated through several rounds of
+feedback (position/sizing, richer hand-authored SVG thumbnails instead of
+icon-style badges to match two reference images Dan supplied, desktop-only
+visibility matching the site's existing 900px mobile breakpoint) to a
+"Perfect!"-approved final design, but this exists only in a standalone
+mock-up file (`carousel-mockup-preview.html`) — Dan has not yet asked for it
+to be integrated into `einvoicing-compliance-tracker.html`, so it remains
+unbuilt in the real site pending that instruction.
+
 ## Open items / next steps
 
 ### Real open work
