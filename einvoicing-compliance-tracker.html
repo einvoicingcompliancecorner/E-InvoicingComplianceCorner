@@ -2701,7 +2701,7 @@ async function openDeepDive(slug, opts){
   // rather than relying on inheriting them from the parent document.
   const scopedCss = PANEL_FONT_IMPORT + (styleEl ? styleEl.textContent : '')
     .replace(/:root\{/g, ':host{')
-    .replace(/body\{/g, ':host{');
+    .replace(/(?<![.\w#-])body\{/g, ':host{');
 
   panel.innerHTML = '';
   const host = document.createElement('div');
@@ -2795,7 +2795,7 @@ async function openSourcesPage(opts){
   // rather than relying on inheriting them from the parent document.
   const scopedCss = PANEL_FONT_IMPORT + (styleEl ? styleEl.textContent : '')
     .replace(/:root\{/g, ':host{')
-    .replace(/body\{/g, ':host{');
+    .replace(/(?<![.\w#-])body\{/g, ':host{');
 
   panel.innerHTML = '';
   const host = document.createElement('div');
@@ -2921,7 +2921,7 @@ async function openMapPage(opts){
   // rather than relying on inheriting them from the parent document.
   const scopedCss = PANEL_FONT_IMPORT + (styleEl ? styleEl.textContent : '')
     .replace(/:root\{/g, ':host{')
-    .replace(/body\{/g, ':host{');
+    .replace(/(?<![.\w#-])body\{/g, ':host{');
 
   panel.innerHTML = '';
   const host = document.createElement('div');
@@ -3211,7 +3211,7 @@ async function openArchive(opts){
   // rather than relying on inheriting them from the parent document.
   const scopedCss = PANEL_FONT_IMPORT + (styleEl ? styleEl.textContent : '')
     .replace(':root{', ':host{')
-    .replace('body{', ':host{')
+    .replace(/(?<![.\w#-])body\{/g, ':host{')
     + '\n.archive-wrap, .topbar-wide{margin:0 auto;}';
 
   // Fix relative /members/... links (e.g. manage-preferences, though
@@ -3485,7 +3485,7 @@ async function openEducationPage(pageKey, opts){
   // when opened in-page (6 Aug 2026).
   const scopedCss = PANEL_FONT_IMPORT + (styleEl ? styleEl.textContent : '')
     .replace(/:root\{/g, ':host{')
-    .replace(/body\{/g, ':host{');
+    .replace(/(?<![.\w#-])body\{/g, ':host{');
 
   panel.innerHTML = '';
   const host = document.createElement('div');
@@ -3673,7 +3673,7 @@ async function openFeedbackPage(opts){
   // rather than relying on inheriting them from the parent document.
   const scopedCss = PANEL_FONT_IMPORT + (styleEl ? styleEl.textContent : '')
     .replace(/:root\{/g, ':host{')
-    .replace(/body\{/g, ':host{');
+    .replace(/(?<![.\w#-])body\{/g, ':host{');
 
   panel.innerHTML = '';
   const host = document.createElement('div');
@@ -3895,7 +3895,7 @@ async function openSubscribePage(opts){
   // rather than relying on inheriting them from the parent document.
   const scopedCss = PANEL_FONT_IMPORT + (styleEl ? styleEl.textContent : '')
     .replace(/:root\{/g, ':host{')
-    .replace(/body\{/g, ':host{');
+    .replace(/(?<![.\w#-])body\{/g, ':host{');
 
   panel.innerHTML = '';
   const host = document.createElement('div');

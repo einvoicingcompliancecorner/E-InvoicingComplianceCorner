@@ -5601,6 +5601,76 @@ Static-file-only change (`einvoicing-compliance-tracker.html` only this
 round -- no i18n file changes), no migration -- deploy is a single
 `wrangler deploy` from `site-worker/`.
 
+## 6 Aug 2026 (cont'd, again) — real root cause found for the Education-panel font bug: a regex collision, not a font-loading gap
+
+Dan reported (with the exact quoted text and later the exact `data-i18n` key,
+`sec1.card1.body`) that the card body text on all four Education pages --
+not the headings, which were already confirmed correct -- looked like it
+was rendering in the wrong font when opened as an in-page panel, though it
+looked right on the standalone page. The 5 Aug fix (`PANEL_FONT_IMPORT`,
+see the "Education-panel font bug" entry above) turned out to be treating
+a symptom of a *different*, unconfirmed problem -- this time the actual
+root cause was found and fixed.
+
+Repeated live testing (computed styles, `document.fonts.check()`, canvas
+font-metric comparisons, and a side-by-side standalone-vs-in-panel
+screenshot diff) kept coming back clean: `font-family` was correctly
+`"IBM Plex Sans"` and genuinely loaded in both places. That was true, but
+it was the wrong question -- Dan's report was about the box content, not
+just its font-family, and comparing font-*family* alone missed that
+`font-size` and `color` were also wrong. Dan then pointed to the exact
+`data-i18n` key, which led to inspecting the shadow root's actual injected
+`<style>` content directly (`root.querySelector('style').textContent`)
+rather than trusting `getComputedStyle()` in isolation -- and the
+`.spec-card p.body{font-size:13px; color:#4a4030; ...}` rule (present in
+every education page's source `<style>` block, confirmed via a raw
+`fetch()` of the live file) was simply *missing* from the CSS actually
+injected into the shadow root, even though a sibling rule two lines away
+(`.spec-card h3{...}`) came through fine.
+
+Root cause: every `open*Page()` function (all 7 -- `openDeepDive`,
+`openSourcesPage`, `openMapPage`, `openArchive`, `openEducationPage`,
+`openFeedbackPage`, `openSubscribePage`) rewrites the fetched page's
+top-level `body{...}` element selector to `:host{...}` before injecting it
+into the shadow root, since a real `<body>` element doesn't exist inside a
+shadow tree. Six of the seven did this with
+`.replace(/body\{/g, ':host{')`; the seventh (`openArchive`) did the same
+thing even less safely with a single, non-global
+`.replace('body{', ':host{')`. Both forms match the literal substring
+"body{" *anywhere* in the CSS text, with no check for what precedes it --
+so a class selector like `.spec-card p.body{...}` gets silently mangled
+into `.spec-card p:host{...}`, an invalid selector outside a shadow root's
+own top-level scope that the browser just drops. `font-family` still came
+back correct only because it's an inherited property, falling back to the
+(correctly rewritten) `:host{font-family:'IBM Plex Sans'...}` rule one
+level up -- masking the fact that the more specific, intended rule had
+been silently destroyed. Confirmed live: after manually re-applying a
+corrected version of the CSS to the open panel, `sec1.card1.body`'s
+computed `font-size` went from `16px` (browser default -- the rule was
+gone) to the correct `13px`, and `color` went from an inherited `#241d10`
+to the intended `#4a4030`.
+
+Dan flagged that this exact class of bug had already bitten once before,
+on a country deep-dive card (commit `d35d21a`, "Fix font sizing of
+body-text on Pakistan's compliance-gap card") -- that fix worked around it
+by naming the new class `.body-text` instead of `.body`, which happens to
+dodge the "body{" substring collision without anyone having diagnosed the
+regex itself as the problem. Given the same landmine is still live for any
+class ending in exactly `.body` (or `#some-id-body`, `.foo-body`, etc.),
+fixed the regex itself instead of relying on nobody ever naming a class
+that ends in "body" again: all 7 occurrences now use
+`.replace(/(?<![.\w#-])body\{/g, ':host{')` -- a negative lookbehind that
+only matches a bare `body{` selector (at the start of the stylesheet,
+after whitespace/comma/`}`), not one immediately preceded by `.`, `#`, a
+word character, or `-`. Verified against a battery of cases including the
+four education pages' `.spec-card p.body`, `subscribe.html`'s
+`.benefit-list .b-body` and `.modal-body` (same latent bug, not yet
+reported by Dan but now fixed pre-emptively), and legitimate bare
+`body{`/`html,body{` selectors, which still correctly rewrite to `:host{`.
+
+Static-file-only change (`einvoicing-compliance-tracker.html`), no
+migration -- deploy is a single `wrangler deploy` from `site-worker/`.
+
 ## Open items / next steps
 
 ### Real open work
