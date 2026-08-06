@@ -4893,12 +4893,17 @@ milestones and the ~70 still needing a follow-up search. Verified via full
 in-memory migration replay: 0 new errors, all 121 target rows match
 expected URLs.
 
-**Code complete, deploy pending Dan's confirmation.** Bundled together
-with the runbook-update commit (`b7b3c4b` + `8214e36`) since neither had
-been pushed yet, and delivered to Dan. Full audit findings (all 331
-milestones, both raw batches and the compiled report with content-accuracy
-list) live in Dan's chat history from this session, not yet copied into
-this repo — worth doing if a next session picks up the follow-up pass.
+**Deployed and tested** (confirmed by Dan): migration 406 applied via
+`apply_migrations.py --remote` — pure content `UPDATE`, no static-file or
+Worker redeploy needed. Also confirmed pushed to the canonical GitHub repo
+(`git fetch` against `neworigin/main` shows `3f61922` — the runbook
+commit `b7b3c4b`, migration 406 commit `8214e36`, and this doc commit all
+present). All 121 milestone citation fixes are now live. Full audit
+findings (all 331 milestones, both raw batches and the compiled report
+with the content-accuracy list) live in Dan's chat history from this
+session, not yet copied into this repo — worth doing if a next session
+picks up the follow-up pass (the ~70 unresolved problem milestones plus
+the 49 content-accuracy flags).
 
 ## Open items / next steps
 
