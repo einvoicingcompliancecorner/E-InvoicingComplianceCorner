@@ -5671,6 +5671,102 @@ reported by Dan but now fixed pre-emptively), and legitimate bare
 Static-file-only change (`einvoicing-compliance-tracker.html`), no
 migration -- deploy is a single `wrangler deploy` from `site-worker/`.
 
+## Cross-region coverage evaluated (6 Aug 2026) -- not yet built
+
+Dan asked which additional countries are worth addressing next, without
+specifying a region. Rather than repeat the existing per-region
+evaluations (Middle East, Asia-Pacific, and Americas coverage were each
+already evaluated earlier this project -- see those dated entries above,
+and note the Americas one already has six recommended-but-unbuilt
+candidates: Dominican Republic, Guatemala, Paraguay, Bolivia, Panama, El
+Salvador), this pass live-researched **Europe**, which had never had a
+dedicated coverage evaluation despite being the tracker's largest region
+(26 of 56), plus rechecked whether anything in MENA/Asia-Pacific had
+moved since the last look. Same bar as every prior evaluation: a firm,
+dated, in-force (or imminently in-force) mandate outranks a "discussed
+but no timeline" one.
+
+Ranked findings, folded together with the still-open Americas list into
+one cross-region order:
+
+1. **Serbia (Europe) -- strongest candidate, no caveats.** SEF/e-Faktura
+   has been a mature, mandatory B2B clearance system since 2023 -- one of
+   the most established non-EU CTC mandates on the continent, and a
+   notable, visible gap given how many smaller/thinner European mandates
+   are already tracked. E-delivery notes (e-otpremnica) become mandatory
+   by end of 2026, giving a genuinely live 2026 milestone to anchor a
+   build on, not just historical dates.
+2. **Latvia (Europe) -- strongest candidate, already in effect.**
+   Mandatory e-invoicing and e-reporting took effect **1 January
+   2026** -- already live as of today, not a future date. EU/ViDA-
+   relevant, and a glaring omission for a site whose whole model is
+   "what's the deadline and what do you do about it."
+3. **Kazakhstan -- strongest candidate, already in effect.** B2B
+   e-invoicing became mandatory on the IS ESF portal from **January
+   2026**, expanding to all VAT and select non-VAT payers through the
+   year. A large Central Asian economy with a real, dated, currently-
+   enforced mandate. Flagging the same open question Turkey raised: this
+   tracker's regions are Europe/MENA/Asia-Pacific/Americas, and
+   Kazakhstan doesn't sit cleanly in any of them -- worth confirming
+   with Dan which region it should join before scaffolding (Asia-Pacific
+   is the closest existing bucket, same reasoning that ultimately placed
+   Turkey in Europe by explicit choice rather than assumption).
+4. **Dominican Republic (Americas) -- already the top unbuilt Americas
+   candidate, and still moving.** Carried over from the 4 Aug Americas
+   evaluation; this pass confirmed it's still actively developing news,
+   not stale -- a May 2026 mandatory-registration deadline, since
+   extended six months for MSMEs and unclassified taxpayers to November
+   2026. Real, current, deadline-driven -- exactly this site's content
+   model.
+5. **Bulgaria (Europe) -- real and dated.** SAF-T reporting begins in
+   2026 (already offered to Dan on 5 Aug alongside Uruguay/Costa Rica but
+   not chosen then); B2G e-invoicing already live, B2B plans forming.
+   EU/ViDA context makes this a natural companion story to Latvia's.
+6. **Paraguay (Americas) -- real, dated, actively phasing in.** Carried
+   over from the Americas evaluation; SIFEN already mandatory for
+   government suppliers, with Resolution 52/2026 staging six more
+   taxpayer groups from June 2026 through September 2027 (deadline
+   recently extended in the same window).
+7. **Estonia (Europe) -- real, proposed, EU momentum story.** B2B
+   e-invoicing proposed for 2027; pairs naturally with Latvia and
+   Bulgaria as a "the Baltics and EU periphery are moving" narrative
+   rather than a single isolated country.
+8. **Guatemala (Americas) -- real, enacted, narrower scope.** Carried
+   over from the Americas evaluation; FEL mandatory since 2023 for
+   SAT-designated taxpayer categories, not a universal mandate.
+9. **Qatar (MENA) -- re-checked, status unchanged since the 4 Aug
+   hold-back.** Still only Cabinet-approved draft law and executive
+   regulations (confirmed via EY, KPMG, and vatcalc, all describing the
+   same May 2026 Cabinet approval) -- has not advanced to Shura Council
+   review or the Amir's assent. Same "expected, not yet enacted" tier as
+   before; worth a periodic recheck (this is the second recheck with no
+   material change) rather than building now. Would be a natural third
+   GCC addition alongside UAE and Saudi Arabia once it clears enactment.
+10. **El Salvador / Bolivia / Panama (Americas) -- carried over from the
+    Americas evaluation**, real but individually-noticed (El Salvador)
+    or less crisply sourced on scope/penalties (Bolivia, Panama) than
+    the countries ranked above them.
+11. **Bahrain (MENA) -- re-checked, still not concrete enough.** No
+    confirmed mandate or dates found beyond the NBR's 2023 removal of its
+    prior-approval requirement for voluntary e-invoicing. Unchanged from
+    the 3 Aug hold-back.
+12. **Switzerland, Thailand -- watch-list only, no confirmed mandate.**
+    Switzerland has no B2B clearance mandate on the horizon (eBill/Peppol
+    stay voluntary); Thailand's e-Tax Invoice system was explicitly
+    reconfirmed as still voluntary in July 2026 coverage, with only
+    incentive-based signals toward an eventual mandate. Neither has a
+    real deadline to anchor a deep-dive on yet.
+
+**Recommendation:** Serbia, Latvia, and Kazakhstan first -- all three
+have real, currently-in-force mandates (not future dates) and fill
+genuine, visible gaps (Serbia in an under-covered mature-CTC segment of
+Europe; Latvia and Kazakhstan both live as of this year, making their
+absence the most "site says nothing about a deadline that already
+passed" kind of gap). Dominican Republic and Bulgaria are equally strong
+next picks. Nothing in this list has been built -- this is evaluation
+only, matching the pattern already established for Middle East/Asia-
+Pacific/Americas coverage above.
+
 ## Open items / next steps
 
 ### Real open work
