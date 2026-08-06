@@ -5767,6 +5767,122 @@ next picks. Nothing in this list has been built -- this is evaluation
 only, matching the pattern already established for Middle East/Asia-
 Pacific/Americas coverage above.
 
+## 6 Aug 2026 (cont'd, again) — Serbia (#57) and Latvia (#58) built; a
+## long-standing "48 countries" static/D1 drift bug found and fixed
+
+Per Dan's "Yes, please do serbia and latvia," both were built following
+`ADDING-A-COUNTRY.md`'s runbook, using Slovenia/Iceland (412-424) as the
+structural template. Migrations 425-436, all replay-validated (see
+below).
+
+**Serbia (migrations 425-426, 428, 430, 433, 435).** A mature,
+centralized-clearance regime, live since 2023 -- deliberately researched
+*deeper* than the original evaluation pass, not just re-confirmed.
+Sourced via Serbia's own Legal Information System
+(pravno-informacioni-sistem.rs), Ministry of Finance legal-text pages
+(mfin.gov.rs), and the official SEF portal (efaktura.gov.rs), cross-
+checked against Paragraf.rs (a reputable secondary legal compiler,
+flagged as such rather than gazette-primary) and several independent
+advisories. Key finding beyond the original evaluation: the "e-delivery
+notes mandatory by end of 2026" detail flagged there turns out to
+conflate two *distinct* developments -- the e-otpremnica (e-delivery
+note) system's own two-phase rollout (Phase 1: public sector/excise
+goods/carriers, live 1 Jan 2026, grace period to 30 Jun 2026; Phase 2:
+general private-sector B2B, 1 Oct 2027) is a separate law
+(Zakon o elektronskim otpremnicama) from a further "expanded B2B"
+e-invoicing reform package (new SEF fields, stricter validation, new
+penalty regime) that secondary sources (Fiscal Solutions, citing an
+unlocated primary MoF announcement) describe as postponed to "end of
+2026" -- kept as two distinct, clearly-flagged items on the deep dive
+rather than merged into one. 6 milestones, 5 stats, 7 cards (2
+file_format, 2 scope_transmission, 3 penalties_related -- including an
+explicit "what we could not confirm" card), 5 steps, 3 portals, 1 story
+(the e-otpremnica Phase 1 launch), 3 tracking sources -- all in
+EN/ES/DE/FR.
+
+**Latvia (migrations 427, 429, 431, 434, 436).** **Important correction
+to the prior evaluation pass**: that pass assumed Latvia's B2B mandate
+took effect 1 Jan 2026. Live re-research found this is now out of date
+-- the Saeima adopted amendments on 5 June 2025 postponing the B2B
+go-live to **1 January 2028**, confirmed by 5+ independent sources
+including a 22 July 2026 update, with no further delay reported since.
+What's actually live: B2G e-invoicing (mandatory since 1 Jan 2025) and
+mandatory e-invoice data-reporting to VID for B2G/G2G/G2B (since 1 Jan
+2026), plus a voluntary B2B phase open since 30 Mar 2026 via the free
+eAddress platform. The European Commission's own Latvia eInvoicing
+country factsheet has **not** been updated since the postponement and
+still shows a 1 Jan 2026 B2B date -- this is called out explicitly on
+the deep dive, in the tracking-sources description for that factsheet,
+and as the entire subject of the launch story, rather than silently
+worked around. One item flagged unverified: Cabinet Regulation No. 749's
+full text (likumi.lv fetch blocked in this session) was confirmed only
+via a secondary summary (numbero.app), not read directly -- flagged on
+the relevant milestone and card. 7 milestones, 5 stats, 6 cards (2
+file_format, 2 scope_transmission, 2 penalties_related -- one of which
+states plainly that no dedicated e-invoicing penalty schedule has been
+published yet, rather than inventing one), 5 steps, 3 portals, 1 story
+(the postponement itself), 3 tracking sources (including the EC
+factsheet, deliberately kept but caveated rather than dropped) -- all in
+EN/ES/DE/FR.
+
+**Phase 2/3 static-file edits:** `countries.js` (Europe array) and
+`shared/deep-dive-render.mjs` (`COUNTRY_DEEP_DIVE_SLUGS` +
+`COUNTRY_NAME_TRANSLATIONS` es/de/fr) updated for both countries. The
+Map needs no `TOPO_NAME_OVERRIDES`/`MARKER_LONLAT_OVERRIDES` -- both
+"Serbia" and "Latvia" exist verbatim in `vendor/countries-50m.json`'s
+topology, confirmed by direct lookup.
+
+**A second, unplanned fix, per Dan's mid-build flag**: Dan noticed the
+tracker's own header paragraph still said "48 countries" despite the
+site being well past that count. Investigating turned up something
+worse than a one-line staleness: **migration 424 (5 Aug->6 Aug) had
+already correctly updated D1's `translations` table from 54 to 56**,
+but the *static* `i18n/*.json` mirror files that `site-worker` actually
+serves -- plus meta descriptions and `data-i18n` fallback text across 7
+HTML files -- were never regenerated to match, and were still showing
+**48**, several country-additions stale (not just one). `generate_files.py`
+(the documented D1-to-static regenerator) evidently hasn't been run
+against live D1 in a long time, so D1 and the deployed static assets had
+quietly diverged. Found via a targeted structural scan (not a blind
+`grep 48`, to avoid false positives like `#1c2c48` hex colors, SVG path
+coordinates, and `gap:48px` CSS) across all 31 affected files: `i18n/en
+|es|de|fr.json` (`brand.description`, plus `countryNames` additions for
+Serbia/Latvia), all 16 `i18n/{lang}-edu-*.json` files (`statusBanner
+.text`, `sec#.card3.body`), all 4 `i18n/{lang}-subscribe.json` files
+(`benefits.intro`, `benefits.item2.body`, `card.countriesHint`,
+`confirm.fullDigest`), and 7 HTML files (`einvoicing-compliance-
+tracker.html`'s 3 meta tags + `brand-sub` paragraph, `index.html`'s meta
+tag, `subscribe.html`'s 3 meta tags + 3 body paragraphs + the raw `48`
+stat digit, and the 4 education pages' `sec#.card3.body` fallback
+paragraphs and, for certified-providers, its `statusBanner.text`). All
+corrected directly to **58**, reusing migration 424's already-good
+wording (just swapping the digits) rather than re-deriving new prose.
+Migration 432 keeps D1 in sync at 58, continuing the exact `UPDATE ...
+WHERE ... AND value = '<old text>'` pattern migration 424 established.
+**Recommend running `generate_files.py --remote` after every future
+country add's migrations are applied, and diffing its output against
+`i18n/` before shipping** -- that's the gap that let this drift happen
+silently across several country additions.
+
+**Verification:** `apply_migrations.py`'s own `validate_replay()` run
+directly (no wrangler/network needed) against the full 436-file chain --
+clean, only the 4 pre-existing documented errors. A deeper structural
+replay (schema + every migration into an in-memory DB, then querying
+row counts) confirmed: both countries' full row sets (milestones,
+deep-dive pages/stats/cards/steps/portals, stories, tracking sources)
+have exactly the 4 expected languages (en/es/de/fr) on every
+translatable row, no orphaned or missing translations; total non-EU
+`countries` count is exactly 58. Also grepped the full repo post-fix to
+confirm zero remaining stale country-count references anywhere in
+`i18n/*.json` or `*.html`.
+
+**Status: built, replay-validated, not yet shipped.** Needs, from Dan's
+own machine: `python3 apply_migrations.py --remote` (from
+`members-worker/migrations/`) to apply migrations 425-432 (D1), then
+`wrangler deploy` from `site-worker/` to ship the static-asset edits
+(`countries.js`, `shared/deep-dive-render.mjs`, all edited `i18n/*.json`
+and `*.html` files). Jurisdiction count goes from 56 to 58.
+
 ## Open items / next steps
 
 ### Real open work
