@@ -4743,6 +4743,90 @@ shows `HEAD -> main, origin/main, origin/HEAD` all aligned at
 `69d35a7`, cross-checked via `git ls-remote`/`git fetch` against
 `neworigin/main`.
 
+### 6 Aug 2026 — Full citation audit across all 140 newsletter stories; 99 source_url fixes (migration 405)
+
+Dan asked about the Hungary `2026-08-04-hungary-september-deadline-and-2030-floor`
+story specifically — its `source_url` was the generic EU Commission ViDA
+overview page, which never mentions Hungary, NAV, or any of the story's
+actual claims. Verified the story's underlying content was accurate
+(corroborated the 1 Sept 2026 NAV receipt-data-reporting deadline, the
+3-day reporting window, and the 1 Jul 2028 e-cash-register transition
+against multiple live sources, including an official NAV press release),
+but the citation itself was wrong. Dan then asked whether this was
+systemic across the whole newsletter archive, and — given "the site
+loses credibility if [the citation isn't relevant]" — asked for a full
+audit rather than just the one fix.
+
+**Method:** replayed the full migration chain in-memory, dumped all 140
+published `stories` rows (id, date, countries, source_url, plain-text
+article body) to JSON, split into 10 batches of 14, and dispatched 10
+parallel general-purpose subagents (via the `Agent` tool, each with
+`WebFetch`/`WebSearch`) with a shared brief: identify the story's
+specific, checkable claims (dates, legislative status, named
+institutions, figures, quotes), fetch the cited source, judge whether it
+substantively supports those claims (not just "same general topic"), and
+for anything inadequate, search for a better replacement — official
+government pages preferred, reputable compliance-industry sources
+(VATupdate, Sovos, EDICOM, KPMG, etc.) as fallback.
+
+**Result: 40 ADEQUATE, 96 INADEQUATE, 4 MISSING (no source_url at all)**
+— 100 of 140 stories (71%) had a real citation problem. The dominant
+failure pattern: a story cites a country's generic tax-authority
+homepage or landing page instead of the actual dated press release,
+resolution, or article containing the claims being reported — the exact
+Hungary pattern, just far more widespread. It also affected the two
+other stories built on the same "whatever the country decides
+domestically, the 2030 ViDA floor still applies regardless" template —
+Cyprus's and Czech Republic's own versions had the identical problem
+(same generic ViDA page, country-specific claims uncovered).
+
+**Fixing it:** parsed the structured audit output, then did targeted
+follow-up research on the hardest cases before trusting any suggested
+replacement — direct `WebFetch` verification for Hungary (confirmed via
+search that the NAV press release is genuinely dated 5 Aug 2026, not
+an ambiguous older document — swapped from the agent's VATupdate
+suggestion to this official NAV source), Cyprus (confirmed the EU
+Digital Building Blocks Cyprus country sheet substantively covers the
+2024 mandate-postponement, gov.cy portal, and no-B2B-mandate claims),
+Czech Republic (reused the same expats.cz EET 2.0 article already
+verified for `2026-07-17-czech-eet2-passes-lower-house`, since it
+directly covers the Senate/President Pavel status the story needed),
+Canada's `2026-02-01-canada-provincial-federal-exploration` (no clean
+single replacement exists; used a Sovos page that covers the CRA task
+force but not the Quebec/OECD specifics — a partial improvement, noted
+as such), and Ecuador's `2024-11-05-ecuador-emergency-relaxation`
+(found the actual official SRI boletín PDF, Boletín 061, by name —
+consistent with this project's existing precedent of citing SRI PDFs
+Ecuador's site rejects fetching directly). Also spot-verified a sample
+of ~10 other agent-suggested replacements directly via `WebFetch`
+before trusting the rest; one (India's suggested `gimbooks.com` page for
+`2026-06-15-india-threshold-reduction-discussion`) turned out not to
+support the claim at all, and two more searches found no corroboration
+anywhere for that story's core claim (a GST Council discussion of
+cutting the e-invoicing threshold to ₹2-3 crore) — **deliberately left
+unfixed and flagged**, since this is a content-accuracy question for Dan
+to decide (trim/remove the claim, or a source exists that wasn't found),
+not a citation swap.
+
+**Migration 405** (`UPDATE stories SET source_url = ... WHERE id = ...`,
+99 statements, pure content update, no schema change) covers all 99
+resolvable fixes: the 96 INADEQUATE stories minus the 1 India exception,
+plus the 4 MISSING (including two multi-country roundup/editorial
+pieces — `belgium-croatia-january-check-in` and
+`2027-wave-multi-country-outlook` — that don't make new checkable
+claims so much as reference facts already covered elsewhere on the
+site; gave both a general "further reading" link to a VATupdate
+worldwide-mandates roundup rather than force-fitting a claim-specific
+citation that doesn't exist for an advisory piece). Verified via full
+405-file in-memory replay (only the 4 documented pre-existing errors)
+plus a structural check confirming every one of the 99 target rows
+updated to its intended URL with zero mismatches and zero remaining
+null/empty `source_url` values sitewide.
+
+**Deploy pending Dan's confirmation** — migration 405 is committed and
+bundled, not yet applied to live D1. Pure content `UPDATE`, no
+static-file or Worker redeploy needed once applied.
+
 ## Open items / next steps
 
 ### Real open work
