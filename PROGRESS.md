@@ -5165,6 +5165,86 @@ Procurement Authority as of 1 July 2026 — the stored URL is still live
 and correct today, just worth revisiting if that transfer becomes more
 complete.
 
+### 6 Aug 2026 (cont'd) — Slovenia and Iceland evaluated (both good candidates, neither built yet)
+
+Dan asked for an evaluation of Slovenia and Iceland, explicitly stressing
+sourcing accuracy given the citation-audit work that just wrapped up (405-
+411). Dispatched two parallel research agents with the same discipline
+established across this whole project: live search only, every claim
+traced to a primary/official source, unsourced vendor-blog claims
+explicitly flagged rather than repeated as fact. Independently
+re-verified the two anchor legal citations myself afterward (Slovenia's
+ZIERDED gazette text, Iceland's Regulation 44/2019) via direct fetch —
+both confirmed exactly as the agents reported.
+
+**Slovenia — strong add-now candidate, no real caveats on the core
+facts.** Two-tier legal basis, both primary-sourced:
+- **B2G**: ZOPSPU-1, in force since 1 Jan 2015 (long-standing, not new).
+- **B2B**: **ZIERDED** (Zakon o izmenjavi elektronskih računov in drugih
+  elektronskih dokumentov) — passed by parliament 23 Oct 2025, published
+  in the Official Gazette **Uradni list RS, št. 85/2025** (6 Nov 2025).
+  This is enacted law, not a draft — independently confirmed via direct
+  fetch of the gazette text. Effective dates: the certified "e-path"
+  provider regime from **1 April 2027**, the core mandatory B2B exchange
+  obligation from **1 January 2028**. ZIERDED Art. 1 explicitly
+  transposes elements of the EU's ViDA directive (2025/516).
+- **Penalties** (also independently confirmed): Art. 24 — €1,000-3,000
+  for legal entities, €500-1,500 for sole proprietors, €100-500 for a
+  responsible person, for core exchange violations; Art. 25 sets a
+  separate, lower range for consumer-related violations.
+- **Standard**: e-SLOG 2.0 (EN 16931-compliant); Peppol is one of three
+  permitted transmission channels (alongside certified e-path providers
+  and direct system-to-system links) per ZIERDED Art. 9.
+- **One real gap, flagged rather than papered over**: no source confirms
+  Slovenia has a formally registered OpenPeppol "Peppol Authority" —
+  Slovenia doesn't appear on OpenPeppol's own current authorities list,
+  and UJP's government page doesn't claim that title. If built, the
+  deep-dive should describe UJP's actual role (central B2G hub, one of
+  the accepted exchange channels) without asserting formal Peppol
+  Authority status. Two secondary-only claims (ZZI operating an
+  "Exchange Hub"; FURS offering a "miniBlagajna" tool) weren't
+  independently corroborated on a primary page and should be re-verified
+  or dropped if built, not carried over from vendor summaries.
+- Earlier vendor commentary (2024–early 2025, from Marosa/Sovos/Comarch/
+  Taxually/RTC/VATupdate) tracked draft 2026/2027 dates that the final
+  enacted law superseded — a concrete example of exactly the "draft date
+  vs. enacted date" trap this project's sourcing standard exists to
+  catch; only the Official Gazette text should be cited for the date.
+
+**Iceland — real but narrow; a defensible add, not a compelling one.**
+- **B2G only, and not new.** Regulation 44/2019 (independently confirmed
+  via direct fetch) requires public bodies to receive EN 16931-compliant
+  e-invoices — state institutions by 18 Apr 2019, municipalities/public
+  enterprises by 18 Apr 2020. Applies via EEA incorporation of EU
+  Directive 2014/55/EU (Iceland is EEA, not EU). Fjársýsla ríkisins
+  (Financial Management Authority) has been the registered OpenPeppol
+  Peppol Authority since 2020 — confirmed on OpenPeppol's own country
+  profile, a real primary source this time.
+- **No B2B mandate exists — not enacted, not drafted, not even
+  publicly discussed with a date.** The EU Commission's own 2025 country
+  sheet for Iceland is self-flagged "NO VERIFICATION" and lists no
+  2024-2026 developments.
+- **No penalty regime found anywhere** — the EU Commission's own page
+  states this explicitly. Any deep-dive would have to say "no statutory
+  penalty found," not invent a figure.
+- **A widely-repeated claim explicitly does NOT hold up**: several
+  vendor blogs (CentaraIQ, ValidateFin, Basware, e-invoice.app) describe
+  a "1 July 2026" deadline for Iceland to retire the older BII format in
+  favor of Peppol BIS 3.0. None cite an actual Icelandic legal or
+  regulatory source — the agent traced it to unsourced vendor inference
+  and could not corroborate it against Fjársýslan, island.is,
+  Stjórnarráðið, or OpenPeppol. **This should not be used** if Iceland
+  is built — exactly the class of claim the site's audit work this
+  session was built to catch before it ships, not after.
+
+**Recommendation**: build Slovenia — it clears the bar the same way
+Jordan/South Korea/Argentina did (enacted law, dated phases, specific
+penalty figures, primary-sourced throughout). Iceland is legitimate but
+thin: real B2G-only mandate, nothing changing, no penalties, no B2B
+story — comparable to other mature/static B2G-only entries already on
+the tracker, worth adding for completeness rather than urgency. Neither
+has been built yet — this is evaluation only, awaiting Dan's go-ahead.
+
 ## Open items / next steps
 
 ### Real open work
