@@ -5098,11 +5098,13 @@ structural checks confirm the milestone count dropped from 331 to 328
 ids, and every updated/merged field matches the expected value across
 all 4 languages.
 
-Not yet deployed — awaiting Dan's `apply_migrations.py --remote` run.
-This closes out the full citation and content-accuracy audit thread that
-began with the Hungary story flag: all 140 stories and all 331 (now 328)
-milestones have been through the same audit-and-fix cycle, and every
-open item from that work now has a resolution.
+**Deployed and tested** (confirmed by Dan): migration 410 applied via
+`apply_migrations.py --remote`, clean run. Also confirmed pushed to the
+canonical GitHub repo — `git fetch` against `neworigin/main` shows
+`97f3e24`. This closes out the full citation and content-accuracy audit
+thread that began with the Hungary story flag: all 140 stories and all
+331 (now 328) milestones have been through the same audit-and-fix cycle,
+and every open item from that work now has a resolution.
 
 ## Open items / next steps
 
