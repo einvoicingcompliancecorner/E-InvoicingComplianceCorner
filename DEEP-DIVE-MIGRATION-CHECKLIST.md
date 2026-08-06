@@ -10,6 +10,13 @@ looked closely at the rendered page, not because an automated check found them.
 Update this file whenever a new country reveals a new pattern or a new bug
 gets caught. It should get more complete over time, not just longer.
 
+**Sourcing note (added 6 Aug 2026):** `deep_dive_stats`, `deep_dive_cards`,
+`deep_dive_steps`, and `deep_dive_penalty_rows` have no `source_url` column
+in the schema yet, unlike `milestones` and `stories`. Until that's added,
+record where each figure/claim actually came from in the migration file's
+own comments or the country's PROGRESS.md entry — see `ADDING-A-COUNTRY.md`'s
+"Sourcing standard" section for the full principle and why it matters.
+
 ---
 
 ## 1. Content extraction (per country)

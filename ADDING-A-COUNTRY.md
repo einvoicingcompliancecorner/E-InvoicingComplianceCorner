@@ -39,6 +39,58 @@ Decide up front:
 
 ---
 
+## Sourcing standard (added 6 Aug 2026 — read this before writing content)
+
+A guiding principle of this site: it unifies verified information, and
+every article and every piece of information is sourced from authorised
+sources. This is not optional polish — it's why the site is trustworthy.
+
+**A citation must specifically support the claim it's attached to — not
+just be "about the same country" or "the right government's homepage."**
+A citation audit run 6 Aug 2026 found 100 of 140 published newsletter
+stories (71%) citing a source that didn't actually cover the claim being
+made — almost always a country's generic tax-authority landing page
+cited instead of the actual dated press release, resolution, or article
+that contains the date/figure/quote in question. A reader clicking
+through got a page that never mentions what they just read. Fixed in
+migration 405 (see `PROGRESS.md`'s 6 Aug 2026 entry for the full audit
+and methodology) — but the real fix is not writing the problem in the
+first place:
+
+- Before setting a `source_url` (on a milestone, a story, or any future
+  sourced content type), open the link and confirm it actually contains
+  the specific fact you're citing it for — the date, the figure, the
+  legal citation, the quote. "Same topic, same country" is not enough.
+- A country's generic homepage or landing page is almost never the
+  right citation for a specific, dated claim. Prefer the actual press
+  release, the specific resolution/decree/law text, or a dated news
+  article that names the fact directly.
+- When several claims in one piece of content come from different
+  places (e.g. a milestone's headline date from an official gazette, a
+  penalty figure from a secondary compliance source), and the schema
+  only has room for one `source_url`, cite the source that covers the
+  more specific/harder-to-verify claim, not the more general one — the
+  general EU-wide facts (like the 2030 ViDA floor) are easy for a
+  reader to verify elsewhere; a country-specific legislative-status
+  detail is not.
+- Official government sources are preferred where they exist and are
+  fetchable; reputable compliance-industry sources (VATupdate, Sovos,
+  EDICOM, KPMG's tax-news flashes, national chambers of commerce, etc.)
+  are a legitimate fallback when no official page covers the specific
+  claim, or when the official page can't be verified from this sandbox
+  (flag that explicitly rather than silently citing something weaker).
+- **Deep-dive content currently has nowhere to put a citation at all.**
+  `deep_dive_stats`, `deep_dive_cards`, `deep_dive_steps`, and
+  `deep_dive_penalty_rows` have no `source_url` column in the schema —
+  unlike `milestones` and `stories`, which both do. Until that schema
+  gap is closed, keep a clear internal record (in the migration file's
+  own comments, or in PROGRESS.md's build entry for that country) of
+  where each card/stat/penalty figure actually came from, the same way
+  past country builds already did informally — so a citation can be
+  retrofitted later without re-researching from scratch.
+
+---
+
 ## Phase 1 — D1 migrations (the bulk of the work)
 
 **Start with the scaffolder** — it generates steps 1 and 2 below from a
@@ -79,7 +131,12 @@ non-negotiable, now automated rather than remembered.
 
 2. **Milestones + translations** (tracker board and deep-dive timeline)
    - `milestones`: `id` (short country prefix, e.g. `qa-b2b-wave1`),
-     `country_id`, `date`, `anchor`, `source_url`, **`on_tracker`**
+     `country_id`, `date`, `anchor`, `source_url` (see "Sourcing
+     standard" above — this must specifically support the milestone's
+     date/scope claim, not just be the country's tax authority in
+     general; 47 of 331 existing milestones had no `source_url` at all
+     as of the 6 Aug 2026 audit, before even checking whether the
+     populated ones were adequate), **`on_tracker`**
      (1 = shows on the main board), **`portals`** (JSON array of
      `{label,url}` — every current board entry has at least one),
      **`confidence`** (`'expected'` for announced-but-unlegislated
@@ -308,6 +365,9 @@ mind autoincrement-PK tables where a re-run genuinely duplicates rows
       three times; check any *new* counting logic too, not just text.
 - [ ] Board milestone cards translate when switching language (proves
       the `milestone_translations` rows landed)
+- [ ] Every `source_url` you set (milestones, story) actually supports
+      the specific claim it's attached to — open the link and confirm,
+      don't just check that it resolves. See "Sourcing standard" above.
 - [ ] The new country appears on **The Map** (`/map`, and the tracker's
       Resources → The Map in-page panel), in the right region, with a
       status that matches its real-world mandate state — this is
