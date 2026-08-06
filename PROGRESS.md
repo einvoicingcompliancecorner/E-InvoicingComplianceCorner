@@ -5388,14 +5388,12 @@ complete.
    entries above) — every country added this session is now live.
    Uruguay, Costa Rica, and Ecuador are the next recommended
    additions; ready to scaffold whenever Dan wants to proceed.
-2. **Tracking-source URL audit, continued** — ~40 of 54 sources not
-   yet verified for whether they'll ever actually surface real news.
-   Two rounds done (Brazil/Australia/Ireland/Poland/Saudi
-   Arabia/Portugal fixed; Chile/Romania/Malaysia checked, correctly
-   left as-is). Genuinely slow, real-fetch work — see the dated
-   entries above for the method and the near-misses to avoid
-   repeating (a page can look exactly right by title and still have
-   silently stopped being updated years ago; always verify live).
+2. ~~**Tracking-source URL audit, continued**~~ — **done 6 Aug 2026**
+   (migration 411): all 101 `tracking_sources` + 81 `deep_dive_portals`
+   rows (182 URLs total, every one of them, not just the ~40 this item
+   used to flag) checked for both link-liveness and country-match via
+   12 parallel agents. Zero country mismatches; 6 dead links found and
+   fixed, all independently re-verified. See the dated entry above.
 3. ~~**Translation frameworks for the remaining static pages**~~ —
    evaluated 4 August 2026: of 10 static HTML pages, 8 were already
    fully wired into i18n; privacy-policy.html was the one real gap
