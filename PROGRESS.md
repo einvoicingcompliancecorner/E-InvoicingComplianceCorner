@@ -5051,6 +5051,59 @@ The four open items from migration 408 (`ie-phase1-criteria-reconfirmed`,
 `uk-nhs-peppol`, and the two duplicate-milestone pairs) remain
 outstanding — unaffected by this translation sync.
 
+### 6 Aug 2026 (cont'd) — Dan's decisions on the 4 outstanding audit items (migration 410)
+
+Dan resolved all four open items from migration 408 in one pass:
+
+- **`ie-phase1-criteria-reconfirmed`**: Dan supplied a real Revenue.ie
+  source — the VAT Modernisation "large corporates" guidance page. Fetched
+  it directly: published 20 Jul 2026, it defines Phase 1 as VAT-registered
+  businesses managed by Revenue's Large Corporates Division, established
+  or with a fixed establishment in Ireland, who must send e-invoices to
+  Irish business customers and report a data subset to Revenue from
+  go-live (1 Nov 2028) — with all Irish businesses, regardless of size,
+  required to be able to receive structured e-invoices from that date.
+  Nothing on the page supports the old "Revenue restates the criteria
+  ~8 months after the initial confirmation" framing (there's already a
+  distinct, separately-cited `ie-phase1-criteria-2026` milestone for the
+  actual 10 Feb 2026 criteria confirmation — this page is later and more
+  detailed, not a restatement of the same thing). Rewrote system/desc (all
+  4 languages) to describe what the page actually says, and corrected the
+  date from 2 Oct 2026 to 20 Jul 2026 to match its real publish date.
+- **`uk-nhs-peppol`**: removed entirely, per Dan's call — the 2018/2019
+  date was genuinely unresolvable after real search effort, and Dan chose
+  removal over carrying an uncertain citation. Deleted the `milestones`
+  row and all 4 `milestone_translations` rows.
+- **`ca-cra-research-2018` merged into `ca-watch`**: both covered the same
+  2021 CRA e-invoicing feasibility study. Rather than just delete the
+  duplicate and lose the "preliminary research began January 2021" detail
+  the audit had surfaced, folded that fact into `ca-watch`'s desc (all 4
+  languages) — it now reads "began preliminary feasibility research in
+  January 2021, followed by broader stakeholder research..." — then
+  deleted `ca-cra-research-2018`.
+- **`au-default-2025` merged into `au-automate`**: both had ended up
+  describing the same December 2026 ATO reform once migration 408
+  corrected `au-default-2025`'s date to match the only corroborated
+  sources. `au-automate`'s system/desc (all 4 languages) now cover both
+  aspects — e-invoicing becoming the default exchange method *and* the
+  mandatory automated-processing/quarterly-reporting requirement — then
+  deleted `au-default-2025`.
+
+**Migration 410**: 1 `UPDATE milestones` (Ireland date/source), 12
+`UPDATE milestone_translations` (3 milestones × 4 languages), 3 `DELETE
+FROM milestones` + 3 `DELETE FROM milestone_translations` (the removed/
+merged-away ids). Verified via full in-memory replay: 0 new errors;
+structural checks confirm the milestone count dropped from 331 to 328
+(3 removed), zero orphaned `milestone_translations` rows for the removed
+ids, and every updated/merged field matches the expected value across
+all 4 languages.
+
+Not yet deployed — awaiting Dan's `apply_migrations.py --remote` run.
+This closes out the full citation and content-accuracy audit thread that
+began with the Hungary story flag: all 140 stories and all 331 (now 328)
+milestones have been through the same audit-and-fix cycle, and every
+open item from that work now has a resolution.
+
 ## Open items / next steps
 
 ### Real open work
