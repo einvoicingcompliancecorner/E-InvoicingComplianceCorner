@@ -5942,7 +5942,7 @@ pre-existing Education-menu link to the same page.
 pure static-asset change, no D1 migration needed. The Navigation Help
 pop-out, the new carousel slide, and the renamed heading are all live.
 
-## 6 Aug 2026 (cont'd, again) — Kazakhstan (#59) and Dominican Republic (#60) built; "The Map" explainer added to Navigation Help (code complete, deploy pending)
+## 6 Aug 2026 (cont'd, again) — Kazakhstan (#59) and Dominican Republic (#60) built; "The Map" explainer added to Navigation Help (deployed & confirmed live)
 
 Two new countries at Dan's request — "Kazakhstan under Asia-Pacific on
 the map, and grouping" plus Dominican Republic — and a fifth Navigation
@@ -6079,11 +6079,18 @@ has at least one portal, and the site's own counting rule
 (`slug IS NOT NULL AND in_picker = 1`, excluding the EU) returns exactly
 60. `node --check` on the tracker's extracted inline script: 0 errors.
 
-**Not yet deployed** — this is code-complete, pending Dan pulling,
-applying migrations 437-444 with `apply_migrations.py --remote`, and
-`wrangler deploy` on both Workers plus site-worker for the static-file
-edits (countries.js, deep-dive-render.mjs, i18n, the tracker HTML, and
-the jurisdiction-count static edits).
+**Deployed and confirmed live.** Dan pulled, ran
+`apply_migrations.py --remote` (all 12 migrations, 437-448, applied
+clean after working through a Cloudflare OAuth token issue —
+`wrangler whoami` showed a valid session but the live API calls were
+hitting a stale-token 7403; a full `wrangler logout`/`login`
+re-authentication cycle cleared it, consistent with this project's
+prior Indonesia/Japan precedent for the same class of issue), then
+`wrangler deploy` for site-worker. Dan confirmed: "there were no
+errors this time applying migrations, and deploy successfully."
+Kazakhstan (#59) and Dominican Republic (#60) are live on the tracker,
+map, and deep-dive pages, and the 5th Navigation Help tip-card
+explaining The Map is live.
 
 ## Open items / next steps
 
@@ -6097,16 +6104,17 @@ the jurisdiction-count static edits).
    and Iceland, and now Serbia and Latvia too (see the entry above), are
    also **confirmed deployed** — Dan confirmed both the
    migrations and the `site-worker` deploy went out for each, and all
-   four countries appear live on the site, along with the corrected
-   58-country header text. Every country added this project's history
-   (through Latvia, #58) is now live. Myanmar was evaluated and held back
+   four countries appear live on the site. Kazakhstan (#59) and
+   Dominican Republic (#60) (see the entry above) are also **confirmed
+   deployed**, along with the corrected 60-country header text. Every
+   country added this project's history (through Dominican Republic,
+   #60) is now live. Myanmar was evaluated and held back
    (no real mandate found). Qatar
    was evaluated and held back at Dan's choice (thinner than first
    assessed). Still not tracked in Europe: Bulgaria, Estonia,
    Lithuania, Malta, Liechtenstein. Still not tracked in the Americas:
-   Dominican Republic, Guatemala, Paraguay, Bolivia, Panama,
-   El Salvador. The scaffolder + runner make each addition a fraction
-   of the old effort.
+   Guatemala, Paraguay, Bolivia, Panama, El Salvador. The scaffolder
+   + runner make each addition a fraction of the old effort.
 
    **Middle East coverage evaluated (3 August 2026).** Dan asked for
    an assessment of which additional Middle Eastern countries are
