@@ -5155,12 +5155,15 @@ replay: 0 new errors, all 8 rows match expected values, row counts
 unchanged (101 tracking_sources, 81 deep_dive_portals — no rows added
 or removed, URL-only changes).
 
-Not yet deployed — awaiting Dan's `apply_migrations.py --remote` run.
-One item flagged for awareness, not action: Sweden's DIGG page itself
-notes some Peppol/e-commerce operational responsibilities transferred to
-the Swedish Procurement Authority as of 1 July 2026 — the stored URL is
-still live and correct today, just worth revisiting if that transfer
-becomes more complete.
+**Deployed and tested** (confirmed by Dan): migration 411 applied via
+`apply_migrations.py --remote`, clean run. Also confirmed pushed to the
+canonical GitHub repo — `git fetch` against `neworigin/main` shows
+`8ba8888`. All 8 link fixes are now live. One item flagged for
+awareness, not action: Sweden's DIGG page itself notes some Peppol/
+e-commerce operational responsibilities transferred to the Swedish
+Procurement Authority as of 1 July 2026 — the stored URL is still live
+and correct today, just worth revisiting if that transfer becomes more
+complete.
 
 ## Open items / next steps
 
