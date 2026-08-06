@@ -5245,7 +5245,7 @@ story — comparable to other mature/static B2G-only entries already on
 the tracker, worth adding for completeness rather than urgency. Neither
 has been built yet — this is evaluation only, awaiting Dan's go-ahead.
 
-## 6 Aug 2026 (cont'd, again) — Slovenia and Iceland built, awaiting deploy
+## 6 Aug 2026 (cont'd, again) — Slovenia and Iceland built, deployed & confirmed live
 
 Dan authorized building both countries evaluated earlier today ("Please
 build both - Iceland can appear as B2G only in the map"). Built following
@@ -5339,6 +5339,9 @@ is not sufficient by itself:
    files) so the new countries appear on the subscribe page, deep-dive
    routing, and translated country names.
 
+Both steps confirmed done by Dan the same day — Slovenia and Iceland
+are live on the site.
+
 Not yet done, pending a live D1 connection: running
 `generate_files.py --remote` + `compare_generated.py` to confirm the
 by-hand i18n edits above match what the generator itself would produce
@@ -5419,12 +5422,13 @@ unbuilt in the real site pending that instruction.
    Jordan, Israel, South Korea, Vietnam, Turkey, Czech Republic,
    Argentina, Colombia, Philippines, Taiwan, Hungary (#49), Indonesia
    (#50), Japan (#51), Pakistan (#52), Ecuador (#53), Uruguay (#54),
-   and Costa Rica (#55) are all confirmed deployed and tested — every
-   country added this project's history (through Costa Rica) is now
-   live. Slovenia and Iceland (built 6 Aug 2026, see the entry above)
-   are ready but **not yet confirmed deployed** — pending Dan pulling,
-   pushing, applying the migrations, and redeploying `site-worker`.
-   Myanmar was evaluated and held back (no real mandate found). Qatar
+   and Costa Rica (#55) are all confirmed deployed and tested. Slovenia
+   and Iceland (built 6 Aug 2026, see the entry above) are now also
+   **confirmed deployed** — Dan confirmed both the migrations and the
+   `site-worker` deploy went out, and both countries appear live on the
+   site. Every country added this project's history (through Iceland,
+   #57) is now live. Myanmar was evaluated and held back (no real
+   mandate found). Qatar
    was evaluated and held back at Dan's choice (thinner than first
    assessed). Still not tracked in Europe: Bulgaria, Estonia, Latvia,
    Lithuania, Malta, Liechtenstein. Still not tracked in the Americas:
