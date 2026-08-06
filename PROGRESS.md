@@ -4833,6 +4833,73 @@ citations are now live; the one deliberately-unfixed India story
 (`2026-06-15-india-threshold-reduction-discussion`) still needs Dan's
 call on the underlying claim.
 
+### 6 Aug 2026 (cont'd) — Sourcing standard added to runbooks; full milestones citation audit; migration 406 (121 fixes)
+
+Following Dan's request to make sourcing integrity "a priority for future
+work" and to scope out where else audits are needed, two things happened
+in sequence:
+
+**Runbook update** (commit `b7b3c4b`): added an explicit "Sourcing
+standard" section to `ADDING-A-COUNTRY.md` (between "Before you start"
+and "Phase 1"), stating the guiding principle, citing the 71%/100-of-140
+story-audit statistic, and giving 5 concrete rules (open the link and
+confirm; generic homepages are inadequate; prefer official over
+compliance-industry sources; cite the harder-to-verify claim when one
+`source_url` covers several; keep informal records for deep-dive content
+until the schema has a citation column). Also updated Phase 1 step 2
+(milestones) to flag that 47 of 331 existing milestones had no
+`source_url` at all as of this audit, and added a Phase 5 testing-checklist
+item requiring every `source_url` to be opened and confirmed, not just
+resolved. `DEEP-DIVE-MIGRATION-CHECKLIST.md` got a matching "Sourcing
+note" flagging the missing citation column on `deep_dive_stats`/`cards`/
+`steps`/`penalty_rows`.
+
+**Full milestones citation audit**: ran the same audit methodology used
+for the 140 newsletter stories across all 331 milestones on the tracker —
+dump every milestone (id, date, country, source_url, system, desc,
+actions) via the in-memory replay DB, split into 12 batches of ~28,
+dispatch parallel `Agent` calls each instructed to `WebFetch` the cited
+source, judge ADEQUATE/INADEQUATE/MISSING against whether it specifically
+supports the milestone's claim (not just same topic), and `WebSearch` for
+a replacement when it doesn't, flagging content-accuracy concerns
+separately from citation-adequacy ones.
+
+Results: 92 ADEQUATE, 192 INADEQUATE, 47 MISSING — 72.2% with a citation
+problem, closely matching the story audit's 71%. Beyond one-off bad
+citations, found several structural patterns: two confirmed instances of
+a malformed Ecuador SRI URL pattern (`descargar?id=<resolution-name>`
+instead of a UUID) silently resolving to unrelated content; 7 Australian,
+10 Danish, and 7 Chinese milestones each citing one shared generic
+homepage regardless of the specific claim; and 7 UK + 4 Vietnam milestones
+mostly pointing to a single wrong shared source, looking like a citation
+pasted once and reused down a country's whole timeline rather than 11
+independent research gaps. 49 milestones carry a content-accuracy concern
+(the claim itself, not just the citation, looks wrong or is contradicted
+by sources found) — these were deliberately left unfixed and reported to
+Dan for a judgment call, same rule as the India story exception in
+migration 405. One earlier-flagged concern (Hungary's `hu-rtir-scope-2021`,
+possibly-wrong Jan-vs-April-2021 date) was resolved in the milestone's
+favor on this full re-run — Sovos confirms January 2021 is correct, it
+only needed a better citation. WebSearch hit its session quota repeatedly
+during the audit, so roughly 70 of the 239 problem milestones still have
+no verified replacement — marked "none found" for tooling reasons, not
+confirmed absence of a source; these need a follow-up pass.
+
+**Migration 406** (`UPDATE milestones SET source_url = ... WHERE id = ...`,
+121 statements, pure content update): fixes every problem milestone that
+had a confirmed replacement source not conflicting with the milestone's
+own claim. Deliberately excludes the 49 content-accuracy-flagged
+milestones and the ~70 still needing a follow-up search. Verified via full
+in-memory migration replay: 0 new errors, all 121 target rows match
+expected URLs.
+
+**Code complete, deploy pending Dan's confirmation.** Bundled together
+with the runbook-update commit (`b7b3c4b` + `8214e36`) since neither had
+been pushed yet, and delivered to Dan. Full audit findings (all 331
+milestones, both raw batches and the compiled report with content-accuracy
+list) live in Dan's chat history from this session, not yet copied into
+this repo — worth doing if a next session picks up the follow-up pass.
+
 ## Open items / next steps
 
 ### Real open work
