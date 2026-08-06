@@ -4945,6 +4945,14 @@ confirms which corrections to apply, the next migration (408) will need
 to touch milestone `date`/`desc` content, not just `source_url` — a
 different, more consequential kind of change than 405-407.
 
+**Deployed and tested** (confirmed by Dan): migration 407 applied via
+`apply_migrations.py --remote`, clean run, no errors. Also confirmed
+pushed to the canonical GitHub repo — `git fetch` against `neworigin/main`
+shows `fb86026`. All 79 round-2 citation fixes are now live. Combined
+with migration 406, 200 of the 239 problem milestones now have a verified
+citation; the 39 remaining need Dan's decision on the underlying claim
+before a content-correcting migration 408 can be built.
+
 ## Open items / next steps
 
 ### Real open work
