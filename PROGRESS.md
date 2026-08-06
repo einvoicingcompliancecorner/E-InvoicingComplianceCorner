@@ -5016,8 +5016,39 @@ still need Dan's explicit decision (not deploy-blocking, just unresolved):
 whether to remove or re-source `ie-phase1-criteria-reconfirmed`; whether
 `uk-nhs-peppol`'s date is ever resolvable; and whether to merge the two
 flagged duplicate pairs (`ca-cra-research-2018`/`ca-watch`,
-`au-default-2025`/`au-automate`). DE/ES/FR translation rows for the 23
-corrected milestones remain stale pending a follow-up translation pass.
+`au-default-2025`/`au-automate`).
+
+### 6 Aug 2026 (cont'd) — DE/ES/FR translations synced to migration 408's content fixes (migration 409)
+
+Dan asked to make the migration 408 content corrections available in the
+other language translations. Migration 408 had only updated the `lang =
+'en'` row on `milestone_translations` for the 23 milestones whose
+`system`/`desc` changed — the German, Spanish, and French rows still held
+the pre-correction (now-wrong) text.
+
+Dispatched 4 parallel `Agent` translation passes (batches of 5-6
+milestones each), each given the corrected English text plus the old
+DE/ES/FR text purely as a terminology/style reference (not as content to
+patch — the old translations describe the wrong facts). Rules given:
+translate fresh from the corrected English meaning; preserve proper
+nouns, institution abbreviations, legal citation numbers/names, currency
+figures, and technical standard names (Peppol, PINT, CFDI, etc.)
+untranslated; format dates naturally per language without shifting the
+actual date value; match existing site terminology conventions.
+
+**Migration 409**: 69 `UPDATE milestone_translations` statements (23
+milestones × 3 languages), each only setting the `system`/`desc` fields
+that actually changed in migration 408. Verified via full in-memory
+replay: 0 new errors, all 69 milestone/lang rows match the expected
+translated values exactly (checked programmatically against the parsed
+agent output, not just spot-checked).
+
+Committed, not yet deployed — awaiting Dan's `apply_migrations.py
+--remote` run. Once applied, all four languages will be consistent
+across the 23 corrected milestones. The four open items from migration
+408 (`ie-phase1-criteria-reconfirmed`, `uk-nhs-peppol`, and the two
+duplicate-milestone pairs) remain outstanding — unaffected by this
+translation sync.
 
 ## Open items / next steps
 
