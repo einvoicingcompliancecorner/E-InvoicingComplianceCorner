@@ -4953,6 +4953,62 @@ with migration 406, 200 of the 239 problem milestones now have a verified
 citation; the 39 remaining need Dan's decision on the underlying claim
 before a content-correcting migration 408 can be built.
 
+### 6 Aug 2026 (cont'd) — Content corrections for 35 of the 39 flagged milestones (migration 408)
+
+Dan approved the batch of high-confidence corrections from the follow-up
+report and separately supplied a new source for `be-mercurius` (Babelway's
+own blog confirming the Mercurius platform is built on Babelway's Peppol
+integration technology).
+
+**Schema correction made while building this migration**: `milestones`
+only has `id, country_id, date, anchor, source_url` — the `system` and
+`desc` fields live on a separate `milestone_translations` table, keyed by
+`(milestone_id, lang)`. An earlier draft of this migration incorrectly
+tried to `UPDATE milestones SET system = ..., desc = ...`, which the
+in-memory replay caught (`no such column: system`) before anything was
+committed. Rewritten to correctly split each correction across both
+tables.
+
+**Migration 408** (35 milestones touched; 35 `UPDATE milestones`
+statements for `date`/`source_url`, 23 `UPDATE milestone_translations ...
+WHERE lang = 'en'` statements for `system`/`desc`, only emitting the
+fields that actually changed from the current DB value): covers all 30
+LIKELY_WRONG corrections plus the 7 new concerns surfaced during the
+follow-up search pass (`pl-b2g-peppol`, `at-b2g-extended-2018`,
+`au-default-2025`, `br-mandatory`, and 3 lower-stakes nuances), minus 2
+items that stay untouched (below). `be-mercurius` was corrected using
+Dan's supplied Babelway source — desc now credits Babelway's integration
+technology; the 2017 launch date remains unconfirmed by any source found
+and was left as-is (Babelway's page doesn't specify a year). Verified via
+full in-memory replay: 0 new errors (only the 4 documented pre-existing
+ones), all 37 milestones' `milestones` and `milestone_translations` rows
+match expected values.
+
+**Known gap, not addressed in this migration**: DE/ES/FR translation rows
+for the 23 milestones with corrected `system`/`desc` text are now stale
+relative to the corrected English — this migration only updates `lang =
+'en'`. Translating 23 corrected descriptions into 3 languages accurately
+is a substantial separate task; flagging it here rather than silently
+leaving it unaddressed.
+
+**Deliberately left untouched (2 milestones)**:
+- `ie-phase1-criteria-reconfirmed` — no evidence the event itself
+  happened; needs Dan's explicit decision (verify it's real and find a
+  source, or remove the milestone) rather than inventing a citation for a
+  possibly-nonexistent event.
+- `uk-nhs-peppol` — still genuinely unclear after research; no new
+  information surfaced since the follow-up report.
+
+**Possible duplicate milestones flagged, not merged** (kept both, applied
+best-effort corrections to each, left the merge/dedup decision to Dan):
+- `ca-cra-research-2018` (now 2021-01-01, reframed as preliminary
+  research) vs. `ca-watch` (2021-06-01, stakeholder engagement) — same
+  underlying subject, close dates.
+- `au-default-2025` (now 2026-12-01) vs. `au-automate` (also
+  2026-12-01) — after correction these two milestones share a date.
+
+Not yet deployed — awaiting Dan's `apply_migrations.py --remote` run.
+
 ## Open items / next steps
 
 ### Real open work
