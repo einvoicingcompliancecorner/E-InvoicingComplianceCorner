@@ -5043,12 +5043,13 @@ replay: 0 new errors, all 69 milestone/lang rows match the expected
 translated values exactly (checked programmatically against the parsed
 agent output, not just spot-checked).
 
-Committed, not yet deployed — awaiting Dan's `apply_migrations.py
---remote` run. Once applied, all four languages will be consistent
-across the 23 corrected milestones. The four open items from migration
-408 (`ie-phase1-criteria-reconfirmed`, `uk-nhs-peppol`, and the two
-duplicate-milestone pairs) remain outstanding — unaffected by this
-translation sync.
+**Deployed and tested** (confirmed by Dan): migration 409 applied via
+`apply_migrations.py --remote`. Also confirmed pushed to the canonical
+GitHub repo — `git fetch` against `neworigin/main` shows `fa703cc`. All
+four languages are now consistent across the 23 corrected milestones.
+The four open items from migration 408 (`ie-phase1-criteria-reconfirmed`,
+`uk-nhs-peppol`, and the two duplicate-milestone pairs) remain
+outstanding — unaffected by this translation sync.
 
 ## Open items / next steps
 
