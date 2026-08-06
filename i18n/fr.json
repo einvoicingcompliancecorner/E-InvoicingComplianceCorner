@@ -16,7 +16,7 @@
     "authorConnect": "N'hésitez pas à me contacter — <a href=\"https://www.linkedin.com/in/danielyoung76/\" target=\"_blank\" rel=\"noopener\" style=\"color:var(--stamp); text-decoration:underline;\">retrouvez-moi sur LinkedIn</a>."
   },
   "brand": {
-    "description": "Un suivi actualisé en continu des obligations de facturation électronique et de télédéclaration dans 58 pays — règles ViDA à l'échelle de l'UE, systèmes nationaux de CTC, et tout ce qui se trouve entre les deux. Chaque entrée indique l'échéance, ce qu'il faut faire, et un lien direct vers le portail officiel du gouvernement, pour passer de \"est-ce que cela nous concerne ?\" à \"voici ce qu'il faut faire\" en une seule page.",
+    "description": "Un suivi actualisé en continu des obligations de facturation électronique et de télédéclaration dans 60 pays — règles ViDA à l'échelle de l'UE, systèmes nationaux de CTC, et tout ce qui se trouve entre les deux. Chaque entrée indique l'échéance, ce qu'il faut faire, et un lien direct vers le portail officiel du gouvernement, pour passer de \"est-ce que cela nous concerne ?\" à \"voici ce qu'il faut faire\" en une seule page.",
     "eyebrow": "Tableau de suivi de conformité",
     "title": "The E-Invoicing<br>Compliance Corner"
   },
@@ -105,6 +105,8 @@
     "tip3Title": "Retrouvez les annonces passées",
     "tip4Desc": "La chronologie affiche par défaut les changements récents et à venir — les réglementations bien établies depuis longtemps se trouvent dans la section repliée ci-dessous.",
     "tip4Title": "Les informations anciennes sont rangées à part",
+    "tip5Desc": "La Carte (dans le menu Ressources) affiche le statut du mandat de chaque juridiction suivie dans le monde entier sur une seule vue à code couleur — cliquez sur un pays pour ouvrir son analyse détaillée.",
+    "tip5Title": "Voyez chaque pays en un coup d'œil sur la Carte",
     "eyebrow": "Aide"
   },
   "perks": {
@@ -170,7 +172,9 @@
     "Slovenia": "Slovénie",
     "Iceland": "Islande",
     "Serbia": "Serbie",
-    "Latvia": "Lettonie"
+    "Latvia": "Lettonie",
+    "Kazakhstan": "Kazakhstan",
+    "Dominican Republic": "République dominicaine"
   },
   "terminal": {
     "arrivalsView": "Tableau des arrivées",

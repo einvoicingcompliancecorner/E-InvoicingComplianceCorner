@@ -16,7 +16,7 @@
     "authorConnect": "Feel free to connect — <a href=\"https://www.linkedin.com/in/danielyoung76/\" target=\"_blank\" rel=\"noopener\" style=\"color:var(--stamp); text-decoration:underline;\">find me on LinkedIn</a>."
   },
   "brand": {
-    "description": "A living tracker of e-invoicing and digital reporting mandates across 58 countries — EU-wide ViDA rules, national CTC systems, and everything in between. Each entry shows the deadline, what you need to do about it, and a direct link to the official government portal, so you can go from \"is this relevant to us?\" to \"here's what to action\" in one page.",
+    "description": "A living tracker of e-invoicing and digital reporting mandates across 60 countries — EU-wide ViDA rules, national CTC systems, and everything in between. Each entry shows the deadline, what you need to do about it, and a direct link to the official government portal, so you can go from \"is this relevant to us?\" to \"here's what to action\" in one page.",
     "eyebrow": "Compliance tracker board",
     "title": "The E-Invoicing<br>Compliance Corner"
   },
@@ -105,6 +105,8 @@
     "tip3Title": "Catch up on past announcements",
     "tip4Desc": "The timeline shows recent and upcoming changes by default — long-settled regulations live in the collapsed section below it.",
     "tip4Title": "Old news is tucked away",
+    "tip5Desc": "The Map (in the Resources menu) shows every tracked jurisdiction's mandate status worldwide on one color-coded view — click any country to open its deep dive.",
+    "tip5Title": "See every country at a glance on The Map",
     "eyebrow": "Help"
   },
   "perks": {
@@ -170,7 +172,9 @@
     "Slovenia": "Slovenia",
     "Iceland": "Iceland",
     "Serbia": "Serbia",
-    "Latvia": "Latvia"
+    "Latvia": "Latvia",
+    "Kazakhstan": "Kazakhstan",
+    "Dominican Republic": "Dominican Republic"
   },
   "terminal": {
     "arrivalsView": "Arrivals board",

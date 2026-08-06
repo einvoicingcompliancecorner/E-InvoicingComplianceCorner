@@ -5942,6 +5942,149 @@ pre-existing Education-menu link to the same page.
 pure static-asset change, no D1 migration needed. The Navigation Help
 pop-out, the new carousel slide, and the renamed heading are all live.
 
+## 6 Aug 2026 (cont'd, again) — Kazakhstan (#59) and Dominican Republic (#60) built; "The Map" explainer added to Navigation Help (code complete, deploy pending)
+
+Two new countries at Dan's request — "Kazakhstan under Asia-Pacific on
+the map, and grouping" plus Dominican Republic — and a fifth Navigation
+Help tip-card explaining The Map. Same discipline as Serbia/Latvia:
+independent research agents per country (WebFetch against primary
+government sources, every fact flagged CONFIRMED/PLAUSIBLE per the 6
+Aug sourcing standard), then migrations written from the verified
+findings, not agent recall. Migrations start at 437 (last used: 436).
+
+**Kazakhstan (KZ, Asia-Pacific, slug `kazakhstan`).** A mature CTC
+clearance regime, IS ESF (ИС ЭСФ): voluntary from 1 Jul 2014 (Gov't
+Resolution No. 818), mandatory for all VAT payers from 1 Jan 2019
+(confirmed directly against kgd.gov.kz's own news release), and
+expanded from 1 Jan 2026 to universal VAT-payer coverage plus ~12
+non-VAT-payer categories (commission/forwarding agents, customs
+representatives, simplified-regime taxpayers, medical/pharma sellers,
+law offices, importers, Virtual Warehouse participants) under a wholly
+new Tax Code (Law No. 214-VIII, signed 18 Jul 2025) — alongside a
+lowered VAT threshold (10,000 MRP) and a higher VAT rate (16%). 5
+milestones (2 on_tracker: the 2019 mandate and the 2026 expansion, both
+`mandate_scope='b2b'`); 5 stats, 2 file_format cards, 1 scope card + 1
+lifecycle "clearance flow" card, 3 penalties_related cards, 5 steps, 1
+portal, 1 tracking source, 1 launch story (the 2026 expansion).
+**Flagged and deliberately excluded**, per the sourcing standard: a
+rumoured pre-2019 "risk goods" mandatory wave (no independently-dated
+source found); the exact current IS ESF public portal domain (search
+results surfaced both "esf.gov.kz" and what looks like an unrelated
+phishing-clone domain, so no portal URL cites it — only kgd.gov.kz's
+own confirmed-live section pages are cited); Order No. 629's exact
+Adilet primary-source page (adilet.zan.kz blocked automated fetching
+on every attempt this session; sourced instead via two independent
+secondary industry sites that agree on the order number/date); the
+exact Administrative Offences Code Art. 280-1 penalty MRP figures
+(corroborated by two independent secondary legal aggregators, not the
+raw statutory text). Migrations 437-438 (country+milestones), 440
+(deep-dive EN), 442 (ES/DE/FR translations), 445 (story), 447
+(tracking sources).
+
+**Dominican Republic (DO, Americas, slug `dominican-republic`).** A
+real-time pre-validation clearance regime, e-CF (Comprobante Fiscal
+Electrónico): voluntary pilot 2019, formalized as a voluntary regime by
+Norma General 01-2020, made mandatory by Ley 32-23 (promulgated 16 May
+2023, fetched directly from DGII's own hosted PDF), rolling out in
+phased waves by DGII taxpayer-size category — Large National Taxpayers
+from 15 May 2024, Large Local & Medium Taxpayers from an extended 15
+Nov 2025 (Aviso 12-25), and Small/Micro/Unclassified Taxpayers from an
+extended 15 Nov 2026 (Aviso 06-26) — the current final wave. From 1 Jan
+2026, Large National Taxpayers may issue e-CF exclusively (Aviso 25-25
+retired paper vouchers for that segment) — a genuinely new milestone
+the original PROGRESS.md lead-research draft had missed entirely,
+caught by this session's independent verification pass. 7 milestones (4
+on_tracker: the 2023 law, and the three taxpayer-wave deadlines, all
+`mandate_scope='b2b'`); 5 stats, 2 file_format cards, 1 scope card + 1
+lifecycle "clearance flow" card, 3 penalties_related cards, 6 steps, 2
+portals, 2 tracking sources, 1 launch story (the Jul 2026 filer-growth
+update — registered electronic filers more than tripled in 6 months,
+23,686 → 76,762). **Flagged and deliberately excluded**: Decreto
+587-24's exact calendar day (three secondary sources disagree — 10, 14,
+or 15 Oct 2024; DGII's own PDF could not be machine-read this session,
+so this page cites "October 2024" without a specific day); the 2019
+pilot's exact statistics (10 companies, 7 completed, ~723,000 e-CF —
+traces to a single Dominican newspaper, not a DGII primary source); the
+claim that e-CF's XML is UBL-based (a vendor-only claim from EDICOM;
+DGII's own technical report doesn't name UBL). Migrations 437, 439
+(milestones), 441 (deep-dive EN), 443 (ES/DE/FR translations), 446
+(story), 448 (tracking sources).
+
+**Region/Map placement.** Kazakhstan → Asia-Pacific per Dan's explicit
+instruction, both in `countries.js` and D1's `countries.region`.
+Dominican Republic → Americas, consistent with this tracker's existing
+Latin American/Caribbean coverage (Colombia, Argentina, Peru, Chile,
+Mexico, Costa Rica, Ecuador, Uruguay) — not explicitly stated by Dan
+this time, but the clearly-intended region and consistent with this
+project's own prior "Americas coverage evaluated" research notes.
+Checked both new countries' English names against the vendored
+world-atlas topology (`vendor/countries-50m.json`) directly rather than
+waiting for a post-deploy console-warning check: Kazakhstan's name
+matches the topology exactly (no override needed); Dominican Republic's
+topology feature is spelled "Dominican Rep.", so a `TOPO_NAME_OVERRIDES`
+entry was added in `shared/map-data.mjs` alongside the existing "United
+States"/"Czech Republic" overrides.
+
+**Phase 2 static-file edits**, all 3 touchpoints: `countries.js` (both
+countries added to their region arrays); `shared/deep-dive-render.mjs`'s
+`COUNTRY_DEEP_DIVE_SLUGS` (`kazakhstan`, `dominican-republic`) and
+`COUNTRY_NAME_TRANSLATIONS` (es/de/fr for both, real translations —
+Kazajistán/Kasachstan/Kazakhstan and República Dominicana/Dominikanische
+Republik/République dominicaine); `i18n/{en,es,de,fr}.json`'s
+`countryNames` (appended, matching the existing Serbia/Latvia pattern
+at the end of each block rather than re-sorting the whole list).
+
+**Jurisdiction-count sweep, 58 → 60.** Migration 444 mirrors 432's
+`translations`-table UPDATE pattern exactly (40 rows: 10 distinct
+namespace/key strings × 4 languages). Static files hand-corrected in
+the same commit, per 432's standing process note (`generate_files.py`
+still not confirmed current against live D1): every HTML file with a
+literal "58 jurisdictions"/"58 countries" string (`subscribe.html`
+including its `<div class="num display">58</div>` stat tile, both
+education pages' cards, `index.html`'s meta description, the tracker's
+own meta description and `brand.description` fallback) and all 23
+`i18n/*.json` files carrying the same prose in 4 languages — found via
+a first-pass regex that only matched "58" within ~3 chars of
+"jurisdiction"/"countr", which missed several instances embedded in
+longer phrases ("58 tracked jurisdictions", and the Spanish/German/
+French translated files where "jurisdicciones"/"Rechtsordnungen"/
+"juridictions" don't share a common substring with the English pattern)
+— caught by a second, broader pass grep across every `i18n/*.json` file
+for a bare `\b58\b` and manually confirming each hit was genuinely a
+jurisdiction-count reference before replacing.
+
+**"The Map" added to Navigation Help.** Dan's second request this
+round: "add, under Navigation Help, on the Menu and addition section
+identifying the Map, and what it's for." Added as a 5th tip-card
+(🗺️) in the `#navHelpOverlay` modal built in the previous session's
+tracker-header work, alongside the existing 4 (filter/deep-dive/
+archive/collapsed-history tips) — same `.tip-card` markup, no new CSS.
+New i18n keys `navTips.tip5Title`/`navTips.tip5Desc`, all 4 languages,
+describing The Map as living in the Resources menu and linking to a
+country's deep dive on click. Verified via headless-Chromium
+(Playwright, local HTTP server): opening Menu ▸ Navigation Help shows
+5 tip-cards, the 5th with the correct title/description text.
+
+**Verification.** Full in-memory `validate_replay()` across all 448
+migration files: OK, only the pre-existing documented errors, no new
+ones. Structural queries against a fresh in-memory replay confirmed:
+both countries' `country_translations` (4 rows each), milestone counts
+(KZ 5/2 on_tracker, DO 7/4 on_tracker) and `mandate_scope` values,
+100% milestone_translations and deep-dive-content-translation
+completeness (4 languages, zero gaps, checked table-by-table:
+stats/cards/steps/portals/lifecycle-cards/lifecycle-statuses), rows_json
+shape consistency across all 4 languages per card, milestone `actions`
+array-length consistency across languages, every `on_tracker` milestone
+has at least one portal, and the site's own counting rule
+(`slug IS NOT NULL AND in_picker = 1`, excluding the EU) returns exactly
+60. `node --check` on the tracker's extracted inline script: 0 errors.
+
+**Not yet deployed** — this is code-complete, pending Dan pulling,
+applying migrations 437-444 with `apply_migrations.py --remote`, and
+`wrangler deploy` on both Workers plus site-worker for the static-file
+edits (countries.js, deep-dive-render.mjs, i18n, the tracker HTML, and
+the jurisdiction-count static edits).
+
 ## Open items / next steps
 
 ### Real open work

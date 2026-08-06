@@ -104,6 +104,7 @@ export function computeCountryMapStatus(milestones, todayISO) {
 const TOPO_NAME_OVERRIDES = {
   "United States": "United States of America",
   "Czech Republic": "Czechia",
+  "Dominican Republic": "Dominican Rep.",
 };
 
 // Countries whose real shape is too small to reliably render/hover/

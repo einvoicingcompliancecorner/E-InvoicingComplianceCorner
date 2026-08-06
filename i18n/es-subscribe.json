@@ -6,13 +6,13 @@
   "backLink": "← Volver al panel general",
   "benefits": {
     "eyebrow": "Nunca más se lleve una sorpresa",
-    "intro": "Los umbrales de facturación electrónica, los números de ola y las fechas de puesta en marcha cambian constantemente — a menudo con poco aviso público. Suscríbase una vez y cada actualización o anuncio gubernamental de las 58 jurisdicciones que seguimos llegará automáticamente a su bandeja de entrada, en lenguaje sencillo, antes de que sorprenda a su equipo.",
+    "intro": "Los umbrales de facturación electrónica, los números de ola y las fechas de puesta en marcha cambian constantemente — a menudo con poco aviso público. Suscríbase una vez y cada actualización o anuncio gubernamental de las 60 jurisdicciones que seguimos llegará automáticamente a su bandeja de entrada, en lenguaje sencillo, antes de que sorprenda a su equipo.",
     "item1": {
       "body": "Cada nuevo mandato, cambio de plazo y actualización de sanciones que seguimos, escrito en lenguaje sencillo — no texto legal copiado y pegado del comunicado de una autoridad fiscal.",
       "title": "Anuncios gubernamentales reales, resumidos"
     },
     "item2": {
-      "body": "Díganos cuáles de las 58 jurisdicciones importan a su negocio, y su correo de notificación mensual le dirá específicamente si aparecieron — o reciba el resumen global completo si prefiere verlo todo.",
+      "body": "Díganos cuáles de las 60 jurisdicciones importan a su negocio, y su correo de notificación mensual le dirá específicamente si aparecieron — o reciba el resumen global completo si prefiere verlo todo.",
       "title": "Elija exactamente los países que le importan"
     },
     "item3": {
@@ -32,7 +32,7 @@
   },
   "card": {
     "clearAll": "Borrar todo",
-    "countriesHint": "Opcional — deje todo sin marcar y le enviaremos el resumen mensual completo de las 58 jurisdicciones.",
+    "countriesHint": "Opcional — deje todo sin marcar y le enviaremos el resumen mensual completo de las 60 jurisdicciones.",
     "countriesLabel": "¿Sobre qué países desea recibir alertas?",
     "countriesMissing": "La selección de países no está disponible temporalmente — de todas formas recibirá el resumen mensual completo. (Falta el archivo: countries.js)",
     "eyebrow": "Suscríbase",
@@ -60,7 +60,7 @@
     "eyebrow": "Un paso más",
     "fineprint": "Se le llevará a una ventana de pago segura de Lemon Squeezy, donde podrá elegir pago recurrente o único y completar su compra.",
     "for": "para",
-    "fullDigest": "el resumen completo (las 58 jurisdicciones)",
+    "fullDigest": "el resumen completo (las 60 jurisdicciones)",
     "payButton": "Continuar al pago →",
     "subscribingAs": "Suscribiéndose como",
     "title": "Confirme sus datos"

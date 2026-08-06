@@ -16,7 +16,7 @@
     "authorConnect": "No dude en conectar conmigo — <a href=\"https://www.linkedin.com/in/danielyoung76/\" target=\"_blank\" rel=\"noopener\" style=\"color:var(--stamp); text-decoration:underline;\">encuéntreme en LinkedIn</a>."
   },
   "brand": {
-    "description": "Un seguimiento actualizado de los mandatos de facturación electrónica y reporte digital en 58 países — normas de ViDA a nivel de la UE, sistemas nacionales de CTC, y todo lo demás. Cada entrada muestra la fecha límite, lo que debe hacer al respecto, y un enlace directo al portal oficial del gobierno, para que pueda pasar de \"¿esto nos afecta?\" a \"esto es lo que hay que hacer\" en una sola página.",
+    "description": "Un seguimiento actualizado de los mandatos de facturación electrónica y reporte digital en 60 países — normas de ViDA a nivel de la UE, sistemas nacionales de CTC, y todo lo demás. Cada entrada muestra la fecha límite, lo que debe hacer al respecto, y un enlace directo al portal oficial del gobierno, para que pueda pasar de \"¿esto nos afecta?\" a \"esto es lo que hay que hacer\" en una sola página.",
     "eyebrow": "Panel de cumplimiento normativo",
     "title": "The E-Invoicing<br>Compliance Corner"
   },
@@ -105,6 +105,8 @@
     "tip3Title": "Póngase al día con anuncios anteriores",
     "tip4Desc": "La línea de tiempo muestra los cambios recientes y próximos de forma predeterminada — las normativas ya asentadas desde hace tiempo están en la sección plegada de abajo.",
     "tip4Title": "Lo antiguo queda guardado aparte",
+    "tip5Desc": "El Mapa (en el menú Recursos) muestra el estado del mandato de cada jurisdicción seguida en todo el mundo en una sola vista codificada por colores — haga clic en cualquier país para abrir su análisis detallado.",
+    "tip5Title": "Vea cada país de un vistazo en El Mapa",
     "eyebrow": "Ayuda"
   },
   "perks": {
@@ -170,7 +172,9 @@
     "Slovenia": "Eslovenia",
     "Iceland": "Islandia",
     "Serbia": "Serbia",
-    "Latvia": "Letonia"
+    "Latvia": "Letonia",
+    "Kazakhstan": "Kazajistán",
+    "Dominican Republic": "República Dominicana"
   },
   "terminal": {
     "arrivalsView": "Panel de llegadas",

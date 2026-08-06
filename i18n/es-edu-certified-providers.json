@@ -11,7 +11,7 @@
     "lastUpdated": "Última actualización:"
   },
   "statusBanner": {
-    "text": "Este es un <strong>conjunto inicial de enlaces verificados</strong>, no un mapa completo de las 58 jurisdicciones seguidas. Cada enlace de abajo se comprobó directamente en el propio sitio web del gobierno/autoridad mencionado. Varios países de este seguimiento simplemente no gestionan un registro público de acreditación — vea la nota de la Sección 3 antes de asumir que existe uno."
+    "text": "Este es un <strong>conjunto inicial de enlaces verificados</strong>, no un mapa completo de las 60 jurisdicciones seguidas. Cada enlace de abajo se comprobó directamente en el propio sitio web del gobierno/autoridad mencionado. Varios países de este seguimiento simplemente no gestionan un registro público de acreditación — vea la nota de la Sección 3 antes de asumir que existe uno."
   },
   "stats": {
     "label1": "Países verificados hasta ahora",
@@ -85,7 +85,7 @@
     },
     "card3": {
       "title": "🌍 Consulte los requisitos específicos de su país",
-      "body": "El menú de análisis por país cubre los pasos exactos de registro, las especificaciones técnicas y las sanciones de cada una de las 58 jurisdicciones seguidas aquí."
+      "body": "El menú de análisis por país cubre los pasos exactos de registro, las especificaciones técnicas y las sanciones de cada una de las 60 jurisdicciones seguidas aquí."
     },
     "card4": {
       "title": "📬 Esta lista crecerá",
