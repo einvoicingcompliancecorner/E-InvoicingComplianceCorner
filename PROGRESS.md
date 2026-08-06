@@ -4823,9 +4823,15 @@ plus a structural check confirming every one of the 99 target rows
 updated to its intended URL with zero mismatches and zero remaining
 null/empty `source_url` values sitewide.
 
-**Deploy pending Dan's confirmation** — migration 405 is committed and
-bundled, not yet applied to live D1. Pure content `UPDATE`, no
-static-file or Worker redeploy needed once applied.
+**Deployed and tested** (confirmed by Dan): migration 405 applied via
+`apply_migrations.py --remote` — pure content `UPDATE`, no static-file
+or Worker redeploy needed. Also confirmed pushed to the canonical
+GitHub repo — Dan's `git log --oneline -5` shows `HEAD -> main,
+origin/main, origin/HEAD` all aligned at `469ebe4`, cross-checked via
+`git fetch`/`git ls-remote` against `neworigin/main`. All 99 story
+citations are now live; the one deliberately-unfixed India story
+(`2026-06-15-india-threshold-reduction-discussion`) still needs Dan's
+call on the underlying claim.
 
 ## Open items / next steps
 
