@@ -5885,7 +5885,7 @@ asset edits (`countries.js`, `shared/deep-dive-render.mjs`, all edited
 Serbia and Latvia are live on the site alongside the corrected header
 count.
 
-## 6 Aug 2026 (cont'd, again) — tracker header: "Navigation Help" pop-out replaces the "Getting Around This Site" strip; new "Preparing for a Mandate" carousel slide; heading renamed to "Compliance tracker board" (code complete, deploy pending)
+## 6 Aug 2026 (cont'd, again) — tracker header: "Navigation Help" pop-out replaces the "Getting Around This Site" strip; new "Preparing for a Mandate" carousel slide; heading renamed to "Compliance tracker board" (deployed & confirmed live)
 
 Three small Dan-requested tweaks to `einvoicing-compliance-tracker.html`,
 none touching D1 — pure static-file changes to the tracker page and its
@@ -5938,8 +5938,9 @@ and clicking that slide correctly opens the Education panel in-page
 `#menuTrigger` still present in the DOM afterward) exactly like the
 pre-existing Education-menu link to the same page.
 
-**Status: code complete, not yet shipped.** Pure static-asset change —
-needs only `wrangler deploy` from `site-worker/`, no D1 migration.
+**Deployed and tested** (confirmed by Dan): `site-worker` redeployed —
+pure static-asset change, no D1 migration needed. The Navigation Help
+pop-out, the new carousel slide, and the renamed heading are all live.
 
 ## Open items / next steps
 
