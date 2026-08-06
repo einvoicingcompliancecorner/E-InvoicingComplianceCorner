@@ -5106,6 +5106,62 @@ thread that began with the Hungary story flag: all 140 stories and all
 331 (now 328) milestones have been through the same audit-and-fix cycle,
 and every open item from that work now has a resolution.
 
+### 6 Aug 2026 (cont'd) — tracking_sources/deep_dive_portals link-liveness and country-match audit (migration 411)
+
+Dan asked for the tracking_sources/deep_dive_portals audit next — the
+thread he'd flagged mid-session as tying into the same sourcing-integrity
+priority as the story/milestone citation work (405-410). Unlike stories
+and milestones, these two tables hold *ongoing reference* links (official
+tracking pages, national e-invoicing/Peppol portals) rather than
+per-claim citations, so the audit questions were link-liveness (does it
+still load?) and country-match (does it actually belong to the assigned
+country?) rather than claim-support.
+
+Dispatched 12 parallel `Agent` calls over all 101 `tracking_sources` +
+81 `deep_dive_portals` rows (182 URLs total, batched ~16 per agent,
+sorted by country for context). Each agent fetched every URL and judged
+LIVE/DEAD and MATCH/MISMATCH, searching for a replacement when broken.
+
+**Result: zero country mismatches across all 182 URLs** — a meaningfully
+better hit rate than the story/milestone audits, and reassuring given
+Dan's specific "Sources Of Truth" concern. 6 dead links found (5 distinct
+URLs, 2 referenced from both tables): Austria's EC factsheet had migrated
+to a new wiki pageId; Netherlands' stored Peppol Authority link 404'd;
+Saudi Arabia's ZATCA news path returned 401 (URL structure changed);
+Vietnam's invoice-lookup subdomain was unreachable. A number of other
+URLs returned errors to the audit tooling itself (403/429/robots.txt
+blocks, common for government sites with bot protection) but were
+corroborated live via search-engine indexing and cross-references —
+not counted as real problems.
+
+Before writing the fix migration, independently re-verified 4 of the 5
+replacement URLs myself via direct fetch (Austria's new EC page, Czech
+Republic's mf.gov.cz, Netherlands' peppolautoriteit.nl, Saudi Arabia's
+new ZATCA news path) — all confirmed live and on-topic. The 5th
+(Vietnam's `hoadondientu.gdt.gov.vn` invoice-lookup replacement) timed
+out on my own direct fetch too, the same connectivity issue the audit
+agent hit; applied it anyway since multiple independent, current
+third-party Vietnamese tax/accounting guides describe it as the live
+portal, but flagged explicitly as corroborated-not-confirmed rather than
+independently verified.
+
+**Migration 411**: 8 `UPDATE` statements — 5 real link fixes (one,
+Netherlands' Peppol link and Vietnam's lookup link, each fixed once per
+table) plus 2 free housekeeping updates while already in the file
+(Czech Republic's mfcr.cz still works but now just redirects to
+mf.gov.cz; UAE's MOF link still works via an internal redirect, stored
+the canonical path directly instead). Verified via full in-memory
+replay: 0 new errors, all 8 rows match expected values, row counts
+unchanged (101 tracking_sources, 81 deep_dive_portals — no rows added
+or removed, URL-only changes).
+
+Not yet deployed — awaiting Dan's `apply_migrations.py --remote` run.
+One item flagged for awareness, not action: Sweden's DIGG page itself
+notes some Peppol/e-commerce operational responsibilities transferred to
+the Swedish Procurement Authority as of 1 July 2026 — the stored URL is
+still live and correct today, just worth revisiting if that transfer
+becomes more complete.
+
 ## Open items / next steps
 
 ### Real open work
