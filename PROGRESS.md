@@ -5007,7 +5007,17 @@ best-effort corrections to each, left the merge/dedup decision to Dan):
 - `au-default-2025` (now 2026-12-01) vs. `au-automate` (also
   2026-12-01) — after correction these two milestones share a date.
 
-Not yet deployed — awaiting Dan's `apply_migrations.py --remote` run.
+**Deployed and tested** (confirmed by Dan): migration 408 applied via
+`apply_migrations.py --remote`, clean run, no errors ("Replay validation
+OK (408 files, only the documented pre-existing errors)."). Also confirmed
+pushed to the canonical GitHub repo — `git fetch` against `neworigin/main`
+shows `4288650`. All 35 corrected milestones are now live. Four items
+still need Dan's explicit decision (not deploy-blocking, just unresolved):
+whether to remove or re-source `ie-phase1-criteria-reconfirmed`; whether
+`uk-nhs-peppol`'s date is ever resolvable; and whether to merge the two
+flagged duplicate pairs (`ca-cra-research-2018`/`ca-watch`,
+`au-default-2025`/`au-automate`). DE/ES/FR translation rows for the 23
+corrected milestones remain stale pending a follow-up translation pass.
 
 ## Open items / next steps
 
