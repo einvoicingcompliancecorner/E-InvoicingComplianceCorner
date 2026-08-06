@@ -5461,6 +5461,87 @@ migration -- deploy is a single `wrangler deploy` from `site-worker/`.
 Confirmed deployed the same day: Dan pulled and pushed the bundle, and
 `site-worker`'s `git log` shows `main`/`origin/main` at `708afa2`.
 
+## 6 Aug 2026 (cont'd, again) — carousel: made translatable, moved next to the perks box
+
+Two follow-up requests on the just-shipped header carousel:
+
+**1. Carousel text wasn't translating.** The carousel's eyebrow/title/desc
+strings were plain JS literals in `wireFeatureCarousel()`'s `SLIDES` array,
+never tagged for the site's `data-i18n` mechanism, so switching languages
+left them in English while everything else on the page translated. Fixed
+by adding a `carousel` section (12 keys: `map`/`news`/`subscribe`/
+`featured` x `Eyebrow`/`Title`/`Desc`) to all four `i18n/*.json` files, and
+rendering each slide's text with a `data-i18n="carousel.<key>"` attribute
+alongside the English fallback content -- the same pattern every other
+translatable element on the page already uses. No new re-render logic was
+needed: `i18n.js`'s existing `applyToDom()` already walks every
+`data-i18n` element on the page on load and on every language switch, and
+since it queries the live DOM each time, it picks up the carousel's slides
+automatically once they carry the attribute. (Es/De/Fr translations
+written to match the existing translation register in each file.)
+
+**2. Moved next to "Subscribers Also Get", equal height.** The carousel
+used to live in `.topbar-right` (upper right of the header, alongside the
+Resources/Education/Menu buttons) at a fixed 360px width. Moved it into a
+new `.perks-row` flex wrapper alongside `.subscriber-perks` inside
+`.brand-row`, with `.perks-row`'s `align-items:stretch` (the flex default,
+stated explicitly) making the two boxes match height regardless of width --
+`.site-carousel` was changed from a block box to `display:flex;
+flex-direction:column` with `.car-track{flex:1}` so its slide content
+actually fills whatever height stretching gives it, rather than leaving a
+gap. The old fixed `width:360px; margin-top:14px; align-self:flex-end`
+rules (meaningful only in the old `.topbar-right` position) were removed.
+(First pass gave both boxes the same capped `max-width:520px` for equal
+width too -- superseded by the follow-up below the same day.)
+
+Verified live against the production page before shipping: injected the
+updated CSS/HTML/JS, measured `.subscriber-perks` and `.site-carousel`'s
+`getBoundingClientRect()`, then extended `window.EICC_I18N.strings.carousel`
+with the same French text going into `i18n/fr.json` and called the real
+`applyToDom()`, confirming all 4 slides update correctly (screenshotted).
+Also re-confirmed the carousel still hides cleanly at mobile widths and
+that clicking a slide still opens the right in-page panel (unaffected by
+the move -- the hrefs and click-interception logic didn't change).
+
+**3. Follow-up the same day: flex the carousel to the remaining page
+width, right-aligned with "Getting Around This Site".** The equal-520px-
+width pairing from #2 left a large block of empty space to the right of
+the carousel (since the row's available width was much wider than 2x520px
+on a normal desktop viewport) and didn't reach the same right edge as the
+`nav-tips` panels below. Two changes:
+
+- `.perks-row`'s sizing was split: `.subscriber-perks{flex:0 1 520px}`
+  keeps its old content-driven width (never grows past it), while
+  `.site-carousel{flex:1 1 320px}` (no `max-width` cap) grows to consume
+  whatever's left in the row.
+- `.brand-row` (containing `.perks-row`) was pulled out from being nested
+  inside `.topbar-brand`'s `flex:1 1 320px` share of the old single-row
+  `.topbar` and made a full-width sibling instead. `.topbar` is now
+  `flex-direction:column` with two stacked children: a new
+  `.topbar-header-row` (the eyebrow/title block + the Resources/
+  Education/Menu buttons -- takes over the old row layout/wrap behavior)
+  on top, then `.brand-row` (description + perks-row) spanning the full
+  topbar width below it. This was necessary because as long as
+  `.brand-row` shared a row with the menu buttons, its flex-grow could
+  only ever fill the space *not* claimed by those buttons -- it could
+  never reach the same right edge as `.nav-tips-wrap` (which has no
+  competing sibling and gets the full 5vw-padded content width).
+
+Verified live: replaced the deployed page's `.topbar` outerHTML with the
+new two-row structure (menu-button dropdown *panels* were stubbed out for
+this test since only the layout was under test, not dropdown behavior --
+unaffected by this change) plus the updated CSS, then measured via
+`getBoundingClientRect()`: `.site-carousel.right` and `.nav-tips.right`
+both came back as exactly the same pixel value (1824px at the tested
+viewport width), and `.site-carousel`/`.subscriber-perks` heights matched
+too (186px each). Confirmed no console errors and the page's other topbar
+content (title, description, perks box) rendered in the expected
+positions.
+
+Static-file-only change (`einvoicing-compliance-tracker.html` +
+`i18n/*.json`), no migration -- deploy is a single `wrangler deploy` from
+`site-worker/`.
+
 ## Open items / next steps
 
 ### Real open work

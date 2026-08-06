@@ -20,6 +20,20 @@
     "eyebrow": "Tableau de suivi de conformité",
     "title": "The E-Invoicing<br>Compliance Corner"
   },
+  "carousel": {
+    "mapEyebrow": "Explorer",
+    "mapTitle": "Voir la Carte",
+    "mapDesc": "Visualisez en un coup d'œil le statut de chaque obligation dans le monde, codé par couleur selon l'étape.",
+    "newsEyebrow": "Actualités",
+    "newsTitle": "Voir les Actualités",
+    "newsDesc": "Parcourez l'intégralité des archives de la newsletter — chaque annonce passée, consultable par recherche.",
+    "subscribeEyebrow": "Restez informé",
+    "subscribeTitle": "S'abonner",
+    "subscribeDesc": "Recevez un résumé mensuel dès qu'un mandat ou une échéance change.",
+    "featuredEyebrow": "Bientôt disponible",
+    "featuredTitle": "Contenu à la Une",
+    "featuredDesc": "Analyses et livres blancs, sélectionnés — rien de publié pour l'instant."
+  },
   "cardLabels": {
     "actionChecklist": "Liste d'actions",
     "countryDeepDive": "Analyse du pays →",

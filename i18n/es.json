@@ -20,6 +20,20 @@
     "eyebrow": "Panel de cumplimiento normativo",
     "title": "The E-Invoicing<br>Compliance Corner"
   },
+  "carousel": {
+    "mapEyebrow": "Explora",
+    "mapTitle": "Ver el Mapa",
+    "mapDesc": "Vea de un vistazo el estado de cada mandato en todo el mundo, codificado por color según la etapa.",
+    "newsEyebrow": "Póngase al día",
+    "newsTitle": "Ver las Noticias",
+    "newsDesc": "Explore el archivo completo del boletín — cada anuncio anterior, con búsqueda.",
+    "subscribeEyebrow": "Manténgase al tanto",
+    "subscribeTitle": "Suscribirse",
+    "subscribeDesc": "Reciba un resumen mensual en el momento en que cambie un mandato o una fecha límite.",
+    "featuredEyebrow": "Próximamente",
+    "featuredTitle": "Contenido Destacado",
+    "featuredDesc": "Análisis e informes técnicos, seleccionados — nada publicado todavía."
+  },
   "cardLabels": {
     "actionChecklist": "Lista de acciones",
     "countryDeepDive": "Análisis del país →",

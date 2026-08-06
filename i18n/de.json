@@ -20,6 +20,20 @@
     "eyebrow": "Compliance-Übersicht",
     "title": "The E-Invoicing<br>Compliance Corner"
   },
+  "carousel": {
+    "mapEyebrow": "Entdecken",
+    "mapTitle": "Zur Karte",
+    "mapDesc": "Sehen Sie auf einen Blick den Status jeder Vorgabe weltweit, farblich nach Phase gekennzeichnet.",
+    "newsEyebrow": "Nachlesen",
+    "newsTitle": "Zu den Neuigkeiten",
+    "newsDesc": "Durchsuchen Sie das vollständige Newsletter-Archiv — jede frühere Meldung, durchsuchbar.",
+    "subscribeEyebrow": "Immer informiert",
+    "subscribeTitle": "Abonnieren",
+    "subscribeDesc": "Erhalten Sie eine monatliche Zusammenfassung, sobald sich eine Vorgabe oder Frist ändert.",
+    "featuredEyebrow": "Demnächst",
+    "featuredTitle": "Ausgewählte Inhalte",
+    "featuredDesc": "Analysen & Whitepapers, kuratiert — noch nichts veröffentlicht."
+  },
   "cardLabels": {
     "actionChecklist": "Maßnahmen-Checkliste",
     "countryDeepDive": "Länderanalyse →",

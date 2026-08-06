@@ -20,6 +20,20 @@
     "eyebrow": "Compliance clearance board",
     "title": "The E-Invoicing<br>Compliance Corner"
   },
+  "carousel": {
+    "mapEyebrow": "Explore",
+    "mapTitle": "View the Map",
+    "mapDesc": "See every mandate status worldwide at a glance, color-coded by stage.",
+    "newsEyebrow": "Catch up",
+    "newsTitle": "View the News",
+    "newsDesc": "Browse the full newsletter archive — every past announcement, searchable.",
+    "subscribeEyebrow": "Stay ahead",
+    "subscribeTitle": "Subscribe",
+    "subscribeDesc": "Get a monthly digest the moment a mandate or deadline changes.",
+    "featuredEyebrow": "Coming soon",
+    "featuredTitle": "Featured Content",
+    "featuredDesc": "Insights & Whitepapers, curated — nothing published yet."
+  },
   "cardLabels": {
     "actionChecklist": "Action checklist",
     "countryDeepDive": "Country deep dive →",

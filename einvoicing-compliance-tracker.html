@@ -51,10 +51,21 @@
 
   a{color:inherit;}
 
-  /* ===== Topbar ===== */
+  /* ===== Topbar =====
+     Two stacked rows (6 Aug 2026, per Dan's request): .topbar-header-row
+     (title block + the Resources/Education/Menu buttons) on top, then
+     .brand-row spanning the FULL topbar width below it -- not nested
+     inside .topbar-brand's flex-basis share, so its own .perks-row
+     (the subscriber-perks box + carousel) can reach all the way to the
+     same right edge as other full-width sections on the page (e.g.
+     "Getting Around This Site"), which wouldn't be reachable if it had
+     to share a row with the menu buttons. */
   .topbar{
     padding:28px 5vw 20px;
     border-bottom:1px solid var(--line);
+    display:flex; flex-direction:column; gap:16px;
+  }
+  .topbar-header-row{
     display:flex; flex-wrap:wrap; gap:16px 32px; align-items:flex-start; justify-content:space-between;
   }
   .topbar-brand{flex:1 1 320px; min-width:0;}
@@ -67,11 +78,23 @@
     margin:0; text-transform:uppercase; line-height:0.95;
   }
   .brand-sub{color:var(--muted); font-size:14.5px; max-width:640px; margin:0;}
-  .brand-row{display:flex; flex-direction:column; gap:16px; margin-top:10px;}
+  .brand-row{display:flex; flex-direction:column; gap:16px;}
   .brand-row .brand-sub{flex:none; max-width:680px;}
 
+  /* The perks box keeps its old ~520px content-driven width (flex-grow:0,
+     so it never grows past that even though .perks-row now has a lot
+     more room); the carousel flex-grows to consume whatever's left in
+     the row, reaching the same right edge as .nav-tips-wrap and other
+     full-width sections below (6 Aug 2026, per Dan's request --
+     previously both were capped at an equal 520px, leaving empty space
+     to the right of the carousel). align-items:stretch (the flex
+     default, stated explicitly) still keeps both boxes equal height. */
+  .perks-row{display:flex; flex-wrap:wrap; gap:16px; align-items:stretch;}
+  .perks-row .subscriber-perks{flex:0 1 520px;}
+  .perks-row .site-carousel{flex:1 1 320px;}
+
   .subscriber-perks{
-    max-width:520px; background:var(--ink-2); border:1px solid var(--line); border-radius:8px;
+    background:var(--ink-2); border:1px solid var(--line); border-radius:8px;
     padding:14px 16px 16px;
   }
   .subscriber-perks h4{
@@ -119,12 +142,15 @@
      plus a "coming soon" slide for future Insights & Whitepapers
      content. A "Sponsor This Site" slide exists in wireFeatureCarousel()
      below but is commented out until there's an actual sponsorship
-     model to link to. */
+     model to link to. Sits paired with .subscriber-perks inside
+     .perks-row (see that rule above) -- flex-grows to fill the rest of
+     the row's width, and stretched to the same height as its
+     neighbour. */
   .site-carousel{
-    width:360px; max-width:40vw; background:var(--ink-2); border:1px solid var(--line); border-radius:10px;
-    margin-top:14px; overflow:hidden; position:relative; align-self:flex-end;
+    background:var(--ink-2); border:1px solid var(--line); border-radius:10px;
+    overflow:hidden; position:relative; display:flex; flex-direction:column;
   }
-  .site-carousel .car-track{display:flex; transition:transform .5s ease;}
+  .site-carousel .car-track{display:flex; flex:1; transition:transform .5s ease;}
   .site-carousel .car-slide{
     flex:0 0 100%; display:flex; gap:14px; align-items:flex-start; padding:16px 16px 14px;
     text-decoration:none; color:inherit; cursor:pointer; box-sizing:border-box; min-height:118px;
@@ -583,24 +609,12 @@
 </div>
 
 <div class="topbar">
-  <div class="topbar-brand">
-    <p class="brand-eyebrow" data-i18n="brand.eyebrow">Compliance clearance board</p>
-    <h1 class="brand-title display" data-i18n="brand.title">The E-Invoicing<br>Compliance Corner</h1>
-    <div class="brand-row">
-      <p class="brand-sub" data-i18n="brand.description">A living tracker of e-invoicing and digital reporting mandates across 48 countries — EU-wide ViDA rules, national CTC systems, and everything in between. Each entry shows the deadline, what you need to do about it, and a direct link to the official government portal, so you can go from "is this relevant to us?" to "here's what to action" in one page.</p>
-      <div class="subscriber-perks">
-        <h4 data-i18n="perks.heading">Subscribers also get</h4>
-        <ul>
-          <li data-i18n="perks.item1">A monthly email digest — every new mandate or deadline change, summarised</li>
-          <li data-i18n="perks.item2">Full access to the newsletter archive, not just this month's issue</li>
-          <li data-i18n="perks.item3">Priority access to new country deep dives as they're published</li>
-          <li data-i18n="perks.item4">Plain-language "what this means for your team" write-ups, not just legal text</li>
-        </ul>
-        <a class="perks-cta" href="subscribe.html" data-i18n="perks.cta">Subscribe →</a>
-      </div>
+  <div class="topbar-header-row">
+    <div class="topbar-brand">
+      <p class="brand-eyebrow" data-i18n="brand.eyebrow">Compliance clearance board</p>
+      <h1 class="brand-title display" data-i18n="brand.title">The E-Invoicing<br>Compliance Corner</h1>
     </div>
-  </div>
-  <div class="topbar-right">
+    <div class="topbar-right">
     <div class="topbar-menus">
       <div class="actions-menu" id="resourcesMenu">
         <button class="menu-trigger" id="resourcesTrigger" data-i18n="menu.resources">Resources</button>
@@ -658,18 +672,44 @@
         </div>
       </div>
     </div>
+    </div>
+  </div>
 
-    <!-- Feature carousel: rotates links to the map, newsletter archive,
-         and subscribe page, plus a "coming soon" slide for future
-         Insights & Whitepapers content. Hrefs match exactly what
-         wireDeepDiveInPagePanel() intercepts, so these links open
-         in-frame automatically -- no extra wiring needed. Hidden on
-         mobile (<900px, see .site-carousel's own media query) since
-         there's no spare real estate once the header stacks. Built and
-         wired by wireFeatureCarousel() below. -->
-    <div class="site-carousel" id="siteCarousel">
-      <div class="car-track" id="carTrack"></div>
-      <div class="car-dots" id="carDots"></div>
+  <!-- Full-width row, sibling of .topbar-header-row above rather than
+       nested inside .topbar-brand's flex-basis share -- spans the same
+       5vw-padded width as every other full-width section on the page
+       (e.g. "Getting Around This Site" below), so .site-carousel's
+       flex-grow can reach that same right edge (6 Aug 2026, per Dan's
+       request). -->
+  <div class="brand-row">
+    <p class="brand-sub" data-i18n="brand.description">A living tracker of e-invoicing and digital reporting mandates across 48 countries — EU-wide ViDA rules, national CTC systems, and everything in between. Each entry shows the deadline, what you need to do about it, and a direct link to the official government portal, so you can go from "is this relevant to us?" to "here's what to action" in one page.</p>
+    <!-- Carousel sits paired with the perks box -- moved here from
+         .topbar-right per Dan's request (6 Aug 2026). Fixed-width perks
+         box, flex-growing carousel (see .perks-row above). -->
+    <div class="perks-row">
+      <div class="subscriber-perks">
+        <h4 data-i18n="perks.heading">Subscribers also get</h4>
+        <ul>
+          <li data-i18n="perks.item1">A monthly email digest — every new mandate or deadline change, summarised</li>
+          <li data-i18n="perks.item2">Full access to the newsletter archive, not just this month's issue</li>
+          <li data-i18n="perks.item3">Priority access to new country deep dives as they're published</li>
+          <li data-i18n="perks.item4">Plain-language "what this means for your team" write-ups, not just legal text</li>
+        </ul>
+        <a class="perks-cta" href="subscribe.html" data-i18n="perks.cta">Subscribe →</a>
+      </div>
+
+      <!-- Feature carousel: rotates links to the map, newsletter
+           archive, and subscribe page, plus a "coming soon" slide for
+           future Insights & Whitepapers content. Hrefs match exactly
+           what wireDeepDiveInPagePanel() intercepts, so these links
+           open in-frame automatically -- no extra wiring needed.
+           Hidden on mobile (<900px, see .site-carousel's own media
+           query) since there's no spare real estate once the header
+           stacks. Built and wired by wireFeatureCarousel() below. -->
+      <div class="site-carousel" id="siteCarousel">
+        <div class="car-track" id="carTrack"></div>
+        <div class="car-dots" id="carDots"></div>
+      </div>
     </div>
   </div>
 </div>
@@ -2299,20 +2339,29 @@ function wireFeatureCarousel(){
   // slides automatically. Don't add target="_blank" or a click handler
   // here, or you'll bypass the in-page panel and get a real standalone
   // navigation instead.
+  //
+  // i18nKey is the carousel.<key>Eyebrow/Title/Desc prefix in
+  // i18n/*.json -- eyebrow/title/desc below are the English fallback
+  // text, rendered with a matching data-i18n attribute so i18n.js's
+  // own applyToDom() (called on load and on every language switch, see
+  // i18n/i18n.js) picks these up exactly like any other translatable
+  // element on the page -- no separate re-render logic needed here.
   const SLIDES = [
-    {thumb:THUMB_MAP, eyebrow:'Explore', title:'View the Map', desc:'See every mandate status worldwide at a glance, color-coded by stage.', href:'/map'},
-    {thumb:THUMB_NEWS, eyebrow:'Catch up', title:'View the News', desc:'Browse the full newsletter archive — every past announcement, searchable.', href:'/members/archive'},
-    {thumb:THUMB_SUBSCRIBE, eyebrow:'Stay ahead', title:'Subscribe', desc:'Get a monthly digest the moment a mandate or deadline changes.', href:'subscribe.html'},
+    {thumb:THUMB_MAP, i18nKey:'map', eyebrow:'Explore', title:'View the Map', desc:'See every mandate status worldwide at a glance, color-coded by stage.', href:'/map'},
+    {thumb:THUMB_NEWS, i18nKey:'news', eyebrow:'Catch up', title:'View the News', desc:'Browse the full newsletter archive — every past announcement, searchable.', href:'/members/archive'},
+    {thumb:THUMB_SUBSCRIBE, i18nKey:'subscribe', eyebrow:'Stay ahead', title:'Subscribe', desc:'Get a monthly digest the moment a mandate or deadline changes.', href:'subscribe.html'},
     // Sponsor This Site -- parked for now per Dan's request (6 Aug 2026).
-    // Uncomment when there's an actual sponsorship model/page to link to:
-    // {thumb:THUMB_SUBSCRIBE, eyebrow:'Coming soon', title:'Sponsor This Site', desc:'Reach a compliance-focused audience across every tracked jurisdiction.', href:'feedback.html'},
+    // Uncomment when there's an actual sponsorship model/page to link to
+    // (and add matching carousel.sponsorEyebrow/Title/Desc keys to
+    // i18n/*.json):
+    // {thumb:THUMB_SUBSCRIBE, i18nKey:'sponsor', eyebrow:'Coming soon', title:'Sponsor This Site', desc:'Reach a compliance-focused audience across every tracked jurisdiction.', href:'feedback.html'},
     // No href -- there's no Featured Content page/section yet, so this
     // slide is deliberately non-clickable (matches this page's own
     // .dropdown-item.coming-soon / .perks-cta.coming-soon treatment).
     // Give it a real href once there's an actual destination to send
     // people to -- it'll pick up in-page-panel treatment automatically
     // too, same as the other slides.
-    {thumb:THUMB_BOOK, eyebrow:'Coming soon', title:'Featured Content', desc:'Insights & Whitepapers, curated — nothing published yet.', href:null},
+    {thumb:THUMB_BOOK, i18nKey:'featured', eyebrow:'Coming soon', title:'Featured Content', desc:'Insights & Whitepapers, curated — nothing published yet.', href:null},
   ];
   const ROTATE_MS = 3500;
 
@@ -2323,13 +2372,20 @@ function wireFeatureCarousel(){
     return `<${tag} class="${cls}"${hrefAttr}>
         <div class="car-thumb" aria-hidden="true">${s.thumb}</div>
         <div class="car-body">
-          <p class="car-eyebrow">${s.eyebrow}</p>
-          <p class="car-title">${s.title}</p>
-          <p class="car-desc">${s.desc}</p>
+          <p class="car-eyebrow" data-i18n="carousel.${s.i18nKey}Eyebrow">${s.eyebrow}</p>
+          <p class="car-title" data-i18n="carousel.${s.i18nKey}Title">${s.title}</p>
+          <p class="car-desc" data-i18n="carousel.${s.i18nKey}Desc">${s.desc}</p>
         </div>
       </${tag}>`;
   }).join('');
   dotsWrap.innerHTML = SLIDES.map((_,i) => `<button class="car-dot${i===0?' active':''}" data-i="${i}" aria-label="Slide ${i+1}"></button>`).join('');
+  // No extra language-change listener needed here: i18n.js's own
+  // applyToDom() already re-translates every data-i18n element on the
+  // page on init AND on every language switch (see i18n/i18n.js's
+  // setLanguage()), and it queries the live DOM each time it runs, so
+  // it picks up these slides automatically the same as any other
+  // translatable element -- consistent with "tag it and that's it"
+  // from i18n.js's own usage notes.
 
   let idx = 0;
   const dots = [...dotsWrap.querySelectorAll('.car-dot')];
