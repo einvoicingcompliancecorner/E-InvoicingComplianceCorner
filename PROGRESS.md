@@ -4905,6 +4905,46 @@ session, not yet copied into this repo — worth doing if a next session
 picks up the follow-up pass (the ~70 unresolved problem milestones plus
 the 49 content-accuracy flags).
 
+### 6 Aug 2026 (cont'd) — Follow-up research pass; migration 407 (79 more fixes); 39 milestones flagged for Dan's review
+
+Dan asked to go ahead with the follow-up pass migration 406 had deferred.
+Ran two parallel research tracks: re-searched citations for the ~70
+milestones where WebSearch had exhausted its quota mid-audit (this time
+with no quota issues — all but one resolved), and fact-checked all 49
+content-accuracy flags directly against primary sources, classifying each
+as CONFIRMED_CORRECT (false alarm, milestone's claim was right, just
+needed a citation), LIKELY_WRONG (claim itself appears incorrect, with a
+recommended correction), or UNCLEAR (still unresolvable after real effort).
+
+**Migration 407** (79 `UPDATE milestones` statements, pure citation swaps):
+covers the 63 re-resolved searches plus 16 CONFIRMED_CORRECT
+content-accuracy items. Verified via full in-memory replay: 0 new errors,
+all 79 target rows match expected URLs.
+
+**Deliberately excluded, reported to Dan for review** (39 milestones —
+correcting a milestone's own claim is a bigger change than a citation
+swap and needs his call, same rule as every content-accuracy exception in
+this project):
+- 30 LIKELY_WRONG content-accuracy items, each with a recommended
+  correction and source (e.g. Spain's Ley 18/2022 dated Jan 2022 vs.
+  actual Sept 2022 enactment; Croatia B2G Jan 2019 vs. actual July 2019;
+  Israel's `il-phase3-10k` citing a legal-basis name that appears
+  fabricated; Jordan's `jo-penalty-grace-end` claiming an imprisonment
+  penalty no source corroborates).
+- 2 UNCLEAR items (`be-mercurius`, `uk-nhs-peppol`) — genuinely
+  unresolvable after real search effort.
+- 7 new content-accuracy concerns that surfaced while searching for
+  citations, not on the original 49-item list (`pl-b2g-peppol`,
+  `at-b2g-extended-2018`, `au-default-2025` — this one also still has NO
+  citation found at all and may be a duplicate of `au-automate` —
+  `br-mandatory`, plus 3 lower-stakes nuances).
+
+Full report with all 39 items, recommended corrections, and sources
+delivered to Dan directly (not yet copied into this repo). Once Dan
+confirms which corrections to apply, the next migration (408) will need
+to touch milestone `date`/`desc` content, not just `source_url` — a
+different, more consequential kind of change than 405-407.
+
 ## Open items / next steps
 
 ### Real open work
