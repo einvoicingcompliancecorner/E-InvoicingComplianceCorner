@@ -587,6 +587,25 @@
   .modal-title{font-family:'Big Shoulders Display',sans-serif; font-weight:800; font-size:22px; text-transform:uppercase; margin:0 0 14px;}
   .modal-card p{font-size:13.8px; color:#4a4030; line-height:1.6; margin:0 0 12px;}
   .modal-card p:last-of-type{margin-bottom:0;}
+
+  /* ===== Whitepaper pop-out (7 Aug 2026, per Dan's request) =====
+     Same overlay/open/close mechanics as the About modal above, but
+     sized for a full document and hosting an <iframe> instead of
+     inline copy -- the framed page (e.g.
+     /whitepaper-ctc-rollouts-compared.html) keeps its own dark-ink
+     styling, so the card goes dark too rather than paper. Opened by
+     openWhitepaperPopout() from the in-page /insights panel. */
+  .modal-card.doc-card{
+    max-width:1080px; width:96%; height:min(88vh, 1200px); max-height:none;
+    padding:0; overflow:hidden; background:var(--ink); border-color:var(--line);
+    display:flex; flex-direction:column;
+  }
+  .doc-card .modal-close{
+    top:10px; right:14px; z-index:2; color:var(--muted);
+    background:rgba(15,26,43,0.85); border-radius:50%; width:30px; height:30px;
+  }
+  .doc-card .modal-close:hover{color:var(--soon);}
+  .doc-card iframe{flex:1; width:100%; border:none; display:block; background:var(--ink);}
 </style>
 <!-- i18n loader — see i18n/i18n.js for how this works and how to add a language -->
 <script src="i18n/i18n.js"></script>
@@ -669,6 +688,20 @@
         </div>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- Whitepaper pop-out: a large dark modal hosting the document in
+     an iframe. Opened from the in-page /insights panel when a listed
+     whitepaper carries a data-doc-url attribute (see
+     renderInsightsListFragment() in shared/resources-render.mjs and
+     openWhitepaperPopout() below). The iframe src is set on open and
+     cleared on close so the document isn't fetched until someone
+     actually asks for it (7 Aug 2026, per Dan's request). -->
+<div class="modal-overlay" id="whitepaperOverlay">
+  <div class="modal-card doc-card">
+    <button class="modal-close" id="whitepaperModalClose" aria-label="Close">&times;</button>
+    <iframe id="whitepaperFrame" title="Whitepaper"></iframe>
   </div>
 </div>
 
@@ -846,6 +879,7 @@
 <div id="sourcesView" style="display:none;"></div>
 <div id="subscribeView" style="display:none;"></div>
 <div id="mapView" style="display:none;"></div>
+<div id="insightsView" style="display:none;"></div>
 
 <footer>
   <p data-i18n="filters.disclaimer">This tracker reflects publicly available guidance as of July 2026 and is provided for general awareness, not legal or tax advice. E-invoicing thresholds, wave numbers and go-live dates change frequently — confirm your obligations directly on the official government portal linked in each entry, or with your tax advisor, before making compliance decisions.</p>
@@ -2433,13 +2467,12 @@ function wireFeatureCarousel(){
     // (and add matching carousel.sponsorEyebrow/Title/Desc keys to
     // i18n/*.json):
     // {thumb:THUMB_SUBSCRIBE, i18nKey:'sponsor', eyebrow:'Coming soon', title:'Sponsor This Site', desc:'Reach a compliance-focused audience across every tracked jurisdiction.', href:'feedback.html'},
-    // No href -- there's no Featured Content page/section yet, so this
-    // slide is deliberately non-clickable (matches this page's own
-    // .dropdown-item.coming-soon / .perks-cta.coming-soon treatment).
-    // Give it a real href once there's an actual destination to send
-    // people to -- it'll pick up in-page-panel treatment automatically
-    // too, same as the other slides.
-    {thumb:THUMB_BOOK, i18nKey:'featured', eyebrow:'Coming soon', title:'Featured Content', desc:'Insights & Whitepapers, curated — nothing published yet.', href:null},
+    // Live since 7 Aug 2026: the Insights & Whitepapers hub has its
+    // first published piece (the CTC-rollouts whitepaper, migration
+    // 449), so this slide now links to /insights -- which the
+    // in-page-panel interception in wireDeepDiveInPagePanel() opens
+    // in-frame automatically, same as the /map and /sources slides.
+    {thumb:THUMB_BOOK, i18nKey:'featured', eyebrow:'Insights', title:'Insights & Whitepapers', desc:'Original analysis and whitepapers — starting with our 60-jurisdiction comparison of CTC rollouts worldwide.', href:'/insights'},
   ];
   const ROTATE_MS = 5000; // 5s per slide, per Dan's request (6 Aug 2026) -- was 3.5s
 
@@ -2745,6 +2778,7 @@ async function openDeepDive(slug, opts){
   if(subscribePageOpen) closeSubscribePage({ skipHistory: true });
   if(sourcesPageOpen) closeSourcesPage({ skipHistory: true });
   if(mapPageOpen) closeMapPage({ skipHistory: true });
+  if(insightsPageOpen) closeInsightsPage({ skipHistory: true });
 
   boardView.style.display = 'none';
   // The site name/description/subscriber-perks block pushes real
@@ -2845,6 +2879,7 @@ async function openSourcesPage(opts){
   if(feedbackPageOpen) closeFeedbackPage({ skipHistory: true });
   if(subscribePageOpen) closeSubscribePage({ skipHistory: true });
   if(mapPageOpen) closeMapPage({ skipHistory: true });
+  if(insightsPageOpen) closeInsightsPage({ skipHistory: true });
 
   boardView.style.display = 'none';
   if(topbarBrand) topbarBrand.style.display = 'none';
@@ -2919,6 +2954,144 @@ function closeSourcesPage(opts){
   }
 }
 
+// ---------- in-page "Insights & Whitepapers" panel ----------
+// Mirrors the sources panel above (fetch the server-rendered
+// /insights hub, scope its CSS into a shadow root, history
+// integration), plus one behavior of its own: whitepaper cards that
+// carry a data-doc-url attribute (see renderInsightsListFragment()
+// in shared/resources-render.mjs) open that document in the
+// #whitepaperOverlay pop-out -- same overlay mechanics as the About
+// modal, per Dan's request (7 Aug 2026) -- instead of navigating.
+// Other article links (gated pieces, future blog posts) keep their
+// real hrefs and navigate to their server-rendered pages normally.
+let insightsPageOpen = false;
+
+async function openInsightsPage(opts){
+  opts = opts || {};
+  const boardView = document.getElementById('boardView');
+  const panel = document.getElementById('insightsView');
+  const topbarBrand = document.querySelector('.topbar-brand');
+  const brandRow = document.querySelector('.brand-row'); // see openDeepDive() for why this is hidden alongside topbarBrand
+  insightsPageOpen = true;
+  if(currentDeepDiveSlug) closeDeepDive({ skipHistory: true });
+  if(archiveOpen) closeArchive({ skipHistory: true });
+  if(currentEducationPage) closeEducationPage({ skipHistory: true });
+  if(feedbackPageOpen) closeFeedbackPage({ skipHistory: true });
+  if(subscribePageOpen) closeSubscribePage({ skipHistory: true });
+  if(sourcesPageOpen) closeSourcesPage({ skipHistory: true });
+  if(mapPageOpen) closeMapPage({ skipHistory: true });
+
+  boardView.style.display = 'none';
+  if(topbarBrand) topbarBrand.style.display = 'none';
+  if(brandRow) brandRow.style.display = 'none';
+  panel.style.display = '';
+  panel.innerHTML = '<p style="color:var(--muted); font-family:\'IBM Plex Mono\',monospace; font-size:13px; padding:40px 5vw;">Loading…</p>';
+  window.scrollTo(0, 0);
+
+  const lang = (window.EICC_I18N && window.EICC_I18N.currentLang) || 'en';
+  let html;
+  try {
+    const res = await fetch(`/insights?lang=${lang}`);
+    if(!res.ok) throw new Error('insights fetch failed: ' + res.status);
+    html = await res.text();
+  } catch(err){
+    console.warn('Falling back to a full navigation for /insights', err);
+    window.location.href = '/insights';
+    return;
+  }
+  if(!insightsPageOpen) return; // closed while loading
+
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  const styleEl = doc.querySelector('style');
+  const wrap = doc.querySelector('.wrap');
+  const topBar = wrap ? wrap.querySelector('.top-bar') : null;
+  if(topBar) topBar.remove(); // replaced by this panel's own close control
+  const langsRow = wrap ? wrap.querySelector('.langs') : null;
+  if(langsRow) langsRow.remove(); // the tracker's language banner takes over in-frame
+
+  const scopedCss = PANEL_FONT_IMPORT + (styleEl ? styleEl.textContent : '')
+    .replace(/:root\{/g, ':host{')
+    .replace(/(?<![.\w#-])body\{/g, ':host{');
+
+  panel.innerHTML = '';
+  const host = document.createElement('div');
+  panel.appendChild(host);
+  const shadow = host.attachShadow({ mode: 'open' });
+
+  const closeLabel = (window.EICC_I18N && window.EICC_I18N.t('backLink')) || '← Back to global tracker';
+  shadow.innerHTML = `
+    <style>${scopedCss}</style>
+    <div class="wrap">
+      <div class="top-bar"><a class="back-link" id="insightsCloseLink" href="/einvoicing-compliance-tracker.html">${closeLabel}</a></div>
+      ${wrap ? wrap.innerHTML : '<p>Could not load this page.</p>'}
+    </div>`;
+  shadow.getElementById('insightsCloseLink').addEventListener('click', (e)=>{
+    e.preventDefault();
+    closeInsightsPage();
+  });
+
+  // Whitepaper pop-out interception. This listener lives on the
+  // shadow root because the document-level listener in
+  // wireDeepDiveInPagePanel() only ever sees the retargeted shadow
+  // host, never the real anchor inside it.
+  shadow.addEventListener('click', (e)=>{
+    const a = e.target && e.target.closest ? e.target.closest('a') : null;
+    if(!a) return;
+    const docUrl = a.getAttribute('data-doc-url');
+    if(docUrl){
+      e.preventDefault();
+      openWhitepaperPopout(docUrl);
+    }
+  });
+
+  if(!opts.skipHistory){
+    history.pushState({ insights: true }, '', '/insights');
+  }
+}
+
+function closeInsightsPage(opts){
+  opts = opts || {};
+  insightsPageOpen = false;
+  document.getElementById('boardView').style.display = '';
+  const topbarBrand = document.querySelector('.topbar-brand');
+  const brandRow = document.querySelector('.brand-row'); // see openDeepDive() for why this is hidden alongside topbarBrand
+  if(topbarBrand) topbarBrand.style.display = '';
+  if(brandRow) brandRow.style.display = '';
+  const panel = document.getElementById('insightsView');
+  panel.style.display = 'none';
+  panel.innerHTML = '';
+  if(!opts.skipHistory){
+    history.pushState({ insights: null }, '', '/einvoicing-compliance-tracker.html');
+  }
+}
+
+// ---------- whitepaper pop-out ----------
+// Same overlay mechanics as wireAboutModal(), hosting an iframe.
+// The iframe src is only set when a document is actually opened (and
+// cleared again on close), so the whitepaper page costs nothing on
+// normal tracker loads.
+function openWhitepaperPopout(url){
+  const overlay = document.getElementById('whitepaperOverlay');
+  const frame = document.getElementById('whitepaperFrame');
+  if(frame.getAttribute('src') !== url) frame.setAttribute('src', url);
+  overlay.classList.add('open');
+}
+
+function wireWhitepaperPopout(){
+  const overlay = document.getElementById('whitepaperOverlay');
+  const closeBtn = document.getElementById('whitepaperModalClose');
+  const frame = document.getElementById('whitepaperFrame');
+
+  function close(){
+    overlay.classList.remove('open');
+    frame.setAttribute('src', 'about:blank');
+  }
+
+  closeBtn.addEventListener('click', close);
+  overlay.addEventListener('click', (e)=>{ if(e.target===overlay) close(); });
+  document.addEventListener('keydown', (e)=>{ if(e.key==='Escape' && overlay.classList.contains('open')) close(); });
+}
+
 // ---------- in-page "The Map" panel ----------
 // Mirrors the sources panel above (fetch the real server-rendered
 // /map page, scope its CSS into a shadow root, show it in the main
@@ -2974,6 +3147,7 @@ async function openMapPage(opts){
   if(feedbackPageOpen) closeFeedbackPage({ skipHistory: true });
   if(subscribePageOpen) closeSubscribePage({ skipHistory: true });
   if(sourcesPageOpen) closeSourcesPage({ skipHistory: true });
+  if(insightsPageOpen) closeInsightsPage({ skipHistory: true });
 
   boardView.style.display = 'none';
   if(topbarBrand) topbarBrand.style.display = 'none';
@@ -3216,6 +3390,7 @@ async function openArchive(opts){
   if(subscribePageOpen) closeSubscribePage({ skipHistory: true });
   if(sourcesPageOpen) closeSourcesPage({ skipHistory: true });
   if(mapPageOpen) closeMapPage({ skipHistory: true });
+  if(insightsPageOpen) closeInsightsPage({ skipHistory: true });
 
   boardView.style.display = 'none';
   if(topbarBrand) topbarBrand.style.display = 'none';
@@ -3529,6 +3704,7 @@ async function openEducationPage(pageKey, opts){
   if(subscribePageOpen) closeSubscribePage({ skipHistory: true });
   if(sourcesPageOpen) closeSourcesPage({ skipHistory: true });
   if(mapPageOpen) closeMapPage({ skipHistory: true });
+  if(insightsPageOpen) closeInsightsPage({ skipHistory: true });
 
   boardView.style.display = 'none';
   if(topbarBrand) topbarBrand.style.display = 'none';
@@ -3726,6 +3902,7 @@ async function openFeedbackPage(opts){
   if(subscribePageOpen) closeSubscribePage({ skipHistory: true });
   if(sourcesPageOpen) closeSourcesPage({ skipHistory: true });
   if(mapPageOpen) closeMapPage({ skipHistory: true });
+  if(insightsPageOpen) closeInsightsPage({ skipHistory: true });
 
   boardView.style.display = 'none';
   if(topbarBrand) topbarBrand.style.display = 'none';
@@ -3948,6 +4125,7 @@ async function openSubscribePage(opts){
   if(feedbackPageOpen) closeFeedbackPage({ skipHistory: true });
   if(sourcesPageOpen) closeSourcesPage({ skipHistory: true });
   if(mapPageOpen) closeMapPage({ skipHistory: true });
+  if(insightsPageOpen) closeInsightsPage({ skipHistory: true });
 
   boardView.style.display = 'none';
   if(topbarBrand) topbarBrand.style.display = 'none';
@@ -4066,6 +4244,19 @@ function wireDeepDiveInPagePanel(){
       return;
     }
 
+    // The Resources > Insights & Whitepapers link -- same in-page
+    // treatment (the /insights hub is server-rendered from D1 by
+    // site-worker; see renderInsightsHub() there). Whitepapers listed
+    // on it open in a pop-out from inside the panel -- see
+    // openInsightsPage()'s shadow-root click listener.
+    if(href === '/insights'){
+      e.preventDefault();
+      document.getElementById('sidebar')?.classList.remove('open');
+      document.getElementById('sidebarOverlay')?.classList.remove('open');
+      openInsightsPage();
+      return;
+    }
+
     // The Resources > Newsletter archive link -- opens the archive
     // list in the main frame instead of navigating away, same
     // treatment as a country Deep Dive link.
@@ -4125,6 +4316,7 @@ function wireDeepDiveInPagePanel(){
     const isSubscribeUrl = window.location.pathname.replace(/^\/+/, '') === 'subscribe.html';
     const isSourcesUrl = window.location.pathname === '/sources' || window.location.pathname === '/sources.html';
     const isMapUrl = window.location.pathname === '/map' || window.location.pathname === '/map.html';
+    const isInsightsUrl = window.location.pathname === '/insights' || window.location.pathname === '/insights.html';
     if(isArchiveUrl){
       openArchive({ skipHistory: true });
     } else if(slug){
@@ -4139,6 +4331,8 @@ function wireDeepDiveInPagePanel(){
       openSourcesPage({ skipHistory: true });
     } else if(isMapUrl){
       openMapPage({ skipHistory: true });
+    } else if(isInsightsUrl){
+      openInsightsPage({ skipHistory: true });
     } else if(currentDeepDiveSlug){
       closeDeepDive({ skipHistory: true });
     } else if(archiveOpen){
@@ -4153,6 +4347,8 @@ function wireDeepDiveInPagePanel(){
       closeSourcesPage({ skipHistory: true });
     } else if(mapPageOpen){
       closeMapPage({ skipHistory: true });
+    } else if(insightsPageOpen){
+      closeInsightsPage({ skipHistory: true });
     }
   });
 
@@ -4167,6 +4363,7 @@ function wireDeepDiveInPagePanel(){
     else if(subscribePageOpen) openSubscribePage({ skipHistory: true });
     else if(sourcesPageOpen) openSourcesPage({ skipHistory: true });
     else if(mapPageOpen) openMapPage({ skipHistory: true });
+    else if(insightsPageOpen) openInsightsPage({ skipHistory: true });
   });
 
   // The subscribe panel's sample-issue modal needs a global Escape
@@ -4207,6 +4404,7 @@ wireEducationMenu();
 wireActionsMenu();
 wireAboutModal();
 wireNavHelpModal();
+wireWhitepaperPopout();
 wireFeatureCarousel();
 wireDeepDiveInPagePanel();
 

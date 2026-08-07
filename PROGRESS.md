@@ -6092,6 +6092,102 @@ Kazakhstan (#59) and Dominican Republic (#60) are live on the tracker,
 map, and deep-dive pages, and the 5th Navigation Help tip-card
 explaining The Map is live.
 
+## 7 Aug 2026 — "Clearance Mandates Compared" whitepaper written; Insights & Whitepapers hub goes live (in-frame panel + whitepaper pop-out + carousel slide activated)
+
+Dan asked for an objective, citation-backed comparison of e-invoicing
+CTC/clearance rollouts — grouping all 60 tracked jurisdictions by
+implementation status and researching staged-vs-big-bang outcomes,
+on-time delivery rates, real participation levels, treasury revenue
+yields, and challenges. Then, in a follow-up request, asked for it to
+be wired into the Insights & Whitepapers section, opening in a pop-out
+"similar to About this site", with the carousel's featured slide
+activated and the /insights hub itself opening in-frame rather than
+standalone.
+
+**The whitepaper** (`whitepaper-ctc-rollouts-compared.html`, repo
+root, static asset, site-styled to match the education pages'
+design system). Nine sections: scope/method (with an explicit
+honesty note about the EC's Dec-2025 VAT-gap re-benchmarking and
+revenue-attribution limits); all 60 jurisdictions grouped (25 live
+clearance, 4 reporting-only CTC, 15 in-process, 16 no general B2B
+mandate — counts verified to sum to 60 by script); staged-vs-big-bang
+design taxonomy (threshold descent, invoice-value descent, B2G→B2B
+ladder, regional pilot, segment big-bang, report-first-clear-later);
+a 26-row on-time scorecard (~10 on time / ~8 held-with-shock-absorbers
+/ ~9 slipped — every fully on-time programme was staged or
+decentralised; Poland +19mo and France +26mo both attempted new
+central platforms); all documented participation figures (Korea 99.8%,
+DR 96%, Vietnam 92%, Malaysia >90%, Colombia ~88%, Ecuador's 11.8%
+cautionary tale); revenue outcomes ranked by evidence quality (IMF
+Peru causal studies, EC country-chapter VAT-gap series for
+Italy/Hungary/Poland, IDB/CIAT and Pomeranz foundations, ViDA impact
+assessment, and an explicit "where no number exists" card naming the
+gap for KSA/Egypt/India/etc.); six recurring failure modes (incl.
+Indonesia's Coretax day-one collapse and Poland's audit-forced
+rebuild, primary-sourced); 8 objective conclusions; 68 references
+tagged [official]/[study]/[press]/[industry]. Research method:
+6 parallel agents (LatAm, live-Europe, in-process-Europe, MENA, APAC,
+cross-cutting studies) under the 6 Aug sourcing standard, then 3
+headline claims independently re-verified at source before delivery
+(EC 24-Oct-2023 release quote + figures, IMF WP/19/231 abstract, DGII
+96% announcement). Citation-anchor integrity script-checked (no
+broken refs, no orphans).
+
+**Insights hub wiring** — the infrastructure already existed
+(migration 338 `articles` schema, shared/resources-render.mjs,
+site-worker /insights + /insights/<slug> routes, members-worker gated
+view) but had zero published rows. Changes:
+
+- **Migration 449** — first `articles` row: slug
+  `ctc-rollouts-compared`, type whitepaper, ungated, published,
+  `pdf_url` pointing at the static HTML page.
+- **resources-render.mjs** — whitepaper CTA no longer assumes PDF
+  ("Read the whitepaper →", localised ×4, replacing "Whitepaper →
+  PDF"); list query now selects `pdf_url`; ungated whitepaper cards
+  carry `data-doc-url` so the tracker can pop them out.
+- **Tracker: in-frame /insights panel** — `openInsightsPage()`/
+  `closeInsightsPage()` mirroring the sources panel exactly
+  (shadow-root CSS scoping, history pushState('/insights'), popstate
+  + languageChanged integration, mutual-close added to all 7 other
+  panel-open functions), interception of `href === '/insights'` in
+  wireDeepDiveInPagePanel().
+- **Tracker: whitepaper pop-out** — #whitepaperOverlay, same
+  overlay/close mechanics as the About modal but sized for a document
+  (min(88vh) dark .doc-card hosting an iframe, src set on open and
+  cleared on close so the page costs nothing until opened). Cards
+  with data-doc-url clicked inside the insights panel's shadow root
+  open here (listener lives on the shadow root — the document-level
+  listener only ever sees the retargeted host).
+- **Whitepaper framed mode** — inline head script sets
+  `data-framed` when window.self !== window.top; CSS hides the
+  page's own back-link inside the pop-out (the modal has its own
+  close button; the back-link would have navigated the iframe).
+- **Carousel** — the "Coming soon / Featured Content" slide is now a
+  live link to /insights (picked up by the same interception, so it
+  opens in-frame automatically); carousel.featured* i18n keys updated
+  in all 4 languages ("Insights / Insights & Whitepapers / Original
+  analysis and whitepapers — starting with our 60-jurisdiction
+  comparison...").
+
+**Verification.** `node --check` on the tracker's extracted inline
+script: 0 errors. Full `validate_replay()`: OK (449 files, only
+documented pre-existing errors). Playwright click-through against a
+local server with /insights stubbed via the REAL renderer
+(renderInsightsListFragment run in node with migration 449's exact
+row): carousel slide is a live /insights link (0 coming-soon slides
+left); menu item opens in-frame (board hidden, URL → /insights);
+whitepaper card in shadow DOM carries data-doc-url; clicking it opens
+the pop-out with the whitepaper rendered inside the iframe and the
+iframe's own back-link hidden; Escape closes the pop-out; the
+panel's back link restores the board; carousel click opens in-frame;
+browser back button restores the board; 0 page errors.
+
+**Deploy needs**: migration 449 via `apply_migrations.py --remote`,
+then `wrangler deploy` for BOTH workers this time — site-worker (new
+whitepaper asset + tracker + i18n + resources-render/site-worker code)
+AND members-worker (it bundles shared/resources-render.mjs too, for
+/members/insights/<slug>).
+
 ## Open items / next steps
 
 ### Real open work

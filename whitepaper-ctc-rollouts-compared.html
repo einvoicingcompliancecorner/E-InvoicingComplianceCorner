@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clearance Mandates Compared — How E-Invoicing CTC Rollouts Actually Performed</title>
+<link rel="canonical" href="https://e-invoicingcompliancecorner.com/whitepaper-ctc-rollouts-compared.html">
+<meta name="description" content="An evidence-led comparison of e-invoicing CTC and clearance-mandate rollouts across 60 jurisdictions: staged vs big-bang, on-time delivery rates, real participation levels, treasury revenue outcomes, and the challenges programmes actually faced — with verifiable sources throughout.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://e-invoicingcompliancecorner.com/whitepaper-ctc-rollouts-compared.html">
+<meta property="og:title" content="Clearance Mandates Compared — How E-Invoicing CTC Rollouts Actually Performed">
+<meta property="og:description" content="Staged vs big-bang, on-time rates, adoption levels, and revenue outcomes across 60 jurisdictions — an objective, fully-cited comparison of e-invoicing compliance rollouts.">
+<meta name="twitter:card" content="summary">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0f1a2b; --ink-2:#152238; --ink-3:#1c2c48; --line:#2b3c5a;
+    --paper:#efe9db; --paper-2:#e4dcc6; --paper-line:#c9bd9e;
+    --text-lo:#f2f0e8; --muted:#93a3c0;
+    --stamp:#b5432f; --stamp-dim:#7c3628;
+    --live:#3f7d5c; --live-dim:#274a38;
+    --soon:#c98a3a; --soon-dim:#6e4c22;
+    --upcoming:#6b7a95; --upcoming-dim:#3a4864;
+    --radius:10px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{background:var(--ink); color:var(--text-lo); font-family:'IBM Plex Sans',sans-serif; line-height:1.55;}
+  .display{font-family:'Big Shoulders Display',sans-serif; font-weight:800;}
+  .mono{font-family:'IBM Plex Mono',monospace;}
+  a{color:inherit;}
+  .wrap{max-width:1040px; margin:0 auto; padding:0 5vw 60px;}
+  .back-link{display:inline-flex; align-items:center; gap:6px; margin:24px 0 0; font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:var(--muted); text-decoration:none;}
+  .back-link:hover{color:var(--soon);}
+  .page-head{
+    display:flex; flex-wrap:wrap; gap:18px; align-items:flex-start; justify-content:space-between;
+    padding:18px 0 26px; border-bottom:1px solid var(--line); margin-bottom:28px;
+  }
+  .eyebrow{font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.16em; text-transform:uppercase; color:var(--soon); margin:0 0 4px;}
+  .page-title{font-size:clamp(28px,4.5vw,42px); margin:0; text-transform:uppercase; line-height:0.95;}
+  .page-sub{font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--muted); margin-top:8px; max-width:680px; line-height:1.6;}
+  .meta{font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--muted); text-align:right;}
+
+  .stat-strip{display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:1px; background:var(--line); border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; margin-bottom:36px;}
+  .stat-strip .stat{background:var(--ink-2); padding:16px 18px;}
+  .stat-strip .stat .num{font-family:'Big Shoulders Display',sans-serif; font-weight:800; font-size:22px; line-height:1.15;}
+  .stat-strip .stat .lbl{font-size:10.8px; color:var(--muted); text-transform:uppercase; letter-spacing:0.07em; margin-top:5px;}
+
+  .section{margin-bottom:44px;}
+  .section-head{display:flex; align-items:baseline; gap:12px; margin-bottom:18px;}
+  .section-head h2{font-size:22px; margin:0; text-transform:uppercase;}
+  .section-head .num{font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--soon);}
+  .section-intro{color:var(--muted); font-size:13.8px; max-width:760px; margin:-8px 0 20px;}
+  .prose{max-width:820px; font-size:13.8px; color:var(--text-lo);}
+  .prose p{margin:0 0 14px;}
+  .prose .aside{color:var(--muted); font-size:12.8px; border-left:2px solid var(--soon-dim); padding-left:12px;}
+
+  .spec-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:14px;}
+  .spec-card{background:var(--paper); color:#241d10; border-radius:var(--radius); border:1px solid var(--paper-line); padding:16px 18px 18px;}
+  .spec-card h3{font-family:'IBM Plex Mono',monospace; font-size:11px; text-transform:uppercase; letter-spacing:0.09em; color:#6b5f3f; margin:0 0 10px; display:flex; align-items:center; gap:8px;}
+  .spec-card h3::after{content:""; flex:1; height:1px; background:var(--paper-line);}
+  .spec-card p.note{font-size:12.6px; color:#5a5138; margin:10px 0 0; padding-top:10px; border-top:1px dashed var(--paper-line);}
+  .spec-card p.body{font-size:13px; color:#4a4030; margin:0 0 10px; line-height:1.55;}
+
+  .compare-card{background:var(--paper); color:#241d10; border-radius:var(--radius); border:1px solid var(--paper-line); padding:8px 18px; margin-bottom:14px; overflow-x:auto;}
+  .compare-table{width:100%; border-collapse:collapse; font-size:12.6px;}
+  .compare-table th, .compare-table td{text-align:left; padding:8px 10px; border-bottom:1px dashed var(--paper-line); vertical-align:top;}
+  .compare-table th{font-family:'IBM Plex Mono',monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:0.06em; color:#6b5f3f;}
+  .compare-table td{color:#241d10;}
+  .compare-table td.c{white-space:nowrap; font-weight:600;}
+  .group-label{font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.1em; text-transform:uppercase; color:var(--soon); margin:24px 0 10px;}
+  .group-count{color:var(--muted);}
+
+  .pill{display:inline-block; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.05em; text-transform:uppercase; padding:2px 8px; border-radius:20px; white-space:nowrap;}
+  .pill.ontime{background:var(--live-dim); color:#a8d5bd; border:1px solid var(--live);}
+  .pill.slipped{background:var(--stamp-dim); color:#eec4ba; border:1px solid var(--stamp);}
+  .pill.partial{background:var(--soon-dim); color:#ecd0a6; border:1px solid var(--soon);}
+  .pill.na{background:var(--upcoming-dim); color:#c3cddd; border:1px solid var(--upcoming);}
+
+  sup.ref{font-size:10px; line-height:0;}
+  sup.ref a{color:var(--soon); text-decoration:none; font-family:'IBM Plex Mono',monospace;}
+  sup.ref a:hover{text-decoration:underline;}
+  .compare-table sup.ref a, .spec-card sup.ref a{color:var(--stamp);}
+
+  .refs{font-size:12.6px; color:var(--muted); max-width:900px;}
+  .refs ol{margin:0; padding-left:26px;}
+  .refs li{margin-bottom:8px; overflow-wrap:break-word;}
+  .refs a{color:var(--soon); text-decoration:none;}
+  .refs a:hover{text-decoration:underline;}
+  .refs .src-tag{font-family:'IBM Plex Mono',monospace; font-size:10px; text-transform:uppercase; letter-spacing:0.05em; color:var(--upcoming);}
+
+  .conclusion-card{background:var(--ink-2); border:1px solid var(--line); border-radius:var(--radius); padding:16px 18px; margin-bottom:12px;}
+  .conclusion-card h4{margin:0 0 6px; font-size:14.5px;}
+  .conclusion-card h4 .cnum{font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--soon); margin-right:8px;}
+  .conclusion-card p{margin:0; font-size:13px; color:var(--muted);}
+
+  footer{margin:40px 0 0; padding:22px 0 10px; border-top:1px solid var(--line); color:var(--muted); font-size:12.3px;}
+  footer p{max-width:860px; margin:0 0 8px;}
+
+  @media (max-width:640px){ .page-head{flex-direction:column;} .meta{text-align:left;} }
+  /* When shown inside the tracker's whitepaper pop-out iframe, the
+     modal has its own close button — the back-link would just
+     navigate the iframe itself to the tracker, nesting the site
+     inside the modal. data-framed is set by the inline script in
+     <head> below. */
+  html[data-framed="1"] .back-link{display:none;}
+</style>
+<script>if(window.self !== window.top) document.documentElement.setAttribute('data-framed','1');</script>
+</head>
+<body>
+<div class="wrap">
+
+  <a class="back-link" href="einvoicing-compliance-tracker.html">← Back to global tracker</a>
+
+  <div class="page-head">
+    <div>
+      <p class="eyebrow">Insights &amp; Whitepapers</p>
+      <h1 class="page-title display">Clearance Mandates Compared</h1>
+      <p class="page-sub">How e-invoicing CTC rollouts actually performed: staged vs big-bang delivery, on-time records, real participation levels, and what the programmes yielded for national treasuries — an objective comparison across the 60 jurisdictions tracked on this site, with verifiable sources throughout.</p>
+    </div>
+    <div class="meta">Published: 7 August 2026<br>E-Invoicing Compliance Corner</div>
+  </div>
+
+  <div class="stat-strip">
+    <div class="stat"><div class="num display">60</div><div class="lbl">Jurisdictions analysed</div></div>
+    <div class="stat"><div class="num display">29</div><div class="lbl">With a live CTC or clearance regime</div></div>
+    <div class="stat"><div class="num display">€61bn</div><div class="lbl">EU VAT gap 2021 — down from €99bn in one year</div></div>
+    <div class="stat"><div class="num display">+5%</div><div class="lbl">First-year reported value-added, Peru (IMF)</div></div>
+    <div class="stat"><div class="num display">19–26</div><div class="lbl">Months of slippage, Poland &amp; France flagships</div></div>
+  </div>
+
+  <!-- ================= 01 SCOPE & METHOD ================= -->
+  <div class="section">
+    <div class="section-head"><span class="num mono">01</span><h2 class="display">Scope, definitions &amp; method</h2></div>
+    <div class="prose">
+      <p><strong>What this report compares.</strong> Continuous Transaction Controls (CTC) are regimes in which tax authorities receive transaction-level invoice data at or near the moment of the transaction, rather than through periodic returns and after-the-fact audit. They come in two main families: <strong>clearance models</strong>, where an invoice must be validated (cleared) by or through the tax authority's infrastructure before or as it is issued — the invoice has no legal effect without it — and <strong>real-time reporting models</strong> (RTIR), where the invoice is exchanged freely but its data must be reported to the authority within hours or days. A growing hybrid is the <strong>decentralised "5-corner" model</strong>, where accredited private platforms exchange invoices (typically over Peppol) and simultaneously report tax data to the authority.<sup class="ref"><a href="#ref-1">[1]</a></sup></p>
+      <p><strong>Method.</strong> The country grouping in Section 02 is derived from this site's own tracked milestone data (each milestone's mandate scope and in-force date, maintained against primary sources). The comparative evidence in Sections 03–07 was researched from public sources in August 2026, with a deliberate hierarchy: official statistics and government announcements first; multilateral studies (European Commission, IMF, IDB/CIAT, OECD, World Bank) second; and reputable industry trackers (Sovos, EDICOM, Comarch, vatcalc, VATupdate, Big-4 alerts) only where no official source exists — always labelled as such in the references. Where a headline figure could not be verified at its original source, that is flagged in the text rather than silently repeated.</p>
+      <p class="aside">Two honesty notes up front. First, revenue attribution is genuinely hard: e-invoicing mandates almost never arrive alone — they ship alongside broader tax reforms, cash-register rules, and enforcement pushes, and only a handful of programmes (notably Peru's) have been evaluated with methods that isolate the e-invoicing effect. Second, the EU's VAT-gap statistics were re-benchmarked in the December 2025 edition, revising earlier years upward; this report cites edition and reference year explicitly wherever those figures appear, because the 2023-edition and 2025-edition series are not directly comparable.<sup class="ref"><a href="#ref-4">[4]</a></sup></p>
+    </div>
+  </div>
+
+  <!-- ================= 02 THE 60 JURISDICTIONS GROUPED ================= -->
+  <div class="section">
+    <div class="section-head"><span class="num mono">02</span><h2 class="display">Where the 60 tracked jurisdictions stand</h2></div>
+    <p class="section-intro">Every jurisdiction tracked on this site, grouped by where it actually is today. The split: 25 have a clearance or pre-validation mandate in force, 4 run a live real-time-reporting CTC without clearance, 15 are mid-rollout with legislated dates, and 16 have no general B2B transmission mandate — though nearly all of the EU members in that last group face ViDA's 2030 intra-EU digital-reporting obligations regardless.<sup class="ref"><a href="#ref-3">[3]</a></sup></p>
+
+    <p class="group-label">Group A — Clearance / pre-validation CTC mandate in force <span class="group-count">(25)</span></p>
+    <div class="compare-card">
+      <table class="compare-table">
+        <tr><th>Jurisdiction</th><th>System / model</th><th>B2B mandate in force</th><th>Rollout shape</th></tr>
+        <tr><td class="c">Italy</td><td>SDI centralised clearance</td><td>1 Jan 2019 — whole economy at once</td><td>Big-bang (flat-rate taxpayers phased in by 2024)</td></tr>
+        <tr><td class="c">Mexico</td><td>CFDI via certified PACs</td><td>2011–2014, all taxpayers by 2014</td><td>Staged by revenue threshold</td></tr>
+        <tr><td class="c">Brazil</td><td>NF-e state/federal clearance</td><td>2008–2010 (sector/state waves); CBS/IBS reform adding layouts 2026–27</td><td>Staged by state &amp; sector</td></tr>
+        <tr><td class="c">Chile</td><td>SII DTE clearance</td><td>2014–2018 (paper invalid from Feb 2018)</td><td>Staged by size, 4-year tail</td></tr>
+        <tr><td class="c">Peru</td><td>SUNAT CPE / OSE</td><td>2014 onward, waves by size &amp; risk</td><td>Staged; deadlines extended</td></tr>
+        <tr><td class="c">Colombia</td><td>DIAN prior-validation</td><td>2020 (8 groups, Jun–Nov 2020)</td><td>Staged; model reset mid-stream</td></tr>
+        <tr><td class="c">Argentina</td><td>CAE clearance (ARCA)</td><td>2015 all VAT-registered; universal 2019</td><td>Staged by sector then universal</td></tr>
+        <tr><td class="c">Ecuador</td><td>SRI clearance-style</td><td>2014–15 large; all issuers Nov 2022</td><td>Staged, compressed final wave</td></tr>
+        <tr><td class="c">Uruguay</td><td>DGI CFE</td><td>Progressive 2016–2022; near-universal May 2024</td><td>Staged by revenue</td></tr>
+        <tr><td class="c">Costa Rica</td><td>DGT clearance</td><td>2018 (sector waves)</td><td>Staged; v4.4 migration extended 2025</td></tr>
+        <tr><td class="c">Romania</td><td>RO e-Factura</td><td>Reporting Jan 2024 → clearance Jul 2024</td><td>Two-step: report first, clear later</td></tr>
+        <tr><td class="c">Serbia</td><td>SEF centralised platform</td><td>1 Jan 2023 (B2G from May 2022)</td><td>Staged by counterparty</td></tr>
+        <tr><td class="c">Turkey</td><td>e-Fatura / e-Arşiv dual</td><td>2014 onward, thresholds descending</td><td>Staged by sector &amp; turnover, 12+ years</td></tr>
+        <tr><td class="c">Poland</td><td>KSeF centralised clearance</td><td>1 Feb 2026 large / 1 Apr 2026 all (penalties from 2027)</td><td>Two waves — after 19-month delay &amp; rebuild</td></tr>
+        <tr><td class="c">Belgium</td><td>Peppol 4-corner exchange</td><td>1 Jan 2026, all VAT-registered</td><td>Single date, decentralised</td></tr>
+        <tr><td class="c">Croatia</td><td>Fiscalization 2.0 (real-time reporting + e-invoice)</td><td>1 Jan 2026 (non-VAT entities 2027)</td><td>Single date, day-one enforcement</td></tr>
+        <tr><td class="c">India</td><td>IRP pre-clearance (IRN)</td><td>Oct 2020 → Aug 2023, ₹500cr → ₹5cr</td><td>Staged turnover descent, 6 waves</td></tr>
+        <tr><td class="c">Vietnam</td><td>GDT clearance / same-day reporting</td><td>1 Jul 2022 nationwide</td><td>Regional pilot → national cutover</td></tr>
+        <tr><td class="c">Indonesia</td><td>e-Faktur → Coretax (DJP)</td><td>All VAT-registered (PKP) since Jul 2016</td><td>Staged 2014–16; platform swapped 2025</td></tr>
+        <tr><td class="c">Kazakhstan</td><td>IS ESF centralised clearance</td><td>All VAT payers 1 Jan 2019; scope expanded Jan 2026</td><td>Staged 2017–19, then expansion</td></tr>
+        <tr><td class="c">Malaysia</td><td>MyInvois clearance</td><td>Aug 2024 → Jan 2026, RM100m → RM1m (sub-RM1m exempt)</td><td>Staged turnover descent + scope cuts</td></tr>
+        <tr><td class="c">Saudi Arabia</td><td>Fatoora (ZATCA) clearance</td><td>Generation Dec 2021; integration waves Jan 2023 → Jun 2026</td><td>24 turnover-descending waves</td></tr>
+        <tr><td class="c">Egypt</td><td>ETA centralised platform</td><td>Nov 2020 → Apr 2023 full B2B; paper invalid Jul 2023</td><td>Staged cohort waves</td></tr>
+        <tr><td class="c">Jordan</td><td>JoFotara national billing</td><td>Full enforcement 1 Apr 2025</td><td>Voluntary → phased → enforced</td></tr>
+        <tr><td class="c">Israel</td><td>Allocation-number clearance</td><td>5 May 2024 → complete Jun 2026 (invoices &gt; NIS 5k)</td><td>Staged by invoice value — finished 18 months early</td></tr>
+      </table>
+    </div>
+
+    <p class="group-label">Group B — Live CTC, real-time reporting variant (no clearance) <span class="group-count">(4)</span></p>
+    <div class="compare-card">
+      <table class="compare-table">
+        <tr><th>Jurisdiction</th><th>System / model</th><th>In force</th><th>Notes</th></tr>
+        <tr><td class="c">Hungary</td><td>NAV Online Számla (RTIR)</td><td>Jul 2018; all invoices since 2021</td><td>Staged by invoice-VAT threshold; full e-invoicing discussed for ~2030</td></tr>
+        <tr><td class="c">South Korea</td><td>e-Tax invoice, next-day reporting</td><td>All corporates 2011; individuals phased to 2024</td><td>13-year threshold descent; 99.8% adoption in year one</td></tr>
+        <tr><td class="c">Spain</td><td>SII real-time VAT ledgers</td><td>1 Jul 2017, large taxpayers (~80% of transaction value)</td><td>VeriFactu certified software 2027 + Crea y Crece B2B exchange ~2027–29 both pending</td></tr>
+        <tr><td class="c">Taiwan</td><td>eGUI post-issuance transmission</td><td>1 Jan 2021 (electronic GUI regime much older)</td><td>Lottery-incentivised consumer receipt culture</td></tr>
+      </table>
+    </div>
+
+    <p class="group-label">Group C — Mandate legislated or announced, rollout in progress <span class="group-count">(15)</span></p>
+    <div class="compare-card">
+      <table class="compare-table">
+        <tr><th>Jurisdiction</th><th>Model</th><th>Key dates ahead</th><th>Status note</th></tr>
+        <tr><td class="c">Dominican Rep.</td><td>e-CF pre-validation clearance</td><td>Final (small/micro) wave 15 Nov 2026</td><td>Waves 1–2 live; both later waves extended 6 months</td></tr>
+        <tr><td class="c">France</td><td>Decentralised via accredited platforms (PA/PDP)</td><td>1 Sep 2026 receive-all + large issue; 1 Sep 2027 all</td><td>26-month slip; public platform's exchange role abandoned Oct 2024</td></tr>
+        <tr><td class="c">Germany</td><td>Decentralised EN 16931, no reporting yet</td><td>Issuance: 2027 (&gt; €800k), 2028 all</td><td>Receive-capability live since Jan 2025, on time</td></tr>
+        <tr><td class="c">Greece</td><td>myDATA reporting live; B2B e-invoicing phasing</td><td>2 Mar 2026 (&gt; €1m revenue); 12 Oct 2026 rest</td><td>Serial postponements 2020–2026; wave 1 now live</td></tr>
+        <tr><td class="c">Oman</td><td>Fawtara (Peppol 5-corner)</td><td>Pilot (~144 largest) Aug 2026; all VAT-registered Aug 2027</td><td>Launches this month; accredited-provider regime<sup class="ref"><a href="#ref-46">[46]</a></sup></td></tr>
+        <tr><td class="c">Slovenia</td><td>Decentralised (e-SLOG/Peppol)</td><td>1 Jan 2028 B2B</td><td>2026 → 2027 → 2028; real-time reporting dropped from design</td></tr>
+        <tr><td class="c">Latvia</td><td>Peppol + e-reporting</td><td>B2B 1 Jan 2028</td><td>Slipped from 2026; B2G live since Jan 2026</td></tr>
+        <tr><td class="c">Slovakia</td><td>Peppol 5-corner ("Digital Postman")</td><td>1 Jan 2027 B2B + real-time reporting</td><td>Soft-landing Jan–Mar 2027 pre-announced</td></tr>
+        <tr><td class="c">Ireland</td><td>Peppol/EN 16931, ViDA-aligned</td><td>Nov 2028 large; Nov 2029 all; Jul 2030 ViDA</td><td>Deliberately long runway, announced Oct 2025</td></tr>
+        <tr><td class="c">United Kingdom</td><td>Decentralised, no central platform</td><td>April 2029, all VAT invoices</td><td>Confirmed Autumn Budget 2025; real-time reporting excluded from 2029 scope</td></tr>
+        <tr><td class="c">China</td><td>Fully-digitalised e-fapiao (Golden Tax IV)</td><td>New taxpayers mandatory from 2026; no hard national end-date</td><td>4-year pilot; issuance still opt-in for incumbents, acceptance mandatory</td></tr>
+        <tr><td class="c">Pakistan</td><td>FBR digital invoicing</td><td>Phased Sep–Dec 2025 schedule, still extending</td><td>3+ schedule rewrites in 18 months</td></tr>
+        <tr><td class="c">Philippines</td><td>BIR EIS post-issuance reporting</td><td>Wave 1 completion 31 Dec 2026; more from 2027</td><td>2018 law; pilot stalled 2024, restarted 2025</td></tr>
+        <tr><td class="c">Singapore</td><td>InvoiceNow (Peppol 5-corner)</td><td>New GST registrants Nov 2025/Apr 2026; all by Apr 2031</td><td>Longest announced runway in this set</td></tr>
+        <tr><td class="c">UAE</td><td>Decentralised 5-corner (DCTCE)</td><td>Pilot Jul 2026; mandate 1 Jan 2027 (≥ AED 50m), 1 Jul 2027 rest</td><td>~6-month slip from signalled Jul 2026 start</td></tr>
+      </table>
+    </div>
+    <p class="section-intro" style="margin-top:6px;">Spain appears in Group B for its live SII regime; its two further tracks — VeriFactu certified-software (Jan/Jul 2027 after two postponements) and the Crea y Crece B2B exchange mandate (~Oct 2027–2029, implementing decree only published March 2026) — are still pending.<sup class="ref"><a href="#ref-40">[40]</a></sup></p>
+
+    <p class="group-label">Group D — No general B2B transmission mandate today <span class="group-count">(16)</span></p>
+    <div class="compare-card">
+      <table class="compare-table">
+        <tr><th>Jurisdiction</th><th>Current model</th><th>Direction of travel</th></tr>
+        <tr><td class="c">United States</td><td>Voluntary 4-corner (DBNAlliance exchange framework)</td><td>Market-led; no federal mandate</td></tr>
+        <tr><td class="c">Canada</td><td>B2G via procurement platforms only</td><td>No B2B mandate</td></tr>
+        <tr><td class="c">Japan</td><td>Voluntary JP PINT/Peppol on the Qualified Invoice System</td><td>Tax-driven adoption without a transmission mandate</td></tr>
+        <tr><td class="c">Australia</td><td>Peppol B2G; voluntary B2B</td><td>Adoption-led ("Business eInvoicing Right" shelved)</td></tr>
+        <tr><td class="c">New Zealand</td><td>Peppol B2G (incl. 2026 receive rules); voluntary B2B</td><td>Adoption-led</td></tr>
+        <tr><td class="c">Netherlands</td><td>B2G mandatory (2017); B2B market-driven Peppol</td><td>ViDA 2030 applies</td></tr>
+        <tr><td class="c">Austria</td><td>B2G mandatory (2014); voluntary B2B</td><td>ViDA 2030 applies</td></tr>
+        <tr><td class="c">Cyprus</td><td>B2G receiving obligations; no B2B mandate</td><td>ViDA 2030 applies</td></tr>
+        <tr><td class="c">Czech Republic</td><td>Voluntary B2G issuance; no B2B mandate</td><td>ViDA 2030 applies (B2C fiscalisation planned 2027)</td></tr>
+        <tr><td class="c">Denmark</td><td>Digital bookkeeping capability mandate (not transmission)</td><td>Closest of this group to a de facto mandate; ViDA 2030</td></tr>
+        <tr><td class="c">Finland</td><td>Mature B2G + near-universal voluntary e-invoicing</td><td>ViDA 2030 applies</td></tr>
+        <tr><td class="c">Sweden</td><td>B2G mandatory (2019); no B2B mandate</td><td>ViDA 2030 applies; mandate under study</td></tr>
+        <tr><td class="c">Norway</td><td>Peppol EHF; B2G mandatory</td><td>B2B mandate formally proposed (~2028–30)</td></tr>
+        <tr><td class="c">Iceland</td><td>B2G receipt model</td><td>No announced B2B mandate</td></tr>
+        <tr><td class="c">Luxembourg</td><td>B2G mandatory (2023); voluntary B2B</td><td>B2B proposed ~2028–29; ViDA 2030</td></tr>
+        <tr><td class="c">Portugal</td><td>Certified-software + SAF-T + ATCUD/QR regime; B2G mandatory</td><td>Data-integrity controls without transaction clearance; among the EU's lowest VAT gaps (3.6%, 2023)</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- ================= 03 STAGED VS BIG BANG ================= -->
+  <div class="section">
+    <div class="section-head"><span class="num mono">03</span><h2 class="display">Staged vs big-bang: how rollouts were designed</h2></div>
+    <div class="prose">
+      <p>Across the 29 live CTC regimes in Groups A and B, a striking fact emerges: <strong>the genuine whole-economy big-bang is nearly extinct.</strong> Italy is the canonical — and essentially the only — example among major economies: on 1 January 2019 every VAT-registered business, B2B and B2C alike, switched to clearance through the SDI platform on a single date.<sup class="ref"><a href="#ref-9">[9]</a></sup> Everywhere else, some form of staging was used. No rigorous peer-reviewed study directly comparing big-bang and staged CTC rollouts exists — a real gap in the literature — so the comparison below is built from the primary country evidence itself.<sup class="ref"><a href="#ref-24">[24]</a></sup></p>
+    </div>
+    <div class="spec-grid">
+      <div class="spec-card">
+        <h3>Turnover / size descent</h3>
+        <p class="body">The dominant modern design: start with the largest taxpayers and walk the threshold down. India went from ₹500 crore to ₹5 crore in six waves over 34 months;<sup class="ref"><a href="#ref-25">[25]</a></sup> Saudi Arabia ran 24 integration waves from SAR 3bn down to the SAR 375k registration floor over 3.5 years;<sup class="ref"><a href="#ref-31">[31]</a></sup> South Korea descended thresholds for 13 years; Malaysia phased RM100m → RM1m in four waves.<sup class="ref"><a href="#ref-44">[44]</a></sup></p>
+        <p class="note">Every announced go-live date in this design family that we could document was met (after India's single pre-launch COVID deferral) — slippage, where it occurred, was absorbed by trimming scope at the bottom rather than moving dates.</p>
+      </div>
+      <div class="spec-card">
+        <h3>Invoice-value descent</h3>
+        <p class="body">Israel's unique variant stages by the size of the <em>invoice</em>, not the business: allocation numbers were first required only on invoices above NIS 25,000 (2024), stepping down to NIS 5,000 by June 2026 — keeping the smallest firms out entirely until the final step.<sup class="ref"><a href="#ref-34">[34]</a></sup> Hungary's RTIR began the same way, reporting only invoices above HUF 100,000 in VAT before going universal in 2020.<sup class="ref"><a href="#ref-37">[37]</a></sup></p>
+      </div>
+      <div class="spec-card">
+        <h3>Counterparty staging (B2G → B2B)</h3>
+        <p class="body">Serbia's 20-month ladder — government-to-government, then business-to-government, then full B2B on 1 Jan 2023 — is the cleanest example; Romania, Greece, Portugal and most EU rollouts also led with the public sector, where government buyers guarantee a receiving counterparty from day one.<sup class="ref"><a href="#ref-41">[41]</a></sup></p>
+      </div>
+      <div class="spec-card">
+        <h3>Regional pilot → national cutover</h3>
+        <p class="body">Vietnam rehearsed in 6 provinces from November 2021, extended to the remaining 57, then made paper invoices invalid nationwide on 1 July 2022 — the closest thing to a successful modern big-bang, with 92% of obligated taxpayers registered during phase 2.<sup class="ref"><a href="#ref-28">[28]</a></sup> China ran the same play more cautiously: a 3-year provincial pilot, nationwide availability in Dec 2024, and still no hard mandate date for incumbent taxpayers.<sup class="ref"><a href="#ref-47">[47]</a></sup></p>
+      </div>
+      <div class="spec-card">
+        <h3>Segment big-bang</h3>
+        <p class="body">Spain's SII put ~62,000 large taxpayers — about 80% of national transaction value — onto 4-day real-time ledger reporting on a single date (1 July 2017), and stopped there: the once-floated extension to all 3 million businesses never happened.<sup class="ref"><a href="#ref-39">[39]</a></sup></p>
+      </div>
+      <div class="spec-card">
+        <h3>Report first, clear later</h3>
+        <p class="body">The emerging European two-step: Romania required all B2B invoice data to be <em>reported</em> from Jan 2024, then made the platform invoice the only legally valid one from Jul 2024; Greece ran myDATA reporting for five years before its 2026 clearance-style e-invoicing mandate.<sup class="ref"><a href="#ref-38">[38]</a></sup> This de-risks the platform before invoice validity depends on it.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= 04 ON-TIME SCORECARD ================= -->
+  <div class="section">
+    <div class="section-head"><span class="num mono">04</span><h2 class="display">Did programmes ship on time?</h2></div>
+    <p class="section-intro">"On time" here means: did the mandate take legal effect on the first firmly legislated/announced date? Grace periods on penalties are noted separately — they turn out to be nearly universal. The pattern is stark enough to state up front: threshold-staged and decentralised (Peppol-based) designs shipped on schedule almost without exception; economy-wide mandates built on a new central state platform slipped, in the two flagship cases by 19 and 26 months.</p>
+
+    <div class="compare-card">
+      <table class="compare-table">
+        <tr><th>Programme</th><th>First firm date</th><th>Actual</th><th>Verdict</th><th>Notes</th></tr>
+        <tr><td class="c">Italy SDI (B2B)</td><td>1 Jan 2019</td><td>1 Jan 2019</td><td><span class="pill ontime">On time</span></td><td>Announced Dec 2017; early-weeks penalty moderation only<sup class="ref"><a href="#ref-9">[9]</a></sup></td></tr>
+        <tr><td class="c">Chile SII phase-in</td><td>2014–2018 statutory ladder</td><td>Held</td><td><span class="pill ontime">On time</span></td><td>Only disaster-region carve-outs<sup class="ref"><a href="#ref-15">[15]</a></sup></td></tr>
+        <tr><td class="c">India IRP waves</td><td>1 Apr 2020</td><td>1 Oct 2020, then all 6 waves held</td><td><span class="pill partial">1 deferral</span></td><td>COVID deferral pre-launch; every threshold wave thereafter on date<sup class="ref"><a href="#ref-25">[25]</a>,<a href="#ref-26">[26]</a></sup></td></tr>
+        <tr><td class="c">Saudi Fatoora</td><td>4 Dec 2021 / waves from Jan 2023</td><td>Held throughout</td><td><span class="pill ontime">On time</span></td><td>No documented wave slip across 24 waves<sup class="ref"><a href="#ref-31">[31]</a>,<a href="#ref-32">[32]</a></sup></td></tr>
+        <tr><td class="c">Vietnam national cutover</td><td>Nov 2020 (Decree 119/2018)</td><td>1 Jul 2022 (Decree 123/2020 reset)</td><td><span class="pill partial">Reset once</span></td><td>New date then held nationwide<sup class="ref"><a href="#ref-28">[28]</a></sup></td></tr>
+        <tr><td class="c">South Korea e-Tax</td><td>2011 + threshold ladder</td><td>Held</td><td><span class="pill ontime">On time</span></td><td>13 years of scheduled descents<sup class="ref"><a href="#ref-27">[27]</a></sup></td></tr>
+        <tr><td class="c">Hungary RTIR</td><td>1 Jul 2018</td><td>1 Jul 2018</td><td><span class="pill ontime">On time</span></td><td>2020/2021 extensions also on schedule; 3-month schema grace<sup class="ref"><a href="#ref-37">[37]</a></sup></td></tr>
+        <tr><td class="c">Spain SII</td><td>1 Jul 2017</td><td>1 Jul 2017</td><td><span class="pill ontime">On time</span></td><td>Foral territories +6 months by design<sup class="ref"><a href="#ref-39">[39]</a></sup></td></tr>
+        <tr><td class="c">Serbia SEF</td><td>1 Jan 2022 (B2G) / 1 Jan 2023 (B2B)</td><td>May 2022 / 1 Jan 2023</td><td><span class="pill partial">Phase 1 slipped</span></td><td>B2B launched on schedule<sup class="ref"><a href="#ref-41">[41]</a>,<a href="#ref-42">[42]</a></sup></td></tr>
+        <tr><td class="c">Romania e-Factura</td><td>1 Jan / 1 Jul 2024</td><td>Dates held</td><td><span class="pill partial">Grace extended</span></td><td>Penalty-free period extended twice, to 31 May 2024<sup class="ref"><a href="#ref-38">[38]</a></sup></td></tr>
+        <tr><td class="c">Belgium B2B Peppol</td><td>1 Jan 2026</td><td>1 Jan 2026</td><td><span class="pill ontime">On time</span></td><td>Conditional Q1 tolerance for provably-preparing firms<sup class="ref"><a href="#ref-19">[19]</a>,<a href="#ref-20">[20]</a></sup></td></tr>
+        <tr><td class="c">Croatia Fiscalization 2.0</td><td>1 Jan 2026</td><td>1 Jan 2026</td><td><span class="pill ontime">On time</span></td><td>Day-one enforcement — no grace period<sup class="ref"><a href="#ref-21">[21]</a></sup></td></tr>
+        <tr><td class="c">Germany (receive duty)</td><td>1 Jan 2025</td><td>1 Jan 2025</td><td><span class="pill ontime">On time</span></td><td>Issuance phases 2027/2028 still ahead<sup class="ref"><a href="#ref-18">[18]</a></sup></td></tr>
+        <tr><td class="c">Jordan JoFotara</td><td>1 Apr 2025</td><td>1 Apr 2025</td><td><span class="pill ontime">On time</span></td><td>2-month fines waiver to 31 May 2025<sup class="ref"><a href="#ref-35">[35]</a></sup></td></tr>
+        <tr><td class="c">Poland KSeF</td><td>1 Jul 2024</td><td>1 Feb / 1 Apr 2026</td><td><span class="pill slipped">+19 months</span></td><td>Halted Jan 2024 after audit found "critical errors"; system rebuilt as KSeF 2.0; new dates then held<sup class="ref"><a href="#ref-16">[16]</a>,<a href="#ref-17">[17]</a></sup></td></tr>
+        <tr><td class="c">France B2B</td><td>1 Jul 2024</td><td>1 Sep 2026 / 1 Sep 2027</td><td><span class="pill slipped">+26 months</span></td><td>Postponed Jul 2023; public platform's exchange role abandoned Oct 2024; Sept 2026 confirmed Jul 2026, with soft landing to year-end<sup class="ref"><a href="#ref-11">[11]</a>,<a href="#ref-12">[12]</a>,<a href="#ref-13">[13]</a></sup></td></tr>
+        <tr><td class="c">Greece myDATA / B2B</td><td>2020 (myDATA); Feb 2026 (B2B)</td><td>Oct–Nov 2021; 2 Mar 2026</td><td><span class="pill slipped">Serial</span></td><td>Postponed repeatedly 2020–21; B2B slipped Feb → Mar 2026<sup class="ref"><a href="#ref-43">[43]</a></sup></td></tr>
+        <tr><td class="c">Spain VeriFactu / Crea y Crece</td><td>Jul 2025 / law Sept 2022</td><td>Jan–Jul 2027 / ~Oct 2027–29</td><td><span class="pill slipped">+18 mo / open</span></td><td>No live B2B obligation 4 years after the enabling law<sup class="ref"><a href="#ref-40">[40]</a></sup></td></tr>
+        <tr><td class="c">Peru CPE waves</td><td>Oct 2014 onward</td><td>Waves extended +10 to +13 months</td><td><span class="pill slipped">Extended</span></td><td>Wave 1 +10 months; wave 5 +13 months<sup class="ref"><a href="#ref-22">[22]</a></sup></td></tr>
+        <tr><td class="c">Mexico CFDI 4.0 migration</td><td>2022</td><td>1 Apr 2023</td><td><span class="pill slipped">+~9 months</span></td><td>Core 2011–14 rollout was broadly on time<sup class="ref"><a href="#ref-23">[23]</a></sup></td></tr>
+        <tr><td class="c">Egypt ETA</td><td>Nov 2020; paper cut-off Jan 2022</td><td>Launch on time; cut-off Jul 2023</td><td><span class="pill partial">Enforcement +18 mo</span></td><td>Reporting windows also relaxed for B2C<sup class="ref"><a href="#ref-33">[33]</a></sup></td></tr>
+        <tr><td class="c">Israel allocation numbers</td><td>1 Jan 2024</td><td>5 May 2024 — then finished Jun 2026, 18 months early</td><td><span class="pill partial">Late start, early finish</span></td><td>The only documented acceleration in this dataset<sup class="ref"><a href="#ref-34">[34]</a>,<a href="#ref-36">[36]</a></sup></td></tr>
+        <tr><td class="c">Dominican Rep. e-CF</td><td>Waves May 2024 / 2025 / 2026</td><td>Wave 1 on time; waves 2–3 each +6 months</td><td><span class="pill partial">SME waves slipped</span></td><td>Certificate procurement cited<sup class="ref"><a href="#ref-29">[29]</a>,<a href="#ref-30">[30]</a></sup></td></tr>
+        <tr><td class="c">Malaysia MyInvois</td><td>Aug 2024 phases</td><td>Dates held; scope cut twice</td><td><span class="pill partial">Scope contracted</span></td><td>Sub-RM500k exemption (2025) raised to RM1m (2026)<sup class="ref"><a href="#ref-44">[44]</a>,<a href="#ref-45">[45]</a></sup></td></tr>
+        <tr><td class="c">Pakistan FBR</td><td>Various 2024–25</td><td>Still extending</td><td><span class="pill slipped">3+ rewrites</span></td><td>Whole schedule rebuilt Aug 2025; extensions continue<sup class="ref"><a href="#ref-48">[48]</a></sup></td></tr>
+        <tr><td class="c">Philippines EIS</td><td>~2023 statutory intent (2018 law)</td><td>Pilot stalled 2024; wave 1 now due Dec 2026</td><td><span class="pill slipped">Years behind</span></td><td>Furthest behind original statutory intent in this set<sup class="ref"><a href="#ref-49">[49]</a></sup></td></tr>
+        <tr><td class="c">UAE / Slovenia / Latvia / Slovakia</td><td>2026 (various)</td><td>2027 / 2028 / 2028 / 2027</td><td><span class="pill slipped">Pre-launch slips</span></td><td>All deferred before ever going live<sup class="ref"><a href="#ref-66">[66]</a></sup></td></tr>
+      </table>
+    </div>
+    <div class="prose">
+      <p class="aside">Tallying the score: of the major programmes above, roughly <strong>10 shipped on their first firm date</strong>, another <strong>8 held their dates but leaned on grace periods, scope cuts or a single reset</strong>, and <strong>9 slipped materially or serially</strong>. Every one of the fully on-time group was either threshold/counterparty-staged or decentralised; both flagship multi-year slips (Poland, France) involved building a new central state platform for a whole-economy switch-on. Italy is the exception that proves nothing either way — its big-bang shipped on time, on a platform (SDI) that had already run B2G invoicing for five years.</p>
+    </div>
+  </div>
+
+  <!-- ================= 05 PARTICIPATION ================= -->
+  <div class="section">
+    <div class="section-head"><span class="num mono">05</span><h2 class="display">Participation: who actually complied?</h2></div>
+    <p class="section-intro">Published, verifiable adoption figures are rarer than the policy rhetoric suggests — many authorities publish invoice volumes (which sound impressive) but not the compliance rate among obligated firms (which is the question that matters). Here is every hard participation figure this research could document, with its source.</p>
+
+    <div class="compare-card">
+      <table class="compare-table">
+        <tr><th>Jurisdiction</th><th>Participation evidence</th><th>As of</th><th>Source type</th></tr>
+        <tr><td class="c">South Korea</td><td><strong>99.8%</strong> of transaction value e-invoiced in year one of the corporate mandate; 99.9% by year three</td><td>2011–2013</td><td>World Bank study<sup class="ref"><a href="#ref-27">[27]</a></sup></td></tr>
+        <tr><td class="c">Dominican Rep.</td><td><strong>96%</strong> of the 633 obligated large national taxpayers compliant or in certification at the wave-1 deadline; 76,762 registered issuers by Jul 2026 — tripling in six months as the SME deadline approached</td><td>Jun 2024 / Jul 2026</td><td>DGII official; press reporting DGII figures<sup class="ref"><a href="#ref-29">[29]</a>,<a href="#ref-30">[30]</a></sup></td></tr>
+        <tr><td class="c">Vietnam</td><td><strong>92%</strong> of obligated taxpayers (764,314) registered during the final rollout phase</td><td>Jul 2022</td><td>Industry tracker citing GDT<sup class="ref"><a href="#ref-28">[28]</a></sup></td></tr>
+        <tr><td class="c">Malaysia</td><td><strong>&gt;90%</strong> compliance for phases 1–3; 200,000+ taxpayers using e-invoicing, 1bn+ transactions</td><td>Feb 2026</td><td>IRB Chief Executive, on record<sup class="ref"><a href="#ref-44">[44]</a></sup></td></tr>
+        <tr><td class="c">Colombia</td><td>1,143,000 registered electronic invoicers; <strong>~157,000 obligated taxpayers still non-compliant</strong> (≈88% compliance)</td><td>Mar 2024</td><td>Press reporting DIAN results<sup class="ref"><a href="#ref-51">[51]</a></sup></td></tr>
+        <tr><td class="c">Belgium</td><td>Peppol registrations jumped from 42% to <strong>78% of ~1.2m VAT-registered businesses in the final month</strong> before the Jan 2026 mandate; ~83% by March 2026 — with the caveat that registered ≠ fully compliant</td><td>Mar 2026</td><td>Industry analysis of Peppol directory data<sup class="ref"><a href="#ref-20">[20]</a></sup></td></tr>
+        <tr><td class="c">Italy</td><td>3.9 million businesses — <strong>78% of all Italian enterprises</strong> — sent 2.09bn invoices through SDI in the mandate's first 18 months</td><td>Jun 2020</td><td>Politecnico di Milano Osservatorio<sup class="ref"><a href="#ref-10">[10]</a></sup></td></tr>
+        <tr><td class="c">Chile</td><td>699,776 registered issuers at completion — <strong>~90% using the SII's free portal tool</strong></td><td>Feb 2018</td><td>SII official<sup class="ref"><a href="#ref-15">[15]</a></sup></td></tr>
+        <tr><td class="c">Peru</td><td><strong>&gt;80%</strong> of (non-fraud-flagged) obligated firms compliant after extended deadlines — never reached 100%</td><td>2019</td><td>IMF working paper<sup class="ref"><a href="#ref-22">[22]</a></sup></td></tr>
+        <tr><td class="c">Egypt</td><td>295,000 companies on the platform (from 134 at launch), &gt;1.25m documents/day</td><td>Feb 2023</td><td>Finance Minister, on record<sup class="ref"><a href="#ref-33">[33]</a></sup></td></tr>
+        <tr><td class="c">Jordan</td><td>~140,000 establishments enrolled; 100m invoices in the four months after enforcement — vs 18m in all of 2024</td><td>Aug 2025</td><td>ISTD Director-General, on record<sup class="ref"><a href="#ref-35">[35]</a></sup></td></tr>
+        <tr><td class="c">Poland</td><td>152,000+ entities in KSeF in month one of the mandate (only ~5,000 of them yet obligated); 35m invoices in February — six times the entire four-year voluntary period</td><td>Feb 2026</td><td>Ministry of Finance data, via press<sup class="ref"><a href="#ref-17">[17]</a></sup></td></tr>
+        <tr><td class="c">Serbia</td><td>220,000+ companies onboarded; 119m invoices in 2023, peaks of 700k/day</td><td>2023</td><td>Platform vendor (first-hand but non-neutral)<sup class="ref"><a href="#ref-42">[42]</a></sup></td></tr>
+        <tr><td class="c">Mexico</td><td>10.32 billion CFDI issued in 2023 (~327/second) — volume, not a compliance rate; issuance is a precondition of doing business</td><td>2023</td><td>SAT release, via IMCP<sup class="ref"><a href="#ref-23">[23]</a></sup></td></tr>
+        <tr><td class="c">Ecuador</td><td>The cautionary tale: <strong>only 11.8%</strong> of ~2.27m obligated RUC holders had adopted five months before the compressed Nov 2022 universal deadline</td><td>Jun 2022</td><td>Press<sup class="ref"><a href="#ref-52">[52]</a></sup></td></tr>
+      </table>
+    </div>
+    <div class="prose">
+      <p class="aside">Reading across these: where mandates are enforced through invoice validity (a non-cleared invoice is legally void, or blocks the buyer's VAT deduction), participation among <em>large and medium</em> firms reliably lands in the 88–100% range within months. The long tail is always micro-businesses — and the single strongest predictor of closing it is a free government issuance tool: Chile's portal carried 90% of its issuers, and the Dominican Republic, Egypt, Croatia and Poland all ship free apps for exactly this reason. Deadline proximity does the rest: Belgium added 425,000 Peppol registrations in a single December, and the Dominican Republic tripled its issuer base in six months.</p>
+    </div>
+  </div>
+
+  <!-- ================= 06 REVENUE OUTCOMES ================= -->
+  <div class="section">
+    <div class="section-head"><span class="num mono">06</span><h2 class="display">What the treasuries actually gained</h2></div>
+    <p class="section-intro">The question every finance ministry asks — and the one with the most uneven evidence. Below, the results are ranked by evidence quality: causal micro-studies first, official gap statistics second, government-asserted attributions third, and projections last. Where a widely-repeated figure could not be traced to a solid source, it is either flagged or omitted.</p>
+
+    <div class="spec-grid">
+      <div class="spec-card">
+        <h3>Peru — the causal benchmark</h3>
+        <p class="body">The IMF's firm-level evaluation of Peru's staged rollout is the cleanest causal evidence anywhere: e-invoicing increased reported firm sales, purchases and value-added by <strong>over 5% in the first year</strong> after adoption, with effects concentrated among smaller firms and low-compliance sectors.<sup class="ref"><a href="#ref-22">[22]</a></sup> A follow-up study found powerful network effects: smaller firms whose trading partners were mandated into e-invoicing reported <strong>11% more sales and paid 17% more VAT</strong> — compliance propagates through supply chains before coverage is even complete.<sup class="ref"><a href="#ref-53">[53]</a></sup></p>
+        <p class="note">The same study is candid about limits: cash revenue gains were muted by weaknesses in Peru's VAT refund system. Digitalisation needs complementary reforms to convert reported liabilities into collected cash.</p>
+      </div>
+      <div class="spec-card">
+        <h3>Italy — the big-bang dividend</h3>
+        <p class="body">Italy's VAT compliance gap fell from <strong>23.5% of theoretical liability in 2017 to 10.8% in 2021</strong> — a €33bn gap cut to €14.6bn — with the 2021 drop alone (−10.7 points) the largest in the EU-27.<sup class="ref"><a href="#ref-7">[7]</a></sup> The finance ministry's own early estimate attributed roughly <strong>€2bn of extra VAT to e-invoicing in 2019</strong>, revised toward €4bn as the year progressed, plus ~€700m of fraudulent VAT credit offsets blocked at the gate.<sup class="ref"><a href="#ref-8">[8]</a></sup></p>
+        <p class="note">Caveat: the EC's re-benchmarked December 2025 report revises Italy's 2023 gap to 15.0% — a real partial rebound plus a methodology change. The improvement is large either way; its exact size depends on the edition cited.<sup class="ref"><a href="#ref-4">[4]</a></sup></p>
+      </div>
+      <div class="spec-card">
+        <h3>Hungary — reporting alone worked</h3>
+        <p class="body">Hungary never mandated clearance — just real-time invoice reporting — and cut its VAT gap from <strong>14.3% (2017) to 4.4% (2021)</strong>, among the EU's best, a decline the EC country chapter calls "steady and steep."<sup class="ref"><a href="#ref-6">[6]</a></sup> Domestic analysis attributes over HUF 400bn of additional budget revenue to the combination of online cash registers, the EKÁER transport system and RTIR.<sup class="ref"><a href="#ref-54">[54]</a></sup></p>
+      </div>
+      <div class="spec-card">
+        <h3>Poland — gains without (then before) clearance</h3>
+        <p class="body">Poland's VAT gap fell from <strong>23.9% (2015) to 9.9% (2018)</strong> on the strength of SAF-T files, split payment and real-time bank-flow analysis — before KSeF existed.<sup class="ref"><a href="#ref-14">[14]</a></sup> By 2023 the gap had rebounded to 16.0% while KSeF sat delayed — the dataset's clearest suggestion that enforcement gains can erode without continuous transaction-level controls, though other factors (inflation, methodology revision) share the blame.<sup class="ref"><a href="#ref-4">[4]</a></sup></p>
+      </div>
+      <div class="spec-card">
+        <h3>Latin America — the founding evidence</h3>
+        <p class="body">The IDB/CIAT programme evaluations found positive revenue effects in all five countries studied (Argentina, Brazil, Ecuador, Mexico, Uruguay).<sup class="ref"><a href="#ref-50">[50]</a></sup> Peer-reviewed point estimates: Ecuador's declared VAT rose <strong>+19.4% (2015) and +28.1% (2016)</strong> among affected taxpayers (~US$133m); Uruguay saw <strong>+3.7%</strong> on corporate VAT paid; Mexico's SAT-commissioned study measured VAT evasion falling from <strong>31.9% to 19.4%</strong> and income-tax evasion from 39.8% to 25.6% between 2011 and 2015 — confounded, honestly, with the 2014 fiscal reform it accompanied.<sup class="ref"><a href="#ref-55">[55]</a>,<a href="#ref-23">[23]</a></sup></p>
+        <p class="note">The intellectual foundation is Chilean: Pomeranz's randomised evaluation across 400,000+ firms showed the VAT invoice paper trail itself deters evasion and propagates enforcement up supply chains — the result CTC regimes industrialise.<sup class="ref"><a href="#ref-56">[56]</a></sup></p>
+      </div>
+      <div class="spec-card">
+        <h3>EU-wide — the aggregate picture</h3>
+        <p class="body">The EU VAT gap fell from <strong>€99bn (2020) to €61bn (2021)</strong> — "an unprecedented improvement" — and the Commission explicitly credited "new digital reporting tools, the real-time tracking of transactions, and e-invoicing regimes which are particularly effective against criminal VAT fraud."<sup class="ref"><a href="#ref-5">[5]</a></sup> The ViDA impact assessment quantified the cross-country effect: member states that introduced digital reporting saw VAT revenue increases of <strong>2.6–3.5% per year</strong>, worth €19–28bn over 2014–2019.<sup class="ref"><a href="#ref-57">[57]</a></sup></p>
+        <p class="note">The 2025 edition shows the gap widening again to €128bn / 9.5% by 2023 under revised methodology — digital controls are necessary but clearly not sufficient in a high-inflation, post-pandemic environment.<sup class="ref"><a href="#ref-4">[4]</a></sup></p>
+      </div>
+      <div class="spec-card">
+        <h3>Projections on the record</h3>
+        <p class="body">France's tax administration expects <strong>€2–3bn/year of additional VAT</strong> in steady state from its 2026–27 mandate, against an estimated €6–10bn national VAT gap;<sup class="ref"><a href="#ref-58">[58]</a></sup> its official impact study also projects ≥€4.5bn/year of business savings (≈€10 per paper invoice vs under €1 electronic).<sup class="ref"><a href="#ref-59">[59]</a></sup> The EU's ViDA package projects up to €11bn/year less VAT fraud and €4.1bn/year lower compliance costs.<sup class="ref"><a href="#ref-57">[57]</a></sup></p>
+      </div>
+      <div class="spec-card">
+        <h3>Where no number exists</h3>
+        <p class="body">Honesty requires naming the gaps: <strong>no audited revenue-attribution figure was found for Saudi Arabia, Egypt, Jordan, Israel, Turkey, Serbia, India, Vietnam, Malaysia or China</strong>. Egypt's +22.5% VAT growth and India's record GST collections are real but officially attributed to broad reform packages, not e-invoicing specifically; Korea's World Bank evaluation explicitly declined to estimate a revenue effect, documenting instead an ~80–85% collapse in bogus-invoice fraud cases from their 2005 peak.<sup class="ref"><a href="#ref-27">[27]</a>,<a href="#ref-33">[33]</a></sup></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= 07 CHALLENGES ================= -->
+  <div class="section">
+    <div class="section-head"><span class="num mono">07</span><h2 class="display">The challenges programmes actually faced</h2></div>
+    <p class="section-intro">Six failure modes recur across the 60 jurisdictions — none of them exotic, all of them documented.</p>
+
+    <div class="spec-grid">
+      <div class="spec-card">
+        <h3>1 · Central platforms that weren't ready</h3>
+        <p class="body">Poland's KSeF was halted five months before go-live when an external audit found "critical errors... affecting overall system functionality and performance"; the state rebuilt the platform from scratch.<sup class="ref"><a href="#ref-16">[16]</a></sup> Indonesia's Coretax — a big-bang replacement of the entire core tax system — broke invoice issuance on day one (of 845,514 invoices attempted in the first nine days, only 236,221 validated), forcing a formal apology from the tax directorate and a penalty moratorium.<sup class="ref"><a href="#ref-60">[60]</a></sup> France, watching, abandoned its public platform's exchange role entirely in October 2024 and pushed exchange onto ~158 accredited private platforms.<sup class="ref"><a href="#ref-12">[12]</a></sup></p>
+      </div>
+      <div class="spec-card">
+        <h3>2 · The SME wall</h3>
+        <p class="body">Every extension documented in this research was, at root, about small businesses: the Dominican Republic's two 6-month wave extensions (digital-certificate procurement), Malaysia's decision to exempt sub-RM1m businesses outright, Peru's +13-month wave 5, Chile's deliberate 4-year micro-enterprise tail, Ecuador's 88%-uncovered final sprint.<sup class="ref"><a href="#ref-30">[30]</a>,<a href="#ref-45">[45]</a>,<a href="#ref-22">[22]</a>,<a href="#ref-52">[52]</a></sup> Digital certificates, software costs and connectivity — not willingness — are the binding constraints cited.</p>
+      </div>
+      <div class="spec-card">
+        <h3>3 · Mid-stream redesigns</h3>
+        <p class="body">Colombia switched from post-validation to prior-validation clearance mid-rollout (2020); Mexico's CFDI 4.0 migration took ~9 months longer than planned; Costa Rica's v4.4 migration produced case-by-case extensions for hundreds of firms; Brazil's 2026 CBS/IBS reform is re-opening layouts across every live system; and ViDA's 2035 harmonisation deadline guarantees that even finished European systems (SDI, KSeF) face a second compliance wave.<sup class="ref"><a href="#ref-51">[51]</a>,<a href="#ref-23">[23]</a>,<a href="#ref-61">[61]</a>,<a href="#ref-68">[68]</a>,<a href="#ref-3">[3]</a></sup></p>
+      </div>
+      <div class="spec-card">
+        <h3>4 · Operational integration burden</h3>
+        <p class="body">Saudi Arabia's Phase 2 documents the day-two problems of a mature clearance regime: cryptographic hash-chains that break on network drops, clearance bottlenecks at month-end peaks, opaque error diagnostics, and per-transaction fees that scale faster than business volume.<sup class="ref"><a href="#ref-62">[62]</a></sup> Poland's first weeks surfaced certificate-generation queues and laggard software vendors pushing firms into offline fallback modes.<sup class="ref"><a href="#ref-63">[63]</a></sup></p>
+      </div>
+      <div class="spec-card">
+        <h3>5 · Privacy — the European constraint</h3>
+        <p class="body">Italy's data protection authority intervened before the 2019 launch, warning of "disproportionate collection of information"; the outcome barred the Revenue Agency from building a full invoice-content database and excluded healthcare invoices from SDI — a constraint with no equivalent in the Latin American systems Europe borrowed from.<sup class="ref"><a href="#ref-64">[64]</a></sup></p>
+      </div>
+      <div class="spec-card">
+        <h3>6 · Credibility decay</h3>
+        <p class="body">Where deadlines slip repeatedly — Pakistan's three schedule rewrites in 18 months, Greece's 2020–2026 sequence, the Philippines' 2018 law still pre-mandate — taxpayer investment stalls, because the rational response to a moving deadline is to wait.<sup class="ref"><a href="#ref-48">[48]</a>,<a href="#ref-43">[43]</a>,<a href="#ref-49">[49]</a></sup> The contrast is Saudi Arabia's 24 waves announced ~6 months ahead and never moved: predictability itself became the compliance tool.<sup class="ref"><a href="#ref-32">[32]</a></sup></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= 08 CONCLUSIONS ================= -->
+  <div class="section">
+    <div class="section-head"><span class="num mono">08</span><h2 class="display">Objective conclusions</h2></div>
+    <p class="section-intro">What the evidence — as opposed to the vendor marketing or the ministerial press release — actually supports.</p>
+
+    <div class="conclusion-card">
+      <h4><span class="cnum">C1</span>Staged rollouts ship; whole-economy central-platform switch-ons slip.</h4>
+      <p>Every fully on-time programme in this dataset was either staged by threshold/counterparty or built on decentralised exchange. The two flagship failures — Poland (+19 months, full rebuild) and France (+26 months, platform model abandoned) — both attempted a new state-built central platform for an economy-wide switch-on. Italy's on-time big-bang is the exception, and it launched on a platform already hardened by five years of B2G traffic. The design lesson is not "never big-bang" but "never big-bang on unproven infrastructure."</p>
+    </div>
+    <div class="conclusion-card">
+      <h4><span class="cnum">C2</span>Roughly a third of programmes shipped on their first announced date — but almost none shipped without a shock absorber.</h4>
+      <p>Grace periods (Romania, Poland, France, Jordan, Malaysia, Belgium), scope contractions (Malaysia's exemption raises), or compressed enforcement (Egypt's 18-month paper-invoice reprieve) accompanied nearly every launch. Croatia's day-one enforcement is the documented outlier. Realistic planning should treat the first 6–12 months after any go-live as a soft period — because empirically, it almost always is.</p>
+    </div>
+    <div class="conclusion-card">
+      <h4><span class="cnum">C3</span>Participation follows enforcement design, not exhortation.</h4>
+      <p>Where invoice validity or the buyer's input-VAT deduction depends on compliance, large/medium-firm participation reliably reaches 88–100% within months (Korea 99.8%, DR wave 1 96%, Vietnam 92%, Malaysia &gt;90%, Colombia ~88%). The buyer-side lever — your customer loses their deduction if you don't comply — is the single most effective mechanism documented, and the SME tail closes only where a free government issuance tool exists.</p>
+    </div>
+    <div class="conclusion-card">
+      <h4><span class="cnum">C4</span>The revenue effect is real, measurable, and smaller than the headlines.</h4>
+      <p>The credible range from causal and quasi-experimental studies is a 3–7% increase in reported VAT among affected firms in the early years (Peru +7.2% liabilities; Uruguay +3.7%; EU DRR states +2.6–3.5%/yr), with larger effects where baseline evasion was high (Ecuador +19–28%; Mexico's evasion rate down 12 points; Italy's gap down ~13 points over four years; Hungary's down ~10). Claims of transformational revenue windfalls beyond that range are not supported by any audited source found in this research.</p>
+    </div>
+    <div class="conclusion-card">
+      <h4><span class="cnum">C5</span>Reporting-only regimes captured most of the fiscal benefit without clearance's delivery risk.</h4>
+      <p>Hungary (4.4% gap by 2021) and Spain's SII achieved elite VAT-gap positions with real-time reporting alone — no clearance platform, no invoice-validity dependency, and on-time delivery. Portugal reached a 3.6% gap with certified-software controls and no CTC at all. Clearance adds enforcement power (blocking fraudulent invoices at the gate, as Italy's €700m of blocked credits shows) but the marginal fiscal gain over well-enforced reporting is undemonstrated in the published data.</p>
+    </div>
+    <div class="conclusion-card">
+      <h4><span class="cnum">C6</span>Gains erode without maintenance — digital controls are a treatment, not a cure.</h4>
+      <p>Poland's gap rebounded from 9.9% to 16.0% while KSeF sat delayed; the EU-wide gap re-widened to €128bn by 2023; Italy's revised 2023 figure (15.0%) shows partial rebound. The 2021 EU-wide improvement was real and the Commission credits digital reporting for much of it — but the 2023 data shows these systems must be continuously enforced and extended to hold their gains.</p>
+    </div>
+    <div class="conclusion-card">
+      <h4><span class="cnum">C7</span>The global direction of travel is settled; the architecture is converging on decentralised models.</h4>
+      <p>With 80+ countries now operating some mandatory e-invoicing (industry estimate),<sup class="ref"><a href="#ref-2">[2]</a></sup> ViDA in force since April 2025,<sup class="ref"><a href="#ref-3">[3]</a></sup> and 2026 the heaviest go-live year on record (Poland, Belgium, Croatia, Greece, France, Oman, UAE pilot), the open question is no longer whether but how. The newest designs — France, UAE, Oman, Singapore, Slovakia, UK, Ireland — have all chosen accredited-private-platform / Peppol 5-corner architectures over new central state platforms, which is itself a verdict on the delivery record documented in Section 04.<sup class="ref"><a href="#ref-65">[65]</a>,<a href="#ref-67">[67]</a></sup></p>
+    </div>
+    <div class="conclusion-card">
+      <h4><span class="cnum">C8</span>For businesses, the practical reading is: prepare on the announced date, bank on the grace period, and watch the SME waves.</h4>
+      <p>First waves for large taxpayers overwhelmingly ship on schedule — planning to a delay is a bad bet (ask anyone who assumed Belgium or Poland's 2026 dates would slip). But final SME waves slip or contract more often than not, and every regime's real enforcement start has lagged its legal start. The rational posture is to build to the official date while sequencing spend so that a 6-month grace period is upside, not sunk cost.</p>
+    </div>
+  </div>
+
+  <!-- ================= 09 REFERENCES ================= -->
+  <div class="section">
+    <div class="section-head"><span class="num mono">09</span><h2 class="display">References</h2></div>
+    <p class="section-intro">Source-type tags: <span class="src-tag mono">[official]</span> government / EU / multilateral primary source · <span class="src-tag mono">[study]</span> peer-reviewed or working-paper research · <span class="src-tag mono">[press]</span> news reporting of official figures · <span class="src-tag mono">[industry]</span> compliance-industry tracker or professional-services alert. Figures resting solely on industry or single-press sources are identified as such in the text.</p>
+    <div class="refs">
+      <ol>
+        <li id="ref-1"><span class="src-tag">[official]</span> OECD Forum on Tax Administration, <a href="https://www.oecd.org/en/publications/tax-administration-3-0-and-electronic-invoicing_2ffc88ed-en.html" target="_blank" rel="noopener">Tax Administration 3.0 and Electronic Invoicing: Initial Findings</a> (2022).</li>
+        <li id="ref-2"><span class="src-tag">[industry]</span> Politecnico di Milano, International Observatory on Electronic Invoicing, <a href="https://www.osservatori.net/comunicato/international-observatory-on-electronic-invoicing/einvoicing-generate-revenue-business-savings/" target="_blank" rel="noopener">press release, September 2025</a> — "over 80 countries have introduced mandatory eInvoicing"; EU 10-year projection €111bn additional VAT + €41bn business savings.</li>
+        <li id="ref-3"><span class="src-tag">[official]</span> European Commission, <a href="https://taxation-customs.ec.europa.eu/taxation/vat/vat-digital-age-vida_en" target="_blank" rel="noopener">VAT in the Digital Age (ViDA)</a> — adopted 11 March 2025, in force 14 April 2025; intra-EU digital reporting from 1 July 2030; domestic-regime harmonisation by 1 January 2035.</li>
+        <li id="ref-4"><span class="src-tag">[official]</span> European Commission, <a href="https://taxation-customs.ec.europa.eu/taxation/vat/fight-against-vat-fraud/vat-gap_en" target="_blank" rel="noopener">VAT gap</a> landing page and <a href="https://data.europa.eu/doi/10.2778/7868422" target="_blank" rel="noopener">VAT gap in Europe — Report 2025</a> (Dec 2025): EU compliance gap €128bn / 9.5% of VTTL (2023); Italy 15.0%, Poland 16.0%, Hungary 7.4%, Spain 7.6%, Portugal 3.6%, Romania 30.0% (2023, revised methodology).</li>
+        <li id="ref-5"><span class="src-tag">[official]</span> European Commission, <a href="https://taxation-customs.ec.europa.eu/news/vat-gap-progress-made-vat-compliance-2021-though-losses-remain-considerable-2023-10-24_en" target="_blank" rel="noopener">press release, 24 Oct 2023</a> — EU gap €99bn (2020) → €61bn (2021); Italy −10.7pp, Poland −7.8pp; attribution to "real-time tracking of transactions, and e-invoicing regimes". Full report: <a href="https://taxation-customs.ec.europa.eu/system/files/2023-11/vat%20gap%20in%20the%20eu-KP0223140ENN.pdf" target="_blank" rel="noopener">VAT gap in the EU — Report 2023 (PDF)</a>.</li>
+        <li id="ref-6"><span class="src-tag">[official]</span> European Commission, <a href="https://taxation-customs.ec.europa.eu/document/download/ac5f9acb-7b51-4b6a-b746-67ace459f440_en?filename=HUNGARY+Country+specific+VAT+gap+report+2023.pdf" target="_blank" rel="noopener">Hungary country-specific VAT gap report 2023 (PDF)</a> — compliance gap 14.3% (2017) → 4.4% (2021).</li>
+        <li id="ref-7"><span class="src-tag">[official]</span> European Commission, <a href="https://taxation-customs.ec.europa.eu/document/download/12749c30-9b2f-4f10-bf3a-6b571080f2af_en?filename=ITALY+Country+specific+VAT+gap+report+2023.pdf" target="_blank" rel="noopener">Italy country-specific VAT gap report 2023 (PDF)</a> — gap 23.5%/€33.0bn (2017) → 10.8%/€14.6bn (2021).</li>
+        <li id="ref-8"><span class="src-tag">[press]</span> Il Sole 24 Ore, <a href="https://www.ilsole24ore.com/art/lotta-all-evasione-fattura-elettronica-spinge-gettito-extra-4-miliardi-2019-AC8FExW" target="_blank" rel="noopener">"Fattura elettronica spinge gettito: extra 4 miliardi nel 2019"</a> — reporting MEF estimates: initial €1.9bn e-invoicing attribution revised toward €4bn; ~€700m improper VAT credit offsets blocked.</li>
+        <li id="ref-9"><span class="src-tag">[official]</span> European Commission, <a href="https://ec.europa.eu/digital-building-blocks/sites/spaces/einvoicingCFS/pages/881983583/2025+Italy+2025+eInvoicing+Country+Sheet" target="_blank" rel="noopener">Italy eInvoicing Country Sheet 2025</a> — B2G 2014–15; B2B+B2C via SDI from 1 Jan 2019; flat-rate exemption removed Jan 2024.</li>
+        <li id="ref-10"><span class="src-tag">[study]</span> Osservatorio Digital B2b, Politecnico di Milano, SDI volume data <a href="https://youmark.it/ym-interactive/il-digital-spinge-la-fatturazione-elettronica-che-raggiunge-i-209-miliardi-di-fatture-transitate-su-sdi-e-lecommerce-b2b-il-report-dellosservatorio-del-politecnico-di-milano/" target="_blank" rel="noopener">as reported June 2020</a> — 2.09bn invoices, 3.9m businesses (78% of enterprises).</li>
+        <li id="ref-11"><span class="src-tag">[industry]</span> EY, <a href="https://www.ey.com/en_gl/technical/tax-alerts/france-postpones-electronic-invoicing-initially-scheduled-for-1-" target="_blank" rel="noopener">France postpones electronic invoicing</a> (Jul 2023).</li>
+        <li id="ref-12"><span class="src-tag">[industry]</span> Tradeshift, <a href="https://tradeshift.com/resources/compliance/ppf-drops-e-invoicing-platform-role/" target="_blank" rel="noopener">PPF drops e-invoicing platform role</a> — DGFiP announcement, 15 Oct 2024: public portal retained as directory/data concentrator only; exchange via registered private platforms.</li>
+        <li id="ref-13"><span class="src-tag">[industry]</span> Comarch, <a href="https://www.comarch.com/trade-and-services/data-management/legal-regulation-changes/france-confirms-september-2026-e-invoicing-go-live-and-publishes-start-up-guidance/" target="_blank" rel="noopener">France confirms September 2026 go-live</a> (Jul 2026) — DGFiP confirmation of 1 Sep 2026, start-up guide, soft-landing doctrine to 31 Dec 2026.</li>
+        <li id="ref-14"><span class="src-tag">[study]</span> Polish Economic Institute, <a href="https://pie.net.pl/wp-content/uploads/2021/12/Raport-LUKA-VAT-EN.pdf" target="_blank" rel="noopener">Reducing the VAT gap: lessons from Poland (PDF)</a> — gap 23.9% (2015) → 14% (2017); measures and attributed recoveries. See also European Commission, <a href="https://eur-lex.europa.eu/legal-content/EN/TXT/HTML/?uri=CELEX:52022PC0058" target="_blank" rel="noopener">COM(2022) 58 final</a> — ~14% (2017) → ~9.7% (2019).</li>
+        <li id="ref-15"><span class="src-tag">[official]</span> Servicio de Impuestos Internos (Chile), <a href="https://www.sii.cl/noticias/2018/010218noti01er.htm" target="_blank" rel="noopener">news release, 1 Feb 2018</a> — completion of mandatory phase-in; 699,776 registered issuers, ~90% on the SII free tool. Statutory schedule: <a href="https://www.sii.cl/factura_electronica/ley/ley_fe_20727.htm" target="_blank" rel="noopener">Ley 20.727</a>.</li>
+        <li id="ref-16"><span class="src-tag">[industry]</span> Sovos, <a href="https://sovos.com/blog/vat/poland-e-invoicing-via-ksef/" target="_blank" rel="noopener">Poland e-invoicing via KSeF</a> — Jan 2024 halt ("critical errors were identified in the code"), external audit, Feb/Apr 2026 dates, KSeF 2.0 Act (Aug 2025). See also EY, <a href="https://www.ey.com/en_gl/technical/tax-alerts/poland-announces-new-timeline-for-mandatory-e-invoicing" target="_blank" rel="noopener">Poland announces new timeline</a>.</li>
+        <li id="ref-17"><span class="src-tag">[industry]</span> VATupdate, <a href="https://www.vatupdate.com/2026/03/04/over-35-million-invoices-issued-in-ksef-since-mandatory-e-invoicing-began-in-february-2026/" target="_blank" rel="noopener">Over 35 million invoices issued in KSeF</a> (Mar 2026) — Ministry of Finance data: 152,000+ entities, 35m+ invoices in month one.</li>
+        <li id="ref-18"><span class="src-tag">[official]</span> European Commission, <a href="https://ec.europa.eu/digital-building-blocks/sites/spaces/DIGITAL/pages/467108886/eInvoicing+in+Germany" target="_blank" rel="noopener">eInvoicing in Germany</a> — Wachstumschancengesetz; receive duty 1 Jan 2025; issuance 2027/2028.</li>
+        <li id="ref-19"><span class="src-tag">[industry]</span> Tradeshift, <a href="https://tradeshift.com/resources/compliance/belgium-b2b-e-invoicing-mandate-2026-tolerance-period/" target="_blank" rel="noopener">Belgium B2B mandate 2026 &amp; tolerance period</a> — 1 Jan 2026 go-live; conditional Q1 2026 tolerance; penalty scale.</li>
+        <li id="ref-20"><span class="src-tag">[industry]</span> peppol.nu, <a href="https://www.peppol.nu/blog-items/belgium-e-invoicing-2026-first-lessons-after-deadline/" target="_blank" rel="noopener">Belgium e-invoicing 2026: first lessons</a> — Peppol registrations 42% → 78% (Dec 2025) → ~83% (Mar 2026) of ~1.2m VAT-registered businesses.</li>
+        <li id="ref-21"><span class="src-tag">[industry]</span> VATupdate, <a href="https://www.vatupdate.com/2026/01/08/croatias-e%E2%80%91invoicing-fiscalization-e%E2%80%91reporting-requirements/" target="_blank" rel="noopener">Croatia's e-invoicing, fiscalization &amp; e-reporting requirements</a> (Jan 2026) — Fiscalization 2.0 design; day-one enforcement; free MIKROeRAČUN tool.</li>
+        <li id="ref-22"><span class="src-tag">[study]</span> Bellon, Chang, Dabla-Norris, Khalid, Lima, Rojas &amp; Villena, <a href="https://www.imf.org/en/publications/wp/issues/2019/11/01/digitalization-to-improve-tax-compliance-evidence-from-vat-e-invoicing-in-peru-48672" target="_blank" rel="noopener">Digitalization to Improve Tax Compliance: Evidence from VAT e-Invoicing in Peru</a>, IMF WP/19/231 (2019); peer-reviewed version in <a href="https://www.sciencedirect.com/science/article/pii/S0047272722000639" target="_blank" rel="noopener">Journal of Public Economics (2022)</a> — first-year effects: reported sales +6.6%, value-added +5.9%, VAT liabilities +7.2%, payments +4.5%; wave extensions and &gt;80% compliance documented in the same paper.</li>
+        <li id="ref-23"><span class="src-tag">[official]</span> SAT (Mexico) figures: <a href="https://imcp.org.mx/noticias-fiscales-2024-53-sat-contribuyentes-emiten-mas-de-10-mil-millones-de-facturas-electronicas-en-2023/" target="_blank" rel="noopener">10.32bn CFDI issued in 2023</a> (SAT release 018-2024, via IMCP), incl. CFDI 4.0 transition dates; SAT-commissioned UDLAP evasion study (VAT evasion 31.9% → 19.4%, 2011–2015) <a href="https://fortunaypoder.com/economia/disminuye-evasion-isr-e-iva-gracias-reforma-fiscal-factura-electronica" target="_blank" rel="noopener">as reported</a> <span class="src-tag">[press]</span>.</li>
+        <li id="ref-24"><span class="src-tag">[industry]</span> Medius, <a href="https://www.medius.com/resources/guides-reports/e-invoicing-mandates-big-bang-vs-phase-approaches/" target="_blank" rel="noopener">E-invoicing mandates: big bang vs phased approaches</a> — cited as the closest existing treatment; no peer-reviewed comparative study of rollout modes was found.</li>
+        <li id="ref-25"><span class="src-tag">[official]</span> GSTN Invoice Registration Portal, <a href="https://einvoice6.gst.gov.in/content/e-invoice-mandate-e-invoicing-changes-exemptions-documents-covered-transactions-and-more/" target="_blank" rel="noopener">e-Invoice mandate: thresholds, exemptions &amp; timeline</a> — ₹500cr (Oct 2020) → ₹5cr (Aug 2023) with notification numbers.</li>
+        <li id="ref-26"><span class="src-tag">[official]</span> Notification No. 13/2020–Central Tax (21 Mar 2020), <a href="https://taxreply.com/gstnotifications-html/Notification-No-13-2020-1307.html" target="_blank" rel="noopener">text</a> — implementation extended to 1 Oct 2020.</li>
+        <li id="ref-27"><span class="src-tag">[study]</span> Hyung Chul Lee, <a href="https://documents1.worldbank.org/curated/en/712881467994710005/txt/WPS7592.txt" target="_blank" rel="noopener">Can Electronic Tax Invoicing Improve Tax Compliance? A Case Study of the Republic of Korea</a>, World Bank Policy Research WP 7592 (2016) — 99.8% adoption by transaction value in year one; bogus-invoice fraud charges down ~80–85% from 2005 peak; no econometric revenue estimate offered.</li>
+        <li id="ref-28"><span class="src-tag">[industry]</span> vatcalc, <a href="https://www.vatcalc.com/vietnam/vietnam-vat-b2b-e-invoices-update/" target="_blank" rel="noopener">Vietnam VAT B2B e-invoices update</a> — regional phases, 1 Jul 2022 national mandate, 764,314 taxpayers (92% of obliged) registered in phase 2. ECR programme detail: <a href="https://en.vietnamplus.vn/tax-authorities-to-make-einvoicing-a-common-practice/266247.vnp" target="_blank" rel="noopener">VietnamPlus</a> <span class="src-tag">[press]</span>.</li>
+        <li id="ref-29"><span class="src-tag">[official]</span> DGII (Dominican Republic), <a href="https://dgii.gov.do/noticias/Paginas/Grandes-Contribuyentes-adoptan-plazo-Ley-Facturacion-Electronica.aspx" target="_blank" rel="noopener">Grandes Contribuyentes adoptan plazo Ley de Facturación Electrónica</a> — 96% of 633 obligated large taxpayers compliant/in certification at the May 2024 deadline.</li>
+        <li id="ref-30"><span class="src-tag">[press]</span> Acento, <a href="https://acento.com.do/economia/mas-de-76000-contribuyentes-ya-emiten-facturas-electronicas-informa-impuestos-internos-9725216.html" target="_blank" rel="noopener">Más de 76,000 contribuyentes ya emiten facturas electrónicas</a> (24 Jul 2026) — DGII figures: 76,762 issuers (from 23,686 in Jan 2026). Wave extensions (Avisos 12-25, 06-26): <a href="https://blog.alegra.com/republica-dominicana/obligatoriedad-de-factura-electronica/" target="_blank" rel="noopener">calendar summary</a> <span class="src-tag">[industry]</span>.</li>
+        <li id="ref-31"><span class="src-tag">[official]</span> ZATCA (Saudi Arabia), <a href="https://zatca.gov.sa/en/E-Invoicing/Pages/default.aspx" target="_blank" rel="noopener">E-Invoicing (Fatoora)</a> — Phase 1 (4 Dec 2021), Phase 2 integration from 1 Jan 2023.</li>
+        <li id="ref-32"><span class="src-tag">[industry]</span> EY, <a href="https://www.ey.com/en_gl/technical/tax-alerts/saudi-arabia-announces-23rd-wave-of-phase-2-e-invoicing-integration" target="_blank" rel="noopener">Saudi Arabia announces 23rd wave of Phase 2 integration</a> — wave structure SAR 3bn → SAR 750k; wave 24 (&gt; SAR 375k, deadline 30 Jun 2026) per <a href="https://www.comarch.com/trade-and-services/data-management/news/navigating-e-invoicing-in-saudi-arabia-how-to-overcome-the-operational-challenges-of-zatca-compliance/" target="_blank" rel="noopener">Comarch</a>.</li>
+        <li id="ref-33"><span class="src-tag">[press]</span> Daily News Egypt, <a href="https://www.dailynewsegypt.com/2023/02/19/295k-companies-join-e-invoice-system-finance-minister/" target="_blank" rel="noopener">295k companies join e-invoice system</a> (Feb 2023) — Finance Minister Maait: from 134 companies (2020) to 295,000; &gt;1.25m documents/day. Wave detail and enforcement slippage: <a href="https://www.vatupdate.com/2026/02/23/briefing-document-podcast-e-invoicing-e-reporting-in-egypt/" target="_blank" rel="noopener">VATupdate Egypt briefing</a> <span class="src-tag">[industry]</span>.</li>
+        <li id="ref-34"><span class="src-tag">[industry]</span> Herzog Fox &amp; Neeman, <a href="https://herzoglaw.co.il/en/news-and-insights/the-implementation-of-the-israel-invoices-vat-reform-will-be-postponed-until-may-5-2024/" target="_blank" rel="noopener">Israel Invoices reform postponed until May 5, 2024</a> — threshold ladder NIS 25k → 5k; fictitious-invoice rationale ("billions of shekels").</li>
+        <li id="ref-35"><span class="src-tag">[press]</span> The Jordan Times, <a href="https://jordantimes.com/news/local/e-invoicing-system-reaches-100-million-invoices-in-four-months-official-figures" target="_blank" rel="noopener">E-invoicing system reaches 100 million invoices in four months</a> (Aug 2025) — ISTD DG: ~140,000 establishments; 1.2m invoices/day peak. Phase structure: <a href="https://www.vatupdate.com/2026/03/20/briefing-document-podcast-e-invoicing-e-reporting-in-jordan/" target="_blank" rel="noopener">VATupdate Jordan briefing</a> <span class="src-tag">[industry]</span>.</li>
+        <li id="ref-36"><span class="src-tag">[industry]</span> Global Indirect Tax Management, <a href="https://globalindirecttaxmanagement.com/country-updates/completion-of-israeli-e-invoicing-launch-advanced-to-june-2026.html" target="_blank" rel="noopener">Completion of Israeli e-invoicing launch advanced to June 2026</a> — 18-month acceleration of the threshold ladder.</li>
+        <li id="ref-37"><span class="src-tag">[industry]</span> Sovos, <a href="https://sovos.com/en-gb/vat/tax-rules/rtir-hungary/" target="_blank" rel="noopener">Hungary real-time invoice reporting (RTIR)</a> — 1 Jul 2018 (≥ HUF 100k VAT), threshold abolished Jul 2020, B2C/intra-EU from 2021.</li>
+        <li id="ref-38"><span class="src-tag">[industry]</span> The Invoicing Hub, <a href="https://www.theinvoicinghub.com/romania-e-reporting-mandate-end-of-the-grace-period/" target="_blank" rel="noopener">Romania e-reporting mandate: end of the grace period</a> — Jan 2024 reporting, Jul 2024 clearance; penalty grace extended to 31 May 2024.</li>
+        <li id="ref-39"><span class="src-tag">[official]</span> CIAT, <a href="https://www.ciat.org/the-immediate-supply-of-information-in-spain/?lang=en" target="_blank" rel="noopener">The Immediate Supply of Information (SII) in Spain</a> — 1 Jul 2017 go-live; ~62,000 entities ≈ 80% of transaction volume; 4-day reporting window.</li>
+        <li id="ref-40"><span class="src-tag">[industry]</span> vatcalc, <a href="https://www.vatcalc.com/spain/spain-verifactu-delay-till-jan-2027-for-certified-e-invoicing/" target="_blank" rel="noopener">Spain VeriFactu delay to Jan/Jul 2027</a>; Crea y Crece implementing decree RD 238/2026 and pending Ministerial Order: <a href="https://www.vatupdate.com/2026/04/18/e-invoicing-in-spain-a-briefing-document/" target="_blank" rel="noopener">VATupdate Spain briefing</a>.</li>
+        <li id="ref-41"><span class="src-tag">[industry]</span> KPMG Serbia, <a href="https://kpmg.com/rs/en/insights/tax-alerts/2021/05/law-on-electronic-invoicing-adopted.html" target="_blank" rel="noopener">Law on Electronic Invoicing adopted</a> (May 2021) — legislated B2G/G2B/B2B ladder to 1 Jan 2023.</li>
+        <li id="ref-42"><span class="src-tag">[industry]</span> vatcalc, <a href="https://www.vatcalc.com/serbia/serbia-b2b-e-invoicing-jan-2023/" target="_blank" rel="noopener">Serbia B2B e-invoicing Jan 2023</a> — "launched on schedule". SEF volumes (220,000+ companies, 119m invoices 2023): <a href="https://www.banqup.com/resources/blog/the-implementation-of-serbia-s-government-e-invoicing-solution" target="_blank" rel="noopener">Banqup/Unifiedpost</a> — platform-vendor figures, first-hand but non-neutral.</li>
+        <li id="ref-43"><span class="src-tag">[industry]</span> vatcalc, <a href="https://www.vatcalc.com/greece/greece-mydata-e-book-and-e-invoices-update/" target="_blank" rel="noopener">Greece myDATA &amp; e-invoices update</a> — B2B mandate 2 Mar 2026 (&gt; €1m) / 12 Oct 2026 (rest); EU derogation Feb 2025. myDATA 2020–21 postponements: <a href="https://sovos.com/blog/vat/greeces-mydata-mandate-postponed-to-september-2021/" target="_blank" rel="noopener">Sovos</a>.</li>
+        <li id="ref-44"><span class="src-tag">[press]</span> Malay Mail, <a href="https://www.malaymail.com/news/malaysia/2026/02/11/irb-more-than-200000-taxpayers-now-using-einvoices-over-one-billion-transactions-recorded/208830" target="_blank" rel="noopener">IRB: more than 200,000 taxpayers now using e-invoices</a> (11 Feb 2026) — &gt;1bn transactions; &gt;90% compliance for phases 1–3.</li>
+        <li id="ref-45"><span class="src-tag">[industry]</span> ClearTax, <a href="https://www.cleartax.com/my/en/different-phases-implementation-timelines-einvoicing-malaysia" target="_blank" rel="noopener">Malaysia e-invoicing implementation phases</a> — RM100m → RM1m waves, 6-month relaxation periods, exemption threshold raised RM500k → RM1m (Jan 2026).</li>
+        <li id="ref-46"><span class="src-tag">[industry]</span> ClearTax, <a href="https://www.cleartax.com/om/e-invoicing-oman" target="_blank" rel="noopener">Oman e-invoicing (Fawtara)</a> — Peppol 5-corner; pilot Aug 2026 (~144 largest taxpayers); phases to Aug 2027.</li>
+        <li id="ref-47"><span class="src-tag">[industry]</span> China Briefing, <a href="https://www.china-briefing.com/news/e-invoicing-china-expansion-fully-digitalized-e-fapiao-program-details-timeline/" target="_blank" rel="noopener">Fully digitalized e-fapiao: program details &amp; timeline</a> — 2021–23 provincial pilots; nationwide from 1 Dec 2024. New VAT Law framework: <a href="https://edicomgroup.com/blog/china-moves-to-implement-the-electronic-invoice" target="_blank" rel="noopener">EDICOM</a>.</li>
+        <li id="ref-48"><span class="src-tag">[industry]</span> VATupdate, <a href="https://www.vatupdate.com/2025/08/27/pakistan-announces-new-deadlines-for-mandatory-electronic-invoicing-starting-september-2025/" target="_blank" rel="noopener">Pakistan announces new deadlines (SRO 1413(I)/2025)</a>; earlier postponements: <a href="https://sovos.com/regulatory-updates/vat/pakistan-mandatory-e-invoicing-integration-deadlines-postponed/" target="_blank" rel="noopener">Sovos</a>.</li>
+        <li id="ref-49"><span class="src-tag">[industry]</span> vatcalc, <a href="https://www.vatcalc.com/philippines/philippines-eis-vat-e-invoicing-1-july-2022/" target="_blank" rel="noopener">Philippines EIS e-invoicing</a> — 2022 pilot (~100 large taxpayers), halted by technical problems by early 2024, restarted Mar 2025; RR 26-2025 extension to Dec 2026.</li>
+        <li id="ref-50"><span class="src-tag">[study]</span> Barreix &amp; Zambrano (eds.), <a href="https://publications.iadb.org/en/electronic-invoicing-latin-america" target="_blank" rel="noopener">Electronic Invoicing in Latin America</a>, IDB/CIAT (2018) — five country impact assessments, all positive on VAT returns and payments; <a href="https://www.ciat.org/Biblioteca/Estudios/2018_FE/2018_Electronic_invoice_summary_BID_CIAT.pdf" target="_blank" rel="noopener">English summary (PDF)</a>.</li>
+        <li id="ref-51"><span class="src-tag">[press]</span> Actualícese, <a href="https://actualicese.com/dian-presento-resultados-de-facturacion-electronica-van-1-143-000-facturadores-en-el-pais/" target="_blank" rel="noopener">DIAN presentó resultados de facturación electrónica</a> (Mar 2024) — 1,143,000 registered; ~157,000 obligated non-compliant. Model reset to prior-validation (Res. 000042/2020): <a href="https://blog.groupseres.com/nuevos-plazos-para-la-implementaci%C3%B3n-de-la-factura-electr%C3%B3nica-en-colombia" target="_blank" rel="noopener">Grupo SERES</a> <span class="src-tag">[industry]</span>.</li>
+        <li id="ref-52"><span class="src-tag">[press]</span> Primicias, <a href="https://www.primicias.ec/noticias/economia/facturacion-electronica-obligatoria-noviembre/" target="_blank" rel="noopener">Facturación electrónica obligatoria en noviembre</a> — Ecuador: 269,575 of ~2.27m obligated (11.8%) adopted five months before the Nov 2022 deadline.</li>
+        <li id="ref-53"><span class="src-tag">[study]</span> Bellon, Dabla-Norris, Khalid, Paliza, Chang &amp; Villena, <a href="https://www.imf.org/en/publications/wp/issues/2022/03/18/digitalization-and-tax-compliance-spillovers-evidence-from-a-vat-e-invoicing-reform-in-peru-515162" target="_blank" rel="noopener">Digitalization and Tax Compliance Spillovers: Evidence from a VAT e-Invoicing Reform in Peru</a>, IMF WP/2022/057 (2022) — partner firms: +11% reported sales, +17% VAT paid.</li>
+        <li id="ref-54"><span class="src-tag">[study]</span> Varga, <a href="https://nemzetkozi-gazdalkodas.hu/files/18988/SZE_9_ME_Varga%20Z%20tanulm%C3%A1nyk%C3%B6tet.pdf" target="_blank" rel="noopener">Digitalisation and taxation in Hungary (PDF)</a> — NAV data: 350,000+ registered reporters; HUF 400bn+ attributed to online cash registers + EKÁER.</li>
+        <li id="ref-55"><span class="src-tag">[study]</span> Ramírez-Álvarez, Oliva &amp; Andino, <a href="https://www.scielo.org.mx/pdf/prode/v53n208/0301-7036-prode-53-208-97-en.pdf" target="_blank" rel="noopener">Tax compliance and electronic invoicing in Ecuador: an impact assessment (PDF)</a> — declared VAT +19.4% (2015), +28.1% (2016), ≈US$132.6m; compiles Uruguay +3.7% (Bérgolo et al.), Mexico &gt;10%, Brazil +22% reported earnings.</li>
+        <li id="ref-56"><span class="src-tag">[study]</span> Dina Pomeranz, <a href="https://www.aeaweb.org/articles?id=10.1257%2Faer.20130393" target="_blank" rel="noopener">No Taxation without Information: Deterrence and Self-Enforcement in the Value Added Tax</a>, American Economic Review 105(8), 2015.</li>
+        <li id="ref-57"><span class="src-tag">[official]</span> European Commission, <a href="https://eur-lex.europa.eu/legal-content/EN/TXT/HTML/?uri=CELEX%3A52022SC0393" target="_blank" rel="noopener">ViDA Impact Assessment, SWD(2022) 393 final</a> — DRR states gained €19–28bn (2014–2019), +2.6–3.5%/yr; 10-year net benefit €250.7bn; €11bn/yr fraud-reduction and €4.1bn/yr cost-saving projections.</li>
+        <li id="ref-58"><span class="src-tag">[press]</span> La Revue du Digital, <a href="https://www.larevuedudigital.com/facturation-electronique-un-gain-de-2-a-3-milliards-deuros-de-tva-attendu-par-la-dfgfip/" target="_blank" rel="noopener">Facturation électronique: un gain de 2 à 3 milliards d'euros de TVA attendu par la DGFiP</a> (21 Jul 2026) — DGFiP Director-General Verdier; €6–10bn national VAT gap estimate.</li>
+        <li id="ref-59"><span class="src-tag">[official]</span> Légifrance, <a href="https://www.legifrance.gouv.fr/contenu/Media/Files/autour-de-la-loi/legislatif-et-reglementaire/fiches-d-impact/fiches-d-impact-ordonnances/2021/ecoe2116916r.pdf" target="_blank" rel="noopener">Fiche d'impact, ordonnance n° 2021-1190 (PDF)</a> — ~€10 paper vs &lt;€1 electronic per invoice; ≥€4.5bn/yr business savings; ~€2bn/yr anti-fraud gain projected.</li>
+        <li id="ref-60"><span class="src-tag">[industry]</span> MUC Consulting, <a href="https://muc.co.id/en/article/the-coretax-system-remains-troubled-dgt-apologizes" target="_blank" rel="noopener">The Coretax system remains troubled, DGT apologizes</a> (Jan 2025) — 845,514 invoices attempted, 236,221 validated by 9 Jan; sanction moratorium.</li>
+        <li id="ref-61"><span class="src-tag">[industry]</span> Siempre al Día, <a href="https://siemprealdia.co/costa-rica/impuestos/prorroga-para-factura-4-4/" target="_blank" rel="noopener">Costa Rica: prórroga para factura electrónica v4.4</a> — case-by-case extensions for 281 companies; free-tool users auto-extended.</li>
+        <li id="ref-62"><span class="src-tag">[industry]</span> Comarch, <a href="https://www.comarch.com/trade-and-services/data-management/news/navigating-e-invoicing-in-saudi-arabia-how-to-overcome-the-operational-challenges-of-zatca-compliance/" target="_blank" rel="noopener">Operational challenges of ZATCA compliance</a> — hash-chain fragility, clearance bottlenecks, error opacity, cost scaling.</li>
+        <li id="ref-63"><span class="src-tag">[industry]</span> peppol.nu, <a href="https://www.peppol.nu/blog-items/poland-ksef-e-invoicing-2026-first-weeks/" target="_blank" rel="noopener">Poland KSeF 2026: the first weeks</a> — certificate queues, JPK_VAT double-change, Offline24 fallback use.</li>
+        <li id="ref-64"><span class="src-tag">[industry]</span> Garante per la protezione dei dati personali rulings on Italian e-invoicing, via <a href="https://www.lexology.com/library/detail.aspx?g=8d8d784a-40b9-4524-8abd-10a6125306de" target="_blank" rel="noopener">Lexology summary</a> and <a href="https://www.edpb.europa.eu/news/national-news/2019/italian-garante-e-invoices-no-database-be-set-italys-revenue-agency-no-e_en" target="_blank" rel="noopener">EDPB news item</a> — no full invoice-content database; healthcare invoices excluded.</li>
+        <li id="ref-65"><span class="src-tag">[industry]</span> UK &amp; Ireland announcements: ICAS, <a href="https://www.icas.com/news-insights-events/news/tax/autumn-budget-2025-e-invoicing-will-go-ahead-from-2029" target="_blank" rel="noopener">Autumn Budget 2025: e-invoicing will go ahead from 2029</a>; VATupdate, <a href="https://www.vatupdate.com/2026/02/21/ireland-confirms-phased-rollout-of-mandatory-e-invoicing-and-real-time-vat-reporting-from-2028/" target="_blank" rel="noopener">Ireland confirms phased rollout from 2028</a>; Revenue (Ireland), <a href="https://www.revenue.ie/en/vat/documents/implementation-einvoicing.pdf" target="_blank" rel="noopener">eInvoicing implementation (PDF)</a> <span class="src-tag">[official]</span>.</li>
+        <li id="ref-66"><span class="src-tag">[industry]</span> Pre-launch deferrals: vatcalc, <a href="https://www.vatcalc.com/slovenia/slovenia-b2b-e-invoicing-e-slog-on-pause/" target="_blank" rel="noopener">Slovenia B2B on pause (2028)</a>; EDICOM, <a href="https://edicomgroup.com/blog/latvia-electronic-invoicing" target="_blank" rel="noopener">Latvia (B2B to 2028)</a>; vatcalc, <a href="https://www.vatcalc.com/slovakia/slovakia-is-efa-e-invoice-proposal-2024-delay-to-b2g/" target="_blank" rel="noopener">Slovakia (2027)</a>; ClearTax, <a href="https://www.cleartax.com/ae/e-invoicing-uae" target="_blank" rel="noopener">UAE (Jan/Jul 2027)</a>.</li>
+        <li id="ref-67"><span class="src-tag">[official]</span> IRAS (Singapore), <a href="https://www.iras.gov.sg/news-events/newsroom/committee-of-supply-2026--extension-of-gst-invoicenow-requirement-to-all-gst-registered-businesses-by-april-2031" target="_blank" rel="noopener">Extension of GST InvoiceNow requirement to all GST-registered businesses by April 2031</a>.</li>
+        <li id="ref-68"><span class="src-tag">[industry]</span> VATupdate, <a href="https://www.vatupdate.com/2025/12/22/briefing-document-podcasts-e-invoicing-e-reporting-in-brazil/" target="_blank" rel="noopener">Brazil e-invoicing &amp; e-reporting briefing</a> — NF-e history, 1,280+ municipal NFS-e systems, CBS/IBS reform layouts 2026–27.</li>
+      </ol>
+    </div>
+  </div>
+
+  <footer>
+    <p><strong>About this report.</strong> Prepared for the E-Invoicing Compliance Corner, August 2026, from the site's tracked milestone dataset plus targeted research of the public sources listed above. Facts were verified at the linked source wherever possible; figures resting on a single secondary source, on vendor-published data, or on government self-reporting are identified as such in the text. Nothing here is legal or tax advice — mandate details change frequently, and obligations should be confirmed against the official portal linked from each country's entry on the tracker, or with a qualified advisor.</p>
+    <p>© E-Invoicing Compliance Corner. Figures © their respective sources, cited above.</p>
+  </footer>
+
+</div>
+</body>
+</html>

@@ -23,7 +23,7 @@ import { escapeHtml, d1All, d1First } from "./deep-dive-render.mjs";
 export async function getPublishedArticles(db) {
   return d1All(db, `
     SELECT slug, type, title, dek, gated, is_sponsored, sponsor_name,
-           author, published_at
+           author, published_at, pdf_url
     FROM articles
     WHERE published = 1
     ORDER BY published_at DESC
@@ -39,22 +39,26 @@ const INSIGHTS_I18N = {
         whitepaper: "Whitepaper", blog: "Article",
         lockedTitle: "Subscriber Content Only",
         lockedBody: "The rest of this piece is for subscribers — free to join, no card required.",
-        unlockCta: "Subscribe free to keep reading", by: "By" },
+        unlockCta: "Subscribe free to keep reading", by: "By",
+        readCta: "Read the whitepaper →" },
   es: { badgeSponsored: "Contenido patrocinado", badgeSubscriber: "Solo para suscriptores",
         whitepaper: "Informe técnico", blog: "Artículo",
         lockedTitle: "Solo para suscriptores",
         lockedBody: "El resto de este contenido es para suscriptores — gratis, sin tarjeta.",
-        unlockCta: "Suscríbase gratis para seguir leyendo", by: "Por" },
+        unlockCta: "Suscríbase gratis para seguir leyendo", by: "Por",
+        readCta: "Leer el informe técnico →" },
   de: { badgeSponsored: "Gesponserter Inhalt", badgeSubscriber: "Nur für Abonnenten",
         whitepaper: "Whitepaper", blog: "Artikel",
         lockedTitle: "Nur für Abonnenten",
         lockedBody: "Der Rest dieses Beitrags ist Abonnenten vorbehalten — kostenlos, keine Kreditkarte nötig.",
-        unlockCta: "Kostenlos abonnieren und weiterlesen", by: "Von" },
+        unlockCta: "Kostenlos abonnieren und weiterlesen", by: "Von",
+        readCta: "Whitepaper lesen →" },
   fr: { badgeSponsored: "Contenu sponsorisé", badgeSubscriber: "Réservé aux abonnés",
         whitepaper: "Livre blanc", blog: "Article",
         lockedTitle: "Réservé aux abonnés",
         lockedBody: "La suite de cet article est réservée aux abonnés — gratuit, sans carte bancaire.",
-        unlockCta: "S'abonner gratuitement pour continuer", by: "Par" },
+        unlockCta: "S'abonner gratuitement pour continuer", by: "Par",
+        readCta: "Lire le livre blanc →" },
 };
 function ui(lang) { return INSIGHTS_I18N[lang] || INSIGHTS_I18N.en; }
 
@@ -77,7 +81,15 @@ export function renderInsightsListFragment(articles, lang, { articleHref }) {
       ? `<span class="insight-badge sponsored">${escapeHtml(u.badgeSponsored)}</span>`
       : a.gated ? `<span class="insight-badge gated">${escapeHtml(u.badgeSubscriber)}</span>` : "";
     const typeLabel = a.type === "whitepaper" ? u.whitepaper : u.blog;
-    return `<a class="insight-card" href="${escapeHtml(articleHref(a.slug))}">
+    // Ungated whitepapers with a document URL carry it as a data
+    // attribute: the tracker's in-page /insights panel (see
+    // openInsightsPage() in einvoicing-compliance-tracker.html) reads
+    // it to open the document in a pop-out overlay instead of
+    // navigating. Standalone/SEO visitors are unaffected — the href
+    // still points at the real article page.
+    const docAttr = a.type === "whitepaper" && a.pdf_url && !a.gated
+      ? ` data-doc-url="${escapeHtml(a.pdf_url)}"` : "";
+    return `<a class="insight-card" href="${escapeHtml(articleHref(a.slug))}"${docAttr}>
       <div class="insight-card-meta"><span class="insight-type">${escapeHtml(typeLabel)}</span>${badge}</div>
       <h3>${escapeHtml(a.title)}</h3>
       <p>${escapeHtml(a.dek)}</p>
@@ -109,7 +121,11 @@ export function renderArticleFragment(article, lang, { locked, unlockUrl }) {
 
   let bodyBlock;
   if (article.type === "whitepaper" && article.pdf_url && !locked) {
-    bodyBlock = `${article.teaser_html}<p><a class="insight-download" href="${escapeHtml(article.pdf_url)}" target="_blank" rel="noopener">${escapeHtml(u.whitepaper)} → PDF</a></p>`;
+    // `pdf_url` is the generic document URL — the site's own
+    // whitepapers ship as styled HTML pages (e.g. migration 449's
+    // /whitepaper-ctc-rollouts-compared.html), so the CTA reads
+    // "Read the whitepaper" rather than promising a PDF.
+    bodyBlock = `${article.teaser_html}<p><a class="insight-download" href="${escapeHtml(article.pdf_url)}" target="_blank" rel="noopener">${escapeHtml(u.readCta)}</a></p>`;
   } else if (locked) {
     bodyBlock = `<div class="insight-teaser">${article.teaser_html}</div>
       <div class="insight-locked-card">
