@@ -3073,8 +3073,31 @@ function closeInsightsPage(opts){
 function openWhitepaperPopout(url){
   const overlay = document.getElementById('whitepaperOverlay');
   const frame = document.getElementById('whitepaperFrame');
-  if(frame.getAttribute('src') !== url) frame.setAttribute('src', url);
   overlay.classList.add('open');
+
+  const setSrc = (target) => {
+    if(frame.getAttribute('src') !== target) frame.setAttribute('src', target);
+  };
+
+  // Full static translations (7 Aug 2026, per Dan's request): each
+  // whitepaper ships as four standalone files, base name for EN plus
+  // -es/-de/-fr variants (e.g.
+  // /whitepaper-ctc-rollouts-compared-es.html). If the site language
+  // isn't English, probe for the matching variant and use it when it
+  // exists -- the HEAD check means a future document published
+  // without translations degrades gracefully to its base file
+  // instead of a 404 in the pop-out. The pages also carry their own
+  // EN·ES·DE·FR switcher row, so a visitor can still change language
+  // inside the pop-out either way.
+  const lang = (window.EICC_I18N && window.EICC_I18N.currentLang) || 'en';
+  if(lang !== 'en' && /\.html$/.test(url)){
+    const variant = url.replace(/\.html$/, `-${lang}.html`);
+    fetch(variant, { method: 'HEAD' })
+      .then(r => setSrc(r.ok ? variant : url))
+      .catch(() => setSrc(url));
+    return;
+  }
+  setSrc(url);
 }
 
 function wireWhitepaperPopout(){

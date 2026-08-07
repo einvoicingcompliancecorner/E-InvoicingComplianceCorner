@@ -6188,6 +6188,60 @@ whitepaper asset + tracker + i18n + resources-render/site-worker code)
 AND members-worker (it bundles shared/resources-render.mjs too, for
 /members/insights/<slug>).
 
+## 7 Aug 2026 (cont'd) — whitepaper fully translated: static ES/DE/FR editions + language-aware pop-out
+
+Dan asked whether the whitepaper was translated (it wasn't — English
+only, with translated hub chrome) and, after weighing static vs full
+D1 translation, chose **full static translation** — reasoning that
+frozen content gets nothing from D1's dynamic machinery, and separate
+per-language files give better long-form prose quality and real
+per-language SEO than the education pages' data-i18n overlay pattern
+(which serves English to crawlers and fragments 9,000 words of prose
+into hundreds of keys).
+
+**Three new static files**, each a complete standalone edition:
+`whitepaper-ctc-rollouts-compared-es.html`, `-de.html`, `-fr.html`,
+written by three parallel translation agents from the EN source with
+a strict ruleset (translate all prose incl. table cells, pills,
+conclusions and reference annotations; keep HTML structure, URLs,
+anchors, numbers, `<style>`/`<script>` byte-identical; linked source
+titles stay in their original language; "clearance" introduced with
+a native gloss then used as industry jargon; source-type tags
+localised — [oficial]/[amtlich]/[officiel] etc.). Each edition:
+`<html lang>`, translated title/meta/og, self-canonical, and the
+shared 5-line hreflang cluster (en/es/de/fr/x-default) — added to
+the EN file too, along with a visible EN·ES·DE·FR `.lang-row`
+switcher (present in all four files, each marking itself current;
+deliberately kept visible in framed mode so language can be switched
+inside the pop-out — the links just navigate the iframe to the
+sibling edition).
+
+**Language-aware pop-out.** `openWhitepaperPopout()` now derives the
+variant from the active site language (`EICC_I18N.currentLang`):
+non-EN languages probe `<base>-<lang>.html` with a HEAD request and
+fall back to the base file if it doesn't exist — so a future
+whitepaper published without translations degrades gracefully
+instead of 404ing in the modal. Convention documented in the
+function comment: base name = EN, `-es/-de/-fr` suffixes = editions.
+
+**Verification, independent of the agents' own checks.** Structural
+parity script across all 4 files: identical counts for sections (9),
+references (68), citation anchors (114), tables (6), rows (108),
+pills (27), conclusion cards, hreflang lines; correct per-file
+canonical + lang attr; zero untranslated-English leftovers on an
+8-phrase heuristic sweep; 11 headline figures (€128bn, 99.8%,
+76,762, 10.8%...) present byte-identical in every edition. `node
+--check` on the tracker script: OK. Playwright: with site language
+switched to ES, the insights-panel whitepaper card opens the pop-out
+with the ES edition loaded ("Mandatos de Clearance Comparados");
+clicking DE in the in-popout lang row loads the German edition;
+a document with no `-es` variant falls back to its base file; zero
+page errors.
+
+**Deploy needs**: `wrangler deploy` on site-worker only (three new
+static assets + tracker edit). No migration this time — no D1
+changes.
+
 ## Open items / next steps
 
 ### Real open work

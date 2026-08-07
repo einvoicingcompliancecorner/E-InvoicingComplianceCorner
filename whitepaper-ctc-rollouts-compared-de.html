@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clearance-Mandate im Vergleich — Wie E-Invoicing-CTC-Einführungen wirklich abschnitten</title>
+<link rel="canonical" href="https://e-invoicingcompliancecorner.com/whitepaper-ctc-rollouts-compared-de.html">
+<link rel="alternate" hreflang="en" href="https://e-invoicingcompliancecorner.com/whitepaper-ctc-rollouts-compared.html">
+<link rel="alternate" hreflang="es" href="https://e-invoicingcompliancecorner.com/whitepaper-ctc-rollouts-compared-es.html">
+<link rel="alternate" hreflang="de" href="https://e-invoicingcompliancecorner.com/whitepaper-ctc-rollouts-compared-de.html">
+<link rel="alternate" hreflang="fr" href="https://e-invoicingcompliancecorner.com/whitepaper-ctc-rollouts-compared-fr.html">
+<link rel="alternate" hreflang="x-default" href="https://e-invoicingcompliancecorner.com/whitepaper-ctc-rollouts-compared.html">
+<meta name="description" content="Ein evidenzgeleiteter Vergleich von E-Invoicing-CTC- und Clearance-Mandats-Einführungen in 60 Jurisdiktionen: gestaffelt vs. Big-Bang, Pünktlichkeitsquoten, reale Teilnahmeniveaus, fiskalische Ergebnisse für die Staatskassen und die Herausforderungen, denen die Programme tatsächlich begegneten — durchgehend mit überprüfbaren Quellen.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://e-invoicingcompliancecorner.com/whitepaper-ctc-rollouts-compared-de.html">
+<meta property="og:title" content="Clearance-Mandate im Vergleich — Wie E-Invoicing-CTC-Einführungen wirklich abschnitten">
+<meta property="og:description" content="Gestaffelt vs. Big-Bang, Pünktlichkeitsquoten, Adoptionsniveaus und fiskalische Ergebnisse in 60 Jurisdiktionen — ein objektiver, vollständig belegter Vergleich von E-Invoicing-Compliance-Einführungen.">
+<meta name="twitter:card" content="summary">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0f1a2b; --ink-2:#152238; --ink-3:#1c2c48; --line:#2b3c5a;
+    --paper:#efe9db; --paper-2:#e4dcc6; --paper-line:#c9bd9e;
+    --text-lo:#f2f0e8; --muted:#93a3c0;
+    --stamp:#b5432f; --stamp-dim:#7c3628;
+    --live:#3f7d5c; --live-dim:#274a38;
+    --soon:#c98a3a; --soon-dim:#6e4c22;
+    --upcoming:#6b7a95; --upcoming-dim:#3a4864;
+    --radius:10px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{background:var(--ink); color:var(--text-lo); font-family:'IBM Plex Sans',sans-serif; line-height:1.55;}
+  .display{font-family:'Big Shoulders Display',sans-serif; font-weight:800;}
+  .mono{font-family:'IBM Plex Mono',monospace;}
+  a{color:inherit;}
+  .wrap{max-width:1040px; margin:0 auto; padding:0 5vw 60px;}
+  .back-link{display:inline-flex; align-items:center; gap:6px; margin:24px 0 0; font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:var(--muted); text-decoration:none;}
+  .back-link:hover{color:var(--soon);}
+  .page-head{
+    display:flex; flex-wrap:wrap; gap:18px; align-items:flex-start; justify-content:space-between;
+    padding:18px 0 26px; border-bottom:1px solid var(--line); margin-bottom:28px;
+  }
+  .eyebrow{font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.16em; text-transform:uppercase; color:var(--soon); margin:0 0 4px;}
+  .page-title{font-size:clamp(28px,4.5vw,42px); margin:0; text-transform:uppercase; line-height:0.95;}
+  .page-sub{font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--muted); margin-top:8px; max-width:680px; line-height:1.6;}
+  .meta{font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--muted); text-align:right;}
+
+  .stat-strip{display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:1px; background:var(--line); border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; margin-bottom:36px;}
+  .stat-strip .stat{background:var(--ink-2); padding:16px 18px;}
+  .stat-strip .stat .num{font-family:'Big Shoulders Display',sans-serif; font-weight:800; font-size:22px; line-height:1.15;}
+  .stat-strip .stat .lbl{font-size:10.8px; color:var(--muted); text-transform:uppercase; letter-spacing:0.07em; margin-top:5px;}
+
+  .section{margin-bottom:44px;}
+  .section-head{display:flex; align-items:baseline; gap:12px; margin-bottom:18px;}
+  .section-head h2{font-size:22px; margin:0; text-transform:uppercase;}
+  .section-head .num{font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--soon);}
+  .section-intro{color:var(--muted); font-size:13.8px; max-width:760px; margin:-8px 0 20px;}
+  .prose{max-width:820px; font-size:13.8px; color:var(--text-lo);}
+  .prose p{margin:0 0 14px;}
+  .prose .aside{color:var(--muted); font-size:12.8px; border-left:2px solid var(--soon-dim); padding-left:12px;}
+
+  .spec-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:14px;}
+  .spec-card{background:var(--paper); color:#241d10; border-radius:var(--radius); border:1px solid var(--paper-line); padding:16px 18px 18px;}
+  .spec-card h3{font-family:'IBM Plex Mono',monospace; font-size:11px; text-transform:uppercase; letter-spacing:0.09em; color:#6b5f3f; margin:0 0 10px; display:flex; align-items:center; gap:8px;}
+  .spec-card h3::after{content:""; flex:1; height:1px; background:var(--paper-line);}
+  .spec-card p.note{font-size:12.6px; color:#5a5138; margin:10px 0 0; padding-top:10px; border-top:1px dashed var(--paper-line);}
+  .spec-card p.body{font-size:13px; color:#4a4030; margin:0 0 10px; line-height:1.55;}
+
+  .compare-card{background:var(--paper); color:#241d10; border-radius:var(--radius); border:1px solid var(--paper-line); padding:8px 18px; margin-bottom:14px; overflow-x:auto;}
+  .compare-table{width:100%; border-collapse:collapse; font-size:12.6px;}
+  .compare-table th, .compare-table td{text-align:left; padding:8px 10px; border-bottom:1px dashed var(--paper-line); vertical-align:top;}
+  .compare-table th{font-family:'IBM Plex Mono',monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:0.06em; color:#6b5f3f;}
+  .compare-table td{color:#241d10;}
+  .compare-table td.c{white-space:nowrap; font-weight:600;}
+  .group-label{font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.1em; text-transform:uppercase; color:var(--soon); margin:24px 0 10px;}
+  .group-count{color:var(--muted);}
+
+  .pill{display:inline-block; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.05em; text-transform:uppercase; padding:2px 8px; border-radius:20px; white-space:nowrap;}
+  .pill.ontime{background:var(--live-dim); color:#a8d5bd; border:1px solid var(--live);}
+  .pill.slipped{background:var(--stamp-dim); color:#eec4ba; border:1px solid var(--stamp);}
+  .pill.partial{background:var(--soon-dim); color:#ecd0a6; border:1px solid var(--soon);}
+  .pill.na{background:var(--upcoming-dim); color:#c3cddd; border:1px solid var(--upcoming);}
+
+  sup.ref{font-size:10px; line-height:0;}
+  sup.ref a{color:var(--soon); text-decoration:none; font-family:'IBM Plex Mono',monospace;}
+  sup.ref a:hover{text-decoration:underline;}
+  .compare-table sup.ref a, .spec-card sup.ref a{color:var(--stamp);}
+
+  .refs{font-size:12.6px; color:var(--muted); max-width:900px;}
+  .refs ol{margin:0; padding-left:26px;}
+  .refs li{margin-bottom:8px; overflow-wrap:break-word;}
+  .refs a{color:var(--soon); text-decoration:none;}
+  .refs a:hover{text-decoration:underline;}
+  .refs .src-tag{font-family:'IBM Plex Mono',monospace; font-size:10px; text-transform:uppercase; letter-spacing:0.05em; color:var(--upcoming);}
+
+  .conclusion-card{background:var(--ink-2); border:1px solid var(--line); border-radius:var(--radius); padding:16px 18px; margin-bottom:12px;}
+  .conclusion-card h4{margin:0 0 6px; font-size:14.5px;}
+  .conclusion-card h4 .cnum{font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--soon); margin-right:8px;}
+  .conclusion-card p{margin:0; font-size:13px; color:var(--muted);}
+
+  footer{margin:40px 0 0; padding:22px 0 10px; border-top:1px solid var(--line); color:var(--muted); font-size:12.3px;}
+  footer p{max-width:860px; margin:0 0 8px;}
+
+  @media (max-width:640px){ .page-head{flex-direction:column;} .meta{text-align:left;} }
+  /* When shown inside the tracker's whitepaper pop-out iframe, the
+     modal has its own close button — the back-link would just
+     navigate the iframe itself to the tracker, nesting the site
+     inside the modal. data-framed is set by the inline script in
+     <head> below. */
+  html[data-framed="1"] .back-link{display:none;}
+  /* Language switcher between the four static variants of this
+     whitepaper (full static translation, 7 Aug 2026, per Dan's
+     request). Stays visible in framed mode too — inside the
+     pop-out, these links navigate the iframe to the sibling
+     variant, which is exactly the desired behavior. */
+  .lang-row{font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--muted); margin:10px 0 0;}
+  .lang-row a{color:var(--muted); text-decoration:none;}
+  .lang-row a:hover{color:var(--soon);}
+  .lang-row .lang-current{color:var(--soon); font-weight:600;}
+</style>
+<script>if(window.self !== window.top) document.documentElement.setAttribute('data-framed','1');</script>
+</head>
+<body>
+<div class="wrap">
+
+  <a class="back-link" href="einvoicing-compliance-tracker.html">← Zurück zum globalen Tracker</a>
+  <div class="lang-row"><a href="whitepaper-ctc-rollouts-compared.html">EN</a> · <a href="whitepaper-ctc-rollouts-compared-es.html">ES</a> · <span class="lang-current">DE</span> · <a href="whitepaper-ctc-rollouts-compared-fr.html">FR</a></div>
+
+  <div class="page-head">
+    <div>
+      <p class="eyebrow">Analysen &amp; Whitepapers</p>
+      <h1 class="page-title display">Clearance-Mandate im Vergleich</h1>
+      <p class="page-sub">Wie E-Invoicing-CTC-Einführungen wirklich abschnitten: gestaffelte vs. Big-Bang-Umsetzung, Pünktlichkeitsbilanzen, reale Teilnahmeniveaus und was die Programme den nationalen Staatskassen einbrachten — ein objektiver Vergleich über die 60 auf dieser Website verfolgten Jurisdiktionen, durchgehend mit überprüfbaren Quellen.</p>
+    </div>
+    <div class="meta">Veröffentlicht: 7. August 2026<br>E-Invoicing Compliance Corner</div>
+  </div>
+
+  <div class="stat-strip">
+    <div class="stat"><div class="num display">60</div><div class="lbl">Analysierte Jurisdiktionen</div></div>
+    <div class="stat"><div class="num display">29</div><div class="lbl">Mit aktivem CTC- oder Clearance-Regime</div></div>
+    <div class="stat"><div class="num display">€61bn</div><div class="lbl">EU-Mehrwertsteuerlücke 2021 — von €99bn binnen eines Jahres gesunken</div></div>
+    <div class="stat"><div class="num display">+5%</div><div class="lbl">Gemeldete Wertschöpfung im ersten Jahr, Peru (IMF)</div></div>
+    <div class="stat"><div class="num display">19–26</div><div class="lbl">Monate Verzug bei den Flaggschiffen Polen &amp; Frankreich</div></div>
+  </div>
+
+  <!-- ================= 01 SCOPE & METHOD ================= -->
+  <div class="section">
+    <div class="section-head"><span class="num mono">01</span><h2 class="display">Umfang, Definitionen &amp; Methode</h2></div>
+    <div class="prose">
+      <p><strong>Was dieser Bericht vergleicht.</strong> Continuous Transaction Controls (CTC) sind Regime, in denen Steuerbehörden Rechnungsdaten auf Transaktionsebene zum oder nahe am Zeitpunkt der Transaktion erhalten — statt über periodische Steuererklärungen und nachgelagerte Prüfungen. Sie treten in zwei Hauptfamilien auf: <strong>Clearance-Modelle</strong>, bei denen eine Rechnung vor oder bei ihrer Ausstellung von oder über die Infrastruktur der Steuerbehörde validiert, d. h. freigegeben (Clearance) werden muss — ohne diese Freigabe entfaltet die Rechnung keine Rechtswirkung — und <strong>Echtzeit-Meldemodelle</strong> (RTIR), bei denen die Rechnung frei ausgetauscht wird, ihre Daten aber innerhalb von Stunden oder Tagen an die Behörde gemeldet werden müssen. Ein wachsender Hybrid ist das <strong>dezentrale „5-Corner-Modell“</strong>, bei dem akkreditierte private Plattformen Rechnungen austauschen (typischerweise über Peppol) und gleichzeitig die Steuerdaten an die Behörde melden.<sup class="ref"><a href="#ref-1">[1]</a></sup></p>
+      <p><strong>Methode.</strong> Die Ländergruppierung in Abschnitt 02 leitet sich aus den eigenen Meilenstein-Daten dieser Website ab (Mandatsumfang und Inkrafttretensdatum jedes Meilensteins, gepflegt gegen Primärquellen). Die vergleichende Evidenz in den Abschnitten 03–07 wurde im August 2026 aus öffentlichen Quellen recherchiert, mit bewusster Hierarchie: zuerst amtliche Statistiken und Regierungsmitteilungen; an zweiter Stelle multilaterale Studien (Europäische Kommission, IMF, IDB/CIAT, OECD, Weltbank); und seriöse Branchen-Tracker (Sovos, EDICOM, Comarch, vatcalc, VATupdate, Big-4-Alerts) nur dort, wo keine amtliche Quelle existiert — im Quellenverzeichnis stets als solche gekennzeichnet. Wo eine prominente Zahl nicht an ihrer Originalquelle verifiziert werden konnte, wird dies im Text ausgewiesen, statt sie stillschweigend zu wiederholen.</p>
+      <p class="aside">Zwei ehrliche Hinweise vorab. Erstens ist die Zurechnung von Mehreinnahmen wirklich schwierig: E-Rechnungs-Mandate kommen fast nie allein — sie werden zusammen mit breiteren Steuerreformen, Registrierkassenregeln und Durchsetzungsoffensiven eingeführt, und nur eine Handvoll Programme (namentlich das peruanische) wurde mit Methoden evaluiert, die den E-Invoicing-Effekt isolieren. Zweitens wurden die Mehrwertsteuerlücken-Statistiken der EU in der Ausgabe vom Dezember 2025 neu benchmarkt und frühere Jahre nach oben revidiert; dieser Bericht nennt Ausgabe und Referenzjahr überall dort ausdrücklich, wo diese Zahlen erscheinen, denn die Reihen der Ausgaben 2023 und 2025 sind nicht direkt vergleichbar.<sup class="ref"><a href="#ref-4">[4]</a></sup></p>
+    </div>
+  </div>
+  <!-- ================= 02 THE 60 JURISDICTIONS GROUPED ================= -->
+  <div class="section">
+    <div class="section-head"><span class="num mono">02</span><h2 class="display">Wo die 60 verfolgten Jurisdiktionen stehen</h2></div>
+    <p class="section-intro">Jede auf dieser Website verfolgte Jurisdiktion, gruppiert danach, wo sie heute tatsächlich steht. Die Aufteilung: 25 haben ein Clearance- oder Vorvalidierungsmandat in Kraft, 4 betreiben ein aktives Echtzeit-Melde-CTC ohne Clearance, 15 befinden sich mitten im Rollout mit gesetzlich verankerten Terminen, und 16 kennen kein allgemeines B2B-Übermittlungsmandat — wobei fast alle EU-Mitglieder in dieser letzten Gruppe unabhängig davon ab 2030 den innergemeinschaftlichen digitalen Meldepflichten von ViDA unterliegen.<sup class="ref"><a href="#ref-3">[3]</a></sup></p>
+
+    <p class="group-label">Gruppe A — Clearance-/Vorvalidierungs-CTC-Mandat in Kraft <span class="group-count">(25)</span></p>
+    <div class="compare-card">
+      <table class="compare-table">
+        <tr><th>Jurisdiktion</th><th>System / Modell</th><th>B2B-Mandat in Kraft</th><th>Rollout-Form</th></tr>
+        <tr><td class="c">Italien</td><td>SDI, zentralisierte Clearance</td><td>1. Jan. 2019 — gesamte Volkswirtschaft auf einmal</td><td>Big-Bang (Pauschalbesteuerte bis 2024 phasenweise einbezogen)</td></tr>
+        <tr><td class="c">Mexiko</td><td>CFDI über zertifizierte PACs</td><td>2011–2014, alle Steuerpflichtigen bis 2014</td><td>Gestaffelt nach Umsatzschwelle</td></tr>
+        <tr><td class="c">Brasilien</td><td>NF-e, Clearance auf Bundesstaats-/Bundesebene</td><td>2008–2010 (Wellen nach Sektor/Bundesstaat); CBS/IBS-Reform ergänzt Layouts 2026–27</td><td>Gestaffelt nach Bundesstaat &amp; Sektor</td></tr>
+        <tr><td class="c">Chile</td><td>SII-DTE-Clearance</td><td>2014–2018 (Papier ab Feb. 2018 ungültig)</td><td>Gestaffelt nach Größe, 4-jähriger Auslauf</td></tr>
+        <tr><td class="c">Peru</td><td>SUNAT CPE / OSE</td><td>Ab 2014, Wellen nach Größe &amp; Risiko</td><td>Gestaffelt; Fristen verlängert</td></tr>
+        <tr><td class="c">Kolumbien</td><td>DIAN-Vorvalidierung</td><td>2020 (8 Gruppen, Jun.–Nov. 2020)</td><td>Gestaffelt; Modell mitten im Rollout neu aufgesetzt</td></tr>
+        <tr><td class="c">Argentinien</td><td>CAE-Clearance (ARCA)</td><td>2015 alle MwSt.-Registrierten; universell 2019</td><td>Gestaffelt nach Sektor, dann universell</td></tr>
+        <tr><td class="c">Ecuador</td><td>SRI, Clearance-artig</td><td>2014–15 Großunternehmen; alle Aussteller Nov. 2022</td><td>Gestaffelt, komprimierte Schlusswelle</td></tr>
+        <tr><td class="c">Uruguay</td><td>DGI CFE</td><td>Progressiv 2016–2022; nahezu universell Mai 2024</td><td>Gestaffelt nach Umsatz</td></tr>
+        <tr><td class="c">Costa Rica</td><td>DGT-Clearance</td><td>2018 (Sektorwellen)</td><td>Gestaffelt; v4.4-Migration 2025 verlängert</td></tr>
+        <tr><td class="c">Rumänien</td><td>RO e-Factura</td><td>Meldung Jan. 2024 → Clearance Jul. 2024</td><td>Zweistufig: erst melden, dann freigeben</td></tr>
+        <tr><td class="c">Serbien</td><td>SEF, zentrale Plattform</td><td>1. Jan. 2023 (B2G ab Mai 2022)</td><td>Gestaffelt nach Gegenpartei</td></tr>
+        <tr><td class="c">Türkei</td><td>e-Fatura / e-Arşiv, dual</td><td>Ab 2014, absteigende Schwellenwerte</td><td>Gestaffelt nach Sektor &amp; Umsatz, über 12 Jahre</td></tr>
+        <tr><td class="c">Polen</td><td>KSeF, zentralisierte Clearance</td><td>1. Feb. 2026 Großunternehmen / 1. Apr. 2026 alle (Sanktionen ab 2027)</td><td>Zwei Wellen — nach 19-monatiger Verzögerung &amp; Neuaufbau</td></tr>
+        <tr><td class="c">Belgien</td><td>Peppol-4-Corner-Austausch</td><td>1. Jan. 2026, alle MwSt.-Registrierten</td><td>Ein Stichtag, dezentral</td></tr>
+        <tr><td class="c">Kroatien</td><td>Fiscalization 2.0 (Echtzeit-Meldung + E-Rechnung)</td><td>1. Jan. 2026 (nicht MwSt.-pflichtige Einheiten 2027)</td><td>Ein Stichtag, Durchsetzung ab Tag eins</td></tr>
+        <tr><td class="c">Indien</td><td>IRP-Vorab-Clearance (IRN)</td><td>Okt. 2020 → Aug. 2023, ₹500cr → ₹5cr</td><td>Gestaffelter Schwellenabstieg, 6 Wellen</td></tr>
+        <tr><td class="c">Vietnam</td><td>GDT-Clearance / taggleiche Meldung</td><td>1. Jul. 2022 landesweit</td><td>Regionaler Pilot → nationale Umstellung</td></tr>
+        <tr><td class="c">Indonesien</td><td>e-Faktur → Coretax (DJP)</td><td>Alle MwSt.-Registrierten (PKP) seit Jul. 2016</td><td>Gestaffelt 2014–16; Plattform 2025 ausgetauscht</td></tr>
+        <tr><td class="c">Kasachstan</td><td>IS ESF, zentralisierte Clearance</td><td>Alle MwSt.-Zahler ab 1. Jan. 2019; Umfang ab Jan. 2026 erweitert</td><td>Gestaffelt 2017–19, dann Erweiterung</td></tr>
+        <tr><td class="c">Malaysia</td><td>MyInvois-Clearance</td><td>Aug. 2024 → Jan. 2026, RM100m → RM1m (unter RM1m befreit)</td><td>Gestaffelter Schwellenabstieg + Umfangskürzungen</td></tr>
+        <tr><td class="c">Saudi-Arabien</td><td>Fatoora (ZATCA), Clearance</td><td>Generierung Dez. 2021; Integrationswellen Jan. 2023 → Jun. 2026</td><td>24 umsatzabsteigende Wellen</td></tr>
+        <tr><td class="c">Ägypten</td><td>ETA, zentrale Plattform</td><td>Nov. 2020 → Apr. 2023 volles B2B; Papier ab Jul. 2023 ungültig</td><td>Gestaffelte Kohortenwellen</td></tr>
+        <tr><td class="c">Jordanien</td><td>JoFotara, nationales Abrechnungssystem</td><td>Volle Durchsetzung ab 1. Apr. 2025</td><td>Freiwillig → phasenweise → durchgesetzt</td></tr>
+        <tr><td class="c">Israel</td><td>Zuteilungsnummern-Clearance</td><td>5. Mai 2024 → abgeschlossen Jun. 2026 (Rechnungen &gt; NIS 5k)</td><td>Gestaffelt nach Rechnungswert — 18 Monate früher fertig</td></tr>
+      </table>
+    </div>
+
+    <p class="group-label">Gruppe B — Aktives CTC, Echtzeit-Meldevariante (ohne Clearance) <span class="group-count">(4)</span></p>
+    <div class="compare-card">
+      <table class="compare-table">
+        <tr><th>Jurisdiktion</th><th>System / Modell</th><th>In Kraft</th><th>Anmerkungen</th></tr>
+        <tr><td class="c">Ungarn</td><td>NAV Online Számla (RTIR)</td><td>Jul. 2018; alle Rechnungen seit 2021</td><td>Gestaffelt nach Rechnungs-MwSt.-Schwelle; vollständige E-Rechnung für ~2030 in der Diskussion</td></tr>
+        <tr><td class="c">Südkorea</td><td>e-Tax-Rechnung, Meldung am Folgetag</td><td>Alle Kapitalgesellschaften 2011; Einzelunternehmer phasenweise bis 2024</td><td>13-jähriger Schwellenabstieg; 99.8% Adoption im ersten Jahr</td></tr>
+        <tr><td class="c">Spanien</td><td>SII, Echtzeit-MwSt.-Register</td><td>1. Jul. 2017, große Steuerpflichtige (~80% des Transaktionswerts)</td><td>VeriFactu-Zertifizierungssoftware 2027 + Crea-y-Crece-B2B-Austausch ~2027–29, beide noch ausstehend</td></tr>
+        <tr><td class="c">Taiwan</td><td>eGUI, Übermittlung nach Ausstellung</td><td>1. Jan. 2021 (elektronisches GUI-Regime weit älter)</td><td>Durch Lotterien incentivierte Konsumbeleg-Kultur</td></tr>
+      </table>
+    </div>
+
+    <p class="group-label">Gruppe C — Mandat gesetzlich verankert oder angekündigt, Rollout läuft <span class="group-count">(15)</span></p>
+    <div class="compare-card">
+      <table class="compare-table">
+        <tr><th>Jurisdiktion</th><th>Modell</th><th>Zentrale Termine voraus</th><th>Statusnotiz</th></tr>
+        <tr><td class="c">Dominikanische Rep.</td><td>e-CF, Vorvalidierungs-Clearance</td><td>Letzte Welle (Klein-/Kleinstunternehmen) 15. Nov. 2026</td><td>Wellen 1–2 live; beide späteren Wellen um 6 Monate verlängert</td></tr>
+        <tr><td class="c">Frankreich</td><td>Dezentral über akkreditierte Plattformen (PA/PDP)</td><td>1. Sep. 2026 Empfangspflicht für alle + Ausstellung Großunternehmen; 1. Sep. 2027 alle</td><td>26 Monate Verzug; Austauschrolle der staatlichen Plattform im Okt. 2024 aufgegeben</td></tr>
+        <tr><td class="c">Deutschland</td><td>Dezentral, EN 16931, noch keine Meldepflicht</td><td>Ausstellung: 2027 (&gt; €800k), 2028 alle</td><td>Empfangspflicht seit Jan. 2025 live, pünktlich</td></tr>
+        <tr><td class="c">Griechenland</td><td>myDATA-Meldung live; B2B-E-Rechnung phasenweise</td><td>2. März 2026 (&gt; €1m Umsatz); 12. Okt. 2026 übrige</td><td>Serielle Verschiebungen 2020–2026; Welle 1 inzwischen live</td></tr>
+        <tr><td class="c">Oman</td><td>Fawtara (Peppol-5-Corner)</td><td>Pilot (~144 größte) Aug. 2026; alle MwSt.-Registrierten Aug. 2027</td><td>Startet diesen Monat; Regime akkreditierter Anbieter<sup class="ref"><a href="#ref-46">[46]</a></sup></td></tr>
+        <tr><td class="c">Slowenien</td><td>Dezentral (e-SLOG/Peppol)</td><td>1. Jan. 2028 B2B</td><td>2026 → 2027 → 2028; Echtzeit-Meldung aus dem Design gestrichen</td></tr>
+        <tr><td class="c">Lettland</td><td>Peppol + E-Meldung</td><td>B2B 1. Jan. 2028</td><td>Von 2026 verschoben; B2G seit Jan. 2026 live</td></tr>
+        <tr><td class="c">Slowakei</td><td>Peppol-5-Corner („Digital Postman“)</td><td>1. Jan. 2027 B2B + Echtzeit-Meldung</td><td>Sanfte Landung Jan.–März 2027 vorab angekündigt</td></tr>
+        <tr><td class="c">Irland</td><td>Peppol/EN 16931, ViDA-konform</td><td>Nov. 2028 Großunternehmen; Nov. 2029 alle; Jul. 2030 ViDA</td><td>Bewusst lange Vorlaufzeit, angekündigt Okt. 2025</td></tr>
+        <tr><td class="c">Vereinigtes Königreich</td><td>Dezentral, keine zentrale Plattform</td><td>April 2029, alle MwSt.-Rechnungen</td><td>Bestätigt im Autumn Budget 2025; Echtzeit-Meldung aus dem Umfang für 2029 ausgeklammert</td></tr>
+        <tr><td class="c">China</td><td>Volldigitalisierte e-Fapiao (Golden Tax IV)</td><td>Neue Steuerpflichtige verpflichtend ab 2026; kein hartes nationales Enddatum</td><td>4-jähriger Pilot; Ausstellung für Bestandsunternehmen weiterhin freiwillig, Annahme verpflichtend</td></tr>
+        <tr><td class="c">Pakistan</td><td>FBR Digital Invoicing</td><td>Phasenplan Sep.–Dez. 2025, wird weiter verlängert</td><td>3+ Neufassungen des Zeitplans in 18 Monaten</td></tr>
+        <tr><td class="c">Philippinen</td><td>BIR EIS, Meldung nach Ausstellung</td><td>Abschluss Welle 1 zum 31. Dez. 2026; weitere ab 2027</td><td>Gesetz von 2018; Pilot 2024 ins Stocken geraten, 2025 neu gestartet</td></tr>
+        <tr><td class="c">Singapur</td><td>InvoiceNow (Peppol-5-Corner)</td><td>Neue GST-Registrierte Nov. 2025/Apr. 2026; alle bis Apr. 2031</td><td>Längste angekündigte Vorlaufzeit in diesem Set</td></tr>
+        <tr><td class="c">VAE</td><td>Dezentral, 5-Corner (DCTCE)</td><td>Pilot Jul. 2026; Mandat 1. Jan. 2027 (≥ AED 50m), 1. Jul. 2027 übrige</td><td>~6 Monate Verzug gegenüber dem signalisierten Start Jul. 2026</td></tr>
+      </table>
+    </div>
+    <p class="section-intro" style="margin-top:6px;">Spanien erscheint wegen seines aktiven SII-Regimes in Gruppe B; seine zwei weiteren Stränge — VeriFactu-Zertifizierungssoftware (Jan./Jul. 2027 nach zwei Verschiebungen) und das Crea-y-Crece-B2B-Austauschmandat (~Okt. 2027–2029, Durchführungsverordnung erst im März 2026 veröffentlicht) — stehen noch aus.<sup class="ref"><a href="#ref-40">[40]</a></sup></p>
+
+    <p class="group-label">Gruppe D — Heute kein allgemeines B2B-Übermittlungsmandat <span class="group-count">(16)</span></p>
+    <div class="compare-card">
+      <table class="compare-table">
+        <tr><th>Jurisdiktion</th><th>Aktuelles Modell</th><th>Entwicklungsrichtung</th></tr>
+        <tr><td class="c">Vereinigte Staaten</td><td>Freiwilliges 4-Corner (DBNAlliance-Austauschrahmen)</td><td>Marktgetrieben; kein Bundesmandat</td></tr>
+        <tr><td class="c">Kanada</td><td>B2G nur über Beschaffungsplattformen</td><td>Kein B2B-Mandat</td></tr>
+        <tr><td class="c">Japan</td><td>Freiwilliges JP PINT/Peppol auf dem Qualified Invoice System</td><td>Steuergetriebene Adoption ohne Übermittlungsmandat</td></tr>
+        <tr><td class="c">Australien</td><td>Peppol B2G; freiwilliges B2B</td><td>Adoptionsgetrieben („Business eInvoicing Right“ auf Eis gelegt)</td></tr>
+        <tr><td class="c">Neuseeland</td><td>Peppol B2G (inkl. Empfangsregeln 2026); freiwilliges B2B</td><td>Adoptionsgetrieben</td></tr>
+        <tr><td class="c">Niederlande</td><td>B2G verpflichtend (2017); B2B marktgetrieben über Peppol</td><td>ViDA 2030 gilt</td></tr>
+        <tr><td class="c">Österreich</td><td>B2G verpflichtend (2014); freiwilliges B2B</td><td>ViDA 2030 gilt</td></tr>
+        <tr><td class="c">Zypern</td><td>B2G-Empfangspflichten; kein B2B-Mandat</td><td>ViDA 2030 gilt</td></tr>
+        <tr><td class="c">Tschechien</td><td>Freiwillige B2G-Ausstellung; kein B2B-Mandat</td><td>ViDA 2030 gilt (B2C-Fiskalisierung für 2027 geplant)</td></tr>
+        <tr><td class="c">Dänemark</td><td>Mandat zur digitalen Buchführungsfähigkeit (keine Übermittlung)</td><td>Kommt in dieser Gruppe einem De-facto-Mandat am nächsten; ViDA 2030</td></tr>
+        <tr><td class="c">Finnland</td><td>Ausgereiftes B2G + nahezu universelle freiwillige E-Rechnung</td><td>ViDA 2030 gilt</td></tr>
+        <tr><td class="c">Schweden</td><td>B2G verpflichtend (2019); kein B2B-Mandat</td><td>ViDA 2030 gilt; Mandat in Prüfung</td></tr>
+        <tr><td class="c">Norwegen</td><td>Peppol EHF; B2G verpflichtend</td><td>B2B-Mandat formell vorgeschlagen (~2028–30)</td></tr>
+        <tr><td class="c">Island</td><td>B2G-Empfangsmodell</td><td>Kein angekündigtes B2B-Mandat</td></tr>
+        <tr><td class="c">Luxemburg</td><td>B2G verpflichtend (2023); freiwilliges B2B</td><td>B2B vorgeschlagen ~2028–29; ViDA 2030</td></tr>
+        <tr><td class="c">Portugal</td><td>Regime aus zertifizierter Software + SAF-T + ATCUD/QR; B2G verpflichtend</td><td>Datenintegritätskontrollen ohne Transaktions-Clearance; eine der niedrigsten Mehrwertsteuerlücken der EU (3.6%, 2023)</td></tr>
+      </table>
+    </div>
+  </div>
+  <!-- ================= 03 STAGED VS BIG BANG ================= -->
+  <div class="section">
+    <div class="section-head"><span class="num mono">03</span><h2 class="display">Gestaffelt vs. Big-Bang: Wie Rollouts konzipiert wurden</h2></div>
+    <div class="prose">
+      <p>Über die 29 aktiven CTC-Regime der Gruppen A und B hinweg tritt ein bemerkenswerter Befund zutage: <strong>der echte gesamtwirtschaftliche Big-Bang ist nahezu ausgestorben.</strong> Italien ist das kanonische — und unter den großen Volkswirtschaften im Grunde einzige — Beispiel: Am 1. Januar 2019 stellte jedes mehrwertsteuerlich registrierte Unternehmen, B2B wie B2C, an einem einzigen Stichtag auf die Clearance über die SDI-Plattform um.<sup class="ref"><a href="#ref-9">[9]</a></sup> Überall sonst kam irgendeine Form der Staffelung zum Einsatz. Eine rigorose, begutachtete Studie, die Big-Bang- und gestaffelte CTC-Einführungen direkt vergleicht, existiert nicht — eine echte Lücke in der Literatur —, weshalb der folgende Vergleich aus der primären Länderevidenz selbst aufgebaut ist.<sup class="ref"><a href="#ref-24">[24]</a></sup></p>
+    </div>
+    <div class="spec-grid">
+      <div class="spec-card">
+        <h3>Umsatz-/Größenabstieg</h3>
+        <p class="body">Das dominierende moderne Design: mit den größten Steuerpflichtigen beginnen und die Schwelle schrittweise absenken. Indien ging in sechs Wellen über 34 Monate von ₹500 crore auf ₹5 crore;<sup class="ref"><a href="#ref-25">[25]</a></sup> Saudi-Arabien fuhr über 3,5 Jahre 24 Integrationswellen von SAR 3bn hinunter bis zur Registrierungsuntergrenze von SAR 375k;<sup class="ref"><a href="#ref-31">[31]</a></sup> Südkorea senkte die Schwellen 13 Jahre lang; Malaysia staffelte RM100m → RM1m in vier Wellen.<sup class="ref"><a href="#ref-44">[44]</a></sup></p>
+        <p class="note">Jeder angekündigte Go-live-Termin dieser Designfamilie, den wir dokumentieren konnten, wurde eingehalten (nach Indiens einzigem COVID-Aufschub vor dem Start) — Verzug wurde, wo er auftrat, durch Beschneiden des Umfangs am unteren Ende aufgefangen statt durch Terminverschiebungen.</p>
+      </div>
+      <div class="spec-card">
+        <h3>Rechnungswert-Abstieg</h3>
+        <p class="body">Israels einzigartige Variante staffelt nach der Größe der <em>Rechnung</em>, nicht des Unternehmens: Zuteilungsnummern waren zunächst nur für Rechnungen über NIS 25,000 erforderlich (2024) und stiegen bis Juni 2026 auf NIS 5,000 herab — die kleinsten Firmen blieben bis zum letzten Schritt vollständig außen vor.<sup class="ref"><a href="#ref-34">[34]</a></sup> Ungarns RTIR begann genauso und meldete nur Rechnungen mit mehr als HUF 100,000 Mehrwertsteuer, bevor es 2020 universell wurde.<sup class="ref"><a href="#ref-37">[37]</a></sup></p>
+      </div>
+      <div class="spec-card">
+        <h3>Gegenpartei-Staffelung (B2G → B2B)</h3>
+        <p class="body">Serbiens 20-monatige Leiter — Government-to-Government, dann Business-to-Government, dann volles B2B zum 1. Jan. 2023 — ist das sauberste Beispiel; auch Rumänien, Griechenland, Portugal und die meisten EU-Rollouts begannen mit dem öffentlichen Sektor, wo staatliche Käufer vom ersten Tag an eine empfangende Gegenpartei garantieren.<sup class="ref"><a href="#ref-41">[41]</a></sup></p>
+      </div>
+      <div class="spec-card">
+        <h3>Regionaler Pilot → nationale Umstellung</h3>
+        <p class="body">Vietnam probte ab November 2021 in 6 Provinzen, weitete auf die übrigen 57 aus und erklärte Papierrechnungen dann landesweit zum 1. Juli 2022 für ungültig — das Nächstliegende zu einem geglückten modernen Big-Bang, mit 92% der verpflichteten Steuerpflichtigen registriert während Phase 2.<sup class="ref"><a href="#ref-28">[28]</a></sup> China spielte denselben Zug vorsichtiger: ein 3-jähriger Provinzpilot, landesweite Verfügbarkeit im Dez. 2024 und bis heute kein harter Mandatstermin für Bestands-Steuerpflichtige.<sup class="ref"><a href="#ref-47">[47]</a></sup></p>
+      </div>
+      <div class="spec-card">
+        <h3>Segment-Big-Bang</h3>
+        <p class="body">Spaniens SII stellte ~62,000 große Steuerpflichtige — rund 80% des nationalen Transaktionswerts — an einem einzigen Stichtag (1. Juli 2017) auf 4-Tage-Echtzeit-Registermeldung um und beließ es dabei: Die einst angedachte Ausweitung auf alle 3 Millionen Unternehmen kam nie.<sup class="ref"><a href="#ref-39">[39]</a></sup></p>
+      </div>
+      <div class="spec-card">
+        <h3>Erst melden, später freigeben</h3>
+        <p class="body">Der aufkommende europäische Zweischritt: Rumänien verlangte ab Jan. 2024, dass alle B2B-Rechnungsdaten <em>gemeldet</em> werden, und machte ab Jul. 2024 die Plattform-Rechnung zur einzig rechtsgültigen; Griechenland betrieb die myDATA-Meldung fünf Jahre lang, bevor 2026 sein Clearance-artiges E-Rechnungs-Mandat kam.<sup class="ref"><a href="#ref-38">[38]</a></sup> Das nimmt der Plattform das Risiko, bevor die Rechnungsgültigkeit von ihr abhängt.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= 04 ON-TIME SCORECARD ================= -->
+  <div class="section">
+    <div class="section-head"><span class="num mono">04</span><h2 class="display">Lieferten die Programme pünktlich?</h2></div>
+    <p class="section-intro">„Pünktlich“ heißt hier: Trat das Mandat am ersten fest gesetzlich verankerten/angekündigten Datum in Kraft? Schonfristen bei Sanktionen werden gesondert vermerkt — sie erweisen sich als nahezu universell. Das Muster ist deutlich genug, um es vorwegzunehmen: Schwellen-gestaffelte und dezentrale (Peppol-basierte) Designs lieferten fast ausnahmslos termingerecht; gesamtwirtschaftliche Mandate auf einer neuen zentralen Staatsplattform verzögerten sich — in den beiden Flaggschiff-Fällen um 19 und 26 Monate.</p>
+
+    <div class="compare-card">
+      <table class="compare-table">
+        <tr><th>Programm</th><th>Erster fester Termin</th><th>Tatsächlich</th><th>Urteil</th><th>Anmerkungen</th></tr>
+        <tr><td class="c">Italien SDI (B2B)</td><td>1. Jan. 2019</td><td>1. Jan. 2019</td><td><span class="pill ontime">Pünktlich</span></td><td>Angekündigt Dez. 2017; lediglich Sanktionsmilderung in den ersten Wochen<sup class="ref"><a href="#ref-9">[9]</a></sup></td></tr>
+        <tr><td class="c">Chile SII-Phaseneinführung</td><td>Gesetzliche Leiter 2014–2018</td><td>Gehalten</td><td><span class="pill ontime">Pünktlich</span></td><td>Nur Ausnahmen für Katastrophenregionen<sup class="ref"><a href="#ref-15">[15]</a></sup></td></tr>
+        <tr><td class="c">Indien IRP-Wellen</td><td>1. Apr. 2020</td><td>1. Okt. 2020, danach alle 6 Wellen gehalten</td><td><span class="pill partial">1 Aufschub</span></td><td>COVID-Aufschub vor dem Start; jede Schwellenwelle danach termingerecht<sup class="ref"><a href="#ref-25">[25]</a>,<a href="#ref-26">[26]</a></sup></td></tr>
+        <tr><td class="c">Saudi Fatoora</td><td>4. Dez. 2021 / Wellen ab Jan. 2023</td><td>Durchgehend gehalten</td><td><span class="pill ontime">Pünktlich</span></td><td>Kein dokumentierter Wellenverzug über 24 Wellen<sup class="ref"><a href="#ref-31">[31]</a>,<a href="#ref-32">[32]</a></sup></td></tr>
+        <tr><td class="c">Vietnam nationale Umstellung</td><td>Nov. 2020 (Dekret 119/2018)</td><td>1. Jul. 2022 (Neuansetzung per Dekret 123/2020)</td><td><span class="pill partial">Einmal neu angesetzt</span></td><td>Neuer Termin dann landesweit gehalten<sup class="ref"><a href="#ref-28">[28]</a></sup></td></tr>
+        <tr><td class="c">Südkorea e-Tax</td><td>2011 + Schwellenleiter</td><td>Gehalten</td><td><span class="pill ontime">Pünktlich</span></td><td>13 Jahre planmäßiger Schwellenabstiege<sup class="ref"><a href="#ref-27">[27]</a></sup></td></tr>
+        <tr><td class="c">Ungarn RTIR</td><td>1. Jul. 2018</td><td>1. Jul. 2018</td><td><span class="pill ontime">Pünktlich</span></td><td>Erweiterungen 2020/2021 ebenfalls planmäßig; 3-monatige Schema-Schonfrist<sup class="ref"><a href="#ref-37">[37]</a></sup></td></tr>
+        <tr><td class="c">Spanien SII</td><td>1. Jul. 2017</td><td>1. Jul. 2017</td><td><span class="pill ontime">Pünktlich</span></td><td>Foralgebiete designbedingt +6 Monate<sup class="ref"><a href="#ref-39">[39]</a></sup></td></tr>
+        <tr><td class="c">Serbien SEF</td><td>1. Jan. 2022 (B2G) / 1. Jan. 2023 (B2B)</td><td>Mai 2022 / 1. Jan. 2023</td><td><span class="pill partial">Phase 1 verschoben</span></td><td>B2B startete planmäßig<sup class="ref"><a href="#ref-41">[41]</a>,<a href="#ref-42">[42]</a></sup></td></tr>
+        <tr><td class="c">Rumänien e-Factura</td><td>1. Jan. / 1. Jul. 2024</td><td>Termine gehalten</td><td><span class="pill partial">Schonfrist verlängert</span></td><td>Sanktionsfreie Phase zweimal verlängert, bis 31. Mai 2024<sup class="ref"><a href="#ref-38">[38]</a></sup></td></tr>
+        <tr><td class="c">Belgien B2B Peppol</td><td>1. Jan. 2026</td><td>1. Jan. 2026</td><td><span class="pill ontime">Pünktlich</span></td><td>Bedingte Q1-Toleranz für nachweislich vorbereitete Firmen<sup class="ref"><a href="#ref-19">[19]</a>,<a href="#ref-20">[20]</a></sup></td></tr>
+        <tr><td class="c">Kroatien Fiscalization 2.0</td><td>1. Jan. 2026</td><td>1. Jan. 2026</td><td><span class="pill ontime">Pünktlich</span></td><td>Durchsetzung ab Tag eins — keine Schonfrist<sup class="ref"><a href="#ref-21">[21]</a></sup></td></tr>
+        <tr><td class="c">Deutschland (Empfangspflicht)</td><td>1. Jan. 2025</td><td>1. Jan. 2025</td><td><span class="pill ontime">Pünktlich</span></td><td>Ausstellungsphasen 2027/2028 stehen noch bevor<sup class="ref"><a href="#ref-18">[18]</a></sup></td></tr>
+        <tr><td class="c">Jordanien JoFotara</td><td>1. Apr. 2025</td><td>1. Apr. 2025</td><td><span class="pill ontime">Pünktlich</span></td><td>2-monatiger Bußgeldverzicht bis 31. Mai 2025<sup class="ref"><a href="#ref-35">[35]</a></sup></td></tr>
+        <tr><td class="c">Polen KSeF</td><td>1. Jul. 2024</td><td>1. Feb. / 1. Apr. 2026</td><td><span class="pill slipped">+19 Monate</span></td><td>Im Jan. 2024 gestoppt, nachdem ein Audit „kritische Fehler“ fand; System als KSeF 2.0 neu aufgebaut; neue Termine dann gehalten<sup class="ref"><a href="#ref-16">[16]</a>,<a href="#ref-17">[17]</a></sup></td></tr>
+        <tr><td class="c">Frankreich B2B</td><td>1. Jul. 2024</td><td>1. Sep. 2026 / 1. Sep. 2027</td><td><span class="pill slipped">+26 Monate</span></td><td>Verschoben Jul. 2023; Austauschrolle der staatlichen Plattform Okt. 2024 aufgegeben; Sept. 2026 im Jul. 2026 bestätigt, mit sanfter Landung bis Jahresende<sup class="ref"><a href="#ref-11">[11]</a>,<a href="#ref-12">[12]</a>,<a href="#ref-13">[13]</a></sup></td></tr>
+        <tr><td class="c">Griechenland myDATA / B2B</td><td>2020 (myDATA); Feb. 2026 (B2B)</td><td>Okt.–Nov. 2021; 2. März 2026</td><td><span class="pill slipped">Mehrfach</span></td><td>2020–21 wiederholt verschoben; B2B rutschte von Feb. auf März 2026<sup class="ref"><a href="#ref-43">[43]</a></sup></td></tr>
+        <tr><td class="c">Spanien VeriFactu / Crea y Crece</td><td>Jul. 2025 / Gesetz Sept. 2022</td><td>Jan.–Jul. 2027 / ~Okt. 2027–29</td><td><span class="pill slipped">+18 Mon. / offen</span></td><td>Vier Jahre nach dem Ermächtigungsgesetz keine aktive B2B-Pflicht<sup class="ref"><a href="#ref-40">[40]</a></sup></td></tr>
+        <tr><td class="c">Peru CPE-Wellen</td><td>Ab Okt. 2014</td><td>Wellen um +10 bis +13 Monate verlängert</td><td><span class="pill slipped">Verlängert</span></td><td>Welle 1 +10 Monate; Welle 5 +13 Monate<sup class="ref"><a href="#ref-22">[22]</a></sup></td></tr>
+        <tr><td class="c">Mexiko CFDI-4.0-Migration</td><td>2022</td><td>1. Apr. 2023</td><td><span class="pill slipped">+~9 Monate</span></td><td>Der Kern-Rollout 2011–14 verlief weitgehend termingerecht<sup class="ref"><a href="#ref-23">[23]</a></sup></td></tr>
+        <tr><td class="c">Ägypten ETA</td><td>Nov. 2020; Papier-Stichtag Jan. 2022</td><td>Start pünktlich; Stichtag Jul. 2023</td><td><span class="pill partial">Durchsetzung +18 Mon.</span></td><td>Meldefenster für B2C ebenfalls gelockert<sup class="ref"><a href="#ref-33">[33]</a></sup></td></tr>
+        <tr><td class="c">Israel Zuteilungsnummern</td><td>1. Jan. 2024</td><td>5. Mai 2024 — dann Abschluss Jun. 2026, 18 Monate früher</td><td><span class="pill partial">Später Start, frühes Ende</span></td><td>Die einzige dokumentierte Beschleunigung in diesem Datensatz<sup class="ref"><a href="#ref-34">[34]</a>,<a href="#ref-36">[36]</a></sup></td></tr>
+        <tr><td class="c">Dominikanische Rep. e-CF</td><td>Wellen Mai 2024 / 2025 / 2026</td><td>Welle 1 pünktlich; Wellen 2–3 jeweils +6 Monate</td><td><span class="pill partial">KMU-Wellen verschoben</span></td><td>Beschaffung digitaler Zertifikate als Grund genannt<sup class="ref"><a href="#ref-29">[29]</a>,<a href="#ref-30">[30]</a></sup></td></tr>
+        <tr><td class="c">Malaysia MyInvois</td><td>Phasen ab Aug. 2024</td><td>Termine gehalten; Umfang zweimal gekürzt</td><td><span class="pill partial">Umfang reduziert</span></td><td>Befreiung unter RM500k (2025) auf RM1m angehoben (2026)<sup class="ref"><a href="#ref-44">[44]</a>,<a href="#ref-45">[45]</a></sup></td></tr>
+        <tr><td class="c">Pakistan FBR</td><td>Verschiedene 2024–25</td><td>Wird weiter verlängert</td><td><span class="pill slipped">3+ Neufassungen</span></td><td>Gesamter Zeitplan im Aug. 2025 neu aufgesetzt; Verlängerungen dauern an<sup class="ref"><a href="#ref-48">[48]</a></sup></td></tr>
+        <tr><td class="c">Philippinen EIS</td><td>~2023 gesetzliche Absicht (Gesetz von 2018)</td><td>Pilot 2024 ins Stocken geraten; Welle 1 jetzt fällig Dez. 2026</td><td><span class="pill slipped">Jahre im Rückstand</span></td><td>Am weitesten hinter der ursprünglichen gesetzlichen Absicht in diesem Set<sup class="ref"><a href="#ref-49">[49]</a></sup></td></tr>
+        <tr><td class="c">VAE / Slowenien / Lettland / Slowakei</td><td>2026 (verschieden)</td><td>2027 / 2028 / 2028 / 2027</td><td><span class="pill slipped">Vor Start verschoben</span></td><td>Alle aufgeschoben, bevor sie je live gingen<sup class="ref"><a href="#ref-66">[66]</a></sup></td></tr>
+      </table>
+    </div>
+    <div class="prose">
+      <p class="aside">Die Bilanz: Von den großen Programmen oben lieferten grob <strong>10 zu ihrem ersten festen Termin</strong>, weitere <strong>8 hielten ihre Termine, stützten sich aber auf Schonfristen, Umfangskürzungen oder eine einmalige Neuansetzung</strong>, und <strong>9 verzögerten sich erheblich oder wiederholt</strong>. Ausnahmslos jedes Programm der voll pünktlichen Gruppe war entweder nach Schwelle/Gegenpartei gestaffelt oder dezentral; beide mehrjährigen Flaggschiff-Verzögerungen (Polen, Frankreich) betrafen den Bau einer neuen zentralen Staatsplattform für eine gesamtwirtschaftliche Umschaltung. Italien ist die Ausnahme, die in keine Richtung etwas beweist — sein Big-Bang lieferte pünktlich, auf einer Plattform (SDI), die zuvor bereits fünf Jahre B2G-Rechnungsstellung betrieben hatte.</p>
+    </div>
+  </div>
+  <!-- ================= 05 PARTICIPATION ================= -->
+  <div class="section">
+    <div class="section-head"><span class="num mono">05</span><h2 class="display">Teilnahme: Wer hat tatsächlich mitgezogen?</h2></div>
+    <p class="section-intro">Veröffentlichte, überprüfbare Adoptionszahlen sind seltener, als die politische Rhetorik vermuten lässt — viele Behörden veröffentlichen Rechnungsvolumina (die eindrucksvoll klingen), aber nicht die Compliance-Quote unter den verpflichteten Firmen (die die eigentlich relevante Frage ist). Hier ist jede harte Teilnahmezahl, die diese Recherche dokumentieren konnte, mit ihrer Quelle.</p>
+
+    <div class="compare-card">
+      <table class="compare-table">
+        <tr><th>Jurisdiktion</th><th>Teilnahme-Evidenz</th><th>Stand</th><th>Quellentyp</th></tr>
+        <tr><td class="c">Südkorea</td><td><strong>99.8%</strong> des Transaktionswerts elektronisch fakturiert im ersten Jahr des Unternehmensmandats; 99.9% im dritten Jahr</td><td>2011–2013</td><td>Weltbank-Studie<sup class="ref"><a href="#ref-27">[27]</a></sup></td></tr>
+        <tr><td class="c">Dominikanische Rep.</td><td><strong>96%</strong> der 633 verpflichteten großen nationalen Steuerpflichtigen zum Stichtag der Welle 1 konform oder in Zertifizierung; 76,762 registrierte Aussteller bis Jul. 2026 — Verdreifachung in sechs Monaten, als die KMU-Frist näher rückte</td><td>Jun. 2024 / Jul. 2026</td><td>DGII amtlich; Presse mit DGII-Zahlen<sup class="ref"><a href="#ref-29">[29]</a>,<a href="#ref-30">[30]</a></sup></td></tr>
+        <tr><td class="c">Vietnam</td><td><strong>92%</strong> der verpflichteten Steuerpflichtigen (764,314) während der finalen Rollout-Phase registriert</td><td>Jul. 2022</td><td>Branchen-Tracker unter Berufung auf die GDT<sup class="ref"><a href="#ref-28">[28]</a></sup></td></tr>
+        <tr><td class="c">Malaysia</td><td><strong>&gt;90%</strong> Compliance in den Phasen 1–3; 200,000+ Steuerpflichtige nutzen die E-Rechnung, 1bn+ Transaktionen</td><td>Feb. 2026</td><td>IRB Chief Executive, offiziell zu Protokoll<sup class="ref"><a href="#ref-44">[44]</a></sup></td></tr>
+        <tr><td class="c">Kolumbien</td><td>1,143,000 registrierte elektronische Rechnungssteller; <strong>~157,000 verpflichtete Steuerpflichtige weiterhin nicht konform</strong> (≈88% Compliance)</td><td>März 2024</td><td>Presse mit DIAN-Ergebnissen<sup class="ref"><a href="#ref-51">[51]</a></sup></td></tr>
+        <tr><td class="c">Belgien</td><td>Peppol-Registrierungen sprangen im letzten Monat vor dem Mandat vom Jan. 2026 von 42% auf <strong>78% der ~1.2m MwSt.-registrierten Unternehmen</strong>; ~83% bis März 2026 — mit dem Vorbehalt, dass registriert ≠ vollständig konform</td><td>März 2026</td><td>Branchenanalyse von Peppol-Verzeichnisdaten<sup class="ref"><a href="#ref-20">[20]</a></sup></td></tr>
+        <tr><td class="c">Italien</td><td>3.9 Millionen Unternehmen — <strong>78% aller italienischen Betriebe</strong> — schickten in den ersten 18 Monaten des Mandats 2.09bn Rechnungen durch das SDI</td><td>Jun. 2020</td><td>Politecnico di Milano Osservatorio<sup class="ref"><a href="#ref-10">[10]</a></sup></td></tr>
+        <tr><td class="c">Chile</td><td>699,776 registrierte Aussteller bei Abschluss — <strong>~90% nutzten das kostenlose Portal-Tool des SII</strong></td><td>Feb. 2018</td><td>SII amtlich<sup class="ref"><a href="#ref-15">[15]</a></sup></td></tr>
+        <tr><td class="c">Peru</td><td><strong>&gt;80%</strong> der (nicht wegen Betrugs markierten) verpflichteten Firmen nach verlängerten Fristen konform — 100% wurden nie erreicht</td><td>2019</td><td>IMF Working Paper<sup class="ref"><a href="#ref-22">[22]</a></sup></td></tr>
+        <tr><td class="c">Ägypten</td><td>295,000 Unternehmen auf der Plattform (von 134 beim Start), &gt;1.25m Dokumente/Tag</td><td>Feb. 2023</td><td>Finanzminister, offiziell zu Protokoll<sup class="ref"><a href="#ref-33">[33]</a></sup></td></tr>
+        <tr><td class="c">Jordanien</td><td>~140,000 Betriebe angemeldet; 100m Rechnungen in den vier Monaten nach Durchsetzungsbeginn — gegenüber 18m im gesamten Jahr 2024</td><td>Aug. 2025</td><td>ISTD-Generaldirektor, offiziell zu Protokoll<sup class="ref"><a href="#ref-35">[35]</a></sup></td></tr>
+        <tr><td class="c">Polen</td><td>152,000+ Einheiten im KSeF im ersten Monat des Mandats (davon erst ~5,000 verpflichtet); 35m Rechnungen im Februar — das Sechsfache der gesamten vierjährigen freiwilligen Phase</td><td>Feb. 2026</td><td>Daten des Finanzministeriums, via Presse<sup class="ref"><a href="#ref-17">[17]</a></sup></td></tr>
+        <tr><td class="c">Serbien</td><td>220,000+ Unternehmen angebunden; 119m Rechnungen im Jahr 2023, Spitzen von 700k/Tag</td><td>2023</td><td>Plattformanbieter (aus erster Hand, aber nicht neutral)<sup class="ref"><a href="#ref-42">[42]</a></sup></td></tr>
+        <tr><td class="c">Mexiko</td><td>10.32 Milliarden CFDI ausgestellt im Jahr 2023 (~327/Sekunde) — Volumen, keine Compliance-Quote; die Ausstellung ist Voraussetzung für die Geschäftstätigkeit</td><td>2023</td><td>SAT-Mitteilung, via IMCP<sup class="ref"><a href="#ref-23">[23]</a></sup></td></tr>
+        <tr><td class="c">Ecuador</td><td>Das warnende Beispiel: <strong>nur 11.8%</strong> der ~2.27m verpflichteten RUC-Inhaber hatten fünf Monate vor der komprimierten universellen Frist im Nov. 2022 umgestellt</td><td>Jun. 2022</td><td>Presse<sup class="ref"><a href="#ref-52">[52]</a></sup></td></tr>
+      </table>
+    </div>
+    <div class="prose">
+      <p class="aside">Quer gelesen: Wo Mandate über die Rechnungsgültigkeit durchgesetzt werden (eine nicht freigegebene Rechnung ist rechtlich nichtig oder blockiert den Vorsteuerabzug des Käufers), landet die Teilnahme unter <em>großen und mittleren</em> Firmen verlässlich binnen Monaten im Bereich von 88–100%. Der lange Schwanz sind immer die Kleinstunternehmen — und der stärkste einzelne Prädiktor für sein Schließen ist ein kostenloses staatliches Ausstellungstool: Chiles Portal trug 90% seiner Aussteller, und die Dominikanische Republik, Ägypten, Kroatien und Polen bieten genau aus diesem Grund kostenlose Apps an. Die Nähe der Frist erledigt den Rest: Belgien gewann in einem einzigen Dezember 425,000 Peppol-Registrierungen hinzu, und die Dominikanische Republik verdreifachte ihre Ausstellerbasis in sechs Monaten.</p>
+    </div>
+  </div>
+
+  <!-- ================= 06 REVENUE OUTCOMES ================= -->
+  <div class="section">
+    <div class="section-head"><span class="num mono">06</span><h2 class="display">Was die Staatskassen tatsächlich gewannen</h2></div>
+    <p class="section-intro">Die Frage, die jedes Finanzministerium stellt — und die mit der ungleichmäßigsten Evidenz. Unten sind die Ergebnisse nach Evidenzqualität geordnet: kausale Mikrostudien zuerst, amtliche Lückenstatistiken an zweiter Stelle, von Regierungen behauptete Zurechnungen an dritter und Projektionen zuletzt. Wo eine vielzitierte Zahl nicht auf eine solide Quelle zurückgeführt werden konnte, ist sie entweder gekennzeichnet oder weggelassen.</p>
+
+    <div class="spec-grid">
+      <div class="spec-card">
+        <h3>Peru — der kausale Referenzfall</h3>
+        <p class="body">Die IMF-Evaluierung von Perus gestaffeltem Rollout auf Firmenebene ist die sauberste kausale Evidenz überhaupt: Die E-Rechnung erhöhte die gemeldeten Umsätze, Einkäufe und die Wertschöpfung der Firmen im ersten Jahr nach der Umstellung um <strong>über 5%</strong>, mit konzentrierten Effekten bei kleineren Firmen und Sektoren mit niedriger Compliance.<sup class="ref"><a href="#ref-22">[22]</a></sup> Eine Folgestudie fand starke Netzwerkeffekte: Kleinere Firmen, deren Handelspartner in die E-Rechnung verpflichtet wurden, meldeten <strong>11% mehr Umsatz und zahlten 17% mehr Mehrwertsteuer</strong> — Compliance pflanzt sich durch Lieferketten fort, noch bevor die Abdeckung vollständig ist.<sup class="ref"><a href="#ref-53">[53]</a></sup></p>
+        <p class="note">Dieselbe Studie benennt offen die Grenzen: Die Kassenwirkung wurde durch Schwächen in Perus MwSt.-Erstattungssystem gedämpft. Digitalisierung braucht flankierende Reformen, um gemeldete Verbindlichkeiten in vereinnahmtes Geld zu verwandeln.</p>
+      </div>
+      <div class="spec-card">
+        <h3>Italien — die Big-Bang-Dividende</h3>
+        <p class="body">Italiens MwSt.-Compliance-Lücke fiel von <strong>23.5% der theoretischen Steuerschuld 2017 auf 10.8% im Jahr 2021</strong> — eine Lücke von €33bn, verringert auf €14.6bn — wobei allein der Rückgang 2021 (−10.7 Punkte) der größte in der EU-27 war.<sup class="ref"><a href="#ref-7">[7]</a></sup> Die frühe eigene Schätzung des Finanzministeriums schrieb der E-Rechnung für 2019 rund <strong>€2bn zusätzliche Mehrwertsteuer</strong> zu, im Jahresverlauf Richtung €4bn revidiert, plus ~€700m an betrügerischen MwSt.-Gutschriftsverrechnungen, die am Eingang blockiert wurden.<sup class="ref"><a href="#ref-8">[8]</a></sup></p>
+        <p class="note">Vorbehalt: Der neu benchmarkte EC-Bericht vom Dezember 2025 revidiert Italiens Lücke für 2023 auf 15.0% — ein realer teilweiser Wiederanstieg plus eine Methodikänderung. Die Verbesserung ist so oder so groß; ihre genaue Höhe hängt von der zitierten Ausgabe ab.<sup class="ref"><a href="#ref-4">[4]</a></sup></p>
+      </div>
+      <div class="spec-card">
+        <h3>Ungarn — Meldung allein wirkte</h3>
+        <p class="body">Ungarn hat nie eine Clearance vorgeschrieben — nur die Echtzeit-Rechnungsmeldung — und senkte seine Mehrwertsteuerlücke von <strong>14.3% (2017) auf 4.4% (2021)</strong>, einer der besten Werte der EU; das EC-Länderkapitel nennt den Rückgang „stetig und steil“.<sup class="ref"><a href="#ref-6">[6]</a></sup> Inländische Analysen schreiben der Kombination aus Online-Registrierkassen, dem EKÁER-Transportsystem und RTIR über HUF 400bn an zusätzlichen Haushaltseinnahmen zu.<sup class="ref"><a href="#ref-54">[54]</a></sup></p>
+      </div>
+      <div class="spec-card">
+        <h3>Polen — Gewinne ohne (und dann vor) Clearance</h3>
+        <p class="body">Polens Mehrwertsteuerlücke fiel von <strong>23.9% (2015) auf 9.9% (2018)</strong> — getragen von SAF-T-Dateien, Split Payment und Echtzeitanalyse von Bankflüssen — bevor KSeF überhaupt existierte.<sup class="ref"><a href="#ref-14">[14]</a></sup> Bis 2023 war die Lücke wieder auf 16.0% angewachsen, während KSeF verzögert dalag — der deutlichste Hinweis des Datensatzes darauf, dass Durchsetzungsgewinne ohne kontinuierliche Kontrollen auf Transaktionsebene erodieren können, wobei sich andere Faktoren (Inflation, Methodikrevision) die Schuld teilen.<sup class="ref"><a href="#ref-4">[4]</a></sup></p>
+      </div>
+      <div class="spec-card">
+        <h3>Lateinamerika — die Gründungsevidenz</h3>
+        <p class="body">Die IDB/CIAT-Programmevaluierungen fanden positive Einnahmeeffekte in allen fünf untersuchten Ländern (Argentinien, Brasilien, Ecuador, Mexiko, Uruguay).<sup class="ref"><a href="#ref-50">[50]</a></sup> Begutachtete Punktschätzungen: Ecuadors deklarierte Mehrwertsteuer stieg unter den betroffenen Steuerpflichtigen um <strong>+19.4% (2015) und +28.1% (2016)</strong> (~US$133m); Uruguay verzeichnete <strong>+3.7%</strong> bei der gezahlten Unternehmens-MwSt.; Mexikos von der SAT beauftragte Studie maß einen Rückgang der MwSt.-Hinterziehung von <strong>31.9% auf 19.4%</strong> und der Einkommensteuer-Hinterziehung von 39.8% auf 25.6% zwischen 2011 und 2015 — ehrlicherweise konfundiert mit der begleitenden Fiskalreform von 2014.<sup class="ref"><a href="#ref-55">[55]</a>,<a href="#ref-23">[23]</a></sup></p>
+        <p class="note">Das intellektuelle Fundament ist chilenisch: Pomeranz’ randomisierte Evaluierung über 400,000+ Firmen zeigte, dass die Papierspur der MwSt.-Rechnung selbst Hinterziehung abschreckt und Durchsetzung entlang der Lieferketten nach oben fortpflanzt — das Ergebnis, das CTC-Regime industrialisieren.<sup class="ref"><a href="#ref-56">[56]</a></sup></p>
+      </div>
+      <div class="spec-card">
+        <h3>EU-weit — das Gesamtbild</h3>
+        <p class="body">Die EU-Mehrwertsteuerlücke fiel von <strong>€99bn (2020) auf €61bn (2021)</strong> — „eine beispiellose Verbesserung“ — und die Kommission würdigte ausdrücklich „neue digitale Meldewerkzeuge, die Echtzeitverfolgung von Transaktionen und E-Invoicing-Regime, die gegen kriminellen Mehrwertsteuerbetrug besonders wirksam sind“.<sup class="ref"><a href="#ref-5">[5]</a></sup> Die ViDA-Folgenabschätzung quantifizierte den Ländervergleichseffekt: Mitgliedstaaten mit digitaler Meldung verzeichneten MwSt.-Mehreinnahmen von <strong>2.6–3.5% pro Jahr</strong>, im Wert von €19–28bn über 2014–2019.<sup class="ref"><a href="#ref-57">[57]</a></sup></p>
+        <p class="note">Die Ausgabe 2025 zeigt die Lücke bis 2023 unter revidierter Methodik wieder auf €128bn / 9.5% geweitet — digitale Kontrollen sind notwendig, aber in einem inflationsgeprägten, postpandemischen Umfeld eindeutig nicht hinreichend.<sup class="ref"><a href="#ref-4">[4]</a></sup></p>
+      </div>
+      <div class="spec-card">
+        <h3>Projektionen zu Protokoll</h3>
+        <p class="body">Frankreichs Steuerverwaltung erwartet aus ihrem Mandat 2026–27 im eingeschwungenen Zustand <strong>€2–3bn/Jahr an zusätzlicher Mehrwertsteuer</strong>, gegenüber einer geschätzten nationalen Mehrwertsteuerlücke von €6–10bn;<sup class="ref"><a href="#ref-58">[58]</a></sup> die offizielle Folgenabschätzung projiziert zudem ≥€4.5bn/Jahr an Einsparungen für Unternehmen (≈€10 pro Papierrechnung vs. unter €1 elektronisch).<sup class="ref"><a href="#ref-59">[59]</a></sup> Das ViDA-Paket der EU projiziert bis zu €11bn/Jahr weniger Mehrwertsteuerbetrug und €4.1bn/Jahr niedrigere Compliance-Kosten.<sup class="ref"><a href="#ref-57">[57]</a></sup></p>
+      </div>
+      <div class="spec-card">
+        <h3>Wo keine Zahl existiert</h3>
+        <p class="body">Ehrlichkeit verlangt, die Lücken zu benennen: <strong>Für Saudi-Arabien, Ägypten, Jordanien, Israel, die Türkei, Serbien, Indien, Vietnam, Malaysia und China wurde keine geprüfte Einnahmen-Zurechnungszahl gefunden</strong>. Ägyptens +22.5% MwSt.-Wachstum und Indiens Rekord-GST-Einnahmen sind real, werden aber offiziell breiten Reformpaketen zugeschrieben, nicht spezifisch der E-Rechnung; Koreas Weltbank-Evaluierung verzichtete ausdrücklich auf eine Einnahmenschätzung und dokumentierte stattdessen einen Einbruch der Scheinrechnungs-Betrugsfälle um ~80–85% gegenüber ihrem Höchststand 2005.<sup class="ref"><a href="#ref-27">[27]</a>,<a href="#ref-33">[33]</a></sup></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= 07 CHALLENGES ================= -->
+  <div class="section">
+    <div class="section-head"><span class="num mono">07</span><h2 class="display">Die Herausforderungen, denen die Programme tatsächlich begegneten</h2></div>
+    <p class="section-intro">Sechs Fehlermuster kehren über die 60 Jurisdiktionen hinweg wieder — keines davon exotisch, alle dokumentiert.</p>
+
+    <div class="spec-grid">
+      <div class="spec-card">
+        <h3>1 · Zentrale Plattformen, die nicht bereit waren</h3>
+        <p class="body">Polens KSeF wurde fünf Monate vor dem Go-live gestoppt, als ein externes Audit „kritische Fehler ... mit Auswirkungen auf die Gesamtfunktionalität und -leistung des Systems“ fand; der Staat baute die Plattform von Grund auf neu.<sup class="ref"><a href="#ref-16">[16]</a></sup> Indonesiens Coretax — ein Big-Bang-Austausch des gesamten Kernsteuersystems — brach die Rechnungsausstellung am ersten Tag (von 845,514 in den ersten neun Tagen versuchten Rechnungen wurden nur 236,221 validiert) und erzwang eine förmliche Entschuldigung der Steuerdirektion samt Sanktionsmoratorium.<sup class="ref"><a href="#ref-60">[60]</a></sup> Frankreich, das zusah, gab im Oktober 2024 die Austauschrolle seiner staatlichen Plattform vollständig auf und verlagerte den Austausch auf ~158 akkreditierte private Plattformen.<sup class="ref"><a href="#ref-12">[12]</a></sup></p>
+      </div>
+      <div class="spec-card">
+        <h3>2 · Die KMU-Mauer</h3>
+        <p class="body">Jede in dieser Recherche dokumentierte Fristverlängerung drehte sich im Kern um kleine Unternehmen: die zwei 6-monatigen Wellenverlängerungen der Dominikanischen Republik (Beschaffung digitaler Zertifikate), Malaysias Entscheidung, Unternehmen unter RM1m gänzlich zu befreien, Perus Welle 5 mit +13 Monaten, Chiles bewusster 4-jähriger Kleinstunternehmens-Auslauf, Ecuadors Schlussspurt mit 88% Nichtabdeckung.<sup class="ref"><a href="#ref-30">[30]</a>,<a href="#ref-45">[45]</a>,<a href="#ref-22">[22]</a>,<a href="#ref-52">[52]</a></sup> Digitale Zertifikate, Softwarekosten und Konnektivität — nicht mangelnder Wille — sind die genannten bindenden Engpässe.</p>
+      </div>
+      <div class="spec-card">
+        <h3>3 · Redesigns mitten im Rollout</h3>
+        <p class="body">Kolumbien wechselte mitten im Rollout von der Nach- zur Vorvalidierungs-Clearance (2020); Mexikos CFDI-4.0-Migration dauerte ~9 Monate länger als geplant; Costa Ricas v4.4-Migration produzierte Einzelfallverlängerungen für Hunderte Firmen; Brasiliens CBS/IBS-Reform 2026 reißt Layouts in jedem aktiven System wieder auf; und ViDAs Harmonisierungsfrist 2035 garantiert, dass selbst fertige europäische Systeme (SDI, KSeF) eine zweite Compliance-Welle erwartet.<sup class="ref"><a href="#ref-51">[51]</a>,<a href="#ref-23">[23]</a>,<a href="#ref-61">[61]</a>,<a href="#ref-68">[68]</a>,<a href="#ref-3">[3]</a></sup></p>
+      </div>
+      <div class="spec-card">
+        <h3>4 · Operative Integrationslast</h3>
+        <p class="body">Saudi-Arabiens Phase 2 dokumentiert die Alltagsprobleme eines reifen Clearance-Regimes: kryptografische Hash-Ketten, die bei Netzabbrüchen reißen, Clearance-Engpässe zu Monatsend-Spitzen, undurchsichtige Fehlerdiagnostik und Transaktionsgebühren, die schneller skalieren als das Geschäftsvolumen.<sup class="ref"><a href="#ref-62">[62]</a></sup> Polens erste Wochen brachten Warteschlangen bei der Zertifikatserzeugung und säumige Softwareanbieter zum Vorschein, die Firmen in Offline-Fallback-Modi drängten.<sup class="ref"><a href="#ref-63">[63]</a></sup></p>
+      </div>
+      <div class="spec-card">
+        <h3>5 · Datenschutz — die europäische Schranke</h3>
+        <p class="body">Italiens Datenschutzbehörde intervenierte vor dem Start 2019 und warnte vor einer „unverhältnismäßigen Sammlung von Informationen“; im Ergebnis wurde der Steuerbehörde der Aufbau einer vollständigen Datenbank der Rechnungsinhalte untersagt und Gesundheitsrechnungen vom SDI ausgenommen — eine Schranke ohne Entsprechung in den lateinamerikanischen Systemen, bei denen sich Europa bediente.<sup class="ref"><a href="#ref-64">[64]</a></sup></p>
+      </div>
+      <div class="spec-card">
+        <h3>6 · Glaubwürdigkeitsverfall</h3>
+        <p class="body">Wo Fristen wiederholt rutschen — Pakistans drei Zeitplan-Neufassungen in 18 Monaten, Griechenlands Sequenz 2020–2026, das philippinische Gesetz von 2018, das noch immer vor dem Mandat steht — stockt die Investitionsbereitschaft der Steuerpflichtigen, denn die rationale Antwort auf eine wandernde Frist ist Abwarten.<sup class="ref"><a href="#ref-48">[48]</a>,<a href="#ref-43">[43]</a>,<a href="#ref-49">[49]</a></sup> Der Kontrast ist Saudi-Arabiens 24 Wellen, jeweils ~6 Monate im Voraus angekündigt und nie verschoben: Berechenbarkeit selbst wurde zum Compliance-Werkzeug.<sup class="ref"><a href="#ref-32">[32]</a></sup></p>
+      </div>
+    </div>
+  </div>
+  <!-- ================= 08 CONCLUSIONS ================= -->
+  <div class="section">
+    <div class="section-head"><span class="num mono">08</span><h2 class="display">Objektive Schlussfolgerungen</h2></div>
+    <p class="section-intro">Was die Evidenz — im Unterschied zum Anbietermarketing oder zur ministeriellen Pressemitteilung — tatsächlich trägt.</p>
+
+    <div class="conclusion-card">
+      <h4><span class="cnum">C1</span>Gestaffelte Rollouts liefern; gesamtwirtschaftliche Zentralplattform-Umschaltungen verzögern sich.</h4>
+      <p>Jedes vollständig pünktliche Programm in diesem Datensatz war entweder nach Schwelle/Gegenpartei gestaffelt oder auf dezentralem Austausch aufgebaut. Die beiden Flaggschiff-Fehlschläge — Polen (+19 Monate, kompletter Neuaufbau) und Frankreich (+26 Monate, Plattformmodell aufgegeben) — versuchten beide eine neue staatlich gebaute Zentralplattform für eine gesamtwirtschaftliche Umschaltung. Italiens pünktlicher Big-Bang ist die Ausnahme, und er startete auf einer Plattform, die durch fünf Jahre B2G-Verkehr bereits gehärtet war. Die Design-Lehre lautet nicht „nie Big-Bang“, sondern „nie Big-Bang auf unerprobter Infrastruktur“.</p>
+    </div>
+    <div class="conclusion-card">
+      <h4><span class="cnum">C2</span>Rund ein Drittel der Programme lieferte zum ersten angekündigten Termin — aber fast keines ohne Stoßdämpfer.</h4>
+      <p>Schonfristen (Rumänien, Polen, Frankreich, Jordanien, Malaysia, Belgien), Umfangskürzungen (Malaysias Anhebungen der Befreiungsschwelle) oder gestreckte Durchsetzung (Ägyptens 18-monatiger Aufschub für Papierrechnungen) begleiteten nahezu jeden Start. Kroatiens Durchsetzung ab Tag eins ist der dokumentierte Ausreißer. Realistische Planung sollte die ersten 6–12 Monate nach jedem Go-live als weiche Phase behandeln — denn empirisch sind sie es fast immer.</p>
+    </div>
+    <div class="conclusion-card">
+      <h4><span class="cnum">C3</span>Teilnahme folgt dem Durchsetzungsdesign, nicht dem Appell.</h4>
+      <p>Wo die Rechnungsgültigkeit oder der Vorsteuerabzug des Käufers von der Compliance abhängt, erreicht die Teilnahme großer/mittlerer Firmen verlässlich binnen Monaten 88–100% (Korea 99.8%, Dominikanische Republik Welle 1 96%, Vietnam 92%, Malaysia &gt;90%, Kolumbien ~88%). Der käuferseitige Hebel — Ihr Kunde verliert seinen Vorsteuerabzug, wenn Sie nicht mitziehen — ist der wirksamste dokumentierte Einzelmechanismus, und der KMU-Schwanz schließt sich nur dort, wo ein kostenloses staatliches Ausstellungstool existiert.</p>
+    </div>
+    <div class="conclusion-card">
+      <h4><span class="cnum">C4</span>Der Einnahmeeffekt ist real, messbar — und kleiner als die Schlagzeilen.</h4>
+      <p>Die glaubwürdige Spanne aus kausalen und quasi-experimentellen Studien ist ein Anstieg der gemeldeten Mehrwertsteuer um 3–7% unter den betroffenen Firmen in den frühen Jahren (Peru +7.2% Steuerschuld; Uruguay +3.7%; EU-DRR-Staaten +2.6–3.5%/Jahr), mit größeren Effekten bei hoher Ausgangs-Hinterziehung (Ecuador +19–28%; Mexikos Hinterziehungsquote minus 12 Punkte; Italiens Lücke ~13 Punkte kleiner über vier Jahre; Ungarns ~10). Behauptungen transformativer Einnahmesprünge jenseits dieser Spanne stützt keine in dieser Recherche gefundene geprüfte Quelle.</p>
+    </div>
+    <div class="conclusion-card">
+      <h4><span class="cnum">C5</span>Reine Melderegime holten den Großteil des fiskalischen Nutzens ohne das Lieferrisiko der Clearance.</h4>
+      <p>Ungarn (4.4% Lücke bis 2021) und Spaniens SII erreichten Spitzenpositionen bei der Mehrwertsteuerlücke allein mit Echtzeit-Meldung — ohne Clearance-Plattform, ohne Abhängigkeit der Rechnungsgültigkeit und mit pünktlicher Lieferung. Portugal kam mit zertifizierter-Software-Kontrollen und ganz ohne CTC auf eine Lücke von 3.6%. Clearance fügt Durchsetzungskraft hinzu (das Blockieren betrügerischer Rechnungen am Eingang, wie Italiens €700m blockierter Gutschriften zeigen), aber der fiskalische Mehrgewinn gegenüber gut durchgesetzter Meldung ist in den veröffentlichten Daten nicht nachgewiesen.</p>
+    </div>
+    <div class="conclusion-card">
+      <h4><span class="cnum">C6</span>Gewinne erodieren ohne Pflege — digitale Kontrollen sind eine Behandlung, keine Heilung.</h4>
+      <p>Polens Lücke stieg von 9.9% zurück auf 16.0%, während KSeF verzögert dalag; die EU-weite Lücke weitete sich bis 2023 wieder auf €128bn; Italiens revidierte Zahl für 2023 (15.0%) zeigt einen teilweisen Wiederanstieg. Die EU-weite Verbesserung 2021 war real, und die Kommission schreibt einen Großteil der digitalen Meldung zu — aber die Daten von 2023 zeigen, dass diese Systeme kontinuierlich durchgesetzt und ausgebaut werden müssen, um ihre Gewinne zu halten.</p>
+    </div>
+    <div class="conclusion-card">
+      <h4><span class="cnum">C7</span>Die globale Richtung ist entschieden; die Architektur konvergiert auf dezentrale Modelle.</h4>
+      <p>Mit inzwischen 80+ Ländern mit irgendeiner verpflichtenden E-Rechnung (Branchenschätzung),<sup class="ref"><a href="#ref-2">[2]</a></sup> ViDA in Kraft seit April 2025<sup class="ref"><a href="#ref-3">[3]</a></sup> und 2026 als dem dichtesten Go-live-Jahr der Geschichte (Polen, Belgien, Kroatien, Griechenland, Frankreich, Oman, VAE-Pilot) lautet die offene Frage nicht mehr ob, sondern wie. Die neuesten Designs — Frankreich, VAE, Oman, Singapur, Slowakei, Vereinigtes Königreich, Irland — haben sich sämtlich für Architekturen mit akkreditierten privaten Plattformen / Peppol-5-Corner statt neuer zentraler Staatsplattformen entschieden, was für sich genommen ein Urteil über die in Abschnitt 04 dokumentierte Lieferbilanz ist.<sup class="ref"><a href="#ref-65">[65]</a>,<a href="#ref-67">[67]</a></sup></p>
+    </div>
+    <div class="conclusion-card">
+      <h4><span class="cnum">C8</span>Für Unternehmen lautet die praktische Lesart: auf den angekündigten Termin vorbereiten, die Schonfrist einplanen und die KMU-Wellen im Blick behalten.</h4>
+      <p>Erste Wellen für große Steuerpflichtige liefern ganz überwiegend planmäßig — auf eine Verzögerung zu wetten ist eine schlechte Wette (fragen Sie jeden, der annahm, Belgiens oder Polens 2026er-Termine würden rutschen). Aber finale KMU-Wellen verschieben sich oder schrumpfen öfter als nicht, und der reale Durchsetzungsbeginn jedes Regimes hinkte seinem rechtlichen Beginn hinterher. Die rationale Haltung ist, auf das offizielle Datum hin zu bauen und die Ausgaben so zu sequenzieren, dass eine 6-monatige Schonfrist ein Bonus ist — keine versunkenen Kosten.</p>
+    </div>
+  </div>
+  <!-- ================= 09 REFERENCES ================= -->
+  <div class="section">
+    <div class="section-head"><span class="num mono">09</span><h2 class="display">Quellen</h2></div>
+    <p class="section-intro">Quellentyp-Tags: <span class="src-tag mono">[amtlich]</span> Primärquelle von Regierung / EU / multilateraler Organisation · <span class="src-tag mono">[studie]</span> begutachtete Forschung oder Working Paper · <span class="src-tag mono">[presse]</span> Presseberichterstattung amtlicher Zahlen · <span class="src-tag mono">[branche]</span> Tracker der Compliance-Branche oder Professional-Services-Alert. Zahlen, die allein auf Branchen- oder einzelnen Pressequellen beruhen, sind im Text als solche gekennzeichnet.</p>
+    <div class="refs">
+      <ol>
+        <li id="ref-1"><span class="src-tag">[amtlich]</span> OECD Forum on Tax Administration, <a href="https://www.oecd.org/en/publications/tax-administration-3-0-and-electronic-invoicing_2ffc88ed-en.html" target="_blank" rel="noopener">Tax Administration 3.0 and Electronic Invoicing: Initial Findings</a> (2022).</li>
+        <li id="ref-2"><span class="src-tag">[branche]</span> Politecnico di Milano, International Observatory on Electronic Invoicing, <a href="https://www.osservatori.net/comunicato/international-observatory-on-electronic-invoicing/einvoicing-generate-revenue-business-savings/" target="_blank" rel="noopener">press release, September 2025</a> — „über 80 Länder haben eine verpflichtende E-Rechnung eingeführt“; EU-10-Jahres-Projektion: €111bn zusätzliche Mehrwertsteuer + €41bn Einsparungen für Unternehmen.</li>
+        <li id="ref-3"><span class="src-tag">[amtlich]</span> Europäische Kommission, <a href="https://taxation-customs.ec.europa.eu/taxation/vat/vat-digital-age-vida_en" target="_blank" rel="noopener">VAT in the Digital Age (ViDA)</a> — verabschiedet am 11. März 2025, in Kraft seit 14. April 2025; innergemeinschaftliche digitale Meldung ab 1. Juli 2030; Harmonisierung inländischer Regime bis 1. Januar 2035.</li>
+        <li id="ref-4"><span class="src-tag">[amtlich]</span> Europäische Kommission, <a href="https://taxation-customs.ec.europa.eu/taxation/vat/fight-against-vat-fraud/vat-gap_en" target="_blank" rel="noopener">VAT gap</a>-Übersichtsseite und <a href="https://data.europa.eu/doi/10.2778/7868422" target="_blank" rel="noopener">VAT gap in Europe — Report 2025</a> (Dez. 2025): EU-Compliance-Lücke €128bn / 9.5% der VTTL (2023); Italien 15.0%, Polen 16.0%, Ungarn 7.4%, Spanien 7.6%, Portugal 3.6%, Rumänien 30.0% (2023, revidierte Methodik).</li>
+        <li id="ref-5"><span class="src-tag">[amtlich]</span> Europäische Kommission, <a href="https://taxation-customs.ec.europa.eu/news/vat-gap-progress-made-vat-compliance-2021-though-losses-remain-considerable-2023-10-24_en" target="_blank" rel="noopener">press release, 24 Oct 2023</a> — EU-Lücke €99bn (2020) → €61bn (2021); Italien −10.7pp, Polen −7.8pp; Zurechnung an „Echtzeitverfolgung von Transaktionen und E-Invoicing-Regime“. Vollständiger Bericht: <a href="https://taxation-customs.ec.europa.eu/system/files/2023-11/vat%20gap%20in%20the%20eu-KP0223140ENN.pdf" target="_blank" rel="noopener">VAT gap in the EU — Report 2023 (PDF)</a>.</li>
+        <li id="ref-6"><span class="src-tag">[amtlich]</span> Europäische Kommission, <a href="https://taxation-customs.ec.europa.eu/document/download/ac5f9acb-7b51-4b6a-b746-67ace459f440_en?filename=HUNGARY+Country+specific+VAT+gap+report+2023.pdf" target="_blank" rel="noopener">Hungary country-specific VAT gap report 2023 (PDF)</a> — Compliance-Lücke 14.3% (2017) → 4.4% (2021).</li>
+        <li id="ref-7"><span class="src-tag">[amtlich]</span> Europäische Kommission, <a href="https://taxation-customs.ec.europa.eu/document/download/12749c30-9b2f-4f10-bf3a-6b571080f2af_en?filename=ITALY+Country+specific+VAT+gap+report+2023.pdf" target="_blank" rel="noopener">Italy country-specific VAT gap report 2023 (PDF)</a> — Lücke 23.5%/€33.0bn (2017) → 10.8%/€14.6bn (2021).</li>
+        <li id="ref-8"><span class="src-tag">[presse]</span> Il Sole 24 Ore, <a href="https://www.ilsole24ore.com/art/lotta-all-evasione-fattura-elettronica-spinge-gettito-extra-4-miliardi-2019-AC8FExW" target="_blank" rel="noopener">"Fattura elettronica spinge gettito: extra 4 miliardi nel 2019"</a> — Bericht über MEF-Schätzungen: anfängliche Zurechnung von €1.9bn an die E-Rechnung, Richtung €4bn revidiert; ~€700m unrechtmäßige MwSt.-Gutschriftsverrechnungen blockiert.</li>
+        <li id="ref-9"><span class="src-tag">[amtlich]</span> Europäische Kommission, <a href="https://ec.europa.eu/digital-building-blocks/sites/spaces/einvoicingCFS/pages/881983583/2025+Italy+2025+eInvoicing+Country+Sheet" target="_blank" rel="noopener">Italy eInvoicing Country Sheet 2025</a> — B2G 2014–15; B2B+B2C über SDI ab 1. Jan. 2019; Ausnahme für Pauschalbesteuerte im Jan. 2024 aufgehoben.</li>
+        <li id="ref-10"><span class="src-tag">[studie]</span> Osservatorio Digital B2b, Politecnico di Milano, SDI-Volumendaten <a href="https://youmark.it/ym-interactive/il-digital-spinge-la-fatturazione-elettronica-che-raggiunge-i-209-miliardi-di-fatture-transitate-su-sdi-e-lecommerce-b2b-il-report-dellosservatorio-del-politecnico-di-milano/" target="_blank" rel="noopener">as reported June 2020</a> — 2.09bn Rechnungen, 3.9m Unternehmen (78% der Betriebe).</li>
+        <li id="ref-11"><span class="src-tag">[branche]</span> EY, <a href="https://www.ey.com/en_gl/technical/tax-alerts/france-postpones-electronic-invoicing-initially-scheduled-for-1-" target="_blank" rel="noopener">France postpones electronic invoicing</a> (Jul. 2023).</li>
+        <li id="ref-12"><span class="src-tag">[branche]</span> Tradeshift, <a href="https://tradeshift.com/resources/compliance/ppf-drops-e-invoicing-platform-role/" target="_blank" rel="noopener">PPF drops e-invoicing platform role</a> — DGFiP-Ankündigung, 15. Okt. 2024: staatliches Portal nur noch als Verzeichnis/Datenkonzentrator; Austausch über registrierte private Plattformen.</li>
+        <li id="ref-13"><span class="src-tag">[branche]</span> Comarch, <a href="https://www.comarch.com/trade-and-services/data-management/legal-regulation-changes/france-confirms-september-2026-e-invoicing-go-live-and-publishes-start-up-guidance/" target="_blank" rel="noopener">France confirms September 2026 go-live</a> (Jul. 2026) — DGFiP-Bestätigung des 1. Sep. 2026, Startleitfaden, Doktrin der sanften Landung bis 31. Dez. 2026.</li>
+        <li id="ref-14"><span class="src-tag">[studie]</span> Polish Economic Institute, <a href="https://pie.net.pl/wp-content/uploads/2021/12/Raport-LUKA-VAT-EN.pdf" target="_blank" rel="noopener">Reducing the VAT gap: lessons from Poland (PDF)</a> — Lücke 23.9% (2015) → 14% (2017); Maßnahmen und zugerechnete Rückgewinnungen. Siehe auch Europäische Kommission, <a href="https://eur-lex.europa.eu/legal-content/EN/TXT/HTML/?uri=CELEX:52022PC0058" target="_blank" rel="noopener">COM(2022) 58 final</a> — ~14% (2017) → ~9.7% (2019).</li>
+        <li id="ref-15"><span class="src-tag">[amtlich]</span> Servicio de Impuestos Internos (Chile), <a href="https://www.sii.cl/noticias/2018/010218noti01er.htm" target="_blank" rel="noopener">news release, 1 Feb 2018</a> — Abschluss der verpflichtenden Phaseneinführung; 699,776 registrierte Aussteller, ~90% über das kostenlose SII-Tool. Gesetzlicher Zeitplan: <a href="https://www.sii.cl/factura_electronica/ley/ley_fe_20727.htm" target="_blank" rel="noopener">Ley 20.727</a>.</li>
+        <li id="ref-16"><span class="src-tag">[branche]</span> Sovos, <a href="https://sovos.com/blog/vat/poland-e-invoicing-via-ksef/" target="_blank" rel="noopener">Poland e-invoicing via KSeF</a> — Stopp im Jan. 2024 („kritische Fehler wurden im Code identifiziert“), externes Audit, Termine Feb./Apr. 2026, KSeF-2.0-Gesetz (Aug. 2025). Siehe auch EY, <a href="https://www.ey.com/en_gl/technical/tax-alerts/poland-announces-new-timeline-for-mandatory-e-invoicing" target="_blank" rel="noopener">Poland announces new timeline</a>.</li>
+        <li id="ref-17"><span class="src-tag">[branche]</span> VATupdate, <a href="https://www.vatupdate.com/2026/03/04/over-35-million-invoices-issued-in-ksef-since-mandatory-e-invoicing-began-in-february-2026/" target="_blank" rel="noopener">Over 35 million invoices issued in KSeF</a> (März 2026) — Daten des Finanzministeriums: 152,000+ Einheiten, 35m+ Rechnungen im ersten Monat.</li>
+        <li id="ref-18"><span class="src-tag">[amtlich]</span> Europäische Kommission, <a href="https://ec.europa.eu/digital-building-blocks/sites/spaces/DIGITAL/pages/467108886/eInvoicing+in+Germany" target="_blank" rel="noopener">eInvoicing in Germany</a> — Wachstumschancengesetz; Empfangspflicht 1. Jan. 2025; Ausstellung 2027/2028.</li>
+        <li id="ref-19"><span class="src-tag">[branche]</span> Tradeshift, <a href="https://tradeshift.com/resources/compliance/belgium-b2b-e-invoicing-mandate-2026-tolerance-period/" target="_blank" rel="noopener">Belgium B2B mandate 2026 &amp; tolerance period</a> — Go-live 1. Jan. 2026; bedingte Toleranz Q1 2026; Sanktionsskala.</li>
+        <li id="ref-20"><span class="src-tag">[branche]</span> peppol.nu, <a href="https://www.peppol.nu/blog-items/belgium-e-invoicing-2026-first-lessons-after-deadline/" target="_blank" rel="noopener">Belgium e-invoicing 2026: first lessons</a> — Peppol-Registrierungen 42% → 78% (Dez. 2025) → ~83% (März 2026) der ~1.2m MwSt.-registrierten Unternehmen.</li>
+        <li id="ref-21"><span class="src-tag">[branche]</span> VATupdate, <a href="https://www.vatupdate.com/2026/01/08/croatias-e%E2%80%91invoicing-fiscalization-e%E2%80%91reporting-requirements/" target="_blank" rel="noopener">Croatia's e-invoicing, fiscalization &amp; e-reporting requirements</a> (Jan. 2026) — Design von Fiscalization 2.0; Durchsetzung ab Tag eins; kostenloses Tool MIKROeRAČUN.</li>
+        <li id="ref-22"><span class="src-tag">[studie]</span> Bellon, Chang, Dabla-Norris, Khalid, Lima, Rojas &amp; Villena, <a href="https://www.imf.org/en/publications/wp/issues/2019/11/01/digitalization-to-improve-tax-compliance-evidence-from-vat-e-invoicing-in-peru-48672" target="_blank" rel="noopener">Digitalization to Improve Tax Compliance: Evidence from VAT e-Invoicing in Peru</a>, IMF WP/19/231 (2019); begutachtete Fassung im <a href="https://www.sciencedirect.com/science/article/pii/S0047272722000639" target="_blank" rel="noopener">Journal of Public Economics (2022)</a> — Effekte im ersten Jahr: gemeldete Umsätze +6.6%, Wertschöpfung +5.9%, MwSt.-Schuld +7.2%, Zahlungen +4.5%; Wellenverlängerungen und &gt;80% Compliance im selben Papier dokumentiert.</li>
+        <li id="ref-23"><span class="src-tag">[amtlich]</span> Zahlen der SAT (Mexiko): <a href="https://imcp.org.mx/noticias-fiscales-2024-53-sat-contribuyentes-emiten-mas-de-10-mil-millones-de-facturas-electronicas-en-2023/" target="_blank" rel="noopener">10.32bn CFDI issued in 2023</a> (SAT-Mitteilung 018-2024, via IMCP), inkl. Übergangsterminen zu CFDI 4.0; von der SAT beauftragte UDLAP-Hinterziehungsstudie (MwSt.-Hinterziehung 31.9% → 19.4%, 2011–2015) <a href="https://fortunaypoder.com/economia/disminuye-evasion-isr-e-iva-gracias-reforma-fiscal-factura-electronica" target="_blank" rel="noopener">as reported</a> <span class="src-tag">[presse]</span>.</li>
+        <li id="ref-24"><span class="src-tag">[branche]</span> Medius, <a href="https://www.medius.com/resources/guides-reports/e-invoicing-mandates-big-bang-vs-phase-approaches/" target="_blank" rel="noopener">E-invoicing mandates: big bang vs phased approaches</a> — zitiert als die am nächsten kommende bestehende Behandlung; eine begutachtete Vergleichsstudie der Rollout-Modi wurde nicht gefunden.</li>
+        <li id="ref-25"><span class="src-tag">[amtlich]</span> GSTN Invoice Registration Portal, <a href="https://einvoice6.gst.gov.in/content/e-invoice-mandate-e-invoicing-changes-exemptions-documents-covered-transactions-and-more/" target="_blank" rel="noopener">e-Invoice mandate: thresholds, exemptions &amp; timeline</a> — ₹500cr (Okt. 2020) → ₹5cr (Aug. 2023) mit Notifikationsnummern.</li>
+        <li id="ref-26"><span class="src-tag">[amtlich]</span> Notification No. 13/2020–Central Tax (21. März 2020), <a href="https://taxreply.com/gstnotifications-html/Notification-No-13-2020-1307.html" target="_blank" rel="noopener">text</a> — Umsetzung auf den 1. Okt. 2020 verschoben.</li>
+        <li id="ref-27"><span class="src-tag">[studie]</span> Hyung Chul Lee, <a href="https://documents1.worldbank.org/curated/en/712881467994710005/txt/WPS7592.txt" target="_blank" rel="noopener">Can Electronic Tax Invoicing Improve Tax Compliance? A Case Study of the Republic of Korea</a>, World Bank Policy Research WP 7592 (2016) — 99.8% Adoption nach Transaktionswert im ersten Jahr; Scheinrechnungs-Betrugsanklagen ~80–85% unter dem Höchststand von 2005; keine ökonometrische Einnahmenschätzung angeboten.</li>
+        <li id="ref-28"><span class="src-tag">[branche]</span> vatcalc, <a href="https://www.vatcalc.com/vietnam/vietnam-vat-b2b-e-invoices-update/" target="_blank" rel="noopener">Vietnam VAT B2B e-invoices update</a> — regionale Phasen, nationales Mandat 1. Jul. 2022, 764,314 Steuerpflichtige (92% der Verpflichteten) in Phase 2 registriert. Details zum ECR-Programm: <a href="https://en.vietnamplus.vn/tax-authorities-to-make-einvoicing-a-common-practice/266247.vnp" target="_blank" rel="noopener">VietnamPlus</a> <span class="src-tag">[presse]</span>.</li>
+        <li id="ref-29"><span class="src-tag">[amtlich]</span> DGII (Dominikanische Republik), <a href="https://dgii.gov.do/noticias/Paginas/Grandes-Contribuyentes-adoptan-plazo-Ley-Facturacion-Electronica.aspx" target="_blank" rel="noopener">Grandes Contribuyentes adoptan plazo Ley de Facturación Electrónica</a> — 96% der 633 verpflichteten großen Steuerpflichtigen zum Stichtag Mai 2024 konform/in Zertifizierung.</li>
+        <li id="ref-30"><span class="src-tag">[presse]</span> Acento, <a href="https://acento.com.do/economia/mas-de-76000-contribuyentes-ya-emiten-facturas-electronicas-informa-impuestos-internos-9725216.html" target="_blank" rel="noopener">Más de 76,000 contribuyentes ya emiten facturas electrónicas</a> (24. Jul. 2026) — DGII-Zahlen: 76,762 Aussteller (von 23,686 im Jan. 2026). Wellenverlängerungen (Avisos 12-25, 06-26): <a href="https://blog.alegra.com/republica-dominicana/obligatoriedad-de-factura-electronica/" target="_blank" rel="noopener">calendar summary</a> <span class="src-tag">[branche]</span>.</li>
+        <li id="ref-31"><span class="src-tag">[amtlich]</span> ZATCA (Saudi-Arabien), <a href="https://zatca.gov.sa/en/E-Invoicing/Pages/default.aspx" target="_blank" rel="noopener">E-Invoicing (Fatoora)</a> — Phase 1 (4. Dez. 2021), Phase-2-Integration ab 1. Jan. 2023.</li>
+        <li id="ref-32"><span class="src-tag">[branche]</span> EY, <a href="https://www.ey.com/en_gl/technical/tax-alerts/saudi-arabia-announces-23rd-wave-of-phase-2-e-invoicing-integration" target="_blank" rel="noopener">Saudi Arabia announces 23rd wave of Phase 2 integration</a> — Wellenstruktur SAR 3bn → SAR 750k; Welle 24 (&gt; SAR 375k, Frist 30. Jun. 2026) laut <a href="https://www.comarch.com/trade-and-services/data-management/news/navigating-e-invoicing-in-saudi-arabia-how-to-overcome-the-operational-challenges-of-zatca-compliance/" target="_blank" rel="noopener">Comarch</a>.</li>
+        <li id="ref-33"><span class="src-tag">[presse]</span> Daily News Egypt, <a href="https://www.dailynewsegypt.com/2023/02/19/295k-companies-join-e-invoice-system-finance-minister/" target="_blank" rel="noopener">295k companies join e-invoice system</a> (Feb. 2023) — Finanzminister Maait: von 134 Unternehmen (2020) auf 295,000; &gt;1.25m Dokumente/Tag. Wellendetails und Durchsetzungsverzug: <a href="https://www.vatupdate.com/2026/02/23/briefing-document-podcast-e-invoicing-e-reporting-in-egypt/" target="_blank" rel="noopener">VATupdate Egypt briefing</a> <span class="src-tag">[branche]</span>.</li>
+        <li id="ref-34"><span class="src-tag">[branche]</span> Herzog Fox &amp; Neeman, <a href="https://herzoglaw.co.il/en/news-and-insights/the-implementation-of-the-israel-invoices-vat-reform-will-be-postponed-until-may-5-2024/" target="_blank" rel="noopener">Israel Invoices reform postponed until May 5, 2024</a> — Schwellenleiter NIS 25k → 5k; Begründung Scheinrechnungen („Milliarden von Schekeln“).</li>
+        <li id="ref-35"><span class="src-tag">[presse]</span> The Jordan Times, <a href="https://jordantimes.com/news/local/e-invoicing-system-reaches-100-million-invoices-in-four-months-official-figures" target="_blank" rel="noopener">E-invoicing system reaches 100 million invoices in four months</a> (Aug. 2025) — ISTD-Generaldirektor: ~140,000 Betriebe; Spitze 1.2m Rechnungen/Tag. Phasenstruktur: <a href="https://www.vatupdate.com/2026/03/20/briefing-document-podcast-e-invoicing-e-reporting-in-jordan/" target="_blank" rel="noopener">VATupdate Jordan briefing</a> <span class="src-tag">[branche]</span>.</li>
+        <li id="ref-36"><span class="src-tag">[branche]</span> Global Indirect Tax Management, <a href="https://globalindirecttaxmanagement.com/country-updates/completion-of-israeli-e-invoicing-launch-advanced-to-june-2026.html" target="_blank" rel="noopener">Completion of Israeli e-invoicing launch advanced to June 2026</a> — 18-monatige Beschleunigung der Schwellenleiter.</li>
+        <li id="ref-37"><span class="src-tag">[branche]</span> Sovos, <a href="https://sovos.com/en-gb/vat/tax-rules/rtir-hungary/" target="_blank" rel="noopener">Hungary real-time invoice reporting (RTIR)</a> — 1. Jul. 2018 (≥ HUF 100k MwSt.), Schwelle im Jul. 2020 abgeschafft, B2C/innergemeinschaftlich ab 2021.</li>
+        <li id="ref-38"><span class="src-tag">[branche]</span> The Invoicing Hub, <a href="https://www.theinvoicinghub.com/romania-e-reporting-mandate-end-of-the-grace-period/" target="_blank" rel="noopener">Romania e-reporting mandate: end of the grace period</a> — Meldung Jan. 2024, Clearance Jul. 2024; Sanktionsschonfrist bis 31. Mai 2024 verlängert.</li>
+        <li id="ref-39"><span class="src-tag">[amtlich]</span> CIAT, <a href="https://www.ciat.org/the-immediate-supply-of-information-in-spain/?lang=en" target="_blank" rel="noopener">The Immediate Supply of Information (SII) in Spain</a> — Go-live 1. Jul. 2017; ~62,000 Einheiten ≈ 80% des Transaktionsvolumens; 4-Tage-Meldefenster.</li>
+        <li id="ref-40"><span class="src-tag">[branche]</span> vatcalc, <a href="https://www.vatcalc.com/spain/spain-verifactu-delay-till-jan-2027-for-certified-e-invoicing/" target="_blank" rel="noopener">Spain VeriFactu delay to Jan/Jul 2027</a>; Crea-y-Crece-Durchführungsverordnung RD 238/2026 und ausstehender Ministerialerlass: <a href="https://www.vatupdate.com/2026/04/18/e-invoicing-in-spain-a-briefing-document/" target="_blank" rel="noopener">VATupdate Spain briefing</a>.</li>
+        <li id="ref-41"><span class="src-tag">[branche]</span> KPMG Serbia, <a href="https://kpmg.com/rs/en/insights/tax-alerts/2021/05/law-on-electronic-invoicing-adopted.html" target="_blank" rel="noopener">Law on Electronic Invoicing adopted</a> (Mai 2021) — gesetzlich verankerte B2G/G2B/B2B-Leiter bis 1. Jan. 2023.</li>
+        <li id="ref-42"><span class="src-tag">[branche]</span> vatcalc, <a href="https://www.vatcalc.com/serbia/serbia-b2b-e-invoicing-jan-2023/" target="_blank" rel="noopener">Serbia B2B e-invoicing Jan 2023</a> — „planmäßig gestartet“. SEF-Volumina (220,000+ Unternehmen, 119m Rechnungen 2023): <a href="https://www.banqup.com/resources/blog/the-implementation-of-serbia-s-government-e-invoicing-solution" target="_blank" rel="noopener">Banqup/Unifiedpost</a> — Zahlen des Plattformanbieters, aus erster Hand, aber nicht neutral.</li>
+        <li id="ref-43"><span class="src-tag">[branche]</span> vatcalc, <a href="https://www.vatcalc.com/greece/greece-mydata-e-book-and-e-invoices-update/" target="_blank" rel="noopener">Greece myDATA &amp; e-invoices update</a> — B2B-Mandat 2. März 2026 (&gt; €1m) / 12. Okt. 2026 (übrige); EU-Ausnahmegenehmigung Feb. 2025. myDATA-Verschiebungen 2020–21: <a href="https://sovos.com/blog/vat/greeces-mydata-mandate-postponed-to-september-2021/" target="_blank" rel="noopener">Sovos</a>.</li>
+        <li id="ref-44"><span class="src-tag">[presse]</span> Malay Mail, <a href="https://www.malaymail.com/news/malaysia/2026/02/11/irb-more-than-200000-taxpayers-now-using-einvoices-over-one-billion-transactions-recorded/208830" target="_blank" rel="noopener">IRB: more than 200,000 taxpayers now using e-invoices</a> (11. Feb. 2026) — &gt;1bn Transaktionen; &gt;90% Compliance in den Phasen 1–3.</li>
+        <li id="ref-45"><span class="src-tag">[branche]</span> ClearTax, <a href="https://www.cleartax.com/my/en/different-phases-implementation-timelines-einvoicing-malaysia" target="_blank" rel="noopener">Malaysia e-invoicing implementation phases</a> — Wellen RM100m → RM1m, 6-monatige Lockerungsphasen, Befreiungsschwelle RM500k → RM1m angehoben (Jan. 2026).</li>
+        <li id="ref-46"><span class="src-tag">[branche]</span> ClearTax, <a href="https://www.cleartax.com/om/e-invoicing-oman" target="_blank" rel="noopener">Oman e-invoicing (Fawtara)</a> — Peppol-5-Corner; Pilot Aug. 2026 (~144 größte Steuerpflichtige); Phasen bis Aug. 2027.</li>
+        <li id="ref-47"><span class="src-tag">[branche]</span> China Briefing, <a href="https://www.china-briefing.com/news/e-invoicing-china-expansion-fully-digitalized-e-fapiao-program-details-timeline/" target="_blank" rel="noopener">Fully digitalized e-fapiao: program details &amp; timeline</a> — Provinzpiloten 2021–23; landesweit ab 1. Dez. 2024. Rahmen des neuen MwSt.-Gesetzes: <a href="https://edicomgroup.com/blog/china-moves-to-implement-the-electronic-invoice" target="_blank" rel="noopener">EDICOM</a>.</li>
+        <li id="ref-48"><span class="src-tag">[branche]</span> VATupdate, <a href="https://www.vatupdate.com/2025/08/27/pakistan-announces-new-deadlines-for-mandatory-electronic-invoicing-starting-september-2025/" target="_blank" rel="noopener">Pakistan announces new deadlines (SRO 1413(I)/2025)</a>; frühere Verschiebungen: <a href="https://sovos.com/regulatory-updates/vat/pakistan-mandatory-e-invoicing-integration-deadlines-postponed/" target="_blank" rel="noopener">Sovos</a>.</li>
+        <li id="ref-49"><span class="src-tag">[branche]</span> vatcalc, <a href="https://www.vatcalc.com/philippines/philippines-eis-vat-e-invoicing-1-july-2022/" target="_blank" rel="noopener">Philippines EIS e-invoicing</a> — Pilot 2022 (~100 große Steuerpflichtige), Anfang 2024 wegen technischer Probleme gestoppt, März 2025 neu gestartet; Verlängerung per RR 26-2025 bis Dez. 2026.</li>
+        <li id="ref-50"><span class="src-tag">[studie]</span> Barreix &amp; Zambrano (Hrsg.), <a href="https://publications.iadb.org/en/electronic-invoicing-latin-america" target="_blank" rel="noopener">Electronic Invoicing in Latin America</a>, IDB/CIAT (2018) — fünf Länder-Wirkungsanalysen, alle positiv bei MwSt.-Erklärungen und -Zahlungen; <a href="https://www.ciat.org/Biblioteca/Estudios/2018_FE/2018_Electronic_invoice_summary_BID_CIAT.pdf" target="_blank" rel="noopener">English summary (PDF)</a>.</li>
+        <li id="ref-51"><span class="src-tag">[presse]</span> Actualícese, <a href="https://actualicese.com/dian-presento-resultados-de-facturacion-electronica-van-1-143-000-facturadores-en-el-pais/" target="_blank" rel="noopener">DIAN presentó resultados de facturación electrónica</a> (März 2024) — 1,143,000 registriert; ~157,000 Verpflichtete nicht konform. Modellwechsel zur Vorvalidierung (Res. 000042/2020): <a href="https://blog.groupseres.com/nuevos-plazos-para-la-implementaci%C3%B3n-de-la-factura-electr%C3%B3nica-en-colombia" target="_blank" rel="noopener">Grupo SERES</a> <span class="src-tag">[branche]</span>.</li>
+        <li id="ref-52"><span class="src-tag">[presse]</span> Primicias, <a href="https://www.primicias.ec/noticias/economia/facturacion-electronica-obligatoria-noviembre/" target="_blank" rel="noopener">Facturación electrónica obligatoria en noviembre</a> — Ecuador: 269,575 von ~2.27m Verpflichteten (11.8%) hatten fünf Monate vor der Frist im Nov. 2022 umgestellt.</li>
+        <li id="ref-53"><span class="src-tag">[studie]</span> Bellon, Dabla-Norris, Khalid, Paliza, Chang &amp; Villena, <a href="https://www.imf.org/en/publications/wp/issues/2022/03/18/digitalization-and-tax-compliance-spillovers-evidence-from-a-vat-e-invoicing-reform-in-peru-515162" target="_blank" rel="noopener">Digitalization and Tax Compliance Spillovers: Evidence from a VAT e-Invoicing Reform in Peru</a>, IMF WP/2022/057 (2022) — Partnerfirmen: +11% gemeldete Umsätze, +17% gezahlte MwSt.</li>
+        <li id="ref-54"><span class="src-tag">[studie]</span> Varga, <a href="https://nemzetkozi-gazdalkodas.hu/files/18988/SZE_9_ME_Varga%20Z%20tanulm%C3%A1nyk%C3%B6tet.pdf" target="_blank" rel="noopener">Digitalisation and taxation in Hungary (PDF)</a> — NAV-Daten: 350,000+ registrierte Melder; HUF 400bn+ den Online-Registrierkassen + EKÁER zugerechnet.</li>
+        <li id="ref-55"><span class="src-tag">[studie]</span> Ramírez-Álvarez, Oliva &amp; Andino, <a href="https://www.scielo.org.mx/pdf/prode/v53n208/0301-7036-prode-53-208-97-en.pdf" target="_blank" rel="noopener">Tax compliance and electronic invoicing in Ecuador: an impact assessment (PDF)</a> — deklarierte MwSt. +19.4% (2015), +28.1% (2016), ≈US$132.6m; fasst zusammen: Uruguay +3.7% (Bérgolo et al.), Mexiko &gt;10%, Brasilien +22% gemeldete Erträge.</li>
+        <li id="ref-56"><span class="src-tag">[studie]</span> Dina Pomeranz, <a href="https://www.aeaweb.org/articles?id=10.1257%2Faer.20130393" target="_blank" rel="noopener">No Taxation without Information: Deterrence and Self-Enforcement in the Value Added Tax</a>, American Economic Review 105(8), 2015.</li>
+        <li id="ref-57"><span class="src-tag">[amtlich]</span> Europäische Kommission, <a href="https://eur-lex.europa.eu/legal-content/EN/TXT/HTML/?uri=CELEX%3A52022SC0393" target="_blank" rel="noopener">ViDA Impact Assessment, SWD(2022) 393 final</a> — DRR-Staaten gewannen €19–28bn (2014–2019), +2.6–3.5%/Jahr; 10-Jahres-Nettonutzen €250.7bn; Projektionen: €11bn/Jahr weniger Betrug und €4.1bn/Jahr Kosteneinsparung.</li>
+        <li id="ref-58"><span class="src-tag">[presse]</span> La Revue du Digital, <a href="https://www.larevuedudigital.com/facturation-electronique-un-gain-de-2-a-3-milliards-deuros-de-tva-attendu-par-la-dfgfip/" target="_blank" rel="noopener">Facturation électronique: un gain de 2 à 3 milliards d'euros de TVA attendu par la DGFiP</a> (21. Jul. 2026) — DGFiP-Generaldirektor Verdier; geschätzte nationale Mehrwertsteuerlücke €6–10bn.</li>
+        <li id="ref-59"><span class="src-tag">[amtlich]</span> Légifrance, <a href="https://www.legifrance.gouv.fr/contenu/Media/Files/autour-de-la-loi/legislatif-et-reglementaire/fiches-d-impact/fiches-d-impact-ordonnances/2021/ecoe2116916r.pdf" target="_blank" rel="noopener">Fiche d'impact, ordonnance n° 2021-1190 (PDF)</a> — ~€10 Papier vs. &lt;€1 elektronisch pro Rechnung; ≥€4.5bn/Jahr Einsparungen für Unternehmen; ~€2bn/Jahr projizierter Anti-Betrugs-Gewinn.</li>
+        <li id="ref-60"><span class="src-tag">[branche]</span> MUC Consulting, <a href="https://muc.co.id/en/article/the-coretax-system-remains-troubled-dgt-apologizes" target="_blank" rel="noopener">The Coretax system remains troubled, DGT apologizes</a> (Jan. 2025) — 845,514 versuchte Rechnungen, 236,221 bis 9. Jan. validiert; Sanktionsmoratorium.</li>
+        <li id="ref-61"><span class="src-tag">[branche]</span> Siempre al Día, <a href="https://siemprealdia.co/costa-rica/impuestos/prorroga-para-factura-4-4/" target="_blank" rel="noopener">Costa Rica: prórroga para factura electrónica v4.4</a> — Einzelfallverlängerungen für 281 Unternehmen; Nutzer des kostenlosen Tools automatisch verlängert.</li>
+        <li id="ref-62"><span class="src-tag">[branche]</span> Comarch, <a href="https://www.comarch.com/trade-and-services/data-management/news/navigating-e-invoicing-in-saudi-arabia-how-to-overcome-the-operational-challenges-of-zatca-compliance/" target="_blank" rel="noopener">Operational challenges of ZATCA compliance</a> — Fragilität der Hash-Ketten, Clearance-Engpässe, Fehlerintransparenz, Kostenskalierung.</li>
+        <li id="ref-63"><span class="src-tag">[branche]</span> peppol.nu, <a href="https://www.peppol.nu/blog-items/poland-ksef-e-invoicing-2026-first-weeks/" target="_blank" rel="noopener">Poland KSeF 2026: the first weeks</a> — Zertifikats-Warteschlangen, JPK_VAT-Doppeländerung, Nutzung des Offline24-Fallbacks.</li>
+        <li id="ref-64"><span class="src-tag">[branche]</span> Entscheidungen des Garante per la protezione dei dati personali zur italienischen E-Rechnung, via <a href="https://www.lexology.com/library/detail.aspx?g=8d8d784a-40b9-4524-8abd-10a6125306de" target="_blank" rel="noopener">Lexology summary</a> und <a href="https://www.edpb.europa.eu/news/national-news/2019/italian-garante-e-invoices-no-database-be-set-italys-revenue-agency-no-e_en" target="_blank" rel="noopener">EDPB news item</a> — keine vollständige Datenbank der Rechnungsinhalte; Gesundheitsrechnungen ausgenommen.</li>
+        <li id="ref-65"><span class="src-tag">[branche]</span> Ankündigungen aus dem Vereinigten Königreich &amp; Irland: ICAS, <a href="https://www.icas.com/news-insights-events/news/tax/autumn-budget-2025-e-invoicing-will-go-ahead-from-2029" target="_blank" rel="noopener">Autumn Budget 2025: e-invoicing will go ahead from 2029</a>; VATupdate, <a href="https://www.vatupdate.com/2026/02/21/ireland-confirms-phased-rollout-of-mandatory-e-invoicing-and-real-time-vat-reporting-from-2028/" target="_blank" rel="noopener">Ireland confirms phased rollout from 2028</a>; Revenue (Irland), <a href="https://www.revenue.ie/en/vat/documents/implementation-einvoicing.pdf" target="_blank" rel="noopener">eInvoicing implementation (PDF)</a> <span class="src-tag">[amtlich]</span>.</li>
+        <li id="ref-66"><span class="src-tag">[branche]</span> Aufschübe vor dem Start: vatcalc, <a href="https://www.vatcalc.com/slovenia/slovenia-b2b-e-invoicing-e-slog-on-pause/" target="_blank" rel="noopener">Slovenia B2B on pause (2028)</a>; EDICOM, <a href="https://edicomgroup.com/blog/latvia-electronic-invoicing" target="_blank" rel="noopener">Latvia (B2B to 2028)</a>; vatcalc, <a href="https://www.vatcalc.com/slovakia/slovakia-is-efa-e-invoice-proposal-2024-delay-to-b2g/" target="_blank" rel="noopener">Slovakia (2027)</a>; ClearTax, <a href="https://www.cleartax.com/ae/e-invoicing-uae" target="_blank" rel="noopener">UAE (Jan/Jul 2027)</a>.</li>
+        <li id="ref-67"><span class="src-tag">[amtlich]</span> IRAS (Singapur), <a href="https://www.iras.gov.sg/news-events/newsroom/committee-of-supply-2026--extension-of-gst-invoicenow-requirement-to-all-gst-registered-businesses-by-april-2031" target="_blank" rel="noopener">Extension of GST InvoiceNow requirement to all GST-registered businesses by April 2031</a>.</li>
+        <li id="ref-68"><span class="src-tag">[branche]</span> VATupdate, <a href="https://www.vatupdate.com/2025/12/22/briefing-document-podcasts-e-invoicing-e-reporting-in-brazil/" target="_blank" rel="noopener">Brazil e-invoicing &amp; e-reporting briefing</a> — Geschichte der NF-e, 1,280+ kommunale NFS-e-Systeme, Layouts der CBS/IBS-Reform 2026–27.</li>
+      </ol>
+    </div>
+  </div>
+
+  <footer>
+    <p><strong>Über diesen Bericht.</strong> Erstellt für den E-Invoicing Compliance Corner, August 2026, aus dem auf der Website gepflegten Meilenstein-Datensatz plus gezielter Recherche der oben aufgeführten öffentlichen Quellen. Fakten wurden, wo immer möglich, an der verlinkten Quelle verifiziert; Zahlen, die auf einer einzelnen Sekundärquelle, auf anbieterveröffentlichten Daten oder auf staatlicher Selbstauskunft beruhen, sind im Text als solche gekennzeichnet. Nichts hiervon ist Rechts- oder Steuerberatung — Mandatsdetails ändern sich häufig, und Pflichten sollten gegen das amtliche Portal, das im Tracker beim jeweiligen Ländereintrag verlinkt ist, oder mit einem qualifizierten Berater bestätigt werden.</p>
+    <p>© E-Invoicing Compliance Corner. Zahlen © ihre jeweiligen Quellen, oben zitiert.</p>
+  </footer>
+
+</div>
+</body>
+</html>
