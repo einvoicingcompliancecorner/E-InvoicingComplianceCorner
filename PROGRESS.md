@@ -6244,6 +6244,51 @@ confirmed "deployed successfully". The Insights & Whitepapers hub,
 the whitepaper in all four languages, the pop-out, and the live
 carousel slide are all in production.
 
+## 7 Aug 2026 (cont'd) — /insights listing translated: article_translations table (migration 450) + language-aware renderer
+
+Dan spotted that the whitepaper's title and description on the
+/insights hub rendered English-only in every language (the hub
+chrome was translated; the `articles` row wasn't — migration 338's
+schema deliberately carried no translations). Small fix, following
+the site's established *_translations pattern:
+
+- **Migration 450** — `article_translations` table keyed on
+  (article_slug, lang ∈ es/de/fr; slug is UNIQUE in `articles` so no
+  JOIN-lookup needed at insert time), columns title, dek, nullable
+  teaser_html, nullable **doc_url** — the last one letting each
+  language's listing and article-page CTA point directly at that
+  language's own static edition of the document. Three rows inserted
+  for `ctc-rollouts-compared`, phrased consistently with the
+  translated editions themselves. English needs no row.
+- **resources-render.mjs** — `getPublishedArticles()` and
+  `getArticleBySlug()` gained a lang parameter: 'en' keeps the
+  original single-table query; other languages LEFT JOIN +
+  per-column COALESCE, so an article with no translation row (or a
+  NULL column) falls back field-by-field to English rather than
+  disappearing or mixing languages. doc_url coalesces over pdf_url.
+- **Call sites** — site-worker's renderInsightsHub and
+  renderInsightsArticle, and members-worker's handleArticleFull, all
+  pass their already-resolved lang.
+- **Tracker polish** — since translated listings now carry the
+  language-specific doc_url server-side, openWhitepaperPopout() uses
+  a URL already ending in the active language's suffix directly,
+  instead of HEAD-probing for an impossible "-es-es.html" first (the
+  probe survives as the fallback for untranslated future docs).
+
+**Verification.** `validate_replay()`: OK (450 files, only
+documented pre-existing errors). New queries executed against a full
+in-memory replay: ES card title + -es doc_url, FR article
+title/teaser/doc_url all resolve translated; a synthetic
+translation-less article correctly falls back to English. Renderer
+end-to-end in node with the ES-coalesced row: card carries
+data-doc-url=".../-es.html", type label "Informe técnico", CTA "Leer
+el informe técnico →". `node --check` on both workers' index.js, the
+shared module, and the tracker's inline script: all OK.
+
+**Deploy needs**: migration 450 via `apply_migrations.py --remote`,
+then `wrangler deploy` on BOTH workers (shared renderer changed) —
+site-worker also picks up the tracker edit.
+
 ## Open items / next steps
 
 ### Real open work

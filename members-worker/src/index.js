@@ -1392,7 +1392,7 @@ async function handleArticleFull(request, env, slug, lang) {
   const email = await requireSession(request, env);
   if (!email) return redirectToLogin(`/members/insights/${slug}`);
 
-  const article = await sharedGetArticleBySlug(env.eicc_content, slug);
+  const article = await sharedGetArticleBySlug(env.eicc_content, slug, lang);
   if (!article) return new Response("Not found", { status: 404 });
 
   const fragment = sharedRenderArticleFragment(article, lang, { locked: false, unlockUrl: "" });

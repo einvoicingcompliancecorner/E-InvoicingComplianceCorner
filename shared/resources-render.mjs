@@ -20,18 +20,54 @@
 
 import { escapeHtml, d1All, d1First } from "./deep-dive-render.mjs";
 
-export async function getPublishedArticles(db) {
+// Both queries take an optional lang (default 'en'). For non-English
+// languages they LEFT JOIN article_translations (migration 450) and
+// COALESCE per column, so an article with no translation row — or a
+// translation row with a NULL teaser/doc_url — falls back to its
+// English content field-by-field rather than disappearing or mixing
+// languages mid-page. doc_url overrides pdf_url the same way, letting
+// a translated listing point at that language's own static edition
+// of the document.
+export async function getPublishedArticles(db, lang = "en") {
+  if (lang === "en") {
+    return d1All(db, `
+      SELECT slug, type, title, dek, gated, is_sponsored, sponsor_name,
+             author, published_at, pdf_url
+      FROM articles
+      WHERE published = 1
+      ORDER BY published_at DESC
+    `);
+  }
   return d1All(db, `
-    SELECT slug, type, title, dek, gated, is_sponsored, sponsor_name,
-           author, published_at, pdf_url
-    FROM articles
-    WHERE published = 1
-    ORDER BY published_at DESC
-  `);
+    SELECT a.slug, a.type,
+           COALESCE(t.title, a.title) AS title,
+           COALESCE(t.dek, a.dek) AS dek,
+           a.gated, a.is_sponsored, a.sponsor_name,
+           a.author, a.published_at,
+           COALESCE(t.doc_url, a.pdf_url) AS pdf_url
+    FROM articles a
+    LEFT JOIN article_translations t
+      ON t.article_slug = a.slug AND t.lang = ?
+    WHERE a.published = 1
+    ORDER BY a.published_at DESC
+  `, lang);
 }
 
-export async function getArticleBySlug(db, slug) {
-  return d1First(db, `SELECT * FROM articles WHERE slug = ? AND published = 1`, slug);
+export async function getArticleBySlug(db, slug, lang = "en") {
+  if (lang === "en") {
+    return d1First(db, `SELECT * FROM articles WHERE slug = ? AND published = 1`, slug);
+  }
+  return d1First(db, `
+    SELECT a.*,
+           COALESCE(t.title, a.title) AS title,
+           COALESCE(t.dek, a.dek) AS dek,
+           COALESCE(t.teaser_html, a.teaser_html) AS teaser_html,
+           COALESCE(t.doc_url, a.pdf_url) AS pdf_url
+    FROM articles a
+    LEFT JOIN article_translations t
+      ON t.article_slug = a.slug AND t.lang = ?
+    WHERE a.slug = ? AND a.published = 1
+  `, lang, slug);
 }
 
 const INSIGHTS_I18N = {

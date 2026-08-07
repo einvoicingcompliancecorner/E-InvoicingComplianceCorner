@@ -371,7 +371,7 @@ async function renderInsightsHub(request, env) {
   if (!env.eicc_content) return new Response("Missing D1 binding", { status: 500 });
   const { lang, shouldSetCookie, cookieDuplicated } = resolveInsightsLang(request);
   const ui = INSIGHTS_UI[lang] || INSIGHTS_UI.en;
-  const articles = await getPublishedArticles(env.eicc_content);
+  const articles = await getPublishedArticles(env.eicc_content, lang);
 
   const langLinks = SUPPORTED_LANGS.map((l) =>
     l === lang ? `<span class="lang-current">${l.toUpperCase()}</span>` : `<a href="/insights?lang=${l}">${l.toUpperCase()}</a>`
@@ -402,7 +402,7 @@ async function renderInsightsHub(request, env) {
 async function renderInsightsArticle(request, env, slug) {
   if (!env.eicc_content) return new Response("Missing D1 binding", { status: 500 });
   const { lang, shouldSetCookie, cookieDuplicated } = resolveInsightsLang(request);
-  const article = await getArticleBySlug(env.eicc_content, slug);
+  const article = await getArticleBySlug(env.eicc_content, slug, lang);
   if (!article) return new Response("Not found", { status: 404 });
 
   // Public page: only actually gate readers when the piece is gated

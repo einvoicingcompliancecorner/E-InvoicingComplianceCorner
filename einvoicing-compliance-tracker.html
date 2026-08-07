@@ -3090,6 +3090,14 @@ function openWhitepaperPopout(url){
   // EN·ES·DE·FR switcher row, so a visitor can still change language
   // inside the pop-out either way.
   const lang = (window.EICC_I18N && window.EICC_I18N.currentLang) || 'en';
+  // Since migration 450, translated /insights listings already carry
+  // the language-specific doc_url server-side -- if the URL already
+  // ends in this language's suffix, use it directly instead of
+  // probing for a doubled "-es-es.html" that can't exist.
+  if(lang !== 'en' && new RegExp(`-${lang}\\.html$`).test(url)){
+    setSrc(url);
+    return;
+  }
   if(lang !== 'en' && /\.html$/.test(url)){
     const variant = url.replace(/\.html$/, `-${lang}.html`);
     fetch(variant, { method: 'HEAD' })
