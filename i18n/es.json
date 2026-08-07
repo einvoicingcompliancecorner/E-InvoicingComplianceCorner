@@ -11,8 +11,10 @@
     "p2": "Este sitio tiene como objetivo ofrecer una forma sencilla y de bajo costo de acceder a información precisa con rapidez — y darle alertas continuas cada vez que cambian los mandatos o se introduce nueva legislación.",
     "title": "The E-Invoicing Compliance Corner",
     "authorEyebrow": "Sobre el autor",
-    "authorP1": "He pasado 25 años en la transformación de software financiero, más de 20 de ellos centrados en la facturación electrónica y la automatización de cuentas a pagar. En los últimos cinco años, la demanda del mercado ha girado bruscamente hacia el cumplimiento normativo y la regulación de la facturación electrónica, a medida que las organizaciones intentan abordar la complejidad del cumplimiento de la facturación electrónica B2B.",
-    "authorP2": "Lamentablemente, no existe una autoridad central que defina la hoja de ruta — se ha convertido en un tema genuinamente difícil de navegar. Este sitio existe para reunir esas fuentes dispersas en un solo lugar con información pública, asesoramiento práctico y próximos pasos.",
+    "authorP1": "He pasado 25 años trabajando en la transformación del software financiero, con gran parte de mi carrera centrada en la digitalización de facturas y la automatización de cuentas a pagar.",
+    "authorP2": "Durante ese tiempo, las prioridades de las empresas han cambiado notablemente. En los últimos cinco años en particular, la demanda del mercado ha girado bruscamente hacia la facturación electrónica y el cumplimiento normativo, a medida que las organizaciones se enfrentan a un panorama global de cumplimiento B2B cada vez más complejo.",
+    "authorP3": "El desafío es que no existe una única autoridad central que defina la hoja de ruta global. Las regulaciones, los plazos, los requisitos técnicos y los modelos de cumplimiento varían significativamente de un país a otro, lo que hace que la facturación electrónica sea cada vez más difícil de entender y de navegar.",
+    "authorP4": "The E-Invoicing Compliance Corner existe para reunir esas fuentes dispersas de información en un solo lugar — ofreciendo información clara y práctica, orientación y próximos pasos para ayudar a las empresas a mantenerse informadas y lograr el cumplimiento.",
     "authorConnect": "No dude en conectar conmigo — <a href=\"https://www.linkedin.com/in/danielyoung76/\" target=\"_blank\" rel=\"noopener\" style=\"color:var(--stamp); text-decoration:underline;\">encuéntreme en LinkedIn</a>."
   },
   "brand": {

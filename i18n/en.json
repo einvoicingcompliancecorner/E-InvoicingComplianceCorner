@@ -11,8 +11,10 @@
     "p2": "This site aims to provide a low-cost, easy way to access accurate information quickly — and to give you ongoing alerts whenever mandates change or new legislation is introduced.",
     "title": "The E-Invoicing Compliance Corner",
     "authorEyebrow": "About the author",
-    "authorP1": "I've spent 25 years in financial software transformation, the last 20+ years focused on e-invoicing and AP automation. Over the past five years, market demand has pivoted sharply toward compliance and e-invoicing regulation, as organisations try and tackle the complexity of B2B eInvoicing compliance.",
-    "authorP2": "Sadly, there is no central authority defining the roadmap — it's become a genuinely difficult subject to navigate. This site exists to bring those disparate sources together into one place for public information, practical advice, and next steps.",
+    "authorP1": "I've spent 25 years working in financial software transformation, with much of my career focused on invoice digitisation and Accounts Payable automation.",
+    "authorP2": "Over that time, enterprise priorities have shifted significantly. In the past five years in particular, market demand has pivoted sharply towards e-invoicing and regulatory compliance, as organisations grapple with an increasingly complex global B2B compliance landscape.",
+    "authorP3": "The challenge is that there is no single central authority defining the global roadmap. Regulations, timelines, technical requirements and compliance models vary significantly from country to country, making e-invoicing increasingly difficult to understand and navigate.",
+    "authorP4": "The E-Invoicing Compliance Corner exists to bring those disparate sources of information together in one place — providing clear, practical information, guidance and next steps to help businesses stay informed and become compliant.",
     "authorConnect": "Feel free to connect — <a href=\"https://www.linkedin.com/in/danielyoung76/\" target=\"_blank\" rel=\"noopener\" style=\"color:var(--stamp); text-decoration:underline;\">find me on LinkedIn</a>."
   },
   "brand": {

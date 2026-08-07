@@ -6289,6 +6289,23 @@ shared module, and the tracker's inline script: all OK.
 then `wrangler deploy` on BOTH workers (shared renderer changed) —
 site-worker also picks up the tracker edit.
 
+## 7 Aug 2026 (cont'd) — "About the author" rewritten per Dan's new copy
+
+Dan supplied replacement copy for the About-this-site pop-out's
+author section — four paragraphs instead of the previous two
+(career framing now "invoice digitisation and Accounts Payable
+automation", the shift narrative, the no-central-authority
+challenge, and a closing paragraph on what the site provides).
+Structure change: #aboutOverlay gained about.authorP3/authorP4
+paragraphs; all four i18n files updated — EN verbatim as supplied
+(the one silent normalisation: the plain "-" before "providing"
+rendered as the site's usual " — "), ES/DE/FR translated in
+register with the existing about-section translations, keeping "The
+E-Invoicing Compliance Corner" as an untranslated proper name.
+authorConnect (LinkedIn line) unchanged. Verified via headless
+Chromium: Menu ▸ About shows 4 paragraphs in EN, switches cleanly
+to ES. Deploy: site-worker only.
+
 ## Open items / next steps
 
 ### Real open work

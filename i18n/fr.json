@@ -11,8 +11,10 @@
     "p2": "Ce site vise à offrir un accès simple et peu coûteux à une information fiable et rapide — ainsi que des alertes continues à chaque évolution des obligations ou nouvelle législation.",
     "title": "The E-Invoicing Compliance Corner",
     "authorEyebrow": "À propos de l'auteur",
-    "authorP1": "J'ai passé 25 ans dans la transformation des logiciels financiers, dont plus de 20 ans consacrés à la facturation électronique et à l'automatisation des comptes fournisseurs. Ces cinq dernières années, la demande du marché s'est nettement orientée vers la conformité et la réglementation de la facturation électronique, à mesure que les organisations tentent de maîtriser la complexité de la conformité en matière de facturation électronique B2B.",
-    "authorP2": "Malheureusement, il n'existe pas d'autorité centrale définissant la feuille de route — un sujet devenu réellement difficile à appréhender. Ce site existe pour rassembler ces sources disparates en un seul endroit, avec des informations publiques, des conseils pratiques et les prochaines étapes.",
+    "authorP1": "J'ai passé 25 ans dans la transformation des logiciels financiers, une grande partie de ma carrière étant consacrée à la numérisation des factures et à l'automatisation des comptes fournisseurs.",
+    "authorP2": "Au fil de cette période, les priorités des entreprises ont beaucoup évolué. Ces cinq dernières années en particulier, la demande du marché s'est nettement orientée vers la facturation électronique et la conformité réglementaire, à mesure que les organisations font face à un paysage mondial de conformité B2B de plus en plus complexe.",
+    "authorP3": "La difficulté est qu'aucune autorité centrale unique ne définit la feuille de route mondiale. Les réglementations, les calendriers, les exigences techniques et les modèles de conformité varient considérablement d'un pays à l'autre, rendant la facturation électronique de plus en plus difficile à comprendre et à naviguer.",
+    "authorP4": "The E-Invoicing Compliance Corner existe pour rassembler ces sources d'information dispersées en un seul endroit — en offrant des informations claires et pratiques, des conseils et des prochaines étapes pour aider les entreprises à rester informées et à se mettre en conformité.",
     "authorConnect": "N'hésitez pas à me contacter — <a href=\"https://www.linkedin.com/in/danielyoung76/\" target=\"_blank\" rel=\"noopener\" style=\"color:var(--stamp); text-decoration:underline;\">retrouvez-moi sur LinkedIn</a>."
   },
   "brand": {
