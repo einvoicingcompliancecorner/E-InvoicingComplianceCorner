@@ -6182,11 +6182,10 @@ iframe's own back-link hidden; Escape closes the pop-out; the
 panel's back link restores the board; carousel click opens in-frame;
 browser back button restores the board; 0 page errors.
 
-**Deploy needs**: migration 449 via `apply_migrations.py --remote`,
-then `wrangler deploy` for BOTH workers this time — site-worker (new
-whitepaper asset + tracker + i18n + resources-render/site-worker code)
-AND members-worker (it bundles shared/resources-render.mjs too, for
-/members/insights/<slug>).
+**Deployed and confirmed live** (7 Aug 2026): Dan applied migration
+449 and deployed both workers together with the translations commit
+below — single confirmation covered the combined chain ("deployed
+successfully").
 
 ## 7 Aug 2026 (cont'd) — whitepaper fully translated: static ES/DE/FR editions + language-aware pop-out
 
@@ -6238,9 +6237,12 @@ clicking DE in the in-popout lang row loads the German edition;
 a document with no `-es` variant falls back to its base file; zero
 page errors.
 
-**Deploy needs**: `wrangler deploy` on site-worker only (three new
-static assets + tracker edit). No migration this time — no D1
-changes.
+**Deployed and confirmed live** (7 Aug 2026): shipped together with
+the insights-wiring commit above in one bundle
+(whitepaper-translations.bundle, containing both commits); Dan
+confirmed "deployed successfully". The Insights & Whitepapers hub,
+the whitepaper in all four languages, the pop-out, and the live
+carousel slide are all in production.
 
 ## Open items / next steps
 
