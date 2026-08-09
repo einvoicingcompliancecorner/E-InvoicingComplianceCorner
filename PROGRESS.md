@@ -6414,6 +6414,123 @@ working." Kenya (#61), Nigeria (#62), the "Middle East / Africa"
 region rename, the 62-count, and the corrected Egypt update are all
 live in production.
 
+## 9 Aug 2026 — Bulgaria (#63) and Estonia (#64) built (code complete, deploy pending)
+
+Dan asked to build Bulgaria and Estonia next, from the "Still not
+tracked in Europe" list. Both are straightforward — existing
+'Europe' region, no taxonomy decision needed — but research turned
+up a genuinely important finding for each: **neither country has a
+B2B e-invoicing or clearance mandate today.**
+
+**Bulgaria.** The European Commission's own "eInvoicing in Bulgaria"
+country factsheet (page 467108878, live-fetched) confirms: B2G
+mandatory since 1 Nov 2019 (Article 115a, Public Procurement Act,
+State Gazette 86/18, via the CAIS EPP platform), B2B "optional,
+contingent on mutual business agreements." The real upcoming change
+is unrelated to invoicing: a 5-phase SAF-T periodic accounting-data
+reporting mandate, 1 Jan 2026 (large enterprises, >BGN 300m revenue
+or >BGN 3.5m tax/social payments) through 1 Jan 2030 (full VAT
+universe incl. micro), cross-corroborated by EDICOM, PwC Bulgaria and
+Penkov Markov & Partners (a Bulgarian law firm) all agreeing on the
+same 5-phase structure. **All SAF-T milestones use
+`mandate_scope='none'`** — it's a bookkeeping-file reporting
+obligation, not an invoice-issuance requirement, the same
+classification logic as Spain's VeriFactu. Penalty figures (BGN
+5,000-15,000 / 10,000-30,000) come from one specialist compliance
+source only (SNI Technology) and are flagged plausible, not
+confirmed, in both the milestone-adjacent penalty card and the
+deep-dive's dedicated penalty-rows table — Bulgaria's own NRA SAF-T
+portal page timed out/robots-blocked this research round.
+
+**Estonia.** B2G mandatory since 1 Jul 2019 (EU factsheet, page
+905219410). B2B is a distinctive "buyer chooses" conditional model:
+since 1 Jul 2025 (Accounting Act amendment), any entity registered
+in Estonia's Business Register as an e-invoice recipient can require
+its suppliers to issue e-invoices — sourced to Estonia's own Ministry
+of Finance press release (fin.ee, "Muudatused jõustuvad 2025. aasta
+1. juulist" = confirmed 1 July 2025), cross-checked against Sovos and
+RTC Suite. This is genuinely a live `mandate_scope='b2b'` fact (the
+seller has no discretion once a registered buyer asks), unlike
+Bulgaria's situation. A general/universal B2B mandate is separately
+"anticipated by 2027" per the EU factsheet's own language, but
+remained in draft/proposal stage as of this research round —
+recorded with `confidence='expected'`, not treated as confirmed.
+
+**A sourcing-standard catch worth recording, same failure mode as
+the Egypt 281/2025 case (7 Aug entry above):** a VATupdate article
+dated 27 Jul 2026 ("Riigikogu Adopts Accounting Act Amendments...
+E-Invoicing Becomes More Flexible") describes a further
+simplification (direct self-registration without an e-invoice
+operator). Traced back to the *same* fin.ee press release already
+used for the confirmed 1 Jul 2025 milestone (same self-registration
+detail, same ~15-18k registered-entity figure); asked directly for
+an independent effective date, it had none. Treated as a
+syndicated/re-dated restatement of the 2024/2025 story, not a
+genuine separate 2026 legislative event — no second milestone
+created for it, documented explicitly in migration 465's header so
+it isn't re-discovered and mis-treated as new in a future pass.
+
+**Migrations 463-472** (10 files; last used was 462):
+- 463 BG+EE country rows + 4-lang name translations — both 'Europe',
+  no region change needed (unlike Kenya/Nigeria's MEA widening).
+- 464 Bulgaria: 8 milestones (5 on-board; anchor = 1 Nov 2019 B2G),
+  scopes b2g_only×1/none×6/b2b×1 (only the 2030 ViDA floor is a real
+  future B2B mandate).
+- 465 Estonia: 4 milestones (all 4 on-board; anchor = 1 Jul 2019
+  B2G), scopes b2g_only×1/b2b×3 — deliberately smaller than
+  Kenya/Nigeria/Bulgaria; padding to a bigger count would have
+  misrepresented how comparatively uneventful Estonia's regime is.
+- 466/467 deep dives EN (5 stats, 2+2+2 cards across file_format/
+  scope_transmission/penalties_related, 5/4 steps, 3/2 portals). No
+  lifecycle card for either country (no clearance exchange flow to
+  diagram) — structurally closest to Germany's decentralised-model
+  page. Bulgaria gets a 2-row penalty-rows table (hedged, see above);
+  Estonia gets none (no confirmed e-invoicing-specific fine schedule
+  exists — a narrative card says so explicitly rather than the page
+  silently omitting the section).
+- 468 stories: Bulgaria's SAF-T Phase 1 launch (1 Jan 2026) and
+  Estonia's buyer-request right taking effect (1 Jul 2025), EN only.
+- 469 tracking sources: Bulgaria = Public Procurement Agency (CAIS
+  EPP) + NRA SAF-T page + EC factsheet; Estonia = Ministry of Finance
+  e-invoices page + EC factsheet.
+- 470 jurisdiction count 62→64 in D1 (mechanically generated from 459
+  by the same transformation that made 459 from 444; 40 rows).
+- 471/472 ES/DE/FR translations (2 parallel subagents; JOIN-lookup
+  pattern per 442/457/458; both self-verified via scratch replay —
+  93 and ~80 INSERTs).
+
+**Statics:** countries.js Europe array (+Bulgaria, +Estonia,
+alphabetical); deep-dive-render.mjs slugs + es/de/fr name
+translations; i18n countryNames ×8 files (main + subscribe variants,
+all 4 languages). Count sweep 62→64: 40 D1 `translations` rows +
+7 HTML files + 24 i18n JSON files — same deliberate exclusions as
+the 62-sweep (whitepaper editions, carousel featuredDesc, articles
+rows — all describe the frozen 62-jurisdiction analysis, since the
+whitepaper predates this build). Map: both topology names
+(`Bulgaria`, `Estonia`) matched vendor/countries-50m.json exactly, no
+TOPO_NAME_OVERRIDES needed; both well inside the existing Europe
+REGION_BOUNDS, no widening needed.
+
+**Verification.** `validate_replay()`: OK (472 files, only
+documented pre-existing errors) — caught and fixed a real bug during
+authoring (2 of the hand-written EN penalty/narrative cards had a
+stray trailing NULL argument, "7 values for 6 columns" on
+`deep_dive_card_translations`). Structural queries on a full replay:
+jurisdiction count rule returns exactly 64; BG 8/5/1 and EE 4/4/1
+milestones (n/on-board/anchor); full 4-language completeness across
+every table for both countries (BG: 32/4/20/24/20/12/8 milestone/
+page/stat/card/step/portal/penalty-translation rows; EE: 16/4/20/24/
+16/8, no penalty rows by design); stories 4-lang ×2; tracking-source
+translations 12+8. `node --check` not yet re-run post-static-sweep —
+recommend before/at deploy time, following this project's standing
+practice.
+
+**Not yet deployed** — migrations 463-472 need
+`apply_migrations.py --remote`, then `wrangler deploy` on
+site-worker (countries.js/i18n/deep-dive-render/tracker HTML all
+changed; members-worker needs no changes per the runbook's standing
+rule).
+
 ## Open items / next steps
 
 ### Real open work
@@ -6427,18 +6544,20 @@ live in production.
    also **confirmed deployed** — Dan confirmed both the
    migrations and the `site-worker` deploy went out for each, and all
    four countries appear live on the site. Kazakhstan (#59), Dominican
-   Republic (#60), and now Kenya (#61) and Nigeria (#62) (see the
-   entry above) are also **confirmed deployed**, along with the
-   62-country header text and the "Middle East / Africa" region
-   rename. Every country added this project's history (through
-   Nigeria, #62) is now live. Myanmar was evaluated and held back
+   Republic (#60), and Kenya (#61) and Nigeria (#62) are also
+   **confirmed deployed**, along with the 62-country header text and
+   the "Middle East / Africa" region rename. Bulgaria (#63) and
+   Estonia (#64) (see the 9 Aug entry above) are **code complete,
+   deploy pending** — migrations 463-472 written and replay-validated,
+   the 64-country static-file sweep done, not yet applied to
+   production D1 or deployed. Myanmar was evaluated and held back
    (no real mandate found). Qatar
    was evaluated and held back at Dan's choice (thinner than first
    assessed). Africa candidates remaining from the 7 Aug evaluation:
    Morocco (decree pending) and South Africa (2026-29 phased plan) --
    both deferred by Dan's choice until their legal instruments firm
-   up. Still not tracked in Europe: Bulgaria, Estonia,
-   Lithuania, Malta, Liechtenstein. Still not tracked in the Americas:
+   up. Still not tracked in Europe: Lithuania, Malta, Liechtenstein.
+   Still not tracked in the Americas:
    Guatemala, Paraguay, Bolivia, Panama, El Salvador. The scaffolder
    + runner make each addition a fraction of the old effort.
 
