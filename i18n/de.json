@@ -18,7 +18,7 @@
     "authorConnect": "Vernetzen Sie sich gerne mit mir — <a href=\"https://www.linkedin.com/in/danielyoung76/\" target=\"_blank\" rel=\"noopener\" style=\"color:var(--stamp); text-decoration:underline;\">auf LinkedIn</a>."
   },
   "brand": {
-    "description": "Ein laufend aktualisierter Überblick über E-Invoicing- und digitale Meldepflichten in 60 Ländern — EU-weite ViDA-Regeln, nationale CTC-Systeme und alles dazwischen. Jeder Eintrag zeigt die Frist, was konkret zu tun ist, und einen direkten Link zum offiziellen Regierungsportal — damit Sie in einem einzigen Blick von \"betrifft uns das?\" zu \"das müssen wir tun\" kommen.",
+    "description": "Ein laufend aktualisierter Überblick über E-Invoicing- und digitale Meldepflichten in 62 Ländern — EU-weite ViDA-Regeln, nationale CTC-Systeme und alles dazwischen. Jeder Eintrag zeigt die Frist, was konkret zu tun ist, und einen direkten Link zum offiziellen Regierungsportal — damit Sie in einem einzigen Blick von \"betrifft uns das?\" zu \"das müssen wir tun\" kommen.",
     "eyebrow": "Compliance-Übersicht",
     "title": "The E-Invoicing<br>Compliance Corner"
   },
@@ -128,7 +128,7 @@
   },
   "regionNames": {
     "Europe": "Europa",
-    "Middle East / North Africa": "Naher Osten / Nordafrika",
+    "Middle East / Africa": "Naher Osten / Afrika",
     "Asia-Pacific": "Asien-Pazifik",
     "Americas": "Amerika"
   },
@@ -176,7 +176,9 @@
     "Serbia": "Serbien",
     "Latvia": "Lettland",
     "Kazakhstan": "Kasachstan",
-    "Dominican Republic": "Dominikanische Republik"
+    "Dominican Republic": "Dominikanische Republik",
+    "Kenya": "Kenia",
+    "Nigeria": "Nigeria"
   },
   "terminal": {
     "arrivalsView": "Ankunftstafel",

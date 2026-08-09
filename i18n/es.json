@@ -18,7 +18,7 @@
     "authorConnect": "No dude en conectar conmigo — <a href=\"https://www.linkedin.com/in/danielyoung76/\" target=\"_blank\" rel=\"noopener\" style=\"color:var(--stamp); text-decoration:underline;\">encuéntreme en LinkedIn</a>."
   },
   "brand": {
-    "description": "Un seguimiento actualizado de los mandatos de facturación electrónica y reporte digital en 60 países — normas de ViDA a nivel de la UE, sistemas nacionales de CTC, y todo lo demás. Cada entrada muestra la fecha límite, lo que debe hacer al respecto, y un enlace directo al portal oficial del gobierno, para que pueda pasar de \"¿esto nos afecta?\" a \"esto es lo que hay que hacer\" en una sola página.",
+    "description": "Un seguimiento actualizado de los mandatos de facturación electrónica y reporte digital en 62 países — normas de ViDA a nivel de la UE, sistemas nacionales de CTC, y todo lo demás. Cada entrada muestra la fecha límite, lo que debe hacer al respecto, y un enlace directo al portal oficial del gobierno, para que pueda pasar de \"¿esto nos afecta?\" a \"esto es lo que hay que hacer\" en una sola página.",
     "eyebrow": "Panel de cumplimiento normativo",
     "title": "The E-Invoicing<br>Compliance Corner"
   },
@@ -128,7 +128,7 @@
   },
   "regionNames": {
     "Europe": "Europa",
-    "Middle East / North Africa": "Oriente Medio / Norte de África",
+    "Middle East / Africa": "Oriente Medio / África",
     "Asia-Pacific": "Asia-Pacífico",
     "Americas": "América"
   },
@@ -176,7 +176,9 @@
     "Serbia": "Serbia",
     "Latvia": "Letonia",
     "Kazakhstan": "Kazajistán",
-    "Dominican Republic": "República Dominicana"
+    "Dominican Republic": "República Dominicana",
+    "Kenya": "Kenia",
+    "Nigeria": "Nigeria"
   },
   "terminal": {
     "arrivalsView": "Panel de llegadas",

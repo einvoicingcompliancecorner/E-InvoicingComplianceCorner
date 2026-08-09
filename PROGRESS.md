@@ -6306,6 +6306,110 @@ authorConnect (LinkedIn line) unchanged. Verified via headless
 Chromium: Menu ▸ About shows 4 paragraphs in EN, switches cleanly
 to ES. Deploy: site-worker only.
 
+## 7 Aug 2026 (cont'd) — Kenya (#61) and Nigeria (#62) built; region renamed "Middle East / Africa"; Egypt update corrected & added (code complete, deploy pending)
+
+Dan shared another session's "African countries to add" evaluation
+and chose: build Kenya + Nigeria now (Morocco/South Africa deferred
+until their decree/position-paper firm up), plus an Egypt update.
+Regions: Dan chose renaming "Middle East / North Africa" →
+**"Middle East / Africa"** over adding a fifth region — the widened
+group now spans the continent (Egypt, Israel, Jordan, Kenya, Nigeria,
+Oman, Saudi Arabia, UAE).
+
+**Sourcing standard catch worth recording:** the other session's
+Egypt item — "Resolution 281/2025 cut the registration threshold
+EGP 500k → 250k, register by 31 Mar 2026" — is FALSE as stated.
+Verification traced it to SEO/AI-generated blogs (and an AI-generated
+VATupdate "briefing" that apparently ingested them) contradicting
+each other; PwC's Feb-2026-reviewed country summary shows no
+threshold change. What 281/2025 actually is (Sovos+Comarch+KPMG
+confirmed): the e-receipt Stage 8 wave for two Cairo tax offices,
+from 15 Sep 2025. Built the corrected version instead: off-board
+milestone `eg-ereceipt-stage8-2025` + a story pairing it with the
+real SME angle (Law 6/2025 makes e-invoice/e-receipt enrollment the
+entry condition for the ≤EGP 20m simplified regime), with the debunk
+noted explicitly in the story (migration 461).
+
+**Research** (3 parallel agents, house standard): Kenya came back
+almost entirely KRA-official-sourced (notices 1944/2323, FAQ, ETR
+blog, OSCU/VSCU guide + EY for statutes); Nigeria's "sources
+genuinely conflict" warning resolved into a dated sequence — go-live
+1 Aug 2025 → extension 1 Nov 2025 → penalties statutory 1 Jan 2026
+(NTAA; the source of stray "mandatory 1 Jan 2026" claims) → hard
+deadline 31 Jul 2026 with enforcement from August. FIRS→NRS rename
+(acts signed 26 Jun 2025, effective 1 Jan 2026) handled by using
+FIRS pre-2026 / NRS after.
+
+**Migrations 451-462** (12 files; last used was 450):
+- 451 region relabel, mirroring 297's mechanics (translations
+  namespace='regions' key+value ×4 + countries.region UPDATE).
+- 452 KE+NG country rows + 4-lang name translations (fr "Nigéria").
+- 453 Kenya: 7 milestones (4 on-board; anchor = 30 Nov 2022 TIMS
+  deadline; 2026 return-validation as the flagship recent item),
+  scopes b2b×5/none×2. Excluded per standard: the fabricated
+  "FA2026 expense redefinition", FA2026 penalty figures
+  (single-source), XML-vs-JSON wire format (conflict), the 1 Jan
+  2025 pre-filled-returns date (secondary only).
+- 454 Nigeria: 8 milestones (4 on-board; anchor = 1 Aug 2025
+  go-live with MTN/Huawei/IHS first cleared invoices; Peppol
+  Authority 26 Sep 2025 off-board), scopes b2b×5/none×3. Hedged:
+  "first African country on OpenPeppol's authority list" (implied by
+  the list, stated verbatim nowhere); excluded: 72h buyer-rejection
+  + NGN 50k/day B2C penalty (single-source), archiving conflicts.
+- 455/456 deep dives EN (5 stats, 2+1 cards, lifecycle ×5 statuses,
+  3 penalties cards incl. "What we could not confirm", 5/6 steps,
+  3 portals each). Nigeria portal pages couldn't be machine-read
+  (JS app / fetch-blocked) — flagged in its footer disclaimer.
+- 457/458 ES/DE/FR translations (subagents; JOIN-lookup pattern per
+  442/443; both self-verified via scratch replay — 99 and 105
+  INSERTs; the Kenya agent caught and fixed a generator bug that had
+  eaten French apostrophes).
+- 459 jurisdiction count 60→62 in D1 (mechanically generated from
+  444 by the same transformation that made 444 from 432; 40 rows).
+- 460 stories: Kenya return-validation + Nigeria enforcement-begins,
+  4 languages each (Serbia-433 full-translation pattern — richer
+  than 445/446's EN-only).
+- 461 Egypt corrected update (milestone + story, 4 languages, debunk
+  documented in the header comment).
+- 462 tracking sources: KE = two official KRA pages; NG = official
+  einvoice portal + Thomson Reuters/Pagero log explicitly flagged as
+  the industry fallback (official portals block automated
+  monitoring).
+
+**Statics:** region rename swept across 13 files (countries.js, both
+workers, tracker incl. vestigial DATA rows, map-data.mjs, i18n main
++ subscribe ×4 — translated values updated per language, e.g.
+"Oriente Medio / África"); map REGION_BOUNDS widened west 22°→0°E
+(Nigeria ~2.7°E) and south 14°→-6° (Kenya ~-4.9°S) with a comment
+mirroring the Turkey precedent; region descriptions rewritten ×4 (no
+longer "most compact"); both topology names checked against
+vendor/countries-50m.json — exact matches, no TOPO_NAME_OVERRIDES
+needed. deep-dive-render slugs + es/de/fr name translations; i18n
+countryNames ×4. Count sweep 60→62 across i18n (24 files) + 7 HTML
+files — deliberately EXCLUDING the whitepaper editions ×4, the
+carousel featuredDesc ×4, and the articles rows (all describe the
+frozen 60-jurisdiction whitepaper).
+
+**Verification.** validate_replay: OK (462 files, only documented
+pre-existing errors). Structural queries on a full replay: count
+rule returns exactly 62; MEA region = the 8 expected members, zero
+old-string remnants; KE 7/4/1 and NG 8/4/1 milestones (n/on-board/
+anchor); 4-language completeness across every table (28/32 milestone
+translation rows; 4/20/24/20/20-24/12 page/stat/card/status/step/
+portal rows each); zero on-board milestones without portals; zero
+rows_json shape or actions-length inconsistencies; stories 4-lang
+×3; Egypt milestone 4-lang; tracking sources 2+8 rows per country;
+35 "62-count" rows in D1 with zero stale 60-count rows. node --check
+on tracker script: OK. Playwright: region pill renders "Middle East /
+Africa" (old string absent from DOM), brand copy says 62, Spanish
+switch shows "Oriente Medio / África", zero page errors.
+
+**Not yet deployed** — pending Dan pulling, applying migrations
+451-462 with `apply_migrations.py --remote`, and `wrangler deploy`
+on BOTH workers (members-worker bundles shared/map-data.mjs and
+markets the renamed region on its picker; site-worker carries the
+tracker/statics and region ordering).
+
 ## Open items / next steps
 
 ### Real open work

@@ -30,8 +30,8 @@ const EICC_COUNTRIES_BY_REGION = {
     "Italy", "Latvia", "Luxembourg", "Netherlands", "Norway", "Poland", "Portugal", "Romania", "Serbia", "Slovakia", "Slovenia", "Spain",
     "Sweden", "Turkey", "United Kingdom"
   ],
-  "Middle East / North Africa": [
-    "Egypt", "Israel", "Jordan", "Oman", "Saudi Arabia", "United Arab Emirates"
+  "Middle East / Africa": [
+    "Egypt", "Israel", "Jordan", "Kenya", "Nigeria", "Oman", "Saudi Arabia", "United Arab Emirates"
   ],
   "Asia-Pacific": [
     "Australia", "China", "India", "Indonesia", "Japan", "Kazakhstan", "Malaysia", "New Zealand", "Pakistan", "Philippines", "Singapore", "South Korea", "Taiwan", "Vietnam"

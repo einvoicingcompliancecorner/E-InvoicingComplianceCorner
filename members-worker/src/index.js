@@ -66,7 +66,7 @@ function isSafeVerifyNextPath(next) {
 // The fixed presentation order for region groups — a UI choice, not
 // country data, so it stays in code. Any region not listed here (there
 // are none today) would sort after these.
-const REGION_ORDER = ["Europe", "Middle East / North Africa", "Asia-Pacific", "Americas"];
+const REGION_ORDER = ["Europe", "Middle East / Africa", "Asia-Pacific", "Americas"];
 
 // ================================================================
 // TRANSLATIONS (EN / ES / DE / FR)
@@ -94,9 +94,9 @@ const LANG_COOKIE_TTL_SECONDS = 60 * 60 * 24 * 365; // 1 year
 // 4 fixed UI strings, not per-country data.
 function translateRegionName(lang, name) {
   const map = {
-    es: { "Europe": "Europa", "Middle East / North Africa": "Oriente Medio / Norte de África", "Asia-Pacific": "Asia-Pacífico", "Americas": "América" },
-    de: { "Europe": "Europa", "Middle East / North Africa": "Naher Osten / Nordafrika", "Asia-Pacific": "Asien-Pazifik", "Americas": "Amerika" },
-    fr: { "Europe": "Europe", "Middle East / North Africa": "Moyen-Orient / Afrique du Nord", "Asia-Pacific": "Asie-Pacifique", "Americas": "Amériques" },
+    es: { "Europe": "Europa", "Middle East / Africa": "Oriente Medio / África", "Asia-Pacific": "Asia-Pacífico", "Americas": "América" },
+    de: { "Europe": "Europa", "Middle East / Africa": "Naher Osten / Afrika", "Asia-Pacific": "Asien-Pazifik", "Americas": "Amerika" },
+    fr: { "Europe": "Europe", "Middle East / Africa": "Moyen-Orient / Afrique", "Asia-Pacific": "Asie-Pacifique", "Americas": "Amériques" },
   };
   return map[lang]?.[name] || name;
 }

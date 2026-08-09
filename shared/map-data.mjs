@@ -233,19 +233,25 @@ export async function getMapCountries(db, lang) {
   }));
 }
 
-export const REGION_ORDER = ["Europe", "Middle East / North Africa", "Asia-Pacific", "Americas"];
+export const REGION_ORDER = ["Europe", "Middle East / Africa", "Asia-Pacific", "Americas"];
 
 // One hand-picked lon/lat bounding box per region — see map-panel.js's
 // calibrateProjection() header comment for why these are hand-sized
 // rather than derived from real feature geometry (overseas exclaves
 // blow a feature-derived bbox out to nearly a whole hemisphere).
 //
+// The Middle East / Africa box was widened west (22 -> 0 deg E, for
+// Nigeria's ~2.7 deg E west edge) and south (14 -> -6 deg S, for
+// Kenya's ~-4.9 deg S extent) when the region was renamed from
+// "Middle East / North Africa" and gained its first Sub-Saharan
+// countries (7 Aug 2026, migration 451).
+//
 // Europe's east edge was widened from 35 to 46 deg E when Turkey joined
 // this region (3 August 2026) -- Turkey's own extent runs to roughly
 // 45 deg E (Igdir Province), which the original box would have clipped.
 export const REGION_BOUNDS = {
   "Europe": [[-11, 34], [46, 34], [46, 71.5], [-11, 71.5]],
-  "Middle East / North Africa": [[22, 14], [58, 14], [58, 34], [22, 34]],
+  "Middle East / Africa": [[0, -6], [58, -6], [58, 34], [0, 34]],
   "Asia-Pacific": [[65, -48], [179, -48], [179, 55], [65, 55]],
   "Americas": [[-173, -57], [-33, -57], [-33, 75], [-173, 75]],
 };
@@ -271,7 +277,7 @@ export const MAP_UI = {
     footerText: "Every country here links through to its full deep dive. For the underlying research as it's published — new mandates, deadline changes, source-of-truth updates — it's all in the newsletter archive.",
     archiveBtn: "Browse the newsletter archive →",
     subscribeBtn: "Subscribe to the newsletter →",
-    regionNames: { "Europe": "Europe", "Middle East / North Africa": "Middle East / North Africa", "Asia-Pacific": "Asia-Pacific", "Americas": "Americas" },
+    regionNames: { "Europe": "Europe", "Middle East / Africa": "Middle East / Africa", "Asia-Pacific": "Asia-Pacific", "Americas": "Americas" },
     status: { inforce: "In force (B2B)", upcoming: "Upcoming (B2B)", b2gonly: "B2G only — no B2B mandate", nomandate: "No mandate confirmed", tracked: "Tracked — no data yet" },
     legend: [
       { key: "inforce", text: "In force — real, binding B2B mandate today" },
@@ -282,7 +288,7 @@ export const MAP_UI = {
     ],
     regionNotes: {
       "Europe": "Small jurisdictions (Luxembourg, Cyprus) get an enlarged marker and leader line — their real shape is too small to reliably hover/click at this zoom otherwise.",
-      "Middle East / North Africa": "The most naturally compact of the non-European regions — all tracked countries here sit close together.",
+      "Middle East / Africa": "Now spanning two continents — from the Gulf's clearance regimes to Sub-Saharan Africa's first mandates in Kenya and Nigeria.",
       "Asia-Pacific": "Spans Malaysia to New Zealand — mostly ocean between them by real geography, not a rendering gap.",
       "Americas": "Spans the Canadian Arctic to southern Chile — the map is capped at 75°N (Canada's true extent reaches ~83°N via uninhabited Arctic islands) to keep the rest of the region readable.",
     },
@@ -303,7 +309,7 @@ export const MAP_UI = {
     footerText: "Cada país aquí enlaza a su análisis completo. Para la investigación subyacente a medida que se publica — nuevos mandatos, cambios de plazos, actualizaciones de fuentes — todo está en el archivo del boletín.",
     archiveBtn: "Ver el archivo del boletín →",
     subscribeBtn: "Suscríbete al boletín →",
-    regionNames: { "Europe": "Europa", "Middle East / North Africa": "Oriente Medio / Norte de África", "Asia-Pacific": "Asia-Pacífico", "Americas": "América" },
+    regionNames: { "Europe": "Europa", "Middle East / Africa": "Oriente Medio / África", "Asia-Pacific": "Asia-Pacífico", "Americas": "América" },
     status: { inforce: "Vigente (B2B)", upcoming: "Próximo (B2B)", b2gonly: "Solo B2G — sin mandato B2B", nomandate: "Sin mandato confirmado", tracked: "Rastreado — sin datos aún" },
     legend: [
       { key: "inforce", text: "Vigente — mandato B2B real y vinculante hoy" },
@@ -314,7 +320,7 @@ export const MAP_UI = {
     ],
     regionNotes: {
       "Europe": "Las jurisdicciones pequeñas (Luxemburgo, Chipre) reciben un marcador ampliado y una línea guía — su forma real es demasiado pequeña para pasar el cursor o hacer clic de forma fiable a este nivel de zoom.",
-      "Middle East / North Africa": "La región no europea más compacta — los países rastreados están muy cerca entre sí.",
+      "Middle East / Africa": "Ahora abarca dos continentes — desde los regímenes de clearance del Golfo hasta los primeros mandatos subsaharianos en Kenia y Nigeria.",
       "Asia-Pacific": "Abarca desde Malasia hasta Nueva Zelanda — mayormente océano entre ambos por geografía real, no un error de renderizado.",
       "Americas": "Abarca desde el Ártico canadiense hasta el sur de Chile — el mapa se limita a 75°N (la extensión real de Canadá llega a ~83°N vía islas árticas deshabitadas) para mantener legible el resto de la región.",
     },
@@ -335,7 +341,7 @@ export const MAP_UI = {
     footerText: "Jedes Land hier verlinkt zu seiner vollständigen Länderanalyse. Für die zugrunde liegende Recherche, sobald sie veröffentlicht wird — neue Mandate, Fristenänderungen, aktualisierte Quellen — alles im Newsletter-Archiv.",
     archiveBtn: "Newsletter-Archiv durchsuchen →",
     subscribeBtn: "Newsletter abonnieren →",
-    regionNames: { "Europe": "Europa", "Middle East / North Africa": "Naher Osten / Nordafrika", "Asia-Pacific": "Asien-Pazifik", "Americas": "Amerika" },
+    regionNames: { "Europe": "Europa", "Middle East / Africa": "Naher Osten / Afrika", "Asia-Pacific": "Asien-Pazifik", "Americas": "Amerika" },
     status: { inforce: "In Kraft (B2B)", upcoming: "Bevorstehend (B2B)", b2gonly: "Nur B2G — kein B2B-Mandat", nomandate: "Kein Mandat bestätigt", tracked: "Erfasst — noch keine Daten" },
     legend: [
       { key: "inforce", text: "In Kraft — heute geltendes, verbindliches B2B-Mandat" },
@@ -346,7 +352,7 @@ export const MAP_UI = {
     ],
     regionNotes: {
       "Europe": "Kleine Länder (Luxemburg, Zypern) erhalten eine vergrößerte Markierung und eine Hilfslinie — ihre tatsächliche Form ist bei diesem Zoom sonst zu klein, um zuverlässig zu klicken oder zu hovern.",
-      "Middle East / North Africa": "Die kompakteste der nicht-europäischen Regionen — die erfassten Länder liegen eng beieinander.",
+      "Middle East / Africa": "Umfasst jetzt zwei Kontinente — von den Clearance-Regimen am Golf bis zu den ersten Mandaten Subsahara-Afrikas in Kenia und Nigeria.",
       "Asia-Pacific": "Erstreckt sich von Malaysia bis Neuseeland — dazwischen größtenteils Ozean, bedingt durch die reale Geografie, kein Darstellungsfehler.",
       "Americas": "Erstreckt sich von der kanadischen Arktis bis Südchile — die Karte ist auf 75°N begrenzt (Kanadas tatsächliche Ausdehnung reicht über unbewohnte arktische Inseln bis ~83°N), um den Rest der Region lesbar zu halten.",
     },
@@ -367,7 +373,7 @@ export const MAP_UI = {
     footerText: "Chaque pays ici renvoie vers son analyse complète. Pour la recherche sous-jacente au fur et à mesure de sa publication — nouveaux mandats, changements d'échéances, mises à jour des sources — tout est dans les archives de la newsletter.",
     archiveBtn: "Parcourir les archives de la newsletter →",
     subscribeBtn: "S'abonner à la newsletter →",
-    regionNames: { "Europe": "Europe", "Middle East / North Africa": "Moyen-Orient / Afrique du Nord", "Asia-Pacific": "Asie-Pacifique", "Americas": "Amériques" },
+    regionNames: { "Europe": "Europe", "Middle East / Africa": "Moyen-Orient / Afrique", "Asia-Pacific": "Asie-Pacifique", "Americas": "Amériques" },
     status: { inforce: "En vigueur (B2B)", upcoming: "À venir (B2B)", b2gonly: "B2G uniquement — aucun mandat B2B", nomandate: "Aucun mandat confirmé", tracked: "Suivi — pas encore de données" },
     legend: [
       { key: "inforce", text: "En vigueur — mandat B2B réel et contraignant aujourd'hui" },
@@ -378,7 +384,7 @@ export const MAP_UI = {
     ],
     regionNotes: {
       "Europe": "Les petites juridictions (Luxembourg, Chypre) reçoivent un marqueur agrandi et une ligne de rappel — leur forme réelle est trop petite pour être survolée ou cliquée de manière fiable à ce niveau de zoom.",
-      "Middle East / North Africa": "La région non européenne la plus compacte — les pays suivis sont proches les uns des autres.",
+      "Middle East / Africa": "Couvre désormais deux continents — des régimes de clearance du Golfe aux premiers mandats d'Afrique subsaharienne au Kenya et au Nigéria.",
       "Asia-Pacific": "S'étend de la Malaisie à la Nouvelle-Zélande — essentiellement de l'océan entre les deux, une réalité géographique et non un problème de rendu.",
       "Americas": "S'étend de l'Arctique canadien au sud du Chili — la carte est plafonnée à 75°N (l'étendue réelle du Canada atteint environ 83°N via des îles arctiques inhabitées) afin de garder le reste de la région lisible.",
     },

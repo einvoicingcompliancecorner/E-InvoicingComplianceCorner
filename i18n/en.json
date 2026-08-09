@@ -18,7 +18,7 @@
     "authorConnect": "Feel free to connect — <a href=\"https://www.linkedin.com/in/danielyoung76/\" target=\"_blank\" rel=\"noopener\" style=\"color:var(--stamp); text-decoration:underline;\">find me on LinkedIn</a>."
   },
   "brand": {
-    "description": "A living tracker of e-invoicing and digital reporting mandates across 60 countries — EU-wide ViDA rules, national CTC systems, and everything in between. Each entry shows the deadline, what you need to do about it, and a direct link to the official government portal, so you can go from \"is this relevant to us?\" to \"here's what to action\" in one page.",
+    "description": "A living tracker of e-invoicing and digital reporting mandates across 62 countries — EU-wide ViDA rules, national CTC systems, and everything in between. Each entry shows the deadline, what you need to do about it, and a direct link to the official government portal, so you can go from \"is this relevant to us?\" to \"here's what to action\" in one page.",
     "eyebrow": "Compliance tracker board",
     "title": "The E-Invoicing<br>Compliance Corner"
   },
@@ -128,7 +128,7 @@
   },
   "regionNames": {
     "Europe": "Europe",
-    "Middle East / North Africa": "Middle East / North Africa",
+    "Middle East / Africa": "Middle East / Africa",
     "Asia-Pacific": "Asia-Pacific",
     "Americas": "Americas"
   },
@@ -176,7 +176,9 @@
     "Serbia": "Serbia",
     "Latvia": "Latvia",
     "Kazakhstan": "Kazakhstan",
-    "Dominican Republic": "Dominican Republic"
+    "Dominican Republic": "Dominican Republic",
+    "Kenya": "Kenya",
+    "Nigeria": "Nigeria"
   },
   "terminal": {
     "arrivalsView": "Arrivals board",
