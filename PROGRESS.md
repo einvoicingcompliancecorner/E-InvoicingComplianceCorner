@@ -6306,7 +6306,7 @@ authorConnect (LinkedIn line) unchanged. Verified via headless
 Chromium: Menu ▸ About shows 4 paragraphs in EN, switches cleanly
 to ES. Deploy: site-worker only.
 
-## 7 Aug 2026 (cont'd) — Kenya (#61) and Nigeria (#62) built; region renamed "Middle East / Africa"; Egypt update corrected & added (code complete, deploy pending)
+## 7 Aug 2026 (cont'd) — Kenya (#61) and Nigeria (#62) built; region renamed "Middle East / Africa"; Egypt update corrected & added (deployed & confirmed live)
 
 Dan shared another session's "African countries to add" evaluation
 and chose: build Kenya + Nigeria now (Morocco/South Africa deferred
@@ -6404,11 +6404,15 @@ on tracker script: OK. Playwright: region pill renders "Middle East /
 Africa" (old string absent from DOM), brand copy says 62, Spanish
 switch shows "Oriente Medio / África", zero page errors.
 
-**Not yet deployed** — pending Dan pulling, applying migrations
-451-462 with `apply_migrations.py --remote`, and `wrangler deploy`
-on BOTH workers (members-worker bundles shared/map-data.mjs and
-markets the renamed region on its picker; site-worker carries the
-tracker/statics and region ordering).
+**Deployed and confirmed live.** Dan pulled the bundle, pushed
+(after resolving a GitHub credential expiry — new PAT via the
+keychain-prompt route; an earlier fine-grained token failed with 403
+for lack of repo Contents permission and was revoked after exposure),
+applied migrations 451-462 with `apply_migrations.py --remote`, and
+deployed both workers. Dan confirmed: "confirmed deployed and
+working." Kenya (#61), Nigeria (#62), the "Middle East / Africa"
+region rename, the 62-count, and the corrected Egypt update are all
+live in production.
 
 ## Open items / next steps
 
@@ -6422,14 +6426,18 @@ tracker/statics and region ordering).
    and Iceland, and now Serbia and Latvia too (see the entry above), are
    also **confirmed deployed** — Dan confirmed both the
    migrations and the `site-worker` deploy went out for each, and all
-   four countries appear live on the site. Kazakhstan (#59) and
-   Dominican Republic (#60) (see the entry above) are also **confirmed
-   deployed**, along with the corrected 60-country header text. Every
-   country added this project's history (through Dominican Republic,
-   #60) is now live. Myanmar was evaluated and held back
+   four countries appear live on the site. Kazakhstan (#59), Dominican
+   Republic (#60), and now Kenya (#61) and Nigeria (#62) (see the
+   entry above) are also **confirmed deployed**, along with the
+   62-country header text and the "Middle East / Africa" region
+   rename. Every country added this project's history (through
+   Nigeria, #62) is now live. Myanmar was evaluated and held back
    (no real mandate found). Qatar
    was evaluated and held back at Dan's choice (thinner than first
-   assessed). Still not tracked in Europe: Bulgaria, Estonia,
+   assessed). Africa candidates remaining from the 7 Aug evaluation:
+   Morocco (decree pending) and South Africa (2026-29 phased plan) --
+   both deferred by Dan's choice until their legal instruments firm
+   up. Still not tracked in Europe: Bulgaria, Estonia,
    Lithuania, Malta, Liechtenstein. Still not tracked in the Americas:
    Guatemala, Paraguay, Bolivia, Panama, El Salvador. The scaffolder
    + runner make each addition a fraction of the old effort.
