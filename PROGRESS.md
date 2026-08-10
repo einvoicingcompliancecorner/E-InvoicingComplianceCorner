@@ -7083,7 +7083,7 @@ assume** — this is now the third time this has come up.
 **Nothing was built.** This is evaluation only, matching the pattern of
 every prior coverage evaluation in this file.
 
-## 10 Aug 2026 (cont'd) — Uzbekistan (#69) and Azerbaijan (#70) built, both in Asia-Pacific; a three-migration-old D1 count bug found and repaired (code complete, deploy pending)
+## 10 Aug 2026 (cont'd) — Uzbekistan (#69) and Azerbaijan (#70) built, both in Asia-Pacific; a three-migration-old D1 count bug found and repaired (deployed & confirmed live)
 
 Dan picked the top two candidates from the coverage evaluation above:
 "Please do Uzbekistan and Azerbaijan and place both in Asia Pacific.
@@ -7270,11 +7270,52 @@ then independently re-verified here against the merged chain. All
 touched i18n JSON re-parsed; `node --check` clean on `countries.js`,
 `shared/deep-dive-render.mjs` and `shared/map-data.mjs`.
 
-**Not yet deployed.** Migrations 493-502 and the static-file changes
-are code-complete and replay-validated but have not been applied to
-production D1 or deployed via `wrangler deploy`. Note that this deploy
-also carries the D1 count repair, so it matters more than a usual
-country add.
+**Deployed and confirmed live** (confirmed by Dan, 10 Aug 2026). Worth
+recording the deploy itself, because it did not go cleanly at first.
+
+`apply_migrations.py --remote` initially failed at the wrangler step
+with a **Cloudflare API error 7403** — "The given account is not valid
+or is not authorized to access this service" — against account tag
+`40864d58...`. The replay had already validated, so nothing in the
+migrations was at fault. Two contributing factors, both worth
+remembering:
+
+1. There is no wrangler installed in `members-worker`, so
+   `resolve_wrangler()` fell through to its `npx wrangler` fallback and
+   npx downloaded a **fresh wrangler 4.120.1** (`Need to install the
+   following packages`). An unpinned wrangler that arrives new on each
+   run is how this environment drifts between sessions.
+2. `wrangler.toml` carries **no `account_id`**, so wrangler resolves the
+   account itself. Error 7403 with a populated `accountTag` means it
+   authenticated as someone but was not authorised for that account —
+   an identity mismatch, not a missing login.
+
+Resolved on Dan's side, then all 10 migrations (493-502) applied and
+recorded cleanly, and `site-worker` was redeployed for the static-file
+changes. This is the third time this project has lost time to a
+Cloudflare auth cycle (Indonesia/Japan hung on a stale OAuth session;
+Kazakhstan/Dominican Republic needed a re-auth before applying).
+**Standing recommendation, now recorded rather than rediscovered:**
+install and pin wrangler locally, and add an explicit `account_id` to
+`members-worker/wrangler.toml` so account resolution stops being a
+guess.
+
+Uzbekistan (#69), Azerbaijan (#70), the widened Asia-Pacific map bounds
+and the repaired 70-jurisdiction count are all live in production.
+
+**The count repair was verified against production, not assumed** —
+this is the check whose absence let the bug hide for three builds, so
+it was run deliberately rather than trusting "applied + recorded":
+
+```
+npx wrangler d1 execute eicc-content --remote --command "SELECT COUNT(*) AS stuck FROM translations WHERE value LIKE '%62 jurisdic%' OR value LIKE '%62 countr%' OR value LIKE '%62 Rechtsordnung%' OR value LIKE '%62 juridiction%'; SELECT COUNT(*) AS jurisdictions FROM countries WHERE code <> 'EU';"
+```
+
+Returned `stuck = 0` and `jurisdictions = 70`. **Run this after every
+future count bump** (substituting the previous count for 62). An UPDATE
+that matches zero rows still prints "applied + recorded", so the apply
+step's own output proves nothing about whether the value actually
+moved.
 
 ## Open items / next steps
 
@@ -7307,12 +7348,14 @@ country add.
    **Uzbekistan (#69) and Azerbaijan (#70)** were picked by Dan from
    the 10 Aug global coverage evaluation and built the same day, both
    placed in Asia-Pacific at his explicit instruction — migrations
-   493-502, code-complete and replay-validated, **not yet deployed**,
-   along with the 70-country header text. That deploy also carries a
-   repair to D1's jurisdiction-count rows, which had been stuck at 62
-   since 9 Aug because three successive count-bump migrations silently
-   matched zero rows — see the dated entry above; it matters more than
-   a usual country add. Myanmar was evaluated and held back
+   493-502 applied and site-worker redeployed, Dan confirmed **"changes
+   applied successfully"** — both are now **confirmed deployed**, along
+   with the 70-country header text. That deploy also carried the repair
+   to D1's jurisdiction-count rows, which had been stuck at 62 since
+   9 Aug because three successive count-bump migrations silently
+   matched zero rows, and the widened Asia-Pacific map bounds that also
+   un-clipped Kazakhstan — see the dated entry above. Every country
+   through Azerbaijan (#70) is confirmed deployed. Myanmar was evaluated and held back
    (no real mandate found). Africa candidates remaining from the 7 Aug
    evaluation: Morocco (decree still pending as of a 16 Apr 2026
    re-check) and South Africa (Act 4 of 2026 now gazetted but
