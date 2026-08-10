@@ -7453,7 +7453,13 @@ old shared 20s constant hid that by being small enough for both.
 `timeBudgetMs`, the manual trigger passes
 `CONTENT_MONITOR_MANUAL_BUDGET_MS` (20s), and its HTTP response says
 plainly that a manual run checks a slice and advances the same cursor.
-Needs one further `members-worker` deploy.
+**Deployed and confirmed live** (confirmed by Dan, 10 Aug 2026).
+
+The whole content-monitor round — migration 503, the coverage fix, the
+digest rewrite, announcement tracking, and this follow-up — is now live.
+The first digest under the new code arrives on the next Monday 08:00 UTC
+cron, and should read "All 117 sources checked" with a 5-item "Ready to
+announce" section.
 
 ## Open items / next steps
 
