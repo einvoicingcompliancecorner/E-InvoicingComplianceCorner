@@ -11,7 +11,7 @@
     "lastUpdated": "Dernière mise à jour :"
   },
   "statusBanner": {
-    "text": "Il s'agit d'un <strong>premier ensemble de liens vérifiés</strong>, pas d'une cartographie complète des 64 juridictions suivies. Chaque lien ci-dessous a été vérifié directement sur le site propre du gouvernement/de l'autorité mentionné. Plusieurs pays de ce suivi ne gèrent tout simplement aucun registre public d'agrément — consultez la remarque de la section 3 avant de supposer qu'il en existe un."
+    "text": "Il s'agit d'un <strong>premier ensemble de liens vérifiés</strong>, pas d'une cartographie complète des 66 juridictions suivies. Chaque lien ci-dessous a été vérifié directement sur le site propre du gouvernement/de l'autorité mentionné. Plusieurs pays de ce suivi ne gèrent tout simplement aucun registre public d'agrément — consultez la remarque de la section 3 avant de supposer qu'il en existe un."
   },
   "stats": {
     "label1": "Pays vérifiés à ce jour",
@@ -85,7 +85,7 @@
     },
     "card3": {
       "title": "🌍 Consultez les exigences spécifiques de votre pays",
-      "body": "Le menu des analyses par pays couvre les étapes exactes d'immatriculation, les spécifications techniques et les sanctions pour chacune des 64 juridictions suivies ici."
+      "body": "Le menu des analyses par pays couvre les étapes exactes d'immatriculation, les spécifications techniques et les sanctions pour chacune des 66 juridictions suivies ici."
     },
     "card4": {
       "title": "📬 Cette liste va s'étoffer",

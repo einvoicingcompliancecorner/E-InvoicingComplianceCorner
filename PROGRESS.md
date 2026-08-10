@@ -6617,6 +6617,126 @@ corroborated SAF-T rollout. Both are defensible "add for completeness"
 candidates (comparable to Iceland), not urgent ones. Neither has been
 built yet — this is evaluation only, awaiting Dan's go-ahead.
 
+## 10 Aug 2026 (cont'd) — Lithuania (#65) and Malta (#66) built (code complete, deploy pending)
+
+Dan said "build both" straight after the evaluation above. Built to
+the same rigor as Bulgaria/Estonia, carrying every hedge from the
+evaluation directly into the shipped content rather than smoothing it
+away.
+
+**Lithuania** — 7 milestones (6 on-board; anchor = 1 Jul 2017 B2G),
+scopes b2g_only×2/none×2/b2b×2/(the b2b-2028 one carries
+`confidence='expected'`, not a plain b2b like the confirmed ViDA
+floor). The disputed "1 January 2028" figure is recorded as its own
+milestone (`lt-b2b-2028-target`) with the EC-factsheet
+self-contradiction and the Latvia-conflation theory spelled out
+directly in the reader-facing description — not just in the migration
+comment — plus a dedicated deep-dive card ("The disputed '2028' B2B
+target, explained") and its own tracker-board stat ("2028?"). i.SAF
+(VAT-ledger reporting since ~Oct 2016) is `mandate_scope='none'`
+throughout, same classification logic as Bulgaria's SAF-T — a real
+deep-dive topic, not an invoicing mandate.
+
+**Malta** — deliberately the smallest set built for any country this
+project's history: 5 milestones (4 on-board), 1 file_format card
+(Peppol/Pagero only, no bespoke platform), 4 steps, 2 portals. B2G is
+recorded plainly as receive-only (contracting authorities must accept
+e-invoices; suppliers are not required to send them) — not padded to
+look like a fuller mandate than it is. The MTCA "actively studying...
+ViDA-ready by 2030" quote is carried verbatim into the milestone, the
+deep-dive card, and the launch story.
+
+**Migrations 473-482** (10 files; last used was 472):
+- 473 LT+MT country rows + 4-lang name translations — both 'Europe',
+  no region change needed.
+- 474/475 milestones (LT 7, MT 5) with full EN sourcing notes —
+  474's header documents the 2028-figure decision in detail (EC
+  factsheet self-contradiction, Latvia's real postponed-to-2028
+  mandate as the likely conflation source, i.SAF-T threshold/penalty
+  conflicts deliberately excluded, failed e-seimas.lrs.lt/infolex.lt
+  fetches).
+- 476/477 deep dives EN (5 stats each; cards 2+2+2 for LT,
+  1+2+1 for MT; 5/4 steps; 3/2 portals). No lifecycle card for either
+  (no clearance exchange flow to diagram).
+- 478 stories: Lithuania's Sept 2024 SABIS consolidation (used as the
+  hook for the "still no B2B mandate despite the disputed 2028
+  figure" clarification) and Malta's 5 Jun 2025 TSI project closing
+  event (MTCA's "actively studying" posture), EN only.
+- 479 tracking sources (3 each: LT = SABIS + VMI i.SAF page + EC
+  factsheet; MT = MTCA page + Ministry of Finance page + EC
+  factsheet), all 4 languages included directly in this migration.
+- 480 jurisdiction count 64→66 in D1 (mechanically generated from 470
+  by the same transformation that made 470 from 459; 40 rows).
+- 481/482 ES/DE/FR translations (2 parallel subagents; JOIN-lookup
+  pattern per 442/457/458/471/472; both self-verified via scratch
+  replay). The 2028-figure hedge was confirmed to survive intact in
+  all three languages everywhere it appears (milestone, stat, card,
+  story) — not summarized away in translation.
+
+**Statics:** countries.js Europe array (+Lithuania, +Malta,
+alphabetical); deep-dive-render.mjs slugs + es/de/fr name
+translations; i18n countryNames — added to all 8 files this time,
+including the 4 subscribe-variant files
+(`{en,es,de,fr}-subscribe.json`), which is worth flagging: those 4
+files' `countryNames` blocks turned out to be significantly stale
+relative to the main `{en,es,de,fr}.json` files and to `countries.js`
+— missing 27 countries' worth of entries (Argentina, Colombia, Costa
+Rica, Czech Republic, Dominican Republic, Ecuador, Hungary, Indonesia,
+Israel, Japan, Jordan, Kazakhstan, Kenya, Latvia, Luxembourg, Nigeria,
+Oman, Pakistan, Philippines, Serbia, South Korea, Taiwan, Turkey,
+Uruguay, Vietnam, plus Lithuania/Malta themselves before this fix).
+`subscribe.html`'s lookup falls back silently to the raw English name
+when a translation is missing, so this was never a crash — just a
+long-standing silent gap on the ES/DE/FR subscribe country picker.
+Only Lithuania and Malta were added to close this build's own gap;
+**the other 25 countries' missing subscribe-picker translations are a
+pre-existing defect, not touched here, flagged for a future pass.**
+
+**A second, related pre-existing drift bug found and fixed while
+sweeping the jurisdiction count**: the non-English jurisdiction-count
+text (the "X jurisdictions/countries/Länder/pays/países" prose
+strings) had not been kept in sync with English at every past count
+bump. `i18n/de.json`, `i18n/de-subscribe.json`, and all 4
+`de-edu-*.json` files were still saying "62" (stuck since before
+Kenya/Nigeria's #61/#62 bump); `i18n/es.json` and `i18n/fr.json` were
+also stuck at "62"; `i18n/fr-edu-preparing-for-mandate.json` was
+stuck at "62" too — while the equivalent English files had already
+correctly reached "64" after Bulgaria/Estonia. This is the same class
+of bug as the "48-country drift bug" fixed on 6 Aug (see that entry)
+recurring in a different set of files. Corrected all of these
+directly to "66" in the same pass as the regular 64→66 sweep, rather
+than leaving them stuck at 62 while English reads 66 — a 4-point
+undercount that would otherwise have kept compounding with every
+future country added. Full count sweep, EN/ES/FR 64→66 plus the
+stale-62 DE/ES/FR fixes: 7 HTML files (verified the tracker page's
+regex-based first-pass attempt at this accidentally corrupted
+unrelated SVG map-illustration coordinates and an image width/height
+attribute sharing the literal string "64" — reverted and redid that
+file with 4 precise, non-regex edits instead) + 29 i18n JSON files.
+Map: both topology names (`Lithuania`, `Malta`) matched
+vendor/countries-50m.json exactly, no TOPO_NAME_OVERRIDES needed.
+
+**Verification.** `validate_replay()`: OK (482 files, only documented
+pre-existing errors). Structural queries on a full replay:
+jurisdiction count rule returns exactly 66; LT 7/6/1 and MT 5/4/1
+milestones (n/on-board/anchor); full 4-language completeness across
+every table for both countries confirmed by exact row-count queries
+(LT: 7 milestone/1 page/5 stat/6 card [2+2+2 by section]/5 step/3
+portal-translation rows per language; MT: 5/1/5/4 [1+2+1]/4/2 per
+language); stories 4-lang ×2; tracking-source translations 4-lang ×3
+each; country_translations 4-lang for both (LT: Lithuania/Lituania/
+Litauen/Lituanie; MT: Malta/Malta/Malta/Malte). All i18n JSON files
+re-validated as parseable after the count-sweep edits; every `.js`/
+`.mjs` file re-validated with `node --check`; the tracker page's one
+inline `<script>` block re-parsed cleanly with `node --check` after
+the SVG-corruption revert.
+
+**Not yet deployed.** Migrations 473-482 are code-complete and
+replay-validated but have not been applied to production D1, and
+site-worker has not been redeployed with the static-file changes.
+Awaiting Dan to pull, apply, and deploy, same workflow as every prior
+country build.
+
 ## Open items / next steps
 
 ### Real open work
@@ -6630,25 +6750,39 @@ built yet — this is evaluation only, awaiting Dan's go-ahead.
    also **confirmed deployed** — Dan confirmed both the
    migrations and the `site-worker` deploy went out for each, and all
    four countries appear live on the site. Kazakhstan (#59), Dominican
-   Republic (#60), Kenya (#61), Nigeria (#62), and now Bulgaria (#63)
+   Republic (#60), Kenya (#61), Nigeria (#62), and Bulgaria (#63)
    and Estonia (#64) (see the 9 Aug entry above) are also
    **confirmed deployed**, along with the 64-country header text.
-   Every country added this project's history (through Estonia, #64)
-   is now live. Myanmar was evaluated and held back
+   Lithuania (#65) and Malta (#66) were evaluated and then built at
+   Dan's go-ahead (see the two 10 Aug entries above) — **code complete
+   and replay-validated, but not yet deployed**; awaiting Dan to pull,
+   apply migrations 473-482, and redeploy site-worker (same as the
+   Bulgaria/Estonia workflow before Dan confirmed that one live).
+   Myanmar was evaluated and held back
    (no real mandate found). Qatar
    was evaluated and held back at Dan's choice (thinner than first
    assessed). Africa candidates remaining from the 7 Aug evaluation:
    Morocco (decree pending) and South Africa (2026-29 phased plan) --
    both deferred by Dan's choice until their legal instruments firm
-   up. Lithuania and Malta were evaluated (10 Aug 2026, see the entry
-   above) and found thin — real B2G-only content for both, no
-   confirmed B2B mandate for either, and an unconfirmed "2028" figure
-   for Lithuania flagged as likely EC-factsheet/Latvia-adjacent
-   confusion rather than a real Lithuanian commitment — deferred
-   pending Dan's go-ahead, not built. Still not tracked in Europe:
+   up. Still not tracked in Europe:
    Liechtenstein. Still not tracked in the Americas:
    Guatemala, Paraguay, Bolivia, Panama, El Salvador. The scaffolder
    + runner make each addition a fraction of the old effort.
+
+   **Two pre-existing drift bugs found and fixed as a byproduct of
+   this build (10 Aug 2026), see that entry for full detail**: (a)
+   the 4 subscribe-variant i18n files' `countryNames` blocks were
+   missing 27 countries' worth of translations (silent fallback to
+   English on the ES/DE/FR subscribe picker, not a crash) — only
+   Lithuania/Malta were added to close this build's own gap, the
+   other 25 remain a flagged, un-fixed pre-existing gap; (b) the
+   non-English jurisdiction-count prose text in several i18n files
+   (`de.json`, `de-subscribe.json`, all 4 `de-edu-*.json`, `es.json`,
+   `fr.json`, `fr-edu-preparing-for-mandate.json`) was stuck at "62"
+   from before Kenya/Nigeria, while English had already moved to 64 —
+   corrected directly to 66 in this pass, the same class of bug as
+   the "48-country drift bug" fixed on 6 Aug, recurring in a
+   different file set.
 
    **Middle East coverage evaluated (3 August 2026).** Dan asked for
    an assessment of which additional Middle Eastern countries are

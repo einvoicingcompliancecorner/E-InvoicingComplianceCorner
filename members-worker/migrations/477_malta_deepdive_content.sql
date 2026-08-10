@@ -1,0 +1,59 @@
+-- ================================================================
+-- Malta (MT) deep-dive content, EN. ES/DE/FR ride in a separate
+-- translation migration, JOIN-lookup pattern. See 475's header for
+-- full sourcing notes. Deliberately the thinnest deep-dive page
+-- built this project's history -- Malta genuinely has the least to
+-- say of any tracked country (not even a supplier-side B2G
+-- obligation), and this page says so plainly rather than padding
+-- content to look more substantial than reality. No lifecycle card,
+-- no penalty-rows table (nothing to penalize -- no mandate exists).
+-- ================================================================
+
+INSERT INTO deep_dive_pages (country_id, last_updated) SELECT id, '2026-08-10' FROM countries WHERE code = 'MT';
+INSERT INTO deep_dive_page_translations (country_id, lang, compliance_model, footer_disclaimer, timeline_intro, file_format_intro, scope_intro, steps_intro, penalties_intro, mandate_summary, mandate_summary_icon) SELECT id, 'en',
+  'No B2B mandate, no domestic reporting system — B2G is a receiving-capability requirement only',
+  'This deep-dive page reflects Malta''s e-invoicing regime as confirmed via the European Commission''s eInvoicing Country Factsheet for Malta, Malta''s Ministry for Finance e-Invoicing page, and the Malta Tax and Customs Administration''s (MTCA) own "E-Invoicing and DRR" page (independently re-fetched and confirmed this research round), as of 10 August 2026, and is provided for general awareness, not legal or tax advice. Confirm current requirements directly with MTCA (mtca.gov.mt) or a Maltese tax adviser before relying on this page for compliance decisions.',
+  'Malta transposed the EU''s B2G e-invoicing directive via legal notices in late 2018 — but even that obligation is narrower than most EU peers: it requires only that public contracting authorities be *able to receive* structured e-invoices, not that suppliers send them. Malta has never built a domestic B2B e-invoicing mandate, a clearance platform, or any continuous transaction reporting system. As of this research round, the Malta Tax and Customs Administration describes itself as "actively studying" e-invoicing and real-time reporting, targeting readiness for the EU''s 2030 ViDA floor rather than an earlier domestic mandate.',
+  'Malta accepts EN 16931-compliant structured e-invoices for B2G, transmitted over the Peppol network (Peppol BIS Billing 3.0, UBL) via a certified Access Point, or entered manually through a portal. Malta has no bespoke national e-invoicing platform of its own — instead, the Ministry for Finance contracted Pagero as its certified Peppol service provider following an EU-funded infrastructure project. There is no separate reporting format to describe, because Malta has no domestic reporting system.',
+  'B2G scope covers only the receiving side: contracting authorities must be capable of processing e-invoices for procurement above the EU thresholds; suppliers are not required to send them. There is no B2B or B2C e-invoicing scope of any kind today, because no mandate exists.',
+  'For most Maltese businesses, there is genuinely nothing to do yet on e-invoicing beyond general awareness — the practical task is watching for MTCA''s eventual domestic proposal rather than preparing for an existing obligation.',
+  'No e-invoicing or digital-reporting penalty regime exists in Malta — confirmed by both the European Commission''s factsheet and MTCA''s own page. This follows directly from there being no B2B mandate and no supplier-side B2G obligation to penalize non-compliance with.',
+  'Malta has the thinnest e-invoicing regime of any EU member state tracked on this site: B2G e-invoicing only requires contracting authorities to be able to receive structured invoices (legal notices, late 2018) — there is no supplier mandate, no domestic B2B requirement, no clearance platform, and no reporting system of any kind. The Malta Tax and Customs Administration confirms it is "actively studying" e-invoicing and real-time reporting with a goal of being "ViDA-ready by 2030," rather than pursuing an earlier domestic mandate. The confirmed EU-wide floor remains 1 July 2030 (ViDA) for cross-border B2B.',
+  '🇲🇹'
+FROM countries WHERE code = 'MT';
+
+INSERT INTO deep_dive_stats (country_id, sort_order) SELECT id, 0 FROM countries WHERE code = 'MT';
+INSERT INTO deep_dive_stat_translations (stat_id, lang, stat_value, stat_label) VALUES ((SELECT MAX(id) FROM deep_dive_stats), 'en', '30 Nov 2018', 'Legal notices transposing the EU B2G e-invoicing directive');
+INSERT INTO deep_dive_stats (country_id, sort_order) SELECT id, 1 FROM countries WHERE code = 'MT';
+INSERT INTO deep_dive_stat_translations (stat_id, lang, stat_value, stat_label) VALUES ((SELECT MAX(id) FROM deep_dive_stats), 'en', 'Receive-only', 'Authorities must accept e-invoices — suppliers are not required to send them');
+INSERT INTO deep_dive_stats (country_id, sort_order) SELECT id, 2 FROM countries WHERE code = 'MT';
+INSERT INTO deep_dive_stat_translations (stat_id, lang, stat_value, stat_label) VALUES ((SELECT MAX(id) FROM deep_dive_stats), 'en', 'No mandate', 'No B2B e-invoicing mandate, no target date, no draft law');
+INSERT INTO deep_dive_stats (country_id, sort_order) SELECT id, 3 FROM countries WHERE code = 'MT';
+INSERT INTO deep_dive_stat_translations (stat_id, lang, stat_value, stat_label) VALUES ((SELECT MAX(id) FROM deep_dive_stats), 'en', 'No platform', 'Peppol-only via Pagero — no bespoke national system');
+INSERT INTO deep_dive_stats (country_id, sort_order) SELECT id, 4 FROM countries WHERE code = 'MT';
+INSERT INTO deep_dive_stat_translations (stat_id, lang, stat_value, stat_label) VALUES ((SELECT MAX(id) FROM deep_dive_stats), 'en', '2030', '"ViDA-ready" is MTCA''s own stated target, per its own website');
+
+INSERT INTO deep_dive_cards (country_id, section, sort_order) SELECT id, 'file_format', 0 FROM countries WHERE code = 'MT';
+INSERT INTO deep_dive_card_translations (card_id, lang, title, rows_json, note, body) VALUES ((SELECT MAX(id) FROM deep_dive_cards), 'en', 'B2G format & network', '[["Format", "EN 16931-compliant structured e-invoice"], ["Network", "Peppol (Peppol BIS Billing 3.0, UBL) — no bespoke national platform"], ["Service provider", "Pagero, contracted by the Ministry for Finance following the EU-funded \"eInvoicing4Islands\" project"], ["Submission options", "Structured transmission via a certified Peppol Access Point, or manual entry through a portal"]]', 'Malta is unusual among tracked EU countries for having built no platform of its own — it relies entirely on the shared Peppol network and a single contracted service provider.', NULL);
+
+INSERT INTO deep_dive_cards (country_id, section, sort_order) SELECT id, 'scope_transmission', 0 FROM countries WHERE code = 'MT';
+INSERT INTO deep_dive_card_translations (card_id, lang, title, rows_json, note, body) VALUES ((SELECT MAX(id) FROM deep_dive_cards), 'en', 'What''s actually required today', '[["Contracting authorities", "Must be able to receive and process EN 16931 e-invoices for procurement above EU thresholds — since Nov/Dec 2018 (central), Apr 2020 (sub-central, industry-sourced)"], ["Suppliers to public bodies", "NOT required to send e-invoices — may still submit paper/PDF"], ["B2B", "No requirement of any kind — entirely voluntary, by mutual agreement"], ["B2C", "Not covered by any rule"]]', 'This is the narrowest B2G obligation of any EU country tracked on this site — most peers require both a receiving capability AND a supplier-side sending mandate; Malta has only the former.', NULL);
+INSERT INTO deep_dive_cards (country_id, section, sort_order) SELECT id, 'scope_transmission', 1 FROM countries WHERE code = 'MT';
+INSERT INTO deep_dive_card_translations (card_id, lang, title, rows_json, note, body) VALUES ((SELECT MAX(id) FROM deep_dive_cards), 'en', 'What MTCA says about the future', '[["Status", "\"Actively studying the implementation of e-invoicing and real-time reporting\" (MTCA''s own words)"], ["Target", "\"Ensuring Malta is ViDA-ready by 2030\" (MTCA''s own words)"], ["Recent activity", "TSI-funded project \"Strengthening Tax Compliance through Real-Time Reporting in Malta\" held a stakeholder closing event 5 Jun 2025"], ["No committed domestic date", "Neither MTCA''s Strategic Plan 2023-2025 nor the government''s Pre-Budget Consultation Document 2026 names a specific Malta mandate date"]]', 'Unlike Lithuania''s disputed "2028" figure, Malta''s own sources are consistent and unambiguous: there is no domestic target date at all, only alignment with the 2030 EU floor.', NULL);
+
+INSERT INTO deep_dive_cards (country_id, section, sort_order) SELECT id, 'penalties_related', 0 FROM countries WHERE code = 'MT';
+INSERT INTO deep_dive_card_translations (card_id, lang, title, rows_json, note, body) VALUES ((SELECT MAX(id) FROM deep_dive_cards), 'en', '⚖️ No penalty regime exists — there is nothing to penalize', NULL, NULL, 'Malta has no B2B e-invoicing mandate, no supplier-side B2G obligation, and no digital-reporting requirement — so there is no fine schedule attached to any of them. Both the European Commission''s factsheet and MTCA''s own page confirm this directly rather than leaving it to be inferred.');
+
+INSERT INTO deep_dive_steps (country_id, sort_order) SELECT id, 0 FROM countries WHERE code = 'MT';
+INSERT INTO deep_dive_step_translations (step_id, lang, title, description) VALUES ((SELECT MAX(id) FROM deep_dive_steps), 'en', 'If you sell to Maltese public bodies, know that e-invoicing is optional, not required', 'Maltese contracting authorities can receive structured EN 16931 e-invoices over Peppol, but you are not legally required to send them — paper or PDF invoices remain acceptable unless a specific contracting authority asks otherwise.');
+INSERT INTO deep_dive_steps (country_id, sort_order) SELECT id, 1 FROM countries WHERE code = 'MT';
+INSERT INTO deep_dive_step_translations (step_id, lang, title, description) VALUES ((SELECT MAX(id) FROM deep_dive_steps), 'en', 'If you do want to e-invoice a Maltese public body, use Peppol', 'Submit via a certified Peppol Access Point (Malta''s Ministry for Finance contracted Pagero as its provider) or use the manual portal-entry option where available.');
+INSERT INTO deep_dive_steps (country_id, sort_order) SELECT id, 2 FROM countries WHERE code = 'MT';
+INSERT INTO deep_dive_step_translations (step_id, lang, title, description) VALUES ((SELECT MAX(id) FROM deep_dive_steps), 'en', 'No B2B action is required today', 'There is no domestic B2B e-invoicing mandate to prepare for, and MTCA has named no target date beyond general alignment with the EU''s 2030 ViDA floor.');
+INSERT INTO deep_dive_steps (country_id, sort_order) SELECT id, 3 FROM countries WHERE code = 'MT';
+INSERT INTO deep_dive_step_translations (step_id, lang, title, description) VALUES ((SELECT MAX(id) FROM deep_dive_steps), 'en', 'Watch MTCA for the eventual domestic proposal', 'Monitor mtca.gov.mt''s "E-Invoicing and DRR" page directly — it is the single clearest official source for whenever Malta''s preparatory phase turns into a real, dated proposal.');
+
+INSERT INTO deep_dive_portals (country_id, url, sort_order) SELECT id, 'https://mtca.gov.mt/business-tax/vat1/vat-information/e-invoicing-and-drr/e-invoicing-and-drr', 0 FROM countries WHERE code = 'MT';
+INSERT INTO deep_dive_portal_translations (portal_id, lang, label) VALUES ((SELECT MAX(id) FROM deep_dive_portals), 'en', 'Malta Tax and Customs Administration -- E-Invoicing and DRR');
+INSERT INTO deep_dive_portals (country_id, url, sort_order) SELECT id, 'https://finance.gov.mt/resources/einvoicing/', 1 FROM countries WHERE code = 'MT';
+INSERT INTO deep_dive_portal_translations (portal_id, lang, label) VALUES ((SELECT MAX(id) FROM deep_dive_portals), 'en', 'Ministry for Finance -- e-Invoicing');
