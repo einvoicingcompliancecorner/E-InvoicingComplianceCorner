@@ -456,8 +456,27 @@ export default {
   // from anything that publishes to subscribers.
   async scheduled(event, env, ctx) {
     if (event.cron === CONTENT_MONITOR_CRON) {
-      ctx.waitUntil(runContentMonitor(env));
+      // AWAITED, not ctx.waitUntil() — this matters, see the time-budget
+      // constant below. Cloudflare's scheduled-handler docs are explicit:
+      // "The runtime waits for the promise returned by the scheduled()
+      // handler to resolve (up to the 15-minute duration limit)" and
+      // "You do not need to use waitUntil() for the runtime to wait for
+      // a single asynchronous task." Handing the work to waitUntil()
+      // instead is what let an earlier version get killed partway
+      // through, which in turn is why the run's self-imposed budget was
+      // set so defensively low that it only ever reached ~10 of 117
+      // sources per week. Returning the promise is the supported
+      // pattern and unlocks the real ceiling.
+      await runContentMonitor(env);
     } else {
+      // NOTE (10 Aug 2026): the monthly subscriber notification still
+      // uses ctx.waitUntil() and carries the same latent exposure — if
+      // the subscriber list ever grows past what fits in the grace
+      // period it could be cut off mid-send with nothing surfaced.
+      // Deliberately NOT changed alongside the content monitor: this
+      // path sends real email to real subscribers, so it deserves its
+      // own change and its own verification rather than riding along
+      // with an internal tool's fix.
       ctx.waitUntil(sendMonthlyNotifications(env));
     }
   },
@@ -482,18 +501,48 @@ const CONTENT_MONITOR_CRON = "0 8 * * 1"; // Monday 08:00 UTC — see wrangler.t
 const CONTENT_MONITOR_FETCH_DELAY_MS = 750; // spacing between fetches — considerate of government infrastructure, not a bulk scraper
 const CONTENT_MONITOR_USER_AGENT = "EICC-ContentMonitor/1.0 (+https://e-invoicingcompliancecorner.com/about; weekly check for compliance updates)";
 const CONTENT_MONITOR_FETCH_TIMEOUT_MS = 15000;
-// SELF-IMPOSED time budget for a single run. Cloudflare's ctx.waitUntil()
-// only gets a short grace period once the HTTP response has already
-// been sent (discovered the hard way: an earlier version ran all ~50+
-// sources sequentially with a 3s gap, took several minutes, and got
-// silently killed mid-run with NO digest ever sent — "waitUntil() tasks
-// did not complete... and have been cancelled"). Rather than gamble on
-// exactly where that undocumented ceiling sits, the run polices its own
-// clock and stops itself well before any plausible limit, persisting a
-// cursor in KV so the NEXT run picks up exactly where this one left
-// off — every source still gets checked, just possibly a run later
-// than the one that would have needed it.
-const CONTENT_MONITOR_TIME_BUDGET_MS = 20000;
+// SELF-IMPOSED time budget for a single run.
+//
+// HISTORY, because the number moved a long way and the reasoning
+// matters more than the value. This was originally 20 seconds, set
+// defensively after an earlier version ran all ~50 sources with a 3s
+// gap and got silently killed mid-run with no digest sent at all
+// ("waitUntil() tasks did not complete... and have been cancelled").
+// The diagnosis at the time — an undocumented, very short ceiling —
+// was wrong. The real problem was handing the work to ctx.waitUntil()
+// rather than returning it from scheduled(); see the handler above.
+// Cloudflare documents a 15-MINUTE duration limit for a scheduled
+// handler's returned promise, and for a cron interval of an hour or
+// more the CPU allowance is 15 minutes too (this Worker's monitor cron
+// is weekly, and almost all of its wall time is spent waiting on the
+// network, not on CPU).
+//
+// The cost of getting this wrong was invisible but real: at 20s the
+// run reached about 10 of 117 sources, so a full sweep took roughly
+// TWELVE WEEKS and any given government page was effectively checked
+// once a quarter by a job described as weekly. The digest reported it
+// honestly every time; nobody read "107 deferred" as "quarterly
+// coverage" until Dan asked why the email read like a list of failures
+// (10 Aug 2026).
+//
+// 8 minutes leaves ~7 minutes of headroom under the documented 15.
+// Expected real duration is far lower: 117 sources x (750ms spacing +
+// ~1s fetch) is roughly 3.5 minutes. The budget still exists because
+// the worst case is not the expected case — if every source hit the
+// 15s fetch timeout, an unbounded run would need ~30 minutes and would
+// be cut off with no digest at all. The cursor logic below is retained
+// unchanged for exactly that scenario.
+const CONTENT_MONITOR_TIME_BUDGET_MS = 480000;
+// A source that has failed this many consecutive runs is reported as a
+// "known blocker" — a one-line group rather than a full card each week.
+// Some official sites (Israel's gov.il, for one) block automated
+// requests as a matter of policy and will never succeed; repeating an
+// identical full-size failure card every week trains the reader to
+// skim past the failures section, which is precisely where a NEW
+// failure needs to be noticed. Nothing is ever silently dropped — the
+// group is always listed, with its run count, so a blocker cannot
+// quietly become a blind spot.
+const CONTENT_MONITOR_KNOWN_BLOCKER_RUNS = 3;
 const CONTENT_MONITOR_CURSOR_KEY = "cursor:next-source-id";
 
 function sleep(ms) {
@@ -564,6 +613,23 @@ async function fetchWithTimeout(url, options, timeoutMs) {
   }
 }
 
+// Consecutive-failure bookkeeping, so the digest can tell a source that
+// has just broken apart from one that has been blocking us for months.
+// Counter lives beside the content hash in the same KV namespace and is
+// cleared the moment a source succeeds again — a site that starts
+// working is immediately "recovered", not still on probation.
+async function bumpSourceFailure(env, sourceId) {
+  const key = `fail:${sourceId}`;
+  const prev = parseInt(await env.CONTENT_MONITOR.get(key) || "0", 10) || 0;
+  const next = prev + 1;
+  await env.CONTENT_MONITOR.put(key, String(next));
+  return next;
+}
+
+async function clearSourceFailure(env, sourceId) {
+  await env.CONTENT_MONITOR.delete(`fail:${sourceId}`);
+}
+
 async function checkOneSource(env, source) {
   // source: { id, url, country, description }
   const kvKey = `hash:${source.id}`;
@@ -573,17 +639,21 @@ async function checkOneSource(env, source) {
       headers: { "User-Agent": CONTENT_MONITOR_USER_AGENT },
     }, CONTENT_MONITOR_FETCH_TIMEOUT_MS);
   } catch (err) {
-    return { source, status: "failed", error: String(err && err.message || err) };
+    const consecutiveFailures = await bumpSourceFailure(env, source.id);
+    return { source, status: "failed", error: String(err && err.message || err), consecutiveFailures };
   }
   if (!response.ok) {
-    return { source, status: "failed", error: `HTTP ${response.status}` };
+    const consecutiveFailures = await bumpSourceFailure(env, source.id);
+    return { source, status: "failed", error: `HTTP ${response.status}`, consecutiveFailures };
   }
   let html;
   try {
     html = await response.text();
   } catch (err) {
-    return { source, status: "failed", error: "could not read response body" };
+    const consecutiveFailures = await bumpSourceFailure(env, source.id);
+    return { source, status: "failed", error: "could not read response body", consecutiveFailures };
   }
+  await clearSourceFailure(env, source.id);
   const text = extractComparableText(html);
   const hash = await sha256Hex(text);
   const previous = await env.CONTENT_MONITOR.get(kvKey);
@@ -606,6 +676,102 @@ async function checkOneSource(env, source) {
   }
   const diff = crudeDiffSnippet(previousParsed.text || "", text);
   return { source, status: "changed", diff };
+}
+
+// ================================================================
+// ANNOUNCEMENT TRACKING (migration 503)
+// ================================================================
+// "Have we told anyone about this yet, and where?" Reads three
+// content sources — published stories, published articles
+// (whitepapers/insights), and shipped features — and reports which of
+// them are missing an announcement on each expected channel.
+//
+// Same hard line as the rest of the content monitor: this NEVER
+// announces anything. It reports what a human has not yet done.
+//
+// Which channels are EXPECTED, per item type. Deliberately not one
+// flat list: a newsletter story is announced by the monthly email and
+// that is usually the whole job, whereas a whitepaper or a shipped
+// feature is worth a post as well. Applying "needs LinkedIn too" to
+// every one of ~35 stories in a 60-day window would bury the two or
+// three items that genuinely need a decision — the exact noise problem
+// this rewrite exists to fix. Add a channel here and it starts being
+// chased from the next run.
+const ANNOUNCEMENT_CHANNELS_BY_TYPE = {
+  story: ["newsletter"],
+  article: ["newsletter", "linkedin"],
+  feature: ["newsletter", "linkedin"],
+};
+// Only chase items published/shipped within this window. Something
+// nobody announced three months ago is a decision, not an oversight,
+// and nagging about it forever is exactly the "list of things not
+// done" tone this digest is trying to lose.
+const ANNOUNCEMENT_LOOKBACK_DAYS = 60;
+
+function currentMonthKeyUTC() {
+  const d = new Date();
+  return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`;
+}
+
+async function getUnannouncedItems(env) {
+  const since = new Date(Date.now() - ANNOUNCEMENT_LOOKBACK_DAYS * 86400000).toISOString().slice(0, 10);
+  const thisMonth = currentMonthKeyUTC();
+
+  // One UNION query rather than three round trips. Each arm normalises
+  // to the same shape so the digest can treat them uniformly.
+  const rows = await d1All(env, `
+    SELECT 'story' AS item_type, s.id AS item_id, s.summary_en AS title, s.date AS item_date, NULL AS extra
+      FROM stories s
+     WHERE s.published = 1 AND s.date >= ?1
+       -- Only stories whose month's send has already been and gone.
+       -- This month's stories are queued for the next monthly email,
+       -- so flagging them would be nagging about work that is already
+       -- scheduled. A story from a PREVIOUS month with no newsletter
+       -- record genuinely slipped through — that is the real gap this
+       -- catches (the monthly job sends on the 1st, so anything added
+       -- mid-month was never announced to anyone).
+       AND s.month < ?2
+    UNION ALL
+    SELECT 'article', CAST(a.id AS TEXT), a.title, COALESCE(a.published_at, a.created_at), a.type
+      FROM articles a
+     WHERE a.published = 1 AND COALESCE(a.published_at, a.created_at) >= ?1
+    UNION ALL
+    SELECT 'feature', CAST(f.id AS TEXT), f.title, f.shipped_at, NULL
+      FROM features f
+     WHERE f.shipped_at >= ?1
+    ORDER BY item_date DESC
+  `, since, thisMonth);
+  if (rows.length === 0) return [];
+
+  const announced = await d1All(env, `SELECT item_type, item_id, channel FROM announcements`);
+  const done = new Set(announced.map((a) => `${a.item_type}|${a.item_id}|${a.channel}`));
+
+  return rows
+    .map((r) => ({
+      ...r,
+      missing: (ANNOUNCEMENT_CHANNELS_BY_TYPE[r.item_type] || []).filter((ch) => !done.has(`${r.item_type}|${r.item_id}|${ch}`)),
+    }))
+    .filter((r) => r.missing.length > 0);
+}
+
+// Called by sendMonthlyNotifications once a send has actually gone out,
+// so the 'newsletter' channel stays true without anyone maintaining it.
+// Deliberately called AFTER the send loop, not before: if the send dies
+// partway, we would rather under-record (and re-announce next month)
+// than claim subscribers were told about something they never saw.
+async function recordAnnouncements(env, itemType, itemIds, channel, note) {
+  const today = new Date().toISOString().slice(0, 10);
+  for (const id of itemIds) {
+    try {
+      await env.eicc_content.prepare(`
+        INSERT OR IGNORE INTO announcements (item_type, item_id, channel, announced_at, note)
+        VALUES (?1, ?2, ?3, ?4, ?5)
+      `).bind(itemType, String(id), channel, today, note || null).run();
+    } catch (err) {
+      // Never let announcement bookkeeping break a real send or a digest.
+      console.log(`recordAnnouncements: could not record ${itemType} ${id} on ${channel}: ${err && err.message || err}`);
+    }
+  }
 }
 
 async function getActiveTrackingSources(env) {
@@ -686,56 +852,43 @@ function cmSourceCard(source, accentColor, bodyHtml) {
   </div>`;
 }
 
-function buildDigestHtml(results, totalSources, skipped) {
+const CM_ITEM_TYPE_LABELS = { story: "Newsletter story", article: "Insight / whitepaper", feature: "Feature" };
+const CM_CHANNEL_LABELS = { newsletter: "newsletter", linkedin: "LinkedIn" };
+
+// The digest is ordered by what the reader has to DO, not by what the
+// job happened to compute. Attention first (changed pages, then content
+// waiting to be announced), reassurance second, housekeeping last and
+// small. Before 10 Aug 2026 it opened with a four-up stat grid where
+// three of the four numbers were shortfalls, which made a completely
+// healthy week read like a list of failures.
+function buildDigestHtml(results, totalSources, skipped, unannounced) {
   skipped = skipped || [];
+  unannounced = unannounced || [];
   const changed = results.filter((r) => r.status === "changed");
-  const failed = results.filter((r) => r.status === "failed");
+  const failedAll = results.filter((r) => r.status === "failed");
+  // Split new/intermittent failures from sites that have been refusing
+  // us for weeks. A government site with a standing bot policy is a
+  // known limitation, not news; repeating an identical full card every
+  // week is how a reader learns to skim the section where a genuinely
+  // new failure would appear.
+  const knownBlockers = failedAll.filter((r) => (r.consecutiveFailures || 1) >= CONTENT_MONITOR_KNOWN_BLOCKER_RUNS);
+  const newFailures = failedAll.filter((r) => (r.consecutiveFailures || 1) < CONTENT_MONITOR_KNOWN_BLOCKER_RUNS);
   const baseline = results.filter((r) => r.status === "baseline");
   const unchanged = results.filter((r) => r.status === "unchanged");
   const dateStr = new Date().toISOString().slice(0, 10);
+  const fullSweep = skipped.length === 0;
+  const needsAttention = changed.length + newFailures.length + unannounced.length;
 
   let html = `
     <p style="margin:0 0 4px; font-family:'Courier New',Courier,monospace; font-size:11px; letter-spacing:1.5px; text-transform:uppercase; color:${CM_AMBER};">Content Monitor</p>
-    <h1 style="margin:0 0 18px; font-family:Georgia,serif; font-size:20px; color:${CM_HEADING};">Weekly source check — ${dateStr}</h1>
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:20px;">
-      <tr>
-        ${cmStatCell(`${results.length}/${totalSources}`, "Checked", CM_HEADING)}
-        <td width="6"></td>
-        ${cmStatCell(changed.length, "Changed", changed.length ? CM_AMBER : CM_MUTED)}
-        <td width="6"></td>
-        ${cmStatCell(failed.length, "Failed", failed.length ? CM_STAMP : CM_MUTED)}
-        <td width="6"></td>
-        ${cmStatCell(skipped.length, "Deferred", CM_MUTED)}
-      </tr>
-    </table>`;
+    <h1 style="margin:0 0 6px; font-family:Georgia,serif; font-size:20px; color:${CM_HEADING};">Weekly check — ${dateStr}</h1>
+    <p style="margin:0 0 18px; font-size:13px; color:${CM_BODY};">${
+      needsAttention === 0
+        ? `Nothing needs you this week. ${fullSweep ? `All ${totalSources} sources checked` : `${results.length} of ${totalSources} sources checked`}, no changes found.`
+        : `<strong>${needsAttention} item${needsAttention === 1 ? "" : "s"} for you below.</strong> ${fullSweep ? `All ${totalSources} sources checked.` : `${results.length} of ${totalSources} sources checked.`}`
+    }</p>`;
 
-  // A self-imposed time budget (not a bug — see CONTENT-MONITORING.md)
-  // means a single run may not reach every source; whatever's left
-  // over is picked up automatically at the start of the next run. This
-  // is always stated plainly rather than silently checking fewer
-  // sources than it claims to — kept in the digest even on a quiet run.
-  if (skipped.length) {
-    html += `<p style="margin:0 0 18px; padding:10px 14px; background-color:#f5f0e2; border-radius:4px; font-size:12.5px; color:${CM_BODY};">
-      <strong>We didn't get to ${skipped.length} source(s) this time</strong> — checking sources gradually and considerately means a run occasionally runs out of time. They'll be checked first next time: ${skipped.slice(0, 8).map((s) => escapeHtmlCM(s.country)).join(", ")}${skipped.length > 8 ? `, +${skipped.length - 8} more` : ""}.
-    </p>`;
-  }
-
-  if (changed.length === 0 && failed.length === 0) {
-    html += `<div style="padding:16px; background-color:#f5f0e2; border-radius:6px; text-align:center;">
-      <p style="margin:0; font-family:Georgia,serif; font-size:15px; color:${CM_HEADING};">Nothing to review this run.</p>
-      <p style="margin:6px 0 0; font-size:12.5px; color:${CM_MUTED};">No changes detected among the sources checked this run${unchanged.length ? ` (${unchanged.length} previously-baselined, unchanged)` : ""}${baseline.length ? ` (${baseline.length} newly baselined, nothing to compare yet)` : ""}.</p>
-    </div>`;
-    return html;
-  }
-
-  // Baseline note renders regardless of branch below -- a first-ever
-  // run where every source baselines but one also happens to fail
-  // shouldn't silently drop the baseline count just because it's not
-  // the "quiet week" case.
-  if (baseline.length) {
-    html += `<p style="margin:0 0 16px; font-size:11.5px; color:${CM_MUTED};">${baseline.length} source(s) checked for the first time this run — baseline recorded, no comparison possible yet.</p>`;
-  }
-
+  // ---- Attention: pages that changed ----
   if (changed.length) {
     html += `<h2 style="margin:0 0 10px; font-family:Georgia,serif; font-size:15px; color:${CM_HEADING};"><span style="color:${CM_AMBER};">●</span> Changed (${changed.length}) — go look</h2>`;
     for (const r of changed) {
@@ -745,16 +898,74 @@ function buildDigestHtml(results, totalSources, skipped) {
       `);
     }
   }
-  if (failed.length) {
-    html += `<h2 style="margin:18px 0 10px; font-family:Georgia,serif; font-size:15px; color:${CM_HEADING};"><span style="color:${CM_STAMP};">●</span> Couldn't check (${failed.length}) — verify manually</h2>`;
-    for (const r of failed) {
+
+  // ---- Attention: published, but nobody has been told ----
+  // Deliberately framed as "ready to announce" rather than "you haven't
+  // done this" — these are finished pieces of work waiting for their
+  // moment, which is a different thing from a task backlog.
+  if (unannounced.length) {
+    html += `<h2 style="margin:${changed.length ? "22px" : "0"} 0 4px; font-family:Georgia,serif; font-size:15px; color:${CM_HEADING};"><span style="color:${CM_LIVE};">●</span> Ready to announce (${unannounced.length})</h2>
+      <p style="margin:0 0 10px; font-size:12px; color:${CM_MUTED};">Published on the site, not yet announced everywhere. The newsletter channel records itself when the monthly email goes out; anything else is recorded by hand.</p>`;
+    for (const item of unannounced) {
+      const typeLabel = CM_ITEM_TYPE_LABELS[item.item_type] || item.item_type;
+      const missing = item.missing.map((c) => CM_CHANNEL_LABELS[c] || c).join(" and ");
+      html += `<div style="margin:0 0 10px; padding:12px 14px; background-color:#f9f6ee; border-left:3px solid ${CM_LIVE}; border-radius:4px;">
+        <p style="margin:0 0 4px; font-family:'Courier New',Courier,monospace; font-size:9.5px; letter-spacing:0.5px; text-transform:uppercase; color:${CM_MUTED};">${escapeHtmlCM(typeLabel)}${item.extra ? ` · ${escapeHtmlCM(item.extra)}` : ""} · ${escapeHtmlCM(item.item_date || "")}</p>
+        <p style="margin:0 0 5px; font-family:Georgia,serif; font-size:14px; color:${CM_HEADING};">${escapeHtmlCM(String(item.title || "").slice(0, 180))}${String(item.title || "").length > 180 ? "…" : ""}</p>
+        <p style="margin:0; font-size:12px; color:${CM_BODY};">Not yet announced on: <strong>${escapeHtmlCM(missing)}</strong></p>
+      </div>`;
+    }
+  }
+
+  // ---- Attention: something newly broke ----
+  if (newFailures.length) {
+    html += `<h2 style="margin:22px 0 10px; font-family:Georgia,serif; font-size:15px; color:${CM_HEADING};"><span style="color:${CM_STAMP};">●</span> Newly unreachable (${newFailures.length}) — verify manually</h2>`;
+    for (const r of newFailures) {
       html += cmSourceCard(r.source, CM_STAMP, `
         <p style="margin:0 0 3px; font-size:12.5px; color:${CM_BODY};">${escapeHtmlCM(humanizeFetchError(r.error))}</p>
         <p style="margin:0; font-family:'Courier New',Courier,monospace; font-size:10px; color:${CM_MUTED};">(technical detail: ${escapeHtmlCM(r.error.slice(0, 120))})</p>
       `);
     }
-    html += `<p style="margin:10px 0 0; padding:10px 14px; background-color:#f5f0e2; border-radius:4px; font-size:11.5px; color:${CM_MUTED};">A failed fetch is NOT treated as "no change" — it's flagged so it doesn't become a silent blind spot. Common causes: the site blocks automated requests, a timeout, or the URL moved.</p>`;
+    html += `<p style="margin:10px 0 0; padding:10px 14px; background-color:#f5f0e2; border-radius:4px; font-size:11.5px; color:${CM_MUTED};">A failed fetch is never treated as "no change" — it's surfaced so it can't become a silent blind spot.</p>`;
   }
+
+  // ---- Reassurance, when there genuinely is nothing to do ----
+  if (needsAttention === 0) {
+    html += `<div style="padding:16px; background-color:#f5f0e2; border-radius:6px; text-align:center;">
+      <p style="margin:0; font-family:Georgia,serif; font-size:15px; color:${CM_HEADING};">All quiet.</p>
+      <p style="margin:6px 0 0; font-size:12.5px; color:${CM_MUTED};">${unchanged.length ? `${unchanged.length} source${unchanged.length === 1 ? "" : "s"} checked and unchanged` : "No comparisons available yet"}${baseline.length ? `, ${baseline.length} newly baselined` : ""}. Nothing published is waiting to be announced.</p>
+    </div>`;
+  }
+
+  // ---- Housekeeping: quiet, factual, at the bottom ----
+  const notes = [];
+  if (knownBlockers.length) {
+    // Country alone is ambiguous when one country has several blocked
+    // sources — Israel currently has two, and "Israel (9 runs), Israel
+    // (9 runs)" tells the reader nothing about which pages are dark.
+    const names = knownBlockers.map((r) => {
+      const label = r.source.description ? String(r.source.description).split(/\s+[—-]\s+/).pop() : r.source.url;
+      return `${escapeHtmlCM(r.source.country)} — ${escapeHtmlCM(String(label).slice(0, 60))} (${r.consecutiveFailures} runs)`;
+    });
+    notes.push(`<strong>${knownBlockers.length} known blocker${knownBlockers.length === 1 ? "" : "s"}</strong>, unchanged: ${names.join(", ")}. These sites refuse automated visits as a matter of policy, so they're listed rather than re-explained each week — they still need occasional manual checking, and they'd move back up into "newly unreachable" if they ever started working and then broke again.`);
+  }
+  if (baseline.length) {
+    notes.push(`${baseline.length} source${baseline.length === 1 ? "" : "s"} checked for the first time — baseline recorded, nothing to compare against yet.`);
+  }
+  if (skipped.length) {
+    // Distinct countries, not one entry per source: listing "Latvia,
+    // Latvia, Latvia" because a country has three tracked sources made
+    // the old note look broken.
+    const countries = [...new Set(skipped.map((s) => s.country))];
+    notes.push(`${skipped.length} source${skipped.length === 1 ? "" : "s"} across ${countries.length} countr${countries.length === 1 ? "y" : "ies"} didn't fit in this run's time budget and are first in the queue next time: ${countries.slice(0, 6).map(escapeHtmlCM).join(", ")}${countries.length > 6 ? `, +${countries.length - 6} more` : ""}.`);
+  }
+  if (notes.length) {
+    html += `<div style="margin:22px 0 0; padding:12px 14px; background-color:#f5f0e2; border-radius:4px;">
+      <p style="margin:0 0 6px; font-family:'Courier New',Courier,monospace; font-size:9.5px; letter-spacing:0.5px; text-transform:uppercase; color:${CM_MUTED};">For the record</p>
+      ${notes.map((n) => `<p style="margin:0 0 6px; font-size:11.5px; color:${CM_MUTED};">${n}</p>`).join("")}
+    </div>`;
+  }
+
   return html;
 }
 
@@ -807,14 +1018,33 @@ async function runContentMonitor(env) {
 
   const changed = results.filter((r) => r.status === "changed").length;
   const failed = results.filter((r) => r.status === "failed").length;
-  console.log(`Content monitor: ${results.length}/${allSources.length} checked (${skipped.length} deferred to next run), ${changed} changed, ${failed} failed.`);
+
+  // Published-but-unannounced content (migration 503). Wrapped so a
+  // problem here can never cost us the source-change digest, which is
+  // the part with a real deadline attached.
+  let unannounced = [];
+  try {
+    unannounced = await getUnannouncedItems(env);
+  } catch (err) {
+    console.log(`Content monitor: could not load unannounced items — ${err && err.message || err}`);
+  }
+
+  console.log(`Content monitor: ${results.length}/${allSources.length} checked (${skipped.length} deferred to next run), ${changed} changed, ${failed} failed, ${unannounced.length} awaiting announcement.`);
+
+  // Subject line leads with what needs doing. The old one always read
+  // as a tally of problems ("0 changed, 2 failed, 107 deferred") even
+  // on a healthy week, which is exactly backwards for an inbox.
+  const attention = changed + unannounced.length;
+  const subject = attention === 0
+    ? `[Content Monitor] All quiet — week of ${new Date().toISOString().slice(0, 10)}`
+    : `[Content Monitor] ${[changed ? `${changed} changed` : null, unannounced.length ? `${unannounced.length} to announce` : null].filter(Boolean).join(", ")} — week of ${new Date().toISOString().slice(0, 10)}`;
 
   const footerHtml = `<p style="margin:0; font-family:'Courier New',Courier,monospace; font-size:10.5px; color:${CM_MUTED};">Internal monitoring only — never sent to subscribers. Sources: <a href="https://e-invoicingcompliancecorner.com/sources" style="color:${CM_MUTED};">the tracking sources page</a>.</p>`;
   await sendViaResend(env, {
     from: env.FROM_EMAIL,
     to: env.CONTENT_MONITOR_EMAIL,
-    subject: `[Content Monitor] ${changed} changed, ${failed} failed${stoppedEarly ? `, ${skipped.length} deferred` : ""} — week of ${new Date().toISOString().slice(0, 10)}`,
-    html: buildEmailShell(buildDigestHtml(results, allSources.length, skipped), footerHtml, CM_HEADER_HTML),
+    subject,
+    html: buildEmailShell(buildDigestHtml(results, allSources.length, skipped, unannounced), footerHtml, CM_HEADER_HTML),
   });
 }
 
@@ -935,6 +1165,17 @@ async function sendMonthlyNotifications(env) {
   } while (cursor);
 
   console.log(`Monthly notification run for ${monthKey} complete — sent ${sent} emails.`);
+
+  // Record what subscribers were actually told about, so the weekly
+  // digest's "not yet announced" section stays true without anyone
+  // maintaining it by hand (migration 503). Deliberately after the send
+  // loop and gated on sent > 0: if the run died partway or reached
+  // nobody, under-recording is the safe direction — a story would be
+  // re-announced next month, rather than silently marked as
+  // communicated to people who never received it.
+  if (sent > 0) {
+    await recordAnnouncements(env, "story", monthStories.map((s) => s.id), "newsletter", `monthly notification, ${monthKey}, ${sent} recipient(s)`);
+  }
 }
 
 function currentMonthKey() {

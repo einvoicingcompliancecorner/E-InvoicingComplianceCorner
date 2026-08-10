@@ -7317,6 +7317,120 @@ that matches zero rows still prints "applied + recorded", so the apply
 step's own output proves nothing about whether the value actually
 moved.
 
+## 10 Aug 2026 (cont'd) — Content monitor: a coverage bug fixed, the digest rewritten, and announcement tracking added (code complete, deploy pending)
+
+Dan's prompt was about tone — the weekly digest "reads a little bit
+like a list of things that could not be done" — and investigating the
+tone found a real bug underneath it. Full detail is in
+CONTENT-MONITORING.md's own dated section; the short version:
+
+**The monitor was only reaching ~8% of its sources.** With a 20-second
+self-imposed budget and 750ms spacing, a run covered about 10 of 117
+sources, so a full sweep took **roughly twelve weeks** — every tracked
+government page was on a quarterly check cycle, from a job described
+everywhere as weekly. The digest reported it honestly every week ("107
+deferred"); nobody read that as "quarterly coverage" until Dan asked
+why the email felt negative.
+
+The 20s figure came from a real 3 Aug incident where a run was killed
+mid-flight, but that diagnosis was wrong. The cause was
+`ctx.waitUntil(runContentMonitor(env))` inside `scheduled()`.
+Cloudflare's docs are explicit that the runtime waits for the promise
+the handler *returns*, up to a **15-minute** limit, and that waitUntil
+is unnecessary for a single async task. Now awaited, budget raised to
+8 minutes against an expected ~3.5-minute real duration. The budget and
+KV cursor are kept for the pathological case (every source hitting the
+15s timeout would need ~30 minutes).
+
+**Flagged, not fixed:** `sendMonthlyNotifications` still uses
+`ctx.waitUntil()` and carries the same exposure. Deliberately left for
+its own change — it sends real subscriber email and deserves separate
+verification rather than riding along with an internal tool's fix.
+
+**Digest reordered around what the reader must do**: changed pages →
+ready-to-announce → *newly* unreachable → an "All quiet" panel when
+there is genuinely nothing → a small muted "For the record" block for
+known blockers, baselines and deferrals. The old version opened with a
+four-up stat grid where three of four numbers were shortfalls, so a
+healthy week read as failure.
+
+**Known blockers** now tracked via a consecutive-failure counter in KV
+(`fail:<id>`, cleared on any success). After 3 consecutive failures a
+source moves out of alerting into one "for the record" line with its
+run count and enough of its description to tell two blocked sources in
+the same country apart. Israel's two gov.il services block bots as
+policy and will never succeed; two identical full-size failure cards
+every week is how a reader learns to skim the section where a *new*
+failure would appear. Nothing is silently dropped. The deferred note
+also now lists distinct countries — it previously printed "Kazakhstan,
+Kazakhstan, Latvia, Latvia, Latvia" and looked broken.
+
+### Announcement tracking (migration 503) — Dan's second idea
+
+"Flag news articles with an 'announced' flag... the same with
+whitepapers and insights, or new features... so we know if it has been
+announced, and when... The email digest would include anything not yet
+announced."
+
+Two new tables. **`features`** gives shipped features a home in D1 for
+the first time — they previously existed only as prose in this file —
+so a feature is trackable alongside a story or whitepaper, and a public
+changelog could read from it later. **`announcements`** records
+`(item_type, item_id, channel, announced_at)` with a UNIQUE constraint
+on the triple.
+
+Chosen over an `announced` flag on each table after weighing both: the
+table keeps a dated history rather than one overwritable bit, supports
+multiple channels per item without lying the first time something is
+posted to LinkedIn but not emailed, and works for features (no table to
+add a column to). `channel` is deliberately unconstrained TEXT — a
+departure from this schema's usual CHECK convention — because channels
+are the one axis expected to grow on a whim, and adding Bluesky should
+not need a migration.
+
+Three design decisions that make it useful rather than nagging:
+
+1. **Expected channels are per item type** (story → newsletter;
+   article/feature → newsletter + linkedin). A story is announced by
+   the monthly email and that is normally the whole job. Applying
+   "needs LinkedIn too" to all ~35 stories in a 60-day window would
+   bury the two or three items that need a real decision.
+2. **Stories are only chased once their month's send has passed.** The
+   monthly job fires on the 1st, so a story added on the 10th was never
+   announced to anyone — the real gap this catches. Current-month
+   stories stay quiet.
+3. **A 60-day lookback plus a baseline backfill.** Every pre-August
+   story is recorded as newsletter-announced, because those sends
+   demonstrably happened. No `linkedin` row was backfilled — the system
+   has no idea what was posted socially, and inventing it would poison
+   the one signal the digest exists to give.
+
+**The newsletter channel records itself**: `sendMonthlyNotifications()`
+writes rows for the stories it included, after the send loop and only
+when at least one email actually went out. Under-recording is the safe
+direction — a re-announced story is an annoyance, a falsely-recorded
+one is a silent gap.
+
+Seeded four genuinely user-visible recent features (The Map, the
+archive country filter, Insights & Whitepapers, the tracker's
+due-soon default) so the mechanism has something real to show.
+
+### Verification
+
+`validate_replay()`: OK (503 files, only the documented pre-existing
+errors). `node --check` clean. The digest builder was extracted and
+rendered in Node against three scenarios — a quiet full-sweep week, a
+realistic week (1 changed, 2 known blockers, 1 new failure, 2 to
+announce), and a blockers-only week — and read back as plain text to
+confirm the ordering and wording. A full replay confirms the first real
+digest will surface **5 items** (the CTC whitepaper plus the four
+seeded features), not the 40 an unfiltered query returns.
+
+**Not yet deployed.** Migration 503 and the members-worker changes are
+code-complete but need `apply_migrations.py --remote` and a
+`members-worker` deploy (note: members-worker, not site-worker — this
+round touches no static assets).
+
 ## Open items / next steps
 
 ### Real open work

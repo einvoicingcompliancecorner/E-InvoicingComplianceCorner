@@ -423,3 +423,144 @@ for the sake of looking nicer, only re-presented.
    out of time," answering the "why deferred" question in the same
    breath rather than requiring the reader to already know what a
    time budget is.
+## Coverage bug, digest rewrite, and announcement tracking (10 August 2026)
+
+Dan's prompt was about tone: the weekly digest "reads a little bit like
+a list of things that could not be done." The run he was looking at
+reported 10 of 117 sources checked, 0 changed, 2 failed, 107 deferred.
+Investigating the tone found a real bug underneath it, so this round
+fixed the cause first and the wording second.
+
+### The run was only ever reaching ~8% of its sources
+
+`CONTENT_MONITOR_TIME_BUDGET_MS` was 20 seconds. At the deliberate
+750ms spacing between fetches, that is about 10 sources. With 117
+sources and a weekly cron, **a full sweep took roughly twelve weeks** —
+every tracked government page was effectively on a quarterly check
+cycle, from a job described everywhere as weekly. The digest reported
+this honestly every single week; nobody read "107 deferred" as
+"quarterly coverage."
+
+The 20-second figure came from a real incident (see the 3 August entry
+above): an earlier version ran everything sequentially, took minutes,
+and was killed mid-run with no digest sent. The diagnosis at the time —
+an undocumented, very short ceiling — was **wrong**. The actual problem
+was `ctx.waitUntil(runContentMonitor(env))` in the `scheduled()`
+handler. Cloudflare's scheduled-handler documentation is explicit:
+
+> The runtime waits for the promise returned by the `scheduled()`
+> handler to resolve (up to the 15-minute duration limit).
+> ...
+> You do not need to use `waitUntil()` for the runtime to wait for a
+> single asynchronous task.
+
+Fixed by `await`ing the run, and raising the budget to **8 minutes**.
+Expected real duration is around 3.5 minutes for all 117 sources, so
+the budget is headroom rather than a constraint — but it is retained,
+because a pathological run where every source hits the 15-second fetch
+timeout would need ~30 minutes and would be cut off with no digest at
+all. The KV cursor logic is unchanged and still handles that case.
+
+**The monthly subscriber notification still uses `ctx.waitUntil()`** and
+has the same latent exposure. It was deliberately not changed in the
+same commit: it sends real email to real subscribers and deserves its
+own change and verification rather than riding along with an internal
+tool's fix. Worth doing.
+
+### Digest rewritten around what the reader has to do
+
+The old digest opened with a four-up stat grid in which three of the
+four numbers were shortfalls, so a completely healthy week still read
+as failure. The new order is: **attention → reassurance → housekeeping.**
+
+- Changed pages first, unchanged.
+- Then "Ready to announce" (below).
+- Then **newly** unreachable sources.
+- Then, only when there is genuinely nothing to do, an "All quiet" panel.
+- Then a small, muted "For the record" block carrying known blockers,
+  baselines, and anything deferred.
+
+**Known blockers.** A consecutive-failure count per source now lives in
+KV (`fail:<id>`, cleared on any success). After
+`CONTENT_MONITOR_KNOWN_BLOCKER_RUNS` (3) consecutive failures a source
+drops out of the alerting section into a single "for the record" line
+with its run count. Israel's two gov.il services block automated
+requests as a matter of policy and will never succeed; repeating two
+identical full-size failure cards every week is how a reader learns to
+skim the section where a genuinely new failure would appear. Nothing is
+ever silently dropped, and a blocker that recovers and later breaks
+again is treated as new.
+
+The deferred note also now lists **distinct countries** rather than one
+entry per source — it previously rendered "Kazakhstan, Kazakhstan,
+Latvia, Latvia, Latvia" and looked broken.
+
+### Announcement tracking (migration 503)
+
+Dan's second idea, and a better use of the digest than source-watching
+alone: track whether published content has actually been *told to
+anyone*, and surface whatever has not.
+
+Two new tables. `features` gives shipped features a home in D1 for the
+first time (they previously existed only as prose in PROGRESS.md), so a
+feature is a first-class trackable item alongside a story or a
+whitepaper — and a public changelog page could read from it later.
+`announcements` records `(item_type, item_id, channel, announced_at)`.
+
+A table rather than an `announced` flag on each row, because it keeps a
+dated history rather than one overwritable bit, supports more than one
+channel per item, and works for features (which had no table to add a
+column to).
+
+**Expected channels are per item type**, which is the design decision
+that keeps this useful:
+
+```
+story   -> newsletter
+article -> newsletter, linkedin
+feature -> newsletter, linkedin
+```
+
+A newsletter story is announced by the monthly email and that is
+normally the whole job; a whitepaper or a shipped feature is worth a
+post as well. Applying "needs LinkedIn too" to all ~35 stories in a
+60-day window would bury the two or three items that actually need a
+decision.
+
+**The newsletter channel records itself.** `sendMonthlyNotifications()`
+writes an announcement row for every story it included, after the send
+loop and only when at least one email went out — under-recording is the
+safe direction, since a re-announced story is a minor annoyance and a
+falsely-recorded one is a silent gap.
+
+**Stories are only chased once their month's send has passed.** The
+monthly job fires on the 1st, so a story added on the 10th was never
+announced to anyone — that is the real gap this catches. Current-month
+stories are queued for the next send and deliberately stay quiet.
+
+**Two guards against nagging**, both deliberate: a 60-day lookback
+(something nobody announced three months ago is a decision, not an
+oversight), and a baseline backfill in migration 503 marking every
+pre-August story as newsletter-announced, since those sends demonstrably
+happened. No `linkedin` row was ever backfilled — this system has no
+idea what was posted socially, and inventing that would poison the one
+signal it exists to give.
+
+Verified against a full replay: the first digest surfaces **5 items**
+(the CTC whitepaper plus four seeded features), not 40.
+
+To record an announcement by hand:
+
+```sql
+INSERT INTO announcements (item_type, item_id, channel, announced_at, note)
+SELECT 'feature', id, 'linkedin', '2026-08-11', 'https://linkedin.com/posts/...'
+  FROM features WHERE slug = 'the-map';
+```
+
+To add a feature as you ship it:
+
+```sql
+INSERT INTO features (slug, title, description, shipped_at)
+VALUES ('some-slug', 'Reader-facing title',
+        'One or two plain-language sentences.', '2026-08-20');
+```
