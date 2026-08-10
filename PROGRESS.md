@@ -6731,11 +6731,14 @@ re-validated as parseable after the count-sweep edits; every `.js`/
 inline `<script>` block re-parsed cleanly with `node --check` after
 the SVG-corruption revert.
 
-**Not yet deployed.** Migrations 473-482 are code-complete and
-replay-validated but have not been applied to production D1, and
-site-worker has not been redeployed with the static-file changes.
-Awaiting Dan to pull, apply, and deploy, same workflow as every prior
-country build.
+**Deployed and confirmed live.** Dan pulled the bundle (`git pull
+../lithuaniamaltabuild473482.bundle HEAD:main`, since the bundle only
+carried a `HEAD` ref rather than `refs/heads/main`), confirmed local
+`main`/`origin/main`/`origin/HEAD` all aligned at `f62c646`, applied
+migrations 473-482 via `apply_migrations.py --remote` from
+`members-worker/`, then redeployed `site-worker` via `npx wrangler
+deploy`, and confirmed "this is deployed." Lithuania (#65), Malta
+(#66), and the 66-jurisdiction count are all live in production.
 
 ## Open items / next steps
 
@@ -6754,11 +6757,11 @@ country build.
    and Estonia (#64) (see the 9 Aug entry above) are also
    **confirmed deployed**, along with the 64-country header text.
    Lithuania (#65) and Malta (#66) were evaluated and then built at
-   Dan's go-ahead (see the two 10 Aug entries above) — **code complete
-   and replay-validated, but not yet deployed**; awaiting Dan to pull,
-   apply migrations 473-482, and redeploy site-worker (same as the
-   Bulgaria/Estonia workflow before Dan confirmed that one live).
-   Myanmar was evaluated and held back
+   Dan's go-ahead (see the three 10 Aug entries above) — migrations
+   473-482 applied and site-worker redeployed, Dan confirmed **"this
+   is deployed"** — both are now **confirmed deployed**, along with
+   the 66-country header text. Every country added this project's
+   history (through Malta, #66) is now live. Myanmar was evaluated and held back
    (no real mandate found). Qatar
    was evaluated and held back at Dan's choice (thinner than first
    assessed). Africa candidates remaining from the 7 Aug evaluation:
