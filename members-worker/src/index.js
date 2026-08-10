@@ -469,15 +469,14 @@ export default {
       // pattern and unlocks the real ceiling.
       await runContentMonitor(env);
     } else {
-      // NOTE (10 Aug 2026): the monthly subscriber notification still
-      // uses ctx.waitUntil() and carries the same latent exposure — if
-      // the subscriber list ever grows past what fits in the grace
-      // period it could be cut off mid-send with nothing surfaced.
-      // Deliberately NOT changed alongside the content monitor: this
-      // path sends real email to real subscribers, so it deserves its
-      // own change and its own verification rather than riding along
-      // with an internal tool's fix.
-      ctx.waitUntil(sendMonthlyNotifications(env));
+      // Also awaited, for the same reason as the monitor above (fixed
+      // 10 Aug 2026, immediately after). This one mattered more: it had
+      // no time budget and no resume cursor either, so a run that
+      // outlived its grace period meant every subscriber past that
+      // point silently received nothing that month, with no record of
+      // who had been reached. It now polices its own clock and persists
+      // progress — see sendMonthlyNotifications.
+      await sendMonthlyNotifications(env);
     }
   },
 };
@@ -1128,7 +1127,35 @@ async function getStoriesForMonth(env, monthKey) {
   }));
 }
 
-async function sendMonthlyNotifications(env) {
+// ---- Monthly notification run: budget, spacing and resumability ----
+//
+// This job was the last caller still handing its work to
+// ctx.waitUntil() from scheduled(), and it carried a worse version of
+// the bug the content monitor had (fixed 10 Aug 2026): the monitor at
+// least polices its own clock and persists a cursor, so a truncated run
+// self-heals. This one had neither. If it ran out of time, every
+// subscriber past that point silently received nothing that month, with
+// no record of who had been reached and no way to resume.
+//
+// Three protections, mirroring the monitor's:
+const MONTHLY_TIME_BUDGET_MS = 600000;   // 10 min, under Cloudflare's documented 15-min scheduled-handler limit
+const MONTHLY_MANUAL_BUDGET_MS = 20000;  // the admin trigger runs under a request, not the cron — same reason as the monitor's
+const MONTHLY_SEND_SPACING_MS = 150;     // ~6.7/s, comfortably under Resend's 10/s, leaving headroom for magic-link email happening concurrently
+// Small pages so the between-page checkpoint comes round often. KV's
+// default page size is far larger; at that size a truncated run would
+// overshoot its budget by many minutes before reaching a safe place to
+// stop. 50 x 150ms spacing is roughly 8 seconds of overshoot at worst.
+const MONTHLY_LIST_PAGE_SIZE = 50;
+// State lives in the CONTENT_MONITOR namespace rather than SUBSCRIBERS
+// ON PURPOSE, and this is load-bearing: the run below iterates
+// SUBSCRIBERS with .list() and treats every key name as an email
+// address. A state key stored there would be picked up as a subscriber
+// and mailed. Despite its name, CONTENT_MONITOR is just this Worker's
+// general-purpose KV store.
+const monthlyStateKey = (monthKey, suffix) => `monthly:${monthKey}:${suffix}`;
+
+async function sendMonthlyNotifications(env, opts) {
+  const timeBudgetMs = (opts && opts.timeBudgetMs) || MONTHLY_TIME_BUDGET_MS;
   const monthKey = currentMonthKey();
   const monthStories = await getStoriesForMonth(env, monthKey);
   if (monthStories.length === 0) {
@@ -1136,10 +1163,37 @@ async function sendMonthlyNotifications(env) {
     return;
   }
 
-  let cursor = undefined;
-  let sent = 0;
+  // Already finished this month? Stop. Without this, a second trigger
+  // (a manual test, or a cron retry) re-emails everyone who already
+  // received it. Pass { force: true } to override deliberately.
+  const doneMarker = await env.CONTENT_MONITOR.get(monthlyStateKey(monthKey, "done"));
+  if (doneMarker && !(opts && opts.force)) {
+    console.log(`Monthly notification for ${monthKey} already completed on ${doneMarker} — nothing to do. Pass force to re-send.`);
+    return;
+  }
+
+  // Resume from where a previous truncated run stopped, so the tail of
+  // the subscriber list is not silently skipped.
+  const savedCursor = await env.CONTENT_MONITOR.get(monthlyStateKey(monthKey, "cursor"));
+  let cursor = savedCursor || undefined;
+  let sent = parseInt(await env.CONTENT_MONITOR.get(monthlyStateKey(monthKey, "sent")) || "0", 10) || 0;
+  const sentAtStart = sent;
+  let failed = 0;
+  let ranOutOfTime = false;
+  const runStart = Date.now();
+  if (savedCursor) console.log(`Monthly notification for ${monthKey}: resuming a previous run (${sent} already sent).`);
+
+  // The budget is checked at PAGE BOUNDARIES ONLY, never mid-page, and
+  // this is not a rounding convenience — it is a correctness
+  // requirement. A KV list cursor points at the start of a page, so
+  // stopping halfway through one and saving `cursor` would resume at
+  // the top of that same page and re-email everyone already reached in
+  // it. (Caught by a control-flow harness before this shipped: an
+  // earlier draft did exactly that and double-sent 120 of 160
+  // deliveries.) Pages are deliberately small so a boundary comes round
+  // often enough for the checkpoint to be meaningful.
   do {
-    const list = await env.SUBSCRIBERS.list({ cursor });
+    const list = await env.SUBSCRIBERS.list({ cursor, limit: MONTHLY_LIST_PAGE_SIZE });
     for (const key of list.keys) {
       const email = key.name;
       try {
@@ -1176,27 +1230,61 @@ async function sendMonthlyNotifications(env) {
         // only works today because of the temporary ARCHIVE_PUBLIC promo.
         const archiveToken = await signToken(env.SESSION_SECRET, { email, purpose: "login" }, CONVENIENCE_LINK_TTL_SECONDS);
         const archiveLink = `${env.SITE_URL}/members/verify?token=${encodeURIComponent(archiveToken)}&next=${encodeURIComponent("/members/archive")}`;
-        await sendMonthlyNotificationEmail(env, email, monthKey, introText, storiesToShow, unsubToken, archiveLink);
-        sent++;
+        const ok = await sendMonthlyNotificationEmail(env, email, monthKey, introText, storiesToShow, unsubToken, archiveLink);
+        if (ok === false) failed++; else sent++;
+        // Pace the loop so a large list cannot trip Resend's 10/s cap.
+        await sleep(MONTHLY_SEND_SPACING_MS);
       } catch (err) {
+        failed++;
         console.error(`Failed to notify ${email}:`, err);
         // Deliberately continue to the next subscriber rather than aborting
         // the whole run over one failure.
       }
     }
     cursor = list.list_complete ? undefined : list.cursor;
+    // Checkpoint every page, not only when stopping — if the run is
+    // hard-killed rather than stopping cleanly, the next one still
+    // resumes from the last completed page instead of the beginning.
+    if (cursor) {
+      await env.CONTENT_MONITOR.put(monthlyStateKey(monthKey, "cursor"), cursor);
+      await env.CONTENT_MONITOR.put(monthlyStateKey(monthKey, "sent"), String(sent));
+      if (Date.now() - runStart > timeBudgetMs) {
+        ranOutOfTime = true;
+        break;
+      }
+    }
   } while (cursor);
 
-  console.log(`Monthly notification run for ${monthKey} complete — sent ${sent} emails.`);
+  const completed = !ranOutOfTime;
+
+  if (completed) {
+    await env.CONTENT_MONITOR.delete(monthlyStateKey(monthKey, "cursor"));
+    await env.CONTENT_MONITOR.delete(monthlyStateKey(monthKey, "sent"));
+    // 70-day TTL: long enough that a re-trigger inside the same month is
+    // still blocked, short enough that these markers do not accumulate.
+    await env.CONTENT_MONITOR.put(monthlyStateKey(monthKey, "done"), new Date().toISOString(), { expirationTtl: 60 * 60 * 24 * 70 });
+    console.log(`Monthly notification run for ${monthKey} COMPLETE — ${sent} sent, ${failed} failed.`);
+  } else {
+    // Persist progress so the next invocation resumes rather than
+    // starting over (which would double-send) or giving up (which would
+    // silently skip the tail of the list).
+    await env.CONTENT_MONITOR.put(monthlyStateKey(monthKey, "cursor"), cursor || "");
+    await env.CONTENT_MONITOR.put(monthlyStateKey(monthKey, "sent"), String(sent));
+    console.log(`Monthly notification run for ${monthKey} TRUNCATED by the ${Math.round(timeBudgetMs / 1000)}s budget — ${sent} sent so far (${sent - sentAtStart} this pass), ${failed} failed. Cursor saved; re-trigger to continue.`);
+  }
 
   // Record what subscribers were actually told about, so the weekly
   // digest's "not yet announced" section stays true without anyone
-  // maintaining it by hand (migration 503). Deliberately after the send
-  // loop and gated on sent > 0: if the run died partway or reached
-  // nobody, under-recording is the safe direction — a story would be
-  // re-announced next month, rather than silently marked as
-  // communicated to people who never received it.
-  if (sent > 0) {
+  // maintaining it by hand (migration 503).
+  //
+  // Gated on the run genuinely COMPLETING, not merely on sent > 0. An
+  // earlier version used the latter, which was wrong in exactly the way
+  // its own comment claimed to avoid: one successful email out of a
+  // truncated run would mark every story as announced, even though most
+  // subscribers never received it. Under-recording is the safe
+  // direction — a re-announced story is a small annoyance, a falsely
+  // recorded one is a silent gap in the very signal this exists to give.
+  if (completed && sent > 0) {
     await recordAnnouncements(env, "story", monthStories.map((s) => s.id), "newsletter", `monthly notification, ${monthKey}, ${sent} recipient(s)`);
   }
 }
@@ -1216,8 +1304,21 @@ async function handleManualNotificationTrigger(request, env) {
   if (!provided || provided !== env.SESSION_SECRET) {
     return new Response("Unauthorized", { status: 401 });
   }
-  await sendMonthlyNotifications(env);
-  return new Response("Monthly notification run triggered — check `wrangler tail` for logs.", { status: 200 });
+  // Awaited inside a request handler, so it must use the SHORT budget —
+  // a 10-minute send would hold the HTTP connection open long past any
+  // sensible client timeout. It sends a slice and saves its cursor, so
+  // repeating this call continues the run; the cron picks up the
+  // remainder either way.
+  //
+  // ?force=1 re-sends a month already marked complete. Off by default
+  // because the obvious accident here is emailing every subscriber
+  // twice, which is not recoverable by apologising to a log file.
+  const force = new URL(request.url).searchParams.get("force") === "1";
+  await sendMonthlyNotifications(env, { timeBudgetMs: MONTHLY_MANUAL_BUDGET_MS, force });
+  return new Response(
+    "Monthly notification run triggered. NOTE: a manual run sends only a slice (~20 seconds' worth) because it runs inside an HTTP request, and saves a cursor — call it again to continue, or let the monthly cron finish the rest. Check `wrangler tail` for progress. Add ?force=1 to re-send a month already marked complete.",
+    { status: 200 }
+  );
 }
 
 async function handleUnsubscribeNotifications(request, env, lang) {
@@ -1918,20 +2019,44 @@ function jsonResponse(obj, status = 200) {
 // look completely successful from this Worker's own perspective. This
 // logs the full response body on any non-2xx status so `wrangler tail`
 // actually shows what went wrong, instead of the failure being silent.
+// Resend's documented default is 10 requests per second per team,
+// shared across all API keys. A 429 here used to mean one subscriber
+// silently missed that month's email, because every caller logs the
+// failure and moves on. A bounded retry that honours Resend's own
+// `retry-after` header turns a transient rate-limit into a short pause
+// instead of a lost send.
+//
+// Only 429 and 5xx are retried. A 4xx for a malformed or bounced
+// address should fail fast rather than be attempted three times.
+const RESEND_MAX_ATTEMPTS = 3;
+
 async function sendViaResend(env, payload) {
-  const res = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${env.RESEND_API_KEY}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(payload),
-  });
-  if (!res.ok) {
-    const errorBody = await res.text().catch(() => "(could not read response body)");
-    console.error(`Resend send failed — status ${res.status} for ${payload.to}: ${errorBody}`);
+  for (let attempt = 1; attempt <= RESEND_MAX_ATTEMPTS; attempt++) {
+    const res = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${env.RESEND_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+    if (res.ok) return true;
+
+    const retryable = res.status === 429 || res.status >= 500;
+    if (!retryable || attempt === RESEND_MAX_ATTEMPTS) {
+      const errorBody = await res.text().catch(() => "(could not read response body)");
+      console.error(`Resend send failed — status ${res.status} for ${payload.to} after ${attempt} attempt(s): ${errorBody}`);
+      return false;
+    }
+    // Prefer the server's own guidance; fall back to a short backoff.
+    const retryAfter = parseFloat(res.headers.get("retry-after") || "");
+    const waitMs = Number.isFinite(retryAfter) && retryAfter > 0
+      ? Math.min(retryAfter * 1000, 5000)
+      : 500 * attempt;
+    console.log(`Resend ${res.status} for ${payload.to} — retrying in ${waitMs}ms (attempt ${attempt}/${RESEND_MAX_ATTEMPTS})`);
+    await sleep(waitMs);
   }
-  return res.ok;
+  return false;
 }
 
 // Sent once, right after sign-up, alongside (not instead of) the magic
@@ -2070,7 +2195,11 @@ async function sendMonthlyNotificationEmail(env, email, monthKey, introText, sto
       <a href="${unsubLink}" style="color:#8a7d5a;">Stop these monthly notification emails</a> — this won't cancel your subscription, you'll still be able to log in and read every issue any time.
     </p>`;
 
-  await sendViaResend(env, {
+  // Returned, not discarded: the caller counts real failures, and a
+  // send that Resend rejected must not be counted as delivered — it
+  // would otherwise inflate the recipient count recorded against the
+  // month's announcement rows.
+  return await sendViaResend(env, {
     from: env.FROM_EMAIL,
     to: email,
     subject: `This month's e-invoicing updates — ${monthLabel}`,

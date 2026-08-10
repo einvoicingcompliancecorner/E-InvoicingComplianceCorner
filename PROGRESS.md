@@ -7342,10 +7342,12 @@ is unnecessary for a single async task. Now awaited, budget raised to
 KV cursor are kept for the pathological case (every source hitting the
 15s timeout would need ~30 minutes).
 
-**Flagged, not fixed:** `sendMonthlyNotifications` still uses
-`ctx.waitUntil()` and carries the same exposure. Deliberately left for
-its own change — it sends real subscriber email and deserves separate
-verification rather than riding along with an internal tool's fix.
+**Flagged, not fixed at the time:** `sendMonthlyNotifications` still
+used `ctx.waitUntil()` and carried the same exposure. Deliberately left
+for its own change — it sends real subscriber email and deserved
+separate verification rather than riding along with an internal tool's
+fix. **Done later the same day at Dan's request — see the dated entry
+below; it turned out to be carrying three further problems.**
 
 **Digest reordered around what the reader must do**: changed pages →
 ready-to-announce → *newly* unreachable → an "All quiet" panel when
@@ -7460,6 +7462,74 @@ digest rewrite, announcement tracking, and this follow-up — is now live.
 The first digest under the new code arrives on the next Monday 08:00 UTC
 cron, and should read "All 117 sources checked" with a 5-item "Ready to
 announce" section.
+
+## 10 Aug 2026 (cont'd) — Monthly subscriber notification made resumable and rate-limit-safe (code complete, deploy pending)
+
+Closing the item flagged earlier the same day. The monthly job was the
+last caller handing its work to `ctx.waitUntil()` from `scheduled()`,
+and it carried a worse version of the bug the content monitor had: the
+monitor at least polices its own clock and persists a cursor, so a
+truncated run self-heals. This one had **neither**. If it outlived its
+grace period, every subscriber past that point silently received
+nothing that month, with no record of who had been reached and no way
+to resume.
+
+Four fixes, plus two bugs found while making them.
+
+**1. Awaited, not `waitUntil`.** Same reasoning as the monitor —
+Cloudflare waits up to 15 minutes for the promise `scheduled()`
+returns. Budget set to 10 minutes, with the manual admin trigger given
+a 20-second budget because it runs inside an HTTP request.
+
+**2. Resumable.** A KV cursor and running total are checkpointed at
+every page boundary, so a truncated run continues rather than
+restarting (double-send) or giving up (silent gap). A `done` marker per
+month, with a 70-day TTL, stops a second trigger re-emailing everyone;
+`?force=1` overrides it deliberately.
+
+State lives in the `CONTENT_MONITOR` KV namespace, **not** `SUBSCRIBERS`,
+and that is load-bearing rather than tidiness: the run iterates
+`SUBSCRIBERS` with `.list()` and treats every key name as an email
+address, so a state key stored there would be picked up as a subscriber
+and mailed.
+
+**3. Rate-limit safe.** Resend documents 10 requests/second per team.
+The old loop had no spacing and no retry — beyond a few dozen
+subscribers it would have started taking 429s, and every 429 was logged
+and skipped, meaning that subscriber silently missed the month. Now
+150ms spacing (~6.7/s, leaving headroom for magic-link email happening
+concurrently) plus a bounded retry in `sendViaResend` that honours
+Resend's own `retry-after` header. Only 429 and 5xx retry; a 4xx for a
+bad address still fails fast.
+
+**4. Announcements gated on genuine completion.** The `sent > 0` gate
+added earlier was wrong in exactly the way its own comment claimed to
+avoid — one successful email out of a truncated run would mark every
+story as announced though most subscribers never received it.
+
+### Two bugs caught before shipping, both by testing rather than reading
+
+**A double-send bug in my own fix.** A control-flow harness with a fake
+KV and 120 subscribers showed the first draft delivering 160 emails to
+40 unique addresses. Cause: KV list cursors are **page-granular**.
+Breaking out mid-page and saving `cursor` resumes at the top of that
+same page and re-sends everyone already reached in it. Fixed by
+checking the budget only at page boundaries and setting an explicit
+small page size (50) so a boundary comes round often enough for the
+checkpoint to be useful — worst-case overshoot is about 8 seconds.
+Re-tested: 120 delivered, 120 unique, 0 duplicates, announcements
+recorded exactly once after completion, and the done marker correctly
+refusing a fourth pass.
+
+**A swallowed return value.** `sendMonthlyNotificationEmail` awaited
+`sendViaResend` but discarded its boolean, so the new failure counter
+would never have fired and rejected sends would have inflated the
+recipient count recorded against the month's announcement rows. Now
+returned.
+
+**Not yet deployed.** `members-worker` deploy only — no migration, no
+static assets. Nothing here changes what a subscriber receives; it
+changes whether they receive it.
 
 ## Open items / next steps
 
