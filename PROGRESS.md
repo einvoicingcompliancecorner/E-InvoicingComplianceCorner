@@ -6868,6 +6868,203 @@ override, the 8 i18n `countryNames` files, and the 66 → 68
 jurisdiction-count sweep across HTML + i18n). Qatar (#67), Bahrain
 (#68), and the 68-jurisdiction count are all live in production.
 
+## 10 Aug 2026 (cont'd) — Global coverage re-evaluated across 54 untracked jurisdictions (evaluation only, nothing built)
+
+Dan asked "please can you evaluate which countries to evaluate next?"
+immediately after the Qatar/Bahrain deploy was confirmed. Ran the
+widest sweep this project has done: four parallel research agents over
+**54 jurisdictions** in four clusters (Europe/Caucasus, Africa,
+Americas, Asia-Pacific/Central Asia/Middle East), each briefed with
+this project's sourcing standard verbatim — including the Egypt
+"Resolution 281/2025" incident as a worked example of the AI-generated-
+blog failure mode to watch for. Every agent was explicitly told
+"could not confirm" is an acceptable and valuable answer.
+
+I then independently re-verified the strongest claims myself rather
+than taking the agents' word: fetched GRA Ghana, taxes.gov.az, SIN
+Bolivia's press release, DNIT Paraguay, and SARS's own Act 4 of 2026
+page directly, and corroborated Uzbekistan and Zambia against Thomson
+Reuters/Pagero (a reputable non-AI compliance tracker) after their
+primary sites proved unreachable from this sandbox (soliq.uz robots-
+blocked; zra.org.zm TLS cert failure).
+
+### Tier 1 — real, in force, verified, and genuine gaps
+
+1. **Uzbekistan** — the standout finding, and the largest untracked
+   mature mandate anywhere. ЭСФ (электрон счёт-фактура) has been
+   **mandatory for all economic organizations since 1 January 2020**
+   (voluntary from 1 Jul 2019), under **Cabinet of Ministers Resolution
+   No. 522 of 25 June 2019**, amended by **Resolution No. 168 of 18
+   March 2025**. Real-time clearance-style CTC: structured JSON,
+   mandatory EDS digital signature, validated by the State Tax
+   Committee via SoliqOnline or ~15 licensed operators. Confirmed
+   independently by Thomson Reuters/Pagero and a Kazakh legal database
+   (online.zakon.kz) carrying the same instrument number and date. A
+   37-million-person economy with a six-year-old mandate that this
+   tracker says nothing about.
+2. **Ghana** — **VAT Act, 2025 (Act 1151), effective 1 January 2026**,
+   confirmed directly on GRA's own e-VAT page. Mandatory for
+   VAT-registered businesses, GRA-issued signature key. Note: GRA's
+   page describes offline receipt generation for up to 24 hours, so
+   whether this is strict real-time clearance needs pinning down at
+   build time rather than assumed.
+3. **Zambia** — Smart Invoice System **mandatory for all VAT-registered
+   taxpayers since 1 July 2024**, grace period to 30 September 2024,
+   **penalties from 1 October 2024**. Replaced the previously-obligatory
+   EFD regime. Corroborated via Thomson Reuters/Pagero.
+4. **Azerbaijan** — **primary-source confirmed** on taxes.gov.az:
+   e-qaimə mandatory for VAT-registered entities and persons under
+   **Tax Code Article 218.1.2 as of 1 April 2017**. The single
+   best-sourced candidate in the whole sweep. Region placement is an
+   open question (see below).
+5. **Paraguay** — **primary-source confirmed** on dnit.gov.py.
+   **Resolución General 41/2025** made state suppliers mandatory from
+   2 Jan 2026; **Resolución General 52 (6 May 2026)** designates ~3,000
+   more taxpayers across **groups 19-24**: 1 Jun 2026, 1 Sep 2026,
+   1 Dec 2026, 2 Mar 2027, 1 Jun 2027, 1 Sep 2027, with pre-printed
+   documents losing validity the day after each group's date. The
+   cleanest future-dated milestone set of any candidate — exactly what
+   this tracker's board is built for. No postponement found.
+6. **Albania** — mature and in force: **Law No. 87/2019**, B2G from
+   1 Jan 2021, B2B from 1 Jul 2021, B2C real-time from 1 Sep 2021,
+   UBL 2.1/UN-CEFACT XML. Sourcing is currently secondary-only —
+   needs a tatime.gov.al primary citation before build.
+7. **Armenia** — mandatory since **1 January 2016** (Tax Code),
+   operationalised by **Government Resolution No. 1257-N of 5 October
+   2017**; real-time transmission to the State Revenue Committee.
+   Secondary-only sourcing so far.
+
+### Tier 2 — real, but each carries a caveat that must survive into the build
+
+- **Moldova** — the best *upcoming-deadline* story available:
+  **B2B mandatory 1 October 2026**, pilot from January 2026, B2G since
+  2023. Convergent across five independent secondary sources, but no
+  Moldovan government instrument number was located — do not publish
+  the date as confirmed until fisc.md is verified directly.
+- **Bolivia — important correction to this project's own prior
+  evaluation.** The 6 Aug entry's "groups 9-12 mandatory from 1 October
+  2025" is **stale and now wrong**. Verified directly against SIN's own
+  press release (25 Mar 2026): **RND 102600000007** extended the
+  deadline to **30 September 2026**, mandatory online invoicing from
+  **1 October 2026**. That deadline has now moved at least five times
+  (RNDs 102500000006, 102500000009/10, 102500000036, 102600000007) —
+  any Bolivia build must carry a visible volatility caveat, or the page
+  will go stale again within months.
+- **Guatemala — prior evaluation partially corrected.** The 4 Aug
+  "SAT-designated categories, not universal" framing understates it:
+  small taxpayers came in from 31 Mar 2023 and EY's tracker puts all
+  VAT-registered taxpayers in scope from 1 Jul 2023, i.e. effectively
+  universal. The specific SAT resolution number for that date could not
+  be confirmed (a Lexology page citing SAT-DSI-863-2023 returned 403).
+- **Tunisia** — Finance Law 2026 (**Law No. 17/2025, Art. 53**, enacted
+  12 Dec 2025) extended the existing goods mandate to **services from
+  1 January 2026**; phasing/threshold measures still pending.
+- **Angola** — **Presidential Decree 71/25** + **Executive Decree
+  2683/25**: large taxpayers/state suppliers/transactions over AOA 25m
+  from 1 Jan 2026, all VAT-registered from September 2026.
+- **DR Congo** — Facture Normalisée under **Decree 23-010 (3 Mar
+  2023)**, confirmed on DGI-RDC's own site; full enforcement from
+  15 May 2026 (that enforcement date is secondary-sourced only).
+- **Côte d'Ivoire** — FNE under **Arrêté 0337 (9 May 2025)**, 52,000+
+  companies registered as of a Feb 2026 DGI presentation.
+- **Cambodia** — **Circular No. 003 (22 Jan 2025)** and **Circular
+  No. 012 (Jul 2025)**: real pre-clearance CTC (CamInvoice, blockchain-
+  anchored), but **B2G only** so far. B2B/B2C remain voluntary with no
+  government-published mandate date.
+- **Uganda (EFRIS)** and **Rwanda (EIS/EBM)** — both real and enforced,
+  but structurally EFD/fiscal-device regimes. Buildable, but only with
+  the same care Japan/Hungary got over "this is not a document-issuance
+  mandate."
+- **Kyrgyzstan**, **Nepal**, **Ethiopia**, **Senegal** — genuine
+  mandates or enacted laws, but each rests on sourcing too thin to
+  build from today (conflicting platform names for Kyrgyzstan; no IRD
+  primary for Nepal; no effective date found for Ethiopia's Directive
+  1142/2026; no implementing arrêté located for Senegal's Law 2025-02).
+
+### Rechecks of prior hold-backs
+
+- **South Africa — moved, but not into mandate territory.** Verified
+  directly on SARS's own site: the **Tax Administration Laws Amendment
+  Act 4 of 2026 (GG 54447, 1 April 2026)** really does insert
+  "e-invoice", "e-reporting" and "interoperability framework"
+  definitions into the VAT Act, 1991. But my own read of SARS's page
+  sharpens the research finding: the Section 74 amendment empowers the
+  Minister to prescribe participation in a **"voluntary e-reporting
+  system"** — this is enabling/definitional law with no obligation,
+  threshold, or compliance date. If built, it is a Qatar/Bahrain-shaped
+  `mandate_scope: 'none'` page, not a mandate page.
+- **Morocco — has not moved.** The most recent credible source (a
+  16 Apr 2026 Médias24 interview with DGI director Younes Idrissi
+  Kaitouni) still has the implementing decree "en cours d'examen au
+  niveau du Secrétariat général du gouvernement." Everything asserting
+  "2026 mandate confirmed" is vendor SEO content. Unchanged from the
+  7 Aug deferral.
+- **Sri Lanka — the most valuable negative finding of the sweep.**
+  Multiple industry articles describe a "National e-Invoicing System"
+  with mandatory real-time Web API transmission to RAMIS from 1 May
+  2026. The chain traces to regfollower.com citing an IRD notice
+  (PN_VAT_2026-03) that could not be found on ird.gov.lk, repeated by a
+  VATupdate piece that **self-discloses partial AI authorship**. The
+  actual IRD circular that *was* fetched — **SEC/2026/E/03, 20 May
+  2026** — mandates a revised **invoice format** from 1 July 2026 and
+  states **API integration is optional**, targeting 31 Dec 2026. This
+  is the Egypt "Resolution 281/2025" failure mode recurring almost
+  exactly. **Record it: if a future session or another tracker claims
+  Sri Lanka has a live e-invoicing mandate, this is why it probably
+  doesn't.**
+- **Thailand, Kuwait, Myanmar** — all three reconfirmed unchanged.
+  Thailand's e-Tax Invoice remains voluntary (incentives extended
+  through 2027 by a June 2026 Cabinet approval, Royal Decree still
+  pending); Kuwait remains the GCC's furthest behind with no legal
+  instrument; Myanmar's only 2026 movement is e-filing/e-payment, not
+  e-invoicing.
+- **Panama — a prior claim should be dropped.** The 4 Aug evaluation's
+  "full consolidation targeted for 2026" could not be sourced anywhere;
+  DGI's own normativa and FAQ pages specify segment obligations only
+  and no universal end-state date. Panama's real, dated items are 2022
+  (state suppliers), 2024 (liberal professions), and a 1 Jan 2026
+  free-invoicer threshold change (Resolution 201-6299, secondary only).
+- **El Salvador — prior concern confirmed.** DTE is real and in force
+  since 14 Oct 2022 (Legislative Decree 487), but Hacienda notifies
+  taxpayers individually; EY describes it as applying "only to those
+  selected and notified." Poor fit for a dated milestone board.
+
+### Not worth tracking, with reasons worth keeping
+
+**Cameroon** is the sweep's other AI-blog casualty: a wall of vendor
+content asserts a 2026 obligation, but Deloitte's review of the
+actual enacted Finance Law 2026 (Law No. 2025/012) found no
+e-invoicing provisions at all. **Algeria** slipped to 2027+ with
+nothing enacted. **Switzerland** has only a federal B2G rule above CHF
+5,000 (since 1 Jan 2016) and no B2B horizon. **Liechtenstein** — the
+EU's own factsheet confirms even B2G submission is voluntary.
+**Georgia** — only an electronic waybill regime could be found; no
+e-invoicing mandate confirmed either way. **Montenegro** is B2C
+fiscalisation only. **Bosnia and Herzegovina** enacted a fiscalisation
+law on 12 Feb 2026 but it binds **only the Federation of BiH entity**,
+not Republika Srpska or Brčko, with B2B/B2G not until 2029 — and older
+secondary articles citing 2026/2027 dates are describing the
+superseded draft. **Ukraine**'s URTI may be a registration/reporting
+duty rather than an issuance mandate — unresolved, flagged not
+guessed. **Belarus** is real (ESChF since 2016) but weakly sourced.
+**Honduras**, **Nicaragua**, **Jamaica**, **Trinidad and Tobago**,
+**Bangladesh**, **Hong Kong**, **Mongolia**, **Laos**, **Iraq**,
+**Lebanon**, **Venezuela** — no mandate, or (Venezuela) only a narrow
+e-commerce providencia layered on a fiscal-machine regime.
+
+### Open question for Dan: region placement
+
+Uzbekistan, Azerbaijan, Armenia and Kyrgyzstan don't sit cleanly in
+this tracker's four regions — the same question Turkey raised (resolved
+into Europe by Dan's explicit choice) and Kazakhstan raised (resolved
+into Asia-Pacific by Dan's explicit choice). Consistency with
+Kazakhstan suggests Asia-Pacific for Uzbekistan and Kyrgyzstan; the
+Caucasus trio is genuinely ambiguous. **Ask before scaffolding, don't
+assume** — this is now the third time this has come up.
+
+**Nothing was built.** This is evaluation only, matching the pattern of
+every prior coverage evaluation in this file.
+
 ## Open items / next steps
 
 ### Real open work
