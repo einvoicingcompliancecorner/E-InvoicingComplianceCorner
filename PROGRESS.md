@@ -6414,7 +6414,7 @@ working." Kenya (#61), Nigeria (#62), the "Middle East / Africa"
 region rename, the 62-count, and the corrected Egypt update are all
 live in production.
 
-## 9 Aug 2026 — Bulgaria (#63) and Estonia (#64) built (code complete, deploy pending)
+## 9 Aug 2026 — Bulgaria (#63) and Estonia (#64) built (deployed & confirmed live)
 
 Dan asked to build Bulgaria and Estonia next, from the "Still not
 tracked in Europe" list. Both are straightforward — existing
@@ -6525,11 +6525,11 @@ translations 12+8. `node --check` not yet re-run post-static-sweep —
 recommend before/at deploy time, following this project's standing
 practice.
 
-**Not yet deployed** — migrations 463-472 need
-`apply_migrations.py --remote`, then `wrangler deploy` on
-site-worker (countries.js/i18n/deep-dive-render/tracker HTML all
-changed; members-worker needs no changes per the runbook's standing
-rule).
+**Deployed and confirmed live.** Dan applied migrations 463-472 with
+`apply_migrations.py --remote` and deployed site-worker; confirmed
+"changes applied successfully" — both the D1 migrations and the
+site-worker deploy went out. Bulgaria (#63), Estonia (#64), and the
+64-jurisdiction count are all live in production.
 
 ## Open items / next steps
 
@@ -6544,13 +6544,11 @@ rule).
    also **confirmed deployed** — Dan confirmed both the
    migrations and the `site-worker` deploy went out for each, and all
    four countries appear live on the site. Kazakhstan (#59), Dominican
-   Republic (#60), and Kenya (#61) and Nigeria (#62) are also
-   **confirmed deployed**, along with the 62-country header text and
-   the "Middle East / Africa" region rename. Bulgaria (#63) and
-   Estonia (#64) (see the 9 Aug entry above) are **code complete,
-   deploy pending** — migrations 463-472 written and replay-validated,
-   the 64-country static-file sweep done, not yet applied to
-   production D1 or deployed. Myanmar was evaluated and held back
+   Republic (#60), Kenya (#61), Nigeria (#62), and now Bulgaria (#63)
+   and Estonia (#64) (see the 9 Aug entry above) are also
+   **confirmed deployed**, along with the 64-country header text.
+   Every country added this project's history (through Estonia, #64)
+   is now live. Myanmar was evaluated and held back
    (no real mandate found). Qatar
    was evaluated and held back at Dan's choice (thinner than first
    assessed). Africa candidates remaining from the 7 Aug evaluation:
