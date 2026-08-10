@@ -6740,6 +6740,128 @@ migrations 473-482 via `apply_migrations.py --remote` from
 deploy`, and confirmed "this is deployed." Lithuania (#65), Malta
 (#66), and the 66-jurisdiction count are all live in production.
 
+## 10 Aug 2026 (cont'd, again) — Qatar (#67) and Bahrain (#68) built: both deliberately thin, no enacted mandate for either (code complete, deploy pending)
+
+Dan asked to evaluate and build Qatar and Bahrain right after the
+Lithuania/Malta deploy was confirmed. Both had been evaluated and
+held back twice before (4 Aug, 6 Aug — see the "Cross-region coverage
+evaluated" entry above) for lacking any enacted mandate. Rather than
+build off the stale prior evaluation, dispatched two fresh, independent
+research agents to re-check both from scratch, live, against primary
+sources where fetchable.
+
+**Result: nothing had changed.** Qatar's Council of Ministers approved
+a **draft** e-invoicing law and implementing regulations on 6 May 2026
+— confirmed directly by nine sources (EY, KPMG, PwC, Thomson
+Reuters/Pagero, and others), none reporting the required next steps
+(Shura Council review, Amiri assent, Gazette publication). No
+implementation date, threshold, or format has been officially released;
+Qatar's own General Tax Authority (GTA) site has zero e-invoicing
+content; Qatar hasn't even implemented VAT yet despite a 2016 GCC
+commitment to do so. Bahrain is thinner still: the only enacted, dated
+fact found anywhere is a 16 Nov 2023 NBR procedural change removing a
+prior-approval requirement for *voluntary* e-invoicing — not a mandate.
+Two independent professional trackers (EY as of 24 Jun 2026, Aurifer's
+GCC specialist page) both still classify Bahrain as "preparatory work"
+only, same as Kuwait.
+
+Presented this honestly to Dan via `AskUserQuestion` — hold both back a
+third time, build both caveated, or build Qatar only. **Dan chose to
+build both anyway, clearly caveated** — a deliberately different
+approach from every prior country build on this project: instead of
+documenting a real (even if thin) mandate, every field on both
+countries' pages states plainly what is **not yet true**, following the
+same rigor as the disputed-"2028" hedge on Lithuania's page but applied
+to the entire country rather than one milestone.
+
+**Qatar (QA, Middle East / Africa, migrations 483-484, 486, 488, 491).**
+One milestone (`qa-draft-law-2026`, 6 May 2026, `mandate_scope: 'none'`,
+`on_tracker: 1`) — the single real dated event. Deep-dive content
+frames every section around what's undefined: no format, no scope, no
+implementation date, no penalty schedule. A card lays out the actual
+remaining legislative steps (Shura Council → Amiri assent → Gazette)
+so a reader knows exactly what would need to happen for this to become
+real. A "Context: the rest of the Gulf is moving faster" card places
+Qatar against Saudi Arabia (live), UAE (phasing in), and Oman (pilot
+live). One launch story on the 6 May 2026 approval — a real, dated,
+newsworthy event, unlike Bahrain's stale 2023 fact. Explicitly
+excluded: Wafeq's specific "Oct 2026/Jan 2027" dates, since that source
+itself frames them as analyst speculation, not government-published —
+repeating them would violate this project's sourcing standard.
+
+**Bahrain (BH, Middle East / Africa, migrations 483, 485, 487, 492).**
+One milestone (`bh-prior-approval-removed-2023`, 16 Nov 2023,
+`mandate_scope: 'none'`, `on_tracker: 1`). No launch story — nothing
+newsworthy has happened since 2023 (same "don't invent news" precedent
+as Iceland's build, 6 Aug). A card distinguishes real preparatory
+signals (a confirmed 2023 platform tender via Bahrain's own Tender
+Board; an unconfirmed reported 2025 tender) from an actual mandate,
+which doesn't exist. General VAT penalties (unrelated to e-invoicing)
+are noted but explicitly caveated as not independently re-verified
+against primary legal text this round.
+
+**Map status for both**: `mandate_scope: 'none'` on their only
+milestone means `computeCountryMapStatus()` resolves both to
+**`nomandate`** — the same status class as the US (`us-federal-b2g`,
+`us-dbnalliance`) — rather than a bare grey `tracked` pin. This is the
+correct, honest status: both countries are actively tracked with a
+real dated fact on file, but neither has any mandate, upcoming or in
+force.
+
+**Shared work.** `countries.js` (Middle East / Africa array, Bahrain
+and Qatar added alphabetically). `shared/deep-dive-render.mjs`'s slug
+map (`bahrain`, `qatar`) and `COUNTRY_NAME_TRANSLATIONS` for es/de/fr
+(Baréin/Bahrain/Bahreïn; Catar/Katar/Qatar). Both topology names match
+`vendor/countries-50m.json` exactly (`Bahrain`, `Qatar`) — no
+`TOPO_NAME_OVERRIDES` needed. **Bahrain's shape is genuinely tiny**
+(decoded its topology arc directly: ~0.17° × 0.44° bounding box,
+comparable to Singapore's, which already needed an override) — added a
+`MARKER_LONLAT_OVERRIDES` entry for Bahrain proactively (Manama's
+coordinates) rather than waiting for a "no map position" console
+warning post-deploy, same caution this project's Map runbook section
+recommends. i18n `countryNames` updated in all 8 affected files
+(`{en,es,de,fr}.json` + `{en,es,de,fr}-subscribe.json`), closing this
+build's own gap the same way Lithuania/Malta did.
+
+**Jurisdiction-count sweep, 66 → 68** (migration 490, mirroring 480's
+mechanical transformation exactly — 40 `translations` rows). Static
+files hand-corrected in the same commit: `einvoicing-compliance-
+tracker.html`'s 4 text occurrences fixed with precise non-regex edits
+(learned from the Lithuania/Malta SVG-corruption incident — never
+regex a bare number across a file with SVG coordinates or image
+dimensions), the other 6 HTML files + 12 EN i18n files via a
+context-guarded regex (`\b66\b` within 40 chars of "jurisdiction"/
+"countr", excluding `%`), and the ES/DE/FR i18n files via a plain
+`\b66\b` sweep with every match manually reviewed before applying
+(all 30 matches were clean jurisdiction-count prose, zero false
+positives). Also caught and fixed `subscribe.html`'s raw
+`<div class="num display">66</div>` stat-tile digit, which neither
+regex pass would have matched (no "jurisdiction"/"countr" text nearby)
+— found by a targeted grep for `>66<` afterward, same category of gap
+migration 432's "48 countries" drift bug first surfaced.
+
+**Verification.** `validate_replay()`: OK (492 files, only documented
+pre-existing errors). Structural queries on a full replay confirm:
+jurisdiction count rule returns exactly 68; QA and BH each have exactly
+1 milestone (`mandate_scope: 'none'`, `on_tracker: 1`); full 4-language
+completeness across every table for both countries (5 stats/6 cards
+[1 file_format + 2 scope_transmission + 3 penalties_related]/5 steps/2
+portals/1 deep-dive-page row per language, for each country); Qatar's
+story has all 4 language rows; Bahrain correctly has zero story rows;
+`country_translations` 4-lang for both. All touched i18n JSON files
+re-validated as parseable; `countries.js`, `shared/deep-dive-render.mjs`,
+and `shared/map-data.mjs` all re-validated with `node --check`.
+Translations were written by two independently-dispatched agents
+(migrations 491, 492), each self-validating via the same replay +
+structural-count method before returning, then independently
+re-verified by me against the full merged migration chain — both
+clean, both showing exact 4-language parity documented above.
+
+**Not yet deployed.** Migrations 483-492 and the static-file changes
+are code-complete and replay-validated but have not been applied to
+production D1 or deployed via `wrangler deploy`. Awaiting Dan to pull,
+apply, and deploy, same workflow as every prior country build.
+
 ## Open items / next steps
 
 ### Real open work
@@ -6760,14 +6882,18 @@ deploy`, and confirmed "this is deployed." Lithuania (#65), Malta
    Dan's go-ahead (see the three 10 Aug entries above) — migrations
    473-482 applied and site-worker redeployed, Dan confirmed **"this
    is deployed"** — both are now **confirmed deployed**, along with
-   the 66-country header text. Every country added this project's
-   history (through Malta, #66) is now live. Myanmar was evaluated and held back
-   (no real mandate found). Qatar
-   was evaluated and held back at Dan's choice (thinner than first
-   assessed). Africa candidates remaining from the 7 Aug evaluation:
-   Morocco (decree pending) and South Africa (2026-29 phased plan) --
-   both deferred by Dan's choice until their legal instruments firm
-   up. Still not tracked in Europe:
+   the 66-country header text. Qatar (#67) and Bahrain (#68) were
+   re-evaluated fresh (both still lack any enacted mandate — see the
+   dedicated 10 Aug entry above) and, at Dan's explicit choice, built
+   anyway with deliberately honest "no mandate yet" framing throughout
+   — migrations 483-492, code-complete and replay-validated, **not yet
+   deployed**, along with the 68-country header text. Every country
+   through Bahrain (#68) is either confirmed deployed or awaiting only
+   Dan's apply-and-deploy step. Myanmar was evaluated and held back
+   (no real mandate found). Africa candidates remaining from the 7 Aug
+   evaluation: Morocco (decree pending) and South Africa (2026-29
+   phased plan) -- both deferred by Dan's choice until their legal
+   instruments firm up. Still not tracked in Europe:
    Liechtenstein. Still not tracked in the Americas:
    Guatemala, Paraguay, Bolivia, Panama, El Salvador. The scaffolder
    + runner make each addition a fraction of the old effort.

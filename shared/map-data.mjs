@@ -111,11 +111,15 @@ const TOPO_NAME_OVERRIDES = {
 // click at the map's zoom level get a fallback [lon, lat] marker
 // position instead of relying on the topology's own (tiny or, for a
 // handful of very small states, entirely absent) feature geometry.
-// Only Singapore needs this today; add an entry here rather than in
-// map-panel.js if the topology has no feature at all for a future
-// very small addition.
+// Singapore needed this from the start; Bahrain was added 10 Aug 2026
+// after directly decoding its topology arc (bounding box ~0.17° x
+// 0.44° -- comparably tiny to Singapore's) rather than waiting for a
+// "no map position for Bahrain" console warning post-deploy. Add an
+// entry here rather than in map-panel.js if the topology has no
+// feature at all for a future very small addition.
 const MARKER_LONLAT_OVERRIDES = {
   Singapore: [103.82, 1.35],
+  Bahrain: [50.59, 26.23],
 };
 
 // ----------------------------------------------------------------

@@ -47,6 +47,7 @@ export const COUNTRY_DEEP_DIVE_SLUGS = {
   "Saudi Arabia": "saudi-arabia", "Serbia": "serbia", "Singapore": "singapore", "Slovakia": "slovakia", "Slovenia": "slovenia", "South Korea": "south-korea",
   "Spain": "spain", "Sweden": "sweden", "Taiwan": "taiwan", "Turkey": "turkey", "United Arab Emirates": "uae",
   "United Kingdom": "uk", "United States": "united-states", "Uruguay": "uruguay", "Vietnam": "vietnam",
+  "Bahrain": "bahrain", "Qatar": "qatar",
 };
 
 export const SLUG_TO_COUNTRY = Object.fromEntries(
@@ -67,7 +68,8 @@ const COUNTRY_NAME_TRANSLATIONS = {
     "Argentina": "Argentina", "Brazil": "Brasil", "Canada": "Canadá", "Chile": "Chile", "Colombia": "Colombia", "Costa Rica": "Costa Rica", "Dominican Republic": "República Dominicana",
     "Kenya": "Kenia",
     "Nigeria": "Nigeria", "Ecuador": "Ecuador", "Mexico": "México", "Peru": "Perú",
-    "United States": "Estados Unidos", "Uruguay": "Uruguay", "European Union": "Unión Europea"
+    "United States": "Estados Unidos", "Uruguay": "Uruguay", "European Union": "Unión Europea",
+    "Bahrain": "Baréin", "Qatar": "Catar"
   },
   de: {
     "Austria": "Österreich", "Belgium": "Belgien", "Bulgaria": "Bulgarien", "Croatia": "Kroatien", "Cyprus": "Zypern", "Czech Republic": "Tschechien", "Denmark": "Dänemark", "Estonia": "Estland",
@@ -82,7 +84,8 @@ const COUNTRY_NAME_TRANSLATIONS = {
     "Argentina": "Argentinien", "Brazil": "Brasilien", "Canada": "Kanada", "Chile": "Chile", "Colombia": "Kolumbien", "Costa Rica": "Costa Rica", "Dominican Republic": "Dominikanische Republik",
     "Kenya": "Kenia",
     "Nigeria": "Nigeria", "Ecuador": "Ecuador", "Mexico": "Mexiko", "Peru": "Peru",
-    "United States": "Vereinigte Staaten", "Uruguay": "Uruguay", "European Union": "Europäische Union"
+    "United States": "Vereinigte Staaten", "Uruguay": "Uruguay", "European Union": "Europäische Union",
+    "Bahrain": "Bahrain", "Qatar": "Katar"
   },
   fr: {
     "Austria": "Autriche", "Belgium": "Belgique", "Bulgaria": "Bulgarie", "Croatia": "Croatie", "Cyprus": "Chypre", "Czech Republic": "République tchèque", "Denmark": "Danemark", "Estonia": "Estonie",
@@ -97,7 +100,8 @@ const COUNTRY_NAME_TRANSLATIONS = {
     "Argentina": "Argentine", "Brazil": "Brésil", "Canada": "Canada", "Chile": "Chili", "Colombia": "Colombie", "Costa Rica": "Costa Rica", "Dominican Republic": "République dominicaine",
     "Kenya": "Kenya",
     "Nigeria": "Nigéria", "Ecuador": "Équateur", "Mexico": "Mexique", "Peru": "Pérou",
-    "United States": "États-Unis", "Uruguay": "Uruguay", "European Union": "Union européenne"
+    "United States": "États-Unis", "Uruguay": "Uruguay", "European Union": "Union européenne",
+    "Bahrain": "Bahreïn", "Qatar": "Qatar"
   }
 };
 
