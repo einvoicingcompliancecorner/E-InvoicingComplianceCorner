@@ -6740,7 +6740,7 @@ migrations 473-482 via `apply_migrations.py --remote` from
 deploy`, and confirmed "this is deployed." Lithuania (#65), Malta
 (#66), and the 66-jurisdiction count are all live in production.
 
-## 10 Aug 2026 (cont'd, again) — Qatar (#67) and Bahrain (#68) built: both deliberately thin, no enacted mandate for either (code complete, deploy pending)
+## 10 Aug 2026 (cont'd, again) — Qatar (#67) and Bahrain (#68) built: both deliberately thin, no enacted mandate for either (deployed & confirmed live)
 
 Dan asked to evaluate and build Qatar and Bahrain right after the
 Lithuania/Malta deploy was confirmed. Both had been evaluated and
@@ -6857,10 +6857,16 @@ structural-count method before returning, then independently
 re-verified by me against the full merged migration chain — both
 clean, both showing exact 4-language parity documented above.
 
-**Not yet deployed.** Migrations 483-492 and the static-file changes
-are code-complete and replay-validated but have not been applied to
-production D1 or deployed via `wrangler deploy`. Awaiting Dan to pull,
-apply, and deploy, same workflow as every prior country build.
+**Deployed and confirmed live** (confirmed by Dan, 10 Aug 2026): Dan
+pulled the bundle (`git pull qatar-bahrain-build-483-492.bundle main` —
+this bundle carried `refs/heads/main` correctly, so no `HEAD:main`
+workaround was needed, unlike the first Lithuania/Malta bundle), applied
+migrations 483-492 via `apply_migrations.py --remote`, and redeployed
+`site-worker` for the static-file changes (`countries.js`,
+`shared/deep-dive-render.mjs`, `shared/map-data.mjs`'s Bahrain marker
+override, the 8 i18n `countryNames` files, and the 66 → 68
+jurisdiction-count sweep across HTML + i18n). Qatar (#67), Bahrain
+(#68), and the 68-jurisdiction count are all live in production.
 
 ## Open items / next steps
 
@@ -6886,10 +6892,10 @@ apply, and deploy, same workflow as every prior country build.
    re-evaluated fresh (both still lack any enacted mandate — see the
    dedicated 10 Aug entry above) and, at Dan's explicit choice, built
    anyway with deliberately honest "no mandate yet" framing throughout
-   — migrations 483-492, code-complete and replay-validated, **not yet
-   deployed**, along with the 68-country header text. Every country
-   through Bahrain (#68) is either confirmed deployed or awaiting only
-   Dan's apply-and-deploy step. Myanmar was evaluated and held back
+   — migrations 483-492 applied and site-worker redeployed, Dan
+   confirmed **"these changes were applied successfully"** — both are
+   now **confirmed deployed**, along with the 68-country header text.
+   Every country through Bahrain (#68) is confirmed deployed. Myanmar was evaluated and held back
    (no real mandate found). Africa candidates remaining from the 7 Aug
    evaluation: Morocco (decree pending) and South Africa (2026-29
    phased plan) -- both deferred by Dan's choice until their legal
