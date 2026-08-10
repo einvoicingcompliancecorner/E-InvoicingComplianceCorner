@@ -48,6 +48,7 @@ export const COUNTRY_DEEP_DIVE_SLUGS = {
   "Spain": "spain", "Sweden": "sweden", "Taiwan": "taiwan", "Turkey": "turkey", "United Arab Emirates": "uae",
   "United Kingdom": "uk", "United States": "united-states", "Uruguay": "uruguay", "Vietnam": "vietnam",
   "Bahrain": "bahrain", "Qatar": "qatar",
+  "Uzbekistan": "uzbekistan", "Azerbaijan": "azerbaijan",
 };
 
 export const SLUG_TO_COUNTRY = Object.fromEntries(
@@ -69,7 +70,8 @@ const COUNTRY_NAME_TRANSLATIONS = {
     "Kenya": "Kenia",
     "Nigeria": "Nigeria", "Ecuador": "Ecuador", "Mexico": "México", "Peru": "Perú",
     "United States": "Estados Unidos", "Uruguay": "Uruguay", "European Union": "Unión Europea",
-    "Bahrain": "Baréin", "Qatar": "Catar"
+    "Bahrain": "Baréin", "Qatar": "Catar",
+    "Uzbekistan": "Uzbekistán", "Azerbaijan": "Azerbaiyán"
   },
   de: {
     "Austria": "Österreich", "Belgium": "Belgien", "Bulgaria": "Bulgarien", "Croatia": "Kroatien", "Cyprus": "Zypern", "Czech Republic": "Tschechien", "Denmark": "Dänemark", "Estonia": "Estland",
@@ -85,7 +87,8 @@ const COUNTRY_NAME_TRANSLATIONS = {
     "Kenya": "Kenia",
     "Nigeria": "Nigeria", "Ecuador": "Ecuador", "Mexico": "Mexiko", "Peru": "Peru",
     "United States": "Vereinigte Staaten", "Uruguay": "Uruguay", "European Union": "Europäische Union",
-    "Bahrain": "Bahrain", "Qatar": "Katar"
+    "Bahrain": "Bahrain", "Qatar": "Katar",
+    "Uzbekistan": "Usbekistan", "Azerbaijan": "Aserbaidschan"
   },
   fr: {
     "Austria": "Autriche", "Belgium": "Belgique", "Bulgaria": "Bulgarie", "Croatia": "Croatie", "Cyprus": "Chypre", "Czech Republic": "République tchèque", "Denmark": "Danemark", "Estonia": "Estonie",
@@ -101,7 +104,8 @@ const COUNTRY_NAME_TRANSLATIONS = {
     "Kenya": "Kenya",
     "Nigeria": "Nigéria", "Ecuador": "Équateur", "Mexico": "Mexique", "Peru": "Pérou",
     "United States": "États-Unis", "Uruguay": "Uruguay", "European Union": "Union européenne",
-    "Bahrain": "Bahreïn", "Qatar": "Qatar"
+    "Bahrain": "Bahreïn", "Qatar": "Qatar",
+    "Uzbekistan": "Ouzbékistan", "Azerbaijan": "Azerbaïdjan"
   }
 };
 

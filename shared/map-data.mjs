@@ -253,10 +253,25 @@ export const REGION_ORDER = ["Europe", "Middle East / Africa", "Asia-Pacific", "
 // Europe's east edge was widened from 35 to 46 deg E when Turkey joined
 // this region (3 August 2026) -- Turkey's own extent runs to roughly
 // 45 deg E (Igdir Province), which the original box would have clipped.
+//
+// Asia-Pacific's west edge was widened from 65 to 43 deg E and its
+// north edge from 55 to 57 deg N when Azerbaijan and Uzbekistan joined
+// this region (10 Aug 2026). Decoding the bundled topology directly
+// gives Azerbaijan 44.77-50.37 deg E and Uzbekistan 55.98-73.14 deg E,
+// so the old 65 deg E edge would have placed Azerbaijan ENTIRELY
+// outside its own region view and clipped more than half of
+// Uzbekistan. The same check also surfaced a pre-existing bug: at
+// 46.61-87.32 deg E and up to 55.39 deg N, Kazakhstan has been clipped
+// on both the western and northern edges since it was added on 6 Aug
+// 2026 -- nobody caught it because a clipped shape fails silently
+// rather than erroring. Both are fixed by this widening. Worth
+// repeating the lesson from Turkey's own entry above: check a new
+// country's real decoded extent against its region box, don't assume
+// the box is big enough because the region "obviously" contains it.
 export const REGION_BOUNDS = {
   "Europe": [[-11, 34], [46, 34], [46, 71.5], [-11, 71.5]],
   "Middle East / Africa": [[0, -6], [58, -6], [58, 34], [0, 34]],
-  "Asia-Pacific": [[65, -48], [179, -48], [179, 55], [65, 55]],
+  "Asia-Pacific": [[43, -48], [179, -48], [179, 57], [43, 57]],
   "Americas": [[-173, -57], [-33, -57], [-33, 75], [-173, 75]],
 };
 

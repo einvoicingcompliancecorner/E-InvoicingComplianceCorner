@@ -18,7 +18,7 @@
     "authorConnect": "No dude en conectar conmigo — <a href=\"https://www.linkedin.com/in/danielyoung76/\" target=\"_blank\" rel=\"noopener\" style=\"color:var(--stamp); text-decoration:underline;\">encuéntreme en LinkedIn</a>."
   },
   "brand": {
-    "description": "Un seguimiento actualizado de los mandatos de facturación electrónica y reporte digital en 68 países — normas de ViDA a nivel de la UE, sistemas nacionales de CTC, y todo lo demás. Cada entrada muestra la fecha límite, lo que debe hacer al respecto, y un enlace directo al portal oficial del gobierno, para que pueda pasar de \"¿esto nos afecta?\" a \"esto es lo que hay que hacer\" en una sola página.",
+    "description": "Un seguimiento actualizado de los mandatos de facturación electrónica y reporte digital en 70 países — normas de ViDA a nivel de la UE, sistemas nacionales de CTC, y todo lo demás. Cada entrada muestra la fecha límite, lo que debe hacer al respecto, y un enlace directo al portal oficial del gobierno, para que pueda pasar de \"¿esto nos afecta?\" a \"esto es lo que hay que hacer\" en una sola página.",
     "eyebrow": "Panel de cumplimiento normativo",
     "title": "The E-Invoicing<br>Compliance Corner"
   },
@@ -184,7 +184,9 @@
     "Lithuania": "Lituania",
     "Malta": "Malta",
     "Bahrain": "Baréin",
-    "Qatar": "Catar"
+    "Qatar": "Catar",
+    "Uzbekistan": "Uzbekistán",
+    "Azerbaijan": "Azerbaiyán"
   },
   "terminal": {
     "arrivalsView": "Panel de llegadas",

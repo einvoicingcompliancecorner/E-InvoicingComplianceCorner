@@ -3026,11 +3026,21 @@ not yet fully universal, but not proposal-only either):**
   rather than fully universal.
 - **Bolivia** — SIN's Facturación Electrónica mandate, phased rollout
   with confirmed dated segment waves, mid-rollout.
+  **[CORRECTED 10 Aug 2026 — do not act on the dates in this entry.**
+  The waves have moved repeatedly. See the 10 Aug coverage-evaluation
+  entry below for the verified current position: RND 102600000007 put
+  the groups 9-12 deadline at 30 September 2026, mandatory from
+  1 October 2026, after at least five separate extensions.**]**
 
 **Tier 4 — thinner, checked but not prioritized:**
 
 - **Panama** — SFEP voluntary/mandatory-by-segment regime, DGI-run,
   real but less cleanly universal than the Tier 1-3 candidates.
+  **[CORRECTED 10 Aug 2026.** A "full consolidation targeted for 2026"
+  claim that appeared in later summaries of this evaluation could not
+  be sourced anywhere and has been withdrawn — DGI's own normativa and
+  FAQ pages specify segment obligations only, with no universal
+  end-state date. See the 10 Aug entry below.**]**
 - **El Salvador** — DTE mandate, Ministerio de Hacienda-run, phased
   rollout underway but with a less mature documentation trail than
   the others checked.
@@ -5746,6 +5756,14 @@ one cross-region order:
     Americas evaluation**, real but individually-noticed (El Salvador)
     or less crisply sourced on scope/penalties (Bolivia, Panama) than
     the countries ranked above them.
+    **[CORRECTED 10 Aug 2026 — Bolivia and Panama were both re-verified
+    against primary sources and both needed correcting. Bolivia: the
+    operative deadline is 1 October 2026 (RND 102600000007), not the
+    October 2025 date carried in earlier notes, and it has moved at
+    least five times. Panama: the "full consolidation by 2026" claim is
+    unsourced and withdrawn. El Salvador's individually-noticed concern
+    was re-tested and confirmed. See the 10 Aug coverage-evaluation
+    entry below.]**
 11. **Bahrain (MENA) -- re-checked, still not concrete enough.** No
     confirmed mandate or dates found beyond the NBR's 2023 removal of its
     prior-approval requirement for voluntary e-invoicing. Unchanged from
@@ -7065,6 +7083,199 @@ assume** — this is now the third time this has come up.
 **Nothing was built.** This is evaluation only, matching the pattern of
 every prior coverage evaluation in this file.
 
+## 10 Aug 2026 (cont'd) — Uzbekistan (#69) and Azerbaijan (#70) built, both in Asia-Pacific; a three-migration-old D1 count bug found and repaired (code complete, deploy pending)
+
+Dan picked the top two candidates from the coverage evaluation above:
+"Please do Uzbekistan and Azerbaijan and place both in Asia Pacific.
+Please make corrections to Bolivia and Panama." Migrations 493-502.
+
+**Region placement was Dan's explicit call**, as it was for Turkey
+(Europe, 3 Aug) and Kazakhstan (Asia-Pacific, 6 Aug). Neither country
+sits cleanly in this tracker's four regions — Uzbekistan is Central
+Asian, Azerbaijan South Caucasus — and this was the third time the
+question has arisen. Asked rather than assumed; recorded here so the
+fourth time has a precedent to point at.
+
+### Both research passes corrected the evaluation that preceded them
+
+This is the value of the standing "deep-research before building
+anything previously evaluated" discipline, and both passes earned it.
+
+**Uzbekistan — four first-pass claims were wrong**, and all four traced
+to a single industry country booklet, which is consequently cited
+nowhere on the country's pages: (1) the "invoice by the 10th of the
+following month" rule for continuous supplies comes from Cabinet
+Resolution No. 489 of 14 Aug 2020, not from Resolution 168 of 2025 —
+168 is about the combined ESF-ETTN invoice-and-waybill document
+entirely; (2) there are 27 registered ESF operators, not ~15;
+(3) Presidential Decree UP-153 is dated 4 Sep 2025 with the
+risk-scoring mandate in its Article 4; and (4) most importantly,
+**Uzbekistan is not a pre-clearance regime**. The documented workflow
+runs seller → buyer with a ten-day buyer-acceptance clock, and the 2026
+risk system colours invoices rather than blocking them — a flagged
+invoice is still validly issued, with the consequence falling on the
+buyer's input-VAT timing. The page says so and explains the reasoning
+in its own card rather than adopting a tidy but wrong label.
+
+**Azerbaijan — two first-pass claims corrected.** The 1 Jan 2020 change
+did not replace *paper* VAT invoices: the predecessor document (e-VHF)
+had been electronic since roughly 2008-2012, so 2020 was an
+electronic-to-electronic merger of two systems into one — a better
+story than the wrong one. And the 23 Aug 2026 non-resident
+digital-services change is a VAT-*registration* obligation, not an
+e-invoicing one (non-residents do not issue Azerbaijani e-invoices at
+all), so it is deliberately built as a related-development card rather
+than a milestone — same precedent as Taiwan's voluntary Peppol
+adoption and Hungary's framework consultation.
+
+Also named and rejected on the Azerbaijan page rather than silently
+omitted: a 2025 industry article claiming Azerbaijan "mandated
+e-invoicing since 2010 under Article 2 of the Tax Code." Article 2
+concerns the basis of tax legislation; the operative provision is
+Article 71-1, inserted for 1 April 2017. Same treatment as Iceland's
+phantom "BII retirement" claim, so a future editor does not
+reintroduce it from a search result.
+
+**Uzbekistan (UZ, migrations 493-494, 496, 498, 501).** Five milestones
+— Resolution 522 (25 Jun 2019, anchor), the 1 Jan 2020 universal
+mandate, Resolution 489 (14 Aug 2020, the operating rulebook), the
+1 Jan 2026 risk-scoring launch, and the 1 Jan 2026 self-employed
+extension plus pre-filled returns under Law ZRU-1108. `mandate_scope`
+'b2b' on the three that create or widen a real issuance obligation,
+'none' on the two procedural ones. 5 stats, 7 cards, a 5-step exchange
+lifecycle, 5 steps, 2 portals, 1 story (the 29 Jul 2026 AI SOLIQ
+launch — a tax authority that made invoice risk consequential and
+unexplained, then built a language model to explain it). No penalty
+table: Uzbekistan has exactly one quantified sanction (20% of the
+concealed tax base, Tax Code Art. 223) and it needs the practitioner
+nuance around it, so narrative cards were the honest choice — same
+call as Israel's.
+
+**Azerbaijan (AZ, migrations 493, 495, 497-498, 502).** Five milestones
+— 1 Apr 2017 (anchor, Cabinet Decision No. 89 implementing Art. 71-1),
+1 Jan 2018 (universal), 1 Jan 2020 (e-VHF merged into e-qaimə),
+1 Jan 2024 (advance-payment invoices), 1 Jan 2026 (the timing rules).
+5 stats, 7 cards, a 5-step registration-at-issuance lifecycle, 5 steps,
+2 portals, **a real 5-row penalty table** — Azerbaijan publishes a
+genuine escalating schedule (10%/20%/40% within a calendar year plus
+AZN 100 per transaction) that notably charges the *buyer* too under
+Art. 58.8.2. 1 story: the 1 Jan 2026 timing change, which is a live
+compliance break that international trackers have not covered and at
+least one widely-cited summary still contradicts.
+
+Azerbaijan has the best primary-source footing of any country added in
+this run — its State Tax Service publishes its own e-invoicing page,
+user guide, sanctions booklet and annual amendments FAQ, all fetched
+directly. Stated plainly on the page rather than papered over: no
+e-invoice *volume* statistics appear to be published by Azerbaijan at
+all, so no adoption figure was invented.
+
+### Two real bugs found, one of them live in production
+
+**(1) The Asia-Pacific map region box would have hidden Azerbaijan
+entirely — and has been clipping Kazakhstan since 6 August.** Decoding
+`vendor/countries-50m.json` directly (the same technique used for
+Bahrain's marker on 10 Aug) gives Azerbaijan 44.77-50.37°E and
+Uzbekistan 55.98-73.14°E, against an Asia-Pacific `REGION_BOUNDS` west
+edge of 65°E — Azerbaijan would have rendered entirely outside its own
+region view, and more than half of Uzbekistan would have been cut off.
+The same check surfaced a pre-existing bug nobody had caught:
+Kazakhstan runs 46.61-87.32°E and up to 55.39°N, so it has been clipped
+on both the western and northern edges since it was added on 6 August.
+A clipped shape fails silently rather than erroring, which is why four
+days passed without anyone noticing. Box widened to 43°E / 57°N, fixing
+all three. Both topology names match `name_en` exactly and both shapes
+are substantial, so no `TOPO_NAME_OVERRIDES` or
+`MARKER_LONLAT_OVERRIDES` entries were needed.
+
+**(2) D1's jurisdiction count has been stuck at 62 since 9 August —
+three country builds — because three successive migrations silently
+matched zero rows.** This is the more serious find. Every count-bump
+migration guards its UPDATE on the exact text the previous one set.
+That chain broke at migration 470 (count 64): migration 459 had already
+moved the 40 rows to "62", but 470's WHERE guard was written against
+"60", so it matched nothing. 480 inherited the same wrong "60" guard;
+490 then guarded on "66", which had never been written. All three
+no-opped. **`validate_replay()` cannot see this** — an UPDATE matching
+zero rows is not an error — and nobody checked, because the static i18n
+and HTML files were hand-swept forward correctly each time, so the site
+looked right. It is the same D1/static drift the "48 countries" bug
+(migration 432) exists to fix, and the same "62-stuck" symptom found in
+the i18n JSON files on 10 Aug — but this is the D1 side of it, which
+was never caught, because the static files were corrected by hand and
+D1 was assumed to have followed. Had `generate_files.py --remote` ever
+been run, it would have regenerated the i18n files back to 62.
+
+Migration 500 repairs it and changes how these are written: SET values
+are **derived from the actual replayed current text** of each row
+rather than copied forward from assumptions, and the WHERE clause
+guards on `(namespace, lang, key)` only, with no value guard, so it
+cannot silently no-op. Verified by replaying the full chain and reading
+the rows back: all 40 now read 70, where before 500 all 40 read 62.
+**For the next count bump: replay and assert the 40 rows actually read
+the new number. "Replay validation OK" does not check this.**
+
+### Static files and the count sweep
+
+`countries.js` (Azerbaijan after Australia, Uzbekistan after Taiwan),
+`shared/deep-dive-render.mjs` (slug map + `COUNTRY_NAME_TRANSLATIONS`
+for es/de/fr), `shared/map-data.mjs` (the `REGION_BOUNDS` fix above),
+and `countryNames` in all 8 i18n files.
+
+Count sweep 68 → 70 across 6 HTML files and 19 i18n files. Two
+now-familiar traps avoided and worth re-recording: the tracker's SVG
+path `L31,68` and the whitepapers' `#ref-68` footnote anchors were
+correctly left alone (precise string replacement, never a bare regex,
+in any file containing SVG coordinates); and `subscribe.html`'s raw
+`<div class="num display">68</div>` stat tile was caught again by the
+targeted `>68<` grep, exactly as on 10 Aug for Qatar/Bahrain. **A new
+variant of the drift bug also appeared**: the context-guarded regex
+missed all 8 Spanish occurrences, because its lookahead matched the
+English stem "jurisdiction" and Spanish is "jurisdicciones" — no "t".
+Caught by the follow-up plain `\b68\b` sweep with every match reviewed
+by hand. If that second pass is ever skipped, Spanish will silently
+drift.
+
+### Bolivia and Panama corrections, per Dan's request
+
+Neither country is built, so these are corrections to the recorded
+evaluations rather than to live content. Inline correction notes were
+added at both stale locations (the 4 Aug Americas evaluation and the
+6 Aug cross-region evaluation) pointing forward to the verified
+position, rather than rewriting the dated historical entries.
+**Bolivia**: the recorded "groups 9-12 mandatory from 1 October 2025"
+is stale and wrong — verified directly against SIN's own press release,
+RND 102600000007 extended the deadline to 30 September 2026, mandatory
+from 1 October 2026, after at least five separate extensions. Any
+future Bolivia build must carry a visible volatility caveat.
+**Panama**: the "full consolidation targeted for 2026" claim could not
+be sourced anywhere and is withdrawn — DGI's own normativa and FAQ
+pages specify segment obligations only.
+
+### Verification
+
+`validate_replay()`: OK (502 files, only the documented pre-existing
+errors). Structural queries on a full replay confirm, for both
+countries: 5 milestones each with the intended `anchor`/`on_tracker`/
+`mandate_scope` values; exact 4-language parity across
+`milestone_translations`, `deep_dive_page_translations`, stats (5),
+cards (7), steps (5), portals (2), lifecycle cards (1), lifecycle
+statuses (5), tracking sources (2), `country_translations` and stories
+(1); Azerbaijan's 5 penalty rows at 4 languages each and Uzbekistan
+correctly with none; both rows at `region = 'Asia-Pacific'`; total
+non-EU `countries` count exactly 70; and all 40 jurisdiction-count
+rows reading 70. Translations were written by two independently
+dispatched agents (501, 502), each self-validating before returning and
+then independently re-verified here against the merged chain. All
+touched i18n JSON re-parsed; `node --check` clean on `countries.js`,
+`shared/deep-dive-render.mjs` and `shared/map-data.mjs`.
+
+**Not yet deployed.** Migrations 493-502 and the static-file changes
+are code-complete and replay-validated but have not been applied to
+production D1 or deployed via `wrangler deploy`. Note that this deploy
+also carries the D1 count repair, so it matters more than a usual
+country add.
+
 ## Open items / next steps
 
 ### Real open work
@@ -7092,11 +7303,24 @@ every prior coverage evaluation in this file.
    — migrations 483-492 applied and site-worker redeployed, Dan
    confirmed **"these changes were applied successfully"** — both are
    now **confirmed deployed**, along with the 68-country header text.
-   Every country through Bahrain (#68) is confirmed deployed. Myanmar was evaluated and held back
+   Every country through Bahrain (#68) is confirmed deployed.
+   **Uzbekistan (#69) and Azerbaijan (#70)** were picked by Dan from
+   the 10 Aug global coverage evaluation and built the same day, both
+   placed in Asia-Pacific at his explicit instruction — migrations
+   493-502, code-complete and replay-validated, **not yet deployed**,
+   along with the 70-country header text. That deploy also carries a
+   repair to D1's jurisdiction-count rows, which had been stuck at 62
+   since 9 Aug because three successive count-bump migrations silently
+   matched zero rows — see the dated entry above; it matters more than
+   a usual country add. Myanmar was evaluated and held back
    (no real mandate found). Africa candidates remaining from the 7 Aug
-   evaluation: Morocco (decree pending) and South Africa (2026-29
-   phased plan) -- both deferred by Dan's choice until their legal
-   instruments firm up. Still not tracked in Europe:
+   evaluation: Morocco (decree still pending as of a 16 Apr 2026
+   re-check) and South Africa (Act 4 of 2026 now gazetted but
+   enabling/voluntary only) -- both deferred by Dan's choice until
+   their legal instruments firm up. The 10 Aug global evaluation added
+   a fuller candidate list: Ghana, Zambia, Paraguay, Albania and
+   Armenia as the strongest remaining, with Moldova the best
+   upcoming-deadline story (1 Oct 2026). Still not tracked in Europe:
    Liechtenstein. Still not tracked in the Americas:
    Guatemala, Paraguay, Bolivia, Panama, El Salvador. The scaffolder
    + runner make each addition a fraction of the old effort.

@@ -18,7 +18,7 @@
     "authorConnect": "Vernetzen Sie sich gerne mit mir — <a href=\"https://www.linkedin.com/in/danielyoung76/\" target=\"_blank\" rel=\"noopener\" style=\"color:var(--stamp); text-decoration:underline;\">auf LinkedIn</a>."
   },
   "brand": {
-    "description": "Ein laufend aktualisierter Überblick über E-Invoicing- und digitale Meldepflichten in 68 Ländern — EU-weite ViDA-Regeln, nationale CTC-Systeme und alles dazwischen. Jeder Eintrag zeigt die Frist, was konkret zu tun ist, und einen direkten Link zum offiziellen Regierungsportal — damit Sie in einem einzigen Blick von \"betrifft uns das?\" zu \"das müssen wir tun\" kommen.",
+    "description": "Ein laufend aktualisierter Überblick über E-Invoicing- und digitale Meldepflichten in 70 Ländern — EU-weite ViDA-Regeln, nationale CTC-Systeme und alles dazwischen. Jeder Eintrag zeigt die Frist, was konkret zu tun ist, und einen direkten Link zum offiziellen Regierungsportal — damit Sie in einem einzigen Blick von \"betrifft uns das?\" zu \"das müssen wir tun\" kommen.",
     "eyebrow": "Compliance-Übersicht",
     "title": "The E-Invoicing<br>Compliance Corner"
   },
@@ -184,7 +184,9 @@
     "Lithuania": "Litauen",
     "Malta": "Malta",
     "Bahrain": "Bahrain",
-    "Qatar": "Katar"
+    "Qatar": "Katar",
+    "Uzbekistan": "Usbekistan",
+    "Azerbaijan": "Aserbaidschan"
   },
   "terminal": {
     "arrivalsView": "Ankunftstafel",
