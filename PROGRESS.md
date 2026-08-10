@@ -6531,6 +6531,92 @@ practice.
 site-worker deploy went out. Bulgaria (#63), Estonia (#64), and the
 64-jurisdiction count are all live in production.
 
+## 10 Aug 2026 — Lithuania and Malta evaluated (both thin; neither built yet)
+
+Dan asked for an evaluation of Lithuania and Malta, stressing careful,
+extensively-sourced research. Dispatched two parallel research agents
+with the same discipline as the Slovenia/Iceland and Middle East
+evaluations — official sources preferred, industry sources flagged as
+fallback, single-sourced claims flagged as plausible-not-confirmed,
+conflicting sources reported rather than silently resolved.
+Independently re-verified the two load-bearing claims myself
+afterward via direct fetch: the EC's own Lithuania factsheet quote
+and the MTCA (Malta) official page quote below — both confirmed
+exactly as the agents reported.
+
+**Lithuania — no B2B mandate; a genuinely confusing "2028" figure
+that should NOT be built as a confirmed milestone.**
+- **B2G**: mandatory since 1 Jul 2017 for all public-procurement
+  suppliers (above and below EU thresholds), transposing Directive
+  2014/55/EU under the Law on Public Procurement. Platform: SABIS
+  (replaced the legacy "E. sąskaita" system in mid-to-late 2024 —
+  sources disagree on the exact cut-over date: 1 Jul, "September," or
+  "1 Sep after a two-month transition").
+- **i.SAF** (since ~1 Oct 2016): a monthly invoice-level VAT ledger
+  filed by every VAT-registered entity, no size threshold — a
+  reporting system, not an invoicing mandate or clearance model.
+  Confirmed by the EC's own factsheet, which states outright:
+  "Currently, there is no real-time reporting system in Lithuania."
+  Directly comparable to Bulgaria's SAF-T or Spain's SII — real
+  content for a deep-dive, but `mandate_scope='none'`, not `'b2b'`.
+- **The "1 January 2028" B2B mandate figure — flag, don't build as
+  confirmed.** It appears on the EC's own 2025 Lithuania factsheet
+  (independently re-fetched and confirmed: "mandatory eInvoicing
+  targeted for 1 January 2028," in a ViDA-planning context) — but the
+  *same page* separately states "There is no business-to-business
+  (B2B) mandate." No enacted Lithuanian law, VMI order, or Seimas act
+  was found anywhere corroborating an actual 2028 mandate. Compounding
+  the confusion: neighboring **Latvia** has a real, separately-enacted
+  B2B mandate originally set for 1 Jan 2026 and confirmed postponed to
+  1 Jan 2028 (KPMG, June 2025, "technical delays") — several of the
+  industry sources repeating "Lithuania 2028" (VATupdate, dddinvoices,
+  vatcalc) may be echoing the EC factsheet's own ambiguous wording,
+  Latvia's confirmed date, or some mix of both. **If Lithuania is
+  built, this should land as, at most, a `confidence='expected'`
+  milestone with an explicit hedge** — the same treatment already
+  used for Estonia's ~2027 target — never as a confirmed date.
+- **Other unresolved conflicts** (would need resolving before a
+  build): i.SAF-T's threshold/response-window (Sovos says universal
+  scope + 30 days; another industry source says a €300k threshold +
+  ~10 days); penalty figures (two industry sources give different
+  euro bands, neither independently confirmed against the current
+  Administrative Offences Code text — direct fetches of e-seimas.lrs.lt
+  and infolex.lt failed this round).
+
+**Malta — thinner than Bulgaria; barely more than "not yet."**
+- **B2G is not even a supplier mandate** — the only binding
+  obligation is that contracting authorities must be *able to
+  receive* EN 16931 e-invoices (legal notices transposing Directive
+  2014/55/EU, published Nov/Dec 2018 — EC factsheet says 30 Nov,
+  legislation.mt's S.L. 601.10 shows 19 Dec, unresolved). No
+  centralized platform; Malta contracted Pagero as its Peppol service
+  provider following the EU-funded "eInvoicing4Islands" project.
+- **No B2B mandate, no target date, no draft legislation.**
+  Independently re-confirmed via direct fetch of the official MTCA
+  page: "The Malta Tax and Customs Administration (MTCA) is actively
+  studying the implementation of e-invoicing and real-time
+  reporting... ensuring Malta is ViDA-ready by 2030" — preparatory
+  language only, no committed date ahead of the EU's own 1 Jul 2030
+  floor. The EC's own factsheet states the same: "no Business-to-
+  Business mandate in place... usage remains optional."
+- **No penalty regime found anywhere** — logically consistent with
+  no mandate existing yet to penalize.
+- One source flagged and set aside per the sourcing standard: a
+  VATupdate article on Malta discloses its own content was "partially
+  AI-generated" — used only as a cross-check against Deloitte/EC, not
+  relied on for anything not independently corroborated.
+
+**Recommendation**: neither is a compelling build today. Lithuania
+has real, citable content (B2G since 2017, i.SAF VAT-ledger reporting
+comparable to Bulgaria's SAF-T) but the headline "B2B mandate" figure
+that would make it feel current is unconfirmed and risks repeating
+exactly the kind of error this project's sourcing standard exists to
+catch. Malta is B2G-only with no domestic reporting system of any
+kind — genuinely thinner than Bulgaria, which at least has a dated,
+corroborated SAF-T rollout. Both are defensible "add for completeness"
+candidates (comparable to Iceland), not urgent ones. Neither has been
+built yet — this is evaluation only, awaiting Dan's go-ahead.
+
 ## Open items / next steps
 
 ### Real open work
@@ -6554,8 +6640,13 @@ site-worker deploy went out. Bulgaria (#63), Estonia (#64), and the
    assessed). Africa candidates remaining from the 7 Aug evaluation:
    Morocco (decree pending) and South Africa (2026-29 phased plan) --
    both deferred by Dan's choice until their legal instruments firm
-   up. Still not tracked in Europe: Lithuania, Malta, Liechtenstein.
-   Still not tracked in the Americas:
+   up. Lithuania and Malta were evaluated (10 Aug 2026, see the entry
+   above) and found thin — real B2G-only content for both, no
+   confirmed B2B mandate for either, and an unconfirmed "2028" figure
+   for Lithuania flagged as likely EC-factsheet/Latvia-adjacent
+   confusion rather than a real Lithuanian commitment — deferred
+   pending Dan's go-ahead, not built. Still not tracked in Europe:
+   Liechtenstein. Still not tracked in the Americas:
    Guatemala, Paraguay, Bolivia, Panama, El Salvador. The scaffolder
    + runner make each addition a fraction of the old effort.
 
