@@ -7527,9 +7527,17 @@ would never have fired and rejected sends would have inflated the
 recipient count recorded against the month's announcement rows. Now
 returned.
 
-**Not yet deployed.** `members-worker` deploy only — no migration, no
-static assets. Nothing here changes what a subscriber receives; it
-changes whether they receive it.
+**Deployed and confirmed live** (confirmed by Dan, 10 Aug 2026).
+`members-worker` deploy only — no migration, no static assets. Nothing
+here changes what a subscriber receives; it changes whether they
+receive it.
+
+With this, **every scheduled path in the Worker now awaits its work
+inside `scheduled()` rather than handing it to `ctx.waitUntil()`**, and
+both long-running jobs police their own clock and persist a resume
+cursor. The `ctx.waitUntil()` pattern remains only where it belongs:
+the two manual admin triggers, which run after an HTTP response and are
+given deliberately short budgets for exactly that reason.
 
 ## Open items / next steps
 
