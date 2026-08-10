@@ -7426,10 +7426,34 @@ confirm the ordering and wording. A full replay confirms the first real
 digest will surface **5 items** (the CTC whitepaper plus the four
 seeded features), not the 40 an unfiltered query returns.
 
-**Not yet deployed.** Migration 503 and the members-worker changes are
-code-complete but need `apply_migrations.py --remote` and a
-`members-worker` deploy (note: members-worker, not site-worker — this
-round touches no static assets).
+**Deployed and confirmed live** (confirmed by Dan, 10 Aug 2026):
+migration 503 applied via `apply_migrations.py --remote`, then
+`members-worker` redeployed (no site-worker deploy — this round touches
+no static assets). Verified against production with direct SELECTs
+rather than trusting "applied + recorded": `features` = 4,
+`announcements` = 148 rows all on the `newsletter` channel with **no
+`linkedin` row**, confirming the baseline backfill claimed only what it
+could demonstrate, and 1 published article. That 1 whitepaper plus the
+4 seeded features is exactly the 5-item first digest predicted from
+replay.
+
+### A bug this change introduced in its own sibling path, caught before Monday
+
+Raising `CONTENT_MONITOR_TIME_BUDGET_MS` from 20s to 8 minutes fixed
+the scheduled path and **silently broke the manual one**.
+`/admin/run-content-monitor` still calls `ctx.waitUntil()` *after*
+sending an HTTP response, which gets only a short grace period — it
+does not inherit the scheduled handler's documented 15 minutes. An
+8-minute budget on that path would be killed mid-sweep: precisely the
+failure mode just fixed for the cron, reintroduced one function over.
+
+The two callers have genuinely different lifetimes and always did; the
+old shared 20s constant hid that by being small enough for both.
+`runContentMonitor(env, opts)` now takes an overridable
+`timeBudgetMs`, the manual trigger passes
+`CONTENT_MONITOR_MANUAL_BUDGET_MS` (20s), and its HTTP response says
+plainly that a manual run checks a slice and advances the same cursor.
+Needs one further `members-worker` deploy.
 
 ## Open items / next steps
 

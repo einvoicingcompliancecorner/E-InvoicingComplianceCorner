@@ -533,6 +533,11 @@ const CONTENT_MONITOR_FETCH_TIMEOUT_MS = 15000;
 // be cut off with no digest at all. The cursor logic below is retained
 // unchanged for exactly that scenario.
 const CONTENT_MONITOR_TIME_BUDGET_MS = 480000;
+// The manual /admin/run-content-monitor trigger runs under waitUntil()
+// after an HTTP response and does NOT get the scheduled handler's
+// 15-minute allowance, so it uses this much smaller budget and checks a
+// slice. Same cursor, so nothing is lost — the next run continues.
+const CONTENT_MONITOR_MANUAL_BUDGET_MS = 20000;
 // A source that has failed this many consecutive runs is reported as a
 // "known blocker" — a one-line group rather than a full card each week.
 // Some official sites (Israel's gov.il, for one) block automated
@@ -969,7 +974,13 @@ function buildDigestHtml(results, totalSources, skipped, unannounced) {
   return html;
 }
 
-async function runContentMonitor(env) {
+async function runContentMonitor(env, opts) {
+  // timeBudgetMs is overridable because the two callers have genuinely
+  // different lifetimes: the Monday cron awaits inside scheduled() and
+  // gets Cloudflare's 15-minute allowance, while the manual admin
+  // trigger runs under waitUntil() after a response and gets far less.
+  // See CONTENT_MONITOR_MANUAL_BUDGET_MS.
+  const timeBudgetMs = (opts && opts.timeBudgetMs) || CONTENT_MONITOR_TIME_BUDGET_MS;
   const allSources = await getActiveTrackingSources(env);
   if (allSources.length === 0) {
     console.log("Content monitor: no active tracking sources — nothing to check.");
@@ -993,7 +1004,7 @@ async function runContentMonitor(env) {
   let stoppedEarly = false;
 
   for (let i = 0; i < orderedSources.length; i++) {
-    if (Date.now() - runStart > CONTENT_MONITOR_TIME_BUDGET_MS) {
+    if (Date.now() - runStart > timeBudgetMs) {
       skipped.push(...orderedSources.slice(i));
       stoppedEarly = true;
       break;
@@ -1056,15 +1067,27 @@ async function handleManualContentMonitorTrigger(request, env, ctx) {
   if (!provided || provided !== env.SESSION_SECRET) {
     return new Response("Unauthorized", { status: 401 });
   }
-  // Fire-and-forget: with dozens of sources checked sequentially at a
-  // deliberately considerate pace (3s spacing + real fetch time each),
-  // a full run can take several minutes. Blocking the HTTP response on
-  // that would look exactly like a hang (and risks the request timing
-  // out before the job finishes) — respond immediately instead, same
-  // as the real cron path already does via ctx.waitUntil.
-  ctx.waitUntil(runContentMonitor(env));
+  // Fire-and-forget, because blocking the HTTP response on a multi-
+  // minute sweep would look exactly like a hang and risks the request
+  // timing out before the job finishes.
+  //
+  // BUT this path runs under ctx.waitUntil() AFTER a response has been
+  // sent, which only gets a short grace period — unlike the cron path,
+  // which now awaits its promise inside scheduled() and gets
+  // Cloudflare's documented 15 minutes. So the manual trigger CANNOT
+  // safely use the full CONTENT_MONITOR_TIME_BUDGET_MS: it would be
+  // killed mid-run, which is precisely the failure the cron path was
+  // just fixed for. It gets its own short budget instead and checks a
+  // slice, relying on the same KV cursor as everything else so the
+  // next run continues from where it stopped.
+  //
+  // (Caught 10 Aug 2026, immediately after raising the cron budget from
+  // 20s to 8 minutes — the change fixed the scheduled path and silently
+  // broke this one. Worth remembering that these two callers have
+  // genuinely different lifetimes and always did.)
+  ctx.waitUntil(runContentMonitor(env, { timeBudgetMs: CONTENT_MONITOR_MANUAL_BUDGET_MS }));
   return new Response(
-    "Content monitor run started in the background — a full pass over every active source takes a few minutes (rate-limited on purpose). Watch `wrangler tail` for progress, and check the digest email once it completes.",
+    "Content monitor run started in the background. NOTE: a manual run deliberately checks only a slice of the sources (~20 seconds' worth), because this path runs after the HTTP response and doesn't get the full time budget the Monday cron does. It advances the same cursor, so the next run picks up where this one stopped. Watch `wrangler tail` for progress; a digest email is sent when the slice completes.",
     { status: 202 }
   );
 }

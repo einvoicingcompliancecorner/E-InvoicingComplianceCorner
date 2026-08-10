@@ -564,3 +564,22 @@ INSERT INTO features (slug, title, description, shipped_at)
 VALUES ('some-slug', 'Reader-facing title',
         'One or two plain-language sentences.', '2026-08-20');
 ```
+
+### Postscript: the manual trigger needed its own budget (10 August 2026)
+
+Raising the budget to 8 minutes fixed the Monday cron and broke
+`/admin/run-content-monitor` in the same stroke. That endpoint responds
+first and runs under `ctx.waitUntil()`, so it gets a short grace period
+rather than the scheduled handler's 15 minutes — an 8-minute budget
+there would be killed mid-run.
+
+`runContentMonitor(env, opts)` now accepts `timeBudgetMs`. The cron
+uses the full 8 minutes; the manual trigger passes 20 seconds and
+checks a slice, advancing the same KV cursor so nothing is lost. Its
+response says so explicitly, because "run started in the background"
+followed by a partial sweep would otherwise look like the old bug.
+
+**The general lesson, worth carrying:** a constant shared by two
+callers can hide the fact that they have different constraints. This
+one was small enough to be safe for both, so nothing surfaced the
+difference until it was raised for one of them.
