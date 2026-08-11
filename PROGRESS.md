@@ -7539,6 +7539,61 @@ cursor. The `ctx.waitUntil()` pattern remains only where it belongs:
 the two manual admin triggers, which run after an HTTP response and are
 given deliberately short budgets for exactly that reason.
 
+## 11 Aug 2026 — Arrivals board: one ViDA 2030 entry instead of twelve (migration 504, code complete, deploy pending)
+
+Dan: "we have several entries on the Arrivals board listed for Jul 2030
+and ViDA. It is listed for each country, but then again for the
+European Union. I wonder if it might be cleaner to simply have an entry
+for the European Union, which also exists already there."
+
+He was right — the board carried **twelve** cards for 1 July 2030: the
+`eu-drr` entry plus eleven per-country restatements. They say
+materially the same thing, because Council Directive (EU) 2025/516 is
+one EU-wide fact rather than eleven national ones.
+
+Evidence this was drift, not design: Ireland (`ie-phase3-vida`) and
+Slovakia (`sk-crossborder-2030`) already sat at `on_tracker = 0` — and
+both of those carry genuinely domestic content (Ireland's own phase 3,
+Slovakia's Kontrolný výkaz phase-out), which is the opposite of what a
+deliberate rule would produce. The specific ones were off the board;
+the generic ones were on it.
+
+**Migration 504 sets `on_tracker = 0` on the eleven** (Austria,
+Bulgaria, Cyprus, Czech Republic, Estonia, Finland, Greece, Hungary,
+Lithuania, Malta, Netherlands). Off-boarded rather than deleted,
+because `on_tracker` is exactly the right lever here: site-worker's
+`renderTracker()` and `shared/map-data.mjs` both filter on it, while
+`getMilestonesForCountry()` deliberately does not filter at all. So the
+rows leave the board and the map's status input, and stay on each
+country's deep-dive timeline — where the country-specific framing
+("regardless of whether the Czech Republic ever enacts a domestic
+mandate — none exists or is proposed — ViDA still applies") answers a
+real question rather than repeating one.
+
+**Checked before writing, not after:**
+
+- **Map colours: zero countries change.** Every affected country's
+  status is already decided by another `on_tracker` milestone, so
+  nothing silently flips to `tracked` or `nomandate`. This was the main
+  risk, since all eleven are `mandate_scope = 'b2b'` and feed
+  `computeCountryMapStatus()` directly.
+- **No country vanishes from the board.** Each retains at least one
+  on-board milestone; the thinnest are Cyprus and the Czech Republic
+  with one each.
+
+**Left alone deliberately, flagged for Dan:** Sweden's
+`se-b2b-expected` shares the date and mentions ViDA, but its body is
+about Sweden's *domestic* position — Skatteverket, DIGG and Bolagsverket
+having asked the government to evaluate a mandate — which the EU entry
+does not cover, and it is Sweden's only 2030 board entry. Norway's
+`no-receive` (2030-01-01) is also untouched and should stay: Norway is
+not an EU member state, so ViDA does not apply to it at all.
+
+**Not yet deployed.** Pure D1 content change — migration only, no
+static assets and no Worker deploy, since the tracker renders from D1
+at request time (same as migration 296's `/sources` fix). Allow for the
+tracker route's short cache before the board reflects it.
+
 ## Open items / next steps
 
 ### Real open work
