@@ -7701,10 +7701,24 @@ search results is hard to undo. Also confirmed: `/roi-calculator` is
 **not** in `sitemap.xml`, and should only be added when both switches
 go true.
 
-**Not yet deployed.** Migration 505, then BOTH Workers (the shared
-module changed, and each registers its own route). Note the public route
-will 404 by design after deploy — that is the intended state, not a
-broken deploy.
+**Deployed and confirmed live** (confirmed by Dan, 11 Aug 2026):
+migration 505 applied, both Workers redeployed, and Dan confirmed he can
+reach `/members/roi-calculator`. The public `/roi-calculator` route
+returns 404 by design and stays that way until `ROI_PUBLIC` is flipped.
+
+**Open, and deliberately so:**
+1. **Page chrome is not yet wired to i18n.** The 31 `roi`-namespace
+   strings are seeded in D1 and the loader exists, but the body HTML
+   still carries them inline. The schema is ready; the wiring is not.
+   No schema change needed to finish it.
+2. **No nav menu entry**, by design while hidden. When it goes public it
+   needs a Resources-menu item in 4 languages and a `sitemap.xml` entry.
+3. **The integration-count formula is crude** — clearance countries x
+   ERPs, plus half that for reporting countries. Real programmes get
+   economies after the first few countries; this does not model that,
+   and it drives the whole one-off cost figure.
+4. **Investment placeholders** remain placeholders until real numbers
+   replace them; the payback figure is illustrative until then.
 
 ## Open items / next steps
 
