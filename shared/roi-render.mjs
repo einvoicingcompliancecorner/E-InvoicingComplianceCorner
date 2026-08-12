@@ -270,12 +270,32 @@ export function renderRoiPage({ countries, benchmarks = [], phases = [], strings
     cImpl:   { v: val("cost_per_integration", 20000), h: hintOf("cost_per_integration") },
     cPlat:   { v: val("platform_cost_year", 45000),   h: hintOf("platform_cost_year") },
     cRun:    { v: val("internal_run_cost", 30000),    h: hintOf("internal_run_cost") },
-    lanes:   { v: 2 },
+    // lanes and pace are the two implementation levers that are not
+    // phases, so they have no roi_phases row to live in. Kept here rather
+    // than inventing a table for two numbers. Dan set lanes to 5 on
+    // 12 Aug 2026: with the shortened per-country track, running one or
+    // two countries at a time stretched multi-country waves far enough
+    // back that several opened already-late, which reads as a broken
+    // model rather than a real warning.
+    lanes:   { v: 5 },
     pace:    { v: "1" },
   };
   const PHASE_INPUT = { mobilise: "wMob", design: "wDes", build: "wBld", uat: "wUat",
                         change: "wChg", vendor: "wVen", contract: "wCon" };
   phases.forEach((p) => { const id = PHASE_INPUT[p.key]; if (id) defaults[id] = { v: p.default_weeks }; });
+
+  // ONE SOURCE OF TRUTH FOR EVERY ASSUMPTION'S OPENING VALUE.
+  // Until 12 Aug 2026 the panel's `value="..."` attributes were hardcoded
+  // in the HTML while the DEFAULTS registry read the same figures from D1.
+  // Nothing looked broken, because the two agreed — but they only agreed by
+  // hand. Editing roi_phases.default_weeks or roi_benchmarks.default_value
+  // would have changed what "Reset all to defaults" restored and what
+  // counted as an override, WITHOUT changing the number the visitor
+  // actually sees on load. Migrating a value would have silently done half
+  // its job. Found while changing the phase durations, which is exactly the
+  // edit that would have exposed it. Every input below now renders from the
+  // registry, so D1 is authoritative end to end.
+  const dv = (id) => (defaults[id] != null ? defaults[id].v : "");
 
   // ---- assumption help ------------------------------------------------
   // Dan, 12 Aug 2026, having asked what "Contracting (once)" and "Parallel
@@ -390,42 +410,42 @@ export function renderRoiPage({ countries, benchmarks = [], phases = [], strings
 
     <p style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:var(--soon);margin:0 0 8px">Cost &amp; benefit</p>
     <div class="grid g4">
-      <div><label for="costNow">AP cost per invoice <span class="tag tA">A</span>${hlp("costNow","What this drives")}</label><input type="number" id="costNow" value="9.84" min="0" step="0.01"><p class="hint" id="h-costNow"></p></div>
-      <div><label for="costAR">AR cost per invoice <span class="tag tA">A</span>${hlp("costAR","What this drives")}</label><input type="number" id="costAR" value="6.50" min="0" step="0.01"><p class="hint" id="h-costAR"></p></div>
-      <div><label for="savePct">Cost reduction % <span class="tag tB">B</span>${hlp("savePct","What this drives")}</label><input type="number" id="savePct" value="60" min="0" max="95"><p class="hint" id="h-savePct"></p></div>
-      <div><label for="errCost">Rework per errored invoice <span class="tag tD">D</span>${hlp("errCost","What this drives")}</label><input type="number" id="errCost" value="45" min="0" step="1"><p class="hint" id="h-errCost"></p></div>
+      <div><label for="costNow">AP cost per invoice <span class="tag tA">A</span>${hlp("costNow","What this drives")}</label><input type="number" id="costNow" value="${dv('costNow')}" min="0" step="0.01"><p class="hint" id="h-costNow"></p></div>
+      <div><label for="costAR">AR cost per invoice <span class="tag tA">A</span>${hlp("costAR","What this drives")}</label><input type="number" id="costAR" value="${dv('costAR')}" min="0" step="0.01"><p class="hint" id="h-costAR"></p></div>
+      <div><label for="savePct">Cost reduction % <span class="tag tB">B</span>${hlp("savePct","What this drives")}</label><input type="number" id="savePct" value="${dv('savePct')}" min="0" max="95"><p class="hint" id="h-savePct"></p></div>
+      <div><label for="errCost">Rework per errored invoice <span class="tag tD">D</span>${hlp("errCost","What this drives")}</label><input type="number" id="errCost" value="${dv('errCost')}" min="0" step="1"><p class="hint" id="h-errCost"></p></div>
     </div>
     <div class="grid g4" style="margin-top:12px">
-      <div><label for="errRate">Manual error rate % <span class="tag tB">B</span>${hlp("errRate","What this drives")}</label><input type="number" id="errRate" value="10" min="0" max="100" step="0.5"><p class="hint" id="h-errRate"></p></div>
-      <div><label for="fteCost">Loaded cost / finance FTE <span class="tag tD">D</span>${hlp("fteCost","What this drives")}</label><input type="number" id="fteCost" value="62000" min="0" step="1000"><p class="hint" id="h-fteCost"></p></div>
+      <div><label for="errRate">Manual error rate % <span class="tag tB">B</span>${hlp("errRate","What this drives")}</label><input type="number" id="errRate" value="${dv('errRate')}" min="0" max="100" step="0.5"><p class="hint" id="h-errRate"></p></div>
+      <div><label for="fteCost">Loaded cost / finance FTE <span class="tag tD">D</span>${hlp("fteCost","What this drives")}</label><input type="number" id="fteCost" value="${dv('fteCost')}" min="0" step="1000"><p class="hint" id="h-fteCost"></p></div>
       <div></div><div></div>
     </div>
 
     <p style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:var(--soon);margin:20px 0 8px">Investment &mdash; costs <span class="tag tD">D</span></p>
     <p class="hint" style="margin:-4px 0 8px;color:#e0907f">These are <strong>placeholders, not benchmarks</strong>. We checked: no analyst firm publishes credible per-country e-invoicing implementation or platform costs. Replace them with your own quotes &mdash; until you do, treat the payback figure as illustrative only.</p>
     <div class="grid g4">
-      <div><label for="cImpl" style="font-size:11px">Cost per integration (one-off)${hlp("cImpl","What this drives")}</label><input type="number" id="cImpl" value="20000" min="0" step="1000"><p class="hint" id="h-cImpl"></p></div>
-      <div><label for="cPlat" style="font-size:11px">Platform / network fees per year${hlp("cPlat","What this drives")}</label><input type="number" id="cPlat" value="45000" min="0" step="1000"><p class="hint" id="h-cPlat"></p></div>
-      <div><label for="cRun" style="font-size:11px">Internal run cost per year${hlp("cRun","What this drives")}</label><input type="number" id="cRun" value="30000" min="0" step="1000"><p class="hint" id="h-cRun"></p></div>
+      <div><label for="cImpl" style="font-size:11px">Cost per integration (one-off)${hlp("cImpl","What this drives")}</label><input type="number" id="cImpl" value="${dv('cImpl')}" min="0" step="1000"><p class="hint" id="h-cImpl"></p></div>
+      <div><label for="cPlat" style="font-size:11px">Platform / network fees per year${hlp("cPlat","What this drives")}</label><input type="number" id="cPlat" value="${dv('cPlat')}" min="0" step="1000"><p class="hint" id="h-cPlat"></p></div>
+      <div><label for="cRun" style="font-size:11px">Internal run cost per year${hlp("cRun","What this drives")}</label><input type="number" id="cRun" value="${dv('cRun')}" min="0" step="1000"><p class="hint" id="h-cRun"></p></div>
       <div></div>
     </div>
 
     <p style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:var(--soon);margin:20px 0 8px">Implementation &mdash; weeks <span class="tag tD">D</span></p>
     <div class="grid g4">
-      <div><label for="wMob" style="font-size:11px">Mobilisation${hlp("wMob","What this phase covers")}</label><input type="number" id="wMob" value="2" min="0" step="0.5"></div>
-      <div><label for="wDes" style="font-size:11px">Design${hlp("wDes","What this phase covers")}</label><input type="number" id="wDes" value="2" min="0" step="0.5"></div>
-      <div><label for="wBld" style="font-size:11px">Build${hlp("wBld","What this phase covers")}</label><input type="number" id="wBld" value="2" min="0" step="0.5"></div>
-      <div><label for="wUat" style="font-size:11px">UAT${hlp("wUat","What this phase covers")}</label><input type="number" id="wUat" value="1" min="0" step="0.5"></div>
+      <div><label for="wMob" style="font-size:11px">Mobilisation${hlp("wMob","What this phase covers")}</label><input type="number" id="wMob" value="${dv('wMob')}" min="0" step="0.5"></div>
+      <div><label for="wDes" style="font-size:11px">Design${hlp("wDes","What this phase covers")}</label><input type="number" id="wDes" value="${dv('wDes')}" min="0" step="0.5"></div>
+      <div><label for="wBld" style="font-size:11px">Build${hlp("wBld","What this phase covers")}</label><input type="number" id="wBld" value="${dv('wBld')}" min="0" step="0.5"></div>
+      <div><label for="wUat" style="font-size:11px">UAT${hlp("wUat","What this phase covers")}</label><input type="number" id="wUat" value="${dv('wUat')}" min="0" step="0.5"></div>
     </div>
     <div class="grid g4" style="margin-top:12px" id="chgRow">
-      <div><label for="wChg" style="font-size:11px">Process change &amp; training${hlp("wChg","What this phase covers")}</label><input type="number" id="wChg" value="6" min="0" step="0.5"><p class="hint">AP automation scope only.</p></div>
+      <div><label for="wChg" style="font-size:11px">Process change &amp; training${hlp("wChg","What this phase covers")}</label><input type="number" id="wChg" value="${dv('wChg')}" min="0" step="0.5"><p class="hint">AP automation scope only.</p></div>
       <div></div><div></div><div></div>
     </div>
     <div class="grid g4" style="margin-top:12px">
-      <div><label for="wVen" style="font-size:11px">Vendor selection (once)${hlp("wVen","What “once” means here")}</label><input type="number" id="wVen" value="8" min="0" step="1"></div>
-      <div><label for="wCon" style="font-size:11px">Contracting (once)${hlp("wCon","What “once” means here")}</label><input type="number" id="wCon" value="6" min="0" step="1"></div>
-      <div><label for="lanes" style="font-size:11px">Parallel workstreams${hlp("lanes","What this means")}</label><input type="number" id="lanes" value="2" min="1" max="10"></div>
-      <div><label for="pace" style="font-size:11px">Delivery pace${hlp("pace","What this means")}</label><select id="pace"><option value="0.75">Aggressive</option><option value="1" selected>Typical</option><option value="1.3">Conservative</option></select></div>
+      <div><label for="wVen" style="font-size:11px">Vendor selection (once)${hlp("wVen","What “once” means here")}</label><input type="number" id="wVen" value="${dv('wVen')}" min="0" step="1"></div>
+      <div><label for="wCon" style="font-size:11px">Contracting (once)${hlp("wCon","What “once” means here")}</label><input type="number" id="wCon" value="${dv('wCon')}" min="0" step="1"></div>
+      <div><label for="lanes" style="font-size:11px">Parallel workstreams${hlp("lanes","What this means")}</label><input type="number" id="lanes" value="${dv('lanes')}" min="1" max="10"></div>
+      <div><label for="pace" style="font-size:11px">Delivery pace${hlp("pace","What this means")}</label><select id="pace">${[["0.75","Aggressive"],["1","Typical"],["1.3","Conservative"]].map(([v,n])=>`<option value="${v}"${String(dv('pace'))===v?" selected":""}>${n}</option>`).join("")}</select></div>
     </div>
     <p class="hint" style="margin-top:10px">Durations are per country. Countries sharing a go-live date form a wave, so a five-country wave costs roughly five country-tracks of effort, divided across however many workstreams you can genuinely run at once.</p>
   </div>

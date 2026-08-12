@@ -7917,6 +7917,77 @@ reads "n/a" — the net annual figure is negative by design in that scope.
 
 **Deploy:** both Workers. No migration.
 
+## 12 Aug 2026 — ROI planner: revised phase durations, and a latent drift bug the change exposed (migration 507)
+
+Dan: "can you also set 1 week mobilisation, 3 week build and 4 week
+contracting as default. parallel workstreams can be set to 5."
+
+    mobilise   2 -> 1 weeks   (D1, roi_phases)
+    build      2 -> 3 weeks   (D1, roi_phases)
+    contract   6 -> 4 weeks   (D1, roi_phases)
+    lanes      2 -> 5         (code — not a phase, so no D1 row)
+
+These are Dan's practitioner estimates and supersede his own earlier ones
+from the build (1-2 / 2 / 2 / 1), which had already superseded my first
+attempt at ERP-programme scale — roughly 4x too long, and it produced a
+misleadingly bleak picture. The direction of travel has been consistent
+throughout and is worth stating plainly: an e-invoicing country rollout
+onto an existing platform is a short, IT-weighted track. Mobilisation is
+lighter than a full programme's, build is where the real work sits, and
+procurement is faster than a first-time enterprise purchase.
+
+**What actually moved, which is not what it looks like.** The per-country
+track is unchanged at 7 weeks — mobilisation loses the week build gains.
+The real change is at programme level: contracting 6 -> 4 drops the front
+end from 14 weeks to 12, so the whole plan shifts two weeks later and
+every wave gains two weeks of runway before it turns red. Easy to miss,
+because the per-country arithmetic is a wash.
+
+Lanes 2 -> 5 matters more than it sounds too. With a 7-week country track,
+running two at a time stretched multi-country waves far enough back that
+several opened already-late — which reads as a broken model rather than a
+real warning. At 5 the four-country January 2027 wave now runs fully
+parallel, 7 weeks elapsed against 27 weeks of effort, and the two waves
+that remain red (France 113 days late, Greece 83) are red for a defensible
+reason: their deadlines are weeks away and no amount of parallelism buys
+back procurement time.
+
+### The bug this change nearly hid
+
+Until today the assumptions panel carried every opening value as a
+hardcoded `value="..."` attribute in the HTML, while the DEFAULTS registry
+read the same figures from D1. Nothing looked broken, because the two
+agreed — but **they agreed only because someone had kept them in step by
+hand.**
+
+So this migration on its own would have changed what "Reset all to
+defaults" restores and what counts as an override, **without changing the
+number a visitor actually sees on load.** A migration doing half its job,
+with no error, no log line and no visible symptom until someone pressed
+Reset and watched the field jump to a value they had never entered.
+
+It was already leaking in a small way before anyone touched it: `costAR`
+rendered as `6.50` in the HTML and `6.5` from D1, so the field changed
+appearance after a Reset that was supposed to be a no-op.
+
+All 18 inputs now render from the registry via a `dv()` accessor, so D1 is
+authoritative end to end. **507 and that code change must deploy
+together** — the migration alone moves the reset target without moving the
+displayed value, which is the exact failure it was written to avoid.
+
+The general shape is worth remembering, because this project has now been
+bitten by it twice in three days: **putting a value in D1 does not make D1
+the source of truth. Removing the other copy does.** Yesterday's contrast
+bug was the same mistake in CSS — a declaration that looked authoritative
+until you saw the sheet concatenated ahead of it.
+
+**Verified:** replay clean (507 files); opening values read back
+1/2/3/1/6/8/4 weeks and lanes 5; nothing flagged as an override on load;
+Reset restores byte-identical values; 16/16 functional regressions with no
+JS errors; Gantt inspected on screenshot.
+
+**Deploy:** migration 507, then both Workers, together.
+
 ## Open items / next steps
 
 ### Real open work
