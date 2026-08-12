@@ -8523,7 +8523,26 @@ downstream figure ($1,145,400 → £847,580 → €991,940); no drift on repeate
 switching; overrides survive in real terms; Reset restores correctly;
 16/16 regressions; 0 AA failures.
 
-**Deploy:** migration 513, then both Workers.
+**Migration 514 followed immediately.** Dan asked whether the rates were
+static or calculated daily, and on hearing static: *"Static is fine, so
+long as a tooltip acknowledges this is the case."* 513's tooltips already
+implied it — "a stored rate rather than a live feed", "reproducible next
+quarter" — but implying is not acknowledging. Both tooltips now open with
+the plain statement (**"THE RATE IS FIXED... it does NOT update daily or
+track the market"**), with the reasoning after it rather than before.
+
+The always-visible note under the selector says it too: *"Converted at a
+**fixed rate** of 1 GBP = 1.3511 USD, spot 2026-08-11 — not updated
+daily."* That placement is the point. This project was bitten this week by
+the opposite instinct: 513 existed only because a material warning about
+this very control sat behind a hover instead of in front of the reader.
+
+**If the rates should ever refresh**, the shape that preserves the honesty
+is a monthly cron writing new rows into `roi_fx_rates` with a new `as_of`
+— the page keeps its "spot as at ⟨date⟩" framing and nothing changes at
+request time. Offered, not built.
+
+**Deploy:** migrations 513 and 514, then both Workers.
 
 ## Open items / next steps
 

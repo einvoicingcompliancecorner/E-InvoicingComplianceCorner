@@ -726,9 +726,14 @@ function applyCurrency(next){
   const note = document.getElementById('fxNote');
   if(note){
     const f = FX[next];
+    // Says "fixed rate" in the ALWAYS-VISIBLE note, not only in the
+    // tooltip. Dan asked for the static basis to be acknowledged, and this
+    // project was bitten this week by exactly the opposite instinct:
+    // migration 513 existed because a material warning about this control
+    // sat behind a hover instead of in front of the reader.
     note.innerHTML = next === 'USD' || !f
       ? 'Benchmark defaults are published in US dollars.'
-      : \`Converted at 1 \${next} = \${f.r} USD\${f.asOf ? ', spot ' + f.asOf : ''}. \${ev('yours','Use your own treasury rate for anything you will sign')}\`;
+      : \`Converted at a <strong>fixed rate</strong> of 1 \${next} = \${f.r} USD\${f.asOf ? ', spot ' + f.asOf : ''} &mdash; not updated daily. \${ev('yours','Use your own treasury rate for anything you will sign')}\`;
   }
   markOverridden();
 }
