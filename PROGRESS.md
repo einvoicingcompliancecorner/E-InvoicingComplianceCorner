@@ -8201,6 +8201,149 @@ materially different numbers, so the citation is accurate but not
 sufficient — a reader who finds the Pagero edition has no way to tell which
 wave ours came from. A one-migration fix, offered and not yet taken up.
 
+## 12 Aug 2026 — ROI complexity made explicit, cost split by complexity, and the runbook caught up (migrations 510-511)
+
+Dan asked whether the country rollout instructions needed updating for the
+ROI planner. Checking turned up **two live defects**, both caused by the
+planner being a downstream consumer of country data that the runbook never
+mentioned.
+
+### Defect 1 — nine countries silently scored as having no mandate
+
+`getRoiCountries()` derived complexity by running a regex over
+`deep_dive_page_translations.compliance_model` — a field written as prose
+for human readers. Nine countries with real B2B mandates missed all five
+keywords: **Belgium, Denmark, Singapore and Uruguay** (in force) and
+**Norway, Slovakia, Slovenia, Spain and the United Kingdom** (dated
+deadlines).
+
+A complexity of zero is not "low effort". It contributes **zero
+integrations** and **removes the country from the wave plan entirely**,
+because `buildGantt()` filters on `c[5] && c[4] > 0`. Measured on the
+planner's own default selection at one ERP:
+
+    before   4 integrations, $80,000 one-off, 3 of 8 countries planned
+    after    8 integrations, $160,000 one-off, 6 of 8 planned
+
+**The tool was understating its own default one-off cost by half and
+dropping the United Kingdom out of a UK-facing business case.**
+
+### Defect 2 — ViDA vanished from the planner
+
+Migration 504 took eleven per-country ViDA 2030 entries off the board,
+which was right for the board. But `getRoiCountries()` also filters on
+`on_tracker`, and excludes the European Union row with `code <> 'EU'` — so
+ViDA 2030 became invisible in the planner, and Austria, Bulgaria, Cyprus,
+Czech Republic, Hungary, Malta and the Netherlands lost their only future
+deadline. 504 predates 505 by a day; the consumer did not exist when the
+migration was written, and its comment enumerating `on_tracker`'s
+consumers is now one short.
+
+**Still open** — Dan asked for the impact rather than choosing. Modelling
+it produced a finding worth recording: **blanket readmission is unsafe.**
+There are 159 off-tracker B2B milestones and only 11 are ViDA; readmitting
+all of them moved the UK's deadline from April 2029 to November 2026. Only
+a surgical readmission of the 11 specific rows is safe.
+
+### What Dan decided
+
+> "I would have 'No mandate', and 'Simple Mandate' being decentralised
+> 4-corner only, as a simple model as $10k implementation cost. Where
+> there is a CTC, or 5-Corner model we should allocate complex and assume
+> $20k implementation cost. Include countries with no mandate in the same
+> phase because there is no mandate go-live date to track therefore it can
+> start anytime."
+
+> "Can these assumptions be written somewhere, perhaps in the appropriate
+> section / tab on the roi calculator?"
+
+> "Note that all implementation phases need to start after the contracting
+> phase has complete."
+
+**Migration 510** adds `countries.roi_complexity`, `CHECK`-constrained to
+`none` / `simple` / `complex`, with all 70 hand-assigned. The dividing
+line is **whether the tax authority is a party to the transaction**, which
+is also what drives integration effort. Two consequences that look odd and
+are deliberate: Germany and Estonia are simple (no clearance, no invoice
+reporting); Bulgaria, Latvia, Lithuania and Portugal are complex despite
+having no B2B exchange mandate, because the authority receives
+invoice-level data.
+
+The old four-point scale carried a B2G-only tier and had **no slot at all
+for "mandatory decentralised exchange with no authority involvement"** —
+exactly where Belgium, Norway, the UK and Slovenia live, and where the
+European direction of travel is heading. Dan's three-value scale fixes
+that.
+
+**Migration 511** splits the cost. `cost_per_integration` is deactivated
+(not deleted — it is the audit trail for what the tool used to assume) and
+replaced by simple $10k and complex $20k rates. This also kills the old
+integration formula's "half for reporting countries" fudge, which stood in
+for "reporting is a bit easier" without anyone claiming to know by how
+much, and which drove the entire one-off figure. **That closes open item 3
+from the 11 Aug build note.** Both rates stay Grade D placeholders, and
+say so — the 12 Aug evidence audit confirmed across ten analyst and
+consulting firms that nobody publishes a credible figure.
+
+**And the assumptions are now written where they are applied**, which was
+the more important of Dan's two instructions. Migration 506 already built
+the D1-backed help layer, so the classification rule, the two rates and
+the no-fixed-deadline band each have their own `?` tooltip. A cost model
+that treats Belgium and Brazil differently for reasons the reader cannot
+see is worse than one that treats them the same.
+
+**Implementation cannot start before contracting completes.** The dated
+waves already satisfied this by construction — the programme bar is drawn
+backwards from the earliest country start. The new discretionary band did
+not; it started at today, i.e. before the platform exists. Now clamped to
+`max(contracting end, today)`.
+
+### Four things caught by looking, not by asserting
+
+1. **The test harness was reading a stale JSON snapshot** of the country
+   array rather than querying D1, so it rendered the old 0-3 complexity
+   values against the new 3-value label table and broke the page with an
+   undefined lookup. Rewritten to build countries through the real
+   exported query. A harness that does not track the schema tests last
+   week's code.
+2. **`hlp()` is a server-side helper and I escaped its interpolation**,
+   turning it into a runtime reference to a function that does not exist
+   at runtime. Whole calculate step died with "hlp is not defined".
+3. **Row labels collided in the SVG.** "Czech Republic" ran into
+   "DISCRETIONARY". Nothing errors when two SVG text nodes overlap — it
+   just becomes unreadable. Left gutter widened 168 to 190, long names
+   truncated with the full name in a `<title>`.
+4. **The band was mislabelled "NO MANDATE"** and Portugal and Ecuador —
+   both live regimes — appeared under it, because the filter is "no future
+   dated deadline", which catches both genuinely-unmandated countries and
+   ones already fully in force. Renamed to "NO FIXED DEADLINE", and
+   in-force rows now show `IN FORCE` in amber rather than `ANY TIME`,
+   because telling someone they can start whenever they like in a
+   jurisdiction where they are already late is the comfortable lie rather
+   than the useful one.
+
+### The runbook change Dan actually asked for
+
+`ADDING-A-COUNTRY.md` gains `roi_complexity` as a mandatory field in
+Phase 1 with the full rule and a worked table; a Phase 5 checklist item
+for the planner, including the `on_tracker` interaction that caused defect
+2; and a new **"Downstream consumers of a country row"** table naming all
+five consumers and what each does when the data is wrong. The planner is
+the only one that fails **silently**, which is precisely why it needs an
+explicit check.
+
+**The rule worth carrying:** a value that drives a customer-facing number
+must be stored, not inferred from prose. Improving the regex would only
+have moved the next failure.
+
+**Verified:** replay clean (511 files); all 70 countries assigned with no
+gaps or strays; 16/16 functional regressions, no JS errors; 0 WCAG AA
+failures with 28 tooltips all above 4.5:1; the all-no-mandate selection
+exercised (previously a `Math.max` of an empty spread, now guarded);
+Gantt inspected on screenshot at each step.
+
+**Deploy:** migrations 510 and 511, then both Workers.
+
 ## Open items / next steps
 
 ### Real open work

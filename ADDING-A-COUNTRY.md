@@ -111,8 +111,8 @@ non-negotiable, now automated rather than remembered.
 
 1. **Country row + name translations**
    ```sql
-   INSERT INTO countries (code, name_en, region, slug, in_picker)
-     VALUES ('XX', 'CountryName', 'Region', 'country-slug', 1);
+   INSERT INTO countries (code, name_en, region, slug, in_picker, roi_complexity)
+     VALUES ('XX', 'CountryName', 'Region', 'country-slug', 1, 'complex');
    INSERT INTO country_translations (country_id, lang, display_name)
      SELECT id, 'en', 'CountryName' FROM countries WHERE code = 'XX';
    -- + es / de / fr rows (real translations, not the English name
@@ -125,9 +125,48 @@ non-negotiable, now automated rather than remembered.
 
    **This one insert now powers:** the Deep Dives menu + flyout, the
    sidebar link, the preferences page's checkbox (grouped, translated),
-   the subscribe/archive country handling, and newsletter stories'
-   auto-rendered deep-dive links. None of those are separate edits
-   anymore.
+   the subscribe/archive country handling, newsletter stories'
+   auto-rendered deep-dive links, **and the ROI & Wave Planner's country
+   picker, integration count and delivery timeline**. None of those are
+   separate edits anymore.
+
+   ### `roi_complexity` — mandatory, and it drives money
+
+   Added 12 Aug 2026 (migration 510). Three values, `CHECK`-constrained,
+   **no safe default** — the column defaults to `'none'`, which is
+   almost certainly wrong for a country you are bothering to add, so set
+   it explicitly:
+
+   | Value | Means | ROI planner effect |
+   |---|---|---|
+   | `'complex'` | A CTC in any form — clearance, pre-validation, or invoice-level data reported to the tax authority — **or** a 5-corner model where the exchange network also reports | Full phase durations; the **complex** integration rate (default $20k per country-system) |
+   | `'simple'` | Decentralised 4-corner exchange only: structured invoices move between accredited access points and the tax authority is not a party to the transaction. Most B2G-only Peppol regimes sit here | 0.7x phase durations; the **simple** rate (default $10k) |
+   | `'none'` | Nothing to build for | Same durations as simple, costed at the simple rate, but **no deadline** — the country lands in the timeline's "no fixed deadline" band instead of a dated wave |
+
+   The dividing line is **whether the tax authority is a party to the
+   transaction**. Two consequences of that rule that look surprising and
+   are deliberate: Germany and Estonia are `'simple'` despite being
+   large, serious regimes, because neither has clearance and neither
+   reports invoices; Bulgaria, Latvia, Lithuania and Portugal are
+   `'complex'` despite having no B2B exchange mandate, because the
+   authority receives invoice-level data (SAF-T, VID, i.SAF).
+
+   **Why this is a stored column and not derived.** It used to be
+   derived — `getRoiCountries()` ran a regex over
+   `deep_dive_page_translations.compliance_model`, a field written as
+   prose for human readers. That silently scored **nine** countries with
+   real B2B mandates as having none, because their wording happened to
+   miss five keywords: Belgium, Denmark, Singapore and Uruguay (in
+   force) and Norway, Slovakia, Slovenia, Spain and the United Kingdom
+   (dated deadlines). The damage was not cosmetic — a complexity of zero
+   contributes **zero integrations** and **removes the country from the
+   wave plan entirely**. On the planner's own default selection it
+   halved the one-off cost and dropped the United Kingdom out of a
+   UK-facing business case.
+
+   The general rule this bought: **a value that drives a
+   customer-facing number must be stored, not inferred from prose.**
+   Improving the regex would only have moved the next failure.
 
 2. **Milestones + translations** (tracker board and deep-dive timeline)
    - `milestones`: `id` (short country prefix, e.g. `qa-b2b-wave1`),
@@ -368,6 +407,28 @@ mind autoincrement-PK tables where a re-run genuinely duplicates rows
 - [ ] Every `source_url` you set (milestones, story) actually supports
       the specific claim it's attached to — open the link and confirm,
       don't just check that it resolves. See "Sourcing standard" above.
+- [ ] **The ROI & Wave Planner** (`/members/roi-calculator`) shows it in
+      the country picker with the right complexity pill, and selecting it
+      changes the numbers you expect. This is entirely D1-driven, so the
+      only inputs are `roi_complexity` (Phase 1 step 1) and the
+      milestones' `mandate_scope` / `date` / `on_tracker` (step 2) — but
+      the failure mode is silent, so check it rather than assuming:
+      - **Complexity pill reads Complex / Simple / No mandate as you
+        intended.** A wrong value here is invisible on every other page
+        and quietly changes the one-off cost.
+      - **If the country has a future dated B2B milestone, it appears in
+        the Gantt** under a wave for that date. If it does not, the
+        milestone is either `on_tracker = 0`, not `mandate_scope = 'b2b'`,
+        or in the past — the planner only back-plans from future dated
+        B2B milestones.
+      - **Watch for the `on_tracker` interaction.** Taking a milestone off
+        the board also takes it out of the planner. Migration 504 did
+        exactly that to eleven countries' ViDA 2030 entries for good
+        board-tidiness reasons, and seven of them lost their only future
+        deadline from the wave plan as a side effect nobody noticed for a
+        day. **`on_tracker` now has four consumers, not three**:
+        `renderTracker()`, `getMapCountries()`, `getRoiCountries()`, and
+        `getMilestonesForCountry()` which deliberately ignores it.
 - [ ] The new country appears on **The Map** (`/map`, and the tracker's
       Resources → The Map in-page panel), in the right region, with a
       status that matches its real-world mandate state — this is
@@ -382,6 +443,29 @@ mind autoincrement-PK tables where a re-run genuinely duplicates rows
       country on the map opens the same in-page deep-dive panel as
       everywhere else, and (per the story-tagging item above) any
       tagged story shows up in the region's "Latest updates" list.
+
+---
+
+## Downstream consumers of a country row
+
+Worth keeping current, because the ROI planner was added on 11 Aug 2026
+and nobody updated this runbook — which is how nine countries ended up
+mis-scored and seven lost their deadlines. **When you build something
+new that reads `countries` or `milestones`, add it here and add a Phase 5
+check for it.**
+
+| Consumer | Reads | Fails how? |
+|---|---|---|
+| Tracker board | `milestones` where `on_tracker = 1` | Visibly — the country is missing |
+| The Map | `mandate_scope`, `on_tracker`, `region` | Visibly — wrong colour or missing shape |
+| Deep dive | all `deep_dive_*` tables, ignores `on_tracker` | Visibly — empty sections |
+| Subscribe / preferences | `in_picker`, `country_translations` | Visibly — missing from the list |
+| **ROI & Wave Planner** | **`roi_complexity`, `mandate_scope`, `date`, `on_tracker`, `region`, penalty rows** | **Silently — wrong cost, or absent from the plan with no error** |
+
+The planner is the one that fails quietly, which is exactly why it needs
+the explicit Phase 5 check above. Note `region` too: `getRoiCountries()`
+maps it with `REG[c.region] || "Eu"`, so a region string that is not one
+of the four exact values silently files the country under Europe.
 
 ---
 

@@ -37,10 +37,8 @@
 export async function getRoiCountries(db, todayISO) {
   const today = todayISO || new Date().toISOString().slice(0, 10);
   const { results: countries } = await db.prepare(`
-    SELECT c.id, c.name_en, c.code, c.region, c.slug,
-           (SELECT COUNT(*) FROM deep_dive_penalty_rows p WHERE p.country_id = c.id) AS penalty_rows,
-           (SELECT dpt.compliance_model FROM deep_dive_page_translations dpt
-             WHERE dpt.country_id = c.id AND dpt.lang = 'en') AS compliance_model
+    SELECT c.id, c.name_en, c.code, c.region, c.slug, c.roi_complexity,
+           (SELECT COUNT(*) FROM deep_dive_penalty_rows p WHERE p.country_id = c.id) AS penalty_rows
       FROM countries c
      WHERE c.code <> 'EU'
      ORDER BY c.name_en
@@ -65,11 +63,28 @@ export async function getRoiCountries(db, todayISO) {
     else if (mine.some((m) => m.mandate_scope === "b2b" && m.date > today && m.confidence === "expected")) status = "u";
     else if (mine.length) status = "n";
 
-    const model = String(c.compliance_model || "").toLowerCase();
-    let cx = 0;
-    if (/clearance|ctc|pre-validation/.test(model)) cx = 3;
-    else if (/reporting|post-issuance/.test(model)) cx = 2;
-    else if (status === "b") cx = 1;
+    // COMPLEXITY IS STORED, NOT INFERRED (migration 510, 12 Aug 2026).
+    // This used to be a regex over deep_dive_page_translations
+    // .compliance_model — a field written as prose for human readers —
+    // which silently scored NINE countries with real B2B mandates as
+    // having none, because their wording happened to miss five keywords.
+    // Belgium, Denmark, Singapore and Uruguay were in force at the time;
+    // Norway, Slovakia, Slovenia, Spain and the United Kingdom had dated
+    // deadlines. A zero here does not just mean "low effort": it means
+    // zero integrations AND exclusion from the wave plan, because
+    // buildGantt() filters on `c[5] && c[4] > 0`. On the tool's own
+    // default selection that halved the one-off cost and dropped the UK
+    // out of a UK-facing business case.
+    //
+    // The lesson generalises past this one field: a customer-facing cost
+    // driver inferred from prose cannot be made safe by improving the
+    // pattern. Store the decision so it is reviewable and diffable.
+    // Dan's scale, on whether the tax authority is a party to the
+    // transaction: 2 = complex (CTC, clearance, invoice-level reporting,
+    // or 5-corner), 1 = simple (decentralised 4-corner exchange only),
+    // 0 = no mandate to build for.
+    const CXVAL = { complex: 2, simple: 1, none: 0 };
+    const cx = CXVAL[c.roi_complexity] ?? 0;
 
     const future = mine.filter((m) => m.date > today && m.mandate_scope === "b2b").map((m) => m.date).sort();
     return [c.name_en, c.code, REG[c.region] || "Eu", status, cx, future[0] || "", c.penalty_rows || 0, c.slug];
@@ -267,7 +282,8 @@ export function renderRoiPage({ countries, benchmarks = [], phases = [], strings
     errRate: { v: val("manual_error_rate", 10),     h: hintOf("manual_error_rate") },
     errCost: { v: val("rework_per_error", 45),      h: hintOf("rework_per_error") },
     fteCost: { v: val("loaded_fte_cost", 62000),    h: hintOf("loaded_fte_cost") },
-    cImpl:   { v: val("cost_per_integration", 20000), h: hintOf("cost_per_integration") },
+    cImplS:  { v: val("cost_per_integration_simple", 10000),  h: hintOf("cost_per_integration_simple") },
+    cImplC:  { v: val("cost_per_integration_complex", 20000), h: hintOf("cost_per_integration_complex") },
     cPlat:   { v: val("platform_cost_year", 45000),   h: hintOf("platform_cost_year") },
     cRun:    { v: val("internal_run_cost", 30000),    h: hintOf("internal_run_cost") },
     // lanes and pace are the two implementation levers that are not
@@ -424,7 +440,8 @@ export function renderRoiPage({ countries, benchmarks = [], phases = [], strings
     <p style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:var(--soon);margin:20px 0 8px">Investment &mdash; costs <span class="tag tD">D</span></p>
     <p class="hint" style="margin:-4px 0 8px;color:#e0907f">These are <strong>placeholders, not benchmarks</strong>. We checked: no analyst firm publishes credible per-country e-invoicing implementation or platform costs. Replace them with your own quotes &mdash; until you do, treat the payback figure as illustrative only.</p>
     <div class="grid g4">
-      <div><label for="cImpl" style="font-size:11px">Cost per integration (one-off)${hlp("cImpl","What this drives")}</label><input type="number" id="cImpl" value="${dv('cImpl')}" min="0" step="1000"><p class="hint" id="h-cImpl"></p></div>
+      <div><label for="cImplS" style="font-size:11px">Cost per SIMPLE integration${hlp("cImplS","What this drives")}</label><input type="number" id="cImplS" value="${dv('cImplS')}" min="0" step="1000"><p class="hint" id="h-cImplS"></p></div>
+      <div><label for="cImplC" style="font-size:11px">Cost per COMPLEX integration${hlp("cImplC","What this drives")}</label><input type="number" id="cImplC" value="${dv('cImplC')}" min="0" step="1000"><p class="hint" id="h-cImplC"></p></div>
       <div><label for="cPlat" style="font-size:11px">Platform / network fees per year${hlp("cPlat","What this drives")}</label><input type="number" id="cPlat" value="${dv('cPlat')}" min="0" step="1000"><p class="hint" id="h-cPlat"></p></div>
       <div><label for="cRun" style="font-size:11px">Internal run cost per year${hlp("cRun","What this drives")}</label><input type="number" id="cRun" value="${dv('cRun')}" min="0" step="1000"><p class="hint" id="h-cRun"></p></div>
       <div></div>
@@ -496,11 +513,17 @@ const COUNTRIES = __ROI_COUNTRIES__;
 let unlocked = __ROI_UNLOCKED__;
 const REGION = {Eu:'Europe', Mi:'Middle East / Africa', As:'Asia-Pacific', Am:'Americas'};
 const STATUS = {i:['In force','p-inforce'], u:['Upcoming','p-upcoming'], b:['B2G only','p-b2gonly'], n:['No mandate','p-nomandate'], t:['Tracked','p-nomandate']};
-const CXNAME = {3:['Complex','cx3'], 2:['Moderate','cx2'], 1:['Light','cx1'], 0:['Watch only','cx0']};
-const CXNOTE = {3:'Clearance / CTC: the tax authority is inside the transaction. Per-country integration, structured format, real-time validation.',
-  2:'Post-issuance reporting: the invoice is valid on delivery; transmission is a separate duty. Less invasive than clearance.',
-  1:'B2G only: obligations apply when invoicing the public sector. Usually Peppol-shaped and comparatively light.',
-  0:'No mandate today. Worth monitoring, no build required.'};
+// Three values, not four (Dan, 12 Aug 2026). The dividing line is whether
+// the tax authority is a party to the transaction, which is also what
+// actually drives integration effort. The old four-point scale carried a
+// B2G-only tier and had no slot at all for "mandatory decentralised
+// exchange with no authority involvement" — which is exactly where
+// Belgium, Norway, the UK and Slovenia live, and where the European
+// direction of travel is heading.
+const CXNAME = {2:['Complex','cx3'], 1:['Simple','cx2'], 0:['No mandate','cx0']};
+const CXNOTE = {2:'CTC or 5-corner: the tax authority is a party to the transaction — clearance, pre-validation, or invoice-level reporting. Certification, response handling and status reconciliation on top of the exchange.',
+  1:'Decentralised 4-corner exchange only. Structured invoices move between accredited access points; the tax authority is not in the loop.',
+  0:'No mandate to build for. Included only because you selected it — there is no deadline, so this work can start whenever you have capacity.'};
 const SYM = {GBP:'£', EUR:'€', USD:'$'};
 let cur='USD';
 const fmt = n => SYM[cur] + Math.round(n).toLocaleString('en-US');
@@ -644,9 +667,14 @@ const PH = () => ALL_PHASES.filter(p => !p.prog && (p.scope === 'all' || scopeVa
   .map(p => ({...p, w: num(({mobilise:'wMob',design:'wDes',build:'wBld',uat:'wUat',change:'wChg'})[p.k]) || p.w}));
 const PROG = () => ALL_PHASES.filter(p => p.prog)
   .map(p => ({...p, w: num(({vendor:'wVen',contract:'wCon'})[p.k]) || p.w}));
-// Compressed relative to the old model: on a lean 7-week track the spread
-// between a clearance and a B2G country is proportionally much smaller.
-const CXF = {3:1.0, 2:0.75, 1:0.6, 0:0};
+// Duration multiplier per complexity. A simple 4-corner connection is a
+// genuinely lighter build than a clearance integration, but on a lean
+// 7-week track the spread is proportionally small — hence 0.7 rather
+// than something dramatic. No-mandate countries take the same effort as
+// a simple one (0.7): with nothing to comply with, what remains IS a
+// straightforward connection. They differ from simple countries only in
+// having no deadline, which is handled in buildGantt(), not here.
+const CXF = {2:1.0, 1:0.7, 0:0.7};
 const addW = (d,w) => { const x = new Date(d.getTime()); x.setDate(x.getDate() + Math.round(w*7)); return x; };
 const D = s => new Date(s + 'T00:00:00Z');
 const isoD = d => d.toISOString().slice(0,10);
@@ -655,12 +683,25 @@ const NOW = new Date();
 function buildGantt(sel, erp, pace){
   const host = document.getElementById('gantt');
   const erpF = 1 + Math.min((erp-1)*0.12, 0.6); // gentler: a lean track scales less with system count
+  // Dated countries drive the back-planned waves. No-mandate countries
+  // have no deadline by definition, so they are pulled out here and given
+  // their own discretionary wave below (Dan, 12 Aug 2026: "Include
+  // countries with no mandate in the same phase because there is no
+  // mandate go-live date to track therefore it can start anytime").
   const dated = sel.filter(c => c[5] && c[4] > 0);
-  if(!dated.length){
+  const undated = sel.filter(c => !(c[5] && c[4] > 0));
+  if(!dated.length && undated.length){
+    document.getElementById('ganttHead').innerHTML = '<div class="note">None of your selected jurisdictions has a future dated deadline, so there is no back-planned wave to draw. What follows is discretionary work you can schedule whenever you have capacity.</div>';
+  }
+  if(!dated.length && !undated.length){
     document.getElementById('ganttHead').innerHTML = '<div class="note">No selected jurisdiction has both a future dated deadline and a mandate to build for, so there is no delivery timeline to plot. Jurisdictions already in force still need remediation — see the table below.</div>';
     host.innerHTML = ''; document.getElementById('ganttLegend').innerHTML = ''; return null;
   }
-  const maxCx = Math.max(...dated.map(c=>c[4]));
+  // Guarded: a selection of nothing but no-mandate jurisdictions is a
+  // legitimate state now that they get their own band, and Math.max of an
+  // empty spread is -Infinity, which would silently poison every duration
+  // downstream as NaN.
+  const maxCx = dated.length ? Math.max(...dated.map(c=>c[4])) : 1;
   const progPhases = PROG().map(p => ({...p, weeks: Math.max(2, Math.round(p.w * CXF[maxCx] * pace))}));
   const progWeeks = progPhases.reduce((a,p)=>a+p.weeks,0);
 
@@ -710,16 +751,29 @@ function buildGantt(sel, erp, pace){
     waveRows.forEach(r => rows.push({...r, slipDays, risk, waveKey: dl}));
   });
 
-  const progEnd = new Date(Math.min(...rows.map(r=>r.start.getTime())));
-  const progBegin = addW(progEnd, -progWeeks);
+  // Same guard, for the same reason: with no dated rows there is nothing
+  // to back-plan from, so the axis runs from today across the longest
+  // discretionary track instead.
+  const longestUndated = undated.length ? Math.max(...undated.map(c => durOf(c).total)) : 0;
+  const progEnd = rows.length ? new Date(Math.min(...rows.map(r=>r.start.getTime()))) : addW(NOW, progWeeks);
+  const progBegin = rows.length ? addW(progEnd, -progWeeks) : new Date(NOW.getTime());
   const t0 = new Date(Math.min(progBegin.getTime(), NOW.getTime()));
-  const t1 = new Date(Math.max(...rows.map(r=>r.golive.getTime())));
+  const t1 = rows.length
+    ? new Date(Math.max(...rows.map(r=>r.golive.getTime())))
+    : addW(NOW, progWeeks + longestUndated + 2);
   const pad = (t1-t0)*0.03;
   const X0 = t0.getTime()-pad, X1 = t1.getTime()+pad;
 
-  const L = 168, R = 116, W = 1000, RH = 24, GAP = 4, HEAD = 34;
+  // L is the left gutter: country name at x=0, meta label right-anchored at
+  // L-10. Widened from 168 because "United Kingdom · EU · SIMPLE · L1" and
+  // "Czech Republic · EU · DISCRETIONARY" ran into each other (caught on
+  // screenshot review, not by any assertion — nothing errors when two SVG
+  // text nodes overlap, it just becomes unreadable). Long names are also
+  // truncated, with the full name kept in a <title> for hover.
+  const L = 190, R = 116, W = 1000, RH = 24, GAP = 4, HEAD = 34;
+  const shortName = n => n.length > 18 ? n.slice(0, 17) + '\u2026' : n;
   const groups = [...new Set(rows.map(r=>r.waveKey))];
-  const H = HEAD + (RH+GAP)*(rows.length + groups.length + 2) + 16;
+  const H = HEAD + (RH+GAP)*(rows.length + groups.length + 2 + (undated.length ? undated.length + 1 : 0)) + 16;
   const x = t => L + ((t - X0)/(X1 - X0))*(W - L - R);
 
   let s = \`<svg viewBox="0 0 \${W} \${H}" width="100%" style="min-width:820px;display:block" role="img" aria-label="Back-planned delivery timeline by jurisdiction">\`;
@@ -758,7 +812,7 @@ function buildGantt(sel, erp, pace){
       y += RH + GAP;
     }
     const cx = CXNAME[r.c[4]];
-    s += \`<text x="0" y="\${y+15}" fill="#f2f0e8" font-size="12">\${r.c[0]}</text>\`;
+    s += \`<text x="0" y="\${y+15}" fill="#f2f0e8" font-size="12">\${shortName(r.c[0])}<title>\${r.c[0]}</title></text>\`;
     s += \`<text x="\${L-10}" y="\${y+15}" fill="#93a3c0" font-family="'IBM Plex Mono',monospace" font-size="9" text-anchor="end">\${REGSHORT[r.c[2]]} &middot; \${cx[0].toUpperCase()}\${lanes>1?\` &middot; L\${r.lane+1}\`:''}</text>\`;
     r.segs.forEach(sg => {
       const x1 = x(sg.s.getTime()), x2 = x(sg.e.getTime());
@@ -783,6 +837,59 @@ function buildGantt(sel, erp, pace){
     }
     y += RH + GAP;
   });
+
+  // ---- discretionary wave: selected jurisdictions with no mandate ----
+  // Dan, 12 Aug 2026: "Include countries with no mandate in the same phase
+  // because there is no mandate go-live date to track therefore it can
+  // start anytime." So they get one shared band, drawn from today
+  // forwards rather than back-planned, with NO go-live diamond and no
+  // slip calculation — there is no date to be late against, and drawing
+  // a deadline marker on a country that has no deadline would be the
+  // single most misleading thing this chart could do.
+  if(undated.length){
+    // Header says NO FIXED DEADLINE, not NO MANDATE. This band holds two
+    // different populations and calling them all "no mandate" was wrong:
+    // countries with no obligation at all, AND countries whose mandate is
+    // already fully in force with nothing further dated. Both share the
+    // property Dan actually gave as the reason — there is no go-live date
+    // to back-plan from — but only one of them is optional. Caught on
+    // screenshot review when Portugal and Ecuador, both live clearance
+    // regimes, appeared under a "NO MANDATE" heading.
+    const anyOverdue = undated.some(c => c[3] === 'i');
+    s += \`<text x="0" y="\${y+15}" font-family="'IBM Plex Mono',monospace" font-size="9.5" letter-spacing="1"><tspan fill="#8d9bb5">NO FIXED DEADLINE</tspan><tspan fill="#93a3c0" letter-spacing="0"> &middot; \${undated.length} jurisdiction\${undated.length===1?'':'s'} &middot; \${anyOverdue ? 'already in force, or startable any time' : 'start any time'} once contracting completes</tspan></text>\`;
+    y += RH + GAP;
+    // NO COUNTRY TRACK MAY BEGIN BEFORE PROCUREMENT COMPLETES.
+    // Dan, 12 Aug 2026: "all implementation phases need to start after the
+    // contracting phase has complete." The dated waves already satisfy
+    // this by construction — the programme bar is drawn backwards from the
+    // earliest country start, so implementation begins exactly where
+    // contracting ends. The discretionary band did not: it started at
+    // today, which is before the platform exists. You cannot mobilise a
+    // country onto a vendor you have not signed.
+    //
+    // Clamped to NOW as well, because when a wave is already late progEnd
+    // sits in the past and no work can start there either.
+    const discStart = Math.max(progEnd.getTime(), NOW.getTime());
+    undated.forEach(c => {
+      const {phases, total} = durOf(c);
+      let t = discStart;
+      s += \`<text x="0" y="\${y+15}" fill="#8d9bb5" font-size="12">\${shortName(c[0])}<title>\${c[0]}</title></text>\`;
+      // An already-in-force jurisdiction is not "start any time" — you are
+      // late, and saying otherwise would be the comfortable lie rather than
+      // the useful one.
+      const meta = c[3] === 'i' ? 'IN FORCE' : 'ANY TIME';
+      s += \`<text x="\${L-10}" y="\${y+15}" fill="\${c[3]==='i' ? '#c98a3a' : '#6b7a95'}" font-family="'IBM Plex Mono',monospace" font-size="9" text-anchor="end">\${meta}</text>\`;
+      phases.forEach(pz => {
+        const st = new Date(t), en = addW(st, pz.weeks);
+        const x1 = x(st.getTime()), x2 = x(en.getTime());
+        s += \`<rect x="\${x1+1}" y="\${y+4}" width="\${Math.max(2,x2-x1-2)}" height="\${RH-8}" rx="3" fill="\${pz.c}" opacity="0.5"><title>\${c[0]} — \${pz.n}\\n\${pz.weeks} weeks. Indicative placement only: there is no fixed deadline, so this can move — but it cannot start before contracting completes.</title></rect>\`;
+        t = en.getTime();
+      });
+      s += \`<text x="\${x(t)+6}" y="\${y+16}" fill="#6b7a95" font-family="'IBM Plex Mono',monospace" font-size="9.5">\${total}w</text>\`;
+      y += RH + GAP;
+    });
+  }
+
   // today marker
   const nx = x(NOW.getTime());
   if(nx > L && nx < W-R){
@@ -793,7 +900,11 @@ function buildGantt(sel, erp, pace){
   host.innerHTML = s;
 
   const late = waveMeta.filter(w=>w.risk==='critical').length, soon = waveMeta.filter(w=>w.risk==='warning').length;
-  const typicalTrack = Math.round(waveMeta.reduce((a,w)=>a+w.elapsed,0)/waveMeta.length);
+  const typicalTrack = waveMeta.length ? Math.round(waveMeta.reduce((a,w)=>a+w.elapsed,0)/waveMeta.length) : 0;
+  // With no dated waves there is no risk verdict to give and no critical
+  // path to name, so the head note written above stands rather than being
+  // overwritten with a reassurance about zero waves.
+  if(!waveMeta.length){ document.getElementById('ganttLegend').innerHTML = ''; return rows; }
   const critPath = progWeeks > typicalTrack
     ? \`<div class="note"><strong>Procurement is your critical path, not delivery.</strong> Vendor selection and contracting run \${progWeeks} weeks against a typical wave of \${typicalTrack} weeks elapsed &mdash; so the date that actually moves everything is when you start procurement, not when a country team mobilises. Shortening the country build saves little; shortening procurement moves every deadline.</div>\`
     : '';
@@ -869,13 +980,23 @@ function build(){
   const l1 = saving + savingAR + errSave;
 
   // --- complexity / waves
-  const complex = sel.filter(c=>c[4]===3), moderate = sel.filter(c=>c[4]===2);
-  const light = sel.filter(c=>c[4]===1), watch = sel.filter(c=>c[4]===0);
+  const complex = sel.filter(c=>c[4]===2), simple = sel.filter(c=>c[4]===1);
+  const watch = sel.filter(c=>c[4]===0);
   const dated = sel.filter(c=>c[5]).sort((a,b)=>a[5]<b[5]?-1:1);
-  const integrations = complex.length*erp + moderate.length*Math.max(1,Math.round(erp*0.5));
+  // Every country you build for counts once per ERP system. The old model
+  // counted clearance countries at full rate and "reporting" countries at
+  // HALF — a fudge that stood in for "reporting is a bit easier" without
+  // anyone claiming to know by how much, and which drove the entire
+  // one-off figure. The difference in effort now lives in the RATE
+  // instead, which is both easier to defend and easier to override with a
+  // real quote. No-mandate countries are costed at the simple rate: with
+  // nothing to comply with, a plain connection is all that is left.
+  const intSimple  = (simple.length + watch.length) * erp;
+  const intComplex = complex.length * erp;
+  const integrations = intSimple + intComplex;
 
   // --- Layer 2 (modelled from assumptions only)
-  const ctcCount = complex.length + moderate.length;
+  const ctcCount = complex.length;
   const taxFteSaved = ctcCount ? Math.min(ctcCount*0.15, 3) : 0;
   const l2 = taxFteSaved * fteCost;
 
@@ -890,7 +1011,7 @@ function build(){
     <div class="note \${banked?'':'warn'}" style="margin-top:14px">\${banked
       ? \`<strong>Scope: compliance + AP process automation.</strong> Direct savings count, because your programme includes the process redesign and retraining needed to realise it &mdash; and the timeline below carries a process-change phase per country to match. \`
       : \`<strong>Scope: compliance only.</strong> Direct savings are greyed because this programme <em>unlocks</em> \${fmt(l1)} a year without banking any of it. A mandate integration makes structured data available and removes the paper; it does not change how AP works. Switch scope above to model actually capturing it. \`}Direct savings are what AP process automation delivers; indirect savings are what the compliance regime itself delivers. A mandate integration is an IT workstream that unlocks the first and delivers the second &mdash; worth separating in front of a board, because only one of them is non-negotiable. The two are deliberately <strong>not</strong> added together. Direct savings rest on published figures; indirect ones rest on assumptions you set, because no credible source quantifies them. A CFO will trust a smaller defended number over a larger asserted one.</div>
-    <div class="card"><p style="margin:0">Across <strong>\${sel.length}</strong> jurisdictions you have <strong>\${complex.length} clearance</strong>, <strong>\${moderate.length} reporting</strong> and <strong>\${light.length} B2G-only</strong> regimes, plus \${watch.length} to monitor. With \${erp} ERP/billing system\${erp===1?'':'s'} that is roughly <strong>\${integrations} country-system integration\${integrations===1?'':'s'}</strong>${hlp('integrations','How this is derived')} to deliver. \${dated.length?\`The nearest binding date is <strong>\${dated[0][5]}</strong> (\${dated[0][0]}).\`:'None of the selected jurisdictions has a future dated deadline on the tracker today.'} \${ev('site','Source: live tracker data')}</p></div>\`;
+    <div class="card"><p style="margin:0">Across <strong>\${sel.length}</strong> jurisdictions you have <strong>\${complex.length} complex</strong> (CTC or 5-corner) and <strong>\${simple.length} simple</strong> (4-corner exchange) regime\${simple.length===1?'':'s'}\${watch.length?\`, plus \${watch.length} with no mandate${hlp('nomandate','Why these are still in the plan')}\`:''}. With \${erp} ERP/billing system\${erp===1?'':'s'} that is roughly <strong>\${integrations} country-system integration\${integrations===1?'':'s'}</strong>${hlp('integrations','How this is derived')} to deliver. \${dated.length?\`The nearest binding date is <strong>\${dated[0][5]}</strong> (\${dated[0][0]}).\`:'None of the selected jurisdictions has a future dated deadline on the tracker today.'} \${ev('site','Source: live tracker data')}</p></div>\`;
 
   const pace = +document.getElementById('pace').value || 1;
   const ganttRows = buildGantt(sel, erp, pace);
@@ -898,10 +1019,11 @@ function build(){
   let w = dated.length ? \`<table><thead><tr><th>Deadline</th><th>Jurisdiction</th><th>Status</th><th>Model${hlp('complexity','How complexity is assigned')}</th><th class="num">Integrations${hlp('integrations','How this is derived')}</th><th>Why</th></tr></thead><tbody>\` : '';
   dated.forEach(c=>{
     const st=STATUS[c[3]], cx=CXNAME[c[4]];
-    const ints = c[4]===3?erp : c[4]===2?Math.max(1,Math.round(erp*0.5)) : 1;
+    const ints = erp;   // every country you build for, once per ERP system
     w += \`<tr><td><strong>\${c[5]}</strong></td><td>\${c[0]}</td><td><span class="pill \${st[1]}">\${st[0]}</span></td><td><span class="pill \${cx[1]}">\${cx[0]}</span></td><td class="num">\${ints}</td><td style="font-size:12px;color:var(--muted)">\${CXNOTE[c[4]]}</td></tr>\`;
   });
   w += dated.length ? '</tbody></table>' : '<div class="note">No selected jurisdiction has a future dated deadline. Those already in force still need remediation work &mdash; see the in-force list below.</div>';
+  if(watch.length) w += \`<div class="note" style="margin-top:12px"><strong>No mandate, included by your selection (\${watch.length}):</strong> \${watch.map(c=>c[0]).join(', ')}. Costed at the simple rate and scheduled as one discretionary wave &mdash; there is no deadline to miss, so this work can start whenever you have capacity.</div>\`;
   const inforceNoDate = sel.filter(c=>c[3]==='i' && !c[5]);
   if(inforceNoDate.length) w += \`<div class="note" style="margin-top:12px"><strong>Already in force, no further dated step (\${inforceNoDate.length}):</strong> \${inforceNoDate.map(c=>c[0]).join(', ')}. These are compliance-now, not project-plan items.</div>\`;
   document.getElementById('waves').innerHTML = w;
@@ -935,20 +1057,21 @@ function build(){
     <div class="note warn" style="margin-top:12px"><strong>Why the indirect column is smaller than you would expect.</strong> The compliance case is genuinely compelling &mdash; but almost every circulating number attached to it fails verification. This model shows only what can be defended and names what cannot, which is a stronger position in front of a finance committee than a bigger number that collapses under a single question.</div>\`;
 
   // ---- investment: without a cost side this is a benefits calculator, not ROI
-  const cImpl = +document.getElementById('cImpl').value || 0;
+  const cImplS = +document.getElementById('cImplS').value || 0;
+  const cImplC = +document.getElementById('cImplC').value || 0;
   const cPlat = +document.getElementById('cPlat').value || 0;
   const cRun  = +document.getElementById('cRun').value || 0;
-  const oneOff = integrations * cImpl;
+  const oneOff = intSimple * cImplS + intComplex * cImplC;
   const annualCost = cPlat + cRun;
   const annualBenefit = (banked ? l1 : 0) + l2;
   const netAnnual = annualBenefit - annualCost;
   const paybackMonths = netAnnual > 0 ? (oneOff / netAnnual) * 12 : null;
-  const placeholders = ['cImpl','cPlat','cRun'].filter(id => String(document.getElementById(id).value) === String(DEFAULTS[id].v));
+  const placeholders = ['cImplS','cImplC','cPlat','cRun'].filter(id => String(document.getElementById(id).value) === String(DEFAULTS[id].v));
 
   document.getElementById('invest').innerHTML = \`
-    \${placeholders.length ? \`<div class="note warn"><strong>\${placeholders.length} of 3 cost inputs are still our placeholders.</strong> No analyst firm publishes credible per-country e-invoicing implementation or platform costs &mdash; we checked, and would rather say so than invent one. Put your own quotes in the assumptions panel before showing anyone the payback figure.</div>\` : ''}
+    \${placeholders.length ? \`<div class="note warn"><strong>\${placeholders.length} of 4 cost inputs are still our placeholders.</strong> No analyst firm publishes credible per-country e-invoicing implementation or platform costs &mdash; we checked, and would rather say so than invent one. Put your own quotes in the assumptions panel before showing anyone the payback figure.</div>\` : ''}
     <div class="grid g4">
-      <div class="stat"><div class="n" style="color:#e0907f">\${fmt(oneOff)}</div><div class="l">One-off &mdash; \${integrations} integration\${integrations===1?'':'s'}</div></div>
+      <div class="stat"><div class="n" style="color:#e0907f">\${fmt(oneOff)}</div><div class="l">One-off &mdash; \${intComplex} complex + \${intSimple} simple</div></div>
       <div class="stat"><div class="n" style="color:#e0907f">\${fmt(annualCost)}</div><div class="l">Annual run cost</div></div>
       <div class="stat"><div class="n" style="color:\${netAnnual>=0?'#7fd0a8':'#e0907f'}">\${fmt(netAnnual)}</div><div class="l">Net annual \${banked?'benefit':'(compliance scope)'}</div></div>
       <div class="stat"><div class="n" style="color:\${paybackMonths&&paybackMonths<=24?'#7fd0a8':'#e2b978'}">\${paybackMonths===null?'n/a':Math.round(paybackMonths)+'mo'}</div><div class="l">Payback on one-off</div></div>
