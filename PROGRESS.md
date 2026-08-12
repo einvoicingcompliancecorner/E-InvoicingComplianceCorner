@@ -7711,6 +7711,12 @@ returns 404 by design and stays that way until `ROI_PUBLIC` is flipped.
    strings are seeded in D1 and the loader exists, but the body HTML
    still carries them inline. The schema is ready; the wiring is not.
    No schema change needed to finish it.
+   *Partly addressed 12 Aug 2026:* the 19-row help layer added by
+   migration 506 IS read from D1 through `getRoiStrings()`, as are the
+   seven phase notes, so that slice is genuinely translation-ready — an
+   ES/DE/FR translation is an INSERT, not a code change. Headings,
+   labels and body copy remain inline. Only English help rows exist
+   today; other languages fall back to English per key.
 2. **No nav menu entry**, by design while hidden. When it goes public it
    needs a Resources-menu item in 4 languages and a `sitemap.xml` entry.
 3. **The integration-count formula is crude** — clearance countries x
@@ -7762,6 +7768,109 @@ dark card.
 so redeploying it too keeps the two in step, though its public
 `/roi-calculator` route still 404s by design while `ROI_PUBLIC` is
 `"false"`.
+
+
+## 12 Aug 2026 — ROI planner: an explanation behind every assumption (migration 506)
+
+Dan asked what "Contracting (once)" and "Parallel workstreams" actually
+meant. That was a fair question the page should have answered itself, and
+it generalised: *"can you include tooltip description for these and other
+assumptions, so it's clear what they mean, or how they have been
+derived."*
+
+**What was actually missing.** The benchmark inputs already carried a
+`hint` naming their SOURCE (Ardent, HMRC, ATO) plus an evidence grade. Two
+gaps sat behind that:
+
+1. **A source is not a meaning.** Knowing 9.84 comes from Ardent Partners
+   does not tell you it is multiplied by AP volume to form the baseline
+   the reduction percentage is then applied to. Anyone overriding a figure
+   deserves to know what moves when they do.
+2. **The implementation block had nothing at all.** Seven phase durations,
+   parallel workstreams and delivery pace — nine inputs driving the entire
+   wave plan — with no explanation of any kind. "Contracting (once)" is a
+   reasonable thing to be puzzled by when nothing on the page says
+   procurement is modelled at programme level and country tracks are not.
+
+**Where the text lives, and why not in the code.** Two homes, both already
+language-aware, both already loaded by the renderer, neither needing a new
+query or table:
+
+- **Phase explanations → `roi_phase_translations.note`.** That column
+  already existed, was already being SELECTed by `getRoiPhases()` with a
+  COALESCE to English, and had simply never been rendered. Three of seven
+  phases had a one-line note; four were NULL. Migration 506 replaces all
+  seven with full explanations.
+- **Everything else → the `roi` translations namespace**, under
+  `help.<inputId>` keys, which `getRoiStrings()` already loads wholesale.
+  19 new rows.
+
+The consequence worth stating: **translating the whole help layer into
+ES/DE/FR is now an INSERT, not a code change.** That was the point of
+Dan's "consider supporting translations in the future, during the design
+of the D1 tables" instruction back when these tables were designed, and
+this is the first change to actually collect on it. Until those rows
+exist, non-English readers get the English text via the per-key COALESCE
+— degradation, not breakage, and consistent with the rest of the page
+chrome (open item 1 below).
+
+**27 markers**: 24 rendered server-side into labels, 3 into results-area
+output (the derived integration count in the executive summary, and the
+Model and Integrations column headers in the wave table). A missing D1 row
+renders no marker at all rather than an empty tooltip — silence beats a
+`?` that rewards a hover with nothing.
+
+**Honesty carried into the tooltips.** Several say plainly that the figure
+is crude, a placeholder or a judgement dial: the integration-count formula
+(open item 3), the flat-capacity assumption behind parallel workstreams,
+the pace multiplier, and all three cost placeholders. A tooltip that made
+`cost_per_integration` sound researched would do more damage than no
+tooltip at all — the page's credibility rests on the reader being able to
+tell an evidenced number from an assumed one.
+
+**Three things found by testing rather than by reading the code:**
+
+1. **`title=` was never an option**, which is why this is a real tooltip.
+   Native tooltips are invisible on touch, unreachable by keyboard, and
+   cannot hold 200–650 characters. These markers are `tabindex="0"` with
+   the full text in `aria-label`, and show on `:focus` as well as
+   `:hover` — verified by keyboard.
+2. **Flipping the tooltip anchor was the wrong fix for overflow.** A
+   330px tip anchored `left:0` runs off the right edge in the fourth grid
+   column; the obvious flip to `right:0` then runs off the *left* edge on
+   a phone — browser-tested at 420px, that put **23 of 27** tips partly
+   outside the viewport, one starting at −231px. Replaced with a clamp
+   that computes an explicit offset keeping the tip inside the viewport
+   with a 12px margin. Now 0 off-screen at 1280, 900 and 420.
+3. **The `?` added ~19px to each label**, enough to wrap four of the
+   longer ones and drop their inputs out of alignment. Caught on
+   screenshot review, not by any DOM assertion — nothing was broken, it
+   just looked untidy. Fixed by reserving two lines of label height
+   inside the panel.
+
+Also: `.tip` needed explicit `font-family`, `font-weight`, `letter-spacing`
+and `text-transform` resets. These markers sit inside `<label>`, which is
+uppercase mono on this page, and a tooltip inheriting that is unreadable.
+Same class of bug as yesterday's contrast failure — *appending* a
+stylesheet only overrides what you actually declare.
+
+**Verified before shipping:** full in-memory replay clean (506 files, only
+the 4 documented pre-existing errors); 16/16 functional regressions pass
+with no JS or console errors; WCAG AA audit on the members render still 0
+failures, with all 44 tooltip bodies ≥ 13.79:1 and the worst `?` marker at
+6.25:1; `.hlp` confirmed hidden under print media so the PDF is unchanged.
+
+One regression test is worth keeping for its own sake: it asserts that
+raising parallel workstreams from 1 to 5 **cuts elapsed time (59w → 34w)
+and leaves total effort untouched (59w = 59w)**. That is exactly what the
+tooltip claims, so the claim is now pinned to the code rather than to my
+description of it.
+
+**Deploy:** migration 506, then both Workers. `members-worker` serves the
+page today; `site-worker` imports the same shared module and renders the
+public teaser, whose assumptions panel is visible even while results are
+gated — so it needs the deploy too, notwithstanding that
+`/roi-calculator` still 404s while `ROI_PUBLIC` is `"false"`.
 
 
 ## Open items / next steps

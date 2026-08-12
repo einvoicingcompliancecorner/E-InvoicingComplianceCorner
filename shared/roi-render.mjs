@@ -191,6 +191,27 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
 .ev .tip{display:none;position:absolute;left:0;bottom:calc(100% + 8px);width:320px;background:var(--paper);color:#241d10;border:1px solid var(--paper-line);border-radius:8px;padding:11px 13px;font-size:12px;line-height:1.5;z-index:40;box-shadow:0 8px 26px rgba(0,0,0,.45)}
 .ev:hover .tip,.ev:focus .tip{display:block}
 .ev .tip b{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px}
+/* Assumption help. Same tooltip machinery as .ev, a different job: .ev
+   says where a number CAME FROM, .hlp says what it MEANS and what it
+   moves. Rendered as a small circled ? so a label can carry both without
+   the row becoming a paragraph. Deliberately NOT a title= attribute —
+   those are invisible on touch, unreachable by keyboard, and cannot hold
+   the 200-600 characters these texts actually need. Note the explicit
+   font-weight / letter-spacing / text-transform resets on .tip: these sit
+   inside <label>, which is uppercase mono here, and a tooltip inheriting
+   that is unreadable. */
+.hlp{position:relative;display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;margin-left:5px;border:1px solid var(--muted);border-radius:50%;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:9.5px;font-weight:600;line-height:1;cursor:help;vertical-align:middle;letter-spacing:0;text-transform:none;flex:none}
+.hlp:hover,.hlp:focus{border-color:var(--soon);color:var(--soon);outline:none}
+.hlp .tip{display:none;position:absolute;left:0;bottom:calc(100% + 9px);width:min(330px,78vw);background:var(--paper);color:#241d10;border:1px solid var(--paper-line);border-radius:8px;padding:11px 13px;font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:12px;font-weight:400;line-height:1.55;letter-spacing:0;text-transform:none;text-align:left;white-space:normal;z-index:41;box-shadow:0 8px 26px rgba(0,0,0,.45)}
+/* The ? adds ~19px to a label, which was enough to wrap four of the longer
+   ones onto a second line and drop their inputs out of alignment with the
+   rest of the row (caught on screenshot review, not by the DOM tests —
+   nothing was broken, it just looked untidy). Reserving two lines of label
+   height inside the panel keeps every input on the same baseline whether
+   its label wraps or not. */
+#assump .grid label{min-height:36px}
+.hlp:hover .tip,.hlp:focus .tip{display:block}
+.hlp .tip b{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px}
 .tierA{border-left:4px solid var(--live)}.tierB{border-left:4px solid var(--soon)}.tierC{border-left:4px solid var(--stamp)}.tierD{border-left:4px solid var(--upcoming)}
 .tag{font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.5px;text-transform:uppercase;padding:1px 6px;border-radius:3px;border:1px solid currentColor;margin-left:6px}
 .tA{color:#7fd0a8}.tB{color:#e2b978}.tC{color:#e0907f}.tD{color:#9fb2d4}
@@ -208,6 +229,7 @@ footer{margin-top:40px;padding-top:16px;border-top:1px solid var(--line);font-si
   .card,.stat{background:#fff;border:1px solid #bbb;break-inside:avoid}
   h1,h2,h3{color:#111}.lede,.hint,th,.stat .l,footer{color:#444}
   .ev{color:#111;border-bottom:none}.ev .tip{display:none !important}
+  .hlp{display:none !important}
   table{font-size:11px}
   h2{border-bottom:1px solid #999}
 }
@@ -245,6 +267,38 @@ export function renderRoiPage({ countries, benchmarks = [], phases = [], strings
                         change: "wChg", vendor: "wVen", contract: "wCon" };
   phases.forEach((p) => { const id = PHASE_INPUT[p.key]; if (id) defaults[id] = { v: p.default_weeks }; });
 
+  // ---- assumption help ------------------------------------------------
+  // Dan, 12 Aug 2026, having asked what "Contracting (once)" and "Parallel
+  // workstreams" actually meant: "can you include tooltip description for
+  // these and other assumptions, so it's clear what they mean, or how they
+  // have been derived."
+  //
+  // TWO DISTINCT THINGS, KEPT DISTINCT. The `hint` under a benchmark input
+  // says where the number CAME FROM (Ardent, HMRC, ATO) and pairs with an
+  // evidence grade. This says what the number MEANS and what moves when you
+  // change it. Collapsing them would have lost the evidence grading, which
+  // is the spine of the whole page.
+  //
+  // ALL TEXT COMES FROM D1, NONE FROM HERE. Phase explanations live in
+  // roi_phase_translations.note — a column that already existed, was
+  // already being SELECTed with a COALESCE to English, and had simply
+  // never been rendered. Everything else lives in the `roi` translations
+  // namespace under help.<inputId>, which getRoiStrings() already loads
+  // wholesale. So translating the entire help layer is an INSERT, not a
+  // code change. That was the point of designing these tables for
+  // translation up front, and this is the first change to collect on it.
+  //
+  // A missing row degrades to no marker at all rather than an empty
+  // tooltip — silence beats a ? that rewards a hover with nothing.
+  const helpText = { ...Object.fromEntries(Object.entries(strings)
+    .filter(([k]) => k.startsWith("help."))
+    .map(([k, v]) => [k.slice(5), v])) };
+  phases.forEach((p) => { const id = PHASE_INPUT[p.key]; if (id && p.note) helpText[id] = p.note; });
+  const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const hlp = (id, title = "How this is derived") => (helpText[id]
+    ? `<span class="hlp" tabindex="0" role="note" aria-label="${esc(title)}: ${esc(helpText[id])}">?<span class="tip"><b>${esc(title)}</b>${esc(helpText[id])}</span></span>`
+    : "");
+
   const cite = (k) => {
     const b = byKey[k];
     if (!b) return { t: "D", s: "" };
@@ -275,27 +329,27 @@ export function renderRoiPage({ countries, benchmarks = [], phases = [], strings
 <div class="card noprint">
   <div class="grid g4">
     <div>
-      <label for="volAP">Invoices received / year (AP)</label>
+      <label for="volAP">Invoices received / year (AP)${hlp("volAP","What this drives")}</label>
       <input type="number" id="volAP" value="250000" min="0" step="1000">
     </div>
     <div>
-      <label for="volAR">Invoices issued / year (AR)</label>
+      <label for="volAR">Invoices issued / year (AR)${hlp("volAR","What this drives")}</label>
       <input type="number" id="volAR" value="180000" min="0" step="1000">
       <p class="hint">What the mandates actually bite on.</p>
     </div>
     <div>
-      <label for="erp">ERP / billing integrations</label>
+      <label for="erp">ERP / billing integrations${hlp("erp","What this drives")}</label>
       <input type="number" id="erp" value="4" min="1" max="60">
     </div>
     <div>
-      <label for="cur">Currency</label>
+      <label for="cur">Currency${hlp("cur","Read this before you change it")}</label>
       <select id="cur"><option value="GBP">GBP &pound;</option><option value="EUR">EUR &euro;</option><option value="USD" selected>USD $</option></select>
     </div>
   </div>
 </div>
 
 <div class="card noprint">
-  <label for="scope">What are you modelling?</label>
+  <label for="scope">What are you modelling?${hlp("scope","What this changes")}</label>
   <select id="scope" style="max-width:460px">
     <option value="compliance" selected>Compliance only &mdash; meet the mandates (IT workstream)</option>
     <option value="both">Compliance + AP process automation &mdash; also bank the savings</option>
@@ -304,7 +358,7 @@ export function renderRoiPage({ countries, benchmarks = [], phases = [], strings
 </div>
 
 <div class="card noprint">
-  <label>Countries in scope</label>
+  <label>Countries in scope${hlp("countries","Where this data comes from")}</label>
   <p class="hint" style="margin-bottom:8px">Live mandate data for all 70 tracked jurisdictions. <button id="selEU" style="padding:3px 9px;font-size:12px">EU only</button> <button id="selMandate" style="padding:3px 9px;font-size:12px">Everywhere with a mandate</button> <button id="selNone" style="padding:3px 9px;font-size:12px">Clear</button></p>
   <label class="cbox" id="subsRow" style="align-items:center;gap:8px;padding:9px 12px;margin:0 0 10px;background:var(--ink-3);border:1px solid var(--line);border-radius:6px;font-size:13.5px">
     <input type="checkbox" id="useSubs">
@@ -326,42 +380,42 @@ export function renderRoiPage({ countries, benchmarks = [], phases = [], strings
 
     <p style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:var(--soon);margin:0 0 8px">Cost &amp; benefit</p>
     <div class="grid g4">
-      <div><label for="costNow">AP cost per invoice <span class="tag tA">A</span></label><input type="number" id="costNow" value="9.84" min="0" step="0.01"><p class="hint" id="h-costNow"></p></div>
-      <div><label for="costAR">AR cost per invoice <span class="tag tA">A</span></label><input type="number" id="costAR" value="6.50" min="0" step="0.01"><p class="hint" id="h-costAR"></p></div>
-      <div><label for="savePct">Cost reduction % <span class="tag tB">B</span></label><input type="number" id="savePct" value="60" min="0" max="95"><p class="hint" id="h-savePct"></p></div>
-      <div><label for="errCost">Rework per errored invoice <span class="tag tD">D</span></label><input type="number" id="errCost" value="45" min="0" step="1"><p class="hint" id="h-errCost"></p></div>
+      <div><label for="costNow">AP cost per invoice <span class="tag tA">A</span>${hlp("costNow","What this drives")}</label><input type="number" id="costNow" value="9.84" min="0" step="0.01"><p class="hint" id="h-costNow"></p></div>
+      <div><label for="costAR">AR cost per invoice <span class="tag tA">A</span>${hlp("costAR","What this drives")}</label><input type="number" id="costAR" value="6.50" min="0" step="0.01"><p class="hint" id="h-costAR"></p></div>
+      <div><label for="savePct">Cost reduction % <span class="tag tB">B</span>${hlp("savePct","What this drives")}</label><input type="number" id="savePct" value="60" min="0" max="95"><p class="hint" id="h-savePct"></p></div>
+      <div><label for="errCost">Rework per errored invoice <span class="tag tD">D</span>${hlp("errCost","What this drives")}</label><input type="number" id="errCost" value="45" min="0" step="1"><p class="hint" id="h-errCost"></p></div>
     </div>
     <div class="grid g4" style="margin-top:12px">
-      <div><label for="errRate">Manual error rate % <span class="tag tB">B</span></label><input type="number" id="errRate" value="10" min="0" max="100" step="0.5"><p class="hint" id="h-errRate"></p></div>
-      <div><label for="fteCost">Loaded cost / finance FTE <span class="tag tD">D</span></label><input type="number" id="fteCost" value="62000" min="0" step="1000"><p class="hint" id="h-fteCost"></p></div>
+      <div><label for="errRate">Manual error rate % <span class="tag tB">B</span>${hlp("errRate","What this drives")}</label><input type="number" id="errRate" value="10" min="0" max="100" step="0.5"><p class="hint" id="h-errRate"></p></div>
+      <div><label for="fteCost">Loaded cost / finance FTE <span class="tag tD">D</span>${hlp("fteCost","What this drives")}</label><input type="number" id="fteCost" value="62000" min="0" step="1000"><p class="hint" id="h-fteCost"></p></div>
       <div></div><div></div>
     </div>
 
     <p style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:var(--soon);margin:20px 0 8px">Investment &mdash; costs <span class="tag tD">D</span></p>
     <p class="hint" style="margin:-4px 0 8px;color:#e0907f">These are <strong>placeholders, not benchmarks</strong>. We checked: no analyst firm publishes credible per-country e-invoicing implementation or platform costs. Replace them with your own quotes &mdash; until you do, treat the payback figure as illustrative only.</p>
     <div class="grid g4">
-      <div><label for="cImpl" style="font-size:11px">Cost per integration (one-off)</label><input type="number" id="cImpl" value="20000" min="0" step="1000"><p class="hint" id="h-cImpl"></p></div>
-      <div><label for="cPlat" style="font-size:11px">Platform / network fees per year</label><input type="number" id="cPlat" value="45000" min="0" step="1000"><p class="hint" id="h-cPlat"></p></div>
-      <div><label for="cRun" style="font-size:11px">Internal run cost per year</label><input type="number" id="cRun" value="30000" min="0" step="1000"><p class="hint" id="h-cRun"></p></div>
+      <div><label for="cImpl" style="font-size:11px">Cost per integration (one-off)${hlp("cImpl","What this drives")}</label><input type="number" id="cImpl" value="20000" min="0" step="1000"><p class="hint" id="h-cImpl"></p></div>
+      <div><label for="cPlat" style="font-size:11px">Platform / network fees per year${hlp("cPlat","What this drives")}</label><input type="number" id="cPlat" value="45000" min="0" step="1000"><p class="hint" id="h-cPlat"></p></div>
+      <div><label for="cRun" style="font-size:11px">Internal run cost per year${hlp("cRun","What this drives")}</label><input type="number" id="cRun" value="30000" min="0" step="1000"><p class="hint" id="h-cRun"></p></div>
       <div></div>
     </div>
 
     <p style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:var(--soon);margin:20px 0 8px">Implementation &mdash; weeks <span class="tag tD">D</span></p>
     <div class="grid g4">
-      <div><label for="wMob" style="font-size:11px">Mobilisation</label><input type="number" id="wMob" value="2" min="0" step="0.5"></div>
-      <div><label for="wDes" style="font-size:11px">Design</label><input type="number" id="wDes" value="2" min="0" step="0.5"></div>
-      <div><label for="wBld" style="font-size:11px">Build</label><input type="number" id="wBld" value="2" min="0" step="0.5"></div>
-      <div><label for="wUat" style="font-size:11px">UAT</label><input type="number" id="wUat" value="1" min="0" step="0.5"></div>
+      <div><label for="wMob" style="font-size:11px">Mobilisation${hlp("wMob","What this phase covers")}</label><input type="number" id="wMob" value="2" min="0" step="0.5"></div>
+      <div><label for="wDes" style="font-size:11px">Design${hlp("wDes","What this phase covers")}</label><input type="number" id="wDes" value="2" min="0" step="0.5"></div>
+      <div><label for="wBld" style="font-size:11px">Build${hlp("wBld","What this phase covers")}</label><input type="number" id="wBld" value="2" min="0" step="0.5"></div>
+      <div><label for="wUat" style="font-size:11px">UAT${hlp("wUat","What this phase covers")}</label><input type="number" id="wUat" value="1" min="0" step="0.5"></div>
     </div>
     <div class="grid g4" style="margin-top:12px" id="chgRow">
-      <div><label for="wChg" style="font-size:11px">Process change &amp; training</label><input type="number" id="wChg" value="6" min="0" step="0.5"><p class="hint">AP automation scope only.</p></div>
+      <div><label for="wChg" style="font-size:11px">Process change &amp; training${hlp("wChg","What this phase covers")}</label><input type="number" id="wChg" value="6" min="0" step="0.5"><p class="hint">AP automation scope only.</p></div>
       <div></div><div></div><div></div>
     </div>
     <div class="grid g4" style="margin-top:12px">
-      <div><label for="wVen" style="font-size:11px">Vendor selection (once)</label><input type="number" id="wVen" value="8" min="0" step="1"></div>
-      <div><label for="wCon" style="font-size:11px">Contracting (once)</label><input type="number" id="wCon" value="6" min="0" step="1"></div>
-      <div><label for="lanes" style="font-size:11px">Parallel workstreams</label><input type="number" id="lanes" value="2" min="1" max="10"></div>
-      <div><label for="pace" style="font-size:11px">Delivery pace</label><select id="pace"><option value="0.75">Aggressive</option><option value="1" selected>Typical</option><option value="1.3">Conservative</option></select></div>
+      <div><label for="wVen" style="font-size:11px">Vendor selection (once)${hlp("wVen","What “once” means here")}</label><input type="number" id="wVen" value="8" min="0" step="1"></div>
+      <div><label for="wCon" style="font-size:11px">Contracting (once)${hlp("wCon","What “once” means here")}</label><input type="number" id="wCon" value="6" min="0" step="1"></div>
+      <div><label for="lanes" style="font-size:11px">Parallel workstreams${hlp("lanes","What this means")}</label><input type="number" id="lanes" value="2" min="1" max="10"></div>
+      <div><label for="pace" style="font-size:11px">Delivery pace${hlp("pace","What this means")}</label><select id="pace"><option value="0.75">Aggressive</option><option value="1" selected>Typical</option><option value="1.3">Conservative</option></select></div>
     </div>
     <p class="hint" style="margin-top:10px">Durations are per country. Countries sharing a go-live date form a wave, so a five-country wave costs roughly five country-tracks of effort, divided across however many workstreams you can genuinely run at once.</p>
   </div>
@@ -427,6 +481,37 @@ const fmt1 = n => SYM[cur] + (Math.round(n*10)/10).toLocaleString('en-US');
 // C = single anecdote, not a benchmark     D = your assumption, nothing claimed
 const EV = __ROI_EVIDENCE__;
 const ev = (key, txt) => \`<span class="ev" tabindex="0">\${txt}<span class="tip"><b>Evidence grade \${EV[key].t}</b>\${EV[key].s}</span></span>\`;
+
+// ---- tooltip edge handling -------------------------------------------
+// A 330px tooltip anchored left:0 runs off the RIGHT edge whenever its
+// marker sits in the fourth column of a g4 grid or a right-aligned table
+// header — which is exactly where several of these live. The obvious fix,
+// flipping the anchor to right:0, then runs off the LEFT edge on a phone:
+// browser-tested at 420px, a naive flip put 23 of 27 tips partly outside
+// the viewport, some starting at -231px. So CLAMP rather than flip —
+// compute the offset that keeps the tip inside the viewport with a 12px
+// margin and set it explicitly.
+//
+// Measure the MARKER, not the tip: the marker is always visible, so
+// getBoundingClientRect is meaningful, whereas the tip is display:none
+// until hover and would measure zero. Delegated from document so it also
+// covers markers that build() renders later, and re-run on every hover
+// because column widths move with the viewport.
+function fitTip(el){
+  const t = el.querySelector('.tip'); if(!t) return;
+  const r = el.getBoundingClientRect();
+  const w = Math.min(330, window.innerWidth * 0.78);
+  const M = 12;
+  const want = r.left;
+  const max = Math.max(M, window.innerWidth - w - M);
+  const clamped = Math.min(Math.max(want, M), max);
+  t.style.right = 'auto';
+  t.style.left = Math.round(clamped - r.left) + 'px';
+}
+['mouseover','focusin'].forEach(evt => document.addEventListener(evt, e => {
+  const el = e.target.closest && e.target.closest('.hlp, .ev');
+  if(el) fitTip(el);
+}));
 
 // ---- assumption defaults: one registry, so hints, reset and overrides
 // ---- can never drift apart from the values actually used in the maths.
@@ -775,12 +860,12 @@ function build(){
     <div class="note \${banked?'':'warn'}" style="margin-top:14px">\${banked
       ? \`<strong>Scope: compliance + AP process automation.</strong> Direct savings count, because your programme includes the process redesign and retraining needed to realise it &mdash; and the timeline below carries a process-change phase per country to match. \`
       : \`<strong>Scope: compliance only.</strong> Direct savings are greyed because this programme <em>unlocks</em> \${fmt(l1)} a year without banking any of it. A mandate integration makes structured data available and removes the paper; it does not change how AP works. Switch scope above to model actually capturing it. \`}Direct savings are what AP process automation delivers; indirect savings are what the compliance regime itself delivers. A mandate integration is an IT workstream that unlocks the first and delivers the second &mdash; worth separating in front of a board, because only one of them is non-negotiable. The two are deliberately <strong>not</strong> added together. Direct savings rest on published figures; indirect ones rest on assumptions you set, because no credible source quantifies them. A CFO will trust a smaller defended number over a larger asserted one.</div>
-    <div class="card"><p style="margin:0">Across <strong>\${sel.length}</strong> jurisdictions you have <strong>\${complex.length} clearance</strong>, <strong>\${moderate.length} reporting</strong> and <strong>\${light.length} B2G-only</strong> regimes, plus \${watch.length} to monitor. With \${erp} ERP/billing system\${erp===1?'':'s'} that is roughly <strong>\${integrations} country-system integration\${integrations===1?'':'s'}</strong> to deliver. \${dated.length?\`The nearest binding date is <strong>\${dated[0][5]}</strong> (\${dated[0][0]}).\`:'None of the selected jurisdictions has a future dated deadline on the tracker today.'} \${ev('site','Source: live tracker data')}</p></div>\`;
+    <div class="card"><p style="margin:0">Across <strong>\${sel.length}</strong> jurisdictions you have <strong>\${complex.length} clearance</strong>, <strong>\${moderate.length} reporting</strong> and <strong>\${light.length} B2G-only</strong> regimes, plus \${watch.length} to monitor. With \${erp} ERP/billing system\${erp===1?'':'s'} that is roughly <strong>\${integrations} country-system integration\${integrations===1?'':'s'}</strong>${hlp('integrations','How this is derived')} to deliver. \${dated.length?\`The nearest binding date is <strong>\${dated[0][5]}</strong> (\${dated[0][0]}).\`:'None of the selected jurisdictions has a future dated deadline on the tracker today.'} \${ev('site','Source: live tracker data')}</p></div>\`;
 
   const pace = +document.getElementById('pace').value || 1;
   const ganttRows = buildGantt(sel, erp, pace);
   document.getElementById('waveIntro').innerHTML = \`Back-planned from each jurisdiction's actual published deadline \${ev('site','dates from the tracker')}, through phase durations you control \${ev('durations','practitioner estimates')}. Grouped by region, then by go-live date. Vendor selection and contracting are modelled once at programme level rather than repeated per country.\`;
-  let w = dated.length ? \`<table><thead><tr><th>Deadline</th><th>Jurisdiction</th><th>Status</th><th>Model</th><th class="num">Integrations</th><th>Why</th></tr></thead><tbody>\` : '';
+  let w = dated.length ? \`<table><thead><tr><th>Deadline</th><th>Jurisdiction</th><th>Status</th><th>Model${hlp('complexity','How complexity is assigned')}</th><th class="num">Integrations${hlp('integrations','How this is derived')}</th><th>Why</th></tr></thead><tbody>\` : '';
   dated.forEach(c=>{
     const st=STATUS[c[3]], cx=CXNAME[c[4]];
     const ints = c[4]===3?erp : c[4]===2?Math.max(1,Math.round(erp*0.5)) : 1;
