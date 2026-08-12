@@ -36,11 +36,15 @@
 // map says a country is "upcoming", this must agree.
 export async function getRoiCountries(db, todayISO) {
   const today = todayISO || new Date().toISOString().slice(0, 10);
+  // The European Union row is fetched deliberately and filtered out at the
+  // end. It is not a jurisdiction anyone implements in, but it carries the
+  // EU-wide milestones — and since migration 504 de-duplicated the eleven
+  // per-country ViDA 2030 entries off the board, the surviving EU entry is
+  // the ONLY on-tracker record of an obligation that binds 27 countries.
   const { results: countries } = await db.prepare(`
-    SELECT c.id, c.name_en, c.code, c.region, c.slug, c.roi_complexity,
+    SELECT c.id, c.name_en, c.code, c.region, c.slug, c.roi_complexity, c.eu_member,
            (SELECT COUNT(*) FROM deep_dive_penalty_rows p WHERE p.country_id = c.id) AS penalty_rows
       FROM countries c
-     WHERE c.code <> 'EU'
      ORDER BY c.name_en
   `).all();
   const { results: ms } = await db.prepare(
@@ -53,8 +57,28 @@ export async function getRoiCountries(db, todayISO) {
     byCountry.get(m.country_id).push(m);
   }
 
+  // EU-WIDE OBLIGATIONS APPLY TO MEMBER STATES.
+  //
+  // This reads the EU row's own live milestones rather than readmitting
+  // the eleven off-board per-country copies, for two reasons. First, it
+  // mirrors the reasoning behind the de-duplication itself: ViDA is one
+  // EU fact, not eleven national ones, which is precisely why only the
+  // European Union entry was kept on the board. Second, `on_tracker = 0`
+  // turns out to do two unrelated jobs — of 159 off-tracker B2B
+  // milestones, 148 are genuinely superseded or interim and only 11 are
+  // true-but-deduplicated. A blanket readmission was modelled and moved
+  // the United Kingdom's deadline from April 2029 to November 2026.
+  //
+  // Nothing here changes any milestone row, the Arrivals board, or the
+  // deep-dive timelines — which never lost these entries in the first
+  // place, since getMilestonesForCountry() applies no on_tracker filter.
+  const euRow = countries.find((c) => c.code === "EU");
+  const euWide = euRow
+    ? (byCountry.get(euRow.id) || []).filter((m) => m.mandate_scope === "b2b" && m.date > today)
+    : [];
+
   const REG = { "Europe": "Eu", "Middle East / Africa": "Mi", "Asia-Pacific": "As", "Americas": "Am" };
-  return countries.map((c) => {
+  return countries.filter((c) => c.code !== "EU").map((c) => {
     const mine = byCountry.get(c.id) || [];
     let status = "t";
     if (mine.some((m) => m.mandate_scope === "b2b" && m.date <= today)) status = "i";
@@ -86,8 +110,28 @@ export async function getRoiCountries(db, todayISO) {
     const CXVAL = { complex: 2, simple: 1, none: 0 };
     const cx = CXVAL[c.roi_complexity] ?? 0;
 
-    const future = mine.filter((m) => m.date > today && m.mandate_scope === "b2b").map((m) => m.date).sort();
-    return [c.name_en, c.code, REG[c.region] || "Eu", status, cx, future[0] || "", c.penalty_rows || 0, c.slug];
+    const national = mine.filter((m) => m.date > today && m.mandate_scope === "b2b").map((m) => m.date).sort();
+    const euDates = c.eu_member ? euWide.map((m) => m.date).sort() : [];
+    const future = [...national, ...euDates].sort();
+
+    // Status stays NATIONAL. An EU-wide deadline changes what you have to
+    // deliver and when, but calling Austria "Upcoming" on a page where the
+    // tracker board calls it "B2G only" would put two of this site's own
+    // surfaces in visible disagreement. The EU-derived deadline is flagged
+    // instead, and labelled EU-WIDE wherever it drives a row.
+    const euDriven = future.length > 0 && !national.length && euDates.length > 0 ? 1 : 0;
+
+    // A member state whose ONLY obligation is ViDA still has real work to
+    // do, so it is lifted to at least 'simple' — otherwise a complexity of
+    // 'none' would drop it out of the wave plan entirely and the 2030 date
+    // would be silently ignored, which is the exact defect this fixes.
+    // Deliberately NOT promoted to 'complex': ViDA's digital reporting
+    // arguably meets the "authority receives invoice-level data" test, but
+    // that is a judgement about a 2030 regime rather than today's, and it
+    // is flagged for Dan rather than decided here.
+    const cxEff = (euDriven && cx === 0) ? 1 : cx;
+
+    return [c.name_en, c.code, REG[c.region] || "Eu", status, cxEff, future[0] || "", c.penalty_rows || 0, c.slug, euDriven];
   });
 }
 
@@ -813,7 +857,11 @@ function buildGantt(sel, erp, pace){
     }
     const cx = CXNAME[r.c[4]];
     s += \`<text x="0" y="\${y+15}" fill="#f2f0e8" font-size="12">\${shortName(r.c[0])}<title>\${r.c[0]}</title></text>\`;
-    s += \`<text x="\${L-10}" y="\${y+15}" fill="#93a3c0" font-family="'IBM Plex Mono',monospace" font-size="9" text-anchor="end">\${REGSHORT[r.c[2]]} &middot; \${cx[0].toUpperCase()}\${lanes>1?\` &middot; L\${r.lane+1}\`:''}</text>\`;
+    // c[8] marks a deadline that comes from EU law rather than the
+    // country's own legislature. Worth saying on the row: a reader who
+    // knows Austria has no national mandate needs to see why it is in a
+    // 2030 wave, or they will assume the plan is wrong.
+    s += \`<text x="\${L-10}" y="\${y+15}" fill="\${r.c[8] ? '#c98a3a' : '#93a3c0'}" font-family="'IBM Plex Mono',monospace" font-size="9" text-anchor="end">\${r.c[8] ? 'EU-WIDE' : REGSHORT[r.c[2]]} &middot; \${cx[0].toUpperCase()}\${lanes>1?\` &middot; L\${r.lane+1}\`:''}</text>\`;
     r.segs.forEach(sg => {
       const x1 = x(sg.s.getTime()), x2 = x(sg.e.getTime());
       s += \`<rect x="\${x1+1}" y="\${y+4}" width="\${Math.max(2,x2-x1-2)}" height="\${RH-8}" rx="3" fill="\${sg.c}"><title>\${r.c[0]} — \${sg.n}\\n\${sg.weeks} weeks: \${isoD(sg.s)} to \${isoD(sg.e)}</title></rect>\`;
@@ -1015,12 +1063,16 @@ function build(){
 
   const pace = +document.getElementById('pace').value || 1;
   const ganttRows = buildGantt(sel, erp, pace);
-  document.getElementById('waveIntro').innerHTML = \`Back-planned from each jurisdiction's actual published deadline \${ev('site','dates from the tracker')}, through phase durations you control \${ev('durations','practitioner estimates')}. Grouped by region, then by go-live date. Vendor selection and contracting are modelled once at programme level rather than repeated per country.\`;
+  const euDrivenCount = sel.filter(c=>c[8]).length;
+  document.getElementById('waveIntro').innerHTML = \`Back-planned from each jurisdiction's actual published deadline \${ev('site','dates from the tracker')}, through phase durations you control \${ev('durations','practitioner estimates')}. Grouped by region, then by go-live date. Vendor selection and contracting are modelled once at programme level rather than repeated per country.\${euDrivenCount?\` <strong>\${euDrivenCount} of your jurisdictions are here on an EU-wide obligation</strong> rather than a national mandate${hlp('vida','Where these deadlines come from')}.\`:''}\`;
   let w = dated.length ? \`<table><thead><tr><th>Deadline</th><th>Jurisdiction</th><th>Status</th><th>Model${hlp('complexity','How complexity is assigned')}</th><th class="num">Integrations${hlp('integrations','How this is derived')}</th><th>Why</th></tr></thead><tbody>\` : '';
   dated.forEach(c=>{
     const st=STATUS[c[3]], cx=CXNAME[c[4]];
     const ints = erp;   // every country you build for, once per ERP system
-    w += \`<tr><td><strong>\${c[5]}</strong></td><td>\${c[0]}</td><td><span class="pill \${st[1]}">\${st[0]}</span></td><td><span class="pill \${cx[1]}">\${cx[0]}</span></td><td class="num">\${ints}</td><td style="font-size:12px;color:var(--muted)">\${CXNOTE[c[4]]}</td></tr>\`;
+    const why = c[8]
+      ? \`<strong style="color:#e2b978">EU-wide obligation.</strong> Council Directive (EU) 2025/516 binds this member state from 1 July 2030 regardless of whether it legislates a domestic mandate. \${CXNOTE[c[4]]}\`
+      : CXNOTE[c[4]];
+    w += \`<tr><td><strong>\${c[5]}</strong>\${c[8]?' <span class="pill p-upcoming">EU</span>':''}</td><td>\${c[0]}</td><td><span class="pill \${st[1]}">\${st[0]}</span></td><td><span class="pill \${cx[1]}">\${cx[0]}</span></td><td class="num">\${ints}</td><td style="font-size:12px;color:var(--muted)">\${why}</td></tr>\`;
   });
   w += dated.length ? '</tbody></table>' : '<div class="note">No selected jurisdiction has a future dated deadline. Those already in force still need remediation work &mdash; see the in-force list below.</div>';
   if(watch.length) w += \`<div class="note" style="margin-top:12px"><strong>No mandate, included by your selection (\${watch.length}):</strong> \${watch.map(c=>c[0]).join(', ')}. Costed at the simple rate and scheduled as one discretionary wave &mdash; there is no deadline to miss, so this work can start whenever you have capacity.</div>\`;

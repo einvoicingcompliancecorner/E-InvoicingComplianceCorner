@@ -111,8 +111,8 @@ non-negotiable, now automated rather than remembered.
 
 1. **Country row + name translations**
    ```sql
-   INSERT INTO countries (code, name_en, region, slug, in_picker, roi_complexity)
-     VALUES ('XX', 'CountryName', 'Region', 'country-slug', 1, 'complex');
+   INSERT INTO countries (code, name_en, region, slug, in_picker, roi_complexity, eu_member)
+     VALUES ('XX', 'CountryName', 'Region', 'country-slug', 1, 'complex', 0);
    INSERT INTO country_translations (country_id, lang, display_name)
      SELECT id, 'en', 'CountryName' FROM countries WHERE code = 'XX';
    -- + es / de / fr rows (real translations, not the English name
@@ -167,6 +167,34 @@ non-negotiable, now automated rather than remembered.
    The general rule this bought: **a value that drives a
    customer-facing number must be stored, not inferred from prose.**
    Improving the regex would only have moved the next failure.
+
+   ### `eu_member` — set it for EU-27 countries only
+
+   Added 12 Aug 2026 (migration 512), and it means exactly one thing:
+   **does ViDA bind this country?** `1` for the 27 member states, `0`
+   for everyone else. Note `region = 'Europe'` is *not* a substitute —
+   that bucket also holds Norway, the United Kingdom, Iceland, Serbia
+   and Turkey, none of which ViDA binds.
+
+   The ROI planner reads it to apply the European Union row's
+   `eu-drr` milestone (1 July 2030) to member states, so a member state
+   with no national mandate still gets a 2030 wave, marked EU-WIDE. It
+   exists because migration 504 de-duplicated eleven per-country ViDA
+   entries off the Arrivals board — correctly — and the planner, which
+   filters on `on_tracker` and excludes the EU row, could then see
+   neither copy. Seven member states silently lost their only future
+   deadline.
+
+   **Read that failure carefully, because it will happen again in a
+   different shape.** `on_tracker` is a *presentation* flag meaning
+   "show this on the board". The planner was using it to answer "is
+   this a live obligation". Those were the same question until 504.
+   Of 159 off-tracker B2B milestones today, 148 are genuinely
+   superseded or interim and 11 are true facts removed only for
+   readability — so **you cannot treat `on_tracker = 0` as "not real".**
+
+   Dan also expects `eu_member` to be useful for ViDA go-live content,
+   which is a better reason to have it than the bug that prompted it.
 
 2. **Milestones + translations** (tracker board and deep-dive timeline)
    - `milestones`: `id` (short country prefix, e.g. `qa-b2b-wave1`),
@@ -460,7 +488,7 @@ check for it.**
 | The Map | `mandate_scope`, `on_tracker`, `region` | Visibly — wrong colour or missing shape |
 | Deep dive | all `deep_dive_*` tables, ignores `on_tracker` | Visibly — empty sections |
 | Subscribe / preferences | `in_picker`, `country_translations` | Visibly — missing from the list |
-| **ROI & Wave Planner** | **`roi_complexity`, `mandate_scope`, `date`, `on_tracker`, `region`, penalty rows** | **Silently — wrong cost, or absent from the plan with no error** |
+| **ROI & Wave Planner** | **`roi_complexity`, `eu_member`, `mandate_scope`, `date`, `on_tracker`, `region`, penalty rows** | **Silently — wrong cost, or absent from the plan with no error** |
 
 The planner is the one that fails quietly, which is exactly why it needs
 the explicit Phase 5 check above. Note `region` too: `getRoiCountries()`

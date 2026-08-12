@@ -8342,7 +8342,60 @@ failures with 28 tooltips all above 4.5:1; the all-no-mandate selection
 exercised (previously a `Math.max` of an empty spread, now guarded);
 Gantt inspected on screenshot at each step.
 
-**Deploy:** migrations 510 and 511, then both Workers.
+### ViDA resolved too (migration 512), after Dan corrected the framing
+
+Dan asked whether readmitting the ViDA rows would put them back on the
+deep-dive pages but not the tracker. **The answer is that they never left
+the deep-dive pages** — `getMilestonesForCountry()` applies no
+`on_tracker` filter at all, by design, and all eleven still render on
+their country timelines today. Verified in the data. The de-duplication
+he asked for stands untouched.
+
+That reframed the problem usefully. Nothing needed readmitting; the
+planner was reading `on_tracker` — a *presentation* flag meaning "show
+this on the board" — as if it answered "is this a live obligation". Those
+were the same question until 504, which is exactly where they diverged.
+
+**The fix uses the entry Dan deliberately kept.** The European Union row
+still carries `eu-drr` at 2030-07-01 with `on_tracker = 1`. Migration 512
+adds `countries.eu_member`, and `getRoiCountries()` now applies that one
+EU-wide milestone to the 27 member states — mirroring the reasoning
+behind the de-duplication itself, since ViDA is one EU fact rather than
+eleven national ones. **No milestone row changes, the board is untouched,
+the deep dives are untouched.**
+
+Design decisions worth recording:
+
+- **Status stays national.** An EU deadline changes what you deliver and
+  when, but calling Austria "Upcoming" where the tracker says "B2G only"
+  would put two of this site's own surfaces in visible disagreement. The
+  deadline is flagged **EU-WIDE** in amber on the Gantt row and in the
+  wave table instead, with a tooltip explaining Directive (EU) 2025/516.
+- **A member state whose only obligation is ViDA is lifted to at least
+  `simple`.** Otherwise `roi_complexity = 'none'` would drop it out of
+  the plan and the 2030 date would be silently ignored — the exact defect
+  being fixed. Deliberately *not* promoted to `complex`: ViDA's digital
+  reporting arguably meets the "authority receives invoice-level data"
+  test, but that is a judgement about a 2030 regime rather than today's.
+  **Flagged for Dan, not decided.**
+- `eu_member` is a column rather than an array in the Worker because
+  `region = 'Europe'` cannot do the job — Norway, the UK, Iceland, Serbia
+  and Turkey sit in that bucket — and because hardcoding it would repeat
+  the mistake 510 was written to correct.
+
+Verified on the seven countries that had lost their deadline: all now
+appear in a single 1 July 2030 wave, marked EU-WIDE, with Czech Republic
+lifted from `none` to `simple` so it appears at all.
+
+**The same mistake, twice in one day.** `hlp()` is a server-side helper
+and `ev()` is a runtime one, and they look identical at the call site —
+so an escaped `\${hlp(...)}` becomes a runtime reference to a function
+that does not exist and kills the whole calculate step. It happened on
+the no-mandate marker and again on the ViDA marker. Now checked by
+assertion in the build step rather than by a browser round-trip: no
+escaped `hlp(`, and `ev(` must stay escaped.
+
+**Deploy:** migrations 510, 511 and 512, then both Workers.
 
 ## Open items / next steps
 
