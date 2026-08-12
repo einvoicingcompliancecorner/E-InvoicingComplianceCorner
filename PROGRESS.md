@@ -8452,6 +8452,79 @@ Both surfaces now say one thing.
 
 **Deploy:** both Workers. No migration.
 
+## 12 Aug 2026 — ROI planner: the currency selector never converted anything (migration 513)
+
+Dan: *"switching currency for the calculation seems to not alter the
+underlying calculations... this changes the currency, but never applies
+the FX rate change to the displayed field. Therefore the calculator yields
+the same outcome regardless of whether you select USD, GBP or EUR."*
+
+Correct, and worse than a missing feature. Selecting GBP relabelled
+Ardent's **USD 9.84 as GBP 9.84** — roughly a **35% overstatement** of the
+baseline, presented as a sourced benchmark with the citation still
+attached, and inherited by every figure downstream. The tool did not fail;
+it produced a confident wrong answer.
+
+### The part worth sitting with
+
+**We knew, and documented it instead of fixing it.** Migration 506's
+`help.cur` tooltip said, in as many words: *"Display currency only. No FX
+conversion is applied anywhere in this model. Enter your benchmark values
+in the same currency you pick here, or the totals will be wrong in a way
+nothing on the page will warn you about."*
+
+Every clause of that was true. It was also a warning behind a hover, on a
+dropdown most people will change without reading anything, describing a
+defect rather than preventing one. **Writing that sentence should have
+been the moment it got fixed.** A disclosure is not a mitigation when the
+failure is silent and the output looks authoritative.
+
+### The fix
+
+- **Migration 513** adds `roi_fx_rates` (currency, `usd_per_unit`,
+  `as_of`, `source_url`) and `roi_benchmarks.base_currency`.
+- Rates are **stored and dated, not live**: spot 11 Aug 2026, GBP 1.3511
+  and EUR 1.1543, both from the same source and date so the pair is
+  internally consistent. A model built on Grade D placeholders cannot use
+  the precision a live feed buys, and would pay for it with a network
+  dependency and a number that changes between two runs of the same
+  scenario. Updating is a migration with a source, like every other number
+  here.
+- **`base_currency` matters even though all eight money benchmarks are
+  USD-native today.** It exists so the first EUR- or GBP-native benchmark
+  someone adds converts instead of being silently mislabelled — which is
+  the exact bug being fixed, one level up.
+- `renderRoiPage()` normalises every money default to USD server-side, so
+  the client only ever converts one way and there is a single place where
+  a currency assumption lives.
+- The rate and its date are **shown under the selector**, not buried.
+
+### Rounding drift, found by testing the round trip
+
+The first implementation re-read the displayed values on every switch and
+re-anchored from them. USD → GBP → EUR → USD returned **9.83** for a 9.84
+benchmark, and 62,001 for 62,000. Small, and corrosive: a figure that
+moves when you toggle a dropdown twice undermines confidence in every
+other number on the page.
+
+Fixed by re-anchoring the canonical USD value **only when the user
+actually edits a field**, at that moment, in the currency they typed in.
+Untouched inputs keep their exact canonical value forever; edited ones are
+captured once — which is the user's intent — and never re-rounded.
+Verified USD → GBP → EUR → GBP → USD returns exactly 9.84 and 62,000, and
+that an override of 12.00 USD becomes 8.88 GBP and comes back as 12.
+
+Also made a test assertion less brittle: the tooltip-marker count is now a
+floor rather than an exact number, because two markers are conditional on
+the country selection and the exact count told us nothing when it moved.
+
+**Verified:** replay clean (513 files); conversion changes every
+downstream figure ($1,145,400 → £847,580 → €991,940); no drift on repeated
+switching; overrides survive in real terms; Reset restores correctly;
+16/16 regressions; 0 AA failures.
+
+**Deploy:** migration 513, then both Workers.
+
 ## Open items / next steps
 
 ### Real open work

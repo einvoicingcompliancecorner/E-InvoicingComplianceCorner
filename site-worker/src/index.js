@@ -50,6 +50,7 @@ import {
   getRoiBenchmarks,
   getRoiPhases,
   getRoiStrings,
+  getRoiFxRates,
   renderRoiPage,
   ROI_STYLE,
 } from "../../shared/roi-render.mjs";
@@ -759,11 +760,12 @@ async function renderRoiCalculatorPage(request, env) {
       : (pickBestSupportedLanguage(request.headers.get("Accept-Language")) || "en");
   }
 
-  const [countries, benchmarks, phases, strings] = await Promise.all([
+  const [countries, benchmarks, phases, strings, fx] = await Promise.all([
     getRoiCountries(env.eicc_content),
     getRoiBenchmarks(env.eicc_content, lang),
     getRoiPhases(env.eicc_content, lang),
     getRoiStrings(env.eicc_content, lang),
+    getRoiFxRates(env.eicc_content),
   ]);
 
   const { body, script } = renderRoiPage({
@@ -771,6 +773,7 @@ async function renderRoiCalculatorPage(request, env) {
     benchmarks,
     phases,
     strings,
+    fx,
     locked: true,          // anonymous: results behind the gate
     subscribed: [],        // no saved preferences without a session
     unlockUrl: `https://members.e-invoicingcompliancecorner.com/members/roi-calculator${lang !== "en" ? `?lang=${lang}` : ""}`,

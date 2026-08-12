@@ -28,6 +28,7 @@ import {
   getRoiBenchmarks as sharedGetRoiBenchmarks,
   getRoiPhases as sharedGetRoiPhases,
   getRoiStrings as sharedGetRoiStrings,
+  getRoiFxRates as sharedGetRoiFxRates,
   renderRoiPage as sharedRenderRoiPage,
   ROI_STYLE,
 } from "../../shared/roi-render.mjs";
@@ -1781,15 +1782,16 @@ async function handleRoiCalculator(request, env, lang) {
     console.log(`ROI calculator: could not load saved countries for ${email}: ${err && err.message || err}`);
   }
 
-  const [countries, benchmarks, phases, strings] = await Promise.all([
+  const [countries, benchmarks, phases, strings, fx] = await Promise.all([
     sharedGetRoiCountries(env.eicc_content),
     sharedGetRoiBenchmarks(env.eicc_content, lang),
     sharedGetRoiPhases(env.eicc_content, lang),
     sharedGetRoiStrings(env.eicc_content, lang),
+    sharedGetRoiFxRates(env.eicc_content),
   ]);
 
   const { body, script } = sharedRenderRoiPage({
-    countries, benchmarks, phases, strings,
+    countries, benchmarks, phases, strings, fx,
     locked: false,
     subscribed,
     signedInAs: email,

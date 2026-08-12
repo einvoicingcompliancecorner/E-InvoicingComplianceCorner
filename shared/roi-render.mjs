@@ -170,6 +170,20 @@ export async function getRoiPhases(db, lang = "en") {
   return results;
 }
 
+// FX rates, stored and dated rather than fetched live. See migration 513:
+// an ROI model built on Grade D placeholders cannot use the precision a
+// live feed buys, and pays for it with a network dependency and a number
+// that changes between two runs of the same scenario.
+export async function getRoiFxRates(db) {
+  const { results } = await db.prepare(
+    `SELECT currency, usd_per_unit, as_of, source_url FROM roi_fx_rates`
+  ).all();
+  const out = {};
+  for (const r of results) out[r.currency] = { r: r.usd_per_unit, asOf: r.as_of, src: r.source_url };
+  if (!out.USD) out.USD = { r: 1, asOf: "", src: null };
+  return out;
+}
+
 // Page chrome from the 'roi' translations namespace, same mechanism as
 // every other page. Returns a plain object keyed by the translation key.
 export async function getRoiStrings(db, lang = "en") {
@@ -297,7 +311,7 @@ footer{margin-top:40px;padding-top:16px;border-top:1px solid var(--line);font-si
 // The page. `locked` controls whether results are reachable without a
 // session; `subscribed` is the signed-in reader's own saved countries
 // (empty for anonymous visitors, which disables that control).
-export function renderRoiPage({ countries, benchmarks = [], phases = [], strings = {},
+export function renderRoiPage({ countries, benchmarks = [], phases = [], strings = {}, fx = {},
                                 locked = true, subscribed = [], unlockUrl = "", signedInAs = "" }) {
   // Benchmarks, phases and citations are injected from D1 rather than
   // hardcoded here. This is what makes the tool translation-ready without
@@ -306,8 +320,23 @@ export function renderRoiPage({ countries, benchmarks = [], phases = [], strings
   // are language-neutral — come from the parent row and stay identical
   // across languages. Getting that split right is why these went into D1.
   const byKey = Object.fromEntries(benchmarks.map((b) => [b.key, b]));
-  const val = (k, fb) => (byKey[k] && byKey[k].default_value != null ? byKey[k].default_value : fb);
   const hintOf = (k) => (byKey[k] && byKey[k].hint) || "";
+
+  // EVERY MONEY DEFAULT LEAVES HERE IN USD, whatever it is stored in.
+  // A benchmark has a native currency that has nothing to do with what
+  // the reader wants to see: Ardent publishes in USD, and a future
+  // EUR-native benchmark must not be handed to the client as though it
+  // were dollars. Normalising once, server-side, means the client only
+  // ever converts in one direction and there is exactly one place where
+  // a currency assumption lives.
+  const FX_RATES = { USD: 1, ...Object.fromEntries(Object.entries(fx).map(([k, v]) => [k, v.r])) };
+  const val = (k, fb) => {
+    const b = byKey[k];
+    if (!b || b.default_value == null) return fb;
+    if (b.unit !== "currency") return b.default_value;
+    const rate = FX_RATES[b.base_currency || "USD"] || 1;
+    return b.default_value * rate;   // -> USD
+  };
 
   // This registry holds ASSUMPTIONS ONLY — the benchmark, cost and
   // duration figures behind "Reset all to defaults". The three footprint
@@ -432,8 +461,9 @@ export function renderRoiPage({ countries, benchmarks = [], phases = [], strings
       <input type="number" id="erp" value="1" min="1" max="60">
     </div>
     <div>
-      <label for="cur">Currency${hlp("cur","Read this before you change it")}</label>
+      <label for="cur">Currency${hlp("cur","What this changes")}${hlp("fx","Where the rate comes from")}</label>
       <select id="cur"><option value="GBP">GBP &pound;</option><option value="EUR">EUR &euro;</option><option value="USD" selected>USD $</option></select>
+      <p class="hint" id="fxNote"></p>
     </div>
   </div>
 </div>
@@ -570,6 +600,26 @@ const CXNOTE = {2:'CTC or 5-corner: the tax authority is a party to the transact
   0:'No mandate to build for. Included only because you selected it — there is no deadline, so this work can start whenever you have capacity.'};
 const SYM = {GBP:'£', EUR:'€', USD:'$'};
 let cur='USD';
+
+// ---- currency conversion ------------------------------------------------
+// Until 12 Aug 2026 the currency selector changed the SYMBOL and nothing
+// else, so picking GBP relabelled Ardent's USD 9.84 as GBP 9.84 and
+// overstated a sterling business case by about a third — with the citation
+// still attached. Dan found it.
+//
+// Every money default arrives from the server already normalised to USD
+// (see renderRoiPage), so USD is the canonical unit here and conversion
+// only ever runs one way. Two canonical maps are kept in USD rather than
+// converting the displayed values in place: round-tripping 62,000 through
+// GBP and back loses a pound each time, and a figure that drifts when you
+// toggle a dropdown destroys confidence in everything else on the page.
+const FX = __ROI_FX__;
+const rateOf = c => (FX[c] && FX[c].r) || 1;
+const CUR_INPUTS = ['costNow','costAR','errCost','fteCost','cImplS','cImplC','cPlat','cRun'];
+// Per-invoice figures need pennies; five-figure ones do not, and showing
+// 45,888.53 for a placeholder implies a precision nobody has.
+const roundCur = v => v >= 1000 ? Math.round(v) : Math.round(v*100)/100;
+const usdDefault = {}, usdCurrent = {};
 const fmt = n => SYM[cur] + Math.round(n).toLocaleString('en-US');
 const fmt1 = n => SYM[cur] + (Math.round(n*10)/10).toLocaleString('en-US');
 
@@ -633,9 +683,60 @@ document.getElementById('assump').addEventListener('toggle', e => {
 });
 document.getElementById('resetDefaults').onclick = () => {
   Object.entries(DEFAULTS).forEach(([id,d]) => { const el = document.getElementById(id); if(el) el.value = d.v; });
+  CUR_INPUTS.forEach(id => { usdCurrent[id] = usdDefault[id]; });   // re-anchor the canon too
+  dirtyCur.clear();
   markOverridden(); syncScope(); if(unlocked) showResults();
 };
 document.getElementById('assump').addEventListener('input', markOverridden);
+
+// ---- currency: convert the values, not just the symbol ------------------
+// Seed the canon from the server's USD-normalised defaults. DEFAULTS[id].v
+// is mutated on every switch so that "Reset all to defaults" restores the
+// right currency and markOverridden() compares like with like — otherwise
+// switching to GBP would flag all eight inputs as user overrides.
+CUR_INPUTS.forEach(id => {
+  if(DEFAULTS[id] == null) return;
+  usdDefault[id] = +DEFAULTS[id].v;
+  usdCurrent[id] = +DEFAULTS[id].v;
+});
+
+// Re-anchor the canon ONLY when the user actually edits a field, and do it
+// at that moment in the currency they typed in. Re-reading every displayed
+// value on each currency switch instead compounds the rounding: USD ->
+// GBP -> EUR -> USD returned 9.83 for a 9.84 benchmark, and a figure that
+// drifts when you toggle a dropdown twice undermines confidence in every
+// other number on the page. Untouched inputs keep their exact canonical
+// value forever; edited ones are captured once, which is the user's
+// intent, and never re-rounded afterwards.
+const dirtyCur = new Set();
+document.getElementById('assump').addEventListener('input', (e) => {
+  const id = e.target && e.target.id;
+  if(!CUR_INPUTS.includes(id)) return;
+  dirtyCur.add(id);
+  usdCurrent[id] = (+e.target.value || 0) * rateOf(cur);
+});
+function applyCurrency(next){
+  const r = rateOf(next);
+  CUR_INPUTS.forEach(id => {
+    const el = document.getElementById(id); if(!el) return;
+    el.value = roundCur(usdCurrent[id] / r);
+    if(DEFAULTS[id]) DEFAULTS[id].v = roundCur(usdDefault[id] / r);
+  });
+  cur = next;
+  const note = document.getElementById('fxNote');
+  if(note){
+    const f = FX[next];
+    note.innerHTML = next === 'USD' || !f
+      ? 'Benchmark defaults are published in US dollars.'
+      : \`Converted at 1 \${next} = \${f.r} USD\${f.asOf ? ', spot ' + f.asOf : ''}. \${ev('yours','Use your own treasury rate for anything you will sign')}\`;
+  }
+  markOverridden();
+}
+document.getElementById('cur').addEventListener('change', (e) => {
+  applyCurrency(e.target.value);
+  if(unlocked) showResults();
+});
+applyCurrency(document.getElementById('cur').value);
 
 // ---- country picker --------------------------------------------------
 const list = document.getElementById('countryList');
@@ -1146,6 +1247,7 @@ function build(){
     .replace("__ROI_UNLOCKED__", locked ? "false" : "true")
     .replace("__ROI_DEFAULTS__", JSON.stringify(defaults))
     .replace("__ROI_EVIDENCE__", JSON.stringify(evidence))
-    .replace("__ROI_PHASES__", JSON.stringify(chartPhases));
+    .replace("__ROI_PHASES__", JSON.stringify(chartPhases))
+    .replace("__ROI_FX__", JSON.stringify(fx && Object.keys(fx).length ? fx : { USD: { r: 1, asOf: "", src: null } }));
   return { body, script };
 }
