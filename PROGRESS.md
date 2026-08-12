@@ -7986,7 +7986,13 @@ until you saw the sheet concatenated ahead of it.
 Reset restores byte-identical values; 16/16 functional regressions with no
 JS errors; Gantt inspected on screenshot.
 
-**Deploy:** migration 507, then both Workers, together.
+**Deployed and confirmed by Dan, 12 Aug 2026** — migration 507 applied
+and both Workers redeployed together, as the coupling required.
+
+That closes a four-change day on the ROI planner, all confirmed live:
+the contrast fix, the 27-tooltip help layer (506), the revised opening
+footprint of 100k AP / 50k AR / 1 ERP, and these durations (507) with
+D1 made authoritative for every opening value.
 
 ## Open items / next steps
 
