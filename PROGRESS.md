@@ -8395,7 +8395,26 @@ the no-mandate marker and again on the ViDA marker. Now checked by
 assertion in the build step rather than by a browser round-trip: no
 escaped `hlp(`, and `ev(` must stay escaped.
 
-**Deploy:** migrations 510, 511 and 512, then both Workers.
+**Deployed and confirmed by Dan, 12 Aug 2026** — migrations 510, 511 and
+512 applied and both Workers redeployed. Both live defects are closed: the
+nine mis-scored countries now carry stored complexity, and the seven that
+had lost their only deadline are back in a 1 July 2030 wave marked
+EU-WIDE.
+
+**Three judgement calls left open for Dan, each a one-line change:**
+
+1. **Should ViDA promote a member state to `complex`?** Directive (EU)
+   2025/516 mandates digital reporting, so by the project's own dividing
+   line — does the tax authority receive invoice-level data — the answer is
+   arguably yes. Today those countries are lifted only to `simple`, which
+   is enough to get them into the plan. Deliberately not decided here
+   because it is a judgement about a 2030 regime rather than today's.
+2. **Ten complexity assignments are genuinely arguable**: Bulgaria, Czech
+   Republic, Denmark, Japan, Latvia, Lithuania, Portugal, Singapore,
+   Slovenia and Uruguay. Each is a one-line UPDATE.
+3. **The Ardent benchmark citations** still omit the fielding period, and a
+   second Ardent 2025 edition exists with different numbers. Offered on
+   12 Aug and not yet taken up.
 
 ## Open items / next steps
 
