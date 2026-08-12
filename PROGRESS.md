@@ -7866,11 +7866,20 @@ and leaves total effort untouched (59w = 59w)**. That is exactly what the
 tooltip claims, so the claim is now pinned to the code rather than to my
 description of it.
 
-**Deploy:** migration 506, then both Workers. `members-worker` serves the
-page today; `site-worker` imports the same shared module and renders the
-public teaser, whose assumptions panel is visible even while results are
-gated — so it needs the deploy too, notwithstanding that
-`/roi-calculator` still 404s while `ROI_PUBLIC` is `"false"`.
+**Deployed and confirmed by Dan, 12 Aug 2026** — migration 506 applied
+and both Workers redeployed. `site-worker` was included because it
+imports the same shared module and renders the public teaser, whose
+assumptions panel is visible even while results are gated;
+`/roi-calculator` itself still 404s while `ROI_PUBLIC` is `"false"`.
+
+**How to tell at a glance whether the D1 half landed**, if this is ever
+in doubt again: the markers are rendered only where a D1 row exists, so
+**missing `?` markers mean the migration did not apply**, not that the
+code is stale. A deployed Worker with an unapplied 506 shows the panel
+exactly as it looked before — no markers, no errors, nothing in the
+logs. That silent-degradation choice is deliberate (better than a `?`
+that rewards a hover with nothing) but it does mean the absence of
+markers is the diagnostic to look for.
 
 
 ## Open items / next steps
