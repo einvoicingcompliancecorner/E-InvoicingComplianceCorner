@@ -8096,7 +8096,9 @@ hub and is **pre-existing site chrome, not from this change**: the
 Dan rather than changed here, since it is a brand colour on every insights
 page.
 
-**Deploy:** migration 508, then site-worker.
+**Deployed and confirmed by Dan, 12 Aug 2026**, together with migration
+509 and the analyst section below. Both whitepapers are now live in the
+Insights hub, and the sitemap declares all four URLs.
 
 ## 12 Aug 2026 — ROI evidence whitepaper: the analyst and consultancy section (migration 509)
 
@@ -8188,7 +8190,16 @@ overstate what their sources say cannot overstate what its sources say.
 the replayed DB with the new dek; the ATO wording, Deloitte AU attribution,
 Hackett figures and the Ardent Pagero PDF all fetched and quoted directly.
 
-**Deploy:** migrations 508 and 509, then site-worker.
+**Deployed and confirmed by Dan, 12 Aug 2026** — both migrations applied
+and site-worker redeployed.
+
+**Left open, deliberately, for Dan to decide:** the `ap_cost_per_invoice`,
+`cycle_time_days` and `exception_rate` citations still say "Ardent
+Partners, The State of ePayables 2025" without the fielding period. The
+research above establishes that a second Ardent 2025 edition exists with
+materially different numbers, so the citation is accurate but not
+sufficient — a reader who finds the Pagero edition has no way to tell which
+wave ours came from. A one-migration fix, offered and not yet taken up.
 
 ## Open items / next steps
 
