@@ -7882,6 +7882,41 @@ that rewards a hover with nothing) but it does mean the absence of
 markers is the diagnostic to look for.
 
 
+## 12 Aug 2026 — ROI planner: opening footprint values changed
+
+Dan: "can you set the defaults to 100,000 ap invoices, 50,000 ar invoices,
+1 ERP system when launching the page." Done — `volAP` 250,000 → 100,000,
+`volAR` 180,000 → 50,000, `erp` 4 → 1.
+
+A better opening position than the old one. The previous values implied a
+large multi-ERP enterprise; 100k/50k on a single system is closer to the
+mid-market finance team this site's readers actually work in, and it makes
+the first screen someone sees feel like a starting point to adjust rather
+than a scenario to argue with.
+
+**Why these three are not in the DEFAULTS registry**, and should stay out
+of it: that registry drives "Reset all to defaults" and the "Your value /
+default was…" annotations, and it holds *our estimates*. The footprint
+figures are the visitor's own data. A Reset that silently wiped volumes
+someone had just typed would be a bug wearing a button, and "your value
+differs from our default" is meaningless for a number we were never
+claiming to know. They carry their opening values as plain HTML
+attributes; a comment at the registry now says so, because the omission
+looks like an oversight otherwise.
+
+Verified: opening values read back 100000 / 50000 / 1; Reset leaves all
+three untouched; 16/16 functional regressions pass; AA audit still 0
+failures. Sense-checked the arithmetic by hand — 100,000 × $9.84 × 60% =
+$590,400 AP, 50,000 × $6.50 × 60% = $195,000 AR, 10,000 errored × $45 ×
+80% = $360,000, totalling the $1,145,400 the page reports.
+
+Note the knock-on, which is correct rather than a problem: with 1 ERP the
+default 8-country selection yields 3 integrations rather than 12, so the
+one-off cost drops to $60,000 and payback on a compliance-only scope still
+reads "n/a" — the net annual figure is negative by design in that scope.
+
+**Deploy:** both Workers. No migration.
+
 ## Open items / next steps
 
 ### Real open work

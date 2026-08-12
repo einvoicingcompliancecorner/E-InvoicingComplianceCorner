@@ -250,6 +250,16 @@ export function renderRoiPage({ countries, benchmarks = [], phases = [], strings
   const val = (k, fb) => (byKey[k] && byKey[k].default_value != null ? byKey[k].default_value : fb);
   const hintOf = (k) => (byKey[k] && byKey[k].hint) || "";
 
+  // This registry holds ASSUMPTIONS ONLY — the benchmark, cost and
+  // duration figures behind "Reset all to defaults". The three footprint
+  // inputs (volAP, volAR, erp) carry their opening values as plain HTML
+  // attributes and are deliberately NOT registered here: they are the
+  // visitor's own data, not our estimates, and a Reset that silently wiped
+  // the volumes someone had just typed in would be a bug wearing a
+  // button. Same reason they get no "Your value / default was…"
+  // annotation — there is no default to have departed from.
+  // Opening values set to 100k AP / 50k AR / 1 ERP at Dan's request,
+  // 12 Aug 2026.
   const defaults = {
     costNow: { v: val("ap_cost_per_invoice", 9.84), h: hintOf("ap_cost_per_invoice") },
     costAR:  { v: val("ar_cost_per_invoice", 6.5),  h: hintOf("ar_cost_per_invoice") },
@@ -330,16 +340,16 @@ export function renderRoiPage({ countries, benchmarks = [], phases = [], strings
   <div class="grid g4">
     <div>
       <label for="volAP">Invoices received / year (AP)${hlp("volAP","What this drives")}</label>
-      <input type="number" id="volAP" value="250000" min="0" step="1000">
+      <input type="number" id="volAP" value="100000" min="0" step="1000">
     </div>
     <div>
       <label for="volAR">Invoices issued / year (AR)${hlp("volAR","What this drives")}</label>
-      <input type="number" id="volAR" value="180000" min="0" step="1000">
+      <input type="number" id="volAR" value="50000" min="0" step="1000">
       <p class="hint">What the mandates actually bite on.</p>
     </div>
     <div>
       <label for="erp">ERP / billing integrations${hlp("erp","What this drives")}</label>
-      <input type="number" id="erp" value="4" min="1" max="60">
+      <input type="number" id="erp" value="1" min="1" max="60">
     </div>
     <div>
       <label for="cur">Currency${hlp("cur","Read this before you change it")}</label>
