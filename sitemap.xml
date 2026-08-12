@@ -197,5 +197,39 @@
   </url>
   <!-- Individual pieces (https://e-invoicingcompliancecorner.com/insights/<slug>)
        get their own <url> entry here as each one is published, same
-       by-hand convention as the country entries above. -->
+       by-hand convention as the country entries above.
+
+       Backfilled 12 Aug 2026. The convention above was written when the
+       hub was built but never actually followed, so BOTH whitepapers were
+       missing when the second one was published; the CTC report had been
+       unlisted here since 7 Aug. Nothing was broken and nothing errored,
+       the pages were simply left to be discovered by crawl rather than
+       declared. Each piece gets two entries: the /insights/[slug] page,
+       which is the canonical, translated, D1-rendered one, and the static
+       document itself, which is what the "Read the whitepaper" CTA and the
+       tracker's pop-out actually load. The document gets the lower
+       priority of the pair because the /insights page is canonical.
+
+       Note for the next person: an XML comment may not contain a double
+       hyphen, which is why this block reads the way it does. -->
+  <url>
+    <loc>https://e-invoicingcompliancecorner.com/insights/ctc-rollouts-compared</loc>
+    <lastmod>2026-08-07</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://e-invoicingcompliancecorner.com/whitepaper-ctc-rollouts-compared.html</loc>
+    <lastmod>2026-08-07</lastmod>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://e-invoicingcompliancecorner.com/insights/einvoicing-roi-evidence</loc>
+    <lastmod>2026-08-12</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://e-invoicingcompliancecorner.com/whitepaper-einvoicing-roi-evidence.html</loc>
+    <lastmod>2026-08-12</lastmod>
+    <priority>0.6</priority>
+  </url>
 </urlset>

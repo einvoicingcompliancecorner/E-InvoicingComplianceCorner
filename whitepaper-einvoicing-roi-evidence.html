@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>What E-Invoicing Actually Saves — The Published Evidence for Buyers and Suppliers</title>
+<link rel="canonical" href="https://e-invoicingcompliancecorner.com/whitepaper-einvoicing-roi-evidence.html">
+<meta name="description" content="A source-by-source audit of the published evidence for e-invoicing savings on the buyer (AP) and supplier (AR) side, from countries that have already implemented mandates. Every headline figure traced to its origin, graded, and — where it does not survive the trace — said so.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://e-invoicingcompliancecorner.com/whitepaper-einvoicing-roi-evidence.html">
+<meta property="og:title" content="What E-Invoicing Actually Saves — The Published Evidence for Buyers and Suppliers">
+<meta property="og:description" content="Every headline e-invoicing savings figure, traced to its origin and graded. The buyer-side evidence base is almost empty — and the numbers filling the gap do not survive being chased.">
+<meta name="twitter:card" content="summary">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0f1a2b; --ink-2:#152238; --ink-3:#1c2c48; --line:#2b3c5a;
+    --paper:#efe9db; --paper-2:#e4dcc6; --paper-line:#c9bd9e;
+    --text-lo:#f2f0e8; --muted:#93a3c0;
+    --stamp:#b5432f; --stamp-dim:#7c3628;
+    --live:#3f7d5c; --live-dim:#274a38;
+    --soon:#c98a3a; --soon-dim:#6e4c22;
+    --upcoming:#6b7a95; --upcoming-dim:#3a4864;
+    --radius:10px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{background:var(--ink); color:var(--text-lo); font-family:'IBM Plex Sans',sans-serif; line-height:1.55;}
+  .display{font-family:'Big Shoulders Display',sans-serif; font-weight:800;}
+  .mono{font-family:'IBM Plex Mono',monospace;}
+  a{color:inherit;}
+  .wrap{max-width:1040px; margin:0 auto; padding:0 5vw 60px;}
+  .back-link{display:inline-flex; align-items:center; gap:6px; margin:24px 0 0; font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:var(--muted); text-decoration:none;}
+  .back-link:hover{color:var(--soon);}
+  .page-head{
+    display:flex; flex-wrap:wrap; gap:18px; align-items:flex-start; justify-content:space-between;
+    padding:18px 0 26px; border-bottom:1px solid var(--line); margin-bottom:28px;
+  }
+  .eyebrow{font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.16em; text-transform:uppercase; color:var(--soon); margin:0 0 4px;}
+  .page-title{font-size:clamp(28px,4.5vw,42px); margin:0; text-transform:uppercase; line-height:0.95;}
+  .page-sub{font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--muted); margin-top:8px; max-width:680px; line-height:1.6;}
+  .meta{font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--muted); text-align:right;}
+
+  .stat-strip{display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:1px; background:var(--line); border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; margin-bottom:36px;}
+  .stat-strip .stat{background:var(--ink-2); padding:16px 18px;}
+  .stat-strip .stat .num{font-family:'Big Shoulders Display',sans-serif; font-weight:800; font-size:22px; line-height:1.15;}
+  .stat-strip .stat .lbl{font-size:10.8px; color:var(--muted); text-transform:uppercase; letter-spacing:0.07em; margin-top:5px;}
+
+  .section{margin-bottom:44px;}
+  .section-head{display:flex; align-items:baseline; gap:12px; margin-bottom:18px;}
+  .section-head h2{font-size:22px; margin:0; text-transform:uppercase;}
+  .section-head .num{font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--soon);}
+  .section-intro{color:var(--muted); font-size:13.8px; max-width:760px; margin:-8px 0 20px;}
+  .prose{max-width:820px; font-size:13.8px; color:var(--text-lo);}
+  .prose p{margin:0 0 14px;}
+  .prose .aside{color:var(--muted); font-size:12.8px; border-left:2px solid var(--soon-dim); padding-left:12px;}
+
+  .spec-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:14px;}
+  .spec-card{background:var(--paper); color:#241d10; border-radius:var(--radius); border:1px solid var(--paper-line); padding:16px 18px 18px;}
+  .spec-card h3{font-family:'IBM Plex Mono',monospace; font-size:11px; text-transform:uppercase; letter-spacing:0.09em; color:#6b5f3f; margin:0 0 10px; display:flex; align-items:center; gap:8px;}
+  .spec-card h3::after{content:""; flex:1; height:1px; background:var(--paper-line);}
+  .spec-card p.note{font-size:12.6px; color:#5a5138; margin:10px 0 0; padding-top:10px; border-top:1px dashed var(--paper-line);}
+  .spec-card p.body{font-size:13px; color:#4a4030; margin:0 0 10px; line-height:1.55;}
+
+  .compare-card{background:var(--paper); color:#241d10; border-radius:var(--radius); border:1px solid var(--paper-line); padding:8px 18px; margin-bottom:14px; overflow-x:auto;}
+  .compare-table{width:100%; border-collapse:collapse; font-size:12.6px;}
+  .compare-table th, .compare-table td{text-align:left; padding:8px 10px; border-bottom:1px dashed var(--paper-line); vertical-align:top;}
+  .compare-table th{font-family:'IBM Plex Mono',monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:0.06em; color:#6b5f3f;}
+  .compare-table td{color:#241d10;}
+  .compare-table td.c{white-space:nowrap; font-weight:600;}
+  .group-label{font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.1em; text-transform:uppercase; color:var(--soon); margin:24px 0 10px;}
+  .group-count{color:var(--muted);}
+
+  .pill{display:inline-block; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.05em; text-transform:uppercase; padding:2px 8px; border-radius:20px; white-space:nowrap;}
+  .pill.gA{background:var(--live-dim); color:#a8d5bd; border:1px solid var(--live);}
+  .pill.gB{background:var(--soon-dim); color:#ecd0a6; border:1px solid var(--soon);}
+  .pill.gC{background:var(--stamp-dim); color:#eec4ba; border:1px solid var(--stamp);}
+  .pill.gD{background:var(--upcoming-dim); color:#c3cddd; border:1px solid var(--upcoming);}
+
+  sup.ref{font-size:10px; line-height:0;}
+  sup.ref a{color:var(--soon); text-decoration:none; font-family:'IBM Plex Mono',monospace;}
+  sup.ref a:hover{text-decoration:underline;}
+  .compare-table sup.ref a, .spec-card sup.ref a{color:var(--stamp);}
+
+  .refs{font-size:12.6px; color:var(--muted); max-width:900px;}
+  .refs ol{margin:0; padding-left:26px;}
+  .refs li{margin-bottom:8px; overflow-wrap:break-word;}
+  .refs a{color:var(--soon); text-decoration:none;}
+  .refs a:hover{text-decoration:underline;}
+  .refs .src-tag{font-family:'IBM Plex Mono',monospace; font-size:10px; text-transform:uppercase; letter-spacing:0.05em; color:var(--upcoming);}
+
+  .conclusion-card{background:var(--ink-2); border:1px solid var(--line); border-radius:var(--radius); padding:16px 18px; margin-bottom:12px;}
+  .conclusion-card h4{margin:0 0 6px; font-size:14.5px;}
+  .conclusion-card h4 .cnum{font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--soon); margin-right:8px;}
+  .conclusion-card p{margin:0 0 10px; font-size:13px; color:var(--muted);}
+  .conclusion-card p:last-child{margin-bottom:0;}
+
+  .void{background:var(--ink-2); border:1px dashed var(--stamp); border-radius:var(--radius); padding:18px 20px; margin-bottom:14px;}
+  .void h4{margin:0 0 8px; font-size:14.5px; color:#eec4ba;}
+  .void ul{margin:0; padding-left:20px; font-size:13px; color:var(--muted);}
+  .void li{margin-bottom:5px;}
+
+  .trace{background:var(--ink-3); border-left:3px solid var(--stamp); border-radius:0 6px 6px 0; padding:12px 15px; margin:0 0 14px; font-size:13px; color:var(--muted);}
+  .trace strong{color:var(--text-lo);}
+  .chain{font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--soon); display:block; margin:8px 0 0; line-height:1.7;}
+
+  footer{margin:40px 0 0; padding:22px 0 10px; border-top:1px solid var(--line); color:var(--muted); font-size:12.3px;}
+  footer p{max-width:860px; margin:0 0 8px;}
+
+  @media (max-width:640px){ .page-head{flex-direction:column;} .meta{text-align:left;} }
+  html[data-framed="1"] .back-link{display:none;}
+</style>
+<script>if(window.self !== window.top) document.documentElement.setAttribute('data-framed','1');</script>
+</head>
+<body>
+<div class="wrap">
+
+  <a class="back-link" href="einvoicing-compliance-tracker.html">&larr; Back to global tracker</a>
+
+  <div class="page-head">
+    <div>
+      <p class="eyebrow">Insights &amp; Whitepapers</p>
+      <h1 class="page-title display">What E-Invoicing Actually Saves</h1>
+      <p class="page-sub">A source-by-source audit of the published evidence for buyer-side (AP) and supplier-side (AR) savings, drawn only from jurisdictions that have already implemented mandates. Every headline figure traced to its origin and graded &mdash; and where it does not survive the trace, we say so.</p>
+    </div>
+    <div class="meta">Published: 12 August 2026<br>E-Invoicing Compliance Corner</div>
+  </div>
+
+  <div class="stat-strip">
+    <div class="stat"><div class="num display">0</div><div class="lbl">Measured post-mandate AP cost studies found, in any country</div></div>
+    <div class="stat"><div class="num display">1.5%</div><div class="lbl">Of ViDA's modelled &euro;371.9bn benefit attributed to e-invoicing itself</div></div>
+    <div class="stat"><div class="num display">2016</div><div class="lbl">Vintage of the per-invoice figures most of the world still quotes</div></div>
+    <div class="stat"><div class="num display">18.9%</div><div class="lbl">Chile's VAT gap after reaching ~100% e-invoicing</div></div>
+    <div class="stat"><div class="num display">3</div><div class="lbl">Incompatible versions of Denmark's savings claim, none sourced</div></div>
+  </div>
+
+  <!-- ================= 01 THE QUESTION ================= -->
+  <div class="section">
+    <div class="section-head"><span class="num mono">01</span><h2 class="display">The question, and the short answer</h2></div>
+    <div class="prose">
+      <p><strong>The question.</strong> Countries have been running mandatory e-invoicing for a long time &mdash; Chile since 2003, Brazil since 2008, Korea since 2011, Mexico universally since 2014, Italy since 2019. Between them they have processed hundreds of billions of invoices. So: what has been <em>published</em>, with sources, about what e-invoicing actually saved the businesses involved? Specifically, separately, for <strong>buyers</strong> processing payables and <strong>suppliers</strong> issuing receivables?</p>
+      <p><strong>The short answer is that almost nothing has.</strong> After tracing every figure we could find across Latin America, Europe, Asia-Pacific, the Middle East and Africa, back to its originating document wherever the document could be obtained, the position is this:</p>
+      <p><strong>On the buyer side, we found no measured, post-implementation study of AP invoice processing cost, receipt-to-approval cycle time, exception rates, query rates or archiving effort attributable to an e-invoicing mandate &mdash; in any jurisdiction, at any level of rigour.</strong> Not a weak one. Not a single-country one. The category is empty. Every AP figure in circulation is either a projection made before implementation, a survey asking businesses to estimate, a vendor model, or an extrapolation from one of a very small number of consultancy studies.</p>
+      <p><strong>On the supplier side there is slightly more, but not much</strong>, and what exists is mostly about payment infrastructure rather than invoicing cost: Chile's electronic invoice-financing volumes, a single New Zealand agency's payment-time comparison, and one small Peruvian field study of issuing cost. Nothing on days sales outstanding. Nothing on dispute rates. Nothing on late-payment incidence &mdash; despite that being among the most common supplier-side claims made for mandates anywhere.</p>
+      <p><strong>What <em>is</em> well evidenced is the tax authority's benefit</strong>, and it is evidenced to a genuinely high standard: peer-reviewed, quasi-experimental, published in serious journals. That research is real, and Section 06 covers it. But it answers a different question from the one a CFO is asking, and it is routinely presented as though it answers theirs.</p>
+      <p class="aside">One structural observation explains most of the asymmetry, and it is worth stating before any of the detail. Every credible study of e-invoicing measures outcomes visible <em>in tax administration data</em> &mdash; declared sales, declared purchases, VAT paid. That is not an accident: it is what tax administrations hold, and tax administrations funded most of the research. Firm-side AP and AR costs are invisible in that data. The gap in the evidence base is therefore <strong>structural rather than temporary</strong>, and it will not close on its own. It would take a firm-level survey with a control group, and nobody has commissioned one.</p>
+    </div>
+  </div>
+
+  <!-- ================= 02 METHOD ================= -->
+  <div class="section">
+    <div class="section-head"><span class="num mono">02</span><h2 class="display">Method, and the grading scale</h2></div>
+    <div class="prose">
+      <p><strong>What counts as evidence here.</strong> Research was conducted in August 2026 across academic databases, tax administrations, supreme audit institutions, multilateral publishers and national ministries, in English, Spanish, Portuguese, Norwegian, Danish, Italian and Korean sources. The rule applied throughout: <em>a citation must specifically support the claim attached to it</em>. Where a secondary source quoted a figure, we went to the primary document and checked the number appeared there. Where we could not obtain the primary document, that is stated in the text rather than glossed over &mdash; and it happens more often than it should.</p>
+      <p><strong>The distinction that governs everything below.</strong> Most circulating &ldquo;e-invoicing ROI&rdquo; numbers do not measure e-invoicing. They measure <strong>full accounts-payable automation</strong> or an end-to-end procure-to-pay redesign, of which e-invoicing is one component. This matters enormously to anyone building a business case, because a mandate integration delivers the structured data; it does not by itself change how AP works. Every figure below is therefore labelled <strong>e-invoicing only</strong> or <strong>bundled</strong>, and where a source does not make the distinction clear, that itself is recorded as a finding.</p>
+    </div>
+    <div class="compare-card">
+      <table class="compare-table">
+        <tr><th>Grade</th><th>Means</th><th>How to use it</th></tr>
+        <tr><td class="c"><span class="pill gA">A</span></td><td>Measured, primary, attributable to a named organisation and a specific retrievable document</td><td>Citable as a fact, with its scope stated</td></tr>
+        <tr><td class="c"><span class="pill gB">B</span></td><td>Published by a credible body, but the number is unattributed within it, or modelled rather than measured</td><td>Usable with the modelling caveat attached</td></tr>
+        <tr><td class="c"><span class="pill gC">C</span></td><td>Single case, single organisation, small non-random sample, or perception rather than measurement</td><td>Illustrative only. Never a benchmark</td></tr>
+        <tr><td class="c"><span class="pill gD">D</span></td><td>Assertion with no traceable basis, or a vendor model presented as a finding</td><td>Do not use</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- ================= 03 BUYER SIDE ================= -->
+  <div class="section">
+    <div class="section-head"><span class="num mono">03</span><h2 class="display">The buyer side (AP): what exists</h2></div>
+    <p class="section-intro">This is the shortest section in the report, and that is the finding. Below is everything we located that speaks to buyer-side outcomes from an implemented mandate, ranked by strength. Note that not one entry is a measured before-and-after of AP processing cost.</p>
+
+    <div class="compare-card">
+      <table class="compare-table">
+        <tr><th>Finding</th><th>Country</th><th>Scope</th><th>Grade</th><th>What it actually is</th></tr>
+        <tr>
+          <td class="c">Receiver saves 3 minutes per invoice</td><td>Norway</td><td>E-invoicing only</td><td><span class="pill gB">B</span></td>
+          <td>Vista Analyse for the Norwegian Tax Directorate, 2025. <strong>Revised down</strong> from Oslo Economics' 2020 range of 3&ndash;5 minutes, explicitly because PDF and paper handling has itself become more automated since 2020. Interview- and model-derived, not measured<sup class="ref"><a href="#ref-9">[9]</a>,<a href="#ref-8">[8]</a></sup></td>
+        </tr>
+        <tr>
+          <td class="c">Receipt cost &euro;0.10&ndash;0.40 per e-invoice by firm size</td><td>EU-8</td><td>Unstructured e-invoices</td><td><span class="pill gB">B</span></td>
+          <td>DG TAXUD invoicing-rules evaluation, 2019, survey of 2,007 businesses across eight member states. The best-sampled European work of its kind &mdash; but the per-invoice figures relate to <em>unstructured</em> e-invoices (essentially PDFs), which is not what a mandate requires<sup class="ref"><a href="#ref-6">[6]</a></sup></td>
+        </tr>
+        <tr>
+          <td class="c">&euro;8.40 saved per e-invoice received</td><td>EU-27, B2G</td><td><strong>Bundled</strong></td><td><span class="pill gB">B</span></td>
+          <td>European Commission, 2024. The Commission's own wording is savings from &ldquo;<em>automating the invoicing process</em>&rdquo;, valued at &euro;46 per labour hour &mdash; a time valuation, not an observed cash saving. See Section 05 for the trace<sup class="ref"><a href="#ref-2">[2]</a></sup></td>
+        </tr>
+        <tr>
+          <td class="c">60% of a A$21.69 per-invoice saving falls to AP</td><td>Australia</td><td><strong>Bundled</strong></td><td><span class="pill gD">D</span></td>
+          <td>The 60/40 split is an <strong>ATO working assumption</strong> applied to a shared sender-and-receiver figure, not a measurement. The underlying study is a non-public 2016 consultancy report. See Section 05<sup class="ref"><a href="#ref-1">[1]</a></sup></td>
+        </tr>
+        <tr>
+          <td class="c">Invoicing is 50.6% of corporate VAT compliance cost</td><td>South Korea</td><td>Pre-mandate baseline</td><td><span class="pill gA">A</span></td>
+          <td>Kim &amp; Park (2007), via the World Bank's Korea case study. 67.6% for individual businesses. Establishes that invoicing <em>is</em> the dominant compliance cost &mdash; and that the burden is heavier on smaller firms. Says nothing about what e-invoicing then saved<sup class="ref"><a href="#ref-11">[11]</a></sup></td>
+        </tr>
+        <tr>
+          <td class="c">Invoices paid in 4.2 days vs 7.1 days</td><td>New Zealand</td><td>E-invoicing only</td><td><span class="pill gC">C</span></td>
+          <td>MBIE, one government agency, Peppol receipt into an unchanged finance system. Unusually clean scope; measurement period not stated. A case study, not a benchmark<sup class="ref"><a href="#ref-15">[15]</a></sup></td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="void">
+      <h4>What does not exist &mdash; buyer side</h4>
+      <ul>
+        <li>No measured post-mandate study of <strong>AP invoice processing cost</strong> in any of: Italy, Spain, Portugal, Denmark, Norway, Sweden, Finland, France, Poland, Hungary, Greece, Turkey, Mexico, Brazil, Chile, Peru, Colombia, Argentina, Korea, India, Singapore, Japan, China, Saudi Arabia, Egypt, Kenya or Rwanda.</li>
+        <li>No published figure anywhere for <strong>receipt-to-approval cycle time</strong> before and after a mandate.</li>
+        <li>No published figure anywhere for <strong>exception rates or supplier query rates</strong> before and after a mandate.</li>
+        <li>No published figure anywhere for <strong>audit or archiving effort</strong> attributable to e-invoicing.</li>
+        <li>No published figure anywhere for <strong>input-tax-credit reconciliation effort</strong>, despite this being one of the most heavily marketed benefits in India and the Gulf.</li>
+      </ul>
+    </div>
+
+    <div class="prose">
+      <p class="aside">The nearest thing to an authoritative statement on the buyer side is a negative one, and it comes from the European Commission's own evaluation of its own directive, nine years after mandating B2G e-invoicing across all 27 member states: <em>&ldquo;For the specific objective of lowering operating costs for economic operators, the EU intervention has not been particularly successful&hellip; The lack of data does not allow to estimate whether operating costs have increased or decreased after the Directive's implementation.&rdquo;</em><sup class="ref"><a href="#ref-3">[3]</a></sup> That is the most honest sentence written about e-invoicing ROI by anyone, and it is buried in a staff working document.</p>
+    </div>
+  </div>
+
+  <!-- ================= 04 SUPPLIER SIDE ================= -->
+  <div class="section">
+    <div class="section-head"><span class="num mono">04</span><h2 class="display">The supplier side (AR): what exists</h2></div>
+    <p class="section-intro">Thin, and weighted toward payment and financing infrastructure rather than the cost of issuing an invoice. The Chilean material is the strongest thing in this report on the commercial side &mdash; and it still does not support the causal claim usually made from it.</p>
+
+    <div class="spec-grid">
+      <div class="spec-card">
+        <h3>Chile &mdash; invoice financing</h3>
+        <p class="body">The best-documented supplier-side benefit anywhere. Chile's platform includes a public register of credit assignment, which makes an e-invoice legally assignable to a factor. The tax authority's own figures: <strong>4,310,911 documents ceded electronically in 2018</strong>, up almost 15% year on year, financing <strong>more than US$32.8 billion</strong> to firms, with <strong>over 20,000 companies accessing electronic factoring monthly</strong>.<sup class="ref"><a href="#ref-16">[16]</a></sup></p>
+        <p class="note">Two caveats that matter. <strong>No counterfactual exists</strong> &mdash; nobody has estimated how much invoice financing Chile would have had without e-invoicing, and Chile separately legislated 30-day payment terms and has a mature non-bank factoring industry. The defensible claim is &ldquo;this much financing flows through the platform&rdquo;, not &ldquo;e-invoicing caused it&rdquo;. And the most recent official release we could find is <strong>January 2019, covering 2018</strong> &mdash; anyone quoting Chilean factoring figures today is quoting an eight-year-old data point.</p>
+      </div>
+      <div class="spec-card">
+        <h3>Colombia &mdash; the corrective</h3>
+        <p class="body">Colombia built the same mechanism (RADIAN) and publishes current data. Invoices registered as negotiable title instruments to 31 December 2025: <strong>1,766,898</strong>. Against a national e-invoice volume in the billions.<sup class="ref"><a href="#ref-17">[17]</a></sup></p>
+        <p class="note">This is the single most useful check on the &ldquo;e-invoicing unlocks SME finance&rdquo; claim. Six years into Colombia's mandate, penetration of the financing register is marginal. <strong>Making an invoice electronic does not make it financeable at scale</strong> &mdash; that requires a separate registry, separate legal machinery, and separate adoption effort.</p>
+      </div>
+      <div class="spec-card">
+        <h3>Peru &mdash; issuing cost</h3>
+        <p class="body">The only Latin American per-invoice issuing-cost fieldwork we located. Cost per invoice fell from <strong>S/2.28 traditional to S/0.83 outsourced electronic</strong>, roughly a 64% reduction, decomposed into emission, distribution and storage.<sup class="ref"><a href="#ref-18">[18]</a></sup></p>
+        <p class="note"><span class="pill gC">C</span> &nbsp;111 firms in one region (San Martín), self-reported, no control group, no counterfactual. Genuinely useful as an order of magnitude for the <em>issuing</em> side only &mdash; it covers emission, distribution and storage, and nothing on the receiving side. Do not extrapolate to Peru, let alone anywhere else.</p>
+      </div>
+      <div class="spec-card">
+        <h3>Norway &mdash; sender time</h3>
+        <p class="body">Sender saves approximately <strong>one minute per invoice</strong>, mainly through issuing fewer payment reminders, plus around <strong>NOK 8 of distribution cost</strong> per paper invoice avoided. Paper invoice cost NOK 25&ndash;30; EHF e-invoice transaction around NOK 4.<sup class="ref"><a href="#ref-8">[8]</a>,<a href="#ref-9">[9]</a></sup></p>
+        <p class="note">Note the asymmetry, which is consistent across every Norwegian study since 2008: <strong>the receiver gains roughly three times what the sender does</strong>. Any business case that splits savings evenly between the two sides is not reflecting the literature.</p>
+      </div>
+      <div class="spec-card">
+        <h3>Chile &mdash; what firms themselves said</h3>
+        <p class="body">Chile's tax authority surveyed firms twice, in 2009 and 2013, on the benefits of e-invoicing. In both, <strong>cost saving ranked lowest</strong> among the benefits firms valued &mdash; behind process speed, and behind simply not having to visit a tax office to have invoices stamped.<sup class="ref"><a href="#ref-19">[19]</a></sup></p>
+        <p class="note"><span class="pill gC">C</span> &nbsp;These are 1&ndash;5 importance ratings, not measured savings, so they cannot be converted into money. But the ranking is a finding in itself, from the world's most mature e-invoicing jurisdiction: firms experienced e-invoicing primarily as <em>friction removal</em>, not as cost reduction.</p>
+      </div>
+      <div class="spec-card">
+        <h3>Sweden &mdash; the viability floor</h3>
+        <p class="body">The Swedish Companies Registration Office found that a minimum of <strong>five e-invoices per month</strong> makes e-invoicing financially viable for a business.<sup class="ref"><a href="#ref-3">[3]</a></sup></p>
+        <p class="note">Rarely quoted and unusually practical. It is the clearest published statement that below a certain volume the arithmetic does not work &mdash; which is precisely the population every mandate struggles with, and precisely the population that gets told about per-invoice savings.</p>
+      </div>
+    </div>
+
+    <div class="void">
+      <h4>What does not exist &mdash; supplier side</h4>
+      <ul>
+        <li>No study anywhere of <strong>days sales outstanding</strong> attributable to an e-invoicing mandate.</li>
+        <li>No study anywhere of <strong>late-payment incidence</strong> before and after a mandate &mdash; despite this being among the most common supplier-side claims made for mandates, and the explicit policy rationale in several jurisdictions.</li>
+        <li>No study anywhere of <strong>dispute or credit-note rates</strong>.</li>
+        <li>No <strong>causal</strong> study linking e-invoicing to invoice financing access. Chile has volumes without a counterfactual; Colombia has a counterfactual-free volume that is small.</li>
+        <li>No study linking India's GST e-invoicing to MSME invoice financing through TReDS, despite both existing at national scale.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ================= 05 TRACING THE HEADLINE NUMBERS ================= -->
+  <div class="section">
+    <div class="section-head"><span class="num mono">05</span><h2 class="display">The numbers everyone quotes, traced</h2></div>
+    <p class="section-intro">If the measured evidence is that thin, what are all those confident per-invoice figures? We chased the four most widely cited to their origin. None of them survives intact, and two of them are worse than they look.</p>
+
+    <div class="trace">
+      <strong>1 &middot; A$30.87 paper vs A$9.18 e-invoice &mdash; and Deloitte corroborating Deloitte.</strong>
+      These are the most-quoted per-invoice figures in the Asia-Pacific, published by the Australian Taxation Office. Three things the ATO's own page says, which almost never travel with the numbers. First, it is explicitly <em>&ldquo;a shared cost estimate between the invoice sender and receiver&rdquo;</em> &mdash; not an AP figure and not an AR figure. Second, the widely-repeated 60/40 AP/AR split is an ATO working assumption: <em>&ldquo;How this cost is split&hellip; can vary substantially. For the purposes of this assessment 40% of this cost is attributed to the accounts receivable process and 60% to accounts payable.&rdquo;</em> Third, the source is a Deloitte Access Economics study from <strong>2016</strong> which we could not obtain &mdash; Australian Treasury cites it in footnotes with no title, no year and no bibliography entry.<sup class="ref"><a href="#ref-1">[1]</a></sup>
+      Then the corroboration. The ATO defends the 2016 vintage by noting the figures <em>&ldquo;closely align with the findings of the 2024 APEC report&hellip; which in turn reflects similar conclusions from the 2024 European Commission study&rdquo;</em>. The APEC report was <strong>prepared by Deloitte</strong>, and attributes its per-invoice benefit &mdash; USD 14.84, split 60% AP and 40% AR, the same split &mdash; to <strong>&ldquo;Deloitte Access Economics (2024)&rdquo;</strong>.<sup class="ref"><a href="#ref-5">[5]</a></sup>
+      <span class="chain">Deloitte 2016 &rarr; cited by ATO &rarr; corroborated by APEC 2025 &rarr; authored by Deloitte &rarr; sourced to Deloitte Access Economics 2024</span>
+    </div>
+
+    <div class="trace">
+      <strong>2 &middot; &euro;5.28 issued / &euro;8.40 received &mdash; a labour-time valuation for automating the process.</strong>
+      The European Commission's figures, and the ATO's second &ldquo;corroboration&rdquo;. The Commission's own sentence is precise and rarely quoted in full: <em>&ldquo;Quantitative benefits from <strong>automating the invoicing process</strong> are estimated at around EUR 5.28 per eInvoice issued and EUR 8.4 per eInvoice received, <strong>considering the cost of labour per hour at EUR 46</strong>.&rdquo;</em> So it is a valuation of time saved at an assumed wage, for process automation &mdash; not an observed cash saving from e-invoicing.<sup class="ref"><a href="#ref-2">[2]</a></sup>
+      The underlying preparatory study exists and is catalogued (DOI 10.2873/27631), but we were unable to retrieve the file, so <strong>the derivation of 5.28 and 8.40 &mdash; the sample, the method, and whether the receiver figure assumes automated matching and posting &mdash; remains unverified by us.</strong> That matters, because these two numbers have propagated: Finland's national benefit estimate of &euro;888 million per year is built by re-multiplying them across Finnish invoice volumes.<sup class="ref"><a href="#ref-7">[7]</a></sup> Anyone treating Finland as independent corroboration of the EU figure is double-counting one unverified source.
+    </div>
+
+    <div class="trace">
+      <strong>3 &middot; &euro;25&ndash;65 per purchase-to-pay cycle &mdash; footnoted to a news website.</strong>
+      The same Commission report offers a much larger number for the bundled case, and is admirably clear that it <em>is</em> the bundled case: <em>&ldquo;Greater savings are achieved when automating the entire order-to-pay cycle, including orders, transport documents, invoices, and payment notices&hellip; resulting in benefits estimated between EUR 25 and EUR 65 per purchase-to-pay cycle.&rdquo;</em> Footnote 27, which supports it, is not a study. It is a link to an Italian technology news site's article about a Politecnico di Milano observatory report from <strong>2013</strong>.<sup class="ref"><a href="#ref-2">[2]</a>,<a href="#ref-20">[20]</a></sup>
+      This is the cleanest available illustration of the whole problem: in a single formal report to the European Parliament and Council, the <em>small</em> number sits on the invoice and the <em>large</em> number sits on the entire order-to-pay cycle &mdash; and it is the large one that gets quoted at businesses being asked to fund a mandate integration.
+    </div>
+
+    <div class="trace">
+      <strong>4 &middot; Denmark's &ldquo;DKK 100&ndash;150 million a year&rdquo; &mdash; three incompatible numbers, none sourced.</strong>
+      Denmark ran one of the world's first B2G mandates, from 2005, and a savings figure has circulated ever since. It does not survive. The earliest retrievable appearances are 2006&ndash;2007, all unsourced, and they do not agree with each other or with the version in circulation: a European Commission case study gives both <em>&ldquo;approximately EUR 94 million a year&rdquo;</em> and <em>&ldquo;about EUR 120&ndash;150 million a year&rdquo;</em> in the same document; a 2006 CORDIS article says <em>&ldquo;150 million euro and businesses 50 million euro a year&rdquo;</em>; and Norway's 2008 government working group cites Denmark as having DKK 1.5 billion of annual gains.<sup class="ref"><a href="#ref-12">[12]</a>,<a href="#ref-13">[13]</a>,<a href="#ref-14">[14]</a></sup>
+      Note also the currency: the sourced versions say <strong>EUR</strong> 120&ndash;150 million; the version most often repeated says <strong>DKK</strong> 100&ndash;150 million, which is roughly an order of magnitude smaller. And the Danish Ministry of Finance's own 2005 explainer of the programme, <em>Elektronisk fakturering &mdash; Kort &amp; Godt</em>, contains <strong>no monetary savings figure at all</strong>.<sup class="ref"><a href="#ref-14">[14]</a></sup>
+    </div>
+
+    <div class="prose">
+      <p class="aside"><strong>A note on vendor material, because it is not where you would expect.</strong> Billentis figures &mdash; the source of most European per-invoice claims &mdash; are vendor-sponsored cost models rather than measurement studies, which is well known. What is less well known is how far they have travelled into official documents. The Commission's 2010 communication on e-invoicing sourced its market-penetration figure to Billentis and its headline &euro;240 billion savings claim to a Capgemini paper. A UN regional commission distributes a cross-border e-invoicing guide whose filename literally ends <span class="mono">_billentis_0.pdf</span>. So &ldquo;traced to an official source&rdquo; is not the end of the trace: you have to check what the official source was citing.<sup class="ref"><a href="#ref-21">[21]</a>,<a href="#ref-22">[22]</a></sup></p>
+    </div>
+  </div>
+
+  <!-- ================= 06 WHAT IS WELL EVIDENCED ================= -->
+  <div class="section">
+    <div class="section-head"><span class="num mono">06</span><h2 class="display">What is well evidenced &mdash; and whose benefit it is</h2></div>
+    <p class="section-intro">The research quality here is genuinely high: peer-reviewed, quasi-experimental, published in journals that reject most of what they receive. It is also, without exception, about the money the state collects rather than the money a business saves. Both facts deserve to be stated together.</p>
+
+    <div class="compare-card">
+      <table class="compare-table">
+        <tr><th>Country</th><th>Finding</th><th>Design</th><th>Grade</th><th>Source</th></tr>
+        <tr><td class="c">Peru</td><td>Reported taxable sales +6.6&ndash;7.4%, purchases +4.5&ndash;5.6%, VAT liabilities +8.1% in year one</td><td>Difference-in-differences on staggered mandate waves, 78,000 firms, &gt;80% of domestic VAT</td><td><span class="pill gA">A</span></td><td>IMF WP/19/231; <em>Journal of Public Economics</em> 2022<sup class="ref"><a href="#ref-23">[23]</a></sup></td></tr>
+        <tr><td class="c">Peru</td><td>Spillover: unmandated small firms whose partner was mandated reported +11% sales, +17% VAT</td><td>Network analysis on the same reform</td><td><span class="pill gA">A</span></td><td>IMF WP/2022/057<sup class="ref"><a href="#ref-24">[24]</a></sup></td></tr>
+        <tr><td class="c">Peru</td><td>Independent replication on newer data: effective VAT payments +5&ndash;8% in year one</td><td>~200,000 firms</td><td><span class="pill gA">A</span></td><td>Consejo Fiscal del Perú, Nov 2025<sup class="ref"><a href="#ref-25">[25]</a></sup></td></tr>
+        <tr><td class="c">Italy</td><td>&ldquo;E-invoicing decreased the Italian VAT loss in 2019 by about &euro;2.2 billion to &euro;2.6 billion compared to 2018&rdquo;</td><td>DiD using reverse-charge products as controls; trade data gap on intra-EU imports</td><td><span class="pill gA">A</span></td><td>Heinemann &amp; Stiller, <em>Int. Tax &amp; Public Finance</em> 32(1)<sup class="ref"><a href="#ref-26">[26]</a></sup></td></tr>
+        <tr><td class="c">Rwanda</td><td>E-invoicing alone: +US$10,913 net VAT per firm. Audit alone: +US$26,843. Combined: +US$33,372</td><td>Universe of Rwandan tax filings, 2012&ndash;2019</td><td><span class="pill gA">A</span></td><td><em>Journal of Development Economics</em> 172 (2025)<sup class="ref"><a href="#ref-27">[27]</a></sup></td></tr>
+        <tr><td class="c">Argentina, Ecuador, Uruguay, Mexico</td><td>Positive VAT effects in all four: Argentina taxable sales 0 to +10%; Ecuador VAT +17.7% (2015) and +24.7&ndash;28.1% (2016); Uruguay VAT payments +3.7%; Mexico tax accrued +11 to +16%</td><td>DiD, propensity matching, regression discontinuity</td><td><span class="pill gA">A</span></td><td>IDB discussion papers 561&ndash;563; ITESM for SAT<sup class="ref"><a href="#ref-28">[28]</a></sup></td></tr>
+      </table>
+    </div>
+
+    <div class="prose">
+      <p><strong>Three qualifications the authors themselves draw, which almost never travel with these figures.</strong></p>
+      <p><strong>Peru's authors say the effect is reporting, not production.</strong> Measured value-added grew around 15% among adopters while employment grew about 2%. Their conclusion is that the growth &ldquo;is likely to capture an increase in the share of output that is <em>reported</em>&rdquo;. Anyone citing &ldquo;+7% sales&rdquo; as a commercial benefit of e-invoicing has inverted the paper's meaning. The same paper notes that e-invoicing enables lower administrative and compliance costs for firms &mdash; and <strong>provides no numerical estimate of any firm-side cost reduction</strong>. The most rigorous e-invoicing paper in the literature does not quantify the taxpayer's savings.<sup class="ref"><a href="#ref-23">[23]</a></sup></p>
+      <p><strong>Rwanda's authors found e-invoicing alone to be a weak instrument.</strong> The working-paper version puts it plainly: <em>&ldquo;while e-invoicing adoption per se has increased firms' net VAT payments, this impact is quantitatively limited, as firms seem to re-adjust their expenses so to keep VAT payments low.&rdquo;</em> Firms offset sales-side transparency by inflating the input side. The paper's real finding is that e-invoicing's value is as an <em>enabler of effective audit</em> &mdash; the only audits that significantly improved compliance were those on firms already using e-invoicing. Worth knowing: that sentence was removed from the published journal abstract, which reads more positively. If you quote it, cite the working paper.<sup class="ref"><a href="#ref-27">[27]</a></sup></p>
+      <p><strong>Italy's paper measures cross-border only.</strong> The &euro;2.2&ndash;2.6bn is a reduction in <em>VAT loss</em>, extrapolated from a trade-data-gap effect on intra-EU imports, over twelve months. It makes no claim about domestic VAT compliance. The headline 7% gap reduction is the baseline estimate; the paper's own weighted specifications give 4.8&ndash;5.6%.<sup class="ref"><a href="#ref-26">[26]</a></sup></p>
+      <p class="aside"><strong>And a number worth sitting with.</strong> The European Commission's own impact assessment for VAT in the Digital Age models total benefits of <strong>&euro;371.9 billion</strong> over 2023&ndash;2032. Of that, <strong>&euro;335.6 billion is VAT collection and C-efficiency</strong>, and the line item labelled <strong>&ldquo;E-invoicing benefits&rdquo; is &euro;5.6 billion &mdash; 1.5% of the total</strong>. Set against &euro;79.1 billion of modelled administrative burden falling on businesses.<sup class="ref"><a href="#ref-4">[4]</a></sup> Read plainly, Europe's own business case for ViDA is a revenue case, not a business-efficiency case. That is a legitimate basis for public policy. It is a very different proposition from the one businesses are usually sold.</p>
+    </div>
+  </div>
+
+  <!-- ================= 07 COUNTER-EVIDENCE ================= -->
+  <div class="section">
+    <div class="section-head"><span class="num mono">07</span><h2 class="display">The counter-evidence</h2></div>
+    <p class="section-intro">Findings that cut against the standard narrative, all from primary sources, none of which appears in vendor material. A business case that anticipates these is stronger than one that gets ambushed by them.</p>
+
+    <div class="spec-grid">
+      <div class="spec-card">
+        <h3>Chile &mdash; universal adoption, persistent gap</h3>
+        <p class="body">Chile reached 99% of invoices electronic by April 2017 and universal mandate in February 2018. Its tax authority's own 2025 study puts <strong>VAT non-compliance at 18.9% for 2018&ndash;2020</strong>, equal to 1.9% of GDP, with a corporate income tax gap of 46.4%.<sup class="ref"><a href="#ref-29">[29]</a></sup></p>
+        <p class="note">Near-universal e-invoicing coexisting with a ~19% VAT gap is the strongest single corrective to &ldquo;e-invoicing closes the VAT gap&rdquo;. Note too that <strong>Chile has never had its mandate econometrically evaluated for revenue impact</strong> &mdash; the IDB/CIAT synthesis explicitly excludes it. The country most cited as the success story is the one with no impact evaluation.</p>
+      </div>
+      <div class="spec-card">
+        <h3>Ecuador &mdash; fraud inside the system</h3>
+        <p class="body"><strong>5% of firms use ghost invoices annually</strong>, and among those firms ghost transactions account for <strong>14% of purchases</strong> &mdash; concentrated among larger firms. Published in <em>AER: Insights</em>, using the transaction-level data that e-invoicing itself generates.<sup class="ref"><a href="#ref-30">[30]</a></sup></p>
+        <p class="note">Structured, validated, real-time invoice data does not equal genuine transactions. E-invoicing makes fraud <em>visible</em>; it does not make it impossible.</p>
+      </div>
+      <div class="spec-card">
+        <h3>Korea &mdash; the cost-shift argument</h3>
+        <p class="body">Korea has the world's longest-running B2B mandate. Its tax authority reports a <strong>900 billion KRW annual reduction</strong> in invoice preparation, storage and filing cost.<sup class="ref"><a href="#ref-10">[10]</a></sup> But national taxpayer compliance cost measured by the Korea Institute of Public Finance reached <strong>15.44 trillion KRW for 2021, 0.73% of GDP</strong>, and a domestic academic argument put to the Korean Tax Association is that costs rose from around 7 trillion KRW in 2007 to 15 trillion in 2022 while the state's own cost of collection <em>fell</em>.<sup class="ref"><a href="#ref-31">[31]</a></sup></p>
+        <p class="note">The contention is that digitalisation <strong>transferred cost from the administration onto taxpayers</strong>, concentrated on small firms. Korea's continuing per-invoice tax credit for individual businesses is itself evidence that someone priced that burden and thought it needed compensating.</p>
+      </div>
+      <div class="spec-card">
+        <h3>Norway &mdash; the shrinking baseline</h3>
+        <p class="body">The most important methodological caveat we found anywhere. Oslo Economics' 2020 report for the Norwegian government states that <strong>earlier studies overestimated gains by assuming fully manual invoice handling</strong>, when non-electronic invoices are already largely processed digitally via scanning &mdash; and that further accounting automation will <em>reduce</em> the marginal per-invoice gain from e-invoicing over time.<sup class="ref"><a href="#ref-8">[8]</a></sup></p>
+        <p class="note">Vista Analyse acted on it in 2025, revising the receiver's time saving down from 3&ndash;5 minutes to 3, explicitly citing improvements in PDF and paper handling since 2020.<sup class="ref"><a href="#ref-9">[9]</a></sup> This undermines the entire class of &ldquo;paper costs &euro;11, e-invoice costs &euro;1&rdquo; comparisons: the baseline they measure against no longer exists.</p>
+      </div>
+      <div class="spec-card">
+        <h3>Poland &mdash; a supreme audit institution</h3>
+        <p class="body">Poland's NIK reported in July 2025, after auditing January 2022 to June 2024, that KSeF's problems were apparent in 2023 and that the Finance Minister <em>&ldquo;did not take effective action&rdquo;</em>; an external audit showed an absence of effective oversight. Meanwhile average enforcement recovery per control fell threefold, and VAT audits fell 30.8% in 2023.<sup class="ref"><a href="#ref-32">[32]</a></sup></p>
+        <p class="note">Supreme audit institutions are unusually candid and essentially never quoted in e-invoicing marketing. We looked for equivalents in Denmark, Sweden and Italy and found none &mdash; not because the programmes were flawless, but because nobody audited them.</p>
+      </div>
+      <div class="spec-card">
+        <h3>Implementation costs exceed expectations</h3>
+        <p class="body">The 2025 APEC report's own survey &mdash; as distinct from its modelled benefits &mdash; found that <strong>79% of respondents said implementation costs exceeded expectations</strong>, with large-enterprise costs above USD 20,000.<sup class="ref"><a href="#ref-5">[5]</a></sup></p>
+        <p class="note">A useful irony: the cost findings in that report are better sourced than the benefit findings, because they come from its own survey rather than from modelling. They are also the part nobody quotes.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= 08 CONCLUSIONS ================= -->
+  <div class="section">
+    <div class="section-head"><span class="num mono">08</span><h2 class="display">Conclusions</h2></div>
+    <p class="section-intro">What the evidence &mdash; as opposed to the marketing &mdash; actually supports, and what a business should do about it.</p>
+
+    <div class="conclusion-card">
+      <h4><span class="cnum">C1</span>There is no published, measured, buyer-side ROI evidence for e-invoicing. Anywhere.</h4>
+      <p>Two decades of mandates, hundreds of billions of invoices, and not one before-and-after study of AP processing cost, cycle time or exception rates attributable to an e-invoicing mandate. Every AP figure in circulation is a projection, an elicited estimate, or a vendor model. This is not an accusation against any particular number &mdash; it is a statement about a category that turns out to be empty.</p>
+    </div>
+    <div class="conclusion-card">
+      <h4><span class="cnum">C2</span>The most-quoted figures measure process automation, and their own publishers say so.</h4>
+      <p>The Commission's &euro;5.28/&euro;8.40 is explicitly for &ldquo;automating the invoicing process&rdquo; at an assumed &euro;46/hour. The ATO's A$30.87-to-A$9.18 gap is explicitly a shared sender-and-receiver figure with an assumed 60/40 split. The &euro;25&ndash;65 figure is explicitly for the whole order-to-pay cycle. In every case the qualification is in the source document and absent from the quotation. If you take one thing from this report: <strong>read the sentence the number sits in, not the number.</strong></p>
+    </div>
+    <div class="conclusion-card">
+      <h4><span class="cnum">C3</span>The receiver gains roughly three times the sender &mdash; the only consistent split in the literature.</h4>
+      <p>Norway has measured this repeatedly since 2008 and keeps landing in the same place: about one minute for the sender, about three for the receiver. The ATO independently assumes 60/40. Every serious source points the same way. A business case that splits benefits evenly between AP and AR, or that leads with supplier-side savings, is not reflecting anything published.</p>
+    </div>
+    <div class="conclusion-card">
+      <h4><span class="cnum">C4</span>The baseline is moving, which erodes the benefit over time.</h4>
+      <p>The strongest per-invoice savings claims compare structured e-invoicing against fully manual paper handling. That comparison is increasingly fictional: PDF and scanned-paper processing is itself now substantially automated, which is why Norway revised its own numbers <em>down</em> between 2020 and 2025. The later you implement, the smaller your incremental gain &mdash; and the more of your business case has to rest on compliance rather than efficiency.</p>
+    </div>
+    <div class="conclusion-card">
+      <h4><span class="cnum">C5</span>The compliance case is strong, well evidenced, and belongs to the state.</h4>
+      <p>Peru, Italy, Rwanda, Argentina, Ecuador, Uruguay and Mexico all have credible causal evidence of increased tax compliance. That research is good, and this report does not diminish it. But it measures declared sales, declared purchases and VAT paid &mdash; the state's revenue, not the taxpayer's cost. Europe's own ViDA impact assessment puts 90% of modelled benefit in VAT collection and 1.5% in e-invoicing itself. Presenting compliance research as business ROI is the single most common category error in this field.</p>
+    </div>
+    <div class="conclusion-card">
+      <h4><span class="cnum">C6</span>Financing benefits require separate machinery, and mostly have not materialised.</h4>
+      <p>Chile's electronic factoring is real and large, but has no counterfactual and its most recent official data is from 2018. Colombia built the same mechanism, publishes current figures, and shows penetration in the low millions of invoices against national volumes in the billions. Making an invoice electronic does not make it financeable. If SME finance is in your business case, it needs its own evidence.</p>
+    </div>
+    <div class="conclusion-card">
+      <h4><span class="cnum">C7</span>What to do instead: measure your own baseline before you start.</h4>
+      <p>Given the state of the published evidence, the only defensible per-invoice figures in your business case are <strong>yours</strong>. Before implementation, capture: cost per invoice processed on the AP side, receipt-to-approval cycle time, exception rate and its causes, cost to issue on the AR side, and time spent on tax reporting and audit preparation. Then measure the same things afterwards.</p>
+      <p>This is not a counsel of despair &mdash; it is what the evidence gap actually implies, and it has a practical advantage. A CFO will trust a smaller number you measured over a larger one you imported, and a mandate is a rare opportunity to instrument a process that most organisations have never baselined at all.</p>
+    </div>
+    <div class="conclusion-card">
+      <h4><span class="cnum">C8</span>And be clear about what a mandate is.</h4>
+      <p>The honest framing for most compliance-driven programmes is that you are buying the right to keep trading in a market, not a return. The direct savings are real but they are unlocked by the integration and only <em>banked</em> if you also redesign the process &mdash; which is a separate programme with separate cost, aimed at a different part of the organisation. Conflating the two is how e-invoicing business cases end up promising a return the integration was never going to deliver.</p>
+    </div>
+  </div>
+
+  <!-- ================= 09 REFERENCES ================= -->
+  <div class="section">
+    <div class="section-head"><span class="num mono">09</span><h2 class="display">References</h2></div>
+    <p class="section-intro">Source-type tags: <span class="src-tag mono">[official]</span> government / EU / multilateral primary source &middot; <span class="src-tag mono">[study]</span> peer-reviewed or working-paper research &middot; <span class="src-tag mono">[press]</span> news reporting &middot; <span class="src-tag mono">[vendor]</span> supplier or sponsored-analyst material. Where we could not retrieve a primary document, that is stated in the entry.</p>
+    <div class="refs">
+      <ol>
+        <li id="ref-1"><span class="src-tag">[official]</span> Australian Taxation Office, <a href="https://www.ato.gov.au/businesses-and-organisations/einvoicing/peppol-einvoicing-value-assessment/value-assessment-report/cost-calculations" target="_blank" rel="noopener">Peppol eInvoicing Value Assessment &mdash; Cost calculations</a>. Source of the A$30.87 / A$27.67 / A$9.18 figures; the &ldquo;shared cost estimate between the invoice sender and receiver&rdquo; wording; and the 60/40 AP/AR allocation. Underlying study: Deloitte Access Economics (2016), cited by <a href="https://treasury.gov.au/sites/default/files/2021-12/c2021-185457.pdf" target="_blank" rel="noopener">Australian Treasury</a> in footnotes only, with no title or bibliography entry. <em>We could not obtain the 2016 report; it does not appear to be publicly available.</em></li>
+        <li id="ref-2"><span class="src-tag">[official]</span> European Commission, <a href="https://eur-lex.europa.eu/legal-content/EN/TXT/HTML/?uri=CELEX:52024DC0072" target="_blank" rel="noopener">COM(2024) 72 final &mdash; Report on the effects of Directive 2014/55/EU</a>, 19 Feb 2024. &euro;5.28 / &euro;8.4 per invoice at &euro;46/hour (footnote 26, citing Ciciriello &amp; Gray, <a href="https://op.europa.eu/en/publication-detail/-/publication/24a59a10-c193-11ee-b164-01aa75ed71a1/language-en" target="_blank" rel="noopener">Preparatory study on the effects of Directive 2014/55/EU</a>, Publications Office, 1 Feb 2024, DOI 10.2873/27631 &mdash; catalogued and listed, but <em>we were unable to retrieve the file, so the derivation is unverified by us</em>); &euro;25&ndash;65 per purchase-to-pay cycle (footnote 27, which links to a news article, not a study).</li>
+        <li id="ref-3"><span class="src-tag">[official]</span> European Commission, <a href="https://eur-lex.europa.eu/LexUriServ/LexUriServ.do?uri=SWD:2024:0039:FIN:EN:PDF" target="_blank" rel="noopener">SWD(2024) 39 final &mdash; Evaluation of Directive 2014/55/EU (PDF)</a>. Source of the &ldquo;lack of data does not allow to estimate whether operating costs have increased or decreased&rdquo; finding, and of the Bolagsverket five-invoices-per-month viability threshold.</li>
+        <li id="ref-4"><span class="src-tag">[official]</span> European Commission, <a href="https://eur-lex.europa.eu/legal-content/EN/TXT/HTML/?uri=CELEX%3A52022SC0393" target="_blank" rel="noopener">SWD(2022) 393 final &mdash; VAT in the Digital Age impact assessment</a>, 8 Dec 2022. Preferred option 2023&ndash;2032: total benefits &euro;371.9bn, total costs &euro;121.2bn, net &euro;250.7bn; line items &ldquo;VAT collection / C-efficiency&rdquo; &euro;335.6bn, &ldquo;E-invoicing benefits&rdquo; &euro;5.6bn, &ldquo;Administrative burden for businesses&rdquo; &euro;79.1bn. All figures modelled.</li>
+        <li id="ref-5"><span class="src-tag">[study]</span> APEC, <a href="https://www.apec.org/docs/default-source/publications/2025/2/225_cti_interoperability-of-electronic-invoicing-systems-in-the-apec-region.pdf" target="_blank" rel="noopener">Interoperability of Electronic Invoicing Systems in the APEC Region (PDF)</a>, Feb 2025 &mdash; <strong>prepared by Deloitte Touche Tohmatsu</strong>; per-invoice productivity benefit USD 14.84 (60% AP / 40% AR) attributed to &ldquo;Deloitte Access Economics (2024)&rdquo;; survey finding that 79% of respondents found implementation costs exceeded expectations.</li>
+        <li id="ref-6"><span class="src-tag">[official]</span> Economisti Associati, CASE &amp; Mazars for DG TAXUD, <a href="https://taxation-customs.ec.europa.eu/system/files/2019-07/report_evaluation_invoicing_rules_vol1_en.pdf" target="_blank" rel="noopener">Study on the evaluation of invoicing rules of Directive 2006/112/EC (PDF)</a>, Jan 2019. Business survey of 2,007 completed questionnaires across FR, DE, IT, NL, PL, RO, ES, SE; &euro;920m administrative burden saving 2015&ndash;2017, of which &euro;540m in 2017. Per-invoice cost figures relate to <em>unstructured</em> e-invoices.</li>
+        <li id="ref-7"><span class="src-tag">[official]</span> Patentti- ja rekisterihallitus (Finland), <a href="https://www.prh.fi/material/sites/prh/attachments/tietoaprhsta/digitalous/aim7if62f/Liite_7_Verkkolaskut.pdf" target="_blank" rel="noopener">Yrityksen digitalous, Annex 7: Verkkolaskut (PDF)</a>, 2024 &mdash; national annual gain &euro;888m, built by applying the Commission's &euro;5.28 / &euro;8.40 per-invoice figures to Finnish volumes.</li>
+        <li id="ref-8"><span class="src-tag">[official]</span> Oslo Economics, <a href="https://www.regjeringen.no/globalassets/departementene/nfd/dokumenter/rapporter/oe-rapport-2020-37-elektronisk-faktura.pdf" target="_blank" rel="noopener">Elektronisk faktura, Report 2020-37 (PDF)</a>, 29 May 2020, for the Norwegian Ministry of Local Government and Modernisation and Ministry of Trade, Industry and Fisheries. Sender ~1 minute, receiver 3&ndash;5 minutes per invoice; ~NOK 8 distribution saving; and the caveat that earlier studies overestimated gains by assuming fully manual handling.</li>
+        <li id="ref-9"><span class="src-tag">[official]</span> Vista Analyse, <a href="https://www.regjeringen.no/contentassets/46f37b195426473bbf1fdf64d7d47344/horingsnotat-vedlegg-samfunnsokonomisk-analyse.pdf" target="_blank" rel="noopener">Report 2025/21 for Skattedirektoratet (PDF)</a>, 2025. Sender 1 min / receiver 3 min, revised down from 2020 citing improved PDF and paper handling; paper invoice ~NOK 25&ndash;30, EHF ~NOK 4. Notably, it prices the e-invoicing-only option separately from the bundled digital-bookkeeping option &mdash; the only source found that does.</li>
+        <li id="ref-10"><span class="src-tag">[official]</span> Korea National Tax Service, <a href="https://www.britacom.org/images/tlzt_02_04Slides%20of%20Korea.pdf" target="_blank" rel="noopener">E-Tax Invoice System Introduction (BRITACOM slides, PDF)</a>. Slide 5, &ldquo;Background&rdquo;: <em>cost of keeping paper invoices</em>, est. 6.7 trillion KRW/yr, attributed to the Korea Institute of Public Finance &mdash; <strong>a baseline burden, frequently misquoted as a saving</strong>. Slide 11, &ldquo;Results&rdquo;: 900 billion KRW/yr reduction in invoice preparation, storage and filing cost. No year or method given for the latter.</li>
+        <li id="ref-11"><span class="src-tag">[study]</span> Hyung Chul Lee, <a href="https://documents1.worldbank.org/curated/en/712881467994710005/pdf/WPS7592.pdf" target="_blank" rel="noopener">Can Electronic Tax Invoicing Improve Tax Compliance? A Case Study of the Republic of Korea (PDF)</a>, World Bank Policy Research WP 7592, Mar 2016 &mdash; adoption 15% (2008) to 99.8% in the first mandatory year and 99.9% by 2013; cites Kim &amp; Park (2007) for invoicing being 50.6% of corporate and 67.6% of individual-business VAT compliance cost.</li>
+        <li id="ref-12"><span class="src-tag">[official]</span> European Commission / IDABC, <a href="https://interoperable-europe.ec.europa.eu/collection/eprocurement/document/electronic-invoicing-public-sector-denmark-eid" target="_blank" rel="noopener">Electronic invoicing in the public sector, Denmark</a>, published 25 Jan 2007 &mdash; contains both &ldquo;approximately EUR 94 million a year&rdquo; and &ldquo;about EUR 120&ndash;150 million a year&rdquo;, neither sourced.</li>
+        <li id="ref-13"><span class="src-tag">[official]</span> CORDIS, <a href="https://cordis.europa.eu/article/id/25563-readiness-for-egovernment-will-bring-big-savings-to-eu-says-commission" target="_blank" rel="noopener">Readiness for eGovernment will bring big savings to EU, says Commission</a>, 25 Apr 2006 &mdash; &ldquo;Denmark, which recently reported saving taxpayers a whopping 150 million euro and businesses 50 million euro a year&rdquo;. Unsourced.</li>
+        <li id="ref-14"><span class="src-tag">[official]</span> Økonomistyrelsen (Danish Ministry of Finance), <a href="https://www.budregn.im.dk/media/14278/elektronisk-fakturering.pdf" target="_blank" rel="noopener">Elektronisk fakturering &mdash; Kort &amp; Godt (PDF)</a>, 2005 &mdash; the sponsoring ministry's own explainer, giving the ~18 million annual paper invoice volume and <strong>no monetary savings figure at all</strong>. A third, incompatible figure (DKK 1.5bn) appears in Norway's <a href="https://www.regjeringen.no/globalassets/upload/fad/vedlegg/ikt-politikk/agfarapportweb.pdf" target="_blank" rel="noopener">2008 government working group report (PDF)</a>.</li>
+        <li id="ref-15"><span class="src-tag">[official]</span> MBIE / eInvoicing New Zealand, <a href="https://www.einvoicing.govt.nz/case-studies/mbie-proves-value-of-einvoicing-by-paying-their-suppliers-faster/" target="_blank" rel="noopener">MBIE proves value of eInvoicing by paying their suppliers faster</a> &mdash; 4.2 days average for eInvoices vs 7.1 days for paper/PDF, single agency, Peppol receipt into an existing finance system.</li>
+        <li id="ref-16"><span class="src-tag">[official]</span> Servicio de Impuestos Internos (Chile), <a href="https://www.sii.cl/noticias/2019/300119noti01er.htm" target="_blank" rel="noopener">news release, 30 Jan 2019</a> &mdash; 4,310,911 documents ceded electronically in 2018 (+~15%), more than US$32.8bn financed (+14.7%), over 20,000 companies using electronic factoring monthly. Historical series in <a href="https://www.consejoconsultivoemt.cl/wp-content/uploads/2017/03/Factura-Electronica-y-Factoring-SII.pdf" target="_blank" rel="noopener">SII, Factura Electrónica y Factoring (PDF, 2017)</a>.</li>
+        <li id="ref-17"><span class="src-tag">[official]</span> DIAN (Colombia), <a href="https://micrositios.dian.gov.co/sistema-de-facturacion-electronica/consolidado-cifras-sfe/" target="_blank" rel="noopener">Consolidado Cifras SFE</a> &mdash; RADIAN registrations to 31 Dec 2025: 1,766,898 invoices registered, 1,715,053 endorsed.</li>
+        <li id="ref-18"><span class="src-tag">[study]</span> García-Castro, Saavedra-Vela, Salazar-Vega &amp; Chong-Rengifo, <a href="https://revistas.unsm.edu.pe/index.php/race/article/download/285/521/1971" target="_blank" rel="noopener">Costo beneficio del uso de la factura electrónica en los principales contribuyentes de la Región San Martín (PDF)</a>, <em>Revista Amazónica de Ciencias Económicas</em>, 2022 &mdash; issuing cost S/2.28 traditional to S/0.83 outsourced electronic; 111 firms, one region, self-reported, issuing side only.</li>
+        <li id="ref-19"><span class="src-tag">[official]</span> Servicio de Impuestos Internos (Chile), firm surveys: <a href="https://www.sii.cl/aprenda_sobre_impuestos/estudios/informe_factura_electronica.pdf" target="_blank" rel="noopener">2009 study with the Cámara de Comercio de Santiago (PDF)</a> and <a href="https://www.sii.cl/aprenda_sobre_impuestos/estudios/estudio_factura_elect.pdf" target="_blank" rel="noopener">2013 FRONTDESK study (PDF)</a> &mdash; importance ratings in which cost saving ranks lowest among benefits in every segment. Index: <a href="https://www.sii.cl/sobre_el_sii/estudios_de_factura_electronica.html" target="_blank" rel="noopener">SII e-invoicing studies</a>.</li>
+        <li id="ref-20"><span class="src-tag">[press]</span> CorCom, <a href="https://www.corrierecomunicazioni.it/digital-economy/polimi-da-fattura-elettronica-risparmi-per-3-miliardi/" target="_blank" rel="noopener">Polimi: da fattura elettronica risparmi per 3 miliardi</a> &mdash; the article cited in COM(2024) 72 footnote 27, reporting Politecnico di Milano Osservatorio figures from <strong>2013</strong>, including the &euro;25&ndash;65 per order-cycle range.</li>
+        <li id="ref-21"><span class="src-tag">[official]</span> European Commission, <a href="https://eur-lex.europa.eu/legal-content/EN/TXT/HTML/?uri=CELEX:52010DC0712" target="_blank" rel="noopener">COM(2010) 712 &mdash; Reaping the benefits of electronic invoicing for Europe</a> &mdash; the &euro;240bn over six years claim, footnoted to Capgemini; the 5% B2B penetration figure, footnoted to Billentis.</li>
+        <li id="ref-22"><span class="src-tag">[vendor]</span> UNESCAP, <a href="https://www.unescap.org/sites/default/d8files/event-documents/A%20Guide%20on%20Adoption%20of%20Cross-border%20Electronic%20Invoicing_billentis_0.pdf" target="_blank" rel="noopener">A Guide on Adoption of Cross-border Electronic Invoicing (PDF)</a> &mdash; distributed by a UN regional commission; the filename and contact details identify it as Billentis material. Its headline statistics carry no sources.</li>
+        <li id="ref-23"><span class="src-tag">[study]</span> Bellon, Chang, Dabla-Norris, Khalid, Lima, Rojas &amp; Villena, <a href="https://www.imf.org/-/media/files/publications/wp/2019/wpiea2019231-print-pdf.pdf" target="_blank" rel="noopener">Digitalization to Improve Tax Compliance: Evidence from VAT e-Invoicing in Peru (PDF)</a>, IMF WP/19/231, Nov 2019; peer-reviewed as <a href="https://www.sciencedirect.com/science/article/pii/S0047272722000639" target="_blank" rel="noopener">Journal of Public Economics 210 (2022)</a>. 78,000 firms, &gt;80% of domestic VAT collections. Contains the authors' own conclusion that the effect &ldquo;is likely to capture an increase in the share of output that is reported&rdquo;, and no numerical estimate of firm cost reduction.</li>
+        <li id="ref-24"><span class="src-tag">[study]</span> Bellon, Dabla-Norris, Khalid, Paliza, Chang &amp; Villena, <a href="https://www.imf.org/en/publications/wp/issues/2022/03/18/digitalization-and-tax-compliance-spillovers-evidence-from-a-vat-e-invoicing-reform-in-peru-515162" target="_blank" rel="noopener">Digitalization and Tax Compliance Spillovers: Evidence from a VAT e-Invoicing Reform in Peru</a>, IMF WP/2022/057 &mdash; +11% sales and +17% VAT among unmandated partner firms; also finds firms became less likely to keep transacting with mandated partners.</li>
+        <li id="ref-25"><span class="src-tag">[official]</span> Ganiko &amp; Santisteban, <a href="https://cf.gob.pe/wp-content/uploads/2025/11/facturacion-electronica-en-el-Peru-GG-JSE-nov-VF-3.11.25.pdf" target="_blank" rel="noopener">Facturación electrónica en el Perú (PDF)</a>, Consejo Fiscal del Perú, Documento de Investigación 001-2025, Nov 2025 &mdash; independent replication on ~200,000 firms; effective VAT payments +5&ndash;8% in year one.</li>
+        <li id="ref-26"><span class="src-tag">[study]</span> Heinemann, M. &amp; Stiller, W., <a href="https://link.springer.com/article/10.1007/s10797-023-09820-x" target="_blank" rel="noopener">Digitalization and cross-border tax fraud: evidence from e-invoicing in Italy</a>, <em>International Tax and Public Finance</em> 32(1), 195&ndash;237 (online 28 Feb 2024; print Feb 2025). Verbatim: &ldquo;we estimate that e-invoicing decreased the Italian VAT loss in 2019 by about &euro;2.2 billion to &euro;2.6 billion compared to 2018&rdquo;. Trade data gap reduction ~7% baseline; weighted specifications 4.8&ndash;5.6%. Control group: reverse-charge products. Intra-EU imports only.</li>
+        <li id="ref-27"><span class="src-tag">[study]</span> Kotsogiannis, Salvadori, Karangwa &amp; Murasi, <a href="https://ddd.uab.cat/pub/artpub/2025/e62c667ac3bf/joudeveco_a2025v172iENG.pdf" target="_blank" rel="noopener">E-invoicing, tax audits and VAT compliance (open-access PDF)</a>, <em>Journal of Development Economics</em> 172 (2025), DOI 10.1016/j.jdeveco.2024.103403 &mdash; e-invoicing alone US$10,913; audit alone US$26,843; combined US$33,372; Rwandan tax filings 2012&ndash;2019. The &ldquo;quantitatively limited&hellip; firms seem to re-adjust their expenses&rdquo; caveat appears in the working-paper version, <a href="https://ideas.repec.org/p/bge/wpaper/1454.html" target="_blank" rel="noopener">Barcelona School of Economics WP 1454</a>, and was <strong>removed from the published abstract</strong>.</li>
+        <li id="ref-28"><span class="src-tag">[study]</span> Inter-American Development Bank discussion papers: Artana &amp; Templado, <a href="https://publications.iadb.org/publications/spanish/document/An%C3%A1lisis-del-impacto-de-la-factura-electr%C3%B3nica-en-Argentina.pdf" target="_blank" rel="noopener">Argentina (IDB-DP-562, PDF)</a>; Ramírez-Álvarez, Oliva &amp; Andino, <a href="https://webimages.iadb.org/publications/spanish/document/Facturaci%C3%B3n-electr%C3%B3nica-en-Ecuador-Evaluaci%C3%B3n-de-impacto-en-el-cumplimiento-tributario.pdf" target="_blank" rel="noopener">Ecuador (IDB-DP-563, PDF)</a>; Bérgolo, Ceni &amp; Sauval, <a href="https://publications.iadb.org/publications/spanish/document/Factura-electr%C3%B3nica-y-cumplimiento-tributario-Evidencia-a-partir-de-un-enfoque-cuasi-experimental.pdf" target="_blank" rel="noopener">Uruguay (IDB-DP-561, PDF)</a>. Mexico: Fuentes et al. (ITESM) for SAT, 2016/17 &mdash; <em>we could not retrieve the primary PDF; figures confirmed from SAT's own <a href="https://www.gob.mx/sat/prensa/com2017_054" target="_blank" rel="noopener">press release COM 054/2017</a> and the IDB/CIAT synthesis chapter</em>. Note Uruguay's +3.7% is VAT payments only over six months and is not statistically significant for small firms &mdash; it is frequently restated more broadly than the paper supports.</li>
+        <li id="ref-29"><span class="src-tag">[official]</span> Servicio de Impuestos Internos (Chile), <a href="https://www.sii.cl/noticias/2025/170425noti01aav.htm" target="_blank" rel="noopener">Estudio de brechas de cumplimiento tributario en IVA y en el Impuesto a la Renta</a>, revised 17 Apr 2025 &mdash; VAT non-compliance 18.9% for 2018&ndash;2020 (1.9% of GDP); First Category tax gap 46.4%.</li>
+        <li id="ref-30"><span class="src-tag">[study]</span> Carrillo, Donaldson, Pomeranz &amp; Singhal, <a href="https://www.aeaweb.org/articles?id=10.1257%2Faeri.20220321" target="_blank" rel="noopener">Ghosting the Tax Authority: Fake Firms and Tax Fraud in Ecuador</a>, <em>AER: Insights</em> 5(4): 427&ndash;44, Dec 2023 &mdash; 5% of firms use ghost invoices annually; 14% of those firms' purchases.</li>
+        <li id="ref-31"><span class="src-tag">[press]</span> Korean compliance-cost debate: <a href="https://www.taxwatch.co.kr/article/tax/2024/05/08/0004" target="_blank" rel="noopener">TaxWatch on the Korea Institute of Public Finance's 2023 measurement</a> (15.44 trillion KRW for 2021, 0.73% of GDP); <a href="https://www.tfmedia.co.kr/news/article.html?no=171158" target="_blank" rel="noopener">조세금융신문 on the Korean Tax Association's argument</a> that compliance costs rose from ~7tn KRW (2007) to ~15tn (2022) while the state's collection cost fell. <em>We read both via secondary coverage; the KIPF report itself was not obtained.</em></li>
+        <li id="ref-32"><span class="src-tag">[official]</span> Najwyższa Izba Kontroli (Polish Supreme Audit Office), <a href="https://www.nik.gov.pl/najnowsze-informacje-o-wynikach-kontroli/kas-e-faktury-vat-akcyza-2024.html" target="_blank" rel="noopener">Bez e-faktur VAT wciąż nieszczelny</a>, 15 Jul 2025, covering Jan 2022 &ndash; Jun 2024 &mdash; KSeF oversight failures; average enforcement recovery per control down threefold (PLN 2.4m in 2019 to PLN 823,000 in 2023); VAT audits down 30.8% in 2023.</li>
+      </ol>
+    </div>
+  </div>
+
+  <footer>
+    <p><strong>About this report.</strong> Prepared for the E-Invoicing Compliance Corner, August 2026. Research covered academic databases, tax administrations, supreme audit institutions, multilateral publishers and national ministries across Latin America, Europe, Asia-Pacific, the Middle East and Africa, in seven languages. Every figure was traced to its originating document wherever that document could be retrieved; where it could not, the entry says so explicitly rather than resting on a secondary restatement. Absences reported here are absences of published evidence we could find &mdash; if you know of a study we have missed, particularly a measured buyer-side one, we would genuinely like to see it.</p>
+    <p>Nothing here is legal, tax or financial advice. © E-Invoicing Compliance Corner. Figures © their respective sources, cited above.</p>
+  </footer>
+
+</div>
+</body>
+</html>

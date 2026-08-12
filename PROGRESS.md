@@ -7994,6 +7994,110 @@ the contrast fix, the 27-tooltip help layer (506), the revised opening
 footprint of 100k AP / 50k AR / 1 ERP, and these durations (507) with
 D1 made authoritative for every opening value.
 
+## 12 Aug 2026 — Second whitepaper published: the e-invoicing ROI evidence audit (migration 508)
+
+Dan asked whether anyone has published e-invoicing-only ROI benefits, with
+sources, from countries that already run mandates — split buyer (AP) and
+supplier (AR). The research ran across Latin America, Europe, Asia-Pacific,
+the Middle East and Africa in seven languages, chasing every figure to its
+originating document. He then asked for it on the site: *"This would be a
+great report to add to the insights and whitepapers section."*
+
+**The finding, which is what makes it publishable.** There is **no measured,
+post-implementation study of AP invoice processing cost, receipt-to-approval
+cycle time, exception rates or archiving effort attributable to an
+e-invoicing mandate — in any jurisdiction, at any level of rigour.** The
+category is empty. Two decades of mandates, hundreds of billions of
+invoices, and no before-and-after.
+
+What fills the gap does not survive being chased, and the traces are the
+report's spine:
+
+- The ATO's A$30.87/A$9.18 pair is explicitly a **shared** sender-and-receiver
+  estimate; the 60/40 AP-AR split is an ATO working assumption; the source is
+  a 2016 Deloitte Access Economics study that is not public. The ATO's cited
+  corroboration is a 2024 APEC report **written by Deloitte**, which sources
+  its figures to Deloitte Access Economics.
+- The Commission's &euro;5.28/&euro;8.40 is a labour-time valuation at an
+  assumed &euro;46/hour, for "automating the invoicing process" — the
+  Commission's own words.
+- COM(2024) 72's &euro;25-65 per-cycle figure is footnoted, in a formal
+  report to the European Parliament and Council, **to an Italian tech-news
+  article** about a 2013 university observatory report.
+- Denmark's famous savings claim exists in three mutually incompatible
+  unsourced versions, in the wrong currency, while the Danish finance
+  ministry's own explainer of the programme carries no monetary figure.
+- ViDA's impact assessment puts &euro;335.6bn of its &euro;371.9bn modelled
+  benefit in VAT collection and **&euro;5.6bn — 1.5% — in e-invoicing
+  itself**, against &euro;79.1bn of administrative burden on business.
+
+Verified directly rather than taken from the research pass: the ATO wording,
+the two COM(2024) 72 footnotes, the ViDA cost-benefit table, and the
+Heinemann & Stiller and Rwanda figures. Two corrections came out of that
+verification and are reflected in the text — Heinemann & Stiller measured a
+reduction in **VAT loss**, not "fraud", and only cross-border; and Rwanda's
+"quantitatively limited" caveat exists in the working paper but was
+**removed from the published journal abstract**, so the report cites the
+working paper for it.
+
+**How it was published.** No code change was needed — the insights hub, the
+article page, the tracker's in-page panel and its whitepaper pop-out are all
+data-driven. Setting `pdf_url` is what makes the pop-out work, because
+`renderInsightCards()` emits a `data-doc-url` attribute for any ungated
+whitepaper that has one.
+
+- `whitepaper-einvoicing-roi-evidence.html` in the repo root, same
+  conventions as the CTC whitepaper including the framed-iframe handling.
+- Migration 508: one `articles` row, `type='whitepaper'`, `gated=0`,
+  `published=1`.
+- **Free to everyone and English-only**, both at Dan's explicit choice when
+  asked. English-only degrades correctly rather than breaking:
+  `getPublishedArticles()` and `getArticleBySlug()` COALESCE per column, so a
+  Spanish reader gets an English title and dek inside an otherwise Spanish
+  hub. Adding a language later is INSERTs plus a static edition.
+- **Announcement deliberately not pre-recorded**, so the next weekly digest
+  surfaces it as ready to announce. That is the workflow migration 503 was
+  built for.
+
+### A pre-existing sitemap gap, found while adding this
+
+`sitemap.xml` carried a comment saying each insights piece "gets its own
+`<url>` entry as each one is published". That convention was written when
+the hub was built and **never actually followed** — so the CTC whitepaper
+had been unlisted since 7 Aug, and neither its `/insights/` page nor its
+static document was declared. Nothing was broken and nothing errored; the
+pages were simply left to be found by crawl. Both pieces now have both
+entries, four in total, with the `/insights/<slug>` page at the higher
+priority since it is canonical.
+
+Two things learned the hard way, both worth keeping:
+
+1. **The first contrast audit reported six failures on the hub that were not
+   real.** `.insight-card` has `background:rgba(255,255,255,0.02)` — a 2%
+   white over dark navy — and the audit script's background walker treated
+   any non-`transparent` colour as opaque, so it read a barely-there tint as
+   solid white and computed 1.14:1. The script now composites the whole
+   ancestor chain honouring alpha. A contrast checker that ignores alpha
+   will confidently invent failures on any translucent surface.
+2. **The first render was against a stub stylesheet, not the real shell.**
+   Fixed by extracting `insightsPageShell()`'s own `<style>` block straight
+   from `site-worker/src/index.js` and substituting `INSIGHTS_STYLE` into it,
+   so the page under test is the page that ships. This is the same lesson as
+   the 11 Aug ROI contrast bug, applied before it could bite: **audit the
+   composition, not the fragment.**
+
+**Verified:** replay clean (508 files); hub and article page rendered against
+the replayed DB and inspected; `data-doc-url` confirmed emitted for the new
+piece; sitemap parses as valid XML with 43 unique URLs; the framed-iframe
+script is byte-identical to the CTC whitepaper's; the article shows as
+unannounced on both expected channels. One genuine AA failure remains on the
+hub and is **pre-existing site chrome, not from this change**: the
+`.eyebrow` line uses `--stamp` (#b5432f) on dark navy at 3.17:1. Flagged for
+Dan rather than changed here, since it is a brand colour on every insights
+page.
+
+**Deploy:** migration 508, then site-worker.
+
 ## Open items / next steps
 
 ### Real open work
