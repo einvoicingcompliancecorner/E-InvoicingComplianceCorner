@@ -7594,6 +7594,92 @@ static assets and no Worker deploy, since the tracker renders from D1
 at request time (same as migration 296's `/sources` fix). Allow for the
 tracker route's short cache before the board reflects it.
 
+## 11 Aug 2026 — ROI & Wave Planner built as a subscriber tool (migration 505, code complete, deploy pending)
+
+Prototyped across eight iterations with Dan (see the dated notes in this
+entry), then built for real. A subscriber tool that turns this site's
+mandate data into a board-ready business case: invoice volumes, ERP
+count and country footprint in; direct and indirect savings, an
+investment and payback view, and a delivery wave plan back-planned from
+the **real published deadlines** out.
+
+**Why it fits here rather than anywhere else.** Every vendor has an ROI
+calculator; none can produce a dated wave plan, because none has 70
+jurisdictions of sourced deadlines. That asset is what makes this
+credible, and the tool leans on it rather than on invented benchmarks.
+
+### Architecture
+
+`shared/roi-render.mjs` holds the D1 queries and the page, imported by
+both Workers — same pattern as `resources-render.mjs` and
+`map-data.mjs`. `site-worker` serves a public, SEO-indexable teaser at
+`/roi-calculator` with results locked; `members-worker` serves the same
+page unlocked at `/members/roi-calculator` behind `requireSession()`.
+
+The gate is deliberately placed. The calculation runs client-side, so
+gating it server-side would be theatre — the arithmetic is not the
+asset. What genuinely cannot work anonymously is **"use my subscribed
+countries"**, which reads the reader's real saved preferences via
+`getSubscriber()` — the same list the archive filter and preferences
+page already use, so nobody states their footprint twice. That makes
+the sign-in prompt honest rather than artificial.
+
+### Translation-ready by design, at Dan's request
+
+Dan asked mid-build to "consider supporting translations in the future,
+during the design of the D1 tables." Taken seriously rather than
+deferred, because this project has already paid the retrofit bill once
+(privacy-policy.html shipped unwired on 4 Aug and had to be redone).
+
+Migration 505 adds four tables following the house parent/translations
+split — `roi_benchmarks` + `roi_benchmark_translations`, `roi_phases` +
+`roi_phase_translations` — plus 31 chrome strings under a `roi`
+namespace in `translations`. The split is the important part: **numbers
+live on the parent row, words live on the child.** A Spanish reader
+gets Spanish labels, hints and citations while the figures stay
+identical, which is the only correct behaviour for a benchmark.
+Per-row `COALESCE` to English means a partially-translated language
+degrades gracefully instead of rendering blanks. Adding ES/DE/FR is
+now purely INSERTs — no code change.
+
+Benchmarks being data rather than constants also fixes something real:
+when Ardent publishes its 2026 edition, that becomes a migration with a
+sourcing trail, exactly like a milestone correction, instead of an edit
+buried in a Worker deploy.
+
+### What the tool will and will not claim
+
+14 benchmarks seeded, graded A/B/C/D from the 11 Aug verification pass:
+4 grade A, 3 B, 2 C, 5 D. That distribution is the honest state of this
+field, not a research gap. Baked in and not to be quietly reversed: the
+circulating VAT-gap figures are **European Commission/CASE, not OECD**,
+and the Commission's own country analyses credit post-pandemic economic
+recovery rather than digital reporting — so they are grade C and carry
+no monetary value anywhere in the model. Likewise the NHS figures are
+one unnamed, undated trust, shown but never monetised.
+
+The three investment inputs are labelled placeholders, not benchmarks,
+with a banner that clears once replaced: no analyst firm publishes
+credible per-country implementation or platform costs, which was
+checked directly.
+
+### Two bugs caught by browser-testing the real rendered page
+
+**A signed-in subscriber's own countries checkbox was permanently
+disabled.** `setSubsAvailable(false)` ran unconditionally at init and
+was only flipped inside the sign-in handler — which never runs on the
+members page, where the reader arrives already unlocked. Now
+initialised from the unlock state. The prototype could not have
+surfaced this, because the prototype always starts locked.
+
+**AR volume was collected and never used** in the earlier prototype —
+backwards, since a mandate compels what you *issue*. Now modelled with
+its own benchmark, which moves direct savings from $2.38m to $3.08m on
+the defaults.
+
+**Not yet deployed.** Migration 505, then BOTH Workers (the shared
+module changed, and each registers its own route).
+
 ## Open items / next steps
 
 ### Real open work

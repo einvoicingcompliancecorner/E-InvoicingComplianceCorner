@@ -24,6 +24,14 @@ import {
   deriveFlagFromCode,
 } from "../../shared/deep-dive-render.mjs";
 import {
+  getRoiCountries as sharedGetRoiCountries,
+  getRoiBenchmarks as sharedGetRoiBenchmarks,
+  getRoiPhases as sharedGetRoiPhases,
+  getRoiStrings as sharedGetRoiStrings,
+  renderRoiPage as sharedRenderRoiPage,
+  ROI_STYLE,
+} from "../../shared/roi-render.mjs";
+import {
   getArticleBySlug as sharedGetArticleBySlug,
   renderArticleFragment as sharedRenderArticleFragment,
   INSIGHTS_STYLE,
@@ -416,6 +424,8 @@ export default {
         // "keep reading" link, or a newsletter convenience link.
         const slug = decodeURIComponent(url.pathname.replace("/members/insights/", ""));
         response = await handleArticleFull(request, env, slug, lang);
+      } else if (request.method === "GET" && url.pathname === "/members/roi-calculator") {
+        response = await handleRoiCalculator(request, env, lang);
       } else if (request.method === "GET" && url.pathname === "/admin/preview/milestones") {
         response = await handleMilestonesPreview(request, env, lang);
       } else if (request.method === "GET" && url.pathname === "/admin/preview/deep-dive") {
@@ -1753,6 +1763,47 @@ async function handleArchiveIssue(request, env, slug, lang) {
 // public page already showed the full body and a reader never needs
 // this route at all) or genuinely subscriber-only.
 // ================================================================
+// The unlocked ROI & Wave Planner. Two things a session buys that an
+// anonymous visitor genuinely cannot have: the results panel, and the
+// reader's own saved countries pulled straight from their preferences —
+// the same list the archive filter and the preferences page already use,
+// so nobody has to tell us their footprint twice.
+async function handleRoiCalculator(request, env, lang) {
+  const email = await requireSession(request, env);
+  if (!email) return redirectToLogin("/members/roi-calculator");
+
+  let subscribed = [];
+  try {
+    const sub = await getSubscriber(env, email);
+    subscribed = Array.isArray(sub && sub.countries) ? sub.countries : [];
+  } catch (err) {
+    // Never let a preferences lookup failure cost the reader the tool.
+    console.log(`ROI calculator: could not load saved countries for ${email}: ${err && err.message || err}`);
+  }
+
+  const [countries, benchmarks, phases, strings] = await Promise.all([
+    sharedGetRoiCountries(env.eicc_content),
+    sharedGetRoiBenchmarks(env.eicc_content, lang),
+    sharedGetRoiPhases(env.eicc_content, lang),
+    sharedGetRoiStrings(env.eicc_content, lang),
+  ]);
+
+  const { body, script } = sharedRenderRoiPage({
+    countries, benchmarks, phases, strings,
+    locked: false,
+    subscribed,
+    signedInAs: email,
+  });
+
+  const page = `
+  <div class="topbar">
+    <a class="back-link" href="https://e-invoicingcompliancecorner.com/roi-calculator" style="margin:0;">${t(lang, "backToTracker")}</a>
+    <form method="POST" action="/members/logout"><button type="submit" class="logout-btn">${t(lang, "logout")}</button></form>
+  </div>
+  ${body}`;
+  return htmlResponse(pageShell(page, lang, ROI_STYLE) + `<script>${script}</script>`);
+}
+
 async function handleArticleFull(request, env, slug, lang) {
   const email = await requireSession(request, env);
   if (!email) return redirectToLogin(`/members/insights/${slug}`);

@@ -45,6 +45,14 @@ import {
   renderArticleFragment,
   INSIGHTS_STYLE,
 } from "../../shared/resources-render.mjs";
+import {
+  getRoiCountries,
+  getRoiBenchmarks,
+  getRoiPhases,
+  getRoiStrings,
+  renderRoiPage,
+  ROI_STYLE,
+} from "../../shared/roi-render.mjs";
 
 const LANG_COOKIE = "eicc_lang";
 const LANG_COOKIE_TTL_SECONDS = 60 * 60 * 24 * 365; // 1 year
@@ -738,6 +746,50 @@ function mapPageBodyHtml() {
 </div>`;
 }
 
+const ROI_PATHS = new Set(["/roi-calculator", "/roi-calculator.html", "/roi", "/roi.html"]);
+
+async function renderRoiCalculatorPage(request, env) {
+  if (!env.eicc_content) return new Response("Missing D1 binding", { status: 500 });
+  const url = new URL(request.url);
+  let lang = url.searchParams.get("lang");
+  const { value: cookieLang } = getCookie(request, LANG_COOKIE);
+  if (!(lang && SUPPORTED_LANGS.includes(lang))) {
+    lang = (cookieLang && SUPPORTED_LANGS.includes(cookieLang))
+      ? cookieLang
+      : (pickBestSupportedLanguage(request.headers.get("Accept-Language")) || "en");
+  }
+
+  const [countries, benchmarks, phases, strings] = await Promise.all([
+    getRoiCountries(env.eicc_content),
+    getRoiBenchmarks(env.eicc_content, lang),
+    getRoiPhases(env.eicc_content, lang),
+    getRoiStrings(env.eicc_content, lang),
+  ]);
+
+  const { body, script } = renderRoiPage({
+    countries,
+    benchmarks,
+    phases,
+    strings,
+    locked: true,          // anonymous: results behind the gate
+    subscribed: [],        // no saved preferences without a session
+    unlockUrl: `https://members.e-invoicingcompliancecorner.com/members/roi-calculator${lang !== "en" ? `?lang=${lang}` : ""}`,
+  });
+
+  const html = `<!DOCTYPE html><html lang="${lang}"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>E-Invoicing ROI &amp; Wave Planner — The E-Invoicing Compliance Corner</title>
+<meta name="description" content="Build an e-invoicing business case from your own invoice volumes and country footprint. Delivery waves back-planned from real published mandate deadlines, with an evidence grade against every benchmark used.">
+<link rel="canonical" href="https://e-invoicingcompliancecorner.com/roi-calculator">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>${ROI_STYLE}</style></head><body>${body}<script>${script}</script></body></html>`;
+
+  return new Response(html, {
+    headers: { "content-type": "text/html; charset=utf-8", "cache-control": "public, max-age=300" },
+  });
+}
+
 async function renderMapPage(request, env) {
   if (!env.eicc_content) return new Response("Missing D1 binding", { status: 500 });
   const url = new URL(request.url);
@@ -950,6 +1002,15 @@ export default {
     if (url.pathname.startsWith("/insights/")) {
       const slug = decodeURIComponent(url.pathname.slice("/insights/".length)).replace(/\.html$/, "");
       if (slug) return renderInsightsArticle(request, env, slug);
+    }
+
+    // ROI & Wave Planner — public, SEO-indexable teaser. The calculation
+    // itself runs client-side, so gating it server-side would be theatre;
+    // what is actually gated is the RESULTS panel and "use my subscribed
+    // countries", which needs a real session. Same teaser/gated split as
+    // /insights — see shared/roi-render.mjs's header for the reasoning.
+    if (ROI_PATHS.has(url.pathname)) {
+      return renderRoiCalculatorPage(request, env);
     }
 
     // The Map — D1-rendered choropleth, no asset file behind it either.
