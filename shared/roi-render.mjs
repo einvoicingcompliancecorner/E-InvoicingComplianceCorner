@@ -1121,7 +1121,7 @@ function build(){
   const placeholders = ['cImplS','cImplC','cPlat','cRun'].filter(id => String(document.getElementById(id).value) === String(DEFAULTS[id].v));
 
   document.getElementById('invest').innerHTML = \`
-    \${placeholders.length ? \`<div class="note warn"><strong>\${placeholders.length} of 4 cost inputs are still our placeholders.</strong> No analyst firm publishes credible per-country e-invoicing implementation or platform costs &mdash; we checked, and would rather say so than invent one. Put your own quotes in the assumptions panel before showing anyone the payback figure.</div>\` : ''}
+    \${placeholders.length ? \`<div class="note warn"><strong>\${placeholders.length} of 4 cost inputs are still placeholders.</strong> Please replace them with vendor budgetary estimates in the assumptions panel, and treat the ROI as illustrative until actuals can be provided.</div>\` : ''}
     <div class="grid g4">
       <div class="stat"><div class="n" style="color:#e0907f">\${fmt(oneOff)}</div><div class="l">One-off &mdash; \${intComplex} complex + \${intSimple} simple</div></div>
       <div class="stat"><div class="n" style="color:#e0907f">\${fmt(annualCost)}</div><div class="l">Annual run cost</div></div>

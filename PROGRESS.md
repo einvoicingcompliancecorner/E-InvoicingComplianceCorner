@@ -8439,12 +8439,14 @@ inline rather than in D1 (see the standing open item). No migration.
 Emphasis kept on "placeholders only" so the warning holds its visual
 weight in red; the words are Dan's, unaltered.
 
-**Deliberately left alone, and flagged rather than changed:** the sibling
-warning in the *results* section, which fires when cost inputs are still
-at their defaults and currently reads "N of 4 cost inputs are still our
-placeholders… we checked, and would rather say so than invent one." Dan
-asked about the assumptions panel specifically. The two now differ in
-tone, which is worth a one-line follow-up if he wants them aligned.
+**The sibling warning in the results section was flagged and then aligned
+at Dan's request**, in the same session. It fires when cost inputs are
+still at their defaults and now reads: "N of 4 cost inputs are still
+placeholders. Please replace them with vendor budgetary estimates in the
+assumptions panel, and treat the ROI as illustrative until actuals can be
+provided." Same register, same named next step, with the dynamic count
+kept because it tells the reader how much of the figure is still ours.
+Both surfaces now say one thing.
 
 **Verified:** renders as intended; 16/16 regressions; 0 AA failures.
 
