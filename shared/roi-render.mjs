@@ -144,7 +144,24 @@ h2{font-family:'Big Shoulders Display',sans-serif;font-weight:700;font-size:24px
 h3{font-size:15px;margin:0 0 6px}
 p{margin:0 0 12px}
 .lede{color:var(--muted);max-width:70ch}
-.card{background:var(--ink-2);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px;margin:0 0 14px}
+.card{background:var(--ink-2);color:var(--text-lo);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px;margin:0 0 14px}
+/* COLOUR MUST BE SET EXPLICITLY ON EVERY SURFACE HERE, not left to
+   inherit. members-worker's pageShell() concatenates its own BASE_STYLE
+   BEFORE this sheet, and that stylesheet paints .card cream with
+   near-black text (#241d10). Appending our styles only overrides the
+   properties we actually declare — so setting the background to dark
+   navy while saying nothing about colour left near-black text on dark
+   navy at 1.05:1 contrast: invisible. Reported by Dan 11 Aug 2026,
+   found by measuring the members-rendered page rather than the
+   standalone one, which passes cleanly because BASE_STYLE is not there.
+   Any new surface added below needs its own colour for the same reason. */
+.stat{color:var(--text-lo)}
+.note{color:var(--muted)}
+.gate{color:var(--text-lo)}
+.countries{color:var(--text-lo)}
+table{color:var(--text-lo)}
+.wrap{color:var(--text-lo)}
+footer{color:var(--muted)}
 .grid{display:grid;gap:14px}
 @media(min-width:760px){.g2{grid-template-columns:1fr 1fr}.g3{grid-template-columns:repeat(3,1fr)}.g4{grid-template-columns:repeat(4,1fr)}}
 label{display:block;font-size:12px;font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin:0 0 5px}

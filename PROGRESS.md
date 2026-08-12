@@ -7720,6 +7720,50 @@ returns 404 by design and stays that way until `ROI_PUBLIC` is flipped.
 4. **Investment placeholders** remain placeholders until real numbers
    replace them; the payback figure is illustrative until then.
 
+## 11 Aug 2026 — ROI planner: unreadable text on the members render (fixed)
+
+Dan, road-testing the hidden ROI planner: *"I've noticed the test color of
+the text reading 'Across 11 jurisdictions you have 6 clearance, 2 reporting
+and 2 B2G-only regimes…' is very difficult to read, because it does not
+stand out from the background color"*.
+
+He was reading a **1.05:1** contrast ratio — near-black `rgb(36, 29, 16)`
+text on dark navy `rgb(21, 34, 56)`. WCAG AA wants 4.5:1 for body text.
+Effectively invisible.
+
+**Why I did not see it and he did.** I built and reviewed the planner as a
+standalone HTML file. Audited on its own, `/tmp/roi_live.html` has **zero**
+AA failures — the page is fine in isolation. But that is not the page Dan
+loads. `members-worker`'s `pageShell()` concatenates its own `BASE_STYLE`
+**before** `ROI_STYLE`, and `BASE_STYLE` line 25 paints `.card` cream with
+`color:#241d10`. `ROI_STYLE` then re-declares `.card` — but only its
+`background`, not its `colour`. Appending a rule overrides the properties
+you actually declare and leaves the rest standing, so the dark-navy
+background landed and the near-black text stayed. Reproducing the members
+render exactly (both sheets, in order) surfaced **55** failing elements,
+not one.
+
+The lesson is narrow and worth keeping: **a shared render module has to be
+audited in the shell that actually serves it.** Testing the module alone
+tests a page no user ever sees.
+
+**Fix** (`shared/roi-render.mjs`, no schema change, no migration):
+explicit `color` on every surface the sheet touches — `.card`, `.stat`,
+`.note`, `.gate`, `.countries`, `table`, `.wrap`, `footer` — plus a comment
+at the top of that block explaining why colour must never be left to
+inherit here, so the next surface added does not reintroduce it.
+
+**Re-measured after the fix, against the members-worker render:** 0
+failing elements. Dan's paragraph now renders `rgb(242, 240, 232)` on the
+dark card.
+
+**Deploy:** `members-worker` only — it is the worker that serves
+`/members/roi-calculator`. `site-worker` imports the same shared module,
+so redeploying it too keeps the two in step, though its public
+`/roi-calculator` route still 404s by design while `ROI_PUBLIC` is
+`"false"`.
+
+
 ## Open items / next steps
 
 ### Real open work
