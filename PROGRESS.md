@@ -8658,7 +8658,17 @@ simple, Belgium complex.
 `simple`. A country wrongly rated `complex` overcharges quietly and
 nothing will flag it. Recorded in the runbook next to the field.
 
-**Deploy:** migrations 515 and 516, then both Workers.
+**Deployed and confirmed by Dan, 12 Aug 2026** — migrations 515 and 516
+applied, both Workers redeployed. The complexity rule is now Dan's own
+wording, ViDA rows price as complex, Belgium is corrected, and the weekly
+content monitor carries a standing review that will surface the next
+Belgium without anyone having to remember to look.
+
+**Still open on the planner, after this:** the Germany-shaped modelling
+gap — an EU member with a national deadline before 2030 has a second ViDA
+wave the planner does not show, because only the earliest deadline per
+country is modelled. Fixing it means emitting two rows for those
+countries, which is a change to the planner's shape rather than a tweak.
 
 ## Open items / next steps
 
