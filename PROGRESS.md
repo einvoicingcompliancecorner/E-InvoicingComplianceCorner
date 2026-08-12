@@ -8617,7 +8617,48 @@ a clean empty result that looks like a passing check. Separate cursors.
 simple 2027-01-01, Belgium complex 2028-01-01, Austria and Netherlands
 complex 2030-07-01 EU-WIDE; 16/16 regressions; 0 AA failures.
 
-**Deploy:** migration 515, then both Workers.
+### A standing review, so this does not go stale (migration 516)
+
+Dan: *"Simple is fine, for Denmark and Germany. Please log for review as
+mandates evolve. We should check what is being introduced, and update the
+country complexity as needed."*
+
+`roi_complexity` is correct on the day it is set and slowly wrong
+afterwards, because mandates move. So the ad-hoc scan that found Belgium
+is now a **weekly check inside the content monitor**: any country rated
+`simple` whose own milestones mention clearance, digital reporting, SAF-T,
+RTIR, a 5-corner model or pre-validation gets a digest card with the
+one-line UPDATE that would fix it.
+
+**Acknowledgements are recorded against a fingerprint of the country's
+milestones, not a flag.** A flag would silence Denmark and Germany
+forever, which is the opposite of what was asked. Add a milestone or move
+a date and the fingerprint changes, and the country re-raises carrying the
+note saying what was decided last time and what would change the answer.
+Silence while the facts hold; a prompt the moment they do not.
+
+Seeded with four decisions: Denmark and Germany simple (Dan), Canada
+simple, Belgium complex.
+
+**Two things testing changed:**
+
+1. **Behaviour verified end to end** rather than assumed: with nothing
+   moving the check is silent; inserting a hypothetical Danish
+   e-reporting milestone re-raises Denmark and leaves Germany alone;
+   re-recording the fingerprint silences it again.
+2. **The first pattern was too loose.** A bare `report` flagged the
+   Netherlands, whose milestone mentions an advisory *report* — and a
+   weekly section that opens with permanent false positives teaches the
+   reader to skip it, which is the same failure this digest already fixed
+   once for known blockers. The pattern now requires reporting to appear
+   as an obligation ("digital reporting", "reporting requirement") plus
+   the terms that are unambiguous alone.
+
+**One limitation stated plainly:** the check only looks at countries rated
+`simple`. A country wrongly rated `complex` overcharges quietly and
+nothing will flag it. Recorded in the runbook next to the field.
+
+**Deploy:** migrations 515 and 516, then both Workers.
 
 ## Open items / next steps
 

@@ -728,6 +728,71 @@ function currentMonthKeyUTC() {
   return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`;
 }
 
+// ---------------------------------------------------------------
+// ROI complexity drift check (migration 516).
+//
+// Dan, 12 Aug 2026: "Please log for review as mandates evolve. We should
+// check what is being introduced, and update the country complexity as
+// needed."
+//
+// `roi_complexity` drives what the ROI planner charges per country, and
+// it is correct on the day it is set and slowly wrong afterwards, because
+// mandates move. This is the same scan that found Belgium's `be-ereport`
+// after it had been misclassified since the column was created — a
+// country stored 'simple' whose own milestones talk about reporting,
+// clearance or a 5-corner model.
+//
+// The acknowledgement is recorded against a FINGERPRINT of the country's
+// milestones rather than a plain flag. A flag would silence Denmark and
+// Germany permanently, which is the opposite of what was asked: add a
+// milestone or move a date and the fingerprint changes, and the country
+// re-raises carrying the note explaining what was decided last time.
+// Silence while the facts hold; a prompt the moment they do not.
+// A BARE "report" IS TOO LOOSE, and testing proved it: the first run
+// flagged the Netherlands because a milestone mentions an advisory
+// *report*, and a weekly section that opens with permanent false
+// positives teaches the reader to skip it — the same failure this
+// digest already fixed once, for known blockers. So the pattern requires
+// reporting to appear as an OBLIGATION, plus the terms that are
+// unambiguous on their own.
+const ROI_REPORTING_RE = new RegExp([
+  "(digital|e-|electronic|real[- ]?time|near[- ]?real[- ]?time|transaction(al)?|periodic|continuous)[- ]?reporting",
+  "reporting (obligation|requirement|mandate|regime|system)",
+  "\\bsaf-?t\\b", "\\brtir\\b", "\\bclearance\\b", "\\bctc\\b",
+  "\\b5-?corner\\b", "\\bfive-corner\\b", "pre-?validation",
+].join("|"), "i");
+
+async function getRoiComplexityDrift(env) {
+  const rows = await d1All(env, `
+    SELECT c.code, c.name_en, c.roi_complexity,
+           COALESCE((SELECT group_concat(m2.id || '@' || m2.date, '|')
+                       FROM (SELECT id, date FROM milestones WHERE country_id = c.id ORDER BY id) m2), '') AS fingerprint,
+           COALESCE((SELECT group_concat(COALESCE(mt.system,'') || ' ' || m3.id, ' ~ ')
+                       FROM milestones m3
+                       LEFT JOIN milestone_translations mt ON mt.milestone_id = m3.id AND mt.lang = 'en'
+                      WHERE m3.country_id = c.id), '') AS blob,
+           r.decision AS reviewed_as, r.decided_on, r.fingerprint AS reviewed_fp, r.note
+      FROM countries c
+      LEFT JOIN roi_complexity_reviews r ON r.code = c.code
+     WHERE c.code <> 'EU' AND c.roi_complexity = 'simple'
+  `);
+  const out = [];
+  for (const r of rows) {
+    // ViDA rows are on every member state and are handled by the planner's
+    // own row-level override, so they must not drag every EU country into
+    // this list every single week.
+    const blob = String(r.blob || "").replace(/[a-z]{2}-vida[^\s~]*/gi, "").replace(/\bViDA\b[^~]*/gi, "");
+    if (!ROI_REPORTING_RE.test(blob)) continue;
+    if (r.reviewed_as && r.reviewed_fp === r.fingerprint) continue;   // decided, and nothing has moved
+    out.push({
+      code: r.code, name: r.name_en, stored: r.roi_complexity,
+      previously: r.reviewed_as || null, decidedOn: r.decided_on || null, note: r.note || null,
+      reason: (blob.match(ROI_REPORTING_RE) || [""])[0],
+    });
+  }
+  return out;
+}
+
 async function getUnannouncedItems(env) {
   const since = new Date(Date.now() - ANNOUNCEMENT_LOOKBACK_DAYS * 86400000).toISOString().slice(0, 10);
   const thisMonth = currentMonthKeyUTC();
@@ -876,9 +941,10 @@ const CM_CHANNEL_LABELS = { newsletter: "newsletter", linkedin: "LinkedIn" };
 // small. Before 10 Aug 2026 it opened with a four-up stat grid where
 // three of the four numbers were shortfalls, which made a completely
 // healthy week read like a list of failures.
-function buildDigestHtml(results, totalSources, skipped, unannounced) {
+function buildDigestHtml(results, totalSources, skipped, unannounced, cxDrift) {
   skipped = skipped || [];
   unannounced = unannounced || [];
+  cxDrift = cxDrift || [];
   const changed = results.filter((r) => r.status === "changed");
   const failedAll = results.filter((r) => r.status === "failed");
   // Split new/intermittent failures from sites that have been refusing
@@ -892,7 +958,7 @@ function buildDigestHtml(results, totalSources, skipped, unannounced) {
   const unchanged = results.filter((r) => r.status === "unchanged");
   const dateStr = new Date().toISOString().slice(0, 10);
   const fullSweep = skipped.length === 0;
-  const needsAttention = changed.length + newFailures.length + unannounced.length;
+  const needsAttention = changed.length + newFailures.length + unannounced.length + cxDrift.length;
 
   let html = `
     <p style="margin:0 0 4px; font-family:'Courier New',Courier,monospace; font-size:11px; letter-spacing:1.5px; text-transform:uppercase; color:${CM_AMBER};">Content Monitor</p>
@@ -910,6 +976,25 @@ function buildDigestHtml(results, totalSources, skipped, unannounced) {
       html += cmSourceCard(r.source, CM_AMBER, `
         <p style="margin:0 0 3px; font-family:'Courier New',Courier,monospace; font-size:11px; color:${CM_MUTED};">Before: …${escapeHtmlCM(r.diff.before)}…</p>
         <p style="margin:0; font-family:'Courier New',Courier,monospace; font-size:11px; color:${CM_LIVE};">After: …${escapeHtmlCM(r.diff.after)}…</p>
+      `);
+    }
+  }
+
+  // ---- Attention: a country's mandate may have outgrown its rating ----
+  // Placed with the other action items rather than in the housekeeping
+  // block at the end, because this one changes what customers are
+  // quoted. It stays silent until a country's milestones actually move,
+  // so anything appearing here is genuinely new information.
+  if (cxDrift.length) {
+    html += `<h2 style="margin:0 0 4px; font-family:Georgia,serif; font-size:15px; color:${CM_HEADING};"><span style="color:${CM_AMBER};">●</span> ROI complexity — review (${cxDrift.length})</h2>`;
+    html += `<p style="margin:0 0 10px; font-size:12.5px; color:${CM_MUTED};">These jurisdictions are rated <strong>simple</strong> in the ROI planner, but their tracked milestones mention clearance, reporting or a 5-corner model. Complexity sets the per-country integration rate, so a wrong rating quietly misprices every business case that includes it. Confirm or reclassify — either way, record the decision so this stops asking.</p>`;
+    for (const d of cxDrift) {
+      html += cmSourceCard(d.name, CM_AMBER, `
+        <p style="margin:0 0 4px; font-size:12.5px; color:${CM_BODY};">Rated <strong>simple</strong>; a milestone mentions &ldquo;${escapeHtmlCM(d.reason)}&rdquo;.</p>
+        ${d.previously
+          ? `<p style="margin:0 0 4px; font-size:12px; color:${CM_MUTED};">Reviewed ${escapeHtmlCM(d.decidedOn || "")} and left as <strong>${escapeHtmlCM(d.previously)}</strong> &mdash; but its milestones have changed since. ${d.note ? escapeHtmlCM(d.note) : ""}</p>`
+          : `<p style="margin:0 0 4px; font-size:12px; color:${CM_MUTED};">Not reviewed before.</p>`}
+        <p style="margin:0; font-family:'Courier New',Courier,monospace; font-size:11px; color:${CM_MUTED};">UPDATE countries SET roi_complexity='complex' WHERE code='${escapeHtmlCM(d.code)}';</p>
       `);
     }
   }
@@ -1050,22 +1135,32 @@ async function runContentMonitor(env, opts) {
     console.log(`Content monitor: could not load unannounced items — ${err && err.message || err}`);
   }
 
-  console.log(`Content monitor: ${results.length}/${allSources.length} checked (${skipped.length} deferred to next run), ${changed} changed, ${failed} failed, ${unannounced.length} awaiting announcement.`);
+  // ROI complexity drift (migration 516). Same wrapping and the same
+  // reason: a standing hygiene check must never be able to cost us the
+  // source-change digest, which is the part with a real deadline on it.
+  let cxDrift = [];
+  try {
+    cxDrift = await getRoiComplexityDrift(env);
+  } catch (err) {
+    console.log(`Content monitor: could not run the ROI complexity check — ${err && err.message || err}`);
+  }
+
+  console.log(`Content monitor: ${results.length}/${allSources.length} checked (${skipped.length} deferred to next run), ${changed} changed, ${failed} failed, ${unannounced.length} awaiting announcement, ${cxDrift.length} flagged for ROI complexity review.`);
 
   // Subject line leads with what needs doing. The old one always read
   // as a tally of problems ("0 changed, 2 failed, 107 deferred") even
   // on a healthy week, which is exactly backwards for an inbox.
-  const attention = changed + unannounced.length;
+  const attention = changed + unannounced.length + cxDrift.length;
   const subject = attention === 0
     ? `[Content Monitor] All quiet — week of ${new Date().toISOString().slice(0, 10)}`
-    : `[Content Monitor] ${[changed ? `${changed} changed` : null, unannounced.length ? `${unannounced.length} to announce` : null].filter(Boolean).join(", ")} — week of ${new Date().toISOString().slice(0, 10)}`;
+    : `[Content Monitor] ${[changed ? `${changed} changed` : null, unannounced.length ? `${unannounced.length} to announce` : null, cxDrift.length ? `${cxDrift.length} to reclassify` : null].filter(Boolean).join(", ")} — week of ${new Date().toISOString().slice(0, 10)}`;
 
   const footerHtml = `<p style="margin:0; font-family:'Courier New',Courier,monospace; font-size:10.5px; color:${CM_MUTED};">Internal monitoring only — never sent to subscribers. Sources: <a href="https://e-invoicingcompliancecorner.com/sources" style="color:${CM_MUTED};">the tracking sources page</a>.</p>`;
   await sendViaResend(env, {
     from: env.FROM_EMAIL,
     to: env.CONTENT_MONITOR_EMAIL,
     subject,
-    html: buildEmailShell(buildDigestHtml(results, allSources.length, skipped, unannounced), footerHtml, CM_HEADER_HTML),
+    html: buildEmailShell(buildDigestHtml(results, allSources.length, skipped, unannounced, cxDrift), footerHtml, CM_HEADER_HTML),
   });
 }
 

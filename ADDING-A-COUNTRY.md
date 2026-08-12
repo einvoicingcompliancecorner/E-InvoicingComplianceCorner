@@ -196,6 +196,27 @@ non-negotiable, now automated rather than remembered.
    Dan also expects `eu_member` to be useful for ViDA go-live content,
    which is a better reason to have it than the bug that prompted it.
 
+   ### Complexity is reviewed weekly — you do not have to remember
+
+   Migration 516 added `roi_complexity_reviews` and a check that runs
+   inside the weekly content monitor. It flags any country rated
+   `simple` whose own milestones mention clearance, digital reporting,
+   SAF-T, RTIR, a 5-corner model or pre-validation, and puts it in the
+   digest with the one-line UPDATE that would fix it.
+
+   **Acknowledgements are recorded against a fingerprint of the
+   country's milestones, not a flag.** A flag would silence a country
+   forever, which defeats the point: add a milestone or move a date and
+   the fingerprint changes, and it re-raises carrying the note saying
+   what was decided last time and what would change the answer. Silence
+   while the facts hold; a prompt the moment they do not.
+
+   So when you add a country, you do not need to get `roi_complexity`
+   perfect on day one — but you should still set it deliberately,
+   because the check only looks at countries rated `simple`. A country
+   wrongly rated `complex` overcharges quietly and nothing will tell
+   you.
+
 2. **Milestones + translations** (tracker board and deep-dive timeline)
    - `milestones`: `id` (short country prefix, e.g. `qa-b2b-wave1`),
      `country_id`, `date`, `anchor`, `source_url` (see "Sourcing
