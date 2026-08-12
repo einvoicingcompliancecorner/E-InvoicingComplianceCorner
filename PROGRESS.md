@@ -8098,6 +8098,98 @@ page.
 
 **Deploy:** migration 508, then site-worker.
 
+## 12 Aug 2026 — ROI evidence whitepaper: the analyst and consultancy section (migration 509)
+
+Dan asked two follow-up questions in quick succession — whether Forrester,
+Gartner, IDC, Hackett, Spend Matters or Ardent Partners have published
+research on the benefits of an e-invoicing-only project, and then the same
+of the Big Four. Then: *"Yes, please can you ensure that the report writing
+style is conversational and authoritative."*
+
+**Ten firms checked. None has research that isolates e-invoicing exchange
+from the accounts-payable automation around it.** There is a great deal of
+research in the neighbourhood and some of it is very good — IDC's SAP
+Business Network study names its analysts, publishes a document number and
+gives its figures free in full, which is more transparency than most of the
+sources already in the report. Its problem is scope, not rigour.
+
+Three traces went into the new Section 06, each verified directly rather
+than taken on the research pass:
+
+1. **The Forrester study circulated as e-invoicing evidence is about
+   something else.** The "ONESOURCE Pagero E-Invoicing" page is a spotlight
+   repackaging *The Total Economic Impact of Thomson Reuters ONESOURCE
+   Indirect Tax*, June 2022 — identical 120% ROI and $2.1M NPV, with the
+   parent study's two efficiency lines merged into one. That study's
+   financial analysis covers Determination and Compliance **with Pagero
+   e-invoicing an excluded add-on**.
+2. **Deloitte will not cite Deloitte.** Deloitte Australia's own current
+   e-invoicing blog recites the ~$31 / ~$28 / "a little over $9" figures
+   and attributes them, in a quotation from Australia's Small Business
+   Ombudsman, to *"the digital services community in Australia"* — not to
+   Deloitte Access Economics 2016. Verified at the page. A firm with a
+   citable report cites it.
+3. **"Deloitte Access Economics (2024)" appears to exist only inside a
+   report Deloitte wrote.** It is the source APEC gives for USD 14.84 per
+   invoice, cited on charts with no reference-list entry, in a report
+   produced by Deloitte Touche Tohmatsu. The 60/40 AP/AR split is identical
+   to the unpublished 2016 model, which suggests a re-base rather than new
+   fieldwork.
+
+### The finding that touches the live site
+
+**Ardent published two 2025 benchmark reports whose numbers disagree.**
+*The State of ePayables 2025* (Bottomline, n=204) gives $9.84 / 8.2 days /
+**18.4%** exceptions. *AP Metrics That Matter in 2025* (Pagero, n=212) gives
+$9.40 / 9.2 days / **14%**. The site cites 18.4% as a Grade A benchmark, so
+this mattered. I fetched the Pagero PDF and the conflict resolves cleanly:
+it says "in 2025" on the cover but was **fielded March–May 2024**, so it is
+the older wave. Our 18.4% is from the fresher fielding and is correct.
+
+Two consequences worth acting on, neither done yet and both flagged for Dan
+rather than decided here: the `ap_cost_per_invoice`, `cycle_time_days` and
+`exception_rate` citations should name the edition **and the fielding
+period**, because a reader who finds the Pagero version will otherwise
+conclude we got it wrong; and the Pagero edition is the one that actually
+defines "all-inclusive" cost, a definition the *State of ePayables* edition
+omits and which we could usefully borrow.
+
+### What was deliberately NOT written
+
+We wanted to quote Gartner's own market definition for the AP Applications
+Magic Quadrant, since how a market is *defined* reveals what analysts think
+belongs in it. The reprint page we could reach publishes the vendor's
+positioning, not Gartner's framework. **So the report does not characterise
+it**, and says as much — which is the same standard the report applies to
+everyone else. Restraint here is the point: a document arguing that people
+overstate what their sources say cannot overstate what its sources say.
+
+### Mechanics
+
+- New Section 06 inserted; old 06–09 shifted to 07–10.
+- **References renumbered by first appearance**, 32 → 47, and verified
+  programmatically: every citation resolves to an existing `<li>`, the list
+  order equals first-appearance order, and every visible `[n]` label matches
+  its target id. Done with a single-pass regex mapping rather than
+  sequential replaces, which would have aliased (renaming ref-2 to ref-7 and
+  then rewriting it again on the ref-7 pass).
+- Tone pass at Dan's request: five passages rewritten from passive or stiff
+  to direct, plus warmer openings to sections 03 and 05. **No factual
+  content, figure or citation was touched** — only phrasing.
+- Migration 509 rewrites the listing `dek` and `teaser_html`. The dek said
+  "32 sources"; the reference list now holds 47. Left alone that would have
+  been a factual error on the listing card of a report about citation
+  accuracy. Caught by counting rendered `<li>` elements, not by reading.
+- 508 and 509 apply together on the same pass, since 508 has not deployed
+  yet: 508 inserts the row, 509 rewrites two text fields.
+
+**Verified:** replay clean (509 files); whitepaper renders with 10 sections,
+47 references, 0 WCAG AA failures and no JS errors; hub re-rendered against
+the replayed DB with the new dek; the ATO wording, Deloitte AU attribution,
+Hackett figures and the Ardent Pagero PDF all fetched and quoted directly.
+
+**Deploy:** migrations 508 and 509, then site-worker.
+
 ## Open items / next steps
 
 ### Real open work
