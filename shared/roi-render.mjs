@@ -482,7 +482,7 @@ export function renderRoiPage({ countries, benchmarks = [], phases = [], strings
     </div>
 
     <p style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:var(--soon);margin:20px 0 8px">Investment &mdash; costs <span class="tag tD">D</span></p>
-    <p class="hint" style="margin:-4px 0 8px;color:#e0907f">These are <strong>placeholders, not benchmarks</strong>. We checked: no analyst firm publishes credible per-country e-invoicing implementation or platform costs. Replace them with your own quotes &mdash; until you do, treat the payback figure as illustrative only.</p>
+    <p class="hint" style="margin:-4px 0 8px;color:#e0907f">These figures are <strong>placeholders only</strong>. Please replace with vendor budgetary estimates and treat the ROI as illustrative, until actuals can be provided.</p>
     <div class="grid g4">
       <div><label for="cImplS" style="font-size:11px">Cost per SIMPLE integration${hlp("cImplS","What this drives")}</label><input type="number" id="cImplS" value="${dv('cImplS')}" min="0" step="1000"><p class="hint" id="h-cImplS"></p></div>
       <div><label for="cImplC" style="font-size:11px">Cost per COMPLEX integration${hlp("cImplC","What this drives")}</label><input type="number" id="cImplC" value="${dv('cImplC')}" min="0" step="1000"><p class="hint" id="h-cImplC"></p></div>

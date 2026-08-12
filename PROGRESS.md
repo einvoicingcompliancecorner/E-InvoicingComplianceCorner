@@ -8416,6 +8416,40 @@ EU-WIDE.
    second Ardent 2025 edition exists with different numbers. Offered on
    12 Aug and not yet taken up.
 
+## 12 Aug 2026 — ROI planner: investment placeholder wording (Dan's words, verbatim)
+
+Dan supplied replacement copy for the red warning above the Investment
+inputs in the assumptions panel. Now reads:
+
+> These figures are **placeholders only**. Please replace with vendor
+> budgetary estimates and treat the ROI as illustrative, until actuals can
+> be provided.
+
+Better than what it replaced, and not only because it is shorter. The old
+text spent two of its three sentences on *our* research process — "we
+checked", "no analyst firm publishes" — which is a fact about us, not an
+instruction to the reader. Dan's version is addressed to the person who
+has to act on it and names the actual next step, a vendor budgetary
+estimate, rather than the vaguer "your own quotes". The evidence that no
+credible published figure exists has a proper home now anyway: the
+12 Aug whitepaper, and the two `?` tooltips on the rates themselves.
+
+Code change only — this string is page chrome and page chrome is still
+inline rather than in D1 (see the standing open item). No migration.
+Emphasis kept on "placeholders only" so the warning holds its visual
+weight in red; the words are Dan's, unaltered.
+
+**Deliberately left alone, and flagged rather than changed:** the sibling
+warning in the *results* section, which fires when cost inputs are still
+at their defaults and currently reads "N of 4 cost inputs are still our
+placeholders… we checked, and would rather say so than invent one." Dan
+asked about the assumptions panel specifically. The two now differ in
+tone, which is worth a one-line follow-up if he wants them aligned.
+
+**Verified:** renders as intended; 16/16 regressions; 0 AA failures.
+
+**Deploy:** both Workers. No migration.
+
 ## Open items / next steps
 
 ### Real open work
