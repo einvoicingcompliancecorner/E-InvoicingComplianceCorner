@@ -781,6 +781,7 @@ async function renderRoiCalculatorPage(request, env) {
 <title>E-Invoicing ROI &amp; Wave Planner — The E-Invoicing Compliance Corner</title>
 <meta name="description" content="Build an e-invoicing business case from your own invoice volumes and country footprint. Delivery waves back-planned from real published mandate deadlines, with an evidence grade against every benchmark used.">
 <link rel="canonical" href="https://e-invoicingcompliancecorner.com/roi-calculator">
+<meta name="robots" content="${env.ROI_INDEXABLE === "true" ? "index,follow" : "noindex,nofollow"}">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>${ROI_STYLE}</style></head><body>${body}<script>${script}</script></body></html>`;
@@ -1004,12 +1005,24 @@ export default {
       if (slug) return renderInsightsArticle(request, env, slug);
     }
 
-    // ROI & Wave Planner — public, SEO-indexable teaser. The calculation
-    // itself runs client-side, so gating it server-side would be theatre;
-    // what is actually gated is the RESULTS panel and "use my subscribed
-    // countries", which needs a real session. Same teaser/gated split as
-    // /insights — see shared/roi-render.mjs's header for the reasoning.
+    // ROI & Wave Planner — public teaser, currently SWITCHED OFF.
+    //
+    // Dan asked (11 Aug 2026) to keep this off the public site while he
+    // road-tests the output and iterates. The tool itself stays fully
+    // usable at members.e-invoicingcompliancecorner.com/members/roi-calculator,
+    // which requires a real session, so he can work with it without any
+    // of it being reachable or indexable from the public site.
+    //
+    // Same env-var toggle pattern as members-worker's ARCHIVE_PUBLIC:
+    // flip ROI_PUBLIC to "true" in site-worker/wrangler.toml (or in the
+    // Cloudflare dashboard for an immediate effect, remembering that the
+    // next `wrangler deploy` resyncs from the file) to expose it.
+    //
+    // Deliberately a 404 rather than a redirect or a "coming soon" page:
+    // a soft response still gets crawled, indexed and shared, which is
+    // exactly what "hidden" is meant to prevent.
     if (ROI_PATHS.has(url.pathname)) {
+      if (env.ROI_PUBLIC !== "true") return new Response("Not found", { status: 404 });
       return renderRoiCalculatorPage(request, env);
     }
 

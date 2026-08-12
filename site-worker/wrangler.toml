@@ -48,3 +48,24 @@ run_worker_first = [
 binding = "eicc_content"
 database_name = "eicc-content"
 database_id = "d1d10bd0-e90a-44a3-9494-a63689e8d32e"
+
+# ----------------------------------------------------------------
+# ROI & Wave Planner (added 11 Aug 2026).
+#
+# The public teaser at /roi-calculator is OFF while Dan road-tests the
+# output — the route returns 404 unless this is "true". The tool itself
+# remains fully usable, session-gated, at
+# members.e-invoicingcompliancecorner.com/members/roi-calculator, so it
+# can be worked with without being reachable from the public site.
+#
+# Two separate switches on purpose:
+#   ROI_PUBLIC     — is the page reachable at all
+#   ROI_INDEXABLE  — may search engines index it once it IS reachable
+# Turning the page on does not silently also invite Google in; a
+# half-tested tool appearing in search results is hard to undo.
+#
+# Remember to add /roi-calculator to sitemap.xml when both go true.
+# ----------------------------------------------------------------
+[vars]
+ROI_PUBLIC = "false"
+ROI_INDEXABLE = "false"

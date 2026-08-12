@@ -7677,8 +7677,34 @@ backwards, since a mandate compels what you *issue*. Now modelled with
 its own benchmark, which moves direct savings from $2.38m to $3.08m on
 the defaults.
 
+### Public page switched OFF at Dan's request
+
+Dan asked (11 Aug) to keep this off the public site while he road-tests
+the output: "I would like this page hidden, and not expose via the main
+site. I might have more tweaks and would like to roadtest the output."
+
+Implemented with the same env-var toggle pattern as `ARCHIVE_PUBLIC`:
+`site-worker/wrangler.toml` gains `ROI_PUBLIC = "false"`, and the
+`/roi-calculator` route returns a **404** unless it is `"true"`.
+Deliberately a 404 rather than a redirect or a "coming soon" page — a
+soft response still gets crawled, indexed and shared, which is exactly
+what hiding it is meant to prevent. All four aliases are covered.
+
+The tool stays fully usable at `/members/roi-calculator`, which requires
+a real session, so Dan can work with it while none of it is reachable
+from the public site.
+
+**Two switches, not one**: `ROI_PUBLIC` controls reachability,
+`ROI_INDEXABLE` controls the robots meta tag. Turning the page on does
+not silently also invite Google in — a half-tested tool appearing in
+search results is hard to undo. Also confirmed: `/roi-calculator` is
+**not** in `sitemap.xml`, and should only be added when both switches
+go true.
+
 **Not yet deployed.** Migration 505, then BOTH Workers (the shared
-module changed, and each registers its own route).
+module changed, and each registers its own route). Note the public route
+will 404 by design after deploy — that is the intended state, not a
+broken deploy.
 
 ## Open items / next steps
 
