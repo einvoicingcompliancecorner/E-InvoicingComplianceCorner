@@ -8542,7 +8542,15 @@ is a monthly cron writing new rows into `roi_fx_rates` with a new `as_of`
 — the page keeps its "spot as at ⟨date⟩" framing and nothing changes at
 request time. Offered, not built.
 
-**Deploy:** migrations 513 and 514, then both Workers.
+**Deployed and confirmed by Dan, 12 Aug 2026**, and pushed to GitHub —
+`origin/main` at `3426545`. Migrations 513 and 514 applied, both Workers
+redeployed. The currency selector now converts, and says plainly that the
+rate is fixed.
+
+That clears the whole 12 Aug backlog: the contrast fix, the 27-tooltip
+help layer, the revised footprint and durations, both whitepapers, the
+stored complexity model, the split integration cost, `eu_member`/ViDA, and
+the FX fix are all live.
 
 ## Open items / next steps
 
