@@ -121,15 +121,27 @@ export async function getRoiCountries(db, todayISO) {
     // instead, and labelled EU-WIDE wherever it drives a row.
     const euDriven = future.length > 0 && !national.length && euDates.length > 0 ? 1 : 0;
 
-    // A member state whose ONLY obligation is ViDA still has real work to
-    // do, so it is lifted to at least 'simple' — otherwise a complexity of
-    // 'none' would drop it out of the wave plan entirely and the 2030 date
-    // would be silently ignored, which is the exact defect this fixes.
-    // Deliberately NOT promoted to 'complex': ViDA's digital reporting
-    // arguably meets the "authority receives invoice-level data" test, but
-    // that is a judgement about a 2030 regime rather than today's, and it
-    // is flagged for Dan rather than decided here.
-    const cxEff = (euDriven && cx === 0) ? 1 : cx;
+    // AN EU-DRIVEN DEADLINE IS COMPLEX WORK.
+    //
+    // Dan settled this on 12 Aug 2026, and the rule is his: "If there is
+    // clearance via CTC, 5-corner peppol, or some kind of digital
+    // reporting, then that would be complex. If it is only 4-corner
+    // peppol, no mandate at all, or e-Invoicing mandate only - this would
+    // be simple." ViDA is not an exchange mandate: Council Directive (EU)
+    // 2025/516 carries a Digital Reporting Requirement, so the tax
+    // authority receives invoice-level data and the row qualifies as
+    // complex on the plain reading of that rule.
+    //
+    // Note this deliberately overrides the country's STORED complexity,
+    // and only for rows whose deadline is EU-driven. That is the point:
+    // roi_complexity describes the regime a country runs TODAY, while the
+    // row in the plan is scoped to the deadline actually being planned
+    // for. Austria's own regime is 4-corner B2G and stays 'simple' in the
+    // database; the 2030 wave it appears in is ViDA work and is priced as
+    // complex. Getting that backwards in either direction would misprice
+    // it — leaving it simple understates a reporting build, and changing
+    // the stored value would misdescribe Austria everywhere else.
+    const cxEff = euDriven ? 2 : cx;
 
     return [c.name_en, c.code, REG[c.region] || "Eu", status, cxEff, future[0] || "", c.penalty_rows || 0, c.slug, euDriven];
   });

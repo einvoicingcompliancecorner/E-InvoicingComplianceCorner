@@ -8552,6 +8552,73 @@ help layer, the revised footprint and durations, both whitepapers, the
 stored complexity model, the split integration cost, `eu_member`/ViDA, and
 the FX fix are all live.
 
+## 12 Aug 2026 — Dan's complexity rule adopted verbatim; ViDA settled; Belgium corrected (migration 515)
+
+Dan settled the question 512 left open:
+
+> "If there is clearance via CTC, 5-corner peppol, or some kind of digital
+> reporting, then that would be complex. If it is only 4-corner peppol, no
+> mandate at all, or e-Invoicing mandate only - this would be simple."
+
+**ViDA is therefore complex.** Directive (EU) 2025/516 carries a Digital
+Reporting Requirement, so the authority receives invoice-level data. 512
+had lifted EU-driven rows only to `simple` and flagged the question; they
+are now priced as complex.
+
+The override is scoped to **the row, not the country**, and only where the
+deadline is EU-driven. Austria runs a 4-corner B2G regime today and stays
+`simple` in the database; the 2030 wave it appears in is ViDA work and is
+priced as complex. Both are true because they describe different things —
+the regime a country runs now, and the obligation being planned for.
+
+### Dan's follow-up found a real error
+
+> "Right now, France is complex, but Germany is currently simple - both EU
+> countries"
+
+Both are correct, and the answer is that the rule turns on **what each
+country legislated, not on membership**: France's Y-model is a CTC with
+e-reporting to the DGFiP; Germany mandated exchange only and explicitly
+left reporting to ViDA.
+
+But re-checking every `simple` country against its own milestones to
+answer him turned up **Belgium**, which was wrong. `be-ereport`
+(1 Jan 2028) is *"Near-real-time e-reporting (5-corner Peppol model)"* —
+hitting two limbs of the rule at once. Belgium had been classified on its
+2026 4-corner exchange mandate and its 2028 obligation was missed.
+Corrected to `complex`.
+
+**The scan that found it first returned nothing**, because the script
+reused one SQLite cursor for an inner query inside an outer loop and
+silently truncated it. That is the **second time that exact bug has cost
+time today**, and it fails silently in the most dangerous way — it returns
+a clean empty result that looks like a passing check. Separate cursors.
+
+### Two things left for Dan
+
+1. **Denmark.** `dk-saft2027` requires Danish SAF-T 2.0 *generation* from
+   1 Jan 2027 — a capability to produce invoice-level data on request,
+   rather than a periodic submission. Portugal is `complex` on SAF-T, so
+   consistency argues for changing Denmark; against that, on-demand
+   generation is not the continuous reporting the rule is aimed at, and
+   Denmark's is a bookkeeping-software mandate rather than a transmission
+   one. Left as `simple` and raised. One-line UPDATE either way. *(Note it
+   currently displays as Complex anyway, via the ViDA row override, since
+   it has no national future B2B deadline.)*
+2. **Germany is the shape of a modelling gap.** It has a national exchange
+   deadline (2027/2028, simple) *and* a ViDA reporting obligation (2030,
+   complex), but the planner models **one deadline per country** — the
+   earliest — so only the simple build appears. Any EU member with a
+   national deadline before 2030 has the same hidden second wave. Fixing
+   it means emitting two rows for those countries. Not attempted; it is a
+   real change to the planner's shape, not a tweak.
+
+**Verified:** replay clean (515 files); France complex 2026-09-01, Germany
+simple 2027-01-01, Belgium complex 2028-01-01, Austria and Netherlands
+complex 2030-07-01 EU-WIDE; 16/16 regressions; 0 AA failures.
+
+**Deploy:** migration 515, then both Workers.
+
 ## Open items / next steps
 
 ### Real open work
