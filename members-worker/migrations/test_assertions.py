@@ -262,7 +262,7 @@ def test_live_batch_sql():
         try:
             conn.executescript(open(os.path.join(A.MIGRATIONS_DIR, f), encoding="utf-8").read())
         except Exception:
-            pass  # the four documented replay errors
+            pass  # the documented pre-existing replay errors
     with contextlib.redirect_stdout(io.StringIO()):
         durable, _ = A.validate_replay(quiet=True)
     check("there are durable assertions to send", len(durable) > 20, len(durable))

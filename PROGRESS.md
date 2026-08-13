@@ -9362,45 +9362,73 @@ Rendering was checked rather than assumed: France, Poland and their
 French translations still produce their pill cards from the post-drop
 schema.
 
-### The finding that came out of checking Malaysia
+### The finding that came out of checking Malaysia, and where it led
 
-Malaysia has **zero** lifecycle cards in a clean replay — which is odd,
-because migration 078 exists specifically to support Malaysia's two pill
-cards. The cause: `082_malaysia_deepdive_content.sql` inserts cards with
-a `display_style` column that **088 does not add until six migrations
-later**. 082 is one of the four documented replay failures, and this is
-why.
+Malaysia had **zero** lifecycle cards in a clean replay — odd, because
+078 exists specifically to support Malaysia's two pill cards. Dan
+confirmed production has both. So the live site was correct and **the
+replay was the side that was wrong**.
 
-Production almost certainly has those rows — `089_fix_malaysia_
-submission_methods_style.sql` exists, and there is nothing to fix if
-nothing was inserted. So **the replay and production genuinely disagree
-about this table**, and have since August 2026.
+That mattered more than a missing page would have, because the replay is
+not a curiosity: it is what every test fixture, every migration assertion
+and the jurisdiction-count checker are built on. A gap in it is a blind
+spot in all of them.
 
-That is worth knowing on its own, and it is checkable in one query:
+### All four documented replay errors had the same cause
 
-```sql
-SELECT count(*) FROM deep_dive_lifecycle_cards d
-  JOIN countries c ON c.id = d.country_id WHERE c.code = 'MY';
-```
+Chasing it produced the finding of the day. Every one of the four
+"documented pre-existing errors" this project has carried for months was
+**a migration file edited after it had already been applied**. Their own
+headers say so, in their authors' own words:
 
-Zero in production would mean Malaysia's deep dive is missing content
-live; non-zero confirms the divergence and nothing more.
+- 082 (Malaysia): `display_style` was added to the file after 088
+  introduced that column — so the file described something that never
+  ran, and 089 exists to fix the live row instead.
+- 050b (Portugal): the eleventh milestone was added to 050's file after
+  050 had run with ten, so 050b's insert hits a UNIQUE constraint in
+  replay while being exactly right in production.
+- 070 and 072: 057 was amended to add `title` and `outro_text` after it
+  had run, so both ALTERs are redundant in a replay.
 
-### It changed the migration, which is the point of finding it early
+**Two are now fixed by making the files describe what actually ran.**
+082 no longer writes `display_style`; 050 no longer inserts the eleventh
+milestone. Both verified: the replay end state is unchanged for Portugal
+(same row, same four translations, same 412 milestones) and now *matches
+production* for Malaysia (2 cards, 7 statuses, `list` and `pills` styles
+via 089). `KNOWN_REPLAY_ERRORS` is down from four to two.
+
+**Two are irreducible, and that is now demonstrated rather than
+assumed.** Removing `title` and `outro_text` from 057 to let 070 and 072
+succeed was tried, and it breaks 059, 061, 067 and 069, which insert into
+those columns first. The amendment is load-bearing; the ALTERs are
+genuinely redundant, their backfills are redundant too (059/061/067/069
+write full rows), and since 519 drops that table they now fail against
+something that does not survive to the end of the chain. All of that is
+written into `KNOWN_REPLAY_ERRORS` itself so the next person does not
+have to re-derive it.
+
+**No convergence migration was needed.** The plan was to write one; the
+right fix turned out to be reverting two retroactive edits, which is
+strictly more truthful — a migration file should record what ran.
+
+### It changed migration 519, which is the point of finding it early
 
 The first draft of 519 asserted `count(*) FROM deep_dive_lifecycle_cards
 = 38` and three similar totals, taken from the replay. Those are checked
-against **live D1** when the migration is applied — so the migration
-would have aborted on the Malaysia difference, which is not its business.
+against **live D1** when the migration is applied — so it would have
+aborted on the Malaysia difference, which is not its business.
 
 The assertions now name the two countries this migration actually risks,
 France and Poland, whose counts come from migrations that applied cleanly
 everywhere; plus three **relational** standing invariants that hold
-whatever the row counts are in whichever database is being checked: every
-card has at least one status, every card has English to fall back to, and
-so does every status.
+whatever the row counts are: every card has at least one status, every
+card has English to fall back to, and so does every status.
 
-**The lesson generalises, and is now written into the migration:** an
+That distinction proved itself on the live run: all 8 assertions held
+against production, which contains Malaysia's cards the replay did not.
+The relational ones validated *more* data than the replay could see.
+
+**The lesson generalises, and is now in the migration header:** an
 absolute row count is only safe as an assertion if the replay and
 production agree about that table. Where they might not, assert the
 relationship instead of the number.

@@ -158,13 +158,31 @@ def wrangler_cmd():
 
 
 TRACKER_MIGRATION = "205_schema_migrations.sql"
-# The four documented pre-existing replay errors (see PROGRESS.md /
-# DEEP-DIVE-MIGRATION-CHECKLIST.md). Anything not in this list aborts.
+# The documented pre-existing replay errors. Anything not in this list
+# aborts. It was FOUR for most of this project's life; two were fixed on
+# 13 Aug 2026 once the cause was understood, and the cause was the same
+# in all four: a migration file EDITED AFTER IT HAD BEEN APPLIED.
+#
+# 050b and 082 are gone because their files now describe what actually
+# ran, which also closed a real replay/production divergence — Malaysia's
+# lifecycle cards were missing from every replay, and therefore from
+# every test fixture, while production had them all along.
+#
+# The two that remain are irreducible rather than unexamined, and this is
+# the demonstration, not an assumption:
+#   · Both ALTER deep_dive_lifecycle_intro_translations to add a column
+#     that 057 — as it now stands, after its own amendment — already
+#     creates. Removing those columns from 057 to make these two succeed
+#     was tried and breaks 059, 061, 067 and 069, which insert into them
+#     first. The amendment is load-bearing; the ALTERs are redundant.
+#   · Their backfills are redundant too: 059/061/067/069 write full rows
+#     including those columns, which is why the replayed content matches
+#     production either way.
+#   · And since migration 519 drops that table entirely, they now fail
+#     against something that does not survive to the end of the chain.
 KNOWN_REPLAY_ERRORS = {
-    "050b_portugal_missing_milestone.sql",
     "070_add_lifecycle_title_column.sql",
     "072_split_poland_lifecycle_text.sql",
-    "082_malaysia_deepdive_content.sql",
 }
 
 
@@ -333,7 +351,7 @@ def validate_replay(quiet=False):
                 failures.append((a, actual))
 
     if new_errors:
-        print("REPLAY VALIDATION FAILED — new errors (not the 4 documented ones):")
+        print(f"REPLAY VALIDATION FAILED — new errors (not the {len(KNOWN_REPLAY_ERRORS)} documented ones):")
         for f, e in new_errors:
             print(f"  {f}: {e}")
         sys.exit(1)
