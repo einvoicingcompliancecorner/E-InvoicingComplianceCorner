@@ -8,11 +8,42 @@ migrations/
 .git/
 *.md
 
+# The ignore files themselves, and this one especially. Caught 13 Aug
+# 2026 when a deploy printed "+ /.gitignore" as a new asset — it was
+# uploaded because it had just been edited, but it had been served all
+# along, and so had this file. Neither is a secret and both 404-adjacent
+# paths they name are unreachable anyway, so this is tidiness rather
+# than an incident. But there is no reason to publish a map of the
+# directory layout, and dotfiles at an asset root are a habit worth not
+# having.
+.gitignore
+.assetsignore
+
 # Test harnesses and their dependencies. [assets] directory is the repo
 # ROOT, so anything added at the top level is uploaded and served
-# publicly unless it is listed here — node_modules alone would put tens
-# of thousands of files on the public site.
+# publicly unless it is listed here — node_modules alone is ~1,800 files
+# including the workerd binary, which would exceed Cloudflare's 25 MiB
+# per-asset limit as well as being nobody's business.
 tests/
 node_modules/
 package.json
 package-lock.json
+
+# ----------------------------------------------------------------
+# READ THIS BEFORE PANICKING ABOUT THE FILE COUNT (13 Aug 2026).
+#
+# `wrangler deploy --dry-run` prints e.g. "Read 2,898 files from the
+# assets directory". That is a PRE-FILTER walk, not the upload set. The
+# actual asset-eligible set at that moment was 72 files.
+#
+# The proof is `.git/`, three lines above: it has been excluded since
+# this file was created, its ~106 files are unquestionably inside that
+# 2,898, and the live site has never served `.git`. The count has never
+# been the upload count — before node_modules existed here at all, the
+# same walk would have reported ~767 against the same 72 eligible files.
+#
+# If you ever want to confirm it directly rather than by inference, the
+# real test is one request after any deploy:
+#   curl -sI https://e-invoicingcompliancecorner.com/node_modules/wrangler/package.json
+# It should 404.
+# ----------------------------------------------------------------
