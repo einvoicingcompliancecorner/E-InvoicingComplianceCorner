@@ -9105,12 +9105,23 @@ already uploaded)"* — an upload set of **65**, against 2,901 read. The
 halves proved directly, no inference left.
 
 The deploy also printed `+ /.gitignore` as a new asset. It uploaded
-because it had just been edited, but it had been served all along — and
-so, therefore, had `.assetsignore`, which lists the directory layout.
-Neither is a secret and every path they name 404s anyway, so this is
-tidiness rather than an incident; both are now excluded. Worth noting as
-a pattern, though: **the diagnostic that closed one question surfaced a
-different real finding**, which is the usual return on actually looking.
+because it had just been edited, but it had been public all along. Not a
+secret, and every path it names 404s anyway, so tidiness rather than an
+incident — now excluded, and confirmed 404. Worth noting as a pattern,
+though: **the diagnostic that closed one question surfaced a different
+real finding**, which is the usual return on actually looking.
+
+Two corrections came out of chasing it, both recorded in `.assetsignore`
+rather than left as folklore. **`.assetsignore` itself was never served**
+— wrangler excludes its own config file automatically, proved by a 404
+taken before the entry for it existed. That was asserted here as
+"almost certainly" served, on no evidence, and it was simply wrong. And
+**removal is immediate**: adding a file to `.assetsignore` retires it on
+the very next deploy, even one reporting "No updated asset files to
+upload", because the asset manifest is rebuilt in full every time and
+only the uploads are incremental. The earlier guess that retired assets
+might linger was also wrong; the 200 that prompted it was a deploy that
+predated the merge.
 
 Also corrected while here: the earlier claim that `node_modules` would
 put "tens of thousands of files" on the site. It is ~1,800. The workerd
