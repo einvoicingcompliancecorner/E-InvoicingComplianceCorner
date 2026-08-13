@@ -22,9 +22,42 @@ both without configuration. Override with `NODE_MODULES_ROOT` or
 |---|---|---|
 | migration replay + assertions | `apply_migrations.py --replay-only` | Migrations 470/480/490 ran cleanly and changed nothing for three country builds |
 | assertion mechanism | `test_assertions.py` | An assertion runner that silently passes everything is worse than none |
+| jurisdiction count | `npm run count` | The count is stated in ~96 places and has silently disagreed with itself three times |
 | ROI regression | `npm run test:roi` | `\${hlp(...)}` escaped into the runtime script twice, killing the calculate button |
 | currency round trip | `npm run test:currency` | The selector changed the symbol only, overstating a GBP business case by a third |
 | contrast audit | `npm run test:contrast` | 55 elements of near-black text on dark navy, at 1.05:1, live |
+
+## The jurisdiction count
+
+`npm run count` is the only one of these that can also repair what it
+finds:
+
+```bash
+npm run count          # check; exits 1 on any disagreement
+npm run count:fix      # rewrite the files, then verify itself
+```
+
+The authority is `countries.in_picker = 1`. Everything else — 40 rows in
+D1, 40 sites across the i18n JSON, 16 in static HTML — is a claim about
+it. `--fix` rewrites the JSON and HTML, and writes the D1 half as a
+**draft migration** into `members-worker/migrations/drafts/`, because
+changing D1 is a migration and should never be a silent edit. Review it,
+renumber it, move it up.
+
+**Nothing here matches on a number.** Every site is identified positively
+first — by translation key, by `data-i18n` attribute, or by an exact
+anchor — and only then is a count looked for inside it. That matters
+because five numbers sitting near the count must never move: the CTC
+whitepaper's frozen "60-jurisdiction comparison", Malaysia's "72 hours",
+the UAE's "50 million AED", "Section 3" *inside the very string that
+states the count*, and Forrester's composite of "70 countries" in a
+citation — which is identical to today's count, so a sweep at the next
+bump would corrupt a reference and nothing would notice. A `FROZEN` list
+asserts those survive, as a tripwire on top of the design.
+
+The key registry has one home: migration 517's first standing invariant,
+parsed at runtime. The checker and the invariant cannot drift apart,
+which would be a pleasing irony in a script about things drifting apart.
 
 ## Auditing any other page
 

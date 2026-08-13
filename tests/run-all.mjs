@@ -20,6 +20,7 @@ const SUITES = [
     args: ["apply_migrations.py", "--replay-only"], cwd: MIGRATIONS },
   { name: "assertion mechanism", cmd: "python3",
     args: ["test_assertions.py"], cwd: MIGRATIONS },
+  { name: "jurisdiction count", cmd: "node", args: [join(HERE, "jurisdiction-count.mjs")], cwd: REPO },
   { name: "ROI regression", cmd: "node", args: [join(HERE, "roi-regression.mjs")], cwd: REPO },
   { name: "currency round trip", cmd: "node", args: [join(HERE, "roi-currency.mjs")], cwd: REPO },
   { name: "contrast audit", cmd: "node", args: [join(HERE, "contrast-audit.mjs")], cwd: REPO },

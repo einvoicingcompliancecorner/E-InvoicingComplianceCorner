@@ -9129,6 +9129,90 @@ binary inside it would still exceed Cloudflare's 25 MiB per-asset limit,
 so the exclusion earns its place regardless — but the number should be
 the real one.
 
+## 13 Aug 2026 (cont'd) — One authority for the jurisdiction count (design review, recommendation 5)
+
+Dan picked recommendation 5 off the review. The count is stated in prose
+in about ninety-six places across three kinds of file, and it has
+silently disagreed with itself three times: the "48 countries" header
+stale across several country adds; the German and Spanish i18n files
+stuck on 62 while English had moved on; and migrations 470/480/490 each
+updating D1 to a number none of them wrote. Every time it was found by
+eye, after shipping.
+
+`npm run count` now makes a false claim loud, and `npm run count:fix`
+repairs it.
+
+### Why not simply regenerate the prose, as the recommendation proposed
+
+Mapping it first changed the design. **Five numbers sitting near the
+count must never move**, and one of them is the same number:
+
+- the CTC whitepaper's "60-jurisdiction comparison" — frozen, correct at
+  60 forever, in all four languages
+- Malaysia's "72 hours" acceptance window
+- the UAE's "50 million AED" revenue threshold
+- "Section 3", inside the very string that states the count
+- **Forrester's composite of "70 countries" in whitepaper reference
+  [31]** — identical to today's count, so a sweep at the next bump would
+  corrupt a citation and nothing would notice
+
+A regex sweep over prose is exactly what has gone wrong here before. So
+nothing in this script matches on a number. Every site is identified
+**positively** first — by translation key, by `data-i18n` attribute, or
+by an exact anchor — and only then is a count looked for inside it. A
+`FROZEN` list asserts those five survive, as a tripwire on top of the
+design rather than as the design.
+
+The protection was measured, not assumed: run the count pattern across
+every i18n string *without* the key registry and it matches the frozen
+CTC figure in all four languages. The registry is the whole defence.
+
+### The registry has one home
+
+The count-bearing keys are parsed at runtime out of migration 517's first
+standing invariant. The checker and the invariant therefore cannot drift
+apart, which would have been a pleasing irony in a script about things
+drifting apart.
+
+### A near-miss worth recording
+
+The first version of the count pattern allowed only whitespace and tags
+between the number and its noun. It reported a clean pass — and had
+silently missed **seven of the forty** i18n sites: every German "70 hier
+erfassten Rechtsordnungen" and the English "70 tracked jurisdictions".
+Caught by counting ground truth independently rather than trusting the
+tool's own summary. **A checker that under-detects is worse than none,
+because it is trusted.** The pattern now allows up to three intervening
+words and finds all forty.
+
+### What `--fix` does, and how far it goes
+
+It rewrites the 40 i18n JSON sites and the 16 HTML sites in place —
+verified byte-exact: planting stale values across all four kinds of site
+and running `--fix` leaves `git diff` completely empty.
+
+It does **not** touch D1. Changing D1 is a migration, so `--fix` writes
+one into `migrations/drafts/` instead: all 40 `UPDATE` statements with
+every `SET` value derived from that row's actual replayed text rather
+than copied forward from a previous migration's assumption (the mistake
+that broke 470/480/490), every `WHERE` guarding on `(namespace, lang,
+key)` only so it cannot silently match nothing, and its own `-- ASSERT:`
+line. **That is the count-bump migration that has been written by hand
+every time.**
+
+And a `--fix` run verifies itself with a second read-only pass, because
+"rewrote 31 files" is a claim and re-reading them is evidence.
+
+### Proved end to end
+
+Scaffolding a 71st country into the chain and running the whole loop:
+invariant 1 breaks → the checker reports 96 stale sites and writes the
+draft migration → `--fix` rewrites 31 files → the generated migration
+moved into the chain → replay green again, and "Abschnitt 3" untouched
+throughout. Then everything was reverted; `git status` clean.
+
+`npm test` is now six suites.
+
 ## Open items / next steps
 
 ### Real open work
