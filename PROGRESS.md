@@ -8978,6 +8978,44 @@ comment-only edit from a substantive one and should not pretend
 otherwise. `applied_at` is deliberately left alone — it is the date the
 migration ran, and that has not changed.
 
+## 13 Aug 2026 — Production checked against the migration chain for the first time, and it holds
+
+Dan ran all three commands. Migration 517 applied and recorded, its 8
+standing invariants checked against live D1 before it was recorded; the
+13 checksum drifts re-recorded; and then:
+
+```
+Checking 41 durable assertion(s) against the target database ...
+All 41 durable assertion(s) hold against the target database.
+```
+
+**This is the first time the production database has been verified
+against what the migrations claim**, and it is worth being precise about
+what it means, because it is a stronger statement than "the migrations
+ran". Every one of those 41 assertions was evaluated against live D1, so
+each migration that carries one is now known to have had its stated
+effect *in production* — not merely to have executed without error. That
+covers the country build at 493, the jurisdiction-count repair at 500,
+the ViDA board de-duplication at 504, and the entire 505-516 ROI chain,
+several of which were applied by hand weeks ago and had never been
+confirmed beyond "the command exited zero".
+
+The eight standing invariants passing is the other half, and the more
+useful one going forward. Live, right now: the 40 prose rows that state
+how many jurisdictions this site tracks agree with the number of
+countries actually in the picker; no country is missing any of its four
+display names; no milestone lacks English text to fall back to; no
+milestone is orphaned from its country; every active ROI benchmark and
+phase is labelled; the complexity review ledger agrees with the column it
+documents; and the USD FX row sits at parity. None of those had ever been
+checked against production, and three of them are the exact shapes that
+have gone wrong here before.
+
+**Standing recommendation:** run `--assert-only` after any manual D1 edit
+and as the first item of the Phase 5 checklist on every country build. It
+takes three round-trips and is the only check that can distinguish "the
+migration ran" from "the migration worked".
+
 ## Open items / next steps
 
 ### Real open work
