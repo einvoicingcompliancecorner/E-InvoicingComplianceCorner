@@ -357,10 +357,14 @@ def validate_replay(quiet=False):
     return durable, superseded
 
 
-def wrangler(args, capture=True):
+def wrangler(args, capture=True, fatal=True):
+    """fatal=False returns None instead of exiting, for callers that have
+    a fallback worth trying."""
     cmd = wrangler_cmd() + args
     result = subprocess.run(cmd, cwd=WORKER_DIR, capture_output=capture, text=True)
     if result.returncode != 0:
+        if not fatal:
+            return None
         print(f"wrangler failed: {' '.join(cmd)}")
         if capture:
             print(result.stdout)
@@ -369,11 +373,16 @@ def wrangler(args, capture=True):
     return result.stdout if capture else None
 
 
-def d1_command(sql, remote):
+def d1_command(sql, remote, fatal=True):
+    """Returns a list of row dicts, or None if the command failed and the
+    caller asked not to be exited on (an empty list means the query ran
+    and returned nothing, which is a different thing)."""
     args = ["d1", "execute", DB_NAME, "--command", sql, "--json"]
     if remote:
         args.insert(3, "--remote")
-    out = wrangler(args)
+    out = wrangler(args, fatal=fatal)
+    if out is None:
+        return None
     try:
         payload = json.loads(out)
         return payload[0].get("results", []) if isinstance(payload, list) else []
@@ -389,31 +398,49 @@ def d1_file(path, remote):
 
 
 def batch_sql(batch):
-    """One query that evaluates a batch of assertions. Each assertion's
-    SELECT becomes a scalar subquery, which is exactly what the parser
-    guarantees it is (one row, one column). CAST to TEXT so a batch can
-    mix counts and strings in one column without SQLite deciding on a
-    type for us."""
-    return " UNION ALL ".join(
-        f"SELECT {n} AS k, CAST(({a.sql}) AS TEXT) AS v"
-        for n, a in enumerate(batch))
+    """One query that evaluates a batch of assertions: each assertion's
+    SELECT becomes a scalar subquery in its own COLUMN of a single row.
+
+    The first version stacked them with UNION ALL instead, one row each,
+    and D1 rejected it — "too many terms in compound SELECT", SQLITE_ERROR
+    7500, at only eight terms. D1 evidently sets SQLITE_MAX_COMPOUND_SELECT
+    far below SQLite's own default of 500. Columns have orders of magnitude
+    more headroom (SQLITE_MAX_COLUMN defaults to 2000), and `chunk` keeps
+    a wide margin under it regardless.
+
+    CAST to TEXT so one query can mix counts and strings without SQLite
+    picking a type for us."""
+    return "SELECT " + ", ".join(
+        f"CAST(({a.sql}) AS TEXT) AS a{n}" for n, a in enumerate(batch))
 
 
-def check_live(assertions, remote, chunk=25):
-    """Evaluate assertions against the real database. Batched into a
-    handful of UNION ALL round-trips because each wrangler invocation
-    costs seconds of CLI startup — 60 assertions one at a time is a
-    coffee break, three queries is not."""
+def check_live(assertions, remote, chunk=20):
+    """Evaluate assertions against the real database. Batched, because
+    each wrangler invocation costs seconds of CLI startup — 45 assertions
+    one at a time is a coffee break, three queries is not.
+
+    Falls back to one query per assertion if a batch fails for any reason.
+    A limit we have not met yet must not be able to turn this check into a
+    blanket failure: the point of the tool is to answer the question, and
+    slowly beats not at all."""
     failures = []
     for i in range(0, len(assertions), chunk):
         batch = assertions[i:i + chunk]
-        rows = d1_command(batch_sql(batch), remote)
-        got = {int(r["k"]): r["v"] for r in rows} if rows else {}
-        if not got:
-            failures.append((batch[0], "<no result from D1 for this batch>"))
+        rows = d1_command(batch_sql(batch), remote, fatal=False)
+        if rows:
+            row = rows[0]
+            for n, a in enumerate(batch):
+                actual = row.get(f"a{n}")
+                if not compare(actual, a.op, a.expected):
+                    failures.append((a, actual))
             continue
-        for n, a in enumerate(batch):
-            actual = got.get(n)
+        print(f"  (batched check failed; falling back to {len(batch)} single queries)")
+        for a in batch:
+            one = d1_command(f"SELECT CAST(({a.sql}) AS TEXT) AS a0", remote, fatal=False)
+            if one is None:
+                failures.append((a, "<query could not be run against D1>"))
+                continue
+            actual = one[0].get("a0") if one else None
             if not compare(actual, a.op, a.expected):
                 failures.append((a, actual))
     return failures
@@ -449,6 +476,37 @@ def record_many(name_paths, remote, chunk=50):
             f"VALUES {values}", remote)
 
 
+def drifted(applied):
+    """Applied files whose content on disk no longer matches what was
+    recorded when they ran."""
+    out = []
+    for name, recorded in applied.items():
+        path = os.path.join(MIGRATIONS_DIR, name)
+        if os.path.exists(path) and checksum(path) != recorded:
+            out.append(name)
+    return sorted(out)
+
+
+def refresh_checksums(names, remote):
+    """Re-record the current checksum for already-applied files.
+
+    Needed because retrofitting `-- ASSERT:` comments onto migrations that
+    had already run puts every one of them permanently into checksum
+    drift. Thirteen standing warnings is how a useful warning becomes
+    wallpaper, and the drift check is worth keeping sharp — it is there to
+    catch someone editing the SQL of a migration that has already run,
+    which is a real and nasty mistake.
+
+    This does NOT verify the edits were harmless; nothing here can. It
+    records that you looked. `applied_at` is deliberately left alone — it
+    is the date the migration actually ran, and that has not changed."""
+    for name in names:
+        path = os.path.join(MIGRATIONS_DIR, name)
+        d1_command(f"UPDATE schema_migrations SET checksum = '{checksum(path)}' "
+                   f"WHERE name = '{name}'", remote)
+        print(f"  re-recorded {name}")
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--remote", action="store_true", help="target the remote (production) DB")
@@ -464,6 +522,10 @@ def main():
     ap.add_argument("--assert-only", action="store_true",
                     help="check the target database against every durable assertion the "
                          "migrations make. Applies nothing")
+    ap.add_argument("--refresh-checksums", action="store_true",
+                    help="re-record the checksum of already-applied files that have since "
+                         "been edited, clearing their drift warnings. Applies no SQL. Use "
+                         "only when you know the edits were comment-only")
     args = ap.parse_args()
 
     # Offline mode first: it deliberately requires no target, because
@@ -506,6 +568,25 @@ def main():
         print(f"All {len(durable)} durable assertion(s) hold against the target database.")
         return
 
+    if args.refresh_checksums:
+        applied = fetch_applied(args.remote) or {}
+        names = drifted(applied)
+        if not names:
+            print("No checksum drift — nothing to re-record.")
+            return
+        print(f"{len(names)} applied file(s) have been edited since they ran.")
+        print("Check what changed before accepting this — the runner cannot:")
+        print(f"  git log -p -- {' '.join('migrations/' + n for n in names[:3])}"
+              + (" ..." if len(names) > 3 else ""))
+        if args.dry_run:
+            for n in names:
+                print(f"  would re-record {n}")
+            print("(dry run — nothing recorded)")
+            return
+        refresh_checksums(names, args.remote)
+        print(f"{len(names)} checksum(s) re-recorded. No SQL was applied.")
+        return
+
     applied = fetch_applied(args.remote)
     if applied is None:
         print("schema_migrations table not present — creating it (migration 205).")
@@ -525,12 +606,19 @@ def main():
         return
 
     # Checksum drift on recorded files: loud warning, not fatal —
-    # comment-only edits happen, but you should know.
-    for name, recorded_sum in applied.items():
-        path = os.path.join(MIGRATIONS_DIR, name)
-        if os.path.exists(path) and checksum(path) != recorded_sum:
-            print(f"WARNING: {name} was edited after being applied (checksum drift). "
-                  f"The recorded version is what the DB actually ran.")
+    # comment-only edits happen, but you should know. Summarised rather
+    # than one line per file: thirteen warnings in a row is how a useful
+    # warning turns into wallpaper, and this one is worth keeping sharp.
+    drift = drifted(applied)
+    if drift:
+        print(f"WARNING: {len(drift)} applied file(s) were edited afterwards "
+              f"(checksum drift). The recorded version is what the DB actually ran:")
+        for name in drift[:8]:
+            print(f"  {name}")
+        if len(drift) > 8:
+            print(f"  ... and {len(drift) - 8} more")
+        print("  Review with git, then clear them: "
+              "apply_migrations.py --remote --refresh-checksums")
 
     pending = [f for f in files if f not in applied]
     if not pending:

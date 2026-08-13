@@ -242,12 +242,18 @@ def test_query_error_is_a_failure():
 
 
 def test_live_batch_sql():
-    """--assert-only sends assertions to D1 as one batched UNION ALL
-    query rather than one wrangler call each. That rewrite is the only
-    path that runs against production and cannot be exercised from
-    here, so at minimum prove the SQL it builds is valid and that the
-    values come back in the right order — against the real chain, with
-    the real assertions."""
+    """--assert-only batches assertions into one query rather than one
+    wrangler call each. That is the only path that runs against
+    production and cannot be exercised from here, so at minimum prove the
+    SQL it builds is valid and that the values come back correctly paired
+    — against the real chain, with the real assertions.
+
+    The first version stacked assertions with UNION ALL, one row each.
+    SQLite accepted it happily; D1 rejected it at EIGHT terms with "too
+    many terms in compound SELECT" (SQLITE_ERROR 7500), so the first real
+    run against production failed. Local SQLite could not have caught
+    that — its own limit is 500 — hence the explicit shape check below,
+    which does not depend on any engine's limit."""
     print("\nthe batched query --assert-only sends to D1")
     import sqlite3
     conn = sqlite3.connect(":memory:")
@@ -260,13 +266,23 @@ def test_live_batch_sql():
     with contextlib.redirect_stdout(io.StringIO()):
         durable, _ = A.validate_replay(quiet=True)
     check("there are durable assertions to send", len(durable) > 20, len(durable))
+
+    sql = A.batch_sql(durable)
+    check("the batch is one row of columns, not a compound SELECT",
+          "UNION" not in sql.upper(), sql[:120])
+
     cur = conn.cursor()
-    rows = cur.execute(A.batch_sql(durable)).fetchall()
-    check("one row back per assertion", len(rows) == len(durable), f"{len(rows)} vs {len(durable)}")
-    got = {int(k): v for k, v in rows}
+    rows = cur.execute(sql).fetchall()
+    check("exactly one row comes back", len(rows) == 1, len(rows))
+    check("one column per assertion", len(rows[0]) == len(durable),
+          f"{len(rows[0])} vs {len(durable)}")
     mismatched = [durable[n].raw for n in range(len(durable))
-                  if not A.compare(got.get(n), durable[n].op, durable[n].expected)]
+                  if not A.compare(rows[0][n], durable[n].op, durable[n].expected)]
     check("every batched value satisfies its assertion", not mismatched, mismatched[:3])
+
+    # And the chunk size stays well under a plausible column limit.
+    check("chunk size leaves headroom", A.check_live.__defaults__[-1] <= 50,
+          A.check_live.__defaults__[-1])
 
 
 def test_real_chain():

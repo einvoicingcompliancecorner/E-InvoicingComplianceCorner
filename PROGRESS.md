@@ -8925,6 +8925,59 @@ run offline, which is why it did not come across with the other three.
 
 **Nothing to deploy** — tooling and documentation only.
 
+## 13 Aug 2026 (cont'd) — D1 rejected the batched assertion query, and the drift warnings needed a way out
+
+Dan ran `apply_migrations.py --remote` for real. Migration 517 applied
+cleanly; the live assertion check that runs immediately afterwards did
+not:
+
+```
+too many terms in compound SELECT: SQLITE_ERROR [code: 7500]
+```
+
+**The bug.** `check_live()` batched assertions into one query by stacking
+them with `UNION ALL`, one row each, to avoid paying wrangler's CLI
+startup per assertion. D1 rejects that at **eight terms**. SQLite's own
+`SQLITE_MAX_COMPOUND_SELECT` defaults to 500, so the local test — which
+runs the real batched query against the replayed database — passed
+happily. A limit the test environment does not share is a limit the test
+environment cannot find.
+
+**The fix** is a different shape, not a smaller batch: each assertion
+becomes a scalar subquery in its own **column** of a single row.
+`SQLITE_MAX_COLUMN` defaults to 2000, and the chunk size is 20, so there
+is a wide margin. `test_assertions.py` now asserts the built SQL contains
+no `UNION` at all, which is a check that does not depend on any engine's
+limit — the useful lesson from this being that the previous test could
+only ever have caught it by accident.
+
+`check_live()` also now falls back to one query per assertion if a batch
+fails for any reason, and `wrangler()`/`d1_command()` grew a `fatal=False`
+mode to make that possible. A limit we have not met yet must not be able
+to turn the check into a blanket failure.
+
+**Where that left the database:** 517 was applied but not recorded,
+because the runner deliberately checks a file's assertions before
+recording it. Re-running re-applies a comment-only file (a no-op) and
+records it. That ordering did exactly what it was designed to do.
+
+### Thirteen checksum warnings, which is how a warning becomes wallpaper
+
+The same run printed a `WARNING: ... checksum drift` line for every
+migration that gained `-- ASSERT:` comments — thirteen of them, one per
+file, and permanent. The drift check is worth keeping sharp, because it
+exists to catch someone editing the *SQL* of a migration that has already
+run. Thirteen standing warnings would train anyone to skip the block.
+
+Two changes: the warning is now summarised (a count, the first eight
+names, and what to do) rather than one line per file, and there is a
+`--refresh-checksums` flag that re-records the current checksum for
+already-applied files and applies no SQL. It prints the `git log -p`
+command for the affected files first, because the runner cannot tell a
+comment-only edit from a substantive one and should not pretend
+otherwise. `applied_at` is deliberately left alone — it is the date the
+migration ran, and that has not changed.
+
 ## Open items / next steps
 
 ### Real open work
