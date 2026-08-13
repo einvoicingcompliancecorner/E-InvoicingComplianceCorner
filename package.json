@@ -9,6 +9,7 @@
     "test:roi": "node tests/roi-regression.mjs",
     "test:currency": "node tests/roi-currency.mjs",
     "test:contrast": "node tests/contrast-audit.mjs",
+    "test:i18n": "node tests/roi-i18n.mjs",
     "contrast": "node tests/contrast-page.mjs",
     "count": "node tests/jurisdiction-count.mjs",
     "count:fix": "node tests/jurisdiction-count.mjs --fix",

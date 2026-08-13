@@ -34,30 +34,46 @@
 // an exact anchor — and only then is a count looked for inside it. The
 // frozen strings are additionally asserted to survive any --fix, which
 // is belt and braces on purpose.
-import { readFileSync, writeFileSync, existsSync } from "node:fs";
+import { readFileSync, writeFileSync, existsSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { openReplayDb, REPO } from "./lib/replay-db.mjs";
 
 const FIX = process.argv.includes("--fix");
 
 // ---------------------------------------------------------------------
-// The key registry has ONE home: migration 517's first standing
-// invariant. Parsing it from there rather than repeating it means the
-// checker and the invariant cannot drift apart — which would be a
+// The key registry is not written down here. It is read from the
+// standing invariants in the migrations themselves — every
+// `ASSERT ALWAYS` that compares translation prose to `in_picker` — so
+// the checker and the invariants cannot drift apart, which would be a
 // pleasing irony in a script about things drifting apart.
+//
+// Every migration, not just 517: 518 moved the ROI planner's page copy
+// into D1, two of those strings state the count, and they carry their own
+// invariant. A checker that only read 517 would have gone blind to them
+// the moment they were added — which is the same failure it exists to
+// catch, wearing a lab coat.
 // ---------------------------------------------------------------------
-const INVARIANTS = join(REPO, "members-worker", "migrations", "517_standing_invariants.sql");
+const MIGRATIONS = join(REPO, "members-worker", "migrations");
 
 function countKeys() {
-  const sql = readFileSync(INVARIANTS, "utf8");
-  const line = sql.split("\n").find((l) => /ASSERT ALWAYS:/i.test(l) && /in_picker/.test(l));
-  if (!line) throw new Error(`${INVARIANTS}: could not find the jurisdiction-count invariant. `
-    + "If it was renamed or removed, this checker is now guessing — fix it here.");
-  const inList = line.match(/key IN \(([^)]*)\)/);
-  if (!inList) throw new Error(`${INVARIANTS}: found the invariant but not its key list.`);
-  const keys = [...inList[1].matchAll(/'([^']+)'/g)].map((m) => m[1]);
-  if (keys.length < 5) throw new Error(`${INVARIANTS}: only parsed ${keys.length} keys; that is not right.`);
-  return keys;
+  const files = readdirSync(MIGRATIONS).filter((f) => /^\d/.test(f) && f.endsWith(".sql"));
+  const keys = new Set();
+  const sources = [];
+  for (const f of files) {
+    for (const line of readFileSync(join(MIGRATIONS, f), "utf8").split("\n")) {
+      if (!/ASSERT ALWAYS:/i.test(line) || !/in_picker/.test(line)) continue;
+      const inList = line.match(/key IN \(([^)]*)\)/);
+      if (!inList) continue;
+      const found = [...inList[1].matchAll(/'([^']+)'/g)].map((m) => m[1]);
+      found.forEach((k) => keys.add(k));
+      sources.push(`${f} (${found.length})`);
+    }
+  }
+  if (keys.size < 5) {
+    throw new Error("Could not find the jurisdiction-count invariants in any migration. "
+      + "If they were renamed or removed, this checker is now guessing — fix it here.");
+  }
+  return { keys: [...keys], sources };
 }
 
 // A number followed, within a few words, by a noun meaning
@@ -135,9 +151,9 @@ async function run(db, fix) {
   const FIX = fix;
   const [{ n: COUNT }] = await db.query(
     "SELECT count(*) AS n FROM countries WHERE in_picker = 1");
-  const KEYS = countKeys();
+  const { keys: KEYS, sources } = countKeys();
   console.log(`Authority: ${COUNT} jurisdictions (countries.in_picker = 1)`);
-  console.log(`Registry:  ${KEYS.length} count-bearing keys, from 517_standing_invariants.sql\n`);
+  console.log(`Registry:  ${KEYS.length} count-bearing keys, from ${sources.join(", ")}\n`);
 
   // ---- 1. D1 -----------------------------------------------------------
   // Checked, never rewritten: changing D1 is a migration, so a mismatch
@@ -318,7 +334,41 @@ async function run(db, fix) {
   console.log(`Static HTML:     ${htmlSites} count sites across ${htmlFiles.length} files, ${htmlSites - htmlBad} agree`);
   if (htmlBad) problems.push(`${htmlBad} HTML site(s) disagree`);
 
-  // ---- 4. the tripwire -------------------------------------------------
+  // ---- 4. shared render modules ----------------------------------------
+  // shared/roi-render.mjs states the count twice, in the English fallback
+  // beside a t() call. Those fallbacks are not prose in a file the other
+  // three passes look at, and they were invisible to this checker until
+  // migration 518 registered their keys — a gap found while doing the ROI
+  // i18n wiring, not by this script noticing its own blind spot.
+  //
+  // Anchored on the key, exactly like the i18n JSON pass: t("KEY", "...").
+  const sharedDir = join(REPO, "shared");
+  let sharedSites = 0, sharedBad = 0;
+  for (const f of readdirSync(sharedDir).filter((x) => x.endsWith(".mjs"))) {
+    const path = join(sharedDir, f);
+    let src = readFileSync(path, "utf8");
+    let changed = false;
+    for (const key of KEYS) {
+      const call = new RegExp(`\\bt(?:j?)\\("${key.replace(/\./g, "\\.")}",\\s*"((?:[^"\\\\]|\\\\.)*)"`, "g");
+      for (const m of [...src.matchAll(call)]) {
+        const span = m[1];
+        const found = mentions(span);
+        if (!found.length) continue;
+        sharedSites++;
+        const wrong = found.filter((x) => x.value !== COUNT);
+        if (!wrong.length) continue;
+        sharedBad++;
+        console.log(`  shared/${f}:${lineOf(src, m.index)}  t("${key}"): `
+          + `says ${wrong.map((x) => x.value).join(",")}, expected ${COUNT}`);
+        if (FIX) { src = src.replace(span, rewrite(span, COUNT)); changed = true; }
+      }
+    }
+    if (changed) { writeFileSync(path, src); fixed++; }
+  }
+  console.log(`Shared modules:  ${sharedSites} count sites, ${sharedSites - sharedBad} agree`);
+  if (sharedBad) problems.push(`${sharedBad} shared-module site(s) disagree`);
+
+  // ---- 5. the tripwire -------------------------------------------------
   const broken = FROZEN.filter((f) => {
     const p = join(REPO, f.file);
     return !existsSync(p) || !readFileSync(p, "utf8").includes(f.text);

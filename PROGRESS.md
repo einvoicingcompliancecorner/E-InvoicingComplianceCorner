@@ -9213,6 +9213,79 @@ throughout. Then everything was reverted; `git status` clean.
 
 `npm test` is now six suites.
 
+## 13 Aug 2026 (cont'd) — The ROI planner's text comes from D1 (migration 518, design review recommendation 8)
+
+Recommendation 8 read: *"The help layer and phase notes read from D1;
+headings, labels and body copy are still inline. The schema is ready and
+the mechanism is proven — this is wiring, not design."* Dan chose the
+English-only scope: wire it, translate later.
+
+### The finding that made this worth doing rather than tidy
+
+**Migration 505 seeded 31 page-chrome keys into the `roi` namespace, and
+nothing ever read them.** Its own comment said *"adding a language is
+purely INSERTs against this namespace and needs no code change"* — that
+was the intent, and it was untrue for a week. `renderRoiPage()` consumed
+only `help.*`. Thirty-one rows sat in production being a promise.
+
+Worse, because nothing rendered them, nobody could see they had drifted
+from the page: 505 wrote plain em-dashes where the template emits
+`&mdash;`, dropped the `<br>` from the H1, and dropped "70" from the
+lede. Switching the code over naively would have quietly changed the live
+page in three places.
+
+### 91 strings, and a proof that nothing moved
+
+Every user-facing string now goes through `t(key, "English")`, with the
+English kept at the use site so the template still reads as prose. 26
+pre-seeded keys corrected to exactly what the page renders, 65 added, all
+in migration 518.
+
+**The whole refactor is verified by byte-diff.** The rendered output —
+both the members' unlocked page and the public locked teaser — was
+captured before any change and compared after every batch. Final state:
+`byte-identical (119,523 bytes)` and `byte-identical (102,576 bytes)`. A
+1,270-line file had a third of its text pulled out into a database and
+the output did not move by one character.
+
+### The fallback is a safety net, never the thing rendering
+
+`t()` falls back to the inline English if a D1 row is missing, which is
+right for a reader and exactly wrong for us — it is a silent failure, the
+one this project keeps paying for. So `tests/roi-i18n.mjs` holds the
+line three ways: every key the renderer asks for exists in D1; every D1
+value is character-identical to the fallback beside it, so the two cannot
+drift into disagreeing about the English; and — the one the other two
+would both pass — the strings genuinely reach the page, proved by
+rendering with sentinel values and watching twelve sampled phrases from
+every section disappear.
+
+Five keys 505 seeded still have no use site (`menu.label`,
+`btn.recalculate`, `subs.locked`, `tag.tangible`, `tag.intangible`). They
+are **reported, not deleted**: each is a real string the page may yet
+need, and deleting content to make a number come out round is how you
+lose it.
+
+### It closed a gap in yesterday's count checker, from the other side
+
+`shared/roi-render.mjs` states the jurisdiction count twice, and the
+count checker built earlier today scans HTML, i18n JSON and D1 — not
+`.mjs` files. **Two count sites were invisible to it.** Found while doing
+this wiring, not by the checker noticing its own blind spot.
+
+Both are now `t()` fallbacks anchored on a key, so the checker can find
+them the same way it finds everything else, and migration 518 carries its
+own `ASSERT ALWAYS` for the two count-bearing ROI keys. The checker now
+reads the key registry from **every** migration's standing invariants
+rather than only 517's — a checker that read one file would have gone
+blind the moment a second invariant was added, which is the failure it
+exists to catch, wearing a lab coat.
+
+`npm test` is seven suites.
+
+**Translating the planner is now a pure INSERT migration**, which is what
+505 claimed a week ago. That claim is finally true.
+
 ## Open items / next steps
 
 ### Real open work

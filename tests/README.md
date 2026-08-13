@@ -24,6 +24,7 @@ both without configuration. Override with `NODE_MODULES_ROOT` or
 | assertion mechanism | `test_assertions.py` | An assertion runner that silently passes everything is worse than none |
 | jurisdiction count | `npm run count` | The count is stated in ~96 places and has silently disagreed with itself three times |
 | ROI regression | `npm run test:roi` | `\${hlp(...)}` escaped into the runtime script twice, killing the calculate button |
+| ROI i18n | `npm run test:i18n` | 31 translation keys sat in production for a week with nothing reading them |
 | currency round trip | `npm run test:currency` | The selector changed the symbol only, overstating a GBP business case by a third |
 | contrast audit | `npm run test:contrast` | 55 elements of near-black text on dark navy, at 1.05:1, live |
 
