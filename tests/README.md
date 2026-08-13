@@ -26,6 +26,25 @@ both without configuration. Override with `NODE_MODULES_ROOT` or
 | currency round trip | `npm run test:currency` | The selector changed the symbol only, overstating a GBP business case by a third |
 | contrast audit | `npm run test:contrast` | 55 elements of near-black text on dark navy, at 1.05:1, live |
 
+## Auditing any other page
+
+The contrast auditor is also available as a one-off against any HTML this
+project ships — a whitepaper, a design document, a live URL:
+
+```bash
+npm run contrast -- design-review.html
+npm run contrast -- whitepaper-einvoicing-roi-evidence.html 420   # narrow viewport
+npm run contrast -- https://e-invoicingcompliancecorner.com/
+```
+
+It exits non-zero on any AA failure, so it can gate a deliverable. The
+ROI planner keeps its own suite because it has to be built from D1 first
+and has three interactive states; everything else here is a static file.
+
+This earned itself immediately: the first thing it was pointed at was the
+design review document, and it failed on a badge style added minutes
+earlier — dark ink on the brand green is 3.57:1.
+
 ## The fixture, and why it is built this way
 
 `tests/lib/` assembles the page under test. Three decisions in there were

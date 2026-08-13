@@ -9,6 +9,7 @@
     "test:roi": "node tests/roi-regression.mjs",
     "test:currency": "node tests/roi-currency.mjs",
     "test:contrast": "node tests/contrast-audit.mjs",
+    "contrast": "node tests/contrast-page.mjs",
     "test:migrations": "cd members-worker/migrations && python3 apply_migrations.py --replay-only && python3 test_assertions.py"
   },
   "devDependencies": {
