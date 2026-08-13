@@ -9286,6 +9286,58 @@ exists to catch, wearing a lab coat.
 **Translating the planner is now a pure INSERT migration**, which is what
 505 claimed a week ago. That claim is finally true.
 
+## 13 Aug 2026 — Design review scorecard, and where its history now lives
+
+The design review (`claude/design-architecture-review.html` in the Claude
+project) has been cleaned: the five recommendations implemented on 13
+August are **removed from it entirely** rather than left struck through,
+and this file is now the record of what was built. That is the right
+split — the review is for what is still open, the repository's own
+history is for what was done — but it means the mapping needs to be
+written down once, here, or it is lost.
+
+**Done, with the dated entry above carrying the detail:**
+
+1. *Commit the test harnesses* — `tests/`, root `package.json`, seven
+   suites. Commit `6e60445`.
+2. *Make migrations assert their effect* — `-- ASSERT:` / `ASSERT ALWAYS`,
+   migration 517, `test_assertions.py`. Commits `19a7346`, `f36096c`.
+3. *Pin wrangler, set `account_id`, populate `schema_migrations`* — the
+   third item was already done and the review was wrong about it. Commit
+   `441d8f0`.
+5. *Make D1 the only home for the jurisdiction count* — `npm run count`
+   / `count:fix`. Commit `e700b12`.
+8. *Finish the ROI i18n wiring* — migration 518, 91 strings. Commit
+   `f265012`.
+
+**Two of them did not turn out the way the review proposed, and that is
+the part worth keeping:**
+
+- Recommendation 2 proposed a `-- ASSERT:` comment and nothing else. What
+  it needed was the point-in-time / durable / superseded distinction and
+  `ASSERT ALWAYS`, neither of which was foreseen, and without which the
+  mechanism would have been unusable — every legitimate later change to a
+  number would have failed the replay and taught everyone to delete
+  assertions.
+- Recommendation 5 proposed *generating* the jurisdiction count into the
+  prose from D1. Mapping it first turned it into a *checker*: five
+  numbers sitting near the count must never move, and one of them —
+  Forrester's "70 countries" in a whitepaper citation — is the same
+  number as the count, so a generator would have corrupted a reference at
+  the next bump with nothing to notice.
+
+**Still open on the review:** split `on_tracker` into two fields; sanity
+assertions on rendered output; two waves per EU member state; drop the
+superseded lifecycle v1 tables; leave the tracker monolith alone.
+
+**And the item that is no longer on the numbered list but matters most:**
+there is still no CI. Seven suites and 47 migration assertions exist,
+they are fast, they need no credentials — and nothing runs them unbidden.
+The defence against silent failure is currently a habit. A scheduled job
+running `npm test` and `apply_migrations.py --remote --assert-only`, that
+says so when they stop passing, is what would finish what this work
+started.
+
 ## Open items / next steps
 
 ### Real open work
