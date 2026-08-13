@@ -82,3 +82,13 @@ INSERT INTO translations (namespace, key, lang, value) VALUES
 
 ('roi', 'help.vida', 'en',
  'Some deadlines here come from EU law rather than the country''s own legislature. Council Directive (EU) 2025/516 makes structured e-invoicing AND digital reporting mandatory for intra-EU B2B from 1 July 2030, binding all 27 member states whether or not they have legislated a domestic mandate. Those rows are marked EU-WIDE and priced as COMPLEX, because ViDA carries a Digital Reporting Requirement — the tax authority receives invoice-level data, which is the test for complex under the rule above. Note this is scoped to the row, not the country: a member state running a 4-corner regime today keeps its simple classification everywhere else on this site, while the 2030 wave it appears in is priced as the reporting build it will actually be. The tracker board deliberately shows this as a single European Union entry rather than 27 national ones, because it is one fact; the planner applies that same entry to each member state you select, so your wave plan is complete.');
+
+-- ---- what this migration claims it did (see apply_migrations.py) ----
+-- Belgium is corrected, both help texts are rewritten, and the new text
+-- genuinely states the rule. The first line here is the one that would
+-- have failed for two migrations before anyone asked the question that
+-- found it.
+--
+-- ASSERT: SELECT roi_complexity FROM countries WHERE code = 'BE' = 'complex'
+-- ASSERT: SELECT count(*) FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key IN ('help.complexity','help.vida') = 2
+-- ASSERT: SELECT count(*) FROM translations WHERE namespace = 'roi' AND key = 'help.complexity' AND value LIKE '%5-corner Peppol model%' = 1

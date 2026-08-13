@@ -21,6 +21,67 @@ Typical usage:
   # See what would run without touching anything:
   python3 apply_migrations.py --remote --dry-run
 
+  # Validate the chain and every assertion offline. No wrangler, no
+  # Cloudflare, no target. Safe to run in the build sandbox or CI:
+  python3 apply_migrations.py --replay-only
+
+  # Check the LIVE database still satisfies every durable assertion
+  # the migrations make, without applying anything:
+  python3 apply_migrations.py --remote --assert-only
+
+ASSERTIONS — what a migration claims it did
+-------------------------------------------
+`validate_replay()` proves a migration's SQL *runs*. It cannot prove
+the SQL *did anything*: an UPDATE whose WHERE clause matches zero rows
+is not an error, and this project has already been bitten by exactly
+that. Migrations 470/480/490 each guarded on a value a previous
+migration had never written, so all three silently matched nothing and
+40 translation rows sat on a stale jurisdiction count through three
+country builds. Migration 500's own header ends: "NEXT TIME: after
+writing a count-bump migration, replay the chain and assert the 40 rows
+actually read back at the new number. Do not trust 'replay validation
+OK' — it does not check this." Now it does.
+
+A migration declares its effect in a comment, so it stays inert SQL:
+
+  -- ASSERT: SELECT count(*) FROM countries WHERE eu_member = 1 = 27
+  -- ASSERT: SELECT roi_complexity FROM countries WHERE code='BE' = 'complex'
+  -- ASSERT: SELECT count(*) FROM roi_fx_rates >= 2
+
+Rules, all enforced at parse time so a typo fails loudly rather than
+silently passing:
+  * one line, starting `-- ASSERT:`, anywhere in the file;
+  * the left side is a SELECT returning a single row and column;
+  * the operator is the LAST one on the line — `=`, `!=`, `<>`, `>`,
+    `>=`, `<`, `<=` — so operators inside the SQL are unambiguous;
+  * the right side is a bare number, a 'single-quoted string', or NULL.
+
+When they are checked:
+  * in the in-memory replay, immediately after their own file is
+    applied — this is the point-in-time truth the author meant;
+  * against the live DB immediately after that file is applied for
+    real, aborting the run before later migrations pile on top;
+  * at the END of the replay, every assertion is re-evaluated against
+    the final schema. Those that still hold are DURABLE — they are
+    invariants, and `--assert-only` checks them against production.
+    Those that no longer hold were legitimately superseded by a later
+    migration (511 retires an assumption 505 created; 515 moves
+    Belgium), and are reported as superseded, not as failures. No
+    extra syntax needed: the chain itself says which is which.
+
+There is one exception, and it is where most of the value lives:
+
+  -- ASSERT ALWAYS: SELECT count(*) FROM t WHERE ... = 0
+
+An ALWAYS assertion is a standing invariant. Being superseded is a
+FAILURE for it, not a note — a later migration is not allowed to break
+it quietly. That is what catches the drift class specifically: add a
+country and skip the count sweep, and 517's jurisdiction invariant
+fails the replay, because the prose in D1 no longer agrees with the
+number of countries in the picker. Write those as ALWAYS and express
+them RELATIVELY (compare one table to another) rather than against a
+hardcoded number, which by definition goes stale.
+
 Safety properties:
 - ALWAYS validates the full chain (schema + every migration in order)
   in an in-memory SQLite replay before touching the live DB, honouring
@@ -35,6 +96,7 @@ Safety properties:
   (see PROGRESS.md's Wrangler caveats).
 """
 import argparse, hashlib, os, re, shutil, sqlite3, subprocess, sys, json
+from collections import namedtuple
 from datetime import datetime, timezone
 
 MIGRATIONS_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -58,7 +120,18 @@ def resolve_wrangler():
              "Install wrangler, or set e.g. WRANGLER='npx wrangler' and re-run.")
 
 
-WRANGLER_CMD = resolve_wrangler()
+_WRANGLER_CMD = None
+
+
+def wrangler_cmd():
+    """Resolved lazily, so --replay-only works on a machine with no
+    wrangler and no Cloudflare access (the build sandbox, CI)."""
+    global _WRANGLER_CMD
+    if _WRANGLER_CMD is None:
+        _WRANGLER_CMD = resolve_wrangler()
+    return _WRANGLER_CMD
+
+
 TRACKER_MIGRATION = "205_schema_migrations.sql"
 # The four documented pre-existing replay errors (see PROGRESS.md /
 # DEEP-DIVE-MIGRATION-CHECKLIST.md). Anything not in this list aborts.
@@ -80,27 +153,212 @@ def checksum(path):
     return hashlib.sha256(open(path, "rb").read()).hexdigest()
 
 
-def validate_replay():
-    """Full-chain in-memory replay — abort on any NEW error."""
+# ---------------------------------------------------------------------
+# Assertions
+# ---------------------------------------------------------------------
+
+Assertion = namedtuple("Assertion", "file line sql op expected raw always")
+
+ASSERT_RE = re.compile(r"^\s*--\s*ASSERT(?P<always>\s+ALWAYS)?\s*:\s*(?P<body>.+?)\s*$",
+                       re.IGNORECASE)
+OP_RE = re.compile(r"(>=|<=|!=|<>|=|>|<)")
+NUM_RE = re.compile(r"^-?\d+(\.\d+)?$")
+STR_RE = re.compile(r"^'[^'=<>!]*'$")
+
+
+def bad_assertion(a_file, lineno, body, why):
+    sys.exit(f"MALFORMED ASSERTION — {a_file}:{lineno}\n"
+             f"  {body}\n"
+             f"  {why}\n"
+             f"  Expected form: -- ASSERT: SELECT <one value> <op> <literal>")
+
+
+def parse_assertions(name, text):
+    """Extract every `-- ASSERT:` directive from a migration's text.
+    A malformed directive is fatal: the whole point is that a claim
+    cannot fail quietly, and a claim the runner skipped because it
+    could not parse it is the same failure wearing a different hat."""
+    out = []
+    for lineno, line in enumerate(text.splitlines(), 1):
+        m = ASSERT_RE.match(line)
+        if not m:
+            continue
+        body = m.group("body").strip().rstrip(";").strip()
+        ops = list(OP_RE.finditer(body))
+        if not ops:
+            bad_assertion(name, lineno, body, "no comparison operator found.")
+        # The LAST operator is the separator: the right-hand side is a
+        # literal and may not contain one, so anything earlier belongs
+        # to the SQL (WHERE code='BE', HAVING n > 3, and so on).
+        last = ops[-1]
+        sql = body[:last.start()].strip()
+        expected = body[last.end():].strip()
+        if sql[:6].lower() != "select":
+            bad_assertion(name, lineno, body, "left side must be a SELECT returning one value.")
+        if not (NUM_RE.match(expected) or STR_RE.match(expected)
+                or expected.upper() == "NULL"):
+            bad_assertion(name, lineno, body,
+                          "right side must be a number, a 'quoted string' with no "
+                          "operators in it, or NULL.")
+        out.append(Assertion(name, lineno, sql, last.group(0), expected, body,
+                             bool(m.group("always"))))
+    return out
+
+
+def coerce_expected(expected):
+    if expected.upper() == "NULL":
+        return None
+    if NUM_RE.match(expected):
+        return float(expected) if "." in expected else int(expected)
+    return expected[1:-1]
+
+
+def compare(actual, op, expected_raw):
+    """Compare a value the database returned against the literal the
+    migration claimed. Types are reconciled towards the literal, so
+    `= 27` is satisfied by 27, 27.0 or '27' — D1's JSON transport and
+    sqlite3 disagree about which of those you get."""
+    expected = coerce_expected(expected_raw)
+    if expected is None or actual is None:
+        if op in ("=",):
+            return actual is None and expected is None
+        if op in ("!=", "<>"):
+            return (actual is None) != (expected is None)
+        return False
+    if isinstance(expected, (int, float)):
+        try:
+            actual = float(actual)
+        except (TypeError, ValueError):
+            return False
+        expected = float(expected)
+    else:
+        actual = str(actual)
+    return {
+        "=": actual == expected,
+        "!=": actual != expected,
+        "<>": actual != expected,
+        ">": actual > expected,
+        ">=": actual >= expected,
+        "<": actual < expected,
+        "<=": actual <= expected,
+    }[op]
+
+
+def sqlite_scalar(conn, sql):
+    cur = conn.cursor()          # its own cursor — see 515's header for
+    try:                         # what sharing one costs you
+        row = cur.execute(sql).fetchone()
+    finally:
+        cur.close()
+    return None if row is None else row[0]
+
+
+def check_sqlite(conn, assertions):
+    """Returns [(assertion, actual, passed)] against an in-memory DB."""
+    results = []
+    for a in assertions:
+        try:
+            actual = sqlite_scalar(conn, a.sql)
+        except Exception as e:
+            results.append((a, f"<query error: {e}>", False))
+            continue
+        results.append((a, actual, compare(actual, a.op, a.expected)))
+    return results
+
+
+def report_failures(failures, heading):
+    print(heading)
+    for a, actual in failures:
+        print(f"  {a.file}:{a.line}")
+        print(f"    {a.sql}")
+        print(f"    expected {a.op} {a.expected}   actual: {actual!r}")
+
+
+def validate_replay(quiet=False):
+    """Full-chain in-memory replay — abort on any NEW error, and on any
+    assertion a migration makes about its own effect that does not hold.
+
+    Returns (durable, superseded): assertions that still hold against
+    the final replayed schema, and those a later migration legitimately
+    overtook."""
     conn = sqlite3.connect(":memory:")
     conn.executescript(open(os.path.join(WORKER_DIR, "schema.sql"), encoding="utf-8").read())
-    new_errors = []
+    new_errors, failures, unchecked = [], [], []
+    checked = []
+    total_assertions = 0
+
     for f in migration_files():
+        text = open(os.path.join(MIGRATIONS_DIR, f), encoding="utf-8").read()
+        asserts = parse_assertions(f, text)
+        total_assertions += len(asserts)
         try:
-            conn.executescript(open(os.path.join(MIGRATIONS_DIR, f), encoding="utf-8").read())
+            conn.executescript(text)
         except Exception as e:
             if f not in KNOWN_REPLAY_ERRORS:
                 new_errors.append((f, str(e)))
+            # A file that threw part-way left partial state behind, so
+            # its own claims cannot be judged. Say so rather than
+            # inventing a verdict.
+            unchecked.extend(asserts)
+            continue
+        for a, actual, passed in check_sqlite(conn, asserts):
+            if passed:
+                checked.append(a)
+            else:
+                failures.append((a, actual))
+
     if new_errors:
         print("REPLAY VALIDATION FAILED — new errors (not the 4 documented ones):")
         for f, e in new_errors:
             print(f"  {f}: {e}")
         sys.exit(1)
-    print(f"Replay validation OK ({len(migration_files())} files, only the documented pre-existing errors).")
+
+    if failures:
+        report_failures(failures,
+                        "ASSERTION FAILED — a migration did not do what it says it does.\n"
+                        "Checked in replay at the moment the file was applied:")
+        print("\nThe SQL ran without error; it just had no effect, or the wrong one.\n"
+              "Nothing has been applied to any database.")
+        sys.exit(1)
+
+    # Re-evaluate everything against the end of the chain. Still true =
+    # a durable invariant worth checking against production. No longer
+    # true = a later migration moved it on purpose.
+    durable, superseded, broken_invariants = [], [], []
+    for a, actual, passed in check_sqlite(conn, checked):
+        if passed:
+            durable.append(a)
+        elif a.always:
+            broken_invariants.append((a, actual))
+        else:
+            superseded.append(a)
+
+    if broken_invariants:
+        report_failures(broken_invariants,
+                        "INVARIANT BROKEN — an ASSERT ALWAYS held when its own migration ran,\n"
+                        "and does not hold at the end of the chain. A later migration broke it:")
+        print("\nThis is the shape of every drift bug in this project's history: something\n"
+              "was added, and the thing that has to agree with it was not updated.\n"
+              "Nothing has been applied to any database.")
+        sys.exit(1)
+
+    if not quiet:
+        print(f"Replay validation OK ({len(migration_files())} files, "
+              f"only the documented pre-existing errors).")
+        print(f"Assertions: {len(checked)} checked and passing at their own migration "
+              f"({sum(1 for a in checked if a.always)} standing invariants); "
+              f"{len(durable)} still hold at the end of the chain, "
+              f"{len(superseded)} superseded later"
+              + (f"; {len(unchecked)} unchecked (in a known-failing file)" if unchecked else "")
+              + f". [{total_assertions} declared across {len(set(a.file for a in checked))} file(s)]")
+        if superseded:
+            for a in superseded:
+                print(f"  superseded: {a.file}:{a.line}  {a.sql} {a.op} {a.expected}")
+    return durable, superseded
 
 
 def wrangler(args, capture=True):
-    cmd = WRANGLER_CMD + args
+    cmd = wrangler_cmd() + args
     result = subprocess.run(cmd, cwd=WORKER_DIR, capture_output=capture, text=True)
     if result.returncode != 0:
         print(f"wrangler failed: {' '.join(cmd)}")
@@ -128,6 +386,37 @@ def d1_file(path, remote):
     if remote:
         args.insert(3, "--remote")
     wrangler(args, capture=True)
+
+
+def batch_sql(batch):
+    """One query that evaluates a batch of assertions. Each assertion's
+    SELECT becomes a scalar subquery, which is exactly what the parser
+    guarantees it is (one row, one column). CAST to TEXT so a batch can
+    mix counts and strings in one column without SQLite deciding on a
+    type for us."""
+    return " UNION ALL ".join(
+        f"SELECT {n} AS k, CAST(({a.sql}) AS TEXT) AS v"
+        for n, a in enumerate(batch))
+
+
+def check_live(assertions, remote, chunk=25):
+    """Evaluate assertions against the real database. Batched into a
+    handful of UNION ALL round-trips because each wrangler invocation
+    costs seconds of CLI startup — 60 assertions one at a time is a
+    coffee break, three queries is not."""
+    failures = []
+    for i in range(0, len(assertions), chunk):
+        batch = assertions[i:i + chunk]
+        rows = d1_command(batch_sql(batch), remote)
+        got = {int(r["k"]): r["v"] for r in rows} if rows else {}
+        if not got:
+            failures.append((batch[0], "<no result from D1 for this batch>"))
+            continue
+        for n, a in enumerate(batch):
+            actual = got.get(n)
+            if not compare(actual, a.op, a.expected):
+                failures.append((a, actual))
+    return failures
 
 
 def fetch_applied(remote):
@@ -169,7 +458,23 @@ def main():
                     help="record ALL current migration files as applied without running them "
                          "(one-time setup on a DB that predates the tracker table)")
     ap.add_argument("--dry-run", action="store_true", help="show what would be applied, change nothing")
+    ap.add_argument("--replay-only", action="store_true",
+                    help="validate the chain and every assertion in memory, then stop. "
+                         "Needs no wrangler, no Cloudflare and no target -- run it in CI or the sandbox")
+    ap.add_argument("--assert-only", action="store_true",
+                    help="check the target database against every durable assertion the "
+                         "migrations make. Applies nothing")
     args = ap.parse_args()
+
+    # Offline mode first: it deliberately requires no target, because
+    # its whole value is that it runs anywhere, including where the
+    # Cloudflare API is unreachable.
+    if args.replay_only:
+        if args.remote or args.local:
+            print("(--replay-only touches no database; the target flag is ignored.)")
+        validate_replay()
+        print("Nothing was applied — replay only.")
+        return
 
     # Refuse to guess the target. Omitting --remote used to silently hit
     # wrangler's throwaway local dev database and then fail confusingly
@@ -179,10 +484,27 @@ def main():
         print("Choose a target explicitly:")
         print("  --remote   the production D1 database (the normal case)")
         print("  --local    wrangler's local dev DB in .wrangler/state (rarely wanted)")
+        print("  (or --replay-only for an offline check that needs no target at all)")
         sys.exit(1)
     print(f"TARGET: {'REMOTE (production)' if args.remote else 'LOCAL dev database (.wrangler/state)'}")
 
-    validate_replay()
+    durable, _ = validate_replay()
+
+    if args.assert_only:
+        if not durable:
+            print("No durable assertions declared — nothing to check.")
+            return
+        print(f"Checking {len(durable)} durable assertion(s) against the target database ...")
+        failures = check_live(durable, args.remote)
+        if failures:
+            report_failures(failures,
+                            "\nLIVE DATABASE DOES NOT MATCH WHAT THE MIGRATIONS CLAIM:")
+            print("\nThe replay of these files produces these values; the database does not.\n"
+                  "Either a migration never actually ran against this database, or something\n"
+                  "changed it afterwards. Nothing has been applied.")
+            sys.exit(1)
+        print(f"All {len(durable)} durable assertion(s) hold against the target database.")
+        return
 
     applied = fetch_applied(args.remote)
     if applied is None:
@@ -225,6 +547,20 @@ def main():
         path = os.path.join(MIGRATIONS_DIR, f)
         print(f"Applying {f} ...")
         d1_file(os.path.join("migrations", f), args.remote)
+        # Check the file's own claims against the real database BEFORE
+        # recording it and before anything stacks on top. Replay already
+        # proved these hold against a clean chain; if they fail here,
+        # this database is not in the state the chain assumes.
+        asserts = parse_assertions(f, open(path, encoding="utf-8").read())
+        if asserts:
+            failures = check_live(asserts, args.remote)
+            if failures:
+                report_failures(failures, f"\nASSERTION FAILED ON THE LIVE DATABASE after applying {f}:")
+                print(f"\n{f} ran, but did not have the effect it declares. It has NOT been\n"
+                      "recorded, and no later migration has been applied. Verify with direct\n"
+                      "SELECTs before re-running — don't trust rollback (see PROGRESS.md).")
+                sys.exit(1)
+            print(f"  {len(asserts)} assertion(s) hold.")
         record(f, path, args.remote)
         print(f"  applied + recorded.")
     print("All pending migrations applied. If anything looked off above, verify with "

@@ -30,3 +30,11 @@ INSERT OR IGNORE INTO country_translations (country_id, lang, display_name) SELE
 INSERT OR IGNORE INTO country_translations (country_id, lang, display_name) SELECT id, 'es', 'Azerbaiyán' FROM countries WHERE code = 'AZ';
 INSERT OR IGNORE INTO country_translations (country_id, lang, display_name) SELECT id, 'de', 'Aserbaidschan' FROM countries WHERE code = 'AZ';
 INSERT OR IGNORE INTO country_translations (country_id, lang, display_name) SELECT id, 'fr', 'Azerbaïdjan' FROM countries WHERE code = 'AZ';
+
+-- ---- what this migration claims it did (see apply_migrations.py) ----
+-- Both rows land, and both carry a full set of four display names -- a
+-- missing language here surfaces as an English name in a Spanish menu
+-- rather than as an error.
+--
+-- ASSERT: SELECT count(*) FROM countries WHERE code IN ('UZ','AZ') = 2
+-- ASSERT: SELECT count(*) FROM country_translations WHERE country_id IN (SELECT id FROM countries WHERE code IN ('UZ','AZ')) = 8

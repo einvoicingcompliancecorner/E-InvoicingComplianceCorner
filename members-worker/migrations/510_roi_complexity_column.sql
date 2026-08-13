@@ -102,3 +102,13 @@ UPDATE countries SET roi_complexity = 'none' WHERE code IN (
 -- The European Union row is a container, never a jurisdiction to
 -- implement in, and getRoiCountries() excludes it with `code <> 'EU'`.
 -- Left at the 'none' default deliberately.
+
+-- ---- what this migration claims it did (see apply_migrations.py) ----
+-- Sixty-five of the seventy tracked jurisdictions carry a hand-assigned
+-- complexity; the rest are genuinely 'none'. The 'complex' count is
+-- point-in-time and moves to 48 at migration 515, when Belgium is
+-- corrected.
+--
+-- ASSERT: SELECT count(*) FROM countries WHERE roi_complexity <> 'none' = 65
+-- ASSERT: SELECT count(*) FROM countries WHERE roi_complexity = 'complex' = 47
+-- ASSERT: SELECT roi_complexity FROM countries WHERE code = 'FR' = 'complex'

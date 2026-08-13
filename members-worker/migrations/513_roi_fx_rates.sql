@@ -76,3 +76,11 @@ INSERT INTO translations (namespace, key, lang, value) VALUES
 
 ('roi', 'help.fx', 'en',
  'Benchmarks are held in their native currency — all of today''s are US dollars, because that is what Ardent Partners publishes in and how the implementation placeholders were stated — and converted for display at a stored spot rate. The rate and its date are shown rather than buried, because a business case that is reproducible next quarter is worth more than one that silently tracked the market. Updating the rate is a migration with a source, exactly like updating a benchmark. For anything you are going to sign, use your own treasury rate: put the figures straight in, in your own currency, and override the defaults.');
+
+-- ---- what this migration claims it did (see apply_migrations.py) ----
+-- Three currencies, with USD pinned at parity -- if the base row ever
+-- drifts off 1.0 every figure on the page moves silently.
+--
+-- ASSERT: SELECT count(*) FROM roi_fx_rates = 3
+-- ASSERT: SELECT usd_per_unit FROM roi_fx_rates WHERE currency = 'USD' = 1
+-- ASSERT: SELECT usd_per_unit FROM roi_fx_rates WHERE currency = 'GBP' = 1.3511

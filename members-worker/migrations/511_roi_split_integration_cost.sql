@@ -102,3 +102,15 @@ INSERT INTO translations (namespace, key, lang, value) VALUES
 
 ('roi', 'help.nomandate', 'en',
  'Jurisdictions you have selected that carry no e-invoicing obligation today. They are costed at the simple rate, on the basis that with no mandate to comply with there is nothing beyond a straightforward connection to build. Drop them from your selection if you have no intention of rolling out there. On the timeline they sit in the NO FIXED DEADLINE band, which they share with a second and quite different group: countries whose mandate is already fully in force with no further dated step. Both have no deadline to back-plan from, which is why they are drawn forward rather than backwards from a date. They still start where contracting ends, not today: no country track can begin before the platform is procured and signed — but only the first group is genuinely optional. The second is marked IN FORCE, because if you have not built there yet you are not early, you are late.');
+
+-- ---- what this migration claims it did (see apply_migrations.py) ----
+-- The old benchmark is retired and both replacements exist at the rates
+-- Dan set. Asserting the VALUES rather than the row count matters here:
+-- the planner was understating its own default one-off cost by half
+-- before this split, and a row that exists at the wrong number looks
+-- exactly like a row that exists at the right one.
+--
+-- ASSERT: SELECT active FROM roi_benchmarks WHERE key = 'cost_per_integration' = 0
+-- ASSERT: SELECT default_value FROM roi_benchmarks WHERE key = 'cost_per_integration_simple' = 10000
+-- ASSERT: SELECT default_value FROM roi_benchmarks WHERE key = 'cost_per_integration_complex' = 20000
+-- ASSERT: SELECT count(*) FROM roi_benchmark_translations WHERE lang = 'en' AND benchmark_id IN (SELECT id FROM roi_benchmarks WHERE key LIKE 'cost_per_integration_%') = 2

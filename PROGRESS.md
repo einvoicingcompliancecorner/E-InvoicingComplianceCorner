@@ -8670,6 +8670,161 @@ wave the planner does not show, because only the earliest deadline per
 country is modelled. Fixing it means emitting two rows for those
 countries, which is a change to the planner's shape rather than a tweak.
 
+## 13 Aug 2026 — Migrations now have to prove they did something (migration 517, `test_assertions.py`)
+
+Dan, picking the second recommendation out of the design review: *"Please
+can you start work on address 2 · Make migrations assert their effect."*
+
+The gap is narrow and has been expensive. `validate_replay()` replays
+`schema.sql` plus all 516 migrations into an in-memory SQLite database
+before anything touches live D1, and it has been this project's single
+most useful safety net. But it only proves the SQL **runs**. An `UPDATE`
+whose `WHERE` clause matches nothing is not an error in SQLite, it is a
+successful statement affecting zero rows — so the replay says OK, the
+runner records the migration, and nothing happened. Migrations 470, 480
+and 490 each did exactly that, three times in a row, and the jurisdiction
+count in D1 sat on "62" through three country builds while the static
+files were swept forward by hand each time. Migration 500's header ends
+with the instruction to fix it: *"NEXT TIME: after writing a count-bump
+migration, replay the chain and assert the 40 rows actually read back at
+the new number. Do not trust 'replay validation OK' — it does not check
+this."* It does now.
+
+### The convention
+
+A migration declares its own effect in a comment, so it stays inert SQL
+and can be retrofitted onto files that have already been applied:
+
+```sql
+-- ASSERT: SELECT count(*) FROM countries WHERE eu_member = 1 = 27
+-- ASSERT: SELECT roi_complexity FROM countries WHERE code = 'BE' = 'complex'
+```
+
+One line, a SELECT returning a single value, the operator **last** so
+operators inside the SQL are unambiguous, and a number, a quoted string
+or NULL on the right. A malformed directive is fatal rather than skipped
+— a claim the runner quietly ignored is the same failure in a different
+coat, and it is the exact bug this whole exercise exists to prevent.
+
+They are checked in three places: in the replay immediately after their
+own file is applied; against live D1 immediately after that file is
+applied for real and **before** it is recorded, so a no-op stops the run
+rather than letting later files stack on top of a database that is not in
+the state they assume; and — the part that took the most thought — at the
+end of the full replay.
+
+### Point-in-time versus invariant, decided by the chain rather than by syntax
+
+The end-of-chain pass exists because an assertion is only true at a
+moment. Migration 505 seeds 14 benchmarks; 511 splits the integration
+cost and takes it to 16. Migration 510 puts 47 countries at 'complex';
+515 corrects Belgium and makes it 48. Neither is a bug, and failing the
+replay on either would simply train everyone to delete assertions.
+
+So every assertion is re-evaluated against the final schema. Those that
+still hold are **durable** — real invariants, and `--assert-only` checks
+them against production. Those that no longer hold were legitimately
+overtaken and are reported as **superseded**, with file and line, so you
+can see what moved and satisfy yourself it was on purpose. No extra
+syntax: the chain itself says which is which. Four of the retrofitted
+assertions report as superseded today, and they are precisely the four
+named above.
+
+That left one hole, and it is the more important half of this project's
+history. Point-in-time assertions catch a migration that no-ops. They do
+not catch **drift** — two things that must agree, one updated, the other
+not. Nobody writes a migration to break an invariant; they write a
+migration that does its own job correctly and leaves something else
+behind. Under the rule above, that reports as "superseded", which is
+exactly wrong: it reads as a note when it is a defect.
+
+Hence `-- ASSERT ALWAYS:`. Being superseded is a **failure** for one of
+those, not a note. They live in `517_standing_invariants.sql`, a
+migration containing no SQL whatsoever — eight invariants and the
+reasoning behind each. Stating them somewhere other than the migration
+that might break them is the entire point. All eight are written
+relatively, one table compared against another, never against a
+hardcoded number: a hardcoded invariant is a fact with an expiry date,
+and it gets edited into agreement the first time it is inconvenient.
+
+The first invariant compares those 40 D1 prose rows against the live
+count of countries in the picker. Scaffolding a test country and
+re-running the replay aborts with *"INVARIANT BROKEN"* and points at 517.
+The bug that ran undetected across three country builds is now caught
+before anything is applied, and the next person to add a country does not
+need to have read migration 500's header to be protected by it.
+
+The others cover failure modes that are invisible in SQL and obvious on
+the live site: a country missing one of its four display names (falls
+back to English in a Spanish menu), a milestone with no English child row
+(renders as an empty card, since there is nothing to COALESCE to), an
+orphaned milestone (D1 does not enforce foreign keys by default), an
+active ROI benchmark or phase with no English translation (an unlabelled
+input; an unnamed bar on the Gantt), the complexity review ledger
+disagreeing with the column it documents, and the USD FX row drifting off
+parity — which would move every figure on the planner with nothing on the
+page to say so.
+
+### What was retrofitted, and what deliberately was not
+
+Thirty-seven assertions across thirteen existing migrations: 493 and 500
+(the country build and the count sweep at the centre of the incident),
+504 (an `UPDATE ... WHERE id IN (...)` over eleven hand-typed milestone
+ids — the single most dangerous shape in this repository, since one typo
+is silently skipped and surfaces months later as a duplicate card on the
+board), and 505-516, the whole ROI chain.
+
+Not retrofitted: 470, 480 and 490 themselves. Writing down what those
+files *intended* would fail the replay on a fact already documented and
+repaired at 500. The assertion belongs with the repair, not with the
+wreck.
+
+The scaffolder now emits assertions into every file it generates —
+country row present with all four names, milestone and `on_tracker`
+counts, and one translation assertion **per language** rather than one
+total, because a mistyped milestone id in a single `INSERT OR IGNORE` is
+otherwise completely silent and shows up much later as one English
+sentence in the middle of a French page.
+
+### Two new commands, both offline
+
+```bash
+python3 apply_migrations.py --replay-only    # whole chain + every assertion; no wrangler, no target
+python3 test_assertions.py                   # proves the mechanism itself still works
+```
+
+`--replay-only` needed the wrangler lookup made lazy — it used to resolve
+(and `sys.exit`) at import time, so the offline check could not run on a
+machine without wrangler, including this sandbox. There is also
+`--remote --assert-only`, which checks the live database against every
+durable assertion while applying nothing. That is the one command that
+says whether production and the migration chain genuinely agree, and it
+is worth running after any manual D1 edit — including as a way to find
+out whether something applied by hand months ago actually landed.
+
+### The tests are the point
+
+`test_assertions.py` is 35 checks and no dependencies. The valuable ones
+are negative: a synthetic three-file chain reproducing the 470/480/490
+incident in miniature must **fail** the replay, and the same chain with
+the assertion removed must pass — the status quo asserted explicitly, so
+nobody has to take on trust that the mechanism is doing anything. A
+malformed directive must be fatal in each of four ways. An ALWAYS
+assertion broken by a later migration must fail, and must name the file
+that *declared* it rather than the file that broke it.
+
+One path could not be exercised honestly: `--assert-only` batches
+assertions into a `UNION ALL` query and sends it to D1, and there is no
+Cloudflare access from here. So the batch builder was extracted and the
+test runs the real batched query, built from the real durable assertions,
+against the replayed database — proving the generated SQL is valid and
+the values come back correctly paired, which is everything except the
+transport.
+
+**Nothing to deploy** — 517 contains no SQL, and every other change is
+tooling and documentation. It applies and records like any other
+migration next time the runner runs.
+
 ## Open items / next steps
 
 ### Real open work

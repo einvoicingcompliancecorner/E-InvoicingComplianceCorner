@@ -88,3 +88,14 @@ UPDATE translations SET value = 'A living tracker of e-invoicing and digital rep
 UPDATE translations SET value = 'Un seguimiento actualizado de los mandatos de facturación electrónica y reporte digital en 70 países — normas de ViDA a nivel de la UE, sistemas nacionales de CTC, y todo lo demás. Cada entrada muestra la fecha límite, lo que debe hacer al respecto, y un enlace directo al portal oficial del gobierno, para que pueda pasar de "¿esto nos afecta?" a "esto es lo que hay que hacer" en una sola página.' WHERE namespace = 'tracker' AND lang = 'es' AND key = 'brand.description';
 UPDATE translations SET value = 'Ein laufend aktualisierter Überblick über E-Invoicing- und digitale Meldepflichten in 70 Ländern — EU-weite ViDA-Regeln, nationale CTC-Systeme und alles dazwischen. Jeder Eintrag zeigt die Frist, was konkret zu tun ist, und einen direkten Link zum offiziellen Regierungsportal — damit Sie in einem einzigen Blick von "betrifft uns das?" zu "das müssen wir tun" kommen.' WHERE namespace = 'tracker' AND lang = 'de' AND key = 'brand.description';
 UPDATE translations SET value = 'Un suivi actualisé en continu des obligations de facturation électronique et de télédéclaration dans 70 pays — règles ViDA à l''échelle de l''UE, systèmes nationaux de CTC, et tout ce qui se trouve entre les deux. Chaque entrée indique l''échéance, ce qu''il faut faire, et un lien direct vers le portail officiel du gouvernement, pour passer de "est-ce que cela nous concerne ?" à "voici ce qu''il faut faire" en une seule page.' WHERE namespace = 'tracker' AND lang = 'fr' AND key = 'brand.description';
+
+-- ---- what this migration claims it did (see apply_migrations.py) ----
+-- THIS IS THE CHECK THE HEADER ABOVE ASKS FOR. 470, 480 and 490 each
+-- ran cleanly and changed nothing; the first assertion below is what
+-- would have caught all three the day they were written. The second
+-- closes the loop the whole incident turned on -- the prose in D1 and
+-- the actual number of tracked jurisdictions have to agree, and it was
+-- precisely their quiet divergence that ran for three country builds.
+--
+-- ASSERT: SELECT count(*) FROM countries WHERE in_picker = 1 = 70
+-- ASSERT: SELECT count(*) FROM translations WHERE key IN ('sec5.card3.body','statusBanner.text','sec8.card3.body','sec6.card3.body','sec7.card3.body','benefits.intro','benefits.item2.body','card.countriesHint','confirm.fullDigest','brand.description') AND value LIKE '%70%' = 40

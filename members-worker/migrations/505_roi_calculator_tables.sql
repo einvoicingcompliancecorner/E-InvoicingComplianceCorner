@@ -244,3 +244,15 @@ INSERT OR IGNORE INTO features (slug, title, description, shipped_at) VALUES
    'E-Invoicing ROI &amp; Wave Planner',
    'A subscriber tool that builds a board-ready e-invoicing business case from your own invoice volumes, ERP count and country footprint — including a delivery wave plan back-planned from the real published mandate deadlines, and an evidence grade against every benchmark used.',
    '2026-08-11');
+
+-- ---- what this migration claims it did (see apply_migrations.py) ----
+-- The seed landed in full. The benchmark counts are deliberately
+-- point-in-time: migration 511 splits the integration cost in two and
+-- takes both to 16, at which point the runner reports these two as
+-- superseded rather than failed. That is the mechanism working -- a
+-- later migration is allowed to move a number, it is just not allowed
+-- to do so by accident.
+--
+-- ASSERT: SELECT count(*) FROM roi_benchmarks = 14
+-- ASSERT: SELECT count(*) FROM roi_benchmark_translations WHERE lang = 'en' = 14
+-- ASSERT: SELECT count(*) FROM roi_phases = 7

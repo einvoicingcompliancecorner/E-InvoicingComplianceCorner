@@ -30,3 +30,12 @@ INSERT INTO translations (namespace, key, lang, value) VALUES
 
 ('roi', 'help.cur', 'en',
  'Changes the currency of every money figure on the page, including the benchmark defaults and any value you have overridden — switch to GBP and Ardent''s USD 9.84 becomes its sterling equivalent, not a relabelled 9.84. The conversion uses a FIXED stored rate, dated and shown beneath this control, not a live feed: the same scenario gives the same answer twice, and you can see for yourself how stale the rate is. Your own overrides are preserved in real terms, so a figure you type in one currency follows you into the next. Until 12 August 2026 this control changed only the symbol, which quietly overstated a GBP business case by about a third.');
+
+-- ---- what this migration claims it did (see apply_migrations.py) ----
+-- Both tooltips replaced, and the FX one actually opens with the plain
+-- statement Dan asked for rather than merely implying it -- which is the
+-- entire point of this migration, and is not something a row count can
+-- tell you.
+--
+-- ASSERT: SELECT count(*) FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key IN ('help.fx','help.cur') = 2
+-- ASSERT: SELECT count(*) FROM translations WHERE namespace = 'roi' AND key = 'help.fx' AND value LIKE 'THE RATE IS FIXED.%' = 1

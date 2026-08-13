@@ -133,6 +133,20 @@ def gen_country_sql(spec):
         lines.append(
             f"INSERT OR IGNORE INTO country_translations (country_id, lang, display_name) "
             f"SELECT id, '{lang}', '{esc(spec['names'][lang])}' FROM countries WHERE code = '{esc(spec['code'])}';")
+    code = esc(spec["code"])
+    lines += [
+        "",
+        "-- ---- what this migration claims it did (see apply_migrations.py) ----",
+        "-- INSERT OR IGNORE cannot fail; it can only decline. Assert the row",
+        "-- and all four display names are actually there, so a code that",
+        "-- collides with an existing country is caught in replay rather than",
+        "-- discovered as a missing menu entry.",
+        "--",
+        f"-- ASSERT: SELECT count(*) FROM countries WHERE code = '{code}' = 1",
+        f"-- ASSERT: SELECT in_picker FROM countries WHERE code = '{code}' = 1",
+        f"-- ASSERT: SELECT count(*) FROM country_translations WHERE country_id = "
+        f"(SELECT id FROM countries WHERE code = '{code}') = 4",
+    ]
     return "\n".join(lines) + "\n"
 
 
@@ -156,6 +170,24 @@ def gen_milestones_sql(spec):
             f"VALUES ('{esc(m['id'])}', 'en', '{esc(m['system'])}', '{esc(m['desc'])}', "
             f"'{esc(json.dumps(m['actions'], ensure_ascii=False))}');")
         lines.append("")
+    code = esc(spec["code"])
+    ids = ",".join(f"'{esc(m['id'])}'" for m in spec["milestones"])
+    n = len(spec["milestones"])
+    on_board = sum(1 for m in spec["milestones"] if m.get("on_tracker"))
+    lines += [
+        "-- ---- what this migration claims it did (see apply_migrations.py) ----",
+        "-- The on_tracker count is the one to watch: it decides what appears on",
+        "-- the arrivals board, and getting it wrong is invisible in SQL and",
+        "-- obvious on the live site.",
+        "--",
+        f"-- ASSERT: SELECT count(*) FROM milestones WHERE country_id = "
+        f"(SELECT id FROM countries WHERE code = '{code}') = {n}",
+        f"-- ASSERT: SELECT count(*) FROM milestones WHERE on_tracker = 1 AND country_id = "
+        f"(SELECT id FROM countries WHERE code = '{code}') = {on_board}",
+        f"-- ASSERT: SELECT count(*) FROM milestone_translations WHERE lang = 'en' "
+        f"AND milestone_id IN ({ids}) = {n}",
+        "",
+    ]
     return "\n".join(lines)
 
 
@@ -179,6 +211,19 @@ def gen_translation_stub(spec):
                 f"VALUES ('{esc(m['id'])}', '{lang}', '{esc(m['system'])}', '{esc(m['desc'])}', "
                 f"'{esc(json.dumps(m['actions'], ensure_ascii=False))}');")
         lines.append("")
+    ids = ",".join(f"'{esc(m['id'])}'" for m in spec["milestones"])
+    n = len(spec["milestones"])
+    lines += [
+        "-- ---- what this migration claims it did (see apply_migrations.py) ----",
+        "-- One assertion per language, not one total: a mistyped milestone id in",
+        "-- a single INSERT OR IGNORE is otherwise completely silent, and shows up",
+        "-- months later as one English sentence in the middle of a French page.",
+        "--",
+    ] + [
+        f"-- ASSERT: SELECT count(*) FROM milestone_translations WHERE lang = '{lang}' "
+        f"AND milestone_id IN ({ids}) = {n}"
+        for lang in LANGS
+    ] + [""]
     return "\n".join(lines)
 
 

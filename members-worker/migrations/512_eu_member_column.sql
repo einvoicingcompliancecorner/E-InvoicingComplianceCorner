@@ -75,3 +75,12 @@ DELETE FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key = 'help
 INSERT INTO translations (namespace, key, lang, value) VALUES
 ('roi', 'help.vida', 'en',
  'Some deadlines in this plan come from EU law rather than from the country''s own legislature. Council Directive (EU) 2025/516 makes structured e-invoicing and digital reporting mandatory for intra-EU B2B from 1 July 2030, and it binds all 27 member states whether or not they have enacted a domestic mandate. Those rows are marked EU-WIDE. The tracker board deliberately shows this as a single European Union entry rather than 27 national ones, because it is one fact — the planner applies that same entry to each member state you have selected, so your wave plan is complete. A country whose only obligation is this one is treated as at least a simple integration, since there is real work to do even where nothing national has been legislated.');
+
+-- ---- what this migration claims it did (see apply_migrations.py) ----
+-- Twenty-seven member states, and the two neighbours most often filed
+-- with them by mistake are checked by name: Norway is not a member, and
+-- Germany is.
+--
+-- ASSERT: SELECT sum(eu_member) FROM countries = 27
+-- ASSERT: SELECT eu_member FROM countries WHERE code = 'NO' = 0
+-- ASSERT: SELECT eu_member FROM countries WHERE code = 'DE' = 1

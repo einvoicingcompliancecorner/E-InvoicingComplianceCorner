@@ -60,3 +60,11 @@ WHERE lang = 'en' AND phase_id = (SELECT id FROM roi_phases WHERE key = 'mobilis
 UPDATE roi_phase_translations SET note =
   'Per country. Configure and integrate — connector, transformation, validation, error handling. The longest of the technical phases, and the one where the real work sits. Scales with complexity and system count exactly as design does, since the two move together.'
 WHERE lang = 'en' AND phase_id = (SELECT id FROM roi_phases WHERE key = 'build');
+
+-- ---- what this migration claims it did (see apply_migrations.py) ----
+-- The three durations Dan asked for, read back individually. A single
+-- count would pass while any one of them sat on its old value.
+--
+-- ASSERT: SELECT default_weeks FROM roi_phases WHERE key = 'mobilise' = 1
+-- ASSERT: SELECT default_weeks FROM roi_phases WHERE key = 'build' = 3
+-- ASSERT: SELECT default_weeks FROM roi_phases WHERE key = 'contract' = 4

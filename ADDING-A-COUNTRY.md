@@ -109,6 +109,46 @@ Whether scaffolded or hand-written, **the runner validates the full
 in-memory replay before touching live D1** — the project's
 non-negotiable, now automated rather than remembered.
 
+**Every migration should say what it did.** Replay proves the SQL runs;
+it cannot prove the SQL changed anything, and an `UPDATE` matching zero
+rows is not an error. That gap is what let migrations 470, 480 and 490
+each run cleanly and do nothing across three consecutive country builds.
+So a migration now declares its own effect in a comment, which the
+runner executes after applying the file — in replay, and again against
+live D1 before recording it:
+
+```sql
+-- ASSERT: SELECT count(*) FROM countries WHERE code = 'XX' = 1
+-- ASSERT: SELECT count(*) FROM milestones WHERE on_tracker = 1 AND country_id = (SELECT id FROM countries WHERE code = 'XX') = 3
+```
+
+One line starting `-- ASSERT:`, a SELECT returning a single value, the
+comparison operator last (`=`, `!=`, `>`, `>=`, `<`, `<=`), and a
+number, a `'quoted string'` or `NULL` on the right. A malformed
+directive is a hard error rather than a skipped line — a claim the
+runner quietly ignored is the same failure wearing a different hat. The
+scaffolder writes a sensible set for you; add any others that capture
+what you actually meant to do, and prefer asserting *values* over row
+counts where the value is the point.
+
+`ASSERT ALWAYS` is for **invariants** — two things in the database that
+must agree. A plain assertion is point-in-time, so a later migration may
+legitimately move it (the runner reports that as "superseded"). An
+ALWAYS assertion may not be broken by anything: if it stops holding at
+the end of the chain, the replay fails and names the file that declared
+it. The standing set lives in `migrations/517_standing_invariants.sql`,
+a migration that contains no SQL at all. Write invariants **relatively**
+— compare one table against another, never against a hardcoded number,
+which is just a fact with an expiry date.
+
+Run all of it offline, as often as you like. It needs no wrangler, no
+Cloudflare and no target, so it works in the build sandbox:
+
+```bash
+python3 apply_migrations.py --replay-only    # the whole chain + every assertion
+python3 test_assertions.py                   # proves the mechanism itself still works
+```
+
 1. **Country row + name translations**
    ```sql
    INSERT INTO countries (code, name_en, region, slug, in_picker, roi_complexity, eu_member)
@@ -391,6 +431,14 @@ computes from live data, but literal prose counts do not:
   `generate_files.py` faithfully regenerated the stale D1 text back over
   them.
 
+**This step now fails loudly if you skip it.** Invariant 1 in
+`517_standing_invariants.sql` compares those 40 D1 prose rows against
+the live count of countries in the picker, so the moment you add a
+country without sweeping the count, `apply_migrations.py --replay-only`
+aborts and says so. Run it right after the Phase 1 migrations and again
+before Phase 4 — it takes about a second and needs nothing but Python.
+The hardcoded literals in the HTML and i18n JSON are still on you.
+
 ---
 
 ## Phase 4 — Ship
@@ -405,7 +453,21 @@ The runner keeps its bookkeeping in D1's `schema_migrations` table
 (migration 205): it refuses to double-apply (the autoincrement-table
 duplication trap), applies in order, stops at the first failure with an
 accurate record of what got through, and warns on files edited after
-they were applied. **One-time setup on a database that predates the
+they were applied. It also checks each file's `ASSERT` directives
+against live D1 immediately after applying it and **before** recording
+it, so a migration that ran but had no effect stops the run there
+instead of letting later files stack on top of a database that isn't in
+the state they assume. To check the live database against every durable
+assertion without applying anything:
+
+```bash
+python3 apply_migrations.py --remote --assert-only
+```
+
+That is the one command that will tell you the production database and
+the migration chain genuinely agree — worth running after any manual
+D1 edit, and the fastest way to find out whether a migration you
+applied by hand months ago actually landed. **One-time setup on a database that predates the
 table**: `python3 apply_migrations.py --remote --baseline` records every
 existing migration file as already-applied without running anything.
 
@@ -421,6 +483,10 @@ mind autoincrement-PK tables where a re-run genuinely duplicates rows
 
 ## Phase 5 — Testing checklist
 
+- [ ] `python3 apply_migrations.py --remote --assert-only` passes — the
+      live database satisfies every assertion the chain makes. Do this
+      first: it is the cheapest check here and the only one that can
+      tell you a migration ran without doing anything
 - [ ] Main tracker: milestones on the board (both the arrivals view and
       list view), country in the region filter and sidebar
 - [ ] Deep Dives menu + flyout include it (alphabetical within region),

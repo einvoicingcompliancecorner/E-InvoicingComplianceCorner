@@ -174,3 +174,11 @@ INSERT INTO translations (namespace, key, lang, value) VALUES
 
 ('roi', 'help.complexity', 'en',
  'Assigned from the mandate model recorded on the tracker, not judged by hand. Clearance regimes — where invoices are cleared or reported to the tax authority in or near real time — are heaviest; periodic reporting is lighter; B2G-only lighter still. Complexity scales both phase durations (×1.0 / ×0.75 / ×0.6) and the integration count, so changing your country selection moves the timeline and the cost together.');
+
+-- ---- what this migration claims it did (see apply_migrations.py) ----
+-- Every phase note written, and the full set of help texts present. The
+-- help count moves later (513 and 514 add currency and FX texts), so it
+-- reports as superseded from 513 onwards.
+--
+-- ASSERT: SELECT count(*) FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key LIKE 'help.%' = 19
+-- ASSERT: SELECT count(*) FROM roi_phase_translations WHERE lang = 'en' AND note IS NOT NULL = 7

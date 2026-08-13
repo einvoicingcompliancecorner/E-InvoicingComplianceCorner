@@ -88,3 +88,17 @@ SELECT 'BE', 'complex', '2026-08-12', 'Claude',
           FROM (SELECT id, date FROM milestones WHERE country_id = c.id ORDER BY id) m),
        'Corrected from simple on 12 Aug 2026. Belgium was classified on its 2026 4-corner exchange mandate, but be-ereport (1 Jan 2028) is near-real-time e-reporting on a 5-corner Peppol model — two limbs of the rule at once. Found by the milestone scan that this review ledger now automates.'
   FROM countries c WHERE c.code = 'BE';
+
+-- ---- what this migration claims it did (see apply_migrations.py) ----
+-- Four decisions recorded, and -- the one that matters -- no empty
+-- fingerprints. The seed computes each fingerprint from a subquery over
+-- that country's milestones. Had the subquery returned nothing, the
+-- INSERTs would still have succeeded, every fingerprint would be the
+-- empty string, and all four countries would re-raise on the first
+-- weekly run: a silent failure that presents as noise weeks later. The
+-- last line keeps the ledger honest against the column it describes.
+--
+-- ASSERT: SELECT count(*) FROM roi_complexity_reviews = 4
+-- ASSERT: SELECT count(*) FROM roi_complexity_reviews WHERE fingerprint = '' = 0
+-- ASSERT: SELECT decision FROM roi_complexity_reviews WHERE code = 'BE' = 'complex'
+-- ASSERT: SELECT count(*) FROM roi_complexity_reviews r JOIN countries c ON c.code = r.code WHERE r.decision <> c.roi_complexity = 0

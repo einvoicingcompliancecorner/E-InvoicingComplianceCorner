@@ -70,3 +70,14 @@ UPDATE milestones SET on_tracker = 0 WHERE id IN (
   'mt-vida-2030',   -- Malta
   'nl-vida-2030'    -- Netherlands
 );
+
+-- ---- what this migration claims it did (see apply_migrations.py) ----
+-- An UPDATE ... WHERE id IN (...) is the single most dangerous shape in
+-- this repository: mistype one id and that row is silently skipped, with
+-- no error and no visible difference until someone notices a duplicate
+-- card on the board months later. So assert both halves -- all eleven ids
+-- exist, and none of them is still on the board.
+--
+-- ASSERT: SELECT count(*) FROM milestones WHERE id IN ('at-vida-2030','bg-vida-2030','cy-vida-2030','cz-vida-2030','ee-vida-2030','fi-vida','gr-vida-2030','hu-vida-2030','lt-vida-2030','mt-vida-2030','nl-vida-2030') = 11
+-- ASSERT: SELECT count(*) FROM milestones WHERE on_tracker = 1 AND id IN ('at-vida-2030','bg-vida-2030','cy-vida-2030','cz-vida-2030','ee-vida-2030','fi-vida','gr-vida-2030','hu-vida-2030','lt-vida-2030','mt-vida-2030','nl-vida-2030') = 0
+-- ASSERT: SELECT count(*) FROM milestones WHERE date = '2030-07-01' AND on_tracker = 1 = 2
