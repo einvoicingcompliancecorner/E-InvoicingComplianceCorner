@@ -5,11 +5,20 @@ network. That is the point: a check you can only run from one machine is a
 check that gets skipped.
 
 ```bash
-npm install                 # playwright, once
-npx playwright install chromium
-npm test                    # all five suites
-npm test -- currency        # just the one whose name matches
+npm install                      # playwright and the pinned wrangler, once
+npx playwright install chromium  # the browser binary, separately -- npm install does NOT fetch it
+npm test                         # every suite
+npm test -- currency             # just the one whose name matches
 ```
+
+The second line is easy to skip and the failure is confusing when you do:
+three of the suites need a real browser, and Playwright reports a missing
+binary as a stack trace. `tests/lib/browser.mjs` catches that and prints
+the one-line fix instead, and `run-all` reports those suites as **NOT
+RUN** rather than FAILED — an environment gap is not a regression, and
+conflating them is how a real regression gets waved away as "oh, that's
+just the playwright thing". It still exits non-zero: not-run is not
+passed either.
 
 In the build sandbox, playwright is installed globally and Chromium is
 preinstalled at `/opt/pw-browsers/chromium`; `tests/lib/browser.mjs` finds
@@ -38,9 +47,9 @@ npm run count          # check; exits 1 on any disagreement
 npm run count:fix      # rewrite the files, then verify itself
 ```
 
-The authority is `countries.in_picker = 1`. Everything else — 40 rows in
-D1, 40 sites across the i18n JSON, 16 in static HTML — is a claim about
-it. `--fix` rewrites the JSON and HTML, and writes the D1 half as a
+The authority is `countries.in_picker = 1`. Everything else — 42 rows in
+D1, 40 sites across the i18n JSON, 16 in static HTML, 2 in the shared
+render modules — is a claim about it. `--fix` rewrites the JSON and HTML, and writes the D1 half as a
 **draft migration** into `members-worker/migrations/drafts/`, because
 changing D1 is a migration and should never be a silent edit. Review it,
 renumber it, move it up.
@@ -56,9 +65,13 @@ citation — which is identical to today's count, so a sweep at the next
 bump would corrupt a reference and nothing would notice. A `FROZEN` list
 asserts those survive, as a tripwire on top of the design.
 
-The key registry has one home: migration 517's first standing invariant,
-parsed at runtime. The checker and the invariant cannot drift apart,
-which would be a pleasing irony in a script about things drifting apart.
+The key registry is not written down in the checker. It is read at
+runtime from the standing invariants in the migrations — every
+`ASSERT ALWAYS` comparing translation prose to `in_picker`, across every
+migration file, not just 517's. The checker and the invariants therefore
+cannot drift apart, which would be a pleasing irony in a script about
+things drifting apart. Reading only one file would have gone blind the
+moment migration 518 added a second invariant for the ROI page's copy.
 
 ## Auditing any other page
 

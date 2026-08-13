@@ -37,18 +37,29 @@ if (!chosen.length) {
   process.exit(2);
 }
 
+// Exit 2 from a suite means the machine is not set up to run it (no
+// Chromium), which is a different thing from a failing test and is
+// reported as such. Still counts against the run — "not run" is not
+// "passed" — but it should never be mistaken for a regression.
+const NOT_SET_UP = 2;
+
 const run = (s) => new Promise((resolve) => {
   console.log(`\n=== ${s.name} ===`);
   const p = spawn(s.cmd, s.args, { cwd: s.cwd, stdio: "inherit" });
-  p.on("close", (code) => resolve(code === 0));
-  p.on("error", (e) => { console.error(`  could not start: ${e.message}`); resolve(false); });
+  p.on("close", (code) => resolve(code === 0 ? "ok" : code === NOT_SET_UP ? "skipped" : "failed"));
+  p.on("error", (e) => { console.error(`  could not start: ${e.message}`); resolve("failed"); });
 });
 
 const results = [];
 for (const s of chosen) results.push([s.name, await run(s)]);
 
+const LABEL = { ok: "  ok   ", failed: "FAILED ", skipped: "NOT RUN" };
 console.log("\n" + "=".repeat(52));
-results.forEach(([name, ok]) => console.log(`${ok ? "  ok  " : "FAILED"}  ${name}`));
-const failed = results.filter((r) => !r[1]).length;
-console.log(`${results.length - failed}/${results.length} suites passed`);
-process.exit(failed ? 1 : 0);
+results.forEach(([name, state]) => console.log(`${LABEL[state]} ${name}`));
+const passed = results.filter((r) => r[1] === "ok").length;
+const failed = results.filter((r) => r[1] === "failed").length;
+const skipped = results.filter((r) => r[1] === "skipped").length;
+console.log(`${passed}/${results.length} suites passed`
+  + (skipped ? `, ${skipped} not run (see above — an environment gap, not a failure)` : "")
+  + (failed ? `, ${failed} FAILED` : ""));
+process.exit(failed || skipped ? 1 : 0);

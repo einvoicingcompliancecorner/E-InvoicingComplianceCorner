@@ -28,10 +28,35 @@ export async function loadPlaywright() {
     + "Set NODE_MODULES_ROOT if it lives somewhere unusual.");
 }
 
+/**
+ * Exit code 2 means "this machine is not set up to run browser tests".
+ * Deliberately NOT 1: a missing browser binary is not a failing test, and
+ * conflating the two is how a real regression gets waved away as "oh,
+ * that's just the playwright thing". run-all.mjs reports them separately
+ * and still exits non-zero, because not-run is not the same as passed
+ * either.
+ */
+export const NOT_SET_UP = 2;
+
 export async function launch() {
   const playwright = await loadPlaywright();
   const opts = existsSync(SANDBOX_CHROMIUM) ? { executablePath: SANDBOX_CHROMIUM } : {};
-  return playwright.chromium.launch(opts);
+  try {
+    return await playwright.chromium.launch(opts);
+  } catch (err) {
+    // The package is installed; the browser binary is not. Playwright's
+    // own message says so inside a stack trace, which is how this
+    // surfaced the first time it happened to someone other than its
+    // author: three near-identical stack dumps for one missing download.
+    if (/Executable doesn't exist|browserType\.launch/.test(err.message)) {
+      console.log("\n  Browser tests need Chromium, and it is not downloaded on this machine.\n"
+        + "    npx playwright install chromium\n"
+        + "  Then re-run. Nothing else is wrong: this is a one-time download, "
+        + "not a test failure.\n");
+      process.exit(NOT_SET_UP);
+    }
+    throw err;
+  }
 }
 
 /** Minimal test harness: named checks, a count, and a non-zero exit. */
