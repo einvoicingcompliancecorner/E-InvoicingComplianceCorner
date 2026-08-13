@@ -415,29 +415,53 @@ country.
 
 ---
 
-## Phase 3 — The hardcoded jurisdiction-count problem
+## Phase 3 — The jurisdiction count
 
-Still the step most likely to be missed. The tracker's own stat strip
-computes from live data, but literal prose counts do not:
+**This used to be the step most likely to be missed. It is now two
+commands.**
 
-- `subscribe.html` benefit strip, the education pages, site meta
-  descriptions — search every HTML file for the current literal count
-  (e.g. `32`) and update every hit.
-- The same numbers inside all four languages' i18n JSON prose.
-- **D1's `translations` table** — keys like `brand.description`,
-  `benefits.intro`, and education card bodies hold the count in prose.
-  Update them **via a migration**, not just in live files: migration 024
-  exists because count updates were once applied to live files only, and
-  `generate_files.py` faithfully regenerated the stale D1 text back over
-  them.
+```bash
+npm run count        # what disagrees with the database, and where
+npm run count:fix    # rewrite the 31 files, and draft the migration
+```
 
-**This step now fails loudly if you skip it.** Invariant 1 in
-`517_standing_invariants.sql` compares those 40 D1 prose rows against
-the live count of countries in the picker, so the moment you add a
-country without sweeping the count, `apply_migrations.py --replay-only`
-aborts and says so. Run it right after the Phase 1 migrations and again
-before Phase 4 — it takes about a second and needs nothing but Python.
-The hardcoded literals in the HTML and i18n JSON are still on you.
+The authority is `countries.in_picker = 1`. Everything else is a claim
+about it: 40 rows in D1's `translations`, 40 sites across the i18n JSON,
+and 16 in static HTML — the education pages, the tracker's and
+subscribe's meta descriptions, and `subscribe.html`'s stat tile, which
+two separate hand sweeps missed because it is a bare digit with no word
+next to it.
+
+`--fix` rewrites the JSON and HTML in place and writes the D1 half as a
+**draft migration** into `migrations/drafts/`, ready to review, renumber
+and move up. That draft derives every `SET` value from the row's actual
+replayed text rather than copying forward what a previous migration
+assumed — the mistake that broke 470, 480 and 490 — guards each `WHERE`
+on `(namespace, lang, key)` only so it cannot silently match nothing, and
+carries its own `-- ASSERT:` line. It is the migration that used to be
+written by hand every time.
+
+Two safety properties worth knowing, because they are what let you trust
+`--fix`:
+
+- **Nothing matches on a number.** Every site is identified positively
+  first — by translation key, by `data-i18n`, or by an exact anchor — and
+  only then is a count looked for inside it. Five numbers sitting near
+  the count must never move, including Forrester's "70 countries" in a
+  whitepaper citation, which is the same number as today's count.
+- **It verifies itself.** A `--fix` run re-reads everything afterwards
+  and reports the second pass, rather than claiming success from what it
+  intended to write.
+
+Belt and braces, invariant 1 in `517_standing_invariants.sql` compares
+the same 40 D1 rows against the live country count independently, so
+`apply_migrations.py --replay-only` also aborts if the D1 half is
+skipped. And `npm run count` runs inside `npm test`.
+
+Historical note kept because it explains the shape of all this: migration
+024 exists because count updates were once applied to live files only,
+and `generate_files.py` faithfully regenerated the stale D1 text back
+over them.
 
 ---
 
