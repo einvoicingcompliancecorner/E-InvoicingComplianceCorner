@@ -9098,6 +9098,20 @@ ever needs confirming directly rather than by inference, written into
 `.assetsignore` beside the finding: after any deploy,
 `curl -sI .../node_modules/wrangler/package.json` should 404.
 
+**Confirmed by deploy, and it found something.** The real `wrangler
+deploy` reported *"Read 2,901 files"* and then *"Uploaded 1 file (64
+already uploaded)"* — an upload set of **65**, against 2,901 read. The
+`curl` returned **404** for `/node_modules/wrangler/package.json`. Both
+halves proved directly, no inference left.
+
+The deploy also printed `+ /.gitignore` as a new asset. It uploaded
+because it had just been edited, but it had been served all along — and
+so, therefore, had `.assetsignore`, which lists the directory layout.
+Neither is a secret and every path they name 404s anyway, so this is
+tidiness rather than an incident; both are now excluded. Worth noting as
+a pattern, though: **the diagnostic that closed one question surfaced a
+different real finding**, which is the usual return on actually looking.
+
 Also corrected while here: the earlier claim that `node_modules` would
 put "tens of thousands of files" on the site. It is ~1,800. The workerd
 binary inside it would still exceed Cloudflare's 25 MiB per-asset limit,

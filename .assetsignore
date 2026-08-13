@@ -8,6 +8,17 @@ migrations/
 .git/
 *.md
 
+# The ignore files themselves, and this one especially. Caught 13 Aug
+# 2026 when a deploy printed "+ /.gitignore" as a new asset — it was
+# uploaded because it had just been edited, but it had been served all
+# along, and so had this file. Neither is a secret and both 404-adjacent
+# paths they name are unreachable anyway, so this is tidiness rather
+# than an incident. But there is no reason to publish a map of the
+# directory layout, and dotfiles at an asset root are a habit worth not
+# having.
+.gitignore
+.assetsignore
+
 # Test harnesses and their dependencies. [assets] directory is the repo
 # ROOT, so anything added at the top level is uploaded and served
 # publicly unless it is listed here — node_modules alone is ~1,800 files
