@@ -425,6 +425,31 @@ export function renderRoiPage({ countries, benchmarks = [], phases = [], strings
     .filter(([k]) => k.startsWith("help."))
     .map(([k, v]) => [k.slice(5), v])) };
   phases.forEach((p) => { const id = PHASE_INPUT[p.key]; if (id && p.note) helpText[id] = p.note; });
+  // ---- page text -------------------------------------------------------
+  // Every user-facing string on this page goes through t(). The key is the
+  // D1 row in the `roi` namespace; the second argument is the English,
+  // kept AT THE USE SITE so the template still reads as prose rather than
+  // as a table of key lookups.
+  //
+  // The fallback is deliberate. A missing row degrades to English rather
+  // than to a blank page — but it degrades SILENTLY, which is exactly the
+  // failure mode this project keeps being bitten by. So
+  // tests/roi-i18n.mjs asserts that every key used here exists in D1: the
+  // fallback is a safety net, never the thing actually rendering.
+  //
+  // Migration 505 seeded 31 of these keys in August 2026 with the comment
+  // "adding a language is purely INSERTs and needs no code change". The
+  // code never read them, so that was untrue for a week. It is true now.
+  const t = (k, fb) => {
+    const v = strings[k];
+    return v === undefined || v === null || v === "" ? fb : v;
+  };
+  // Same value, escaped for embedding inside the client script's template
+  // literals. A backtick or a ${ in a translation would otherwise end the
+  // literal and take the whole page with it.
+  const tj = (k, fb) => String(t(k, fb))
+    .replace(/\\/g, "\\\\").replace(/`/g, "\\`").replace(/\$\{/g, "\\${");
+
   const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
   const hlp = (id, title = "How this is derived") => (helpText[id]
     ? `<span class="hlp" tabindex="0" role="note" aria-label="${esc(title)}: ${esc(helpText[id])}">?<span class="tip"><b>${esc(title)}</b>${esc(helpText[id])}</span></span>`
@@ -451,29 +476,29 @@ export function renderRoiPage({ countries, benchmarks = [], phases = [], strings
 
   const body = `<div class="wrap">
 
-<p class="eyebrow">The E-Invoicing Compliance Corner</p>
-<h1>E-Invoicing ROI &amp;<br>Wave Planner</h1>
-<p class="lede">Build a board-ready business case from your own volumes and footprint &mdash; with a dated, sourced compliance wave plan drawn from the 70 jurisdictions this site tracks. Every benchmark carries a visible evidence grade, so your CFO can see exactly which numbers are independently evidenced and which are your own assumptions.</p>
+<p class="eyebrow">${t("page.eyebrow", "The E-Invoicing Compliance Corner")}</p>
+<h1>${t("page.title", "E-Invoicing ROI &amp;<br>Wave Planner")}</h1>
+<p class="lede">${t("page.lede", "Build a board-ready business case from your own volumes and footprint &mdash; with a dated, sourced compliance wave plan drawn from the 70 jurisdictions this site tracks. Every benchmark carries a visible evidence grade, so your CFO can see exactly which numbers are independently evidenced and which are your own assumptions.")}</p>
 
 
-<h2 class="noprint">1 &middot; Your footprint</h2>
+<h2 class="noprint">1 &middot; ${t("sec.footprint", "Your footprint")}</h2>
 <div class="card noprint">
   <div class="grid g4">
     <div>
-      <label for="volAP">Invoices received / year (AP)${hlp("volAP","What this drives")}</label>
+      <label for="volAP">${t("input.volAP", "Invoices received / year (AP)")}${hlp("volAP","What this drives")}</label>
       <input type="number" id="volAP" value="100000" min="0" step="1000">
     </div>
     <div>
-      <label for="volAR">Invoices issued / year (AR)${hlp("volAR","What this drives")}</label>
+      <label for="volAR">${t("input.volAR", "Invoices issued / year (AR)")}${hlp("volAR","What this drives")}</label>
       <input type="number" id="volAR" value="50000" min="0" step="1000">
-      <p class="hint">What the mandates actually bite on.</p>
+      <p class="hint">${t("input.volAR.hint", "What the mandates actually bite on.")}</p>
     </div>
     <div>
-      <label for="erp">ERP / billing integrations${hlp("erp","What this drives")}</label>
+      <label for="erp">${t("input.erp", "ERP / billing integrations")}${hlp("erp","What this drives")}</label>
       <input type="number" id="erp" value="1" min="1" max="60">
     </div>
     <div>
-      <label for="cur">Currency${hlp("cur","What this changes")}${hlp("fx","Where the rate comes from")}</label>
+      <label for="cur">${t("input.currency", "Currency")}${hlp("cur","What this changes")}${hlp("fx","Where the rate comes from")}</label>
       <select id="cur"><option value="GBP">GBP &pound;</option><option value="EUR">EUR &euro;</option><option value="USD" selected>USD $</option></select>
       <p class="hint" id="fxNote"></p>
     </div>
@@ -481,20 +506,20 @@ export function renderRoiPage({ countries, benchmarks = [], phases = [], strings
 </div>
 
 <div class="card noprint">
-  <label for="scope">What are you modelling?${hlp("scope","What this changes")}</label>
+  <label for="scope">${t("input.scope", "What are you modelling?")}${hlp("scope","What this changes")}</label>
   <select id="scope" style="max-width:460px">
-    <option value="compliance" selected>Compliance only &mdash; meet the mandates (IT workstream)</option>
-    <option value="both">Compliance + AP process automation &mdash; also bank the savings</option>
+    <option value="compliance" selected>${t("scope.compliance", "Compliance only &mdash; meet the mandates (IT workstream)")}</option>
+    <option value="both">${t("scope.both", "Compliance + AP process automation &mdash; also bank the savings")}</option>
   </select>
-  <p class="hint">Kept out front rather than buried in the assumptions: it is a scoping decision, not a benchmark, and it changes both the numbers and the timeline.</p>
+  <p class="hint">${t("input.scope.hint", "Kept out front rather than buried in the assumptions: it is a scoping decision, not a benchmark, and it changes both the numbers and the timeline.")}</p>
 </div>
 
 <div class="card noprint">
-  <label>Countries in scope${hlp("countries","Where this data comes from")}</label>
-  <p class="hint" style="margin-bottom:8px">Live mandate data for all 70 tracked jurisdictions. <button id="selEU" style="padding:3px 9px;font-size:12px">EU only</button> <button id="selMandate" style="padding:3px 9px;font-size:12px">Everywhere with a mandate</button> <button id="selNone" style="padding:3px 9px;font-size:12px">Clear</button></p>
+  <label>${t("input.countries", "Countries in scope")}${hlp("countries","Where this data comes from")}</label>
+  <p class="hint" style="margin-bottom:8px">${t("input.countries.hint", "Live mandate data for all 70 tracked jurisdictions.")} <button id="selEU" style="padding:3px 9px;font-size:12px">${t("btn.selEU", "EU only")}</button> <button id="selMandate" style="padding:3px 9px;font-size:12px">${t("btn.selMandate", "Everywhere with a mandate")}</button> <button id="selNone" style="padding:3px 9px;font-size:12px">${t("btn.selNone", "Clear")}</button></p>
   <label class="cbox" id="subsRow" style="align-items:center;gap:8px;padding:9px 12px;margin:0 0 10px;background:var(--ink-3);border:1px solid var(--line);border-radius:6px;font-size:13.5px">
     <input type="checkbox" id="useSubs">
-    <span>Use <strong>my subscribed countries</strong> <span id="subsCount" class="hint" style="display:inline"></span></span>
+    <span>${t("subs.label", "Use <strong>my subscribed countries</strong>")} <span id="subsCount" class="hint" style="display:inline"></span></span>
   </label>
   <div class="countries" id="countryList"></div>
 </div>
@@ -502,94 +527,94 @@ export function renderRoiPage({ countries, benchmarks = [], phases = [], strings
 <details class="card noprint" id="assump" style="padding:0">
   <summary style="cursor:pointer;padding:16px 20px;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:12px">
     <span>
-      <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:var(--soon)">Assumptions &amp; benchmarks</span>
-      <span class="hint" style="display:block;margin:4px 0 0">Everything below is pre-filled with our defaults. Open it only if you know better numbers &mdash; every one can be overridden.</span>
+      <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:var(--soon)">${t("assumptions.title", "Assumptions &amp; benchmarks")}</span>
+      <span class="hint" style="display:block;margin:4px 0 0">${t("assumptions.hint", "Everything below is pre-filled with our defaults. Open it only if you know better numbers &mdash; every one can be overridden.")}</span>
     </span>
-    <span id="assumpChevron" style="font-family:'IBM Plex Mono',monospace;color:var(--muted);font-size:12px;white-space:nowrap">show &#9662;</span>
+    <span id="assumpChevron" style="font-family:'IBM Plex Mono',monospace;color:var(--muted);font-size:12px;white-space:nowrap">${t("assumptions.show", "show &#9662;")}</span>
   </summary>
   <div style="padding:0 20px 18px">
-    <p class="note" style="margin-bottom:14px">Each figure shows where it came from. <span class="tag tA">A</span> measured and primary &middot; <span class="tag tB">B</span> credible body, unattributed &middot; <span class="tag tD">D</span> our estimate. Overriding a value with your own always beats our default &mdash; that is what this panel is for. <button type="button" id="resetDefaults" style="padding:3px 9px;font-size:12px;margin-left:6px">Reset all to defaults</button></p>
+    <p class="note" style="margin-bottom:14px">${t("assumptions.grades", "Each figure shows where it came from. <span class=\"tag tA\">A</span> measured and primary &middot; <span class=\"tag tB\">B</span> credible body, unattributed &middot; <span class=\"tag tD\">D</span> our estimate. Overriding a value with your own always beats our default &mdash; that is what this panel is for.")} <button type="button" id="resetDefaults" style="padding:3px 9px;font-size:12px;margin-left:6px">${t("btn.reset", "Reset all to defaults")}</button></p>
 
-    <p style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:var(--soon);margin:0 0 8px">Cost &amp; benefit</p>
+    <p style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:var(--soon);margin:0 0 8px">${t("assumptions.h.cost", "Cost &amp; benefit")}</p>
     <div class="grid g4">
-      <div><label for="costNow">AP cost per invoice <span class="tag tA">A</span>${hlp("costNow","What this drives")}</label><input type="number" id="costNow" value="${dv('costNow')}" min="0" step="0.01"><p class="hint" id="h-costNow"></p></div>
-      <div><label for="costAR">AR cost per invoice <span class="tag tA">A</span>${hlp("costAR","What this drives")}</label><input type="number" id="costAR" value="${dv('costAR')}" min="0" step="0.01"><p class="hint" id="h-costAR"></p></div>
-      <div><label for="savePct">Cost reduction % <span class="tag tB">B</span>${hlp("savePct","What this drives")}</label><input type="number" id="savePct" value="${dv('savePct')}" min="0" max="95"><p class="hint" id="h-savePct"></p></div>
-      <div><label for="errCost">Rework per errored invoice <span class="tag tD">D</span>${hlp("errCost","What this drives")}</label><input type="number" id="errCost" value="${dv('errCost')}" min="0" step="1"><p class="hint" id="h-errCost"></p></div>
+      <div><label for="costNow">${t("input.costNow", "AP cost per invoice")} <span class="tag tA">A</span>${hlp("costNow","What this drives")}</label><input type="number" id="costNow" value="${dv('costNow')}" min="0" step="0.01"><p class="hint" id="h-costNow"></p></div>
+      <div><label for="costAR">${t("input.costAR", "AR cost per invoice")} <span class="tag tA">A</span>${hlp("costAR","What this drives")}</label><input type="number" id="costAR" value="${dv('costAR')}" min="0" step="0.01"><p class="hint" id="h-costAR"></p></div>
+      <div><label for="savePct">${t("input.savePct", "Cost reduction %")} <span class="tag tB">B</span>${hlp("savePct","What this drives")}</label><input type="number" id="savePct" value="${dv('savePct')}" min="0" max="95"><p class="hint" id="h-savePct"></p></div>
+      <div><label for="errCost">${t("input.errCost", "Rework per errored invoice")} <span class="tag tD">D</span>${hlp("errCost","What this drives")}</label><input type="number" id="errCost" value="${dv('errCost')}" min="0" step="1"><p class="hint" id="h-errCost"></p></div>
     </div>
     <div class="grid g4" style="margin-top:12px">
-      <div><label for="errRate">Manual error rate % <span class="tag tB">B</span>${hlp("errRate","What this drives")}</label><input type="number" id="errRate" value="${dv('errRate')}" min="0" max="100" step="0.5"><p class="hint" id="h-errRate"></p></div>
-      <div><label for="fteCost">Loaded cost / finance FTE <span class="tag tD">D</span>${hlp("fteCost","What this drives")}</label><input type="number" id="fteCost" value="${dv('fteCost')}" min="0" step="1000"><p class="hint" id="h-fteCost"></p></div>
+      <div><label for="errRate">${t("input.errRate", "Manual error rate %")} <span class="tag tB">B</span>${hlp("errRate","What this drives")}</label><input type="number" id="errRate" value="${dv('errRate')}" min="0" max="100" step="0.5"><p class="hint" id="h-errRate"></p></div>
+      <div><label for="fteCost">${t("input.fteCost", "Loaded cost / finance FTE")} <span class="tag tD">D</span>${hlp("fteCost","What this drives")}</label><input type="number" id="fteCost" value="${dv('fteCost')}" min="0" step="1000"><p class="hint" id="h-fteCost"></p></div>
       <div></div><div></div>
     </div>
 
-    <p style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:var(--soon);margin:20px 0 8px">Investment &mdash; costs <span class="tag tD">D</span></p>
-    <p class="hint" style="margin:-4px 0 8px;color:#e0907f">These figures are <strong>placeholders only</strong>. Please replace with vendor budgetary estimates and treat the ROI as illustrative, until actuals can be provided.</p>
+    <p style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:var(--soon);margin:20px 0 8px">${t("assumptions.h.invest", "Investment &mdash; costs")} <span class="tag tD">D</span></p>
+    <p class="hint" style="margin:-4px 0 8px;color:#e0907f">${t("assumptions.placeholders", "These figures are <strong>placeholders only</strong>. Please replace with vendor budgetary estimates and treat the ROI as illustrative, until actuals can be provided.")}</p>
     <div class="grid g4">
-      <div><label for="cImplS" style="font-size:11px">Cost per SIMPLE integration${hlp("cImplS","What this drives")}</label><input type="number" id="cImplS" value="${dv('cImplS')}" min="0" step="1000"><p class="hint" id="h-cImplS"></p></div>
-      <div><label for="cImplC" style="font-size:11px">Cost per COMPLEX integration${hlp("cImplC","What this drives")}</label><input type="number" id="cImplC" value="${dv('cImplC')}" min="0" step="1000"><p class="hint" id="h-cImplC"></p></div>
-      <div><label for="cPlat" style="font-size:11px">Platform / network fees per year${hlp("cPlat","What this drives")}</label><input type="number" id="cPlat" value="${dv('cPlat')}" min="0" step="1000"><p class="hint" id="h-cPlat"></p></div>
-      <div><label for="cRun" style="font-size:11px">Internal run cost per year${hlp("cRun","What this drives")}</label><input type="number" id="cRun" value="${dv('cRun')}" min="0" step="1000"><p class="hint" id="h-cRun"></p></div>
+      <div><label for="cImplS" style="font-size:11px">${t("input.cImplS", "Cost per SIMPLE integration")}${hlp("cImplS","What this drives")}</label><input type="number" id="cImplS" value="${dv('cImplS')}" min="0" step="1000"><p class="hint" id="h-cImplS"></p></div>
+      <div><label for="cImplC" style="font-size:11px">${t("input.cImplC", "Cost per COMPLEX integration")}${hlp("cImplC","What this drives")}</label><input type="number" id="cImplC" value="${dv('cImplC')}" min="0" step="1000"><p class="hint" id="h-cImplC"></p></div>
+      <div><label for="cPlat" style="font-size:11px">${t("input.cPlat", "Platform / network fees per year")}${hlp("cPlat","What this drives")}</label><input type="number" id="cPlat" value="${dv('cPlat')}" min="0" step="1000"><p class="hint" id="h-cPlat"></p></div>
+      <div><label for="cRun" style="font-size:11px">${t("input.cRun", "Internal run cost per year")}${hlp("cRun","What this drives")}</label><input type="number" id="cRun" value="${dv('cRun')}" min="0" step="1000"><p class="hint" id="h-cRun"></p></div>
       <div></div>
     </div>
 
-    <p style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:var(--soon);margin:20px 0 8px">Implementation &mdash; weeks <span class="tag tD">D</span></p>
+    <p style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:var(--soon);margin:20px 0 8px">${t("assumptions.h.weeks", "Implementation &mdash; weeks")} <span class="tag tD">D</span></p>
     <div class="grid g4">
-      <div><label for="wMob" style="font-size:11px">Mobilisation${hlp("wMob","What this phase covers")}</label><input type="number" id="wMob" value="${dv('wMob')}" min="0" step="0.5"></div>
-      <div><label for="wDes" style="font-size:11px">Design${hlp("wDes","What this phase covers")}</label><input type="number" id="wDes" value="${dv('wDes')}" min="0" step="0.5"></div>
-      <div><label for="wBld" style="font-size:11px">Build${hlp("wBld","What this phase covers")}</label><input type="number" id="wBld" value="${dv('wBld')}" min="0" step="0.5"></div>
-      <div><label for="wUat" style="font-size:11px">UAT${hlp("wUat","What this phase covers")}</label><input type="number" id="wUat" value="${dv('wUat')}" min="0" step="0.5"></div>
+      <div><label for="wMob" style="font-size:11px">${t("input.wMob", "Mobilisation")}${hlp("wMob","What this phase covers")}</label><input type="number" id="wMob" value="${dv('wMob')}" min="0" step="0.5"></div>
+      <div><label for="wDes" style="font-size:11px">${t("input.wDes", "Design")}${hlp("wDes","What this phase covers")}</label><input type="number" id="wDes" value="${dv('wDes')}" min="0" step="0.5"></div>
+      <div><label for="wBld" style="font-size:11px">${t("input.wBld", "Build")}${hlp("wBld","What this phase covers")}</label><input type="number" id="wBld" value="${dv('wBld')}" min="0" step="0.5"></div>
+      <div><label for="wUat" style="font-size:11px">${t("input.wUat", "UAT")}${hlp("wUat","What this phase covers")}</label><input type="number" id="wUat" value="${dv('wUat')}" min="0" step="0.5"></div>
     </div>
     <div class="grid g4" style="margin-top:12px" id="chgRow">
-      <div><label for="wChg" style="font-size:11px">Process change &amp; training${hlp("wChg","What this phase covers")}</label><input type="number" id="wChg" value="${dv('wChg')}" min="0" step="0.5"><p class="hint">AP automation scope only.</p></div>
+      <div><label for="wChg" style="font-size:11px">${t("input.wChg", "Process change &amp; training")}${hlp("wChg","What this phase covers")}</label><input type="number" id="wChg" value="${dv('wChg')}" min="0" step="0.5"><p class="hint">${t("input.wChg.hint", "AP automation scope only.")}</p></div>
       <div></div><div></div><div></div>
     </div>
     <div class="grid g4" style="margin-top:12px">
-      <div><label for="wVen" style="font-size:11px">Vendor selection (once)${hlp("wVen","What “once” means here")}</label><input type="number" id="wVen" value="${dv('wVen')}" min="0" step="1"></div>
-      <div><label for="wCon" style="font-size:11px">Contracting (once)${hlp("wCon","What “once” means here")}</label><input type="number" id="wCon" value="${dv('wCon')}" min="0" step="1"></div>
-      <div><label for="lanes" style="font-size:11px">Parallel workstreams${hlp("lanes","What this means")}</label><input type="number" id="lanes" value="${dv('lanes')}" min="1" max="10"></div>
-      <div><label for="pace" style="font-size:11px">Delivery pace${hlp("pace","What this means")}</label><select id="pace">${[["0.75","Aggressive"],["1","Typical"],["1.3","Conservative"]].map(([v,n])=>`<option value="${v}"${String(dv('pace'))===v?" selected":""}>${n}</option>`).join("")}</select></div>
+      <div><label for="wVen" style="font-size:11px">${t("input.wVen", "Vendor selection (once)")}${hlp("wVen","What “once” means here")}</label><input type="number" id="wVen" value="${dv('wVen')}" min="0" step="1"></div>
+      <div><label for="wCon" style="font-size:11px">${t("input.wCon", "Contracting (once)")}${hlp("wCon","What “once” means here")}</label><input type="number" id="wCon" value="${dv('wCon')}" min="0" step="1"></div>
+      <div><label for="lanes" style="font-size:11px">${t("input.lanes", "Parallel workstreams")}${hlp("lanes","What this means")}</label><input type="number" id="lanes" value="${dv('lanes')}" min="1" max="10"></div>
+      <div><label for="pace" style="font-size:11px">${t("input.pace", "Delivery pace")}${hlp("pace","What this means")}</label><select id="pace">${[["0.75",t("pace.aggressive","Aggressive")],["1",t("pace.typical","Typical")],["1.3",t("pace.conservative","Conservative")]].map(([v,n])=>`<option value="${v}"${String(dv('pace'))===v?" selected":""}>${n}</option>`).join("")}</select></div>
     </div>
-    <p class="hint" style="margin-top:10px">Durations are per country. Countries sharing a go-live date form a wave, so a five-country wave costs roughly five country-tracks of effort, divided across however many workstreams you can genuinely run at once.</p>
+    <p class="hint" style="margin-top:10px">${t("assumptions.durations", "Durations are per country. Countries sharing a go-live date form a wave, so a five-country wave costs roughly five country-tracks of effort, divided across however many workstreams you can genuinely run at once.")}</p>
   </div>
 </details>
 
-<p class="noprint" style="margin:16px 0 0"><button class="primary" id="run">Calculate business case</button> <button id="print" class="hidden">Download PDF</button></p>
+<p class="noprint" style="margin:16px 0 0"><button class="primary" id="run">${t("btn.calculate", "Calculate business case")}</button> <button id="print" class="hidden">${t("btn.pdf", "Download PDF")}</button></p>
 
 <div id="gate" class="gate noprint hidden">
-  <p class="eyebrow" style="color:var(--soon)">Subscriber content</p>
-  <h3 style="font-family:'Big Shoulders Display';font-size:22px;text-transform:uppercase;letter-spacing:.5px">Your results are ready</h3>
-  <p class="lede" style="margin:0 auto 14px;max-width:52ch">Sign in free to see the full wave plan, the two-layer ROI model and the evidence panel, to pull in the countries you already follow, and to download the PDF for your board pack.</p>
-  <button class="primary" id="signin">Sign in / subscribe free</button>
+  <p class="eyebrow" style="color:var(--soon)">${t("gate.eyebrow", "Subscriber content")}</p>
+  <h3 style="font-family:'Big Shoulders Display';font-size:22px;text-transform:uppercase;letter-spacing:.5px">${t("gate.title", "Your results are ready")}</h3>
+  <p class="lede" style="margin:0 auto 14px;max-width:52ch">${t("gate.body", "Sign in free to see the full wave plan, the two-layer ROI model and the evidence panel, to pull in the countries you already follow, and to download the PDF for your board pack.")}</p>
+  <button class="primary" id="signin">${t("gate.cta", "Sign in / subscribe free")}</button>
   
 </div>
 
 <div id="results" class="hidden">
-  <h2>2 &middot; Executive summary</h2>
+  <h2>2 &middot; ${t("sec.summary", "Executive summary")}</h2>
   <div id="summary"></div>
-  <h2>3 &middot; Compliance wave plan</h2>
+  <h2>3 &middot; ${t("sec.waves", "Compliance wave plan")}</h2>
   <p class="lede" id="waveIntro"></p>
   <div class="card" style="padding:14px 16px 6px">
     <div id="ganttHead"></div>
     <div style="overflow-x:auto"><div id="gantt"></div></div>
     <div id="ganttLegend"></div>
   </div>
-  <p class="noprint" style="margin:-4px 0 14px"><button id="tblToggle" style="padding:5px 11px;font-size:12.5px">Show as table</button></p>
+  <p class="noprint" style="margin:-4px 0 14px"><button id="tblToggle" style="padding:5px 11px;font-size:12.5px">${t("btn.table", "Show as table")}</button></p>
   <div id="waves" class="hidden"></div>
-  <h2>4 &middot; Direct savings &mdash; cash-releasing</h2>
-  <p class="lede">Money that stops leaving the business: processing cost per invoice, and rework you no longer pay for. Available wherever you digitise, mandate or not.</p>
+  <h2>4 &middot; ${t("sec.direct", "Direct savings &mdash; cash-releasing")}</h2>
+  <p class="lede">${t("sec.direct.lede", "Money that stops leaving the business: processing cost per invoice, and rework you no longer pay for. Available wherever you digitise, mandate or not.")}</p>
   <div id="direct"></div>
-  <h2>5 &middot; Indirect savings &mdash; cost and risk avoided</h2>
-  <p class="lede">Cost you avoid rather than cash you release: tax and audit effort, penalty exposure, fraud. The <em>mechanisms</em> are well evidenced; the <em>magnitudes</em> mostly are not, which is why so much of this section is named rather than monetised.</p>
+  <h2>5 &middot; ${t("sec.indirect", "Indirect savings &mdash; cost and risk avoided")}</h2>
+  <p class="lede">${t("sec.indirect.lede", "Cost you avoid rather than cash you release: tax and audit effort, penalty exposure, fraud. The <em>mechanisms</em> are well evidenced; the <em>magnitudes</em> mostly are not, which is why so much of this section is named rather than monetised.")}</p>
   <div id="indirect"></div>
-  <h2>6 &middot; Investment &amp; payback</h2>
+  <h2>6 &middot; ${t("sec.invest", "Investment &amp; payback")}</h2>
   <div id="invest"></div>
-  <h2>7 &middot; What the evidence actually supports</h2>
+  <h2>7 &middot; ${t("sec.evidence", "What the evidence actually supports")}</h2>
   <div id="evidence"></div>
 </div>
 
 <footer>
-  <p><strong>The E-Invoicing Compliance Corner</strong> &mdash; ROI &amp; wave planner. Country mandate data is live as of 11 August 2026 and traceable to the per-country deep dives. Benchmark figures carry the evidence grade shown against each. This tool models a business case; it is not tax, legal or investment advice.</p>
+  <p>${t("footer.text", "<strong>The E-Invoicing Compliance Corner</strong> &mdash; ROI &amp; wave planner. Country mandate data is live as of 11 August 2026 and traceable to the per-country deep dives. Benchmark figures carry the evidence grade shown against each. This tool models a business case; it is not tax, legal or investment advice.")}</p>
 </footer>
 </div>
 
@@ -1169,10 +1194,10 @@ function build(){
   const scope = scopeVal(), banked = scope === 'both';
   document.getElementById('summary').innerHTML = \`
     <div class="grid g4">
-      <div class="stat"><div class="n" style="color:\${banked?'#7fd0a8':'#8d9bb5'}">\${fmt(l1)}</div><div class="l">Direct &mdash; \${banked?'banked annually':'unlocked, NOT banked'}</div></div>
-      <div class="stat"><div class="n" style="color:#e2b978">\${fmt(l2)}</div><div class="l">Indirect &mdash; modelled</div></div>
-      <div class="stat"><div class="n">\${sel.length}</div><div class="l">Jurisdictions in scope</div></div>
-      <div class="stat"><div class="n" style="color:\${dated.length?'#e08b7a':'#8d9bb5'}">\${dated.length}</div><div class="l">With a dated deadline ahead</div></div>
+      <div class="stat"><div class="n" style="color:\${banked?'#7fd0a8':'#8d9bb5'}">\${fmt(l1)}</div><div class="l">${tj("res.direct","Direct")} &mdash; \${banked?'${tj("res.banked","banked annually")}':'${tj("res.unbanked","unlocked, NOT banked")}'}</div></div>
+      <div class="stat"><div class="n" style="color:#e2b978">\${fmt(l2)}</div><div class="l">${tj("res.indirect","Indirect &mdash; modelled")}</div></div>
+      <div class="stat"><div class="n">\${sel.length}</div><div class="l">${tj("res.inScope","Jurisdictions in scope")}</div></div>
+      <div class="stat"><div class="n" style="color:\${dated.length?'#e08b7a':'#8d9bb5'}">\${dated.length}</div><div class="l">${tj("res.dated","With a dated deadline ahead")}</div></div>
     </div>
     <div class="note \${banked?'':'warn'}" style="margin-top:14px">\${banked
       ? \`<strong>Scope: compliance + AP process automation.</strong> Direct savings count, because your programme includes the process redesign and retraining needed to realise it &mdash; and the timeline below carries a process-change phase per country to match. \`
@@ -1214,7 +1239,7 @@ function build(){
     <tr class="tierA"><td>Paper, print, postage, storage <span class="tag tang">tangible</span></td><td>Paper AUD 30.87 vs e-invoice AUD 9.18 \${ev('ato','ATO / Deloitte')}; your own spend is the better input</td><td class="num">&mdash;</td></tr>
     <tr style="border-top:2px solid var(--line)"><td colspan="2"><strong>Direct total &mdash; \${banked?'banked':'unlocked, not banked'}</strong></td><td class="num"><strong style="color:\${banked?'#7fd0a8':'#8d9bb5'}">\${fmt(l1)}</strong></td></tr>
     </tbody></table>
-    <div class="note warn" style="margin-top:12px"><strong>Important scope caveat.</strong> These savings come from automating the accounts-payable <em>process</em> &mdash; not from the compliance integration on its own. An e-invoicing mandate integration is largely an IT workstream: it makes structured invoice data available and removes the paper, which is what <em>enables</em> the saving, but the saving is only realised if you also change how AP actually works. If your programme is scoped as compliance-only, treat the direct savings as unlocked rather than banked, and the indirect savings as what compliance itself delivers.</div>
+    <div class="note warn" style="margin-top:12px">${tj("res.scopeCaveat","<strong>Important scope caveat.</strong> These savings come from automating the accounts-payable <em>process</em> &mdash; not from the compliance integration on its own. An e-invoicing mandate integration is largely an IT workstream: it makes structured invoice data available and removes the paper, which is what <em>enables</em> the saving, but the saving is only realised if you also change how AP actually works. If your programme is scoped as compliance-only, treat the direct savings as unlocked rather than banked, and the indirect savings as what compliance itself delivers.")}</div>
     <div class="note" style="margin-top:10px">Two benefits above are left unmonetised on purpose. Both are real; neither has a benchmark that survives scrutiny, and inventing one would undermine every other number on this page.</div>\`;
 
   document.getElementById('indirect').innerHTML = \`
@@ -1224,7 +1249,7 @@ function build(){
     <tr class="tierD"><td>Penalty &amp; remediation exposure avoided <span class="tag intang">intangible</span></td><td>\${sel.filter(c=>c[6]>0).length} of your jurisdictions publish a quantified penalty schedule \${ev('site','on their deep dives')}. Size it from those, per country &mdash; there is no credible aggregate</td><td class="num">&mdash;</td></tr>
     <tr class="tierD"><td>Fraud detection, working-capital visibility <span class="tag intang">intangible</span></td><td>Strategic benefits; no benchmark exists \${ev('yours','your call')}</td><td class="num">&mdash;</td></tr>
     </tbody></table>
-    <div class="note warn" style="margin-top:12px"><strong>Why the indirect column is smaller than you would expect.</strong> The compliance case is genuinely compelling &mdash; but almost every circulating number attached to it fails verification. This model shows only what can be defended and names what cannot, which is a stronger position in front of a finance committee than a bigger number that collapses under a single question.</div>\`;
+    <div class="note warn" style="margin-top:12px">${tj("res.indirectWhy","<strong>Why the indirect column is smaller than you would expect.</strong> The compliance case is genuinely compelling &mdash; but almost every circulating number attached to it fails verification. This model shows only what can be defended and names what cannot, which is a stronger position in front of a finance committee than a bigger number that collapses under a single question.")}</div>\`;
 
   // ---- investment: without a cost side this is a benefits calculator, not ROI
   const cImplS = +document.getElementById('cImplS').value || 0;
@@ -1242,19 +1267,19 @@ function build(){
     \${placeholders.length ? \`<div class="note warn"><strong>\${placeholders.length} of 4 cost inputs are still placeholders.</strong> Please replace them with vendor budgetary estimates in the assumptions panel, and treat the ROI as illustrative until actuals can be provided.</div>\` : ''}
     <div class="grid g4">
       <div class="stat"><div class="n" style="color:#e0907f">\${fmt(oneOff)}</div><div class="l">One-off &mdash; \${intComplex} complex + \${intSimple} simple</div></div>
-      <div class="stat"><div class="n" style="color:#e0907f">\${fmt(annualCost)}</div><div class="l">Annual run cost</div></div>
+      <div class="stat"><div class="n" style="color:#e0907f">\${fmt(annualCost)}</div><div class="l">${tj("res.annualRun","Annual run cost")}</div></div>
       <div class="stat"><div class="n" style="color:\${netAnnual>=0?'#7fd0a8':'#e0907f'}">\${fmt(netAnnual)}</div><div class="l">Net annual \${banked?'benefit':'(compliance scope)'}</div></div>
-      <div class="stat"><div class="n" style="color:\${paybackMonths&&paybackMonths<=24?'#7fd0a8':'#e2b978'}">\${paybackMonths===null?'n/a':Math.round(paybackMonths)+'mo'}</div><div class="l">Payback on one-off</div></div>
+      <div class="stat"><div class="n" style="color:\${paybackMonths&&paybackMonths<=24?'#7fd0a8':'#e2b978'}">\${paybackMonths===null?'n/a':Math.round(paybackMonths)+'mo'}</div><div class="l">${tj("res.payback","Payback on one-off")}</div></div>
     </div>
     \${!banked ? \`<div class="note" style="margin-top:12px">On a compliance-only scope the net figure is negative by design, and that is the correct answer rather than a broken one: you are buying the right to keep trading in these markets, not a return. The \${fmt(l1)} of direct savings sits unclaimed until the scope widens &mdash; which is the actual investment case for doing both at once.</div>\` : ''}
-    <div class="note" style="margin-top:12px"><strong>Tangible versus intangible.</strong> Everything counted above is tangible: a number someone can be held to. The intangible benefits &mdash; faster cycle times, penalty exposure avoided, fraud detection, VAT position &mdash; are listed in the two sections above and deliberately carry no value. They are real, they often matter more to a board than the arithmetic, and there is no honest way to price them. Present them as the qualitative case alongside this number, not inside it.</div>\`;
+    <div class="note" style="margin-top:12px">${tj("res.tangible","<strong>Tangible versus intangible.</strong> Everything counted above is tangible: a number someone can be held to. The intangible benefits &mdash; faster cycle times, penalty exposure avoided, fraud detection, VAT position &mdash; are listed in the two sections above and deliberately carry no value. They are real, they often matter more to a board than the arithmetic, and there is no honest way to price them. Present them as the qualitative case alongside this number, not inside it.")}</div>\`;
 
   document.getElementById('evidence').innerHTML = \`
     <div class="grid g2">
-      <div class="card tierA"><h3>Grade A <span class="tag tA">measured &amp; primary</span></h3><p class="hint">Ardent Partners 2025 (cost, cycle time, exceptions) &middot; ATO / Deloitte Access Economics (paper vs PDF vs e-invoice, 2016 vintage, stated) &middot; OECD DCTR 2026 (mechanism) &middot; this site&rsquo;s own tracker data.</p></div>
-      <div class="card tierB"><h3>Grade B <span class="tag tB">credible body, unattributed</span></h3><p class="hint">HMRC/DBT 60&ndash;80% cost reduction and ~10% manual error rate. Both appear in a UK government consultation; neither carries a source within it. Real enough to use, not strong enough to lead with.</p></div>
-      <div class="card tierC"><h3>Grade C <span class="tag tC">anecdote, not benchmark</span></h3><p class="hint">The NHS trust figures (24h vs 10 days, 2&times; payment speed, 15% fewer queries) &mdash; one unnamed, undated organisation. The VAT-gap figures, which are European Commission/CASE rather than OECD, and whose own country analyses credit economic recovery rather than digital reporting.</p></div>
-      <div class="card tierD"><h3>Grade D <span class="tag tD">your assumption</span></h3><p class="hint">Rework cost per errored invoice, loaded FTE cost, tax-effort saving. Nothing is claimed for these; they are exposed so the model can be argued with rather than believed.</p></div>
+      <div class="card tierA"><h3>${tj("ev.gradeA","Grade A")} <span class="tag tA">${tj("ev.gradeA.tag","measured &amp; primary")}</span></h3><p class="hint">${tj("ev.gradeA.body","Ardent Partners 2025 (cost, cycle time, exceptions) &middot; ATO / Deloitte Access Economics (paper vs PDF vs e-invoice, 2016 vintage, stated) &middot; OECD DCTR 2026 (mechanism) &middot; this site&rsquo;s own tracker data.")}</p></div>
+      <div class="card tierB"><h3>${tj("ev.gradeB","Grade B")} <span class="tag tB">${tj("ev.gradeB.tag","credible body, unattributed")}</span></h3><p class="hint">${tj("ev.gradeB.body","HMRC/DBT 60&ndash;80% cost reduction and ~10% manual error rate. Both appear in a UK government consultation; neither carries a source within it. Real enough to use, not strong enough to lead with.")}</p></div>
+      <div class="card tierC"><h3>${tj("ev.gradeC","Grade C")} <span class="tag tC">${tj("ev.gradeC.tag","anecdote, not benchmark")}</span></h3><p class="hint">${tj("ev.gradeC.body","The NHS trust figures (24h vs 10 days, 2&times; payment speed, 15% fewer queries) &mdash; one unnamed, undated organisation. The VAT-gap figures, which are European Commission/CASE rather than OECD, and whose own country analyses credit economic recovery rather than digital reporting.")}</p></div>
+      <div class="card tierD"><h3>${tj("ev.gradeD","Grade D")} <span class="tag tD">${tj("ev.gradeD.tag","your assumption")}</span></h3><p class="hint">${tj("ev.gradeD.body","Rework cost per errored invoice, loaded FTE cost, tax-effort saving. Nothing is claimed for these; they are exposed so the model can be argued with rather than believed.")}</p></div>
     </div>
     <div class="note" style="margin-top:14px">Corrections applied during verification: the VAT-gap figures were re-attributed from OECD to the European Commission, Hungary&rsquo;s start figure corrected 9.8%&rarr;10.4% and Poland&rsquo;s 12.7%&rarr;12.5%, and the &ldquo;reduced penalty exposure&rdquo; claim was removed from the HMRC attribution &mdash; the word &ldquo;penalty&rdquo; does not appear in that consultation.</div>\`;
 }
