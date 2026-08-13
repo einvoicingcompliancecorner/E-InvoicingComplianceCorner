@@ -9338,6 +9338,73 @@ running `npm test` and `apply_migrations.py --remote --assert-only`, that
 says so when they stop passing, is what would finish what this work
 started.
 
+## 13 Aug 2026 (cont'd) — Lifecycle v1 dropped (migration 519), and a replay/production divergence found on the way
+
+Design review recommendation 4: *"Confirm nothing reads them, then
+remove."* Migration 078 generalised the lifecycle pills from
+one-per-country to many-per-country and said explicitly that it was
+leaving the old tables in place because France's and Poland's live data
+still needed migrating. That migration happened. This is the follow-up
+078 implied and nobody came back to.
+
+**What was verified before writing a `DROP`**, which is the one thing in
+this repository that cannot be undone by writing another migration: no
+exact-word reference to any of the four tables anywhere in either
+Worker, the shared modules, the static HTML, the i18n JSON or the build
+scripts — only the five migrations that created and populated them. No
+indexes or views. And the data is *already in v2*, not merely similar to
+it: all 44 v1 status labels match the 44 France/Poland rows in the v2
+table exactly — same country, language, sort order and text — and all 8
+intro/outro rows match, with one difference in the entire set, a trailing
+space trimmed from Poland's French outro.
+
+Rendering was checked rather than assumed: France, Poland and their
+French translations still produce their pill cards from the post-drop
+schema.
+
+### The finding that came out of checking Malaysia
+
+Malaysia has **zero** lifecycle cards in a clean replay — which is odd,
+because migration 078 exists specifically to support Malaysia's two pill
+cards. The cause: `082_malaysia_deepdive_content.sql` inserts cards with
+a `display_style` column that **088 does not add until six migrations
+later**. 082 is one of the four documented replay failures, and this is
+why.
+
+Production almost certainly has those rows — `089_fix_malaysia_
+submission_methods_style.sql` exists, and there is nothing to fix if
+nothing was inserted. So **the replay and production genuinely disagree
+about this table**, and have since August 2026.
+
+That is worth knowing on its own, and it is checkable in one query:
+
+```sql
+SELECT count(*) FROM deep_dive_lifecycle_cards d
+  JOIN countries c ON c.id = d.country_id WHERE c.code = 'MY';
+```
+
+Zero in production would mean Malaysia's deep dive is missing content
+live; non-zero confirms the divergence and nothing more.
+
+### It changed the migration, which is the point of finding it early
+
+The first draft of 519 asserted `count(*) FROM deep_dive_lifecycle_cards
+= 38` and three similar totals, taken from the replay. Those are checked
+against **live D1** when the migration is applied — so the migration
+would have aborted on the Malaysia difference, which is not its business.
+
+The assertions now name the two countries this migration actually risks,
+France and Poland, whose counts come from migrations that applied cleanly
+everywhere; plus three **relational** standing invariants that hold
+whatever the row counts are in whichever database is being checked: every
+card has at least one status, every card has English to fall back to, and
+so does every status.
+
+**The lesson generalises, and is now written into the migration:** an
+absolute row count is only safe as an assertion if the replay and
+production agree about that table. Where they might not, assert the
+relationship instead of the number.
+
 ## Open items / next steps
 
 ### Real open work

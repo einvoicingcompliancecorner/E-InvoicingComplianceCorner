@@ -1,0 +1,105 @@
+-- ================================================================
+-- Drop the superseded lifecycle v1 tables.
+--
+-- Design review, recommendation 4 (9 in the first revision): "Confirm
+-- nothing reads them, then remove. Small, and reduces the number of
+-- things a future reader has to rule out."
+--
+-- WHY THEY WERE LEFT. Migration 078 generalised the lifecycle pills from
+-- one-per-country to many-per-country, because Malaysia needs two
+-- separate pill cards in the same section. Its header says plainly:
+-- "New tables; the old ones are left in place (unused going forward)
+-- rather than dropped, since France and Poland's existing live data
+-- needs migrating into this new structure, not lost."
+--
+-- That was the right call at the time. The migration happened. This is
+-- the follow-up 078 implied and nobody came back to.
+--
+-- WHAT WAS VERIFIED BEFORE WRITING THIS, against a full replay of the
+-- chain — because "confirm nothing reads them" is the whole job here,
+-- and a DROP is the one thing in this repository that cannot be undone
+-- by writing another migration:
+--
+--   · NO CODE READS THEM. Zero exact-word references to any of the four
+--     across members-worker/src, site-worker/src, shared/, the static
+--     HTML, the i18n JSON and the build scripts. The only files that
+--     mention them are the five that created and populated them: 057,
+--     059, 061, 067, 069 (plus 070 and 072, which ALTER and UPDATE the
+--     v1 intro translations and are two of the four documented
+--     pre-existing replay errors).
+--   · THE DATA IS ALREADY IN v2, not merely similar to it. All 44 v1
+--     status labels match the 44 France/Poland rows in
+--     deep_dive_lifecycle_status_v2_translations exactly — same country,
+--     same language, same sort order, same text. All 8 intro/outro rows
+--     match too, with a single difference: Poland's French outro_text
+--     lost a trailing space in the move. That is the entire delta.
+--   · NO INDEXES OR VIEWS depend on them.
+--
+--   Counts at the moment of writing: v1 held 2 + 8 + 11 + 44 = 65 rows.
+--   v2 holds 38 cards, 152 card translations, 179 statuses and 716
+--   status translations across every country that has pill cards.
+--
+-- IF THIS IS EVER WRONG, the recovery is Cloudflare D1 Time Travel,
+-- which keeps a restorable point-in-time copy for 30 days. That is the
+-- real safety net for a DROP, not anything written here — worth knowing
+-- before running it rather than after.
+--
+-- WHY 070 AND 072 STAY IN KNOWN_REPLAY_ERRORS. Both touch
+-- deep_dive_lifecycle_intro_translations and both run long before this
+-- file, so their behaviour is unchanged; they still fail at their own
+-- position, for their own documented reasons. Dropping a table later in
+-- the chain does not retroactively fix a migration earlier in it, and
+-- the list should not be trimmed on the assumption that it does.
+-- ================================================================
+
+-- Children first: SQLite does not enforce these foreign keys by default,
+-- but dropping in dependency order is what someone reading this expects,
+-- and the order costs nothing.
+DROP TABLE IF EXISTS deep_dive_lifecycle_status_translations;
+DROP TABLE IF EXISTS deep_dive_lifecycle_statuses;
+DROP TABLE IF EXISTS deep_dive_lifecycle_intro_translations;
+DROP TABLE IF EXISTS deep_dive_lifecycle_intro;
+
+
+-- ---- what this migration claims it did (see apply_migrations.py) ----
+-- The first line is the obvious one. The rest are the ones that matter:
+-- they assert the tables that SURVIVE are intact and full. A DROP that
+-- takes the wrong table with it is not a subtle failure on a live site,
+-- but it is a completely silent one here — every statement above would
+-- still report success.
+--
+-- ASSERT: SELECT count(*) FROM sqlite_master WHERE type = 'table' AND name IN ('deep_dive_lifecycle_intro','deep_dive_lifecycle_intro_translations','deep_dive_lifecycle_statuses','deep_dive_lifecycle_status_translations') = 0
+-- ASSERT: SELECT count(*) FROM sqlite_master WHERE type = 'table' AND name LIKE 'deep_dive_lifecycle%' = 4
+--
+-- NOT AN ABSOLUTE ROW COUNT, AND THAT MATTERS. The first draft of this
+-- file asserted `count(*) FROM deep_dive_lifecycle_cards = 38` and the
+-- other three totals, taken from the replay. Those would have been
+-- checked against LIVE D1 when this migration is applied, and the replay
+-- and production do NOT agree about this table:
+-- 082_malaysia_deepdive_content.sql inserts cards with a `display_style`
+-- column that 088 does not add until six migrations later, so 082 is one
+-- of the four documented replay failures — Malaysia has zero lifecycle
+-- cards in a clean replay. Production evidently has them (089 exists to
+-- "fix Malaysia submission methods style", which implies rows to fix),
+-- so the counts differ by environment and the migration would have
+-- aborted on a difference that is not this migration's business.
+--
+-- So the point-in-time assertions below name the two countries whose
+-- data this migration actually risks — France and Poland, the ones
+-- migrated out of v1 by 078 — and their counts come from migrations that
+-- applied cleanly everywhere.
+--
+-- ASSERT: SELECT count(*) FROM deep_dive_lifecycle_statuses_v2 s JOIN deep_dive_lifecycle_cards d ON d.id = s.card_id JOIN countries c ON c.id = d.country_id WHERE c.code = 'FR' = 7
+-- ASSERT: SELECT count(*) FROM deep_dive_lifecycle_statuses_v2 s JOIN deep_dive_lifecycle_cards d ON d.id = s.card_id JOIN countries c ON c.id = d.country_id WHERE c.code = 'PL' = 4
+-- ASSERT: SELECT count(*) FROM deep_dive_lifecycle_card_translations t JOIN deep_dive_lifecycle_cards d ON d.id = t.card_id JOIN countries c ON c.id = d.country_id WHERE c.code IN ('FR','PL') = 8
+--
+-- And three standing ones, because the reason v1 lingered for months is
+-- that nothing ever asked whether it was still needed. All three are
+-- relational, so they hold whatever the row counts are in whichever
+-- database is being checked. A pill card with no statuses, or one with
+-- no English to fall back to, renders as an empty box on a country's
+-- deep dive: obvious to a reader, invisible to SQL.
+--
+-- ASSERT ALWAYS: SELECT count(*) FROM deep_dive_lifecycle_cards d WHERE NOT EXISTS (SELECT 1 FROM deep_dive_lifecycle_statuses_v2 s WHERE s.card_id = d.id) = 0
+-- ASSERT ALWAYS: SELECT count(*) FROM deep_dive_lifecycle_cards d WHERE NOT EXISTS (SELECT 1 FROM deep_dive_lifecycle_card_translations t WHERE t.card_id = d.id AND t.lang = 'en') = 0
+-- ASSERT ALWAYS: SELECT count(*) FROM deep_dive_lifecycle_statuses_v2 s WHERE NOT EXISTS (SELECT 1 FROM deep_dive_lifecycle_status_v2_translations t WHERE t.status_id = s.id AND t.lang = 'en') = 0
