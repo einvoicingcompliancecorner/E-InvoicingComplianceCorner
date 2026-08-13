@@ -8825,6 +8825,106 @@ transport.
 tooling and documentation. It applies and records like any other
 migration next time the runner runs.
 
+## 13 Aug 2026 (cont'd) — The test harnesses are in the repo (`tests/`, root `package.json`)
+
+Recommendation 1 from the design review. Dan: *"yes, please do the
+regression test suite, contrast auditor and currency round trip out of
+/tmp."*
+
+Every one of these had already caught a real defect and then lived in
+`/tmp`, where a container restart deletes them. Three are now committed
+and runnable with `npm test`, alongside the two Python checks from
+yesterday, and none of the five needs Cloudflare credentials, wrangler or
+the network. That last point is the design constraint, not a bonus: **a
+check you can only run from one machine is a check that gets skipped.**
+
+### The fixture is most of the work
+
+`tests/lib/` builds the page under test, and three decisions in there were
+each paid for previously.
+
+**It replays the migration chain rather than loading a snapshot.**
+`replay_server.py` rebuilds the database from `schema.sql` plus all 517
+migrations — reusing `apply_migrations.py`'s own file list and known-error
+set — then answers arbitrary SQL over a pipe. The original harness read a
+hand-captured JSON snapshot of the countries table. It went stale the
+moment the complexity scale was rescaled, the page broke on a `CXNAME[3]`
+lookup the snapshot could not know about, and the harness passed anyway. A
+fixture that does not track the schema tests last week's code.
+
+**It drives the real query functions.** Because the replay answers real
+SQL, `build-page.mjs` calls the actual exported `getRoiCountries`,
+`getRoiBenchmarks`, `getRoiPhases`, `getRoiStrings` and `getRoiFxRates`
+against a D1-shaped handle, instead of a hand-copied approximation of
+their SQL. A copy of a query is one more thing that can be wrong on its
+own.
+
+**It renders inside the real shell.** `BASE_STYLE` is lifted out of
+`members-worker/src/index.js` at test time and concatenated *before*
+`ROI_STYLE`, exactly as `pageShell()` does. That ordering is the entire
+reason the contrast bug shipped, and the extractor throws rather than
+guesses if the constant is ever renamed or starts interpolating.
+
+### Each suite was proved to fail
+
+A green suite that cannot go red is decoration, so each was run against a
+deliberately broken copy of the code it covers:
+
+- reducing `applyCurrency()` to a symbol swap — the defect Dan reported —
+  turns the currency suite red on 4 checks, including *"results scale by
+  the rate (1.0000, 1.0000 vs 1.3511)"*;
+- deleting `color:var(--text-lo)` from `ROI_STYLE`'s `.card` reproduces
+  the original contrast failure exactly: **71 elements at 1.05:1,
+  rgb(36,29,16) on rgb(21,34,56)**.
+
+Both were restored and re-verified green.
+
+### The auditor's own false positives are fixed in the committed version
+
+The first contrast pass invented six failures by walking up the ancestor
+chain and taking the first background it found, treating
+`rgba(255,255,255,0.02)` as opaque white. The committed `bgOf()`
+composites the whole chain honouring alpha, and so does the text colour.
+A tool that reports failures nobody can reproduce gets ignored inside a
+week. It audits three states (on load, assumptions open, results shown),
+including the tooltips, which are `display:none` until hover and so have
+to be audited by declared style rather than by measured box.
+
+It also asserts it found something — 1,245 elements, 47 tooltips, 30
+markers — because a selector that stops matching turns an audit green
+without anyone noticing.
+
+### One deployment trap caught while doing this
+
+`site-worker/wrangler.toml` sets `[assets] directory = "../"`, the repo
+root. Anything added at the top level is uploaded and served publicly
+unless `.assetsignore` excludes it — so `node_modules/` alone would have
+put tens of thousands of files on the public site. `tests/`,
+`node_modules/`, `package.json` and `package-lock.json` are now excluded
+there, with the reason written next to them.
+
+### What is in it
+
+`npm test` runs five suites: the migration replay with its assertions,
+the assertion mechanism's own 35 checks, ROI regression (15), currency
+round trip (17) and the contrast audit (4 states). `npm test -- currency`
+runs one. `tests/README.md` records what each suite exists because of, and
+the two habits worth keeping — prove the check fails, and assert a floor
+rather than an exact count where the number is legitimately mobile (the
+tooltip check asserts "at least 28, none empty" rather than 30, because
+two markers are conditional on the country selection and an exact count
+broke the day that changed).
+
+Added to `ADDING-A-COUNTRY.md`'s Phase 5 checklist, since a new country
+changes the planner's picker, integration count and wave plan — the ROI
+regression is a real check on a country add rather than boilerplate.
+
+**Still not committed:** the content-monitor digest simulator, the fourth
+harness the review named. It needs a good deal of KV and fetch mocking to
+run offline, which is why it did not come across with the other three.
+
+**Nothing to deploy** — tooling and documentation only.
+
 ## Open items / next steps
 
 ### Real open work

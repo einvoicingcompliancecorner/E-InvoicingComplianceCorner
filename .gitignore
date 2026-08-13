@@ -1,3 +1,5 @@
 __pycache__/
 .wrangler/
 *.bundle
+node_modules/
+tests/.tmp/

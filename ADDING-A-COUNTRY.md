@@ -487,6 +487,11 @@ mind autoincrement-PK tables where a re-run genuinely duplicates rows
       live database satisfies every assertion the chain makes. Do this
       first: it is the cheapest check here and the only one that can
       tell you a migration ran without doing anything
+- [ ] `npm test` passes from the repo root — replay, assertions, and the
+      three browser suites over the ROI planner. A new country changes
+      the planner's picker, integration count and wave plan, so the ROI
+      regression is a real check on a country add, not boilerplate. Needs
+      no credentials and takes about a minute (see `tests/README.md`)
 - [ ] Main tracker: milestones on the board (both the arrivals view and
       list view), country in the region filter and sidebar
 - [ ] Deep Dives menu + flyout include it (alphabetical within region),

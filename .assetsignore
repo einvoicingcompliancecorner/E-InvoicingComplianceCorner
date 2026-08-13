@@ -7,3 +7,12 @@ shared/
 migrations/
 .git/
 *.md
+
+# Test harnesses and their dependencies. [assets] directory is the repo
+# ROOT, so anything added at the top level is uploaded and served
+# publicly unless it is listed here — node_modules alone would put tens
+# of thousands of files on the public site.
+tests/
+node_modules/
+package.json
+package-lock.json

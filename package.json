@@ -1,0 +1,17 @@
+{
+  "name": "einvoicing-compliance-corner",
+  "version": "1.0.0",
+  "private": true,
+  "description": "The E-Invoicing Compliance Corner — test harnesses. The site itself is two Cloudflare Workers deployed with wrangler from members-worker/ and site-worker/; this file exists for the checks in tests/, which need no credentials and no network.",
+  "type": "module",
+  "scripts": {
+    "test": "node tests/run-all.mjs",
+    "test:roi": "node tests/roi-regression.mjs",
+    "test:currency": "node tests/roi-currency.mjs",
+    "test:contrast": "node tests/contrast-audit.mjs",
+    "test:migrations": "cd members-worker/migrations && python3 apply_migrations.py --replay-only && python3 test_assertions.py"
+  },
+  "devDependencies": {
+    "playwright": "^1.62.1"
+  }
+}
