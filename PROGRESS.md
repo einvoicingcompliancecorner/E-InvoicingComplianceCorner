@@ -8898,10 +8898,11 @@ without anyone noticing.
 
 `site-worker/wrangler.toml` sets `[assets] directory = "../"`, the repo
 root. Anything added at the top level is uploaded and served publicly
-unless `.assetsignore` excludes it — so `node_modules/` alone would have
-put tens of thousands of files on the public site. `tests/`,
-`node_modules/`, `package.json` and `package-lock.json` are now excluded
-there, with the reason written next to them.
+unless `.assetsignore` excludes it — and `node_modules/` turned out to be
+~1,800 files including the workerd binary, which would exceed
+Cloudflare's 25 MiB per-asset limit as well as being nobody's business.
+`tests/`, `node_modules/`, `package.json` and `package-lock.json` are now
+excluded there, with the reason written next to them.
 
 ### What is in it
 
@@ -9073,6 +9074,35 @@ than once.
 that, deploys should use `npx wrangler deploy` rather than a global
 `wrangler`, so they pick up the pin; `ADDING-A-COUNTRY.md`'s Phase 4 now
 says so.
+
+### Postscript: the asset file count is a pre-filter walk
+
+`npm install` made `wrangler deploy --dry-run` report *"Read 2,898 files
+from the assets directory"* against an asset-eligible set of 72, which
+looked exactly like `node_modules` leaking onto the public site — the
+trap `.assetsignore` had just been extended to prevent.
+
+It is not. The count is a pre-filter walk. The proof is `.git/`: it has
+been excluded since `.assetsignore` was created, its 106 files are
+unquestionably inside that 2,898, and the live site has never served
+`.git`. The count has never been the upload count — before `node_modules`
+existed here, the same walk would have reported ~767 against the same 72
+eligible files.
+
+Two things worth keeping. First, **the arithmetic did not close** — 661
+repo files plus 1,793 in `node_modules` plus 106 in `.git` is 2,560,
+leaving 338 unexplained, most likely directories or symlinks counted by
+the walk. That does not change the conclusion, and it is recorded rather
+than quietly rounded away. Second, there is a real one-request test if it
+ever needs confirming directly rather than by inference, written into
+`.assetsignore` beside the finding: after any deploy,
+`curl -sI .../node_modules/wrangler/package.json` should 404.
+
+Also corrected while here: the earlier claim that `node_modules` would
+put "tens of thousands of files" on the site. It is ~1,800. The workerd
+binary inside it would still exceed Cloudflare's 25 MiB per-asset limit,
+so the exclusion earns its place regardless — but the number should be
+the real one.
 
 ## Open items / next steps
 
