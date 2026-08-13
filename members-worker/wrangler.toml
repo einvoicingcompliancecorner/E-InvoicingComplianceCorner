@@ -2,6 +2,19 @@ name = "eicc-members"
 main = "src/index.js"
 compatibility_date = "2026-07-01"
 
+# Pin the account explicitly rather than letting wrangler resolve it.
+# Not a secret — it appears in every Cloudflare dashboard URL — and this
+# file is excluded from the public asset upload by ../.assetsignore.
+#
+# Added 13 Aug 2026 after the third Cloudflare auth cycle this project
+# has lost time to. Without it, a stale OAuth session or an ambiguity
+# between accounts surfaces as "the given account is not valid or is not
+# authorized" (API error 7403) part-way through a migration run, which
+# reads like a broken migration. It is not: the replay has already
+# validated by that point and nothing is wrong with the SQL. Naming the
+# account here makes the failure say what it actually is.
+account_id = "40864d5884a283ec93dddf45fc9ebe32"
+
 # ----------------------------------------------------------------
 # Non-secret configuration. Fill these in before deploying.
 # ----------------------------------------------------------------

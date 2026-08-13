@@ -444,10 +444,20 @@ The hardcoded literals in the HTML and i18n JSON are still on you.
 ## Phase 4 — Ship
 
 ```bash
+npm install                                   # once ever: installs the PINNED wrangler
 cd members-worker/migrations
 python3 apply_migrations.py --remote          # validates, applies only what's pending, records each
-cd ../../site-worker && wrangler deploy       # ships the static-asset edits (countries.js, i18n, counts)
+cd ../../site-worker && npx wrangler deploy   # ships the static-asset edits (countries.js, i18n, counts)
 ```
+
+**Use `npx wrangler`, not a global `wrangler`.** The root `package.json`
+pins an exact version (4.122.0 today) and npx walks up the tree to find
+it, so both Workers and the migration runner use the version this repo
+was tested against. Before 13 August 2026 there was no pin at all and
+`npx` fetched whatever was newest on the day — every deploy ran on a
+toolchain nobody chose. `apply_migrations.py` prints which wrangler it
+resolved on every run, and says so loudly if it falls back to an
+unpinned one.
 
 The runner keeps its bookkeeping in D1's `schema_migrations` table
 (migration 205): it refuses to double-apply (the autoincrement-table
@@ -467,9 +477,18 @@ python3 apply_migrations.py --remote --assert-only
 That is the one command that will tell you the production database and
 the migration chain genuinely agree — worth running after any manual
 D1 edit, and the fastest way to find out whether a migration you
-applied by hand months ago actually landed. **One-time setup on a database that predates the
-table**: `python3 apply_migrations.py --remote --baseline` records every
-existing migration file as already-applied without running anything.
+applied by hand months ago actually landed. Production was checked this
+way for the first time on 13 August 2026 and all 41 durable assertions
+held.
+
+Two housekeeping commands you should rarely need. `--baseline` records
+every existing migration file as already-applied without running
+anything — one-time setup on a database that predates the tracker table,
+and already done here. `--refresh-checksums` re-records the checksum of
+an already-applied file that has since been edited, which clears its
+drift warning and applies no SQL; review what changed with git first,
+because the runner cannot tell a comment-only edit from a substantive
+one.
 
 D1-rendered surfaces (board, deep-dive page, menus, preferences,
 archive links) pick the country up within the 5-minute edge cache — no

@@ -101,23 +101,41 @@ from datetime import datetime, timezone
 
 MIGRATIONS_DIR = os.path.dirname(os.path.abspath(__file__))
 WORKER_DIR = os.path.dirname(MIGRATIONS_DIR)
+REPO_ROOT = os.path.dirname(WORKER_DIR)
 DB_NAME = "eicc-content"
 
 
 def resolve_wrangler():
     """Find how to invoke wrangler on this machine.
-    Order: $WRANGLER override (e.g. WRANGLER='npx wrangler') → a
-    'wrangler' binary on PATH → 'npx wrangler' (covers npm-local
-    installs and shell aliases, which subprocess can't see)."""
+
+    Order: $WRANGLER override → the REPO-LOCAL pinned install → a
+    'wrangler' binary on PATH → 'npx wrangler'.
+
+    The repo-local check comes second on purpose. The root package.json
+    pins an exact wrangler version, and the whole point of pinning is
+    that a deploy uses the version this repo was tested against. If a
+    globally-installed wrangler could win, the pin would be decorative —
+    which is precisely the shape of bug the pin exists to prevent. An
+    explicit $WRANGLER still beats it, because saying so out loud is a
+    deliberate act.
+
+    The npx fallback is last and is what this project ran on until 13 Aug
+    2026: it downloads whatever is newest, so every deploy used a
+    toolchain nobody chose. Three Cloudflare auth cycles were lost partly
+    to that."""
     override = os.environ.get("WRANGLER")
     if override:
         return override.split()
+    local = os.path.join(REPO_ROOT, "node_modules", ".bin", "wrangler")
+    if os.path.exists(local):
+        return [local]
     if shutil.which("wrangler"):
         return ["wrangler"]
     if shutil.which("npx"):
         return ["npx", "wrangler"]
     sys.exit("Could not find wrangler: no 'wrangler' or 'npx' on PATH. "
-             "Install wrangler, or set e.g. WRANGLER='npx wrangler' and re-run.")
+             "Run `npm install` at the repo root for the pinned version, "
+             "or set e.g. WRANGLER='npx wrangler' and re-run.")
 
 
 _WRANGLER_CMD = None
@@ -125,10 +143,17 @@ _WRANGLER_CMD = None
 
 def wrangler_cmd():
     """Resolved lazily, so --replay-only works on a machine with no
-    wrangler and no Cloudflare access (the build sandbox, CI)."""
+    wrangler and no Cloudflare access (the build sandbox, CI). Announces
+    what it picked: 'which wrangler am I actually running' has been a
+    real question here more than once."""
     global _WRANGLER_CMD
     if _WRANGLER_CMD is None:
         _WRANGLER_CMD = resolve_wrangler()
+        where = ("repo-local (pinned)" if _WRANGLER_CMD[0].startswith(REPO_ROOT)
+                 else "npx (UNPINNED — run `npm install` at the repo root)"
+                 if _WRANGLER_CMD[0] == "npx"
+                 else "on PATH")
+        print(f"wrangler: {' '.join(_WRANGLER_CMD)}  [{where}]")
     return _WRANGLER_CMD
 
 

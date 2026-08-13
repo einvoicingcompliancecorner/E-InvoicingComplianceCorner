@@ -19,6 +19,11 @@ name = "eicc-public"
 main = "src/index.js"
 compatibility_date = "2026-08-02"
 
+# Same account as members-worker; see that file's note for why this is
+# written down rather than resolved. Not a secret, and this file is
+# excluded from the public asset upload by ../.assetsignore.
+account_id = "40864d5884a283ec93dddf45fc9ebe32"
+
 # Static assets — everything in the repo root (index.html, the tracker,
 # education pages, i18n/, etc.) except what's excluded in
 # ../.assetsignore (this site-worker/ dir itself, members-worker/,

@@ -2,7 +2,7 @@
   "name": "einvoicing-compliance-corner",
   "version": "1.0.0",
   "private": true,
-  "description": "The E-Invoicing Compliance Corner — test harnesses. The site itself is two Cloudflare Workers deployed with wrangler from members-worker/ and site-worker/; this file exists for the checks in tests/, which need no credentials and no network.",
+  "description": "The E-Invoicing Compliance Corner — test harnesses and the pinned deploy toolchain. The site itself is two Cloudflare Workers deployed with wrangler from members-worker/ and site-worker/. Run `npm install` once at the repo root: npx walks up the tree, so both Workers and apply_migrations.py then use the pinned wrangler below rather than downloading whatever is newest.",
   "type": "module",
   "scripts": {
     "test": "node tests/run-all.mjs",
@@ -12,6 +12,7 @@
     "test:migrations": "cd members-worker/migrations && python3 apply_migrations.py --replay-only && python3 test_assertions.py"
   },
   "devDependencies": {
-    "playwright": "^1.62.1"
+    "playwright": "^1.62.1",
+    "wrangler": "4.122.0"
   }
 }

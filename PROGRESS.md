@@ -9016,6 +9016,64 @@ and as the first item of the Phase 5 checklist on every country build. It
 takes three round-trips and is the only check that can distinguish "the
 migration ran" from "the migration worked".
 
+## 13 Aug 2026 (cont'd) — Wrangler pinned, `account_id` written down, and one recommendation that was already done
+
+Recommendation 3 from the design review, which turned out to be two
+items and a correction.
+
+### `schema_migrations` was already populated — the standing note was wrong
+
+This doc has been carrying the claim that production has the tracker
+table but no rows in it. Dan's run disproves it: `--refresh-checksums`
+found 13 recorded checksums to update, and the apply found exactly 1
+pending file out of 517. Both require the table to be fully populated.
+Nothing to do, and the recommendation to `--baseline` production is
+withdrawn — running it would have been harmless but pointless.
+
+### `account_id` in both `wrangler.toml` files
+
+`account_id = "40864d5884a283ec93dddf45fc9ebe32"`, with the reasoning
+next to it. Not a secret — it is in every dashboard URL — and both files
+are excluded from the public asset upload by `.assetsignore` anyway.
+
+This is the item that would have saved three separate Cloudflare auth
+cycles (Indonesia/Japan, Kazakhstan/Dominican Republic, and
+Uzbekistan/Azerbaijan). Without it wrangler resolves the account itself,
+and a stale OAuth session or an ambiguity between accounts surfaces as
+**API error 7403, "the given account is not valid or is not
+authorized"**, part-way through a migration run. That reads like a broken
+migration and is not one: the replay has already validated by that point
+and nothing is wrong with the SQL. Naming the account makes the failure
+say what it actually is.
+
+### Wrangler pinned to 4.122.0 exactly
+
+There was no `package.json` in either Worker directory, so every deploy
+this project has ever done ran `npx wrangler` and used whatever was
+newest that day — a toolchain nobody chose, on the machine that talks to
+production. Pinned as an exact version (no caret) in the root
+`package.json` that already exists for the tests. Verified that npx walks
+up the directory tree and prefers a local install, so **one entry at the
+root covers both Workers** without adding two more manifests.
+
+**The pin needed a code change to actually bite.** `resolve_wrangler()`
+checked `shutil.which("wrangler")` before falling back to npx, so a
+globally-installed wrangler would silently win and the pin would be
+decorative — which is exactly the class of bug pinning exists to
+prevent. The order is now: explicit `$WRANGLER` → repo-local pinned
+install → PATH → npx. An explicit environment variable still wins,
+because saying so out loud is a deliberate act.
+
+The runner now also prints which wrangler it resolved on every run, and
+labels an npx fallback `UNPINNED — run npm install at the repo root`.
+"Which wrangler am I actually running" has been a real question here more
+than once.
+
+**One-time step on Dan's machine:** `npm install` at the repo root. After
+that, deploys should use `npx wrangler deploy` rather than a global
+`wrangler`, so they pick up the pin; `ADDING-A-COUNTRY.md`'s Phase 4 now
+says so.
+
 ## Open items / next steps
 
 ### Real open work
