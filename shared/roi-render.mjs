@@ -358,6 +358,12 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
 .tag{font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.5px;text-transform:uppercase;padding:1px 6px;border-radius:3px;border:1px solid currentColor;margin-left:6px}
 .tA{color:#7fd0a8}.tB{color:#e2b978}.tC{color:#e0907f}.tD{color:#9fb2d4}
 .tang{color:#7fd0a8;border-color:#3f7d5c}.intang{color:#9fb2d4;border-color:#3a4864}
+/* Whether a row banks on compliance alone. Dan, 14 Aug 2026: every
+   customer he has spoken to in 2-3 years meets mandates on their own and
+   never combines them with AP automation, so the question "does this
+   arrive with the mandate or do I have to go and get it?" is the one the
+   reader is actually asking of every line. */
+.bank{color:#7fd0a8;border-color:#3f7d5c}.unbank{color:#8d9bb5;border-color:#3a4864}
 .gate{background:linear-gradient(180deg,rgba(21,34,56,0) 0%,var(--ink-2) 42%);border:1px solid var(--soon);border-radius:var(--radius);padding:26px 22px;text-align:center;margin:18px 0}
 .note{background:var(--ink-3);border-left:3px solid var(--soon);border-radius:0 6px 6px 0;padding:11px 14px;font-size:13px;color:var(--muted);margin:0 0 14px}
 .warn{border-left-color:var(--stamp)}
@@ -425,6 +431,17 @@ export function renderRoiPage({ countries, benchmarks = [], phases = [], strings
     savePct: { v: val("cost_reduction_pct", 60),    h: hintOf("cost_reduction_pct") },
     errRate: { v: val("manual_error_rate", 10),     h: hintOf("manual_error_rate") },
     errCost: { v: val("rework_per_error", 45),      h: hintOf("rework_per_error") },
+    // THE ONLY MULTIPLIER ON THIS PAGE YOU COULD NOT TOUCH, until Dan
+    // asked where the rework number came from and the honest answer was
+    // "partly from a bare 0.8 in the source". The reasoning behind it was
+    // sound and written down — some exceptions are commercial disputes
+    // rather than clerical errors, and structured data will not fix
+    // those — but it lived in the tooltip of a DIFFERENT input, while the
+    // reader met "x 80%" bare in the results table. Worse, being a
+    // literal it could not be graded, cited, overridden or reset like
+    // every other assumption here. An assumption you cannot argue with is
+    // the one thing this panel exists to prevent.
+    errElim: { v: val("error_elimination_pct", 80), h: hintOf("error_elimination_pct") },
     // TWO RATES, BECAUSE THERE ARE TWO JOBS (Dan, 14 Aug 2026). One field
     // was pricing both a tax professional reconciling clearance regimes
     // and a mailroom clerk keying invoices, which differ by a factor of
@@ -555,6 +572,13 @@ export function renderRoiPage({ countries, benchmarks = [], phases = [], strings
     // how big the business was.
     apqc: cite("ap_invoices_per_fte"),
     atoCapture: cite("capture_share_of_ap"),
+    // Both were previously rendered as ev('yours', ...) — "your rework
+    // cost" for a figure the reader had not supplied, and nothing at all
+    // for the 80%. A default of ours labelled as theirs is worse than an
+    // unlabelled default: it borrows credibility it has not earned.
+    rework: cite("rework_per_error"),
+    errElim: cite("error_elimination_pct"),
+    excGap: cite("exception_reduction_pp"),
     durations: { t: "D", s: "Phase durations are practitioner estimates for a country rollout once a platform is in place, held in D1 and editable above. No analyst firm publishes credible per-country e-invoicing implementation durations — this was checked." },
     yours: { t: "D", s: "Your assumption. Nothing is claimed for this figure — it is exposed so the model can be argued with rather than believed." },
     site: { t: "A", s: "Live mandate data from this site's own tracker: status, model and dated deadlines per jurisdiction, each traceable to the cited legal instrument on that country's deep dive." },
@@ -596,8 +620,8 @@ export function renderRoiPage({ countries, benchmarks = [], phases = [], strings
 <div class="card noprint">
   <label for="scope">${t("input.scope", "What are you modelling?")}${hlp("scope","What this changes")}</label>
   <select id="scope" style="max-width:460px">
-    <option value="compliance" selected>${t("scope.compliance", "Compliance only &mdash; meet the mandates (IT workstream)")}</option>
-    <option value="both">${t("scope.both", "Compliance + AP process automation &mdash; also bank the savings")}</option>
+    <option value="compliance" selected>${t("scope.compliance", "Compliance only &mdash; meet the mandates (what most programmes do)")}</option>
+    <option value="both">${t("scope.both", "Compliance + AP process automation &mdash; the fuller, larger programme")}</option>
   </select>
   <p class="hint">${t("input.scope.hint", "Kept out front rather than buried in the assumptions: it is a scoping decision, not a benchmark, and it changes both the numbers and the timeline.")}</p>
 </div>
@@ -634,7 +658,7 @@ export function renderRoiPage({ countries, benchmarks = [], phases = [], strings
       <div><label for="errRate">${t("input.errRate", "Manual error rate %")} <span class="tag tB">B</span>${hlp("errRate","What this drives")}</label><input type="number" id="errRate" value="${dv('errRate')}" min="0" max="100" step="0.5"><p class="hint" id="h-errRate"></p></div>
       <div><label for="fteCost">${t("input.fteCost", "Loaded cost / tax or finance FTE")} <span class="tag tB">B</span>${hlp("fteCost","What this drives")}</label><input type="number" id="fteCost" value="${dv('fteCost')}" min="0" step="1000"><p class="hint" id="h-fteCost"></p></div>
       <div><label for="fteEntry">${t("input.fteEntry", "Loaded cost / data-entry FTE")} <span class="tag tB">B</span>${hlp("fteEntry","What this drives")}</label><input type="number" id="fteEntry" value="${dv('fteEntry')}" min="0" step="1000"><p class="hint" id="h-fteEntry"></p></div>
-      <div></div>
+      <div><label for="errElim">${t("input.errElim", "Errors eliminated %")} <span class="tag tD">D</span>${hlp("errElim","What this drives")}</label><input type="number" id="errElim" value="${dv('errElim')}" min="0" max="100" step="1"><p class="hint" id="h-errElim"></p></div>
     </div>
 
     <p style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:var(--soon);margin:20px 0 8px">${t("assumptions.h.invest", "Investment &mdash; costs")} <span class="tag tD">D</span></p>
@@ -1488,11 +1512,12 @@ function build(){
   // you ISSUE, so the sending side is the half that is actually compelled.
   const costAR  = +document.getElementById('costAR').value || 0;
   const errRate = (+document.getElementById('errRate').value || 0)/100;
+  const errElim = (+document.getElementById('errElim').value || 0)/100;
   const baseline = volAP * costNow;
   const saving   = baseline * savePct;
   const savingAR = volAR * costAR * savePct;
   const errNow   = volAP * errRate;
-  const errSave  = errNow * errCost * 0.8;        // user-owned assumption, stated as such
+  const errSave  = errNow * errCost * errElim;    // now a real, gradeable input
   const l1 = saving + savingAR + errSave;
 
   // --- complexity / waves
@@ -1583,17 +1608,70 @@ function build(){
   const captureSaved = captureFte * savePct;
   const captureValue = captureSaved * fteEntry;
 
+  // "your rework cost" was our $45 wearing the reader's name. It is only
+  // theirs once they have actually changed it, and the panel already
+  // knows the difference — markOverridden() compares against the same
+  // registry. Dan: "where did the rework number come from. It's not
+  // something I have provided?"
+  const overridden = (id) => {
+    const el = document.getElementById(id);
+    return el && DEFAULTS[id] && String(el.value) !== String(DEFAULTS[id].v);
+  };
+
   const scope = scopeVal(), banked = scope === 'both';
+
+  // WHAT COMPLIANCE ALONE ACTUALLY BANKS (Dan, 14 Aug 2026).
+  //
+  // "Every customer I have talked with looking to implement compliance in
+  // the last 2-3 years is meeting mandates alone, and never wants to
+  // combine it with AP automation. That project is just too large for any
+  // enterprise to tackle in one project."
+  //
+  // Until now this was an all-or-nothing switch: banked = scope === both,
+  // and annualBenefit = (banked ? l1 : 0) + l2. So on the scope that every
+  // real customer picks, the entire direct total was multiplied by zero,
+  // and the page told them the actual investment case was to do both at
+  // once — advice nobody takes, offered to everybody.
+  //
+  // The reality is not all-or-nothing, because the rows do not depend on
+  // the same thing:
+  //
+  //   AP capture and validation  BANKED BY COMPLIANCE. You cannot receive
+  //     a cleared structured invoice and still key it. The integration
+  //     that makes you compliant is the integration that removes the
+  //     keying. Split at the ATO / Deloitte task times already in D1 —
+  //     receipt 7 + validation 2, against review 7 + approval 5.
+  //   AP review and approve      NOT BANKED. That is workflow, and
+  //     workflow needs the change programme.
+  //   AR issuing                 BANKED BY COMPLIANCE. The mandate forces
+  //     structured issuance; the printing and PDF-ing stops by law rather
+  //     than by choice.
+  //   Avoided rework             NOT BANKED, deliberately, though the
+  //     argument for it is decent — no keying, no keying errors. It rests
+  //     on HMRC's unsourced 10% error rate on top of a user-set rework
+  //     cost, which makes it the weakest-evidenced row in the model and
+  //     the largest single beneficiary of this change. Dan's call, and
+  //     the right one: banking it would have moved payback to about seven
+  //     months on the back of the least defensible number here.
+  //
+  // This makes the answer materially better, which is exactly why the
+  // reasoning is stated per row on the page rather than in a footnote.
+  // "The number improved after the vendor changed the model" is the
+  // criticism this page exists to be immune to.
+  const bankedAP  = banked ? saving : saving * TAXM.captureShare;
+  const bankedErr = banked ? errSave : 0;
+  const l1Banked  = bankedAP + savingAR + bankedErr;
+  const l1Unbanked = l1 - l1Banked;
   document.getElementById('summary').innerHTML = \`
     <div class="grid g4">
-      <div class="stat"><div class="n" style="color:\${banked?'#7fd0a8':'#8d9bb5'}">\${fmt(l1)}</div><div class="l">${tj("res.direct","Direct")} &mdash; \${banked?'${tj("res.banked","banked annually")}':'${tj("res.unbanked","unlocked, NOT banked")}'}</div></div>
+      <div class="stat"><div class="n" style="color:#7fd0a8">\${fmt(l1Banked)}</div><div class="l">${tj("res.direct","Direct")} &mdash; ${tj("res.banked","banked annually")}\${l1Unbanked > 0 ? \` (+\${fmt(l1Unbanked)} ${tj("res.unbanked","unlocked, not banked")})\` : ''}</div></div>
       <div class="stat"><div class="n" style="color:#e2b978">\${fmt(l2)}</div><div class="l">${tj("res.indirect","Indirect &mdash; modelled")}</div></div>
       <div class="stat"><div class="n">\${sel.length}</div><div class="l">${tj("res.inScope","Jurisdictions in scope")}</div></div>
       <div class="stat"><div class="n" style="color:\${dated.length?'#e08b7a':'#8d9bb5'}">\${dated.length}</div><div class="l">${tj("res.dated","With a dated deadline ahead")}</div></div>
     </div>
-    <div class="note \${banked?'':'warn'}" style="margin-top:14px">\${banked
-      ? \`<strong>Scope: compliance + AP process automation.</strong> Direct savings count, because your programme includes the process redesign and retraining needed to realise it &mdash; and the timeline below carries a process-change phase per country to match. \`
-      : \`<strong>Scope: compliance only.</strong> Direct savings are greyed because this programme <em>unlocks</em> \${fmt(l1)} a year without banking any of it. A mandate integration makes structured data available and removes the paper; it does not change how AP works. Switch scope above to model actually capturing it. \`}Direct savings are what AP process automation delivers; indirect savings are what the compliance regime itself delivers. A mandate integration is an IT workstream that unlocks the first and delivers the second &mdash; worth separating in front of a board, because only one of them is non-negotiable. The two are deliberately <strong>not</strong> added together. Direct savings rest on published figures; indirect ones rest on assumptions you set, because no credible source quantifies them. A CFO will trust a smaller defended number over a larger asserted one.</div>
+    <div class="note" style="margin-top:14px">\${banked
+      ? \`<strong>Scope: compliance + AP process automation.</strong> Every direct row counts, because your programme includes the process redesign and retraining, and the timeline below carries a process-change phase per country to match. This is the less common shape: most enterprises meet the mandate on its own first, because doing both at once is too large a programme to land in one go. \`
+      : \`<strong>Scope: compliance only &mdash; the usual shape.</strong> \${fmt(l1Banked)} a year banks without any process-change programme, because the integration that makes you compliant is the same integration that stops you keying invoices and stops you posting paper. The remaining \${fmt(l1Unbanked)} is review, approval and rework &mdash; workflow, which needs the change programme, and which is why it sits unbanked above rather than counted. \`}Direct savings are what AP process automation delivers; indirect savings are what the compliance regime itself delivers. A mandate integration is an IT workstream that unlocks the first and delivers the second &mdash; worth separating in front of a board, because only one of them is non-negotiable. The two are deliberately <strong>not</strong> added together. Direct savings rest on published figures; indirect ones rest on assumptions you set, because no credible source quantifies them. A CFO will trust a smaller defended number over a larger asserted one.</div>
     <div class="card"><p style="margin:0">Across <strong>\${sel.length}</strong> jurisdictions you have <strong>\${complex.length} complex</strong> (CTC or 5-corner) and <strong>\${simple.length} simple</strong> (4-corner exchange) regime\${simple.length===1?'':'s'}\${watch.length?\`, plus \${watch.length} with no mandate${hlp('nomandate','Why these are still in the plan')}\`:''}. With \${erp} ERP/billing system\${erp===1?'':'s'} that is roughly <strong>\${integrations} country-system integration\${integrations===1?'':'s'}</strong>${hlp('integrations','How this is derived')} to deliver. \${dated.length?\`The nearest binding date is <strong>\${dated[0][5]}</strong> (\${dated[0][0]}).\`:'None of the selected jurisdictions has a future dated deadline on the tracker today.'} \${ev('site','Source: live tracker data')}</p></div>\`;
 
   const pace = +document.getElementById('pace').value || 1;
@@ -1624,14 +1702,14 @@ function build(){
 
   document.getElementById('direct').innerHTML = \`
     <table><thead><tr><th>Benefit</th><th>Basis</th><th class="num">Annual value</th></tr></thead><tbody>
-    <tr class="tierA"><td>Processing cost reduction (AP) <span class="tag tang">tangible</span></td><td>\${volAP.toLocaleString()} invoices &times; \${fmt1(costNow)} \${ev('ardent','baseline')} &times; \${Math.round(savePct*100)}% \${ev('hmrc60','reduction')}</td><td class="num">\${fmt(saving)}</td></tr>
-    <tr class="tierA"><td>Issuing cost reduction (AR) <span class="tag tang">tangible</span></td><td>\${volAR.toLocaleString()} invoices &times; \${fmt1(costAR)} \${ev('ato','ATO / Deloitte')} &times; \${Math.round(savePct*100)}% \${ev('hmrc60','reduction')}</td><td class="num">\${fmt(savingAR)}</td></tr>
-    <tr class="tierB"><td>Avoided rework on data-entry errors <span class="tag tang">tangible</span></td><td>\${Math.round(errNow).toLocaleString()} errored invoices \${ev('hmrcErr',\`at ~\${Math.round(errRate*100)}%\`)} &times; \${fmt(errCost)} \${ev('yours','your rework cost')} &times; 80% \${ev('ardentExc','not Ardent&rsquo;s 18.4% exception rate')}</td><td class="num">\${fmt(errSave)}</td></tr>
+    <tr class="tierA"><td>Processing cost reduction (AP) <span class="tag tang">tangible</span> <span class="tag \${banked?'bank':'unbank'}">\${banked?'banks':Math.round(TAXM.captureShare*100)+'% banks'}</span></td><td>\${volAP.toLocaleString()} invoices &times; \${fmt1(costNow)} \${ev('ardent','baseline')} &times; \${Math.round(savePct*100)}% \${ev('hmrc60','reduction')}</td><td class="num">\${fmt(saving)}</td></tr>
+    <tr class="tierA"><td>Issuing cost reduction (AR) <span class="tag tang">tangible</span> <span class="tag bank">banks</span></td><td>\${volAR.toLocaleString()} invoices &times; \${fmt1(costAR)} \${ev('ato','ATO / Deloitte')} &times; \${Math.round(savePct*100)}% \${ev('hmrc60','reduction')}</td><td class="num">\${fmt(savingAR)}</td></tr>
+    <tr class="tierB"><td>Avoided rework on data-entry errors <span class="tag tang">tangible</span> <span class="tag \${banked?'bank':'unbank'}">\${banked?'banks':'not banked'}</span></td><td>\${Math.round(errNow).toLocaleString()} errored invoices \${ev('hmrcErr',\`at ~\${Math.round(errRate*100)}%\`)} &times; \${fmt(errCost)} \${overridden('errCost') ? ev('yours','your rework cost') : ev('rework','our estimate, not yours')} &times; \${Math.round(errElim*100)}% \${ev('errElim','why not all of them')} \${ev('ardentExc','not Ardent&rsquo;s 18.4% exception rate')}</td><td class="num">\${fmt(errSave)}</td></tr>
     <tr class="tierA"><td>Faster cycle time &amp; fewer supplier queries <span class="tag intang">intangible</span></td><td>Top-performing AP spends <strong>12.8%</strong> of staff time on supplier inquiries against <strong>24.0%</strong> for everyone else \${ev('ardentInq','Ardent Partners, 2025 data')}. Measured and primary &mdash; but an association with high-performing AP as a whole, not a measured effect of e-invoicing, so <strong>deliberately not monetised</strong>. The matching cycle-time gap \${ev('ardentCycle','2.9 vs 13.5 days')} is circular by construction and is not offered as evidence; \${ev('nhs','one NHS trust')} reports queries down ~15%, which is an anecdote.</td><td class="num">&mdash;</td></tr>
     <tr class="tierA"><td>Paper, print, postage, storage <span class="tag tang">tangible</span></td><td>Paper AUD 30.87 vs e-invoice AUD 9.18 \${ev('ato','ATO / Deloitte')}; your own spend is the better input</td><td class="num">&mdash;</td></tr>
-    <tr style="border-top:2px solid var(--line)"><td colspan="2"><strong>Direct total &mdash; \${banked?'banked':'unlocked, not banked'}</strong></td><td class="num"><strong style="color:\${banked?'#7fd0a8':'#8d9bb5'}">\${fmt(l1)}</strong></td></tr>
+    <tr style="border-top:2px solid var(--line)"><td colspan="2"><strong>Direct total &mdash; banked on this scope</strong>\${l1Unbanked > 0 ? \` <span class="hint" style="display:inline">(\${fmt(l1Unbanked)} unlocked and not banked, of \${fmt(l1)})</span>\` : ''}</td><td class="num"><strong style="color:#7fd0a8">\${fmt(l1Banked)}</strong></td></tr>
     </tbody></table>
-    <div class="note warn" style="margin-top:12px">${tj("res.scopeCaveat","<strong>Important scope caveat.</strong> These savings come from automating the accounts-payable <em>process</em> &mdash; not from the compliance integration on its own. An e-invoicing mandate integration is largely an IT workstream: it makes structured invoice data available and removes the paper, which is what <em>enables</em> the saving, but the saving is only realised if you also change how AP actually works. If your programme is scoped as compliance-only, treat the direct savings as unlocked rather than banked, and the indirect savings as what compliance itself delivers.")}</div>
+    <div class="note warn" style="margin-top:12px">${tj("res.scopeCaveat","<strong>What banks, and what you have to go and get.</strong> Each row above says which it is. Capture and issuing arrive with the integration &mdash; once invoices come in structured and go out cleared, nobody is keying or posting them, whatever else you do or do not change. Review, approval and the rework that follows them are workflow, and workflow only improves if you redesign and retrain, which is a separate programme with its own cost and its own risk. The split between the two comes from the ATO / Deloitte task times, not from us. Rework is held unbanked even on a compliance scope despite a decent argument that it should not be: it rests on the least well-evidenced figures in this model, and the row that gains most from a change is the wrong row to be generous with.")}</div>
     <div class="note warn" style="margin-top:12px"><strong>${tj("res.headcount.h","What this means in headcount.")}</strong> Your \${volAP.toLocaleString()} AP invoices imply <strong>\${apFteImplied.toFixed(1)} AP FTE</strong> \${ev('apqc','APQC median, 12,000 per FTE')}, of which \${Math.round(TAXM.captureShare*100)}% is capture and validation \${ev('atoCapture','ATO / Deloitte task times')} &mdash; about <strong>\${captureFte.toFixed(1)} FTE keying invoices today</strong>. At \${Math.round(savePct*100)}% reduction that releases <strong>\${captureSaved.toFixed(1)} FTE</strong>, worth \${fmt(captureValue)} at your data-entry rate.<br><br>${tj("res.headcount.same","<strong>This is the same money as the processing-cost row above, expressed as people &mdash; not an additional saving.</strong> The per-invoice benchmark is labour-dominated, so counting both would count it twice.")}\${saving > 0 ? \`<br><br>${tj("res.headcount.gap","Worth noticing how much of the top line it accounts for:")} \${fmt(captureValue)} of \${fmt(saving)}, or \${Math.round(captureValue/saving*100)}%. ${tj("res.headcount.gap2","The rest is the review-and-approve half of the process, technology and overhead &mdash; all inside the per-invoice benchmark, none of it a data-entry head. And released capacity is only cash if the post goes or is not backfilled, which is a decision rather than a benefit.")}\` : ''}</div>
     <div class="note" style="margin-top:10px">${tj("res.unmonetised", "Two benefits above are left unmonetised on purpose, and for <em>different</em> reasons. Paper, print and postage has no benchmark worth defending &mdash; your own spend is the only honest input. Cycle time and supplier queries has a good one, and still cannot be monetised: nobody has measured how much of that gap e-invoicing itself causes, and assuming all of it would undermine every other number on this page.")}</div>\`;
 
@@ -1651,7 +1729,7 @@ function build(){
   const cRun  = +document.getElementById('cRun').value || 0;
   const oneOff = intSimple * cImplS + intComplex * cImplC;
   const annualCost = cPlat + cRun;
-  const annualBenefit = (banked ? l1 : 0) + l2;
+  const annualBenefit = l1Banked + l2;
   const netAnnual = annualBenefit - annualCost;
   const paybackMonths = netAnnual > 0 ? (oneOff / netAnnual) * 12 : null;
   const placeholders = ['cImplS','cImplC','cPlat','cRun'].filter(id => String(document.getElementById(id).value) === String(DEFAULTS[id].v));
@@ -1664,7 +1742,7 @@ function build(){
       <div class="stat"><div class="n" style="color:\${netAnnual>=0?'#7fd0a8':'#e0907f'}">\${fmt(netAnnual)}</div><div class="l">Net annual \${banked?'benefit':'(compliance scope)'}</div></div>
       <div class="stat"><div class="n" style="color:\${paybackMonths&&paybackMonths<=24?'#7fd0a8':'#e2b978'}">\${paybackMonths===null?'n/a':Math.round(paybackMonths)+'mo'}</div><div class="l">${tj("res.payback","Payback on one-off")}</div></div>
     </div>
-    \${!banked ? \`<div class="note" style="margin-top:12px">On a compliance-only scope the net figure is negative by design, and that is the correct answer rather than a broken one: you are buying the right to keep trading in these markets, not a return. The \${fmt(l1)} of direct savings sits unclaimed until the scope widens &mdash; which is the actual investment case for doing both at once.</div>\` : ''}
+    \${!banked ? \`<div class="note" style="margin-top:12px">${tj("res.complianceOnly","<strong>This is a compliance-only case, and it is the normal one.</strong> Enterprises meeting a mandate almost never bundle AP process automation into the same programme &mdash; it is too large to land in one go. What counts above is only what the integration itself delivers: you stop keying inbound invoices and stop issuing paper, because the mandate leaves you no way to do either.")} \${l1Unbanked > 0 ? \`${tj("res.complianceOnly2","The further")} \${fmt(l1Unbanked)} ${tj("res.complianceOnly3","is review, approval and rework. It stays unbanked because it needs a change programme you are not running &mdash; but it does not go away, and it is the option this integration buys you for later. If the net figure is negative, that is a real answer rather than a broken one: you are buying the right to keep trading in these markets.")}\` : ''}</div>\` : ''}
     <div class="note" style="margin-top:12px">${tj("res.tangible","<strong>Tangible versus intangible.</strong> Everything counted above is tangible: a number someone can be held to. The intangible benefits &mdash; faster cycle times, penalty exposure avoided, fraud detection, VAT position &mdash; are listed in the two sections above and deliberately carry no value. They are real, they often matter more to a board than the arithmetic, and there is no honest way to price them. Present them as the qualitative case alongside this number, not inside it.")}</div>\`;
 
   document.getElementById('evidence').innerHTML = \`
@@ -1740,6 +1818,28 @@ function build(){
     warn.push(\`<strong>The capture headcount is worth more than the whole processing saving.</strong> \${fmt(captureValue)} of released data-entry cost against \${fmt(saving)} of total AP processing reduction. These are two routes to the same money, so the first cannot exceed the second — check the data-entry rate and the AP cost per invoice, because one of them is out.\`);
   }
 
+  // 7. The rework row claims to remove more exceptions than separate the
+  //    most automated quartile in the market from everybody else.
+  //
+  //    Dan asked whether Ardent substantiates the rework metric. It
+  //    substantiates the MECHANISM — "eInvoicing drives process
+  //    efficiencies by eliminating data capture and manual data entry" —
+  //    and publishes no breakdown of exceptions by cause and no
+  //    quantified reduction, so it cannot confirm the magnitude. What it
+  //    does give is a ceiling: Best-in-Class run 11.1% exceptions against
+  //    20.9%, a 9.8-point gap covering EVERY cause, with e-invoicing only
+  //    one contributor among several.
+  //
+  //    The model's own claim is errRate x errElim of all invoices. On the
+  //    defaults that is 8.0 points inside 9.8 — tight, and the first real
+  //    evidence the 80% is not absurd. Above 9.8 the model asserts that
+  //    e-invoicing alone beats everything Best-in-Class do combined,
+  //    which is not a big number, it is a wrong one.
+  const claimedPp = errRate * errElim * 100;
+  if(TAXM.excGapPp > 0 && claimedPp > TAXM.excGapPp){
+    warn.push(\`<strong>This model removes more exceptions than separate the best quartile of AP from everyone else.</strong> Your error rate and elimination assumption together take \${claimedPp.toFixed(1)} points of invoices out of exception; Ardent measures the whole gap between Best-in-Class and all others at \${TAXM.excGapPp} points \${ev('excGap','11.1% against 20.9%')}, across every cause and with e-invoicing only one contributor. Lower the error rate or the elimination percentage &mdash; as it stands the rework row is claiming more than the market's best performers achieve.\`);
+  }
+
   document.getElementById('guards').innerHTML = warn.length
     ? warn.map(w => \`<div class="note warn" style="margin:0 0 12px">\${w}</div>\`).join('')
     : '';
@@ -1767,6 +1867,11 @@ function build(){
       // validation 2 min of a 21-minute process. The capture-and-key
       // portion, which is the part e-invoicing actually removes.
       captureShare: val("capture_share_of_ap", 0.4286),
+      // Ardent's Best-in-Class exception rate against all others, 11.1
+      // vs 20.9. The entire observed gap between the most automated
+      // quartile and everyone else — used as a ceiling on what this
+      // model may claim, never as a target.
+      excGapPp: val("exception_reduction_pp", 9.8),
     }))
     .replace("__ROI_PLATFEE__", JSON.stringify({
       fee: val("platform_fee_per_invoice", 0.4),   // USD, per invoice, either direction

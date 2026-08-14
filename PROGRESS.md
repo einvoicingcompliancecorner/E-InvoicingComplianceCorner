@@ -10078,6 +10078,159 @@ additional; it reconciles against the processing row it decomposes; guard
 both rates. Replay: 103 assertions declared, 90 durable, 13 superseded.
 
 
+## 14 Aug 2026 (cont'd) — Compliance-only stops being modelled as a failure (migration 528)
+
+Dan, from customer conversations: *"Every customer I have talked with
+looking to implement compliance in the last 2-3 years is meeting mandates
+alone, and never wants to combine it with AP automation. That project is
+just too large for any enterprise to tackle in one project. Our
+calculator asks if we are including AP automation, before realising the
+savings."*
+
+The model was built on the opposite assumption:
+
+    banked = (scope === 'both')
+    annualBenefit = (banked ? l1 : 0) + l2
+
+So on the scope every real customer picks, the entire $1,145,400 direct
+total was multiplied by zero. The page then explained that the negative
+result "is the correct answer rather than a broken one" and that the real
+investment case was "doing both at once". **Advice nobody takes, offered
+to everybody.** A tool whose headline answer for its whole audience is
+"this does not pay back" is not being conservative, it is wrong.
+
+### The error was one global switch over rows with different dependencies
+
+| row | banks on compliance alone? |
+|---|---|
+| AP capture and validation | **Yes.** You cannot receive a cleared structured invoice and still key it. The integration that makes you compliant is the one that removes the keying. |
+| AP review and approval | No. Workflow, and workflow needs the change programme. |
+| AR issuing | **Yes.** The mandate forces structured issuance; printing and PDF-ing stop by law, not by choice. |
+| Avoided rework | Held unbanked — see below. |
+
+The 43/57 split isn't invented: it's the ATO/Deloitte purchase-invoice
+task times already in D1 as `capture_share_of_ap` (receipt 7 + validation
+2 of 21 minutes, against review 7 + approval 5). It is exactly the line
+between "the mandate did this to you" and "you chose to do this".
+
+**Rework is held unbanked on Dan's call, and it was the right one.** The
+argument for banking it is decent — no keying, no keying errors — but it
+rests on HMRC's unsourced 10% error rate on top of a user-set rework
+cost, which makes it simultaneously the weakest-evidenced row in the
+model and the largest single beneficiary of this change. Banking it would
+have taken payback to about seven months on the strength of the least
+defensible number on the page. The row that gains most from a change is
+the wrong row to be generous with.
+
+### Effect, and why that is uncomfortable
+
+EU preset, 100k invoices, compliance-only: **$0 banked → $448,045**, net
+annual +$104,667 → +$642,712, payback 65 months → about 11.
+
+**This makes the answer materially better, which is the problem with
+it.** "The number improved after the vendor changed the model" is the
+exact criticism this page has spent its existence trying to be immune to.
+So the reasoning is on the row, not in a footnote: every direct row now
+carries a tag — `43% banks`, `banks`, `not banked` — and the split comes
+from a cited external source rather than from us. Anyone who disagrees
+can see precisely which row and which benchmark to argue with.
+
+The scope control keeps both options but stops implying that combining
+them is the goal: compliance-only is now labelled as what most programmes
+actually do, because it is.
+
+### A standing invariant on the prose
+
+The old copy told the reader that compliance-only banks nothing and the
+answer is to widen scope. The arithmetic no longer works that way, so a
+standing assertion now fails if either phrase returns to D1 — prose and
+model diverging is how this page ends up contradicting itself, which it
+already did once this week over Ardent.
+
+### Verification
+
+`npm test`: 8 suites, all passing. ROI regression 63 checks (was 57). Six
+new: compliance-only banks exactly $448,045; the total row states what is
+left unlocked against the full figure; every direct row carries its
+banking tag; rework is not banked on a compliance scope; the fuller
+programme banks the lot; and the superseded framing is asserted gone.
+Migration generated from the renderer's own strings rather than retyped —
+522's lesson. Replay: 108 assertions declared, 94 durable, 14 superseded.
+
+
+## 14 Aug 2026 (cont'd) — The one multiplier you could not argue with (migration 529)
+
+Dan: *"Question - where did the rework number come from. It's not
+something I have provided?"*
+
+It wasn't. The $360,000 was `100,000 x 10% x $45 x 80%`, and all three
+inputs were ours. Two were at least visible and graded — `manual_error_rate`
+at B from the HMRC/DBT consultation which asserts 10% and cites no study,
+and `rework_per_error` at D with `source_url` NULL. **The 80% was a bare
+literal in the renderer:**
+
+    const errSave = errNow * errCost * 0.8;   // user-owned assumption
+
+The comment was false twice over. It wasn't user-owned — there was no
+control — and it wasn't stated where anyone would meet it. The reasoning
+existed and was sound (not every exception is a clerical error), but it
+sat in the tooltip of a *different* input while the reader met a bare
+"× 80%" in the results table. Being a literal it was also the only
+assumption on the page that couldn't be graded, cited, overridden or
+reset — and it multiplied the largest of the three direct rows.
+
+It's now a D1 row like everything else, exposed in the panel, with its
+reasoning attached at the point of use.
+
+**And the $45 stopped calling itself the reader's.** The table said "your
+rework cost" for a figure nobody supplied. A default of ours wearing the
+reader's name is worse than an unlabelled default, because it borrows
+credibility it hasn't earned. It now reads "our estimate, not yours"
+until the value actually changes.
+
+### What Ardent can and cannot substantiate (Dan's follow-up)
+
+He asked whether Ardent has anything on data-entry errors that would
+substantiate the rework row. Checked against the report directly:
+
+**It gives the mechanism.** "eInvoicing drives process efficiencies by
+eliminating data capture and manual data entry", and 48% of AP
+professionals name a high exception rate as a top challenge.
+
+**It does not give the magnitude.** No breakdown of exceptions by cause,
+no quantified reduction from automation. So it can neither confirm nor
+refute the 80%. Mechanism evidenced, magnitude ours — the same evidential
+position as the OECD on the indirect layer, and now stated in those terms.
+
+**But it gives a ceiling, and that turned out to be the useful part.**
+Best-in-Class run an 11.1% exception rate against 20.9% for all others: a
+**9.8-point gap** covering every cause of exception, with e-invoicing only
+one contributor among several (they also run 51% straight-through against
+29%, and have 1.4× more suppliers enabled).
+
+The model's own claim is `errRate × errElim` of all invoices. On the
+defaults that's **8.0 points inside 9.8** — tight, and the first real
+evidence the 80% isn't absurd. Guard 7 fires above it: a model removing
+more exceptions than separate the best quartile from everyone else is
+claiming e-invoicing alone beats everything Best-in-Class do combined.
+That isn't a big number, it's a wrong one. There's also a migration-time
+assertion that the shipped defaults sit inside the envelope.
+
+Graded B, not A: Ardent's figures, our subtraction — same basis as the
+two FTE rates and `ar_cost_per_invoice`.
+
+### Verification
+
+`npm test`: 8 suites, all passing. ROI regression 69 checks (was 63). Six
+new: the 80% is a real input; the default sits inside the observed gap;
+claiming more is called out; reset restores it; an unchanged rework cost
+is labelled as ours; it becomes theirs once changed. One existing check
+was repaired — it matched `.ev` elements by `textContent`, which includes
+the tooltip, and three markers on that row now mention an exception rate,
+so the loose match had started selecting the wrong one. Replay: 117
+assertions declared, 101 durable, 16 superseded.
+
+
 ## Open items / next steps
 
 ### Real open work
