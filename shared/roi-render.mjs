@@ -543,6 +543,10 @@ export function renderRoiPage({ countries, benchmarks = [], phases = [], strings
     // figures available were one NHS anecdote. Both cannot be true.
     ardentCycle: cite("cycle_time_days"), ardentExc: cite("exception_rate"),
     ardentInq: cite("supplier_inquiry_time"),
+    // The only citable bridge between invoice volume and headcount that
+    // survived checking. Without it the indirect layer had no way to know
+    // how big the business was.
+    apqc: cite("ap_invoices_per_fte"),
     durations: { t: "D", s: "Phase durations are practitioner estimates for a country rollout once a platform is in place, held in D1 and editable above. No analyst firm publishes credible per-country e-invoicing implementation durations — this was checked." },
     yours: { t: "D", s: "Your assumption. Nothing is claimed for this figure — it is exposed so the model can be argued with rather than believed." },
     site: { t: "A", s: "Live mandate data from this site's own tracker: status, model and dated deadlines per jurisdiction, each traceable to the cited legal instrument on that country's deep dive." },
@@ -897,6 +901,7 @@ document.getElementById('cur').addEventListener('change', (e) => {
 // would restore the OLD derived figure. And the hint has to show the
 // arithmetic: a number that moves when you edit something else, without
 // saying why, reads as a bug.
+const TAXM = __ROI_TAXMODEL__;
 const PLAT = __ROI_PLATFEE__;
 function recalcPlat(){
   const el = document.getElementById('cPlat');
@@ -1497,9 +1502,53 @@ function build(){
   const integrations = intSimple + intComplex;
 
   // --- Layer 2 (modelled from assumptions only)
+  //
+  // THIS USED TO BE VOLUME-BLIND, and at scale it produced a wrong answer
+  // with a straight face. It read:
+  //
+  //     taxFteSaved = min(complexCount * 0.15, 3)
+  //
+  // Two invented absolutes, neither of which knew how many invoices the
+  // business processes. Dan found it by putting 1,000,000 in the volume
+  // box: direct savings went up tenfold, the indirect line did not move
+  // one dollar, and because the platform fee now scales with volume the
+  // compliance-only case flipped from +96,000 to -444,000 and reported
+  // that the programme never pays back. A larger invoice estate means
+  // MORE tax reporting effort, not the same amount.
+  //
+  // The fix is to stop counting FTE in absolute terms and start counting
+  // them as a SHARE OF THE AP HEADCOUNT THE VOLUME IMPLIES, using APQC's
+  // published median of 12,000 invoices per AP FTE per year — a grade A,
+  // primary, attributable benchmark, and the only citable bridge between
+  // invoice volume and headcount that survived checking.
+  //
+  // The two ratios are still ours and still grade D. What changed is that
+  // they are now DIMENSIONLESS: a share of a benchmarked base rather than
+  // a headcount pulled out of the air, so the answer scales with the
+  // business instead of standing still.
+  //
+  // CALIBRATED FOR EXACT CONTINUITY. 0.018 and 0.36 are not new opinions:
+  // at the page's default 100k AP volume they reproduce the old 0.15 and
+  // 3 to the penny (100,000/12,000 = 8.333 implied FTE; 8.333 x 0.018 =
+  // 0.15; 8.333 x 0.36 = 3.00), and the cap still starts binding at 20
+  // complex jurisdictions. Nothing a reader saw yesterday moves. This
+  // change is about SHAPE, not magnitude, and doing both at once would
+  // have made it impossible to tell which one caused a number to move.
+  //
+  // The magnitude is a separate and open question, raised with Dan rather
+  // than decided here: 0.36 means 36% of the entire AP function saved on
+  // tax reporting and audit prep alone, which is hard to defend. It was
+  // equally hard to defend yesterday — it was just invisible, because a
+  // headcount of "3" does not announce what proportion it represents.
+  // Expressing it as a proportion is what made it arguable at all, and
+  // tuning it is now a one-line migration rather than a code change.
+  const apFteImplied = TAXM.invPerFte > 0 ? volAP / TAXM.invPerFte : 0;
   const ctcCount = complex.length;
-  const taxFteSaved = ctcCount ? Math.min(ctcCount*0.15, 3) : 0;
+  const shareRaw  = ctcCount * TAXM.perJur;
+  const shareUsed = Math.min(shareRaw, TAXM.cap);
+  const taxFteSaved = ctcCount ? apFteImplied * shareUsed : 0;
   const l2 = taxFteSaved * fteCost;
+  const taxCapBinds = ctcCount > 0 && shareRaw > TAXM.cap;
 
   const scope = scopeVal(), banked = scope === 'both';
   document.getElementById('summary').innerHTML = \`
@@ -1554,7 +1603,7 @@ function build(){
 
   document.getElementById('indirect').innerHTML = \`
     <table><thead><tr><th>Benefit</th><th>Evidence position</th><th class="num">Annual value</th></tr></thead><tbody>
-    <tr class="tierA"><td>Reduced tax reporting &amp; audit-prep effort <span class="tag tang">tangible</span></td><td>Mechanism evidenced \${ev('oecd','OECD DCTR, 2026')}; magnitude modelled from \${taxFteSaved.toFixed(2)} FTE &times; \${fmt(fteCost)} \${ev('yours','your figures')}</td><td class="num">\${fmt(l2)}</td></tr>
+    <tr class="tierA"><td>Reduced tax reporting &amp; audit-prep effort <span class="tag tang">tangible</span></td><td>Mechanism evidenced \${ev('oecd','OECD DCTR, 2026')}. Your \${volAP.toLocaleString()} AP invoices imply <strong>\${apFteImplied.toFixed(1)} AP FTE</strong> \${ev('apqc','APQC median, 12,000 per FTE')}; \${ctcCount} clearance or reporting \${ctcCount===1?'jurisdiction':'jurisdictions'} put <strong>\${(shareUsed*100).toFixed(1)}%</strong> of that in scope \${ev('yours','our assumption')}\${taxCapBinds?' <em>(capped)</em>':''} &mdash; \${taxFteSaved.toFixed(2)} FTE &times; \${fmt(fteCost)}</td><td class="num">\${fmt(l2)}</td></tr>
     <tr class="tierC"><td>VAT leakage / gap recovery <span class="tag intang">intangible</span></td><td>Often quoted, <strong>not defensible</strong> \${ev('vatgap','why not')} &mdash; excluded from this model entirely</td><td class="num">&mdash;</td></tr>
     <tr class="tierD"><td>Penalty &amp; remediation exposure avoided <span class="tag intang">intangible</span></td><td>\${sel.filter(c=>c[6]>0).length} of your jurisdictions publish a quantified penalty schedule \${ev('site','on their deep dives')}. Size it from those, per country &mdash; there is no credible aggregate</td><td class="num">&mdash;</td></tr>
     <tr class="tierD"><td>Fraud detection, working-capital visibility <span class="tag intang">intangible</span></td><td>Strategic benefits; no benchmark exists \${ev('yours','your call')}</td><td class="num">&mdash;</td></tr>
@@ -1635,6 +1684,17 @@ function build(){
     warn.push(\`<strong>\${late.length} pinned \${late.length===1?'start date finishes':'start dates finish'} after the deadline.</strong> \${late.map(r=>r.c[0]).join(', ')}. That may be deliberate — an accepted late position is a decision a board can take — but the plan below no longer meets \${late.length===1?'that date':'those dates'}.\`);
   }
 
+  // 5. The tax-effort cap is binding. It used to be an absolute 3 FTE and
+  //    it bound at 20 complex jurisdictions, which both the EU preset (25)
+  //    and the mandate preset (46) blow straight through — so selecting 46
+  //    countries instead of 25 added 400,000 of one-off cost and exactly
+  //    zero benefit, with nothing on screen saying the number had stopped
+  //    responding. A ceiling nobody is told about is indistinguishable
+  //    from a model that does not work.
+  if(taxCapBinds){
+    warn.push(\`<strong>The tax-effort saving is capped and the cap is binding.</strong> \${ctcCount} clearance or reporting jurisdictions would imply \${(shareRaw*100).toFixed(0)}% of your AP effort; the model will not credit more than \${(TAXM.cap*100).toFixed(0)}%, because the magnitude is our assumption rather than a benchmark and an uncapped one would run away. Adding further jurisdictions will not move the indirect figure &mdash; though it will keep adding cost, which is the honest asymmetry.\`);
+  }
+
   document.getElementById('guards').innerHTML = warn.length
     ? warn.map(w => \`<div class="note warn" style="margin:0 0 12px">\${w}</div>\`).join('')
     : '';
@@ -1649,6 +1709,16 @@ function build(){
     .replace("__ROI_DEFAULTS__", JSON.stringify(defaults))
     .replace("__ROI_EVIDENCE__", JSON.stringify(evidence))
     .replace("__ROI_PHASES__", JSON.stringify(chartPhases))
+    // The indirect layer's three model constants. invPerFte is APQC's
+    // published median and grade A; the other two are ours and grade D,
+    // but they are ratios rather than headcounts, which is what lets the
+    // answer scale with the business. All three live in D1 so they can be
+    // argued with in a migration rather than a deploy.
+    .replace("__ROI_TAXMODEL__", JSON.stringify({
+      invPerFte: val("ap_invoices_per_fte", 12000),
+      perJur:    val("tax_effort_per_jurisdiction", 0.018),
+      cap:       val("tax_effort_cap", 0.36),
+    }))
     .replace("__ROI_PLATFEE__", JSON.stringify({
       fee: val("platform_fee_per_invoice", 0.4),   // USD, per invoice, either direction
       tpl: t("input.cPlat.derived",

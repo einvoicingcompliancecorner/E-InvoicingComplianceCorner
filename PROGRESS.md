@@ -9872,6 +9872,106 @@ caught in the same session it was introduced rather than a deploy later.
 
 Replay: 85 assertions declared, 76 durable, 9 superseded.
 
+## 14 Aug 2026 (cont'd) — The indirect layer learns how big the business is (migration 526)
+
+Dan: *"Does our FTE cost scale in todays calculator. When I change the
+invoice volume to 1000000 invoices, how are the FTE savings incorporated
+into the outputs?"*
+
+It didn't, at all. The calculation was `min(complexCount * 0.15, 3)` —
+two invented absolutes, neither of which knew how many invoices the
+business processes. Measured on the EU preset:
+
+| | 100k AP invoices | 1,000,000 AP invoices |
+|---|---|---|
+| direct (unlocked) | $1,145,400 | $11,454,000 |
+| **indirect** | **$186,000** | **$186,000** |
+| annual run cost | $90,000 | $630,000 |
+| net annual, compliance-only | +$96,000 | **−$444,000** |
+| payback | 71 months | **never** |
+
+Direct savings rose tenfold; the indirect line didn't move a dollar. And
+because 524 made the platform fee scale, the compliance-only case flipped
+sign and reported that the programme never pays back. 524 didn't cause
+that — the frozen benefit did — but it turned a hidden defect into a
+visibly wrong answer, which is the best thing a change can do to a latent
+bug.
+
+### The fix, and the one benchmark that survived checking
+
+Stop counting FTE in absolute terms; count them as a share of the AP
+headcount the volume implies. APQC publishes a median of **12,000
+invoices per AP FTE per year** — grade A, primary, attributable, and the
+only citable bridge from invoice volume to headcount I could find.
+Everything else on offer was vendor content marketing, including the
+ubiquitous and entirely unsourced claim that "80% of AP time is data
+entry", which appeared in most of my search results and traces to nothing.
+
+The two ratios are still ours and still grade D. What changed is that
+they are now **dimensionless** — a share of a benchmarked base rather
+than a headcount pulled out of the air.
+
+### Calibrated for exact continuity, deliberately
+
+At the default 100k volume the new constants reproduce the old ones to
+the penny: 100,000 / 12,000 = 8.333 implied FTE; × 0.018 = 0.15 per
+jurisdiction; × 0.36 = 3.00 cap; cap still binds at 20 jurisdictions.
+Nothing a reader saw yesterday moves, and at 1M the indirect line is now
+$1,860,000 with a 6-month payback.
+
+**This migration changes the model's shape, not its magnitude**, because
+doing both at once would make it impossible to tell which one moved a
+number. The magnitude is a separate open question put to Dan rather than
+decided here: 0.36 means 36% of the entire AP function saved on tax
+reporting alone, which is hard to defend — and was exactly as hard to
+defend yesterday, just invisible, because a headcount of "3" doesn't
+announce what proportion it represents. Expressing it as a proportion is
+what made it arguable, and tuning it is now one UPDATE.
+
+Guard 5 added: the page now says out loud when the cap is binding. It
+bound at 20 jurisdictions and both the EU (25) and mandate (46) presets
+blow through it, so selecting 46 countries instead of 25 added $400,000
+of one-off cost and zero benefit, silently.
+
+### A note on editing an applied migration
+
+525's standing invariant lists the grade-A keys the renderer may carry,
+and `ap_invoices_per_fte` is a new grade-A key, so the list had to be
+extended in 525 itself. Assertion-comment edit only — no executable
+change, replay byte-identical, `--refresh-checksums` re-records it. This
+is the friction the hand-maintained list was designed to create, working
+as intended rather than being worked around.
+
+### Wage research, and a correction Dan made
+
+I'd said $62,000 looked low. Against the wrong occupation: I'd priced
+bookkeeping clerks, and Dan pointed out the role e-invoicing actually
+removes is **data entry**, which is more junior. BLS Data Entry Keyers
+(SOC 43-9021, May 2023): median $37,790, 10th percentile $28,250. Loaded
+at the BLS employer-cost factor of ×1.43 (private industry wages are
+69.9% of total compensation, March 2026) that is about **$54,000** — so
+his $35–45k instinct was very close to the base wage of exactly the right
+occupation, and my clerk figure was pricing a different job.
+
+The current $62,000 is attached to `l2`, which models tax reporting and
+audit prep — accountant territory at ~$117,000 loaded. So the one field
+is doing two jobs and is wrong in both directions at once.
+
+UK: ONS ASHE April 2025 median gross full-time pay is £39,039 across all
+occupations. The occupation-level UK figure sits in ASHE Table 14/2,
+which are Excel datasets I could not read in-session — flagged rather
+than guessed.
+
+### Verification
+
+`npm test`: 8 suites, all passing. ROI regression 50 checks (was 44).
+Six new: continuity at the default volume returns exactly $186,000 and
+3.00 FTE; ten times the volume gives ten times the saving; the row shows
+the APQC-implied headcount; the cap guard fires when binding and stays
+quiet when it isn't. Replay: 91 assertions declared, 82 durable, 9
+superseded.
+
+
 ## Open items / next steps
 
 ### Real open work

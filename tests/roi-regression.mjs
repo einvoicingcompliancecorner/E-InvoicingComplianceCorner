@@ -331,5 +331,50 @@ const stuck = await page.evaluate(() => {
 t.check("and survive the scroll (a heading you scroll past labels nothing)",
   Math.abs(stuck) <= 2, stuck);
 
+// ---- 14. the indirect layer knows how big the business is ----
+// It did not. `min(complexCount * 0.15, 3)` had no volume term at all, so
+// Dan typed 1,000,000 into the volume box and watched direct savings rise
+// tenfold while the indirect line sat at $186,000 — and, because the
+// platform fee now scales, the compliance-only case flipped to "never
+// pays back". The two checks that matter are opposites: the number must
+// now MOVE with volume, and it must NOT have moved at the default volume,
+// because this change was about shape and not magnitude.
+const indirect = () => page.locator("#indirect tbody tr").first();
+const indValue = async () =>
+  Number((await indirect().locator("td").last().innerText()).replace(/[^\d]/g, ""));
+
+await page.click("#selEU"); await page.waitForTimeout(200);
+await page.fill("#volAP", "100000"); await page.fill("#volAR", "50000");
+await page.click("#run"); await page.waitForTimeout(700);
+const ind100k = await indValue();
+t.check("continuity: the default volume returns exactly the pre-migration figure",
+  ind100k === 186000, ind100k);
+t.check("still 3.00 FTE, so 0.018 and 0.36 really are the old 0.15 and 3",
+  /3\.00 FTE/.test(await indirect().innerText()), await indirect().innerText());
+
+await page.fill("#volAP", "1000000"); await page.fill("#volAR", "500000");
+await page.click("#run"); await page.waitForTimeout(800);
+const ind1m = await indValue();
+t.check(`ten times the volume, ten times the saving (${ind100k} -> ${ind1m})`,
+  ind1m === ind100k * 10, `${ind100k} -> ${ind1m}`);
+t.check("and the row shows the APQC-implied headcount it scaled from",
+  /83\.3 AP FTE/.test(await indirect().innerText()), await indirect().innerText());
+
+// The cap is still there and still binding at 25 jurisdictions — the
+// difference is that it now says so. An invisible ceiling is
+// indistinguishable from a model that has stopped working.
+t.check("the binding cap is called out",
+  /cap is binding/.test(await page.locator("#guards").innerText()));
+
+await page.click("#selNone");
+await page.evaluate(() => {
+  [...document.querySelectorAll("#countryList label")].forEach((l) => {
+    if (/^\s*(France|Italy)/.test(l.textContent)) l.querySelector("input").click();
+  });
+});
+await page.click("#run"); await page.waitForTimeout(700);
+t.check("and stays quiet when the cap is not binding",
+  !/cap is binding/.test(await page.locator("#guards").innerText()));
+
 await browser.close();
 process.exit(t.report() ? 0 : 1);
