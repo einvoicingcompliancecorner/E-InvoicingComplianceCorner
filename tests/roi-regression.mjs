@@ -426,5 +426,60 @@ t.check("and reset restores both rates",
   (await page.inputValue("#fteEntry")) === "54000"
   && (await page.inputValue("#fteCost")) === "116800");
 
+// ---- 16. compliance-only banks what compliance actually delivers ----
+// Dan, from customer conversations: every enterprise he has spoken to in
+// two to three years meets mandates alone and never bundles AP
+// automation, because that programme is too large to land in one go. The
+// model assumed the opposite — `banked = scope === 'both'`, so the entire
+// direct total was multiplied by zero on the scope everybody picks, and
+// the page told them the real answer was to widen scope. Now each row
+// declares what it depends on.
+await page.click("#selEU"); await page.waitForTimeout(200);
+await page.fill("#volAP", "100000"); await page.fill("#volAR", "50000");
+await page.selectOption("#scope", "compliance"); await page.waitForTimeout(300);
+await page.click("#run"); await page.waitForTimeout(700);
+
+const totalRow = () => page.locator("#direct tbody tr").last();
+const bankedTotal = async () =>
+  Number((await totalRow().locator("td").last().innerText()).replace(/[^\d]/g, ""));
+
+// 590,400 x 0.4286 capture share + 195,000 AR = 448,045. Rework is held
+// out deliberately: it is the weakest-evidenced row and would have been
+// the largest single beneficiary.
+const complianceBanked = await bankedTotal();
+t.check(`compliance-only banks capture and issuing, not nothing (${complianceBanked})`,
+  complianceBanked === 448045, complianceBanked);
+t.check("and states what is left unlocked against the full total",
+  /697,355/.test(await totalRow().innerText()) && /1,145,400/.test(await totalRow().innerText()),
+  await totalRow().innerText());
+
+// The tags are the whole defence of this change: the reasoning has to be
+// on the row, not in a footnote, because the change makes the answer
+// better and that is exactly when a reader should be able to audit it.
+const tags = await page.evaluate(() =>
+  [...document.querySelectorAll("#direct .tag.bank, #direct .tag.unbank")].map((e) => e.textContent));
+t.check("every direct row says whether it banks on compliance",
+  tags.includes("43% banks") && tags.includes("banks") && tags.includes("not banked"), tags);
+
+const directText = await page.locator("#direct").innerText();
+t.check("rework is not banked on a compliance scope",
+  /not banked/.test(directText) && !/banks in full/.test(directText));
+
+await page.selectOption("#scope", "both"); await page.waitForTimeout(400);
+await page.click("#run"); await page.waitForTimeout(700);
+t.check("the fuller programme banks the lot",
+  (await bankedTotal()) === 1145400, await bankedTotal());
+
+// The superseded sentiment, asserted gone. The old copy told the reader
+// compliance-only banks nothing and the answer is to widen scope; the
+// arithmetic no longer works that way and prose saying so would describe
+// a page that does not exist.
+await page.selectOption("#scope", "compliance"); await page.waitForTimeout(400);
+await page.click("#run"); await page.waitForTimeout(700);
+const resultsText = await page.locator("#results").innerText();
+t.check("and the old 'banks nothing, widen scope' framing is gone",
+  !/without banking any of it/.test(resultsText)
+  && !/actual investment case for doing both at once/.test(resultsText));
+
 await browser.close();
 process.exit(t.report() ? 0 : 1);

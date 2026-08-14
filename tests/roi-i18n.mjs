@@ -89,7 +89,7 @@ try {
     ["page title", "Wave Planner"],
     ["page lede", "board-ready business case"],
     ["an input label", "Invoices received / year (AP)"],
-    ["a scope option", "meet the mandates (IT workstream)"],
+    ["a scope option", "meet the mandates (what most programmes do)"],
     ["an assumptions heading", "Implementation &mdash; weeks"],
     ["the placeholder warning", "placeholders only"],
     ["the paywall gate", "Your results are ready"],
