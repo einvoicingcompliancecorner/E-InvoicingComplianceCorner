@@ -51,6 +51,27 @@ export async function getRoiCountries(db, todayISO) {
     `SELECT country_id, date, mandate_scope, confidence FROM milestones WHERE on_tracker = 1`
   ).all();
 
+  // OBLIGATIONS THE BOARD DOES NOT SHOW. `on_tracker` is a presentation
+  // flag (migration 520); `obligation_status` is the substance. A row that
+  // is off the board but classified 'live' is a real dated obligation that
+  // every consumer filtering on on_tracker is blind to — and three
+  // countries have one as their ONLY future deadline, so the planner
+  // currently files Denmark, Portugal and Brazil under "no fixed deadline,
+  // start any time".
+  //
+  // This is read for WARNING ONLY and deliberately does not feed the wave
+  // plan. Changing what the planner schedules is a decision about the
+  // product, not a side effect of making the data available; until that
+  // decision is taken, the honest behaviour is to keep planning exactly as
+  // before and tell the reader what is missing from it.
+  const { results: hidden } = await db.prepare(
+    `SELECT country_id, min(date) AS date FROM milestones
+      WHERE on_tracker = 0 AND obligation_status = 'live'
+        AND mandate_scope = 'b2b' AND date > ?
+      GROUP BY country_id`
+  ).bind(today).all();
+  const hiddenBy = new Map(hidden.map((h) => [h.country_id, h.date]));
+
   const byCountry = new Map();
   for (const m of ms) {
     if (!byCountry.has(m.country_id)) byCountry.set(m.country_id, []);
@@ -143,7 +164,12 @@ export async function getRoiCountries(db, todayISO) {
     // the stored value would misdescribe Austria everywhere else.
     const cxEff = euDriven ? 2 : cx;
 
-    return [c.name_en, c.code, REG[c.region] || "Eu", status, cxEff, future[0] || "", c.penalty_rows || 0, c.slug, euDriven];
+    // Index 9: the earliest live obligation this country has that the board
+    // does not show, or "" — surfaced so the render can warn when it is
+    // planning a country as deadline-free that is not.
+    const hiddenDate = hiddenBy.get(c.id) || "";
+    return [c.name_en, c.code, REG[c.region] || "Eu", status, cxEff, future[0] || "", c.penalty_rows || 0, c.slug, euDriven,
+            hiddenDate && (!future.length || hiddenDate < future[0]) ? hiddenDate : ""];
   });
 }
 
@@ -590,6 +616,7 @@ export function renderRoiPage({ countries, benchmarks = [], phases = [], strings
 </div>
 
 <div id="results" class="hidden">
+  <div id="guards"></div>
   <h2>2 &middot; ${t("sec.summary", "Executive summary")}</h2>
   <div id="summary"></div>
   <h2>3 &middot; ${t("sec.waves", "Compliance wave plan")}</h2>
@@ -599,6 +626,20 @@ export function renderRoiPage({ countries, benchmarks = [], phases = [], strings
     <div style="overflow-x:auto"><div id="gantt"></div></div>
     <div id="ganttLegend"></div>
   </div>
+  <details class="card noprint" id="adjust" style="padding:0">
+    <summary style="cursor:pointer;padding:14px 18px;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:12px">
+      <span>
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:var(--soon)">${t("adjust.title", "Adjust the plan")}</span>
+        <span class="hint" style="display:block;margin:4px 0 0">${t("adjust.hint", "Move a country to a different wave, or pin its own start date. The chart and the elapsed figures redraw from your changes; nothing else on the page moves.")}</span>
+      </span>
+      <span id="adjustChevron" style="font-family:'IBM Plex Mono',monospace;color:var(--muted);font-size:12px;white-space:nowrap">${t("assumptions.show", "show &#9662;")}</span>
+    </summary>
+    <div style="padding:0 18px 16px">
+      <div id="adjustRows"></div>
+      <p class="hint" style="margin:12px 0 0">${t("adjust.note", "Changes live in this page only &mdash; nothing is saved, and reloading restores the back-planned schedule. A country you move later than its own deadline stays visible and is called out above, because a plan that misses a date is a decision rather than an error.")} <button type="button" id="adjustReset" style="padding:3px 9px;font-size:12px;margin-left:6px">${t("adjust.reset", "Reset to the computed plan")}</button></p>
+    </div>
+  </details>
+
   <p class="noprint" style="margin:-4px 0 14px"><button id="tblToggle" style="padding:5px 11px;font-size:12.5px">${t("btn.table", "Show as table")}</button></p>
   <div id="waves" class="hidden"></div>
   <h2>4 &middot; ${t("sec.direct", "Direct savings &mdash; cash-releasing")}</h2>
@@ -867,8 +908,32 @@ const D = s => new Date(s + 'T00:00:00Z');
 const isoD = d => d.toISOString().slice(0,10);
 const NOW = new Date();
 
-function buildGantt(sel, erp, pace){
+// ---- user overrides -------------------------------------------------
+// Session only, by design: no storage, no server, no per-subscriber
+// state. Someone assembling a board pack does it in one sitting and
+// downloads the PDF; persisting a plan raises a question this tool
+// cannot yet answer well, which is what should happen to a saved
+// override when the published deadline underneath it moves.
+//
+// Keyed by country name because that is what the row carries. Shape is
+// deliberately serialisable so persisting it later is a storage
+// decision rather than a rewrite.
+const OVR = {};                       // name -> {dl?: 'YYYY-MM-DD', start?: 'YYYY-MM-DD'}
+const ovrOf = n => OVR[n] || {};
+const anyOvr = () => Object.values(OVR).some(o => o.dl || o.start);
+
+function buildGantt(sel0, erp, pace){
   const host = document.getElementById('gantt');
+  // A wave override rewrites the country's effective deadline, which is
+  // all "move it to another wave" means here: waves ARE the set of
+  // countries sharing a date. Copy the row rather than mutating it —
+  // COUNTRIES is shared with the table, the summary and the cost model,
+  // and none of those should move because someone dragged a wave.
+  const sel = sel0.map(c => {
+    const o = ovrOf(c[0]);
+    if(!o.dl) return c;
+    const c2 = c.slice(); c2[5] = o.dl; return c2;
+  });
   const erpF = 1 + Math.min((erp-1)*0.12, 0.6); // gentler: a lean track scales less with system count
   // Dated countries drive the back-planned waves. No-mandate countries
   // have no deadline by definition, so they are pulled out here and given
@@ -929,6 +994,22 @@ function buildGantt(sel, erp, pace){
         end = start;
       }
     });
+    // A pinned start date shifts that country's whole track, keeping its
+    // durations. golive is left alone on purpose: if the shift pushes the
+    // finish past the deadline, the bar visibly runs past it and the
+    // guard above the summary says so. Hiding that would defeat the point
+    // of letting someone move it.
+    waveRows.forEach(r => {
+      const o = ovrOf(r.c[0]);
+      if(!o.start) return;
+      const pinned = D(o.start);
+      if(isNaN(pinned)) return;
+      const shift = pinned.getTime() - r.start.getTime();
+      r.start = new Date(r.start.getTime() + shift);
+      r.segs = r.segs.map(sg => ({...sg, s: new Date(sg.s.getTime()+shift), e: new Date(sg.e.getTime()+shift)}));
+      r.pinned = true;
+      if(r.start < waveStart) waveStart = r.start;
+    });
     waveRows.sort((a,b) => a.start - b.start || a.lane - b.lane);
     const progStart = addW(waveStart, -progWeeks);
     const slipDays = Math.round((progStart - NOW)/86400000);
@@ -945,8 +1026,12 @@ function buildGantt(sel, erp, pace){
   const progEnd = rows.length ? new Date(Math.min(...rows.map(r=>r.start.getTime()))) : addW(NOW, progWeeks);
   const progBegin = rows.length ? addW(progEnd, -progWeeks) : new Date(NOW.getTime());
   const t0 = new Date(Math.min(progBegin.getTime(), NOW.getTime()));
+  // Without overrides the last segment always ends exactly on golive, so
+  // this is identical to taking golive alone — it only differs once a
+  // pinned start pushes a track past its deadline, which is precisely
+  // when the chart must not crop it.
   const t1 = rows.length
-    ? new Date(Math.max(...rows.map(r=>r.golive.getTime())))
+    ? new Date(Math.max(...rows.map(r => Math.max(r.golive.getTime(), r.segs[r.segs.length-1].e.getTime()))))
     : addW(NOW, progWeeks + longestUndated + 2);
   const pad = (t1-t0)*0.03;
   const X0 = t0.getTime()-pad, X1 = t1.getTime()+pad;
@@ -1123,8 +1208,67 @@ function buildGantt(sel, erp, pace){
 // (Caught in browser testing: the first version re-showed the gate every
 // time, which made the tool feel broken exactly when someone was doing the
 // thing you want them to do — iterating on their own numbers.)
+// ---- the adjust panel ------------------------------------------------
+// Rebuilt on every calculation because the country selection drives it.
+// Only dated countries appear: an undated one has no wave to move it out
+// of, and pinning a start for work that can begin whenever you like is a
+// control that does nothing.
+function renderAdjust(sel){
+  const host = document.getElementById('adjustRows');
+  if(!host) return;
+  const dated = sel.filter(c => c[5] && c[4] > 0)
+                   .sort((a,b) => (a[5]||'').localeCompare(b[5]||'') || a[0].localeCompare(b[0]));
+  const waves = [...new Set(sel.map(c => ovrOf(c[0]).dl || c[5]).filter(Boolean))].sort();
+  if(!dated.length){
+    host.innerHTML = '<p class="hint">No selected jurisdiction has a dated deadline, so there are no waves to rearrange.</p>';
+    return;
+  }
+  host.innerHTML = \`
+    <div class="grid" style="grid-template-columns:1fr auto auto;gap:8px 12px;align-items:center">
+      <span class="hint" style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase">Jurisdiction</span>
+      <span class="hint" style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase">Wave (go-live)</span>
+      <span class="hint" style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase">Pinned start</span>
+      \${dated.map(c => {
+        const o = ovrOf(c[0]);
+        const cur = o.dl || c[5];
+        const opts = waves.map(w => \`<option value="\${w}"\${w===cur?' selected':''}>\${w}\${w===c[5]?' \\u00b7 computed':''}</option>\`).join('');
+        return \`
+        <span style="font-size:13px">\${c[0]}\${(o.dl||o.start)?' <span class="tag tD" style="margin-left:4px">adjusted</span>':''}</span>
+        <select data-ovr-dl="\${c[0]}" style="font-size:12.5px;padding:3px 6px;max-width:190px">\${opts}</select>
+        <input type="date" data-ovr-start="\${c[0]}" value="\${o.start||''}" style="font-size:12.5px;padding:3px 6px">\`;
+      }).join('')}
+    </div>\`;
+  host.querySelectorAll('[data-ovr-dl]').forEach(el => el.onchange = () => {
+    const n = el.getAttribute('data-ovr-dl');
+    OVR[n] = {...ovrOf(n), dl: el.value};
+    showResults();
+  });
+  host.querySelectorAll('[data-ovr-start]').forEach(el => el.onchange = () => {
+    const n = el.getAttribute('data-ovr-start');
+    const v = el.value;
+    OVR[n] = {...ovrOf(n)};
+    if(v) OVR[n].start = v; else delete OVR[n].start;
+    showResults();
+  });
+}
+document.getElementById('adjustReset').onclick = (e) => {
+  e.preventDefault();
+  Object.keys(OVR).forEach(k => delete OVR[k]);
+  showResults();
+};
+document.getElementById('adjust').addEventListener('toggle', function(){
+  document.getElementById('adjustChevron').textContent =
+    this.open ? 'hide ▴' : 'show ▾';
+});
+
 function showResults(){
+  // The panel's own controls call this, and build() re-renders the panel
+  // from scratch — so remember whether it was open, or changing a wave
+  // would slam the drawer shut on the person using it.
+  const adj = document.getElementById('adjust');
+  const wasOpen = adj && adj.open;
   build();
+  if(adj && wasOpen) adj.open = true;
   document.getElementById('results').classList.remove('hidden');
   document.getElementById('print').classList.remove('hidden');
   document.getElementById('results').scrollIntoView({behavior:'smooth'});
@@ -1282,6 +1426,55 @@ function build(){
       <div class="card tierD"><h3>${tj("ev.gradeD","Grade D")} <span class="tag tD">${tj("ev.gradeD.tag","your assumption")}</span></h3><p class="hint">${tj("ev.gradeD.body","Rework cost per errored invoice, loaded FTE cost, tax-effort saving. Nothing is claimed for these; they are exposed so the model can be argued with rather than believed.")}</p></div>
     </div>
     <div class="note" style="margin-top:14px">Corrections applied during verification: the VAT-gap figures were re-attributed from OECD to the European Commission, Hungary&rsquo;s start figure corrected 9.8%&rarr;10.4% and Poland&rsquo;s 12.7%&rarr;12.5%, and the &ldquo;reduced penalty exposure&rdquo; claim was removed from the HMRC attribution &mdash; the word &ldquo;penalty&rdquo; does not appear in that consultation.</div>\`;
+
+  // ---- sanity guards on what we just rendered ----------------------
+  // Design review, "add sanity assertions to rendered output": the page
+  // should refuse to present an obviously wrong number confidently. The
+  // failure mode this system is most prone to is not a crash, it is a
+  // plausible answer, and every one of these has actually occurred.
+  const warn = [];
+
+  // 1. Integrations of zero against a selection that includes a mandated
+  //    country. This is what nine countries scoring 'none' looked like in
+  //    August: a business case that quietly halved its own cost.
+  const mandated = sel.filter(c => c[4] > 0);
+  if(mandated.length && (intSimple + intComplex) === 0){
+    warn.push(\`<strong>\${mandated.length} selected \${mandated.length===1?'jurisdiction has':'jurisdictions have'} a mandate, but the model has costed zero integrations.</strong> That is not a cheap programme, it is a broken calculation — treat every figure below as unsafe until it is explained.\`);
+  }
+
+  // 2. A payback so fast it is not credible. Nothing in this field pays
+  //    back in under a month; if it does, an input is wrong by an order
+  //    of magnitude.
+  if(paybackMonths !== null && paybackMonths > 0 && paybackMonths < 1){
+    warn.push(\`<strong>Payback under one month.</strong> No e-invoicing programme pays back that fast. Check the volumes and the per-invoice costs — one of them is out by an order of magnitude, and the rest of this page inherits it.\`);
+  }
+
+  // 3. THE ONE THAT NEEDED MIGRATION 520. A selected country whose
+  //    planned deadline is later than an obligation it actually has, or
+  //    which is being scheduled as discretionary while holding a dated
+  //    one. Before obligation_status existed there was no way to ask
+  //    this: an off-board row was indistinguishable from a superseded
+  //    one, so the planner could file Denmark under "no fixed deadline"
+  //    with a straight face.
+  const mistimed = sel.filter(c => c[9] && (!c[5] || c[9] < c[5]));
+  if(mistimed.length){
+    warn.push(\`<strong>\${mistimed.length} selected \${mistimed.length===1?'jurisdiction has an obligation':'jurisdictions have obligations'} earlier than the date this plan plans for.</strong> \${mistimed.map(c => \`\${c[0]} &mdash; \${c[9]}\${c[5] ? \` (planned for \${c[5]})\` : ' (planned as discretionary)'}\`).join('; ')}. These are dated, live obligations that the arrivals board does not display, so the wave plan below does not schedule them. The runway shown for \${mistimed.length===1?'it':'them'} is longer than the runway \${mistimed.length===1?'it':'they'} actually \${mistimed.length===1?'has':'have'}.\`);
+  }
+
+  // 4. An override that pushes a country past its own deadline. Not an
+  //    error — someone may be modelling exactly that — but it must never
+  //    be silent.
+  const late = (ganttRows || []).filter(r => r.pinned && r.segs[r.segs.length-1].e > r.golive);
+  if(late.length){
+    warn.push(\`<strong>\${late.length} pinned \${late.length===1?'start date finishes':'start dates finish'} after the deadline.</strong> \${late.map(r=>r.c[0]).join(', ')}. That may be deliberate — an accepted late position is a decision a board can take — but the plan below no longer meets \${late.length===1?'that date':'those dates'}.\`);
+  }
+
+  document.getElementById('guards').innerHTML = warn.length
+    ? warn.map(w => \`<div class="note warn" style="margin:0 0 12px">\${w}</div>\`).join('')
+    : '';
+
+  renderAdjust(sel);
+
 }
 `
     .replace("__ROI_COUNTRIES__", JSON.stringify(countries))

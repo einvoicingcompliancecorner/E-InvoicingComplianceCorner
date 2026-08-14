@@ -76,6 +76,20 @@ fails = [...r.visible, ...r.hidden].filter((f) => !allowed(f));
 if (fails.length) show("failing with results shown", fails);
 t.check(`results shown: ${r.counts.elements} elements audited, 0 AA failures`, fails.length === 0);
 
+// State 4: the adjust panel open, with the sanity guards showing. New UI
+// that only exists after a calculation, inside a <details> that is closed
+// by default — three ways for an audit to miss it entirely.
+await page.click("#adjust summary").catch(() => {});
+await page.waitForTimeout(250);
+r = await page.evaluate(AUDIT);
+fails = [...r.visible, ...r.hidden].filter((f) => !allowed(f));
+if (fails.length) show("failing with the adjust panel open", fails);
+t.check(`adjust panel open: ${r.counts.elements} elements audited, 0 AA failures`,
+  fails.length === 0);
+t.check("the adjust panel is actually on screen",
+  (await page.locator("[data-ovr-dl]").count()) > 0,
+  await page.locator("[data-ovr-dl]").count());
+
 // A guard on the audit itself: if the selectors ever stop matching, the
 // audit passes vacuously and nobody notices. Assert it found real work.
 t.check(`the audit is actually looking at something `
