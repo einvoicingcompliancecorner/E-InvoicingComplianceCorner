@@ -117,9 +117,12 @@ const cycTip = await page.evaluate(() => {
 t.check("the cycle-time citation explains that the gap is definitional",
   /tautology/.test(cycTip) && /Best-in-Class/.test(cycTip), cycTip.slice(0, 140));
 
+// Match the MARKER's own label, not the element's textContent — that
+// includes the tooltip, and three markers on this row now mention an
+// exception rate, so the loose match started picking the wrong one.
 const excTip = await page.evaluate(() => {
   const el = [...document.querySelectorAll("#direct .ev")]
-    .find((e) => /exception rate/.test(e.textContent));
+    .find((e) => e.firstChild && /not Ardent/.test(e.firstChild.textContent || ""));
   return el ? el.querySelector(".tip").textContent : "";
 });
 t.check("and the exception rate warns it is not the model's error rate",
@@ -480,6 +483,42 @@ const resultsText = await page.locator("#results").innerText();
 t.check("and the old 'banks nothing, widen scope' framing is gone",
   !/without banking any of it/.test(resultsText)
   && !/actual investment case for doing both at once/.test(resultsText));
+
+// ---- 17. the rework row is bounded by what Ardent actually measured ----
+// Dan asked whether Ardent substantiates the rework metric. It gives the
+// mechanism — "eInvoicing drives process efficiencies by eliminating data
+// capture and manual data entry" — but publishes no breakdown of
+// exceptions by cause and no quantified reduction. What it does give is a
+// ceiling: Best-in-Class run 11.1% exceptions against 20.9%, a 9.8-point
+// gap covering every cause. The model may not claim more than that.
+await page.evaluate(() => { document.getElementById("assump").open = true; });
+await page.waitForTimeout(200);
+t.check("the 80% is a real input now, not a literal",
+  (await page.inputValue("#errElim")) === "80", await page.inputValue("#errElim"));
+t.check("and the default sits inside the observed gap (10% x 80% = 8.0 < 9.8)",
+  !/removes more exceptions than separate the best quartile/i
+    .test(await page.locator("#guards").innerText()));
+
+await page.fill("#errRate", "20");
+await page.click("#run"); await page.waitForTimeout(700);
+t.check("claiming more than the best quartile achieves is called out",
+  /removes more exceptions than separate the best quartile/i
+    .test(await page.locator("#guards").innerText()),
+  (await page.locator("#guards").innerText()).slice(0, 160));
+
+await page.click("#resetDefaults"); await page.waitForTimeout(400);
+await page.click("#run"); await page.waitForTimeout(700);
+t.check("reset restores the elimination assumption too",
+  (await page.inputValue("#errElim")) === "80");
+
+// The $45 is ours until it is theirs, and the page now says which.
+const reworkRow = await page.locator("#direct tbody tr").nth(2).innerText();
+t.check("an unchanged rework cost is labelled as our estimate, not the reader's",
+  /our estimate, not yours/.test(reworkRow), reworkRow.slice(0, 200));
+await page.fill("#errCost", "70");
+await page.click("#run"); await page.waitForTimeout(700);
+t.check("and becomes theirs once they change it",
+  /your rework cost/.test(await page.locator("#direct tbody tr").nth(2).innerText()));
 
 await browser.close();
 process.exit(t.report() ? 0 : 1);

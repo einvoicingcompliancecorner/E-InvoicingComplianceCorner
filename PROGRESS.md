@@ -10158,6 +10158,79 @@ Migration generated from the renderer's own strings rather than retyped —
 522's lesson. Replay: 108 assertions declared, 94 durable, 14 superseded.
 
 
+## 14 Aug 2026 (cont'd) — The one multiplier you could not argue with (migration 529)
+
+Dan: *"Question - where did the rework number come from. It's not
+something I have provided?"*
+
+It wasn't. The $360,000 was `100,000 x 10% x $45 x 80%`, and all three
+inputs were ours. Two were at least visible and graded — `manual_error_rate`
+at B from the HMRC/DBT consultation which asserts 10% and cites no study,
+and `rework_per_error` at D with `source_url` NULL. **The 80% was a bare
+literal in the renderer:**
+
+    const errSave = errNow * errCost * 0.8;   // user-owned assumption
+
+The comment was false twice over. It wasn't user-owned — there was no
+control — and it wasn't stated where anyone would meet it. The reasoning
+existed and was sound (not every exception is a clerical error), but it
+sat in the tooltip of a *different* input while the reader met a bare
+"× 80%" in the results table. Being a literal it was also the only
+assumption on the page that couldn't be graded, cited, overridden or
+reset — and it multiplied the largest of the three direct rows.
+
+It's now a D1 row like everything else, exposed in the panel, with its
+reasoning attached at the point of use.
+
+**And the $45 stopped calling itself the reader's.** The table said "your
+rework cost" for a figure nobody supplied. A default of ours wearing the
+reader's name is worse than an unlabelled default, because it borrows
+credibility it hasn't earned. It now reads "our estimate, not yours"
+until the value actually changes.
+
+### What Ardent can and cannot substantiate (Dan's follow-up)
+
+He asked whether Ardent has anything on data-entry errors that would
+substantiate the rework row. Checked against the report directly:
+
+**It gives the mechanism.** "eInvoicing drives process efficiencies by
+eliminating data capture and manual data entry", and 48% of AP
+professionals name a high exception rate as a top challenge.
+
+**It does not give the magnitude.** No breakdown of exceptions by cause,
+no quantified reduction from automation. So it can neither confirm nor
+refute the 80%. Mechanism evidenced, magnitude ours — the same evidential
+position as the OECD on the indirect layer, and now stated in those terms.
+
+**But it gives a ceiling, and that turned out to be the useful part.**
+Best-in-Class run an 11.1% exception rate against 20.9% for all others: a
+**9.8-point gap** covering every cause of exception, with e-invoicing only
+one contributor among several (they also run 51% straight-through against
+29%, and have 1.4× more suppliers enabled).
+
+The model's own claim is `errRate × errElim` of all invoices. On the
+defaults that's **8.0 points inside 9.8** — tight, and the first real
+evidence the 80% isn't absurd. Guard 7 fires above it: a model removing
+more exceptions than separate the best quartile from everyone else is
+claiming e-invoicing alone beats everything Best-in-Class do combined.
+That isn't a big number, it's a wrong one. There's also a migration-time
+assertion that the shipped defaults sit inside the envelope.
+
+Graded B, not A: Ardent's figures, our subtraction — same basis as the
+two FTE rates and `ar_cost_per_invoice`.
+
+### Verification
+
+`npm test`: 8 suites, all passing. ROI regression 69 checks (was 63). Six
+new: the 80% is a real input; the default sits inside the observed gap;
+claiming more is called out; reset restores it; an unchanged rework cost
+is labelled as ours; it becomes theirs once changed. One existing check
+was repaired — it matched `.ev` elements by `textContent`, which includes
+the tooltip, and three markers on that row now mention an exception rate,
+so the loose match had started selecting the wrong one. Replay: 117
+assertions declared, 101 durable, 16 superseded.
+
+
 ## Open items / next steps
 
 ### Real open work
