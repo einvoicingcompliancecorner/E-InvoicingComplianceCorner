@@ -7252,6 +7252,28 @@ future Bolivia build must carry a visible volatility caveat.
 be sourced anywhere and is withdrawn — DGI's own normativa and FAQ
 pages specify segment obligations only.
 
+### Corrected within the hour: countries with no fixed deadline
+
+Dan asked why Australia, New Zealand and Canada were absent from the
+panel. They were excluded by a filter requiring a dated deadline, on
+reasoning written into the code that pinning a start for discretionary
+work "is a control that does nothing".
+
+That was wrong, and he was right to query it. **"Start any time" is a
+default, not a constraint**, and turning "any time" into a date is most
+of what planning is. All three now appear with the wave control disabled
+and the start field live; the discretionary band draws each from its own
+pin instead of stacking them at one shared start.
+
+The model's own floor still holds and is now visible rather than
+silent: nothing may begin before contracting completes, so a pin earlier
+than that is **CLAMPED** rather than obeyed, and the row says so.
+Honoured pins read **PINNED**. Both labels sit where `ANY TIME` and
+`IN FORCE` already did.
+
+(Portugal, also in Dan's question, was never excluded — it has an
+EU-driven 2030 deadline and appears. Checked rather than assumed.)
+
 ### Verification
 
 `validate_replay()`: OK (502 files, only the documented pre-existing

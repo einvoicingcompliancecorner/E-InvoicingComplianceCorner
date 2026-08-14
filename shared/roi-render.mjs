@@ -1030,9 +1030,19 @@ function buildGantt(sel0, erp, pace){
   // this is identical to taking golive alone — it only differs once a
   // pinned start pushes a track past its deadline, which is precisely
   // when the chart must not crop it.
+  // Undated tracks are drawn later, from progEnd or from a pin, so their
+  // right-hand edge has to be predicted here or a pinned discretionary
+  // country runs off the end of the chart.
+  const discStart0 = rows.length ? Math.max(new Date(Math.min(...rows.map(r=>r.start.getTime()))).getTime(), NOW.getTime()) : NOW.getTime();
+  const undatedEnd = undated.length ? Math.max(...undated.map(c => {
+    const o = ovrOf(c[0]);
+    const w = o.start ? D(o.start).getTime() : NaN;
+    const st = isNaN(w) ? discStart0 : Math.max(w, discStart0);
+    return addW(new Date(st), durOf(c).total).getTime();
+  })) : 0;
   const t1 = rows.length
-    ? new Date(Math.max(...rows.map(r => Math.max(r.golive.getTime(), r.segs[r.segs.length-1].e.getTime()))))
-    : addW(NOW, progWeeks + longestUndated + 2);
+    ? new Date(Math.max(undatedEnd, ...rows.map(r => Math.max(r.golive.getTime(), r.segs[r.segs.length-1].e.getTime()))))
+    : new Date(Math.max(undatedEnd, addW(NOW, progWeeks + longestUndated + 2).getTime()));
   const pad = (t1-t0)*0.03;
   const X0 = t0.getTime()-pad, X1 = t1.getTime()+pad;
 
@@ -1148,13 +1158,22 @@ function buildGantt(sel0, erp, pace){
     const discStart = Math.max(progEnd.getTime(), NOW.getTime());
     undated.forEach(c => {
       const {phases, total} = durOf(c);
-      let t = discStart;
+      // A pinned start applies here too. "Start any time" is the default,
+      // not a constraint — and "any time" is exactly the thing a planner
+      // wants to turn into a date. The floor still holds: nothing may
+      // begin before contracting completes, so a pin earlier than that is
+      // clamped rather than honoured, and the row says so.
+      const o = ovrOf(c[0]);
+      const wanted = o.start ? D(o.start).getTime() : null;
+      const pinnedEarly = wanted !== null && !isNaN(wanted) && wanted < discStart;
+      let t = (wanted !== null && !isNaN(wanted)) ? Math.max(wanted, discStart) : discStart;
+      const isPinned = wanted !== null && !isNaN(wanted);
       s += \`<text x="0" y="\${y+15}" fill="#8d9bb5" font-size="12">\${shortName(c[0])}<title>\${c[0]}</title></text>\`;
       // An already-in-force jurisdiction is not "start any time" — you are
       // late, and saying otherwise would be the comfortable lie rather than
       // the useful one.
-      const meta = c[3] === 'i' ? 'IN FORCE' : 'ANY TIME';
-      s += \`<text x="\${L-10}" y="\${y+15}" fill="\${c[3]==='i' ? '#c98a3a' : '#6b7a95'}" font-family="'IBM Plex Mono',monospace" font-size="9" text-anchor="end">\${meta}</text>\`;
+      const meta = c[3] === 'i' ? '${tj("chart.inforce","IN FORCE")}' : (isPinned ? (pinnedEarly ? '${tj("chart.clamped","CLAMPED")}' : '${tj("chart.pinned","PINNED")}') : '${tj("chart.anytime","ANY TIME")}');
+      s += \`<text x="\${L-10}" y="\${y+15}" fill="\${c[3]==='i' ? '#c98a3a' : (isPinned ? '#7fd0a8' : '#6b7a95')}" font-family="'IBM Plex Mono',monospace" font-size="9" text-anchor="end">\${meta}</text>\`;
       phases.forEach(pz => {
         const st = new Date(t), en = addW(st, pz.weeks);
         const x1 = x(st.getTime()), x2 = x(en.getTime());
@@ -1210,17 +1229,26 @@ function buildGantt(sel0, erp, pace){
 // thing you want them to do — iterating on their own numbers.)
 // ---- the adjust panel ------------------------------------------------
 // Rebuilt on every calculation because the country selection drives it.
-// Only dated countries appear: an undated one has no wave to move it out
-// of, and pinning a start for work that can begin whenever you like is a
-// control that does nothing.
+// Dated countries get both controls. Undated ones get the start date
+// only, with the wave control disabled: there is no wave to move them
+// between, but "start any time" is a default rather than a constraint,
+// and turning "any time" into a date is most of what planning is. The
+// first version left them out entirely, on reasoning Dan corrected.
 function renderAdjust(sel){
   const host = document.getElementById('adjustRows');
   if(!host) return;
   const dated = sel.filter(c => c[5] && c[4] > 0)
                    .sort((a,b) => (a[5]||'').localeCompare(b[5]||'') || a[0].localeCompare(b[0]));
+  // Countries with no fixed deadline are listed too, with the wave control
+  // disabled and the start date live. The first version left them out on
+  // the reasoning that there is no wave to move them between — true, and
+  // beside the point: "start any time" is a default, not a constraint, and
+  // turning "any time" into a date is most of what planning is.
+  const undated = sel.filter(c => !(c[5] && c[4] > 0))
+                     .sort((a,b) => a[0].localeCompare(b[0]));
   const waves = [...new Set(sel.map(c => ovrOf(c[0]).dl || c[5]).filter(Boolean))].sort();
-  if(!dated.length){
-    host.innerHTML = '<p class="hint">No selected jurisdiction has a dated deadline, so there are no waves to rearrange.</p>';
+  if(!dated.length && !undated.length){
+    host.innerHTML = '<p class="hint">Nothing is selected, so there is nothing to rearrange.</p>';
     return;
   }
   host.innerHTML = \`
@@ -1235,6 +1263,14 @@ function renderAdjust(sel){
         return \`
         <span style="font-size:13px">\${c[0]}\${(o.dl||o.start)?' <span class="tag tD" style="margin-left:4px">adjusted</span>':''}</span>
         <select data-ovr-dl="\${c[0]}" style="font-size:12.5px;padding:3px 6px;max-width:190px">\${opts}</select>
+        <input type="date" data-ovr-start="\${c[0]}" value="\${o.start||''}" style="font-size:12.5px;padding:3px 6px">\`;
+      }).join('')}
+      \${undated.length ? \`<span class="hint" style="grid-column:1/-1;margin:8px 0 0;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase">${tj("adjust.undated","No fixed deadline &middot; startable once contracting completes")}</span>\` : ''}
+      \${undated.map(c => {
+        const o = ovrOf(c[0]);
+        return \`
+        <span style="font-size:13px">\${c[0]}\${o.start?' <span class="tag tD" style="margin-left:4px">adjusted</span>':''}</span>
+        <select disabled style="font-size:12.5px;padding:3px 6px;max-width:190px;opacity:.55"><option>\${c[3]==='i' ? '${tj("adjust.inforce","in force \\u00b7 no further date")}' : '${tj("adjust.nodeadline","no deadline")}'}</option></select>
         <input type="date" data-ovr-start="\${c[0]}" value="\${o.start||''}" style="font-size:12.5px;padding:3px 6px">\`;
       }).join('')}
     </div>\`;
