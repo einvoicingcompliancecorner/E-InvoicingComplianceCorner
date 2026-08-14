@@ -1270,7 +1270,7 @@ function renderAdjust(sel){
         const o = ovrOf(c[0]);
         return \`
         <span style="font-size:13px">\${c[0]}\${o.start?' <span class="tag tD" style="margin-left:4px">adjusted</span>':''}</span>
-        <select disabled style="font-size:12.5px;padding:3px 6px;max-width:190px;opacity:.55"><option>\${c[3]==='i' ? '${tj("adjust.inforce","in force \\u00b7 no further date")}' : '${tj("adjust.nodeadline","no deadline")}'}</option></select>
+        <select disabled style="font-size:12.5px;padding:3px 6px;min-width:190px;opacity:.55"><option>\${c[3]==='i' ? '${tj("adjust.inforce","in force &middot; no further date")}' : '${tj("adjust.nodeadline","no deadline")}'}</option></select>
         <input type="date" data-ovr-start="\${c[0]}" value="\${o.start||''}" style="font-size:12.5px;padding:3px 6px">\`;
       }).join('')}
     </div>\`;

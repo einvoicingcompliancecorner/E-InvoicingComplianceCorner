@@ -7274,6 +7274,31 @@ Honoured pins read **PINNED**. Both labels sit where `ANY TIME` and
 (Portugal, also in Dan's question, was never excluded — it has an
 EU-driven 2030 deadline and appears. Checked rather than assumed.)
 
+### A count is not a proofread (migration 522)
+
+Dan, testing: Ecuador's wave column read `in force \u00b7 no further d`.
+Two defects at once — a literal escape that never became a middot, and a
+`<select>` clipping the text — which together looked like a rendering
+failure.
+
+The escape came from the script that generated 521 from the code's inline
+fallbacks: it emitted the JavaScript source escape rather than the
+character, so the code fallback and the D1 row carried the same wrong six
+characters and therefore agreed with each other perfectly.
+
+**Worth being precise about why nothing caught it.** 521's assertions
+check that these rows EXIST and how many there are. `roi-i18n.mjs` checks
+that every key exists and that D1 matches the fallback beside it. Every
+one of those was true throughout. Nothing asserted anything about a
+string's *content*, and two identical wrong values agree.
+
+Migration 522 fixes the row and adds the standing invariant that would
+have caught it — no `roi` translation may contain a literal `\u00`
+escape — verified by removing the fix and watching the replay fail. It is
+an `UPDATE`, not an `INSERT OR IGNORE`: 521 had already applied, so an
+insert would have declined in silence, which is the same shape that hid
+the missing keys for a deploy cycle.
+
 ### Verification
 
 `validate_replay()`: OK (502 files, only the documented pre-existing
