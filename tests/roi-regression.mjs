@@ -187,6 +187,41 @@ await page.waitForTimeout(600);
 t.check("a pin before contracting completes is clamped, and says so",
   (await bandLabels()).includes("CLAMPED"), await bandLabels());
 
+// ---- 11. editing in the panel neither moves the page nor drops focus ----
+// The panel sits near the bottom of a long page. showResults() used to
+// call scrollIntoView() on the top of the results unconditionally, so
+// every edit in a date field threw the reader back up to the Calculate
+// button; and renderAdjust() replaces the panel's DOM wholesale, so the
+// field being typed into stopped existing mid-edit. Either alone is
+// irritating. Together they made the panel unusable for the one thing it
+// is for, which is trying several dates in a row and watching the chart.
+await page.evaluate(() =>
+  document.querySelector('[data-ovr-start="Canada"]').scrollIntoView({ block: "center" }));
+await page.waitForTimeout(300);
+const yBefore = await page.evaluate(() => window.scrollY);
+await page.fill('[data-ovr-start="Canada"]', "2033-03-01");
+await page.dispatchEvent('[data-ovr-start="Canada"]', "change");
+await page.waitForTimeout(800);
+const yAfter = await page.evaluate(() => window.scrollY);
+t.check(`editing a pinned date leaves the viewport where it was (${yBefore} -> ${yAfter})`,
+  Math.abs(yAfter - yBefore) < 40, `${yBefore} -> ${yAfter}`);
+t.check("and focus returns to the field being edited",
+  (await page.evaluate(() => document.activeElement?.getAttribute("data-ovr-start"))) === "Canada",
+  await page.evaluate(() => document.activeElement?.tagName));
+
+// The opposite failure is just as real: make scrolling opt-in and forget
+// to opt the button in, and Calculate appears to do nothing on a page
+// where the results are off-screen.
+await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+await page.waitForTimeout(200);
+const yBottom = await page.evaluate(() => window.scrollY);
+await page.click("#run");
+await page.waitForTimeout(900);
+const yRun = await page.evaluate(() => window.scrollY);
+t.check(`but pressing Calculate still scrolls to the results (${yBottom} -> ${yRun})`,
+  yRun < yBottom - 40, `${yBottom} -> ${yRun}`);
+
+await page.evaluate(() => { document.getElementById("adjust").open = true; });
 await page.click("#adjustReset"); await page.waitForTimeout(600);
 t.check("reset clears discretionary pins too",
   !(await bandLabels()).some((l) => /PINNED|CLAMPED/.test(l)), await bandLabels());

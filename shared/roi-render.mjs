@@ -919,6 +919,9 @@ const NOW = new Date();
 // deliberately serialisable so persisting it later is a storage
 // decision rather than a rewrite.
 const OVR = {};                       // name -> {dl?: 'YYYY-MM-DD', start?: 'YYYY-MM-DD'}
+// renderAdjust() replaces the panel's DOM wholesale, which drops focus.
+// Without this you have to re-click the field after every single edit.
+let ovrRefocus = null;
 const ovrOf = n => OVR[n] || {};
 const anyOvr = () => Object.values(OVR).some(o => o.dl || o.start);
 
@@ -1259,7 +1262,15 @@ function renderAdjust(sel){
       \${dated.map(c => {
         const o = ovrOf(c[0]);
         const cur = o.dl || c[5];
-        const opts = waves.map(w => \`<option value="\${w}"\${w===cur?' selected':''}>\${w}\${w===c[5]?' \\u00b7 computed':''}</option>\`).join('');
+        // The marker on one option says WHY that date is this country's
+        // default, and it had better name the right source. It read
+        // "computed", which was wrong twice over: nothing here is derived,
+        // and for an EU member with no national B2B date the date is not
+        // the country's own at all — it is the ViDA 2030 row, which is
+        // exactly the distinction a reader adjusting a plan needs.
+        const src = c[8] ? '${tj("adjust.eudeadline", "EU-wide deadline")}'
+                         : '${tj("adjust.owndeadline", "own deadline")}';
+        const opts = waves.map(w => \`<option value="\${w}"\${w===cur?' selected':''}>\${w}\${w===c[5]?' \\u00b7 '+src:''}</option>\`).join('');
         return \`
         <span style="font-size:13px">\${c[0]}\${(o.dl||o.start)?' <span class="tag tD" style="margin-left:4px">adjusted</span>':''}</span>
         <select data-ovr-dl="\${c[0]}" style="font-size:12.5px;padding:3px 6px;max-width:190px">\${opts}</select>
@@ -1274,9 +1285,15 @@ function renderAdjust(sel){
         <input type="date" data-ovr-start="\${c[0]}" value="\${o.start||''}" style="font-size:12.5px;padding:3px 6px">\`;
       }).join('')}
     </div>\`;
+  if(ovrRefocus){
+    const back = host.querySelector(ovrRefocus);
+    if(back) back.focus({preventScroll: true});
+    ovrRefocus = null;
+  }
   host.querySelectorAll('[data-ovr-dl]').forEach(el => el.onchange = () => {
     const n = el.getAttribute('data-ovr-dl');
     OVR[n] = {...ovrOf(n), dl: el.value};
+    ovrRefocus = '[data-ovr-dl="' + n + '"]';
     showResults();
   });
   host.querySelectorAll('[data-ovr-start]').forEach(el => el.onchange = () => {
@@ -1284,6 +1301,7 @@ function renderAdjust(sel){
     const v = el.value;
     OVR[n] = {...ovrOf(n)};
     if(v) OVR[n].start = v; else delete OVR[n].start;
+    ovrRefocus = '[data-ovr-start="' + n + '"]';
     showResults();
   });
 }
@@ -1297,7 +1315,12 @@ document.getElementById('adjust').addEventListener('toggle', function(){
     this.open ? 'hide ▴' : 'show ▾';
 });
 
-function showResults(){
+// The scroll argument is opt-in, and only the two deliberate "show me
+// the results" actions pass it. Everything else here is someone EDITING
+// while reading — a currency switch, a scope change, a pinned date — and
+// yanking the viewport back to the top of the results on every keystroke
+// makes the adjust panel unusable. Dan found this within minutes.
+function showResults(scroll){
   // The panel's own controls call this, and build() re-renders the panel
   // from scratch — so remember whether it was open, or changing a wave
   // would slam the drawer shut on the person using it.
@@ -1307,10 +1330,10 @@ function showResults(){
   if(adj && wasOpen) adj.open = true;
   document.getElementById('results').classList.remove('hidden');
   document.getElementById('print').classList.remove('hidden');
-  document.getElementById('results').scrollIntoView({behavior:'smooth'});
+  if(scroll) document.getElementById('results').scrollIntoView({behavior:'smooth'});
 }
 document.getElementById('run').onclick = () => {
-  if(unlocked){ showResults(); return; }
+  if(unlocked){ showResults(true); return; }
   document.getElementById('gate').classList.remove('hidden');
   document.getElementById('gate').scrollIntoView({behavior:'smooth', block:'center'});
 };
@@ -1318,8 +1341,8 @@ document.getElementById('signin').onclick = () => {
   unlocked = true;
   setSubsAvailable(true);
   document.getElementById('gate').classList.add('hidden');
-  document.getElementById('run').textContent = 'Recalculate';
-  showResults();
+  document.getElementById('run').textContent = '${t("btn.recalculate", "Recalculate")}';
+  showResults(true);
 };
 document.getElementById('print').onclick = () => window.print();
 const syncScope = () => { document.getElementById('chgRow').style.display = scopeVal()==='both' ? '' : 'none'; };

@@ -9638,6 +9638,65 @@ Migration 521 carries the four new strings. That is the second collection
 on 518's i18n wiring: a new feature's copy arrives as rows rather than as
 edits scattered through a 1,300-line module.
 
+## 14 Aug 2026 (cont'd) — Two things the adjust panel got wrong in Dan's hands (migration 523)
+
+Both found within minutes of the panel being deployed, and neither by a
+test. Both are the same species: the feature worked, and using it was
+unpleasant or misleading.
+
+### The page jumped on every edit
+
+`showResults()` ended with an unconditional `scrollIntoView()` on the top
+of the results. That is right for the two deliberate "show me the
+results" actions — pressing **Calculate business case**, and signing in —
+and wrong for all seven other callers, every one of which is somebody
+*editing while reading*: a currency switch, a scope change, a pinned
+date. Dan: picking a date "auto refocusses back to the top of the
+section", and then, "its a bit annoying for the user."
+
+Scrolling is now an opt-in argument that only `#run` and `#signin` pass.
+
+Underneath it was a second, quieter fault: `renderAdjust()` replaces the
+panel's DOM wholesale, so the field being typed into stopped existing
+mid-edit and focus fell to `<body>`. Each handler now records which
+control it came from and `renderAdjust()` restores focus to it with
+`preventScroll`. Fixing only the scroll would have left a panel that
+stays put and silently swallows the keyboard.
+
+The two new checks were confirmed by reverting each fix and watching them
+fail — the viewport moved 3039 → 2093, and `document.activeElement` came
+back `BODY`. A third check guards the opposite mistake: make scrolling
+opt-in, forget to opt the button in, and Calculate appears to do nothing
+on a page where the results are off-screen.
+
+### "· computed" was not computed (migration 523)
+
+Dan: *"what is meant by Wave (go-live) date reading '- computed'
+afterwards? Is this a mandated date computed, or some other milestone"*
+
+The label marked which option in the wave dropdown is that country's
+default. Nothing about it is computed — it is the earliest future B2B
+mandate date read straight out of `milestones`. Worse, the one word
+covered two materially different cases: a **national** deadline from the
+country's own row, and an **EU-wide** deadline for a member state with no
+national B2B date, where the date comes from the ViDA row on the European
+Union entry (`getRoiCountries` index 8, `euDriven`).
+
+That second case is exactly what a reader rearranging a plan needs to
+see. Austria's 2030 is not Austria's decision and will not move on
+Austrian news; France's 2026 is and will. The options now read
+`2026-09-01 · own deadline` and `2030-07-01 · EU-wide deadline`,
+verified against both countries in a real render.
+
+Migration 523 carries the two strings and supersedes 521's two count
+assertions — a point-in-time assertion that stops holding later is
+reported as SUPERSEDED, not as a failure, which is the mechanism working
+as designed. 71 declared, 64 durable, 7 superseded.
+
+`btn.recalculate` was a D1 key nothing read, because the sign-in handler
+hardcoded `'Recalculate'` beside it. It is wired up now, so
+`roi-i18n.mjs`'s unused-key list drops from five to four.
+
 ## Open items / next steps
 
 ### Real open work
