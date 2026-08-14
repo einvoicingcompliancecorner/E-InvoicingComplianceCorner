@@ -9516,6 +9516,81 @@ exact failure this mechanism exists to prevent, and it is just as easy to
 write in the check as in the migration** — noted in the file, with the
 `m.` aliases that fix it.
 
+## 14 Aug 2026 — Sanity guards on the planner's output, and a wave-plan adjust panel (migration 521)
+
+Two things in one change, because they turned out to need each other.
+
+### The guards (design review recommendation 1)
+
+The planner now refuses to present an obviously wrong number quietly.
+Four checks run on every calculation and render above the summary:
+
+1. **Zero integrations against a mandated selection** — what the nine
+   mis-scored countries looked like in August: a business case that
+   halved its own cost and said nothing.
+2. **Payback under one month** — nothing in this field pays back that
+   fast; if it does, an input is out by an order of magnitude.
+3. **A jurisdiction whose real obligation is earlier than the date the
+   plan plans for** — the one that needed migration 520.
+4. **A pinned start that finishes after the deadline** — new with the
+   panel below, and deliberately shown rather than hidden.
+
+### What guard 3 found, and a correction to yesterday's note
+
+Yesterday's entry said Denmark, Portugal and Brazil had "no on-board B2B
+deadline" and were therefore modelled as deadline-free. That was right
+about the raw milestone query and **wrong about the planner**, which
+applies the surviving EU ViDA row to member states. The real picture is
+worse:
+
+- **Denmark** — obligation 1 Jan 2027, planner plans for **1 Jul 2030**
+- **Portugal** — obligation 1 Jan 2028, planner plans for **1 Jul 2030**
+- **Brazil** — obligation 1 Jan 2027, planned as **discretionary**
+- **Poland** — obligation 31 Dec 2026 vs 1 Jan 2027 planned (immaterial)
+
+So two of them are not missing a deadline; they are being shown three
+years of runway they do not have. The guard states both dates and names
+the countries, and the behaviour underneath is deliberately unchanged —
+what the planner *schedules* is still a product decision, not a side
+effect of a warning being added.
+
+`getRoiCountries()` gained a tenth element for this: the earliest live
+off-board obligation, read for warning only and never fed to the wave
+plan.
+
+### The adjust panel (Dan's request)
+
+A collapsed panel under the chart lets a subscriber move a country to a
+different wave, or pin its own start date, and the plan redraws. Session
+only, at Dan's choice — nothing is stored, nothing is saved per
+subscriber, and reloading restores the back-planned schedule. The
+override object is a serialisable shape, so persisting it later is a
+storage decision rather than a rewrite.
+
+Two design points worth keeping. **A wave override rewrites the
+country's effective deadline**, because that is all a wave is here: the
+set of countries sharing a date. It copies the row rather than mutating
+it, so the cost model, the table and the summary do not move when
+somebody rearranges a chart. And **a pinned start leaves `golive`
+alone**, so a track pushed past its deadline visibly runs past it and
+guard 4 says so. Hiding that would defeat the point of allowing the
+move.
+
+### Verification
+
+`npm test` is seven suites, and the ROI regression suite went from 15
+checks to 22: the guard fires on the three-country case and names both
+dates; moving a country between waves redraws the chart; the panel stays
+open across its own rebuild; the moved country is marked; a late pin is
+called out; and reset restores the computed plan exactly. The contrast
+audit gained a fourth state — the adjust panel open with guards showing,
+which is new UI inside a `<details>` that is closed by default, three
+separate ways for an audit to miss it. 0 AA failures.
+
+Migration 521 carries the four new strings. That is the second collection
+on 518's i18n wiring: a new feature's copy arrives as rows rather than as
+edits scattered through a 1,300-line module.
+
 ## Open items / next steps
 
 ### Real open work

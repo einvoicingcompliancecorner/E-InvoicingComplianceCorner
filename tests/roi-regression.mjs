@@ -94,5 +94,57 @@ const markers = await page.locator(".hlp").count();
 t.check("no thin or empty tooltips", thin === 0, thin);
 t.check(`tooltip markers present (${markers} >= 28)`, markers >= 28);
 
+// ---- 8. the sanity guards fire on the case that needed migration 520 ----
+// Denmark, Portugal and Brazil each hold a dated live obligation the
+// arrivals board does not show. Before obligation_status existed this was
+// not expressible: an off-board row was indistinguishable from a
+// superseded one, so the planner scheduled Denmark for 2030 while it has
+// work due in 2027 and said nothing.
+await page.click("#selNone");
+await page.evaluate(() => {
+  [...document.querySelectorAll("#countryList label")].forEach((l) => {
+    if (/Denmark|Portugal|Brazil/.test(l.textContent)) l.querySelector("input").click();
+  });
+});
+await page.click("#run"); await page.waitForTimeout(500);
+const guards = await page.locator("#guards").innerText();
+t.check("the mistimed-obligation guard fires", /earlier than the date this plan plans for/.test(guards),
+  guards.slice(0, 120));
+t.check("it names the countries and both dates",
+  ["Denmark", "Portugal", "Brazil", "2027-01-01", "2028-01-01"].every((x) => guards.includes(x)),
+  guards.slice(0, 200));
+
+// ---- 9. the adjust panel actually rearranges the plan ----
+const waveText = () => page.evaluate(() =>
+  [...document.querySelectorAll("#gantt svg text")].map((n) => n.textContent).filter((x) => /w elapsed/.test(x)));
+await page.click("#selMandate"); await page.waitForTimeout(150);
+await page.click("#run"); await page.waitForTimeout(600);
+const before = await waveText();
+await page.click("#adjust summary"); await page.waitForTimeout(200);
+const who = await page.locator("[data-ovr-dl]").first().getAttribute("data-ovr-dl");
+const waves = await page.locator(`[data-ovr-dl="${who}"] option`).allTextContents();
+await page.selectOption(`[data-ovr-dl="${who}"]`, waves[waves.length - 1].split(" ")[0]);
+await page.waitForTimeout(600);
+const after = await waveText();
+t.check(`moving a country between waves redraws the chart (${before.length} -> ${after.length} waves)`,
+  JSON.stringify(before) !== JSON.stringify(after));
+t.check("the panel stays open across the redraw",
+  await page.locator("#adjust").evaluate((e) => e.open));
+t.check("the moved country is marked adjusted",
+  (await page.locator("#adjustRows .tag").count()) >= 1);
+
+// A pinned start that lands after the deadline must be shown, not hidden:
+// modelling an accepted late position is legitimate, silently drawing it
+// as on time is not.
+await page.fill(`[data-ovr-start="${who}"]`, "2031-06-01");
+await page.dispatchEvent(`[data-ovr-start="${who}"]`, "change");
+await page.waitForTimeout(600);
+t.check("a pinned start past the deadline is called out",
+  /pinned start date finishes after the deadline/i.test(await page.locator("#guards").innerText()));
+
+await page.click("#adjustReset"); await page.waitForTimeout(600);
+t.check("reset restores the computed plan exactly",
+  JSON.stringify(await waveText()) === JSON.stringify(before));
+
 await browser.close();
 process.exit(t.report() ? 0 : 1);
