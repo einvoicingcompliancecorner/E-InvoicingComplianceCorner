@@ -98,10 +98,12 @@ INSERT OR IGNORE INTO translations (namespace, key, lang, value) VALUES
 -- maintained by hand deliberately: adding a key here should be a
 -- decision, taken at the moment the renderer starts using it.
 --
--- (`ap_invoices_per_fte` added 14 Aug 2026 by migration 526, which is
--- when the renderer started citing it. Assertion-comment edit only — no
--- executable change, so the replay is byte-identical and
--- --refresh-checksums re-records the file. This is the friction the
--- hand-maintained list was designed to create, working as intended.)
+-- (`ap_invoices_per_fte` added 14 Aug 2026 by migration 526, and
+-- `capture_share_of_ap` by 527, each at the point the renderer started
+-- citing it. Assertion-comment edits only — no executable change, so the
+-- replay is byte-identical and --refresh-checksums re-records the file.
+-- Both times the invariant caught the omission on the first replay,
+-- which is the friction the hand-maintained list was designed to create,
+-- working as intended rather than being worked around.)
 --
--- ASSERT ALWAYS: SELECT count(*) FROM roi_benchmarks WHERE active = 1 AND evidence_grade = 'A' AND key NOT IN ('ap_cost_per_invoice','ar_cost_per_invoice','cycle_time_days','exception_rate','supplier_inquiry_time','dctr_mechanism','ap_invoices_per_fte') = 0
+-- ASSERT ALWAYS: SELECT count(*) FROM roi_benchmarks WHERE active = 1 AND evidence_grade = 'A' AND key NOT IN ('ap_cost_per_invoice','ar_cost_per_invoice','cycle_time_days','exception_rate','supplier_inquiry_time','dctr_mechanism','ap_invoices_per_fte','capture_share_of_ap') = 0

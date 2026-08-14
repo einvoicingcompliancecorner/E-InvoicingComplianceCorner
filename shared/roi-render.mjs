@@ -425,7 +425,14 @@ export function renderRoiPage({ countries, benchmarks = [], phases = [], strings
     savePct: { v: val("cost_reduction_pct", 60),    h: hintOf("cost_reduction_pct") },
     errRate: { v: val("manual_error_rate", 10),     h: hintOf("manual_error_rate") },
     errCost: { v: val("rework_per_error", 45),      h: hintOf("rework_per_error") },
-    fteCost: { v: val("loaded_fte_cost", 62000),    h: hintOf("loaded_fte_cost") },
+    // TWO RATES, BECAUSE THERE ARE TWO JOBS (Dan, 14 Aug 2026). One field
+    // was pricing both a tax professional reconciling clearance regimes
+    // and a mailroom clerk keying invoices, which differ by a factor of
+    // two and offshore completely differently. Dan spotted it from the
+    // other end: "$62000 seems high", which was true of the data-entry
+    // role and wrong by half for the tax role the field actually drove.
+    fteCost:  { v: val("loaded_fte_cost", 116800),       h: hintOf("loaded_fte_cost") },
+    fteEntry: { v: val("loaded_fte_cost_entry", 54000),  h: hintOf("loaded_fte_cost_entry") },
     cImplS:  { v: val("cost_per_integration_simple", 10000),  h: hintOf("cost_per_integration_simple") },
     cImplC:  { v: val("cost_per_integration_complex", 20000), h: hintOf("cost_per_integration_complex") },
     // cPlat is DERIVED, not a flat placeholder. Until 14 Aug 2026 it was a
@@ -547,6 +554,7 @@ export function renderRoiPage({ countries, benchmarks = [], phases = [], strings
     // survived checking. Without it the indirect layer had no way to know
     // how big the business was.
     apqc: cite("ap_invoices_per_fte"),
+    atoCapture: cite("capture_share_of_ap"),
     durations: { t: "D", s: "Phase durations are practitioner estimates for a country rollout once a platform is in place, held in D1 and editable above. No analyst firm publishes credible per-country e-invoicing implementation durations — this was checked." },
     yours: { t: "D", s: "Your assumption. Nothing is claimed for this figure — it is exposed so the model can be argued with rather than believed." },
     site: { t: "A", s: "Live mandate data from this site's own tracker: status, model and dated deadlines per jurisdiction, each traceable to the cited legal instrument on that country's deep dive." },
@@ -624,8 +632,9 @@ export function renderRoiPage({ countries, benchmarks = [], phases = [], strings
     </div>
     <div class="grid g4" style="margin-top:12px">
       <div><label for="errRate">${t("input.errRate", "Manual error rate %")} <span class="tag tB">B</span>${hlp("errRate","What this drives")}</label><input type="number" id="errRate" value="${dv('errRate')}" min="0" max="100" step="0.5"><p class="hint" id="h-errRate"></p></div>
-      <div><label for="fteCost">${t("input.fteCost", "Loaded cost / finance FTE")} <span class="tag tD">D</span>${hlp("fteCost","What this drives")}</label><input type="number" id="fteCost" value="${dv('fteCost')}" min="0" step="1000"><p class="hint" id="h-fteCost"></p></div>
-      <div></div><div></div>
+      <div><label for="fteCost">${t("input.fteCost", "Loaded cost / tax or finance FTE")} <span class="tag tB">B</span>${hlp("fteCost","What this drives")}</label><input type="number" id="fteCost" value="${dv('fteCost')}" min="0" step="1000"><p class="hint" id="h-fteCost"></p></div>
+      <div><label for="fteEntry">${t("input.fteEntry", "Loaded cost / data-entry FTE")} <span class="tag tB">B</span>${hlp("fteEntry","What this drives")}</label><input type="number" id="fteEntry" value="${dv('fteEntry')}" min="0" step="1000"><p class="hint" id="h-fteEntry"></p></div>
+      <div></div>
     </div>
 
     <p style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:var(--soon);margin:20px 0 8px">${t("assumptions.h.invest", "Investment &mdash; costs")} <span class="tag tD">D</span></p>
@@ -747,7 +756,7 @@ let cur='USD';
 // toggle a dropdown destroys confidence in everything else on the page.
 const FX = __ROI_FX__;
 const rateOf = c => (FX[c] && FX[c].r) || 1;
-const CUR_INPUTS = ['costNow','costAR','errCost','fteCost','cImplS','cImplC','cPlat','cRun'];
+const CUR_INPUTS = ['costNow','costAR','errCost','fteCost','fteEntry','cImplS','cImplC','cPlat','cRun'];
 // Per-invoice figures need pennies; five-figure ones do not, and showing
 // 45,888.53 for a placeholder implies a precision nobody has.
 const roundCur = v => v >= 1000 ? Math.round(v) : Math.round(v*100)/100;
@@ -1470,6 +1479,7 @@ function build(){
   const savePct = (+document.getElementById('savePct').value || 0)/100;
   const errCost = +document.getElementById('errCost').value || 0;
   const fteCost = +document.getElementById('fteCost').value || 0;
+  const fteEntry = +document.getElementById('fteEntry').value || 0;
   const sel = chosen();
 
   // --- Layer 1
@@ -1550,6 +1560,29 @@ function build(){
   const l2 = taxFteSaved * fteCost;
   const taxCapBinds = ctcCount > 0 && shareRaw > TAXM.cap;
 
+  // --- the same AP saving, expressed as data-entry headcount.
+  //
+  // Dan asked for two rates under the assumptions panel: one for the
+  // data-entry and mailroom role e-invoicing actually removes, one for
+  // the tax or finance professional whose reporting effort falls. This
+  // is the first of the two.
+  //
+  // IT IS DELIBERATELY NOT A BENEFIT ROW. The ATO / Deloitte source this
+  // page already cites states that most of the paper and PDF invoice cost
+  // "is attributable to the manual work required to enter the invoice
+  // data into your systems" — so the per-invoice benchmark IS the labour,
+  // and adding an FTE-priced saving beside the processing-cost row would
+  // count the same money twice. It is the first question a finance
+  // committee asks, and the answer would have been yes.
+  //
+  // What it does instead is decompose a number already in the model into
+  // people, which is what anyone actually acts on: nobody approves a
+  // programme on "$590,400 of processing cost", they approve it on "two
+  // of your three-and-a-half capture heads".
+  const captureFte   = apFteImplied * TAXM.captureShare;
+  const captureSaved = captureFte * savePct;
+  const captureValue = captureSaved * fteEntry;
+
   const scope = scopeVal(), banked = scope === 'both';
   document.getElementById('summary').innerHTML = \`
     <div class="grid g4">
@@ -1599,6 +1632,7 @@ function build(){
     <tr style="border-top:2px solid var(--line)"><td colspan="2"><strong>Direct total &mdash; \${banked?'banked':'unlocked, not banked'}</strong></td><td class="num"><strong style="color:\${banked?'#7fd0a8':'#8d9bb5'}">\${fmt(l1)}</strong></td></tr>
     </tbody></table>
     <div class="note warn" style="margin-top:12px">${tj("res.scopeCaveat","<strong>Important scope caveat.</strong> These savings come from automating the accounts-payable <em>process</em> &mdash; not from the compliance integration on its own. An e-invoicing mandate integration is largely an IT workstream: it makes structured invoice data available and removes the paper, which is what <em>enables</em> the saving, but the saving is only realised if you also change how AP actually works. If your programme is scoped as compliance-only, treat the direct savings as unlocked rather than banked, and the indirect savings as what compliance itself delivers.")}</div>
+    <div class="note warn" style="margin-top:12px"><strong>${tj("res.headcount.h","What this means in headcount.")}</strong> Your \${volAP.toLocaleString()} AP invoices imply <strong>\${apFteImplied.toFixed(1)} AP FTE</strong> \${ev('apqc','APQC median, 12,000 per FTE')}, of which \${Math.round(TAXM.captureShare*100)}% is capture and validation \${ev('atoCapture','ATO / Deloitte task times')} &mdash; about <strong>\${captureFte.toFixed(1)} FTE keying invoices today</strong>. At \${Math.round(savePct*100)}% reduction that releases <strong>\${captureSaved.toFixed(1)} FTE</strong>, worth \${fmt(captureValue)} at your data-entry rate.<br><br>${tj("res.headcount.same","<strong>This is the same money as the processing-cost row above, expressed as people &mdash; not an additional saving.</strong> The per-invoice benchmark is labour-dominated, so counting both would count it twice.")}\${saving > 0 ? \`<br><br>${tj("res.headcount.gap","Worth noticing how much of the top line it accounts for:")} \${fmt(captureValue)} of \${fmt(saving)}, or \${Math.round(captureValue/saving*100)}%. ${tj("res.headcount.gap2","The rest is the review-and-approve half of the process, technology and overhead &mdash; all inside the per-invoice benchmark, none of it a data-entry head. And released capacity is only cash if the post goes or is not backfilled, which is a decision rather than a benefit.")}\` : ''}</div>
     <div class="note" style="margin-top:10px">${tj("res.unmonetised", "Two benefits above are left unmonetised on purpose, and for <em>different</em> reasons. Paper, print and postage has no benchmark worth defending &mdash; your own spend is the only honest input. Cycle time and supplier queries has a good one, and still cannot be monetised: nobody has measured how much of that gap e-invoicing itself causes, and assuming all of it would undermine every other number on this page.")}</div>\`;
 
   document.getElementById('indirect').innerHTML = \`
@@ -1695,6 +1729,17 @@ function build(){
     warn.push(\`<strong>The tax-effort saving is capped and the cap is binding.</strong> \${ctcCount} clearance or reporting jurisdictions would imply \${(shareRaw*100).toFixed(0)}% of your AP effort; the model will not credit more than \${(TAXM.cap*100).toFixed(0)}%, because the magnitude is our assumption rather than a benchmark and an uncapped one would run away. Adding further jurisdictions will not move the indirect figure &mdash; though it will keep adding cost, which is the honest asymmetry.\`);
   }
 
+  // 6. The capture labour, priced from headcount, exceeds the whole
+  //    processing saving it is supposed to be a component of. That is a
+  //    contradiction rather than just a large number: you cannot release
+  //    more capture wages than the total reduction in processing cost.
+  //    This is the reconciliation the two-route design exists to make
+  //    possible — a top-down and a bottom-up estimate of the same money
+  //    that disagree in the wrong direction mean one input is wrong.
+  if(saving > 0 && captureValue > saving){
+    warn.push(\`<strong>The capture headcount is worth more than the whole processing saving.</strong> \${fmt(captureValue)} of released data-entry cost against \${fmt(saving)} of total AP processing reduction. These are two routes to the same money, so the first cannot exceed the second — check the data-entry rate and the AP cost per invoice, because one of them is out.\`);
+  }
+
   document.getElementById('guards').innerHTML = warn.length
     ? warn.map(w => \`<div class="note warn" style="margin:0 0 12px">\${w}</div>\`).join('')
     : '';
@@ -1717,7 +1762,11 @@ function build(){
     .replace("__ROI_TAXMODEL__", JSON.stringify({
       invPerFte: val("ap_invoices_per_fte", 12000),
       perJur:    val("tax_effort_per_jurisdiction", 0.018),
-      cap:       val("tax_effort_cap", 0.36),
+      cap:       val("tax_effort_cap", 0.20),
+      // ATO / Deloitte purchase-invoice task times: receipt 7 min +
+      // validation 2 min of a 21-minute process. The capture-and-key
+      // portion, which is the part e-invoicing actually removes.
+      captureShare: val("capture_share_of_ap", 0.4286),
     }))
     .replace("__ROI_PLATFEE__", JSON.stringify({
       fee: val("platform_fee_per_invoice", 0.4),   // USD, per invoice, either direction
