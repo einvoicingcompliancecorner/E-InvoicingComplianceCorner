@@ -347,16 +347,23 @@ await page.click("#selEU"); await page.waitForTimeout(200);
 await page.fill("#volAP", "100000"); await page.fill("#volAR", "50000");
 await page.click("#run"); await page.waitForTimeout(700);
 const ind100k = await indValue();
-t.check("continuity: the default volume returns exactly the pre-migration figure",
-  ind100k === 186000, ind100k);
-t.check("still 3.00 FTE, so 0.018 and 0.36 really are the old 0.15 and 3",
-  /3\.00 FTE/.test(await indirect().innerText()), await indirect().innerText());
+// 8.333 implied FTE x 0.20 cap x $116,800 = 194,667. Migration 526
+// preserved the old $186,000 exactly; 527 moved it deliberately, by
+// correcting the rate UP and the ceiling DOWN in the same migration
+// because they multiply. The two corrections nearly cancel, which is
+// what makes the pair defensible rather than convenient.
+t.check("the default volume returns the calibrated figure",
+  ind100k === 194667, ind100k);
+t.check("1.67 FTE at the tax rate, not the data-entry rate",
+  /1\.67 FTE × \$116,800/.test(await indirect().innerText()), await indirect().innerText());
 
 await page.fill("#volAP", "1000000"); await page.fill("#volAR", "500000");
 await page.click("#run"); await page.waitForTimeout(800);
 const ind1m = await indValue();
+// Tolerance of a few dollars: both figures are rounded for display, so
+// exact equality would be testing the rounding rather than the scaling.
 t.check(`ten times the volume, ten times the saving (${ind100k} -> ${ind1m})`,
-  ind1m === ind100k * 10, `${ind100k} -> ${ind1m}`);
+  Math.abs(ind1m - ind100k * 10) <= 10, `${ind100k} -> ${ind1m}`);
 t.check("and the row shows the APQC-implied headcount it scaled from",
   /83\.3 AP FTE/.test(await indirect().innerText()), await indirect().innerText());
 
@@ -375,6 +382,49 @@ await page.evaluate(() => {
 await page.click("#run"); await page.waitForTimeout(700);
 t.check("and stays quiet when the cap is not binding",
   !/cap is binding/.test(await page.locator("#guards").innerText()));
+
+// ---- 15. two FTE rates, and the decomposition that must not double count ----
+// One field used to price both a tax professional reconciling clearance
+// regimes and a mailroom clerk keying invoices — roles that differ by
+// roughly double and offshore completely differently. The data-entry rate
+// exists to restate a saving already counted, never to add one, because
+// the ATO source says the per-invoice benchmark IS the labour.
+await page.click("#selEU"); await page.waitForTimeout(200);
+await page.fill("#volAP", "100000"); await page.fill("#volAR", "50000");
+await page.click("#run"); await page.waitForTimeout(700);
+
+t.check("both rates are in the assumptions panel, and differ",
+  (await page.inputValue("#fteCost")) === "116800"
+  && (await page.inputValue("#fteEntry")) === "54000",
+  `${await page.inputValue("#fteCost")} / ${await page.inputValue("#fteEntry")}`);
+
+const directTotal = Number((await page.locator("#direct tbody tr").first()
+  .locator("td").last().innerText()).replace(/[^\d]/g, ""));
+const head = await page.locator("#direct .note.warn").last().innerText();
+t.check("the headcount block states the capture FTE it derived",
+  /3\.6 FTE keying invoices today/.test(head), head.slice(0, 200));
+t.check("and the FTE it releases at the stated reduction",
+  /releases 2\.1 FTE/.test(head), head.slice(0, 260));
+
+// The load-bearing sentence. Without it this is a double count, and it is
+// the first thing a finance committee would challenge.
+t.check("it says in terms that this is not an additional saving",
+  /not an additional saving/i.test(head));
+t.check("and reconciles itself against the processing row it decomposes",
+  head.includes(String(directTotal.toLocaleString("en-US"))), head.slice(-260));
+
+// Guard 6: the bottom-up labour cannot exceed the top-down saving it is a
+// component of. Forced by pushing the data-entry rate far past market.
+await page.evaluate(() => { document.getElementById("assump").open = true; });
+await page.fill("#fteEntry", "900000");
+await page.click("#run"); await page.waitForTimeout(700);
+t.check("a data-entry rate that outruns the whole saving is called out",
+  /capture headcount is worth more than the whole processing saving/i
+    .test(await page.locator("#guards").innerText()));
+await page.click("#resetDefaults"); await page.waitForTimeout(400);
+t.check("and reset restores both rates",
+  (await page.inputValue("#fteEntry")) === "54000"
+  && (await page.inputValue("#fteCost")) === "116800");
 
 await browser.close();
 process.exit(t.report() ? 0 : 1);

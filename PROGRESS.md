@@ -9972,6 +9972,112 @@ quiet when it isn't. Replay: 91 assertions declared, 82 durable, 9
 superseded.
 
 
+## 14 Aug 2026 (cont'd) — Two FTE rates, because there were always two jobs (migration 527)
+
+Dan: *"I'd like to have two FTE rates displayed under the assumptions and
+benchmarks then. One loaded FTE rate for data entry, and a second loaded
+FTE rate for an accounting clerk / tax professional."*
+
+It started with him saying $62,000 looked high. It did — for the role he
+had in mind, the mailroom and data-entry work e-invoicing actually
+removes. But the field drove `l2`, which models reduced **tax reporting
+and audit-prep** effort: a qualified tax person, for whom $62,000 is
+wrong by nearly half in the other direction. **One field was pricing two
+roles that differ by roughly double and offshore completely
+differently** — nobody moves their tax function to Manila, plenty of
+people move capture there.
+
+I got it wrong first too, and Dan corrected me: I had priced bookkeeping
+clerks, and the displaced role is more junior. Data Entry Keyers is the
+right occupation.
+
+### The wage arithmetic, from primary government statistics
+
+BLS Occupational Employment and Wage Statistics: Data Entry Keyers
+(43-9021) median $37,790 (May 2023); accountants and auditors $81,680
+(May 2024). BLS Employer Costs for Employee Compensation (March 2026):
+private-industry wages are 69.9% of total compensation, so the employer's
+cost is wages / 0.699 = **×1.43**.
+
+    data entry     37,790 × 1.43 = 54,040  -> 54,000
+    tax / finance  81,680 × 1.43 = 116,802 -> 116,800
+
+Both graded **B**, not A. Every input is BLS primary but the
+multiplication is ours — the same reasoning that grades
+`ar_cost_per_invoice` at B because the AR split is our derivation rather
+than the ATO's published number. Consistency beats the flattering grade.
+
+### The cap moved in the same migration, and that was the point
+
+0.36 → 0.20. The rate and the ceiling are **multiplied together**, so
+correcting one without the other compounds the error rather than fixing
+it. Raising the rate alone would have taken the EU preset from $186,000
+to $350,400 and payback from 71 months to 26 — nearly doubling the
+business case on the back of a correction to one input while the weaker
+assumption beside it sat untouched.
+
+| | rate | cap | FTE | indirect | payback |
+|---|---|---|---|---|---|
+| before | $62,000 | 36% | 3.00 | $186,000 | 71mo |
+| rate only | $116,800 | 36% | 3.00 | $350,400 | 26mo |
+| **both** | **$116,800** | **20%** | **1.67** | **$194,667** | **65mo** |
+
+The two corrections nearly cancel. The headline barely moves and both
+components are now individually defensible, which is usually the sign
+you have found the right pair rather than a convenient one. 36% meant
+most of a tax function removed by e-invoicing alone; 20% is 1.67 FTE
+across 25 clearance jurisdictions, about three weeks a year each.
+
+### "Savings calculated on invoice entry" — as a decomposition, not a row
+
+The data-entry rate deliberately adds **no benefit row**. The ATO /
+Deloitte source this page already cites states that most of the paper and
+PDF invoice cost "is attributable to the manual work required to enter
+the invoice data into your systems" — the per-invoice benchmark *is* the
+labour, so an FTE-priced saving beside the processing-cost row would
+count the same money twice. "Isn't that the same as your processing
+saving?" is the first question a finance committee asks, and the answer
+would have been yes.
+
+Instead it decomposes a number already in the model into people, which is
+what anyone actually acts on. Nobody approves a programme on "$590,400 of
+processing cost"; they approve it on "two of your three-and-a-half
+capture heads". The new block under the direct table reads: 8.3 AP FTE
+implied, 43% capture and validation (ATO task times: receipt 7 + validation 2
+of 21 minutes), 3.6 FTE keying today, 2.1 released at 60%, worth $115,722
+— **and states in terms that this is the same money, not additional**.
+
+It also reports what share of the top line that accounts for: $115,722 of
+$590,400, or 20%. Worth knowing on its own. The rest is review and
+approval, technology and overhead — all inside the per-invoice benchmark,
+none of it a data-entry head.
+
+Guard 6 added: if the bottom-up capture labour ever exceeds the top-down
+processing saving it is a component of, that is a contradiction rather
+than a big number, and the page says so.
+
+### The invariant caught me twice
+
+525's grade-A allowlist rejected `ap_invoices_per_fte` (526) and then
+`capture_share_of_ap` (527), each on the first replay. Both were
+assertion-comment edits with no executable change. That friction is
+exactly what the hand-maintained list is for, and it fired on its author
+both times.
+
+`roi-i18n.mjs` caught a third: I updated the benchmark's `label` but not
+the `input.fteCost` translation key, so the field would still have read
+"finance FTE" beside a fallback that said "tax or finance FTE".
+
+### Verification
+
+`npm test`: 8 suites, all passing. ROI regression 57 checks (was 50).
+Seven new: both rates present and different; the headcount block states
+its capture FTE and released FTE; it says in terms that this is not
+additional; it reconciles against the processing row it decomposes; guard
+6 fires when the data-entry rate outruns the whole saving; reset restores
+both rates. Replay: 103 assertions declared, 90 durable, 13 superseded.
+
+
 ## Open items / next steps
 
 ### Real open work
