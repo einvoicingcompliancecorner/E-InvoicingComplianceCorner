@@ -276,7 +276,23 @@ python3 test_assertions.py                   # proves the mechanism itself still
      if it's real and binding but not itself an e-invoicing-mandate-
      scope fact (a software/format certification requirement like
      Spain's VeriFactu, a voluntary/pilot program, a pure tax-reporting
-     field addition). **This is not optional and has no safe default
+     field addition). **`obligation_status`** (migration 520) —
+     `'live'` for anything with `on_tracker = 1`, always. The scaffolder
+     emits it, and 520's standing invariant fails the replay if an
+     on-board row says anything else: putting a milestone on the
+     arrivals board is a claim that a reader should act on it, and that
+     claim belongs in the data rather than implied by a presentation
+     flag. Off-board rows may default to `'unreviewed'`, but **anything
+     dated in the future must be classified** — `live`, `superseded`,
+     `restatement` (with `restates_id`) or `context` — or the replay
+     fails. The vocabulary and the reasoning behind each value are in
+     520's header.
+
+     Why this exists: `on_tracker` only ever meant "show this on the
+     arrivals board", and four consumers were reading that editorial
+     decision as a statement of fact. That is how a blanket readmission
+     of off-board rows once moved the UK's modelled deadline from April
+     2029 to November 2026. **This is not optional and has no safe default
      to leave unset** — the column defaults to `'b2b'` for schema
      reasons (most historical rows are exactly that), but a new
      milestone left at the default when it should be `'b2g_only'` or

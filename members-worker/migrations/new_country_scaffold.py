@@ -160,10 +160,18 @@ def gen_milestones_sql(spec):
         portals = esc(json.dumps(m.get("portals", []), ensure_ascii=False))
         conf = f"'{esc(m['confidence'])}'" if m.get("confidence") else "NULL"
         src = f"'{esc(m['source_url'])}'" if m.get("source_url") else "NULL"
+        # obligation_status is NOT left to the column default. A row on the
+        # board must be 'live' -- migration 520's standing invariant fails
+        # the replay otherwise, which is deliberate: putting a milestone on
+        # the arrivals board is a claim that a reader should act on it, and
+        # the claim should be in the data rather than implied by the flag.
+        # Off-board rows default to 'unreviewed' and want a human: see the
+        # vocabulary in 520's header.
+        oblig = "'live'" if m.get("on_tracker") else "'unreviewed'"
         lines.append(
-            f"INSERT OR IGNORE INTO milestones (id, country_id, date, anchor, source_url, on_tracker, portals, confidence, mandate_scope) "
+            f"INSERT OR IGNORE INTO milestones (id, country_id, date, anchor, source_url, on_tracker, portals, confidence, mandate_scope, obligation_status) "
             f"SELECT '{esc(m['id'])}', id, '{m['date']}', {1 if m.get('anchor') else 0}, {src}, "
-            f"{1 if m.get('on_tracker') else 0}, '{portals}', {conf}, '{esc(m['mandate_scope'])}' "
+            f"{1 if m.get('on_tracker') else 0}, '{portals}', {conf}, '{esc(m['mandate_scope'])}', {oblig} "
             f"FROM countries WHERE code = '{esc(spec['code'])}';")
         lines.append(
             f"INSERT OR IGNORE INTO milestone_translations (milestone_id, lang, system, desc, actions) "
@@ -186,6 +194,8 @@ def gen_milestones_sql(spec):
         f"(SELECT id FROM countries WHERE code = '{code}') = {on_board}",
         f"-- ASSERT: SELECT count(*) FROM milestone_translations WHERE lang = 'en' "
         f"AND milestone_id IN ({ids}) = {n}",
+        f"-- ASSERT: SELECT count(*) FROM milestones WHERE obligation_status = 'live' "
+        f"AND id IN ({ids}) = {on_board}",
         "",
     ]
     return "\n".join(lines)
