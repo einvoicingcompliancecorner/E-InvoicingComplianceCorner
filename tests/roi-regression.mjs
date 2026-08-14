@@ -120,7 +120,8 @@ const waveText = () => page.evaluate(() =>
 await page.click("#selMandate"); await page.waitForTimeout(150);
 await page.click("#run"); await page.waitForTimeout(600);
 const before = await waveText();
-await page.click("#adjust summary"); await page.waitForTimeout(200);
+await page.evaluate(() => { document.getElementById("adjust").open = true; });
+await page.waitForTimeout(200);
 const who = await page.locator("[data-ovr-dl]").first().getAttribute("data-ovr-dl");
 const waves = await page.locator(`[data-ovr-dl="${who}"] option`).allTextContents();
 await page.selectOption(`[data-ovr-dl="${who}"]`, waves[waves.length - 1].split(" ")[0]);
@@ -142,7 +143,57 @@ await page.waitForTimeout(600);
 t.check("a pinned start past the deadline is called out",
   /pinned start date finishes after the deadline/i.test(await page.locator("#guards").innerText()));
 
+// ---- 10. countries with no fixed deadline are adjustable too ----
+// Left out of the first version on the reasoning that there is no wave to
+// move them between. True, and beside the point: "start any time" is a
+// default, and turning it into a date is most of what planning is.
+await page.click("#selNone");
+await page.evaluate(() => {
+  [...document.querySelectorAll("#countryList label")].forEach((l) => {
+    if (/^\s*(France|Australia|Canada)/.test(l.textContent)) l.querySelector("input").click();
+  });
+});
+await page.click("#run"); await page.waitForTimeout(600);
+// Open it idempotently. Clicking the summary TOGGLES, and showResults()
+// deliberately preserves the open state across a rebuild — so a click
+// here closes a panel that a previous section left open.
+await page.evaluate(() => { document.getElementById("adjust").open = true; });
+await page.waitForTimeout(250);
+const starts = await page.evaluate(() =>
+  [...document.querySelectorAll("[data-ovr-start]")].map((e) => e.getAttribute("data-ovr-start")));
+const dls = await page.evaluate(() =>
+  [...document.querySelectorAll("[data-ovr-dl]")].map((e) => e.getAttribute("data-ovr-dl")));
+t.check("undated countries get a start field", starts.includes("Australia") && starts.includes("Canada"), starts);
+t.check("but no wave field, because they have no wave", !dls.includes("Australia"), dls);
+
+const bandLabels = () => page.evaluate(() =>
+  [...document.querySelectorAll("#gantt svg text")].map((n) => n.textContent)
+    .filter((x) => /ANY TIME|PINNED|CLAMPED/.test(x)));
+// Far enough out to be after contracting completes in ANY selection.
+// A nearer date is a test of where the programme bar happens to land,
+// which depends on lanes, scope and the earliest deadline selected —
+// three things earlier sections of this file have already changed.
+await page.fill('[data-ovr-start="Australia"]', "2035-01-01");
+await page.dispatchEvent('[data-ovr-start="Australia"]', "change");
+await page.waitForTimeout(600);
+t.check("a pinned discretionary start is honoured and labelled",
+  (await bandLabels()).includes("PINNED"), await bandLabels());
+
+// The floor still holds: nothing may start before contracting completes,
+// so a pin earlier than that is clamped rather than silently obeyed.
+await page.fill('[data-ovr-start="Australia"]', "2024-01-01");
+await page.dispatchEvent('[data-ovr-start="Australia"]', "change");
+await page.waitForTimeout(600);
+t.check("a pin before contracting completes is clamped, and says so",
+  (await bandLabels()).includes("CLAMPED"), await bandLabels());
+
 await page.click("#adjustReset"); await page.waitForTimeout(600);
+t.check("reset clears discretionary pins too",
+  !(await bandLabels()).some((l) => /PINNED|CLAMPED/.test(l)), await bandLabels());
+
+// ---- back to the dated case for the final reset check ----
+await page.click("#selMandate"); await page.waitForTimeout(150);
+await page.click("#run"); await page.waitForTimeout(600);
 t.check("reset restores the computed plan exactly",
   JSON.stringify(await waveText()) === JSON.stringify(before));
 
