@@ -9788,6 +9788,90 @@ column alignment. Contrast audit still 0 AA failures across all four
 states with the new header and date styling. Replay: 78 assertions
 declared, 70 durable, 8 superseded.
 
+## 14 Aug 2026 (cont'd) — The page contradicted itself about Ardent (migration 525)
+
+Dan: *"take a look at the referenced sources, especially ardent, and see
+if they benchmark 'Faster cycle time & fewer supplier queries'"*
+
+They do — better than the page admitted, and not in the way the page
+implied. **Two statements were on screen at the same time and one of them
+was false.** The direct-benefits row said "the only figures available are
+one NHS anecdote". The Grade A card said "Ardent Partners 2025 (cost,
+cycle time, exceptions)". And `cycle_time_days` (8.2) and
+`exception_rate` (18.4%) sat in `roi_benchmarks` as active Grade A rows
+that **nothing on the page rendered** — the third instance this week of
+the same shape, after `platform_cost_year` and `btn.recalculate`.
+
+### What Ardent actually publishes
+
+Verified against both the report PDF and the Payables Place summary,
+which agree to a percentage point — a real cross-check, not one source
+read twice.
+
+| metric | all | Best-in-Class | all others |
+|---|---|---|---|
+| cost per invoice | $9.84 | $2.65 | $12.42 |
+| cycle time (days) | 8.2 | 2.9 | 13.5 |
+| exception rate | 18.4% | 11.1% | 20.9% |
+| staff time on supplier inquiries | 21.9%\* | 12.8% | 24.0% |
+
+\* the market figure is time dealing with suppliers *overall*; the
+Best-in-Class split is inquiries specifically. Close, not identical, and
+worth not smoothing over.
+
+### The distinction that decides the whole answer
+
+Ardent defines Best-in-Class as the 20% of enterprises with the lowest
+processing costs and shortest average invoice process times. **Cycle time
+is the definition.** So "Best-in-Class are 79% faster" is a tautology
+dressed as a finding, and citing it as evidence that e-invoicing shortens
+cycle time would collapse under one question from a finance committee.
+
+Staff time on supplier inquiries is *not* part of that definition, which
+is exactly what makes 12.8% vs 24.0% a real observation rather than a
+restatement of who was selected. It is still an association with
+high-performing AP as a whole — Ardent does not isolate e-invoicing,
+reporting only that top performers have 1.4× more suppliers enabled and
+1.8× more straight-through processing.
+
+So the row keeps its em-dash. **The evidence improves; the arithmetic does
+not change.** What changes is the reason for not pricing it: from "there
+is nothing to go on" to "there is something good to go on, and it still
+does not establish cause". The closing note used to say both unmonetised
+rows were unmonetised for the same reason. They now are not, and it says
+so.
+
+The exception rate is quoted with a warning rather than used: 18.4% is
+Grade A and the model's manual error rate is a Grade B 10%, and the
+temptation to swap them is obvious and wrong. An exception is any invoice
+needing manual intervention; an error is narrower. Quietly substituting
+one would nearly double a line of the business case on a change of
+definition alone.
+
+### The standing invariant this argues for
+
+A Grade A benchmark is the strongest claim this page makes about a
+number. Carrying one in D1 that no consumer renders is how the
+contradiction survived unnoticed, so: every active grade-A row must be
+cited by the renderer, checked against a hand-maintained list. Hand-
+maintained deliberately — adding a key there should be a decision taken
+at the moment the renderer starts using it, not a line that widens itself.
+
+### Verification
+
+`npm test`: 8 suites, all passing; ROI regression 44 checks (was 40).
+Four new ones, all of which would have failed yesterday: the row carries
+12.8% and 24.0%, it no longer claims the only figure is an anecdote, the
+cycle-time citation explains that the gap is definitional, and the
+exception-rate citation warns it is not the model's error rate.
+
+`roi-i18n.mjs` earned its place again — I updated `ev.gradeA.body` in D1
+and forgot the inline fallback beside it, and the character-identical
+check named the key and both strings. That is the drift it exists for,
+caught in the same session it was introduced rather than a deploy later.
+
+Replay: 85 assertions declared, 76 durable, 9 superseded.
+
 ## Open items / next steps
 
 ### Real open work
