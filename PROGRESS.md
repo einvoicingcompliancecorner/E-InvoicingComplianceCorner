@@ -9697,6 +9697,97 @@ as designed. 71 declared, 64 durable, 7 superseded.
 hardcoded `'Recalculate'` beside it. It is wired up now, so
 `roi-i18n.mjs`'s unused-key list drops from five to four.
 
+## 14 Aug 2026 (cont'd) — The platform fee learns about volume, and the country list becomes a table (migration 524)
+
+### A cost that ignored the footprint
+
+Dan: *"adjust the 'Platform / network fees per year' fee, so that it is
+calculated as $0.40 multiplied by the invoice volume earlier in the page.
+Update the tool tip, to indicate that this is an approximate multiplier
+for cost-per-invoice, for the technology. The actual vendor price may
+vary and should be updated manually."*
+
+`platform_cost_year` was a flat 45,000 whether the visitor had typed
+5,000 invoices or 5,000,000. Every benefit on the page scales with
+volume; this was the one cost that did not. **A model whose savings are
+linear and whose costs are constant does not have an ROI, it has a slope,
+and it will always eventually say yes.** On the opening footprint the new
+figure is 60,000 rather than 45,000, but the 15,000 is not the point —
+the point is that at 500k invoices it now reads 220,000 instead of still
+reading 45,000.
+
+**Which volume.** AP + AR, Dan's pick of the three I offered. A network
+charges for a document whether you send it or receive it, and it is the
+only basis where the fee responds to either input moving. Worth having
+asked: AR-only would have given 20,000 on the same footprint, and I would
+have had no way to know that was wrong.
+
+Three things the derivation must not do, all of them easy to get wrong.
+It must not overwrite a typed value — a vendor quote beats our multiplier
+permanently, and `dirtyCur` already recorded exactly that fact for the
+currency machinery. It must keep `usdDefault` in step, or the next
+currency switch restores the *old* derived figure. And the hint has to
+show its own arithmetic: a number that moves when you edit something else
+without saying why reads as a bug. The hint now renders "Approximate:
+550,000 invoices × $0.40 each", in the selected currency (£0.30 in GBP).
+
+The field keeps its place in the "n of 4 cost inputs are still
+placeholders" warning. An approximate multiplier is exactly that.
+`platform_cost_year` is retired with `active = 0` rather than deleted,
+and a new standing invariant says every active benchmark must carry an
+English translation — an active row nothing renders is dead data that
+reads as live, the same shape as the D1 key nothing consumed.
+
+### The countries-in-scope list
+
+Dan: *"update the countries in scope table, so that the country, mandate
+type, complexity and date are aligned in columns"*
+
+It was one flowing line per row: name, then a pill, then a pill, then a
+date, each starting wherever the last one ended. Seventy rows of that
+gives four ragged edges and no way to scan down a single attribute, which
+is the only thing anyone does with that list.
+
+Now a grid template shared by a sticky header and every row. The name
+column is capped at 190px — "United Arab Emirates" measures 179 — with a
+trailing `1fr` taking the slack, because the first version let the name
+column absorb everything and left 600 empty pixels between a country and
+its own mandate: aligned, and no easier to read. Below 700px it falls
+back to the flowing line, where fixed columns would leave the name about
+forty pixels.
+
+The check that means "aligned in columns" is literally that: every row's
+nth cell starts at the same x. All 70 rows, four columns, one unique
+left-offset each, plus the header over its own columns and still there
+after a scroll.
+
+### The trap this file sets, now checked (`tests/render-lint.mjs`)
+
+Twice in one afternoon I wrote a comment like ``// the `scroll` argument
+is opt-in`` inside the client-script template, and the backtick ended the
+template literal. The module then fails to parse, four suites die at
+import, and the error is `SyntaxError: Unexpected identifier 'scroll'`
+pointing at a comment — which reads like the parser has lost its mind.
+
+`render-lint.mjs` scans the client-script region for unescaped backticks
+and `${` on comment lines, then imports the module as ground truth. It
+runs first among the JS suites so the legible error arrives before the
+four illegible ones. Confirmed by reintroducing the backtick and watching
+it name the line. Backticks around identifiers are the house style
+everywhere else in this repo, which is precisely why this needed a check
+rather than discipline.
+
+### Verification
+
+`npm test`: 8 suites, all passing. ROI regression is 40 checks (was 30):
+seven for the derived fee — opening value, follows a volume change, shows
+its arithmetic, a typed price stops tracking, flagged as an override,
+quoted in the selected currency, and reset restoring the derivation at
+the *current* volumes rather than the opening ones — and three for the
+column alignment. Contrast audit still 0 AA failures across all four
+states with the new header and date styling. Replay: 78 assertions
+declared, 70 durable, 8 superseded.
+
 ## Open items / next steps
 
 ### Real open work

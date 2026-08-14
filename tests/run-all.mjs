@@ -20,6 +20,10 @@ const SUITES = [
     args: ["apply_migrations.py", "--replay-only"], cwd: MIGRATIONS },
   { name: "assertion mechanism", cmd: "python3",
     args: ["test_assertions.py"], cwd: MIGRATIONS },
+  // First of the JS suites deliberately: it is the fastest, and when it
+  // fails the other four fail at import time with a syntax error pointing
+  // at a comment, which is the least legible message this repo produces.
+  { name: "render lint", cmd: "node", args: [join(HERE, "render-lint.mjs")], cwd: REPO },
   { name: "jurisdiction count", cmd: "node", args: [join(HERE, "jurisdiction-count.mjs")], cwd: REPO },
   { name: "ROI regression", cmd: "node", args: [join(HERE, "roi-regression.mjs")], cwd: REPO },
   { name: "ROI i18n", cmd: "node", args: [join(HERE, "roi-i18n.mjs")], cwd: REPO },

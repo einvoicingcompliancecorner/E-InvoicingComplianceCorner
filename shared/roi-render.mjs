@@ -286,11 +286,42 @@ button:disabled{opacity:.5;cursor:not-allowed}
 .pill{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.6px;text-transform:uppercase;padding:2px 7px;border-radius:99px;border:1px solid currentColor}
 .p-inforce{color:#7fd0a8}.p-upcoming{color:#e2b978}.p-b2gonly{color:#9fb2d4}.p-nomandate{color:#b9a9a4}
 .cx3{color:#e08b7a}.cx2{color:#e2b978}.cx1{color:#9fb2d4}.cx0{color:#8d9bb5}
-.countries{max-height:260px;overflow:auto;border:1px solid var(--line);border-radius:8px;padding:10px;background:var(--ink)}
+.countries{max-height:260px;overflow:auto;border:1px solid var(--line);border-radius:8px;padding:0 10px 10px;background:var(--ink)}
 .creg{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:var(--soon);margin:10px 0 5px}
-.creg:first-child{margin-top:0}
 .cbox{display:flex;align-items:flex-start;gap:7px;padding:2px 0;font-size:13.5px}
 .cbox input{margin-top:3px}
+/* THE COUNTRY LIST IS A TABLE, so it is laid out as one. It used to be a
+   flowing line per row — name, then two pills, then the date, each
+   starting wherever the previous one happened to end. Seventy rows of
+   that gives four ragged edges and no way to scan down a single
+   attribute, which is the only thing anyone does with this list. One
+   shared grid template on the header and every row is what makes the
+   columns line up; the header is sticky so it survives the scroll.
+   Widths are sized to the longest value each column can hold: "No
+   mandate" in both pill columns, an ISO date in the last, and 190px of
+   name because "United Arab Emirates" measures 179 and a name that
+   wrapped would break the row rhythm the alignment exists for. The
+   trailing 1fr is the reason for that cap — without it the name column
+   takes all the slack on a wide screen and leaves 600 empty pixels
+   between a country and its own mandate, which is aligned but no easier
+   to read. Both elements declare six columns and fill five; the sixth is
+   the slack. */
+.crow,.chead{display:grid;grid-template-columns:15px minmax(70px,190px) 100px 100px 84px 1fr;align-items:center;gap:0 10px}
+.crow{padding:3px 0;font-size:13.5px}
+.crow input{margin:0}
+.crow .pill{justify-self:start}
+.cdate{font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--muted);text-align:right}
+.chead{position:sticky;top:0;z-index:2;background:var(--ink);padding:10px 0 6px;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--soon)}
+.chead span:last-child{text-align:right}
+/* Below this the fixed columns leave the name 40-odd pixels and the whole
+   point is lost, so fall back to the flowing line the list had before. */
+@media (max-width:700px){
+  .crow{display:flex;flex-wrap:wrap;align-items:center;gap:7px}
+  .crow input{margin-top:0}
+  .cdate{text-align:left}
+  .chead{display:none}
+  .countries{padding:10px}
+}
 .stat{background:var(--ink-3);border:1px solid var(--line);border-radius:8px;padding:14px}
 .stat .n{font-family:'Big Shoulders Display',sans-serif;font-size:30px;font-weight:800;line-height:1}
 .stat .l{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.7px;text-transform:uppercase;color:var(--muted);margin-top:4px}
@@ -385,7 +416,9 @@ export function renderRoiPage({ countries, benchmarks = [], phases = [], strings
   // button. Same reason they get no "Your value / default was…"
   // annotation — there is no default to have departed from.
   // Opening values set to 100k AP / 50k AR / 1 ERP at Dan's request,
-  // 12 Aug 2026.
+  // 12 Aug 2026. Named constants because the platform fee is now derived
+  // from them and the two used to be typed out in three separate places.
+  const OPEN_VOL_AP = 100000, OPEN_VOL_AR = 50000;
   const defaults = {
     costNow: { v: val("ap_cost_per_invoice", 9.84), h: hintOf("ap_cost_per_invoice") },
     costAR:  { v: val("ar_cost_per_invoice", 6.5),  h: hintOf("ar_cost_per_invoice") },
@@ -395,7 +428,18 @@ export function renderRoiPage({ countries, benchmarks = [], phases = [], strings
     fteCost: { v: val("loaded_fte_cost", 62000),    h: hintOf("loaded_fte_cost") },
     cImplS:  { v: val("cost_per_integration_simple", 10000),  h: hintOf("cost_per_integration_simple") },
     cImplC:  { v: val("cost_per_integration_complex", 20000), h: hintOf("cost_per_integration_complex") },
-    cPlat:   { v: val("platform_cost_year", 45000),   h: hintOf("platform_cost_year") },
+    // cPlat is DERIVED, not a flat placeholder. Until 14 Aug 2026 it was a
+    // standing 45,000 a year that took no notice of whether the reader had
+    // typed 5,000 invoices or 5,000,000 — the one input on the investment
+    // side that ignored the footprint the whole rest of the page is built
+    // on. It is now the per-invoice fee times AP + AR volume, recomputed
+    // client-side whenever either volume moves, and still fully
+    // overridable: a typed value wins and stops tracking. The opening
+    // value here must agree with the volumes the two inputs open on, or
+    // the panel would show one number for the half-second before the
+    // client's first recalcPlat().
+    cPlat:   { v: Math.round(val("platform_fee_per_invoice", 0.4) * (OPEN_VOL_AP + OPEN_VOL_AR)),
+               h: hintOf("platform_fee_per_invoice") },
     cRun:    { v: val("internal_run_cost", 30000),    h: hintOf("internal_run_cost") },
     // lanes and pace are the two implementation levers that are not
     // phases, so they have no roi_phases row to live in. Kept here rather
@@ -512,11 +556,11 @@ export function renderRoiPage({ countries, benchmarks = [], phases = [], strings
   <div class="grid g4">
     <div>
       <label for="volAP">${t("input.volAP", "Invoices received / year (AP)")}${hlp("volAP","What this drives")}</label>
-      <input type="number" id="volAP" value="100000" min="0" step="1000">
+      <input type="number" id="volAP" value="${OPEN_VOL_AP}" min="0" step="1000">
     </div>
     <div>
       <label for="volAR">${t("input.volAR", "Invoices issued / year (AR)")}${hlp("volAR","What this drives")}</label>
-      <input type="number" id="volAR" value="50000" min="0" step="1000">
+      <input type="number" id="volAR" value="${OPEN_VOL_AR}" min="0" step="1000">
       <p class="hint">${t("input.volAR.hint", "What the mandates actually bite on.")}</p>
     </div>
     <div>
@@ -813,11 +857,61 @@ function applyCurrency(next){
       ? 'Benchmark defaults are published in US dollars.'
       : \`Converted at a <strong>fixed rate</strong> of 1 \${next} = \${f.r} USD\${f.asOf ? ', spot ' + f.asOf : ''} &mdash; not updated daily. \${ev('yours','Use your own treasury rate for anything you will sign')}\`;
   }
-  markOverridden();
+  // recalcPlat() rather than markOverridden() directly: the platform fee's
+  // hint quotes the per-invoice rate, so it has to be rebuilt in the new
+  // currency too, and it ends by calling markOverridden() itself. The
+  // initial applyCurrency() call therefore sits BELOW recalcPlat's
+  // definition — PLAT is a const, and calling it any earlier would hit
+  // the temporal dead zone.
+  recalcPlat();
 }
 document.getElementById('cur').addEventListener('change', (e) => {
   applyCurrency(e.target.value);
   if(unlocked) showResults();
+});
+
+// ---- platform / network fees: derived from the volumes above ----------
+// Every other figure on the investment side is a flat placeholder, which
+// is honest for a one-off integration cost — that genuinely does not
+// scale with volume. Platform and network fees do. A standing 45,000 a
+// year was the one input on this page that took no notice of whether the
+// reader had typed 5,000 invoices or 5,000,000, while the whole benefit
+// side moved with them: a business case whose costs were fixed and whose
+// savings were linear, which is not a model, it is a slope.
+//
+// So: fee per invoice times AP + AR. Both directions, because a network
+// charges for a document whether you send it or receive it, and because
+// AR-only would leave the larger flow unpriced.
+//
+// Three things this must not do, each of which it would be easy to get
+// wrong. It must not overwrite a value the reader typed — a vendor quote
+// beats our multiplier, permanently, and dirtyCur already records
+// exactly that (it is set on any edit to a currency input and cleared by
+// Reset). It must keep usdDefault in step, or the next currency switch
+// would restore the OLD derived figure. And the hint has to show the
+// arithmetic: a number that moves when you edit something else, without
+// saying why, reads as a bug.
+const PLAT = __ROI_PLATFEE__;
+function recalcPlat(){
+  const el = document.getElementById('cPlat');
+  if(!el || !DEFAULTS.cPlat) return;
+  const vol = (+document.getElementById('volAP').value || 0)
+            + (+document.getElementById('volAR').value || 0);
+  const r = rateOf(cur);
+  usdDefault.cPlat = Math.round(PLAT.fee * vol);
+  DEFAULTS.cPlat.v = roundCur(usdDefault.cPlat / r);
+  DEFAULTS.cPlat.h = PLAT.tpl
+    .replace('{vol}', vol.toLocaleString('en-US'))
+    .replace('{fee}', SYM[cur] + (PLAT.fee / r).toFixed(2));
+  if(!dirtyCur.has('cPlat')){
+    usdCurrent.cPlat = usdDefault.cPlat;
+    el.value = DEFAULTS.cPlat.v;
+  }
+  markOverridden();
+}
+['volAP','volAR'].forEach(id => {
+  const el = document.getElementById(id);
+  if(el) el.addEventListener('input', recalcPlat);
 });
 applyCurrency(document.getElementById('cur').value);
 
@@ -825,13 +919,20 @@ applyCurrency(document.getElementById('cur').value);
 const list = document.getElementById('countryList');
 const byRegion = {};
 COUNTRIES.forEach((c,i) => { (byRegion[c[2]] ||= []).push([c,i]); });
-let html='';
+// One header row, sticky, sharing the grid template with every country
+// row. The empty first cell is the checkbox column: aligning against a
+// control the header cannot label is the whole reason the template is
+// declared once in CSS rather than per element. aria-hidden because the
+// checkboxes are already individually labelled — a screen reader gets the
+// country name and both pill texts from the label itself, and announcing
+// four column headings that belong to no table would be noise.
+let html = \`<div class="chead" aria-hidden="true"><span></span><span>${tj("col.jurisdiction","Jurisdiction")}</span><span>${tj("col.mandate","Mandate")}</span><span>${tj("col.complexity","Complexity")}</span><span>${tj("col.deadline","Deadline")}</span></div>\`;
 ['Eu','Mi','As','Am'].forEach(r => {
   if(!byRegion[r]) return;
   html += \`<div class="creg">\${REGION[r]}</div>\`;
   byRegion[r].forEach(([c,i]) => {
     const st = STATUS[c[3]], cx = CXNAME[c[4]];
-    html += \`<label class="cbox"><input type="checkbox" data-i="\${i}"><span>\${c[0]} <span class="pill \${st[1]}">\${st[0]}</span> <span class="pill \${cx[1]}">\${cx[0]}</span>\${c[5]?\` <span class="hint" style="display:inline">&middot; \${c[5]}</span>\`:''}</span></label>\`;
+    html += \`<label class="crow"><input type="checkbox" data-i="\${i}"><span>\${c[0]}</span><span class="pill \${st[1]}">\${st[0]}</span><span class="pill \${cx[1]}">\${cx[0]}</span><span class="cdate">\${c[5] || '&mdash;'}</span></label>\`;
   });
 });
 list.innerHTML = html;
@@ -1542,6 +1643,11 @@ function build(){
     .replace("__ROI_DEFAULTS__", JSON.stringify(defaults))
     .replace("__ROI_EVIDENCE__", JSON.stringify(evidence))
     .replace("__ROI_PHASES__", JSON.stringify(chartPhases))
+    .replace("__ROI_PLATFEE__", JSON.stringify({
+      fee: val("platform_fee_per_invoice", 0.4),   // USD, per invoice, either direction
+      tpl: t("input.cPlat.derived",
+        "Approximate: {vol} invoices &times; {fee} each. This is a rough per-invoice multiplier for the technology &mdash; your vendor&rsquo;s actual price will differ, and should be entered here."),
+    }))
     .replace("__ROI_FX__", JSON.stringify(fx && Object.keys(fx).length ? fx : { USD: { r: 1, asOf: "", src: null } }));
   return { body, script };
 }
