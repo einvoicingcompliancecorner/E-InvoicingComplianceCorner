@@ -232,5 +232,73 @@ await page.click("#run"); await page.waitForTimeout(600);
 t.check("reset restores the computed plan exactly",
   JSON.stringify(await waveText()) === JSON.stringify(before));
 
+// ---- 12. the platform fee is derived from the reader's own volumes ----
+// It used to be a flat 45,000 a year whatever the footprint, which made
+// it the only cost on the page that ignored the volumes the entire
+// benefit side is computed from. A model whose savings are linear in
+// volume and whose costs are constant always eventually says yes.
+await page.evaluate(() => { document.getElementById("assump").open = true; });
+await page.waitForTimeout(200);
+t.check("platform fee opens derived from the opening volumes (0.40 x 150,000)",
+  (await page.inputValue("#cPlat")) === "60000", await page.inputValue("#cPlat"));
+
+await page.fill("#volAP", "500000"); await page.waitForTimeout(250);
+t.check("it follows a volume change (0.40 x 550,000)",
+  (await page.inputValue("#cPlat")) === "220000", await page.inputValue("#cPlat"));
+t.check("and the hint shows its own arithmetic",
+  /550,000 invoices\s*×\s*\$0\.40/.test(await page.locator("#h-cPlat").textContent()),
+  await page.locator("#h-cPlat").textContent());
+
+// A vendor quote beats our multiplier permanently. Getting this wrong in
+// the other direction — recomputing over a number someone typed — would
+// be worse than never deriving it at all.
+await page.fill("#cPlat", "125000"); await page.waitForTimeout(200);
+await page.fill("#volAR", "250000"); await page.waitForTimeout(250);
+t.check("a typed vendor price stops tracking the volumes",
+  (await page.inputValue("#cPlat")) === "125000", await page.inputValue("#cPlat"));
+t.check("and is flagged as an override",
+  /Your value/.test(await page.locator("#h-cPlat").textContent()));
+
+await page.selectOption("#cur", "GBP"); await page.waitForTimeout(400);
+t.check("the per-invoice rate is quoted in the selected currency",
+  /£0\.30/.test(await page.locator("#h-cPlat").textContent()),
+  await page.locator("#h-cPlat").textContent());
+await page.selectOption("#cur", "USD"); await page.waitForTimeout(400);
+
+await page.click("#resetDefaults"); await page.waitForTimeout(400);
+t.check("reset restores the derivation at the CURRENT volumes, not the opening ones",
+  (await page.inputValue("#cPlat")) === "300000", await page.inputValue("#cPlat"));
+await page.fill("#volAP", "100000"); await page.fill("#volAR", "50000");
+await page.waitForTimeout(250);
+
+// ---- 13. the countries list is a table, so it lines up like one ----
+// Four attributes per row, each previously starting wherever the last one
+// happened to end. The check that means "aligned in columns" is literally
+// that: every row's nth cell starts at the same x.
+const align = await page.evaluate(() => {
+  const rows = [...document.querySelectorAll("#countryList .crow")];
+  const lefts = rows.map((r) => [...r.children].map((e) => Math.round(e.getBoundingClientRect().left)));
+  return { rows: rows.length, uniq: [1, 2, 3, 4].map((i) => new Set(lefts.map((l) => l[i])).size) };
+});
+t.check(`all ${align.rows} country rows share one column grid`,
+  align.rows > 60 && align.uniq.every((u) => u === 1), align.uniq);
+
+const headAligned = await page.evaluate(() => {
+  const cells = (el) => [...el.children].map((e) => Math.round(e.getBoundingClientRect().left)).slice(1);
+  return JSON.stringify(cells(document.querySelector("#countryList .chead")))
+      === JSON.stringify(cells(document.querySelector("#countryList .crow")));
+});
+t.check("the column headings sit over their own columns", headAligned);
+
+await page.evaluate(() => { document.querySelector(".countries").scrollTop = 400; });
+await page.waitForTimeout(200);
+const stuck = await page.evaluate(() => {
+  const box = document.querySelector(".countries");
+  return Math.round(box.querySelector(".chead").getBoundingClientRect().top
+                  - box.getBoundingClientRect().top);
+});
+t.check("and survive the scroll (a heading you scroll past labels nothing)",
+  Math.abs(stuck) <= 2, stuck);
+
 await browser.close();
 process.exit(t.report() ? 0 : 1);
