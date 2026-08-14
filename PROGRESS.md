@@ -9433,6 +9433,89 @@ absolute row count is only safe as an assertion if the replay and
 production agree about that table. Where they might not, assert the
 relationship instead of the number.
 
+## 14 Aug 2026 — `on_tracker` split into presentation and substance (migration 520)
+
+Design review recommendation 1, at the "schema + classify, change nothing
+visible" scope Dan chose.
+
+`on_tracker` means, and has only ever meant, **show this on the arrivals
+board**. Four consumers filter on it — the board, the map, the ROI
+planner, the monthly digest — and each is really asking a different
+question, so each has been reading an editorial decision as a statement
+of fact. Reading it as "is this a real obligation" is what moved the UK's
+modelled deadline from April 2029 to November 2026 when a blanket
+readmission was tried.
+
+`milestones` now carries `obligation_status` (`live` / `superseded` /
+`restatement` / `context` / `unreviewed`) and a nullable `restates_id`.
+**Nothing visible changed**: every consumer still filters on
+`on_tracker`, and the ROI planner renders byte-for-byte what it rendered
+before, verified by diff.
+
+### The finding: three countries the planner models as having no deadline
+
+Classifying the 29 off-board future-dated rows turned up eleven genuine
+obligations that no consumer can currently see. Most are harmless —
+the country has an earlier on-board deadline anyway — but three are not:
+
+| Country | Hidden obligation | Date | On-board B2B deadline |
+|---|---|---|---|
+| Denmark | SAF-T 2.0 generation required | 1 Jan 2027 | **none** |
+| Portugal | first mandatory full accounting SAF-T | 1 Jan 2028 | **none** |
+| Brazil | CBS/IS collection begins | 1 Jan 2027 | **none** |
+
+All three are `mandate_scope = 'b2b'` and off the board, so the planner
+sees no future deadline for them at all and files them under "no fixed
+deadline — start any time". Each has a real dated obligation.
+
+Denmark is the pointed one: `dk-saft2027` is the same milestone reviewed
+on 12 August when Dan called Denmark's complexity `simple`. It was
+visible for that decision and invisible to the planner's timeline, which
+is precisely the overload this migration exists to unpick.
+
+(Bulgaria's three SAF-T phases are also hidden, but they are
+`mandate_scope = 'none'`, so the planner excludes them on scope
+regardless. Real obligations; not e-invoicing ones.)
+
+**Deliberately not fixed here.** Acting on it changes the planner's
+output for three countries, which is a visible behaviour change to a tool
+Dan is road-testing, and it should be a decision rather than a side
+effect of a schema migration.
+
+### `unreviewed` is the default, on purpose
+
+179 of the 208 off-board rows are past-dated. Classifying them correctly
+means reading each one, and this migration does not. Defaulting them to
+`live` would assert something unchecked about 179 rows; `superseded`
+asserts the opposite, equally unchecked. So they say `unreviewed` and the
+remaining work is queryable rather than invisible.
+
+The rule that keeps it honest is written relatively, against `date('now')`
+rather than a hardcoded date: **nothing dated in the future may sit
+unclassified.** Past rows can stay unreviewed indefinitely — nobody plans
+against them — but the next future-dated row anyone adds must be
+classified or the replay fails.
+
+### Two standing invariants that make the runbook step non-optional
+
+`ASSERT ALWAYS` that every on-board row is `live`. A new country's
+milestones would otherwise arrive with the column default, so scaffolding
+a country onto the board without classifying it now fails the replay
+rather than quietly adding an unreviewed row to the board.
+`new_country_scaffold.py` emits the value, and `ADDING-A-COUNTRY.md`
+documents it — but the invariant is what makes it stick.
+
+### The assertion mechanism caught a bug in its own assertion
+
+The first draft of the `restates_id` invariant read
+`NOT EXISTS (SELECT 1 FROM milestones o WHERE o.id = restates_id)`. The
+unqualified `restates_id` binds to the INNER table, so every restatement
+matched itself and the check reported zero regardless of the data. The
+replay failed on it immediately. **A check that verifies nothing is the
+exact failure this mechanism exists to prevent, and it is just as easy to
+write in the check as in the migration** — noted in the file, with the
+`m.` aliases that fix it.
+
 ## Open items / next steps
 
 ### Real open work
