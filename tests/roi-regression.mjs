@@ -94,6 +94,37 @@ const markers = await page.locator(".hlp").count();
 t.check("no thin or empty tooltips", thin === 0, thin);
 t.check(`tooltip markers present (${markers} >= 28)`, markers >= 28);
 
+// ---- 7b. the Ardent evidence the page used to deny it had ----
+// Dan asked whether the sources actually benchmark "faster cycle time &
+// fewer supplier queries". They do — and the page said the only figure
+// available was one NHS anecdote while its own Grade A card claimed
+// Ardent for cycle time and exceptions, with both benchmark rows sitting
+// in D1 rendered nowhere. Two statements on one screen, one of them
+// false, and no check could see it because both were prose.
+const direct = await page.locator("#direct").innerText();
+t.check("the cycle-time row carries Ardent's supplier-inquiry split",
+  /12\.8%/.test(direct) && /24\.0%/.test(direct), direct.slice(0, 160));
+t.check("and no longer says the only figure is an anecdote",
+  !/only figures available are one NHS anecdote/i.test(direct));
+
+const cycTip = await page.evaluate(() => {
+  const el = [...document.querySelectorAll("#direct .ev")]
+    .find((e) => /2\.9 vs 13\.5 days/.test(e.textContent));
+  return el ? el.querySelector(".tip").textContent : "";
+});
+// The figure is quoted; the reason it proves nothing has to be quoted
+// with it, or citing it is worse than omitting it.
+t.check("the cycle-time citation explains that the gap is definitional",
+  /tautology/.test(cycTip) && /Best-in-Class/.test(cycTip), cycTip.slice(0, 140));
+
+const excTip = await page.evaluate(() => {
+  const el = [...document.querySelectorAll("#direct .ev")]
+    .find((e) => /exception rate/.test(e.textContent));
+  return el ? el.querySelector(".tip").textContent : "";
+});
+t.check("and the exception rate warns it is not the model's error rate",
+  /Not interchangeable/.test(excTip), excTip.slice(0, 140));
+
 // ---- 8. the sanity guards fire on the case that needed migration 520 ----
 // Denmark, Portugal and Brazil each hold a dated live obligation the
 // arrivals board does not show. Before obligation_status existed this was
