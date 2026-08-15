@@ -86,13 +86,28 @@ INSERT OR IGNORE INTO translations (namespace, key, lang, value) VALUES
 -- ASSERT: SELECT count(*) FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key = 'sec.savings.lede4' AND value LIKE '%section 2 works from%' = 1
 --
 -- The run-cost bridge is the assertion worth having, because it is the
--- one thing that can silently rot: if the grid ever regains an annual
--- run cost stat, or the note loses it, the reader is left with a banked
+-- one thing that can silently rot: if the reader is left with a saving
 -- figure and a net figure and no visible way to get from one to the
--- other. That is the defect Dan hit in section 4, and the reason this
--- page now carries a reconciliation rule at all.
+-- other, the defect Dan hit in section 4 is back one section higher.
 --
--- ASSERT ALWAYS: SELECT count(*) FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key IN ('sum.bridge','sum.bridge2') = 2
+-- EDITED 15 Aug 2026, comment only. This named `sum.bridge` /
+-- `sum.bridge2`, which carried the bridge when it lived in the summary
+-- note. Migration 544 moved it onto the One-off stat, where it reads
+-- better, and 545 deleted the orphaned note keys. The INVARIANT is
+-- unchanged -- the bridge must be stated somewhere -- so it is repointed
+-- at the keys that state it rather than retired. Precedent for editing
+-- an applied migration's assertion comments is migration 525: no
+-- executable change, replay is byte-identical, --refresh-checksums
+-- re-records the file.
+--
+-- The invariant itself MOVED TO 545 rather than being repointed here,
+-- and the reason is a property of the mechanism worth knowing: an
+-- ASSERT ALWAYS is checked at its own migration's point in the chain as
+-- well as at the end. Naming `res.running*` here would assert the
+-- existence of keys that migration 544 does not create for another four
+-- files, and the replay fails at 540. A standing invariant can only ever
+-- reference rows that exist by the time its own file runs -- so when the
+-- thing it protects moves forward, the invariant has to move with it.
 --
 -- Orphans are now SIXTEEN: `sec.invest`, `sec.summary`, `res.annualRun`,
 -- `res.complianceOnly`, `res.complianceOnly3`, `res.tangible`,
