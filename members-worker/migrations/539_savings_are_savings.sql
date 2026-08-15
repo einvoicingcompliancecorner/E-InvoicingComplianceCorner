@@ -1,0 +1,74 @@
+-- ================================================================
+-- The direct/indirect distinction comes off the page entirely.
+--
+-- Dan: "I don't think we need to differentiate between direct and
+-- indirect savings. Savings are savings - let the reader decide."
+--
+-- THE END OF A THREE-MIGRATION ARC, and the right end. 536 gave the two
+-- tables a shared banking column, 537 put the indirect row through the
+-- banking model it had been exempt from, 538 merged the tables and kept
+-- the distinction alive as a per-row tag. Each step made it matter less.
+-- This one asks the obvious question: if the two kinds share a column, a
+-- banking rule, a table, a total and a payback calculation, what is the
+-- tag still doing?
+--
+-- The answer was "teaching a taxonomy the reader did not ask for". The
+-- distinction is real -- one is cash released, the other is cost avoided
+-- -- but it is a distinction about how a saving arises, and a reader
+-- deciding whether to fund a programme is asking whether the number is
+-- credible and whether they get to spend it. The page already answers
+-- both, on every row, with the tangible/intangible tag and the banking
+-- column. Direct-versus-indirect was a third axis that changed no
+-- decision.
+--
+-- WHAT GOES:
+--   * the `direct` / `indirect` tag on all nine rows;
+--   * the clause in the section lede that existed to teach it;
+--   * the note under the executive summary explaining why the two were
+--     reported separately -- they no longer are;
+--   * and the SPLIT HEADLINE. Section 2 showed "Direct -- banked
+--     annually" beside "Indirect -- modelled", two stats the page then
+--     added together everywhere else. They are now one figure, which is
+--     the same figure section 4 totals and section 5 divides into. Three
+--     places, one number, first time that has been true.
+--
+-- WHAT STAYS, and deliberately. Every row keeps its evidence citation and
+-- its tangible/intangible tag, so a reader who wants to make the
+-- distinction still can -- the tax row still says "mechanism evidenced,
+-- our assumption" in as many words. Nothing is hidden; a label is
+-- removed. That is what "let the reader decide" asks for.
+--
+-- No arithmetic moves. Again. The last four migrations have changed what
+-- this page SAYS about its numbers without changing one of them, which is
+-- worth stating plainly because it is the whole reason the numbers can be
+-- trusted while the presentation is rebuilt underneath them.
+-- ================================================================
+
+INSERT OR IGNORE INTO translations (namespace, key, lang, value) VALUES
+  ('roi', 'sec.savings.lede3', 'en', 'Priced savings first, banked ones at the top; what this model will not put a number on is named below the total. Every priced row says what it banks on the scope you chose, and section 5 works from the banked figure.'),
+  ('roi', 'sum.scopeBoth4',    'en', 'Section 4 shows what makes up this figure, row by row');
+
+-- ---- what this migration claims it did (see apply_migrations.py) ----
+-- ASSERT: SELECT count(*) FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key IN ('sec.savings.lede3','sum.scopeBoth4') = 2
+-- ASSERT: SELECT count(*) FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key = 'sec.savings.lede3' AND value LIKE '%section 5 works from the banked figure%' = 1
+--
+-- The orphan list keeps growing and is still not being cleaned here.
+-- `tag.direct`, `tag.indirect`, `res.direct`, `res.indirect`,
+-- `sum.scopeBoth3` and `sec.savings.lede2` join `sec.direct`,
+-- `sec.indirect`, their two ledes, `sec.savings.lede`, `res.indirectWhy`
+-- and `row.directTotal` -- twelve keys across four migrations, every one
+-- of them a string the page used until the day it did not.
+--
+-- LEFT IN PLACE ON PURPOSE, for the third migration running. Retiring
+-- them by hand, in the migration that orphaned them, is precisely how the
+-- last six orphans were created: someone deletes what they remember and
+-- misses what they do not. The dead-data sweep is recommendation 1 on the
+-- design review for exactly this reason, and this arc has now built it a
+-- twelve-row worked example. `npm test` prints the current list on every
+-- run (roi-i18n, section 4), so it is visible rather than lurking.
+--
+-- The standing invariant is unchanged from 538 and still the right one:
+-- both column headings must exist, because the banking column is now the
+-- only structure carrying what the tags used to say.
+--
+-- ASSERT ALWAYS: SELECT count(*) FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key IN ('col.gross','col.banks','col.benefit','col.basis') = 4

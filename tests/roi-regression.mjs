@@ -112,7 +112,7 @@ t.check(`tooltip markers present (${markers} >= 28)`, markers >= 28);
 // Ardent for cycle time and exceptions, with both benchmark rows sitting
 // in D1 rendered nowhere. Two statements on one screen, one of them
 // false, and no check could see it because both were prose.
-const direct = await page.locator("#direct").innerText();
+const direct = await page.locator("#savingsTable").innerText();
 t.check("the cycle-time row carries Ardent's supplier-inquiry split",
   /12\.8%/.test(direct) && /24\.0%/.test(direct), direct.slice(0, 160));
 t.check("and no longer says the only figure is an anecdote",
@@ -138,7 +138,7 @@ t.check("the cycle-time citation explains that the gap is definitional",
 // includes the tooltip, and three markers on this row now mention an
 // exception rate, so the loose match started picking the wrong one.
 const excTip = await page.evaluate(() => {
-  const el = [...document.querySelectorAll("#direct .ev")]
+  const el = [...document.querySelectorAll("#savingsTable .ev")]
     .find((e) => e.firstChild && /not Ardent/.test(e.firstChild.textContent || ""));
   return el ? el.querySelector(".tip").textContent : "";
 });
@@ -360,7 +360,7 @@ t.check("and survive the scroll (a heading you scroll past labels nothing)",
 // pays back". The two checks that matter are opposites: the number must
 // now MOVE with volume, and it must NOT have moved at the default volume,
 // because this change was about shape and not magnitude.
-const indirect = () => page.locator("#indirect tbody tr").first();
+const indirect = () => page.locator('#savingsTable tr[data-row="tax"]');
 const indValue = async () =>
   Number((await indirect().locator("td").last().innerText()).replace(/[^\d]/g, ""));
 
@@ -419,9 +419,9 @@ t.check("both rates are in the assumptions panel, and differ",
   && (await page.inputValue("#fteEntry")) === "54000",
   `${await page.inputValue("#fteCost")} / ${await page.inputValue("#fteEntry")}`);
 
-const directTotal = Number((await page.locator("#direct tbody tr").first()
+const directTotal = Number((await page.locator('#savingsTable tr[data-row="ap"]')
   .locator("td").nth(2).innerText()).replace(/[^\d]/g, ""));
-const head = await page.locator("#direct .note").last().innerText();
+const head = await page.locator("#savingsTable .note").first().innerText();
 t.check("the headcount line states the capture FTE it derived",
   /3\.6 FTE keying invoices today/.test(head), head.slice(0, 200));
 t.check("and the FTE it releases",
@@ -467,25 +467,48 @@ await page.fill("#volAP", "100000"); await page.fill("#volAR", "50000");
 await page.selectOption("#scope", "compliance"); await page.waitForTimeout(300);
 await page.click("#run"); await page.waitForTimeout(700);
 
-const totalRow = () => page.locator("#direct tbody tr").last();
+const totalRow = () => page.locator('#savingsTable tr[data-row="total"]');
 const bankedTotal = async () =>
   Number((await totalRow().locator("td").last().innerText()).replace(/[^\d]/g, ""));
 
-// 590,400 x 0.4286 capture share + 195,000 AR = 448,045. Rework is held
-// out deliberately: it is the weakest-evidenced row and would have been
-// the largest single beneficiary.
-const complianceBanked = await bankedTotal();
-t.check(`compliance-only banks capture and issuing, not nothing (${complianceBanked})`,
-  complianceBanked === 448045, complianceBanked);
+// 590,400 x 0.4286 capture share = 253,045 banked, plus 195,000 AR in
+// full. Rework is held out deliberately: it is the weakest-evidenced row
+// and would have been the largest single beneficiary.
+//
+// Asserted per ROW rather than against a subtotal. 538 merged the two
+// tables, so the only total on the page is now the whole section's — and
+// that moves whenever the country selection changes the indirect row,
+// which would make this check about jurisdiction mix rather than about
+// banking. The rows are where the banking decision actually lives.
+const cell = async (row, n) => Number((await page.locator(`#savingsTable tr[data-row="${row}"]`)
+  .locator("td").nth(n).innerText()).replace(/[^\d]/g, ""));
+t.check("compliance-only banks the capture share of AP, not all of it",
+  (await cell("ap", 3)) === 253045, await cell("ap", 3));
+t.check("and banks AR in full, because the mandate compels structured issuing",
+  (await cell("ar", 3)) === 195000 && (await cell("ar", 2)) === 195000);
+t.check("and banks none of the rework",
+  /^\s*(—|&mdash;)\s*$/.test(await page.locator('#savingsTable tr[data-row="rework"] td').nth(3).innerText()),
+  await page.locator('#savingsTable tr[data-row="rework"] td').nth(3).innerText());
 // Until 536 this asserted a parenthetical reading "($697,355 unlocked and
 // not banked, of $1,145,400)", which was the only bridge between a column
 // summing to 1,145,400 and a total reading 448,045. Dan hit exactly that
 // gap while checking the model by hand. The bridge is now a second column,
 // so the property to assert is that the total row states BOTH figures —
 // and, separately, that the unbanked amount is still named on the page.
-t.check("the total row states the gross and the banked figure side by side",
-  /1,145,400/.test(await totalRow().innerText()) && /448,045/.test(await totalRow().innerText()),
-  await totalRow().innerText());
+// The total was the direct table's subtotal until 538; it is now the
+// section's, and it is the figure section 5 divides into for payback.
+// Asserted as a relationship rather than a literal, because the indirect
+// component moves with the country selection.
+const totCells = await totalRow().locator("td").allInnerTexts();
+const totGross = Number(totCells[totCells.length - 2].replace(/[^\d]/g, ""));
+const totBanked = Number(totCells[totCells.length - 1].replace(/[^\d]/g, ""));
+t.check(`the total row states the gross and the banked figure side by side (${totGross} / ${totBanked})`,
+  totGross > 0 && totBanked > 0 && totGross > totBanked, totCells.join(" | "));
+t.check("and the banked total is what section 5 divides into for payback",
+  totBanked === Number((await page.locator("#invest .stat").nth(2).locator(".n").innerText())
+    .replace(/[^\d]/g, "")) + Number((await page.locator("#invest .stat").nth(1).locator(".n").innerText())
+    .replace(/[^\d]/g, "")),
+  `${totBanked} vs net+run`);
 t.check("and the unlocked remainder is still stated somewhere on the page",
   (await page.locator("body").innerText()).includes("697,355"));
 
@@ -493,7 +516,7 @@ t.check("and the unlocked remainder is still stated somewhere on the page",
 // on the row, not in a footnote, because the change makes the answer
 // better and that is exactly when a reader should be able to audit it.
 const tags = await page.evaluate(() =>
-  [...document.querySelectorAll("#direct .tag.bank, #direct .tag.unbank")].map((e) => e.textContent));
+  [...document.querySelectorAll("#savingsTable .tag.bank, #savingsTable .tag.unbank")].map((e) => e.textContent));
 t.check("every direct row says whether it banks on compliance",
   tags.includes("43% banks") && tags.includes("banks") && tags.includes("not banked"), tags);
 
@@ -502,15 +525,24 @@ t.check("every direct row says whether it banks on compliance",
 // replaced the parenthetical it failed, having never tested the row it
 // names. innerText applies text-transform, so the tag reads "NOT BANKED":
 // match case-insensitively, and against the rework row specifically.
-const reworkBankRow = await page.locator("#direct tbody tr").nth(2).innerText();
+const reworkBankRow = await page.locator('#savingsTable tr[data-row="rework"]').innerText();
 t.check("rework is not banked on a compliance scope",
   /not banked/i.test(reworkBankRow) && /—|&mdash;/.test(reworkBankRow.split("\t").pop()),
   reworkBankRow.slice(0, 120));
 
 await page.selectOption("#scope", "both"); await page.waitForTimeout(400);
 await page.click("#run"); await page.waitForTimeout(700);
-t.check("the fuller programme banks the lot",
-  (await bankedTotal()) === 1145400, await bankedTotal());
+// The property is that on the fuller scope EVERY priced row banks in
+// full — which is what "banks the lot" meant. The literal 1,145,400 was
+// the direct subtotal and is no longer rendered on its own after 538.
+const bothRows = await page.evaluate(() =>
+  ["ap", "ar", "tax", "rework"].map((r) => {
+    const tr = document.querySelector(`#savingsTable tr[data-row="${r}"]`);
+    const c = [...tr.children].map((x) => x.textContent.trim());
+    return { r, gross: c[2], banks: c[3] };
+  }));
+t.check("the fuller programme banks the lot — every priced row in full",
+  bothRows.every((x) => x.gross === x.banks), JSON.stringify(bothRows));
 
 // The superseded sentiment, asserted gone. The old copy told the reader
 // compliance-only banks nothing and the answer is to widen scope; the
@@ -551,13 +583,13 @@ t.check("reset restores the elimination assumption too",
   (await page.inputValue("#errElim")) === "80");
 
 // The $45 is ours until it is theirs, and the page now says which.
-const reworkRow = await page.locator("#direct tbody tr").nth(2).innerText();
+const reworkRow = await page.locator('#savingsTable tr[data-row="rework"]').innerText();
 t.check("an unchanged rework cost is labelled as our estimate, not the reader's",
   /our estimate, not yours/.test(reworkRow), reworkRow.slice(0, 200));
 await page.fill("#errCost", "70");
 await page.click("#run"); await page.waitForTimeout(700);
 t.check("and becomes theirs once they change it",
-  /your rework cost/.test(await page.locator("#direct tbody tr").nth(2).innerText()));
+  /your rework cost/.test(await page.locator('#savingsTable tr[data-row="rework"]').innerText()));
 
 // ---- 18. the page stays readable ----
 // Dan, 15 Aug 2026: "The UI is difficult to read and follow because there
@@ -834,27 +866,42 @@ const sav = await page.evaluate(() => {
   return {
     headings: hs.map((e) => e.textContent.trim()),
     savingsHeadings: hs.filter((e) => /Savings/i.test(e.textContent)).length,
-    holdsBoth: own.some((e) => e.id === "direct") && own.some((e) => e.id === "indirect"),
-    subheads: own.filter((e) => e.classList.contains("subhead")).map((e) => e.textContent.trim()),
+    holdsBoth: own.some((e) => e.id === "savingsTable"),
+    subheads: [...document.querySelectorAll("#savingsTable tr.grp td")].map((e) => e.textContent.trim()),
     lede: (own.find((e) => e.classList.contains("lede")) || {}).textContent || "",
   };
 });
 t.check("exactly one Savings heading", sav.savingsHeadings === 1, sav.savingsHeadings);
-t.check("and both result containers hang off it", sav.holdsBoth, sav.headings.join(" / "));
-t.check(`the two halves are subheads now, not headings (${sav.subheads.join(" / ")})`,
+t.check("and the savings table hangs off it", sav.holdsBoth, sav.headings.join(" / "));
+// 535 split the section into a Direct and an Indirect subhead. 538
+// merged the two tables and reordered by whether a number exists, so the
+// groups are now "Priced" and "Named, not priced" — the distinction the
+// reader navigates by. Direct/indirect moved onto the row as a tag, and
+// is asserted below rather than lost.
+t.check(`the table groups by priced and not priced (${sav.subheads.join(" / ")})`,
   sav.subheads.length === 2
-  && /^Direct\b/.test(sav.subheads[0]) && /^Indirect\b/.test(sav.subheads[1]),
+  && /^Priced\b/.test(sav.subheads[0]) && /^Named, not priced\b/.test(sav.subheads[1]),
   sav.subheads.join(" | "));
-t.check("neither repeats the word the heading above already says",
+t.check("neither group label repeats the word the heading above already says",
   sav.subheads.every((s) => !/savings/i.test(s)), sav.subheads.join(" | "));
+// 538 tagged every row direct or indirect; 539 took the tag off, because
+// once both kinds share a column, a rule, a table, a total and a payback
+// calculation the label changed no decision. Dan: "Savings are savings -
+// let the reader decide." What has to survive is that the reader CAN
+// still decide — the evidence stays on every row.
+t.check("no row carries a direct/indirect label any more",
+  (await page.locator("#savingsTable .tag.kd, #savingsTable .tag.ki").count()) === 0);
+t.check("but every priced row still shows the evidence to judge it by",
+  await page.evaluate(() => ["ap", "ar", "tax", "rework"].every((r) =>
+    document.querySelector(`#savingsTable tr[data-row="${r}"]`).querySelector(".ev"))));
 // This asserted "never added together" when 535 wrote it. Validating the
 // arithmetic showed that was false — section 5 and the pie both add them
 // — so 536 reworded it and this check follows. What the lede has to do is
 // unchanged: state, once and where both halves can see it, how the two
 // kinds relate. Only the true version of that sentence differs.
-t.check("the lede says why the two are reported apart, and that section 5 uses both",
-  /evidence behind them differs/.test(sav.lede) && /uses both/i.test(sav.lede),
-  sav.lede.slice(0, 90));
+t.check("the lede describes the order the single table is actually in",
+  /named below the total/.test(sav.lede) && /banked figure/i.test(sav.lede),
+  sav.lede.slice(0, 110));
 t.check("sections renumber with the merge — 4 Savings, 5 Investment",
   sav.headings.some((x) => /^4 \S* Savings/.test(x))
   && sav.headings.some((x) => /^5 \S* Investment/.test(x)),
@@ -870,9 +917,11 @@ t.check("sections renumber with the merge — 4 Savings, 5 Investment",
 // up — which is the property that was missing, not the arithmetic.
 const money = (x) => { const m = String(x).replace(/[^0-9.\-]/g, ""); return m === "" ? null : parseFloat(m); };
 const readDirect = () => page.evaluate(() => {
-  const trs = [...document.querySelectorAll("#direct tbody tr")];
+  const trs = [...document.querySelectorAll("#savingsTable tr[data-row]")]
+    .filter((tr) => tr.dataset.row !== "total");
   const cells = (tr) => [...tr.children].map((c) => c.textContent.trim());
-  return { body: trs.slice(0, -1).map(cells), total: cells(trs[trs.length - 1]) };
+  const tot = document.querySelector('#savingsTable tr[data-row="total"]');
+  return { body: trs.map(cells), total: cells(tot) };
 });
 for (const scope of ["compliance", "both"]) {
   await page.selectOption("#scope", scope);
@@ -941,7 +990,7 @@ await page.fill("#cImplS", "8000"); await page.fill("#cImplC", "22000");
 await page.fill("#volAP", "100000"); await page.fill("#volAR", "50000");
 await page.click("#run"); await page.waitForTimeout(900);
 const apRow = await page.evaluate(() => {
-  const tr = document.querySelector("#direct tbody tr");
+  const tr = document.querySelector('#savingsTable tr[data-row="ap"]');
   return { basis: tr.children[1].textContent.replace(/\s+/g, " "),
            value: tr.children[2].textContent.trim() };
 });
@@ -962,51 +1011,67 @@ t.check(`the AP basis multiplies out to the AP value (${rate} x 60%)`,
 // Dan: "which seems like a valid saving to bank." Migration 537.
 await page.selectOption("#scope", "compliance");
 await page.click("#run"); await page.waitForTimeout(800);
-const bothTables = await page.evaluate(() => {
-  const read = (id) => {
-    const rows = [...document.querySelectorAll(`#${id} tbody tr`)]
-      .filter((tr) => !/Direct total/i.test(tr.textContent));
-    return {
-      cols: [...document.querySelectorAll(`#${id} thead th`)].map((e) => e.textContent.trim()),
-      monetised: rows.filter((tr) => /[\d]/.test(tr.children[2].textContent))
-        .map((tr) => ({
-          name: tr.children[0].textContent.replace(/\s+/g, " ").trim().slice(0, 40),
-          tag: [...tr.querySelectorAll(".tag.bank, .tag.unbank")].map((e) => e.textContent).join("/"),
-          banks: tr.children[3] ? tr.children[3].textContent.trim() : null,
-        })),
-    };
-  };
-  return { direct: read("direct"), indirect: read("indirect") };
+const priced = await page.evaluate(() => {
+  const rows = [...document.querySelectorAll("#savingsTable tr[data-row]")]
+    .filter((tr) => tr.dataset.row !== "total");
+  const grp = [...document.querySelectorAll("#savingsTable tr.grp")];
+  // Which group a row falls in: above the second group row = priced.
+  const secondGrpTop = grp[1] ? grp[1].getBoundingClientRect().top : Infinity;
+  return rows.map((tr) => ({
+    row: tr.dataset.row,
+    name: tr.children[0].textContent.replace(/\s+/g, " ").trim().slice(0, 34),
+
+    tag: [...tr.querySelectorAll(".tag.bank, .tag.unbank")].map((e) => e.textContent).join("/"),
+    gross: tr.children[2].textContent.trim(),
+    banks: tr.children[3] ? tr.children[3].textContent.trim() : null,
+    inPricedGroup: tr.getBoundingClientRect().top < secondGrpTop,
+  }));
 });
-t.check("both tables carry the same two numeric columns",
-  bothTables.direct.cols.slice(-2).join("|") === bothTables.indirect.cols.slice(-2).join("|"),
-  `${bothTables.direct.cols.slice(-2)} vs ${bothTables.indirect.cols.slice(-2)}`);
-const allMon = [...bothTables.direct.monetised, ...bothTables.indirect.monetised];
-t.check(`every monetised row on the page declares a banking position (${allMon.length} rows)`,
-  allMon.every((r) => r.tag && r.banks !== null),
-  JSON.stringify(allMon.filter((r) => !r.tag || r.banks === null)));
-const tax = bothTables.indirect.monetised[0];
-t.check(`the indirect row banks in full and says so (${tax.tag})`,
-  tax.tag === "banks" && tax.banks === bothTables.indirect.monetised[0].banks,
-  JSON.stringify(tax));
+const monetised = priced.filter((r) => /\d/.test(r.gross));
+t.check(`every monetised row declares a banking position (${monetised.length} rows)`,
+  monetised.every((r) => r.tag && r.banks !== null),
+  JSON.stringify(monetised.filter((r) => !r.tag || r.banks === null)));
+t.check("and every one of them sits above the total, in the priced group",
+  monetised.every((r) => r.inPricedGroup),
+  JSON.stringify(monetised.filter((r) => !r.inPricedGroup).map((r) => r.row)));
+t.check("while every unpriced benefit sits below it",
+  priced.filter((r) => !/\d/.test(r.gross)).every((r) => !r.inPricedGroup),
+  JSON.stringify(priced.filter((r) => !/\d/.test(r.gross) && r.inPricedGroup).map((r) => r.row)));
+// Dan: "With tangible banked entries at the top" — the rows that bank
+// come before the one that does not, inside the priced group.
+const bankIdx = monetised.map((r, i) => ({ i, banks: /\d/.test(r.banks || "") }));
+t.check("banked rows come before the priced row that does not bank",
+  Math.max(...bankIdx.filter((x) => x.banks).map((x) => x.i))
+    < Math.min(...bankIdx.filter((x) => !x.banks).map((x) => x.i)),
+  JSON.stringify(monetised.map((r) => `${r.row}:${r.banks}`)));
+const tax = monetised.find((r) => r.row === "tax");
+t.check(`the tax row banks in full (${tax.tag})`,
+  tax.tag === "banks" && tax.gross === tax.banks, JSON.stringify(tax));
 t.check("and states its reason inline, as the direct rows do",
   /falls with the compliance build itself/.test(
-    await page.locator("#indirect tbody tr").first().innerText()));
+    await page.locator('#savingsTable tr[data-row="tax"]').innerText()));
 
-// The arithmetic must NOT have moved: 537 makes a decision visible, it
-// does not change one. Net annual is still banked direct + indirect - cost.
-const net537 = await page.evaluate(() => {
-  const n = (s) => parseFloat(String(s).replace(/[^0-9.]/g, ""));
-  const dir = [...document.querySelectorAll("#direct tbody tr")].pop();
-  const ind = document.querySelector("#indirect tbody tr");
-  return { banked: n(dir.children[dir.children.length - 1].textContent),
-           l2: n(ind.children[2].textContent),
-           net: n([...document.querySelectorAll("#invest .stat")][2].querySelector(".n").textContent),
-           run: n([...document.querySelectorAll("#invest .stat")][1].querySelector(".n").textContent) };
+// The arithmetic must NOT have moved: 537 made a decision visible and
+// 538 moved where the total is drawn, but neither changed a figure.
+//
+// This check itself had to change with 538, and the way it broke is the
+// point. It read the total row's banked cell and ADDED the indirect row
+// to it — correct while the total was the direct table's subtotal, a
+// double count the moment the total became the section's. It failed
+// loudly rather than drifting, which is what the assertion is for.
+const net538 = await page.evaluate(() => {
+  const n = (x) => parseFloat(String(x).replace(/[^0-9.]/g, ""));
+  const tot = document.querySelector('#savingsTable tr[data-row="total"]');
+  const cells = [...tot.children];
+  const stat = (i) => n([...document.querySelectorAll("#invest .stat")][i].querySelector(".n").textContent);
+  return { banked: n(cells[cells.length - 1].textContent), net: stat(2), run: stat(1) };
 });
-t.check(`net annual is still banked direct + indirect - run cost (${net537.net.toLocaleString()})`,
-  Math.abs((net537.banked + net537.l2 - net537.run) - net537.net) <= 1,
-  `${net537.banked} + ${net537.l2} - ${net537.run} vs ${net537.net}`);
+t.check(`net annual is the section's banked total minus run cost (${net538.net.toLocaleString()})`,
+  Math.abs((net538.banked - net538.run) - net538.net) <= 1,
+  `${net538.banked} - ${net538.run} vs ${net538.net}`);
+t.check("and the banked total is the figure section 4 now shows, not one only section 5 knew",
+  net538.banked > 0 && net538.banked === net538.net + net538.run,
+  `${net538.banked} vs ${net538.net}+${net538.run}`);
 
 await browser.close();
 process.exit(t.report() ? 0 : 1);
