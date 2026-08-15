@@ -504,18 +504,23 @@ const totGross = Number(totCells[totCells.length - 2].replace(/[^\d]/g, ""));
 const totBanked = Number(totCells[totCells.length - 1].replace(/[^\d]/g, ""));
 t.check(`the total row states the gross and the banked figure side by side (${totGross} / ${totBanked})`,
   totGross > 0 && totBanked > 0 && totGross > totBanked, totCells.join(" | "));
+const runParts = async () => {
+  const sub = await page.locator("#summary .stat").nth(1).locator(".statrun").innerText();
+  const m = sub.match(/\D?([\d,]+)\s*\S*\s*platform[\s\S]*?\D([\d,]+)\s*\S*\s*internal/i);
+  return m ? [Number(m[1].replace(/,/g, "")), Number(m[2].replace(/,/g, ""))] : null;
+};
 const runFromNote = async () => {
-  const note = await page.locator("#summary .note:not(.warn)").innerText();
-  const m = note.match(/less\s+\D?([\d,]+)\s+of platform fees.*?\D([\d,]+)\s+of internal run cost/is);
-  return m ? Number(m[1].replace(/,/g, "")) + Number(m[2].replace(/,/g, "")) : null;
+  const p = await runParts();
+  return p ? p[0] + p[1] : null;
 };
 const netStat = async () => Number((await page.locator("#summary .stat").nth(2)
   .locator(".n").innerText()).replace(/[^\d]/g, ""));
 t.check("and the banked total is what the executive summary works from",
   totBanked === (await netStat()) + (await runFromNote()),
   `${totBanked} vs net ${await netStat()} + run ${await runFromNote()}`);
-t.check("the run cost that bridges banked to net is stated, not left implicit",
-  (await runFromNote()) !== null, await page.locator("#summary .note:not(.warn)").innerText());
+t.check("the running costs that bridge saving to net are stated beside the one-off",
+  (await runFromNote()) !== null,
+  await page.locator("#summary .stat").nth(1).innerText());
 t.check("and the unlocked remainder is still stated somewhere on the page",
   (await page.locator("body").innerText()).includes("697,355"));
 
@@ -524,8 +529,11 @@ t.check("and the unlocked remainder is still stated somewhere on the page",
 // better and that is exactly when a reader should be able to audit it.
 const tags = await page.evaluate(() =>
   [...document.querySelectorAll("#savingsTable .tag.bank, #savingsTable .tag.unbank")].map((e) => e.textContent));
-t.check("every direct row says whether it banks on compliance",
-  tags.includes("43% banks") && tags.includes("banks") && tags.includes("not banked"), tags);
+// 544 replaced the hardcoded English literals 'banks' / 'not banked' /
+// '43% banks' with the D1-backed tag.saved and tag.notSaved, so these are
+// translatable for the first time.
+t.check("every priced row says what it saves on compliance",
+  tags.includes("43% saved") && tags.includes("saved") && tags.includes("not saved"), tags);
 
 // This used to match lowercase "not banked" inside the total row's
 // parenthetical rather than the tag on the rework row — so when 536
@@ -533,8 +541,8 @@ t.check("every direct row says whether it banks on compliance",
 // names. innerText applies text-transform, so the tag reads "NOT BANKED":
 // match case-insensitively, and against the rework row specifically.
 const reworkBankRow = await page.locator('#savingsTable tr[data-row="rework"]').innerText();
-t.check("rework is not banked on a compliance scope",
-  /not banked/i.test(reworkBankRow) && /—|&mdash;/.test(reworkBankRow.split("\t").pop()),
+t.check("rework is not counted as saved on a compliance scope",
+  /not saved/i.test(reworkBankRow) && /—|&mdash;/.test(reworkBankRow.split("\t").pop()),
   reworkBankRow.slice(0, 120));
 
 await page.selectOption("#scope", "both"); await page.waitForTimeout(400);
@@ -650,7 +658,7 @@ await page.waitForTimeout(600);
 t.check("a 'why' link opens it", await page.locator("#notes").evaluate((e) => e.open));
 
 const notes = await page.locator("#notes").innerText();
-["What compliance alone banks", "Why rework is held back",
+["What compliance alone saves", "Why rework is held back",
  "Headcount restates", "carries no value on purpose",
  "Grade A", "Grade D", "Corrections applied"].forEach((phrase) =>
   t.check(`the panel carries: ${phrase}`, notes.includes(phrase)));
@@ -1058,8 +1066,8 @@ t.check("banked rows come before the priced row that does not bank",
     < Math.min(...bankIdx.filter((x) => !x.banks).map((x) => x.i)),
   JSON.stringify(monetised.map((r) => `${r.row}:${r.banks}`)));
 const tax = monetised.find((r) => r.row === "tax");
-t.check(`the tax row banks in full (${tax.tag})`,
-  tax.tag === "banks" && tax.gross === tax.banks, JSON.stringify(tax));
+t.check(`the tax row is saved in full (${tax.tag})`,
+  tax.tag === "saved" && tax.gross === tax.banks, JSON.stringify(tax));
 t.check("and states its reason inline, as the direct rows do",
   /falls with the compliance build itself/.test(
     await page.locator('#savingsTable tr[data-row="tax"]').innerText()));
@@ -1076,9 +1084,10 @@ const net538 = await page.evaluate(() => {
   const n = (x) => parseFloat(String(x).replace(/[^0-9.]/g, ""));
   const tot = document.querySelector('#savingsTable tr[data-row="total"]');
   const cells = [...tot.children];
-  const stat = (i) => n([...document.querySelectorAll("#summary .stat")][i].querySelector(".n").textContent);
-  const note = document.querySelector("#summary .note:not(.warn)").textContent;
-  const m = note.match(/less\s+\D?([\d,]+)\s+of platform fees[\s\S]*?\D([\d,]+)\s+of internal run cost/i);
+  const stats = [...document.querySelectorAll("#summary .stat")];
+  const stat = (i) => n(stats[i].querySelector(".n").textContent);
+  const sub = stats[1].querySelector(".statrun").textContent;
+  const m = sub.match(/\D?([\d,]+)\s*\S*\s*platform[\s\S]*?\D([\d,]+)\s*\S*\s*internal/i);
   return { banked: n(cells[cells.length - 1].textContent), net: stat(2),
            run: m ? Number(m[1].replace(/,/g, "")) + Number(m[2].replace(/,/g, "")) : NaN };
 });
@@ -1132,11 +1141,11 @@ t.check("and on compliance scope it quantifies what is excluded",
 // number an executive challenges first, and the page showed them a sum.
 await page.selectOption("#scope", "compliance");
 await page.click("#run"); await page.waitForTimeout(800);
-const bridgeNote = await page.locator("#summary .note:not(.warn)").innerText();
-const parts = bridgeNote.match(/less\s+\D?([\d,]+)\s+of platform fees[\s\S]*?\D([\d,]+)\s+of internal run cost/i);
-t.check("the note names platform fees and internal run cost separately",
-  parts !== null, bridgeNote.slice(0, 150));
-const plat = Number(parts[1].replace(/,/g, "")), run = Number(parts[2].replace(/,/g, ""));
+const oneOffStat = await page.locator("#summary .stat").nth(1).innerText();
+const parts = await runParts();
+t.check("the one-off stat names platform and internal run cost separately",
+  parts !== null, oneOffStat.replace(/\s+/g, " ").slice(0, 150));
+const [plat, run] = parts;
 t.check(`platform fees are stated in their own right (${plat.toLocaleString()})`, plat > 0);
 t.check(`internal run cost is stated separately (${run.toLocaleString()})`, run > 0 && run !== plat);
 // It still has to close the arithmetic — that is why it is in the note.
@@ -1152,12 +1161,10 @@ t.check(`the two still bridge banked to net (${bankedNow} - ${plat} - ${run} = $
 await page.evaluate(() => { document.getElementById("assump").open = true; });
 await page.fill("#volAP", "200000");
 await page.click("#run"); await page.waitForTimeout(900);
-const platAfter = (await page.locator("#summary .note:not(.warn)").innerText())
-  .match(/less\s+\D?([\d,]+)\s+of platform fees[\s\S]*?\D([\d,]+)\s+of internal run cost/i);
-t.check(`platform fees track volume (${plat.toLocaleString()} -> ${Number(platAfter[1].replace(/,/g,"")).toLocaleString()})`,
-  Number(platAfter[1].replace(/,/g, "")) > plat);
-t.check("while internal run cost does not",
-  Number(platAfter[2].replace(/,/g, "")) === run);
+const platAfter = await runParts();
+t.check(`platform fees track volume (${plat.toLocaleString()} -> ${platAfter[0].toLocaleString()})`,
+  platAfter[0] > plat);
+t.check("while internal run cost does not", platAfter[1] === run);
 await page.fill("#volAP", "100000");
 
 
@@ -1191,8 +1198,9 @@ t.check("including the parenthetical inside the headline label",
 const tagText = await page.evaluate(() =>
   [...document.querySelectorAll("#savingsTable .tag.bank, #savingsTable .tag.unbank")]
     .map((e) => e.textContent.trim()));
-t.check(`the row tags are still hardcoded English — known i18n debt (${tagText.join(", ")})`,
-  tagText.length > 0, tagText.join(", "));
+// 543 logged these as untranslatable literals; 544 moved them into D1.
+t.check(`the row tags come from D1 now, not the template (${tagText.join(", ")})`,
+  tagText.length > 0 && tagText.every((x) => /saved/i.test(x)), tagText.join(", "));
 
 await browser.close();
 process.exit(t.report() ? 0 : 1);
