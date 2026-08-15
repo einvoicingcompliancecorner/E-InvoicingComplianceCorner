@@ -11364,6 +11364,94 @@ recommendations are done.
 rows across all three ROI tables.
 
 
+## 15 August 2026 (cont'd) — Every selection reaches the PDF (546), and the taxonomy reaches D1 (547)
+
+### 546 — the PDF was dropping half the selection
+
+Dan: *"please can you update the pdf output to include all countries that
+are checked. Where no mandate exists and no date has been defined you can
+either accept the pinned date, or say not yet defined, if the date is not
+pinned."*
+
+Worse than a missing table row. The PDF's wave table was built from
+`WAVES`, which holds only back-planned waves — so **a selected
+jurisdiction with no dated deadline appeared nowhere on the printed
+plan**, while still being costed at the simple rate and included in the
+one-off total on page 1. At the EU preset that is sixteen of thirty-two:
+half the selection, paid for and invisible. The interactive page always
+showed them; the artefact that leaves the building did not.
+
+Pinned dates get a row each, clamped to contracting-complete exactly as
+the chart clamps them and labelled "(moved to earliest)" when that
+happens — printing a date the plan does not use would be a small lie on
+the one page that gets forwarded. Unpinned share a "Not yet defined" row.
+
+**One row each for the unpinned was tried first** and took page one to
+307mm against A4's 271. Grouping also matches what the chart does when
+collapsed, so the two renderings agree again.
+
+Checked as a **set comparison**, not a count — a count can be right while
+the names are wrong.
+
+### 547 — recommendation 1, and the estimate was wrong
+
+The recommendation said half a day, on the assumption that 544 and 545 had
+found most of the hardcoded English by accident. The detector says
+otherwise.
+
+**Method**: render with every D1 value — page strings, benchmark labels,
+hints and citations, phase names and notes — replaced by a sentinel, drive
+the page in a browser, read the visible text. Anything still English is
+hardcoded. A browser test rather than a source scan, because half this
+page is built by client-side concatenation and a regex cannot tell which
+fragments a reader ever sees.
+
+**It found 166 strings. Not nine.**
+
+The first run said 240, and 74 were the detector's fault: it stubbed the
+`strings` map but not benchmarks and phases, which are also D1-backed.
+Same lesson as the dead-data sweep — a too-convenient result is the signal
+to re-read the question.
+
+**What moved (26 strings): the page's taxonomy and tooltip chrome.** Five
+status labels, three complexity labels and their notes, four region
+headings, twelve tooltip titles. Chosen first because they are the page's
+*vocabulary* rather than its prose: every country row carries a status and
+a complexity pill, and if those stay English nothing below them reads as
+translated. They are also the cheapest — labels with no sentence around
+them to restructure.
+
+**What is left, honestly: about 103 strings, and not another afternoon.**
+They are prose fragments interleaved with computed values:
+
+```
+'Across ' + N + ' jurisdictions you have ' + X + ' complex (CTC or
+ 5-corner) and ' + Y + ' simple (4-corner exchange) regimes'
+```
+
+Translating that means restructuring it around a positional formatter,
+because word order moves between languages and a German translator cannot
+reorder fragments JavaScript concatenates in a fixed sequence. Extracting
+them as fragments would produce rows that are individually translatable
+and **collectively useless** — worse than English, because it looks
+finished. Roughly 40 short labels that are straightforward and 60-odd
+fragments needing the sentence rebuilt first.
+
+### The ninth suite
+
+`tests/roi-hardcoded.mjs`. It carries the full inventory as a `KNOWN`
+allowlist **generated from a real run rather than typed** — a retyped
+inventory drifts from what the page renders and then hides the next
+regression behind a stale entry. Two checks: nothing new appears, and
+nothing on the list has silently been fixed. So the number can go down and
+cannot go up. Verified it bites by hardcoding a column header.
+
+### Verified
+
+`npm test`: **9 suites**, all passing. ROI regression 172, i18n 7,
+hardcoded 2. PDF still exactly two pages.
+
+
 ## Open items / next steps
 
 ### Where things stand — 15 August 2026

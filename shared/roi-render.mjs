@@ -750,7 +750,7 @@ export function renderRoiPage({ countries, benchmarks = [], phases = [], strings
     .replace(/\\/g, "\\\\").replace(/`/g, "\\`").replace(/\$\{/g, "\\${");
 
   const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-  const hlp = (id, title = "How this is derived") => (helpText[id]
+  const hlp = (id, title = t("tip.derived","How this is derived")) => (helpText[id]
     ? `<span class="hlp" tabindex="0" role="note" aria-label="${esc(title)}: ${esc(helpText[id])}">?<span class="tip"><b>${esc(title)}</b>${esc(helpText[id])}</span></span>`
     : "");
 
@@ -816,20 +816,20 @@ export function renderRoiPage({ countries, benchmarks = [], phases = [], strings
 <div class="card noprint">
   <div class="grid g4">
     <div>
-      <label for="volAP">${t("input.volAP", "Invoices received / year (AP)")}${hlp("volAP","What this drives")}</label>
+      <label for="volAP">${t("input.volAP", "Invoices received / year (AP)")}${hlp("volAP",t("tip.drives","What this drives"))}</label>
       <input type="number" id="volAP" value="${OPEN_VOL_AP}" min="0" step="1000">
     </div>
     <div>
-      <label for="volAR">${t("input.volAR", "Invoices issued / year (AR)")}${hlp("volAR","What this drives")}</label>
+      <label for="volAR">${t("input.volAR", "Invoices issued / year (AR)")}${hlp("volAR",t("tip.drives","What this drives"))}</label>
       <input type="number" id="volAR" value="${OPEN_VOL_AR}" min="0" step="1000">
       <p class="hint">${t("input.volAR.hint", "What the mandates actually bite on.")}</p>
     </div>
     <div>
-      <label for="erp">${t("input.erp", "ERP / billing integrations")}${hlp("erp","What this drives")}</label>
+      <label for="erp">${t("input.erp", "ERP / billing integrations")}${hlp("erp",t("tip.drives","What this drives"))}</label>
       <input type="number" id="erp" value="1" min="1" max="60">
     </div>
     <div>
-      <label for="cur">${t("input.currency", "Currency")}${hlp("cur","What this changes")}${hlp("fx","Where the rate comes from")}</label>
+      <label for="cur">${t("input.currency", "Currency")}${hlp("cur",t("tip.changes","What this changes"))}${hlp("fx",t("tip.rate","Where the rate comes from"))}</label>
       <select id="cur"><option value="GBP">GBP &pound;</option><option value="EUR">EUR &euro;</option><option value="USD" selected>USD $</option></select>
       <p class="hint" id="fxNote"></p>
     </div>
@@ -837,7 +837,7 @@ export function renderRoiPage({ countries, benchmarks = [], phases = [], strings
 </div>
 
 <div class="card noprint">
-  <label for="scope">${t("input.scope", "What are you modelling?")}${hlp("scope","What this changes")}</label>
+  <label for="scope">${t("input.scope", "What are you modelling?")}${hlp("scope",t("tip.changes","What this changes"))}</label>
   <select id="scope" style="max-width:460px">
     <option value="compliance" selected>${t("scope.compliance", "Compliance only &mdash; meet the mandates (what most programmes do)")}</option>
     <option value="both">${t("scope.both", "Compliance + AP process automation &mdash; the fuller, larger programme")}</option>
@@ -846,7 +846,7 @@ export function renderRoiPage({ countries, benchmarks = [], phases = [], strings
 </div>
 
 <div class="card noprint" id="s-countries">
-  <label>${t("input.countries", "Countries in scope")}${hlp("countries","Where this data comes from")}</label>
+  <label>${t("input.countries", "Countries in scope")}${hlp("countries",t("tip.data","Where this data comes from"))}</label>
   <p class="hint" style="margin-bottom:8px">${t("input.countries.hint", "Live mandate data for all 70 tracked jurisdictions.")} <button id="selEU" style="padding:3px 9px;font-size:12px">${t("btn.selEU", "EU only")}</button> <button id="selMandate" style="padding:3px 9px;font-size:12px">${t("btn.selMandate", "Everywhere with a mandate")}</button> <button id="selNone" style="padding:3px 9px;font-size:12px">${t("btn.selNone", "Clear")}</button></p>
   <label class="cbox" id="subsRow" style="align-items:center;gap:8px;padding:9px 12px;margin:0 0 10px;background:var(--ink-3);border:1px solid var(--line);border-radius:6px;font-size:13.5px">
     <input type="checkbox" id="useSubs">
@@ -868,44 +868,44 @@ export function renderRoiPage({ countries, benchmarks = [], phases = [], strings
 
     <p style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:var(--soon);margin:0 0 8px">${t("assumptions.h.cost", "Cost &amp; benefit")}</p>
     <div class="grid g4">
-      <div><label for="costNow">${t("input.costNow", "AP cost per invoice")} <span class="tag tA">A</span>${hlp("costNow","What this drives")}</label><input type="number" id="costNow" value="${dv('costNow')}" min="0" step="0.01"><p class="hint" id="h-costNow"></p></div>
-      <div><label for="costAR">${t("input.costAR", "AR cost per invoice")} <span class="tag tA">A</span>${hlp("costAR","What this drives")}</label><input type="number" id="costAR" value="${dv('costAR')}" min="0" step="0.01"><p class="hint" id="h-costAR"></p></div>
-      <div><label for="savePct">${t("input.savePct", "Cost reduction %")} <span class="tag tB">B</span>${hlp("savePct","What this drives")}</label><input type="number" id="savePct" value="${dv('savePct')}" min="0" max="95"><p class="hint" id="h-savePct"></p></div>
-      <div><label for="errCost">${t("input.errCost", "Rework per errored invoice")} <span class="tag tD">D</span>${hlp("errCost","What this drives")}</label><input type="number" id="errCost" value="${dv('errCost')}" min="0" step="1"><p class="hint" id="h-errCost"></p></div>
+      <div><label for="costNow">${t("input.costNow", "AP cost per invoice")} <span class="tag tA">A</span>${hlp("costNow",t("tip.drives","What this drives"))}</label><input type="number" id="costNow" value="${dv('costNow')}" min="0" step="0.01"><p class="hint" id="h-costNow"></p></div>
+      <div><label for="costAR">${t("input.costAR", "AR cost per invoice")} <span class="tag tA">A</span>${hlp("costAR",t("tip.drives","What this drives"))}</label><input type="number" id="costAR" value="${dv('costAR')}" min="0" step="0.01"><p class="hint" id="h-costAR"></p></div>
+      <div><label for="savePct">${t("input.savePct", "Cost reduction %")} <span class="tag tB">B</span>${hlp("savePct",t("tip.drives","What this drives"))}</label><input type="number" id="savePct" value="${dv('savePct')}" min="0" max="95"><p class="hint" id="h-savePct"></p></div>
+      <div><label for="errCost">${t("input.errCost", "Rework per errored invoice")} <span class="tag tD">D</span>${hlp("errCost",t("tip.drives","What this drives"))}</label><input type="number" id="errCost" value="${dv('errCost')}" min="0" step="1"><p class="hint" id="h-errCost"></p></div>
     </div>
     <div class="grid g4" style="margin-top:12px">
-      <div><label for="errRate">${t("input.errRate", "Manual error rate %")} <span class="tag tB">B</span>${hlp("errRate","What this drives")}</label><input type="number" id="errRate" value="${dv('errRate')}" min="0" max="100" step="0.5"><p class="hint" id="h-errRate"></p></div>
-      <div><label for="fteCost">${t("input.fteCost", "Loaded cost / tax or finance FTE")} <span class="tag tB">B</span>${hlp("fteCost","What this drives")}</label><input type="number" id="fteCost" value="${dv('fteCost')}" min="0" step="1000"><p class="hint" id="h-fteCost"></p></div>
-      <div><label for="fteEntry">${t("input.fteEntry", "Loaded cost / data-entry FTE")} <span class="tag tB">B</span>${hlp("fteEntry","What this drives")}</label><input type="number" id="fteEntry" value="${dv('fteEntry')}" min="0" step="1000"><p class="hint" id="h-fteEntry"></p></div>
-      <div><label for="errElim">${t("input.errElim", "Errors eliminated %")} <span class="tag tD">D</span>${hlp("errElim","What this drives")}</label><input type="number" id="errElim" value="${dv('errElim')}" min="0" max="100" step="1"><p class="hint" id="h-errElim"></p></div>
+      <div><label for="errRate">${t("input.errRate", "Manual error rate %")} <span class="tag tB">B</span>${hlp("errRate",t("tip.drives","What this drives"))}</label><input type="number" id="errRate" value="${dv('errRate')}" min="0" max="100" step="0.5"><p class="hint" id="h-errRate"></p></div>
+      <div><label for="fteCost">${t("input.fteCost", "Loaded cost / tax or finance FTE")} <span class="tag tB">B</span>${hlp("fteCost",t("tip.drives","What this drives"))}</label><input type="number" id="fteCost" value="${dv('fteCost')}" min="0" step="1000"><p class="hint" id="h-fteCost"></p></div>
+      <div><label for="fteEntry">${t("input.fteEntry", "Loaded cost / data-entry FTE")} <span class="tag tB">B</span>${hlp("fteEntry",t("tip.drives","What this drives"))}</label><input type="number" id="fteEntry" value="${dv('fteEntry')}" min="0" step="1000"><p class="hint" id="h-fteEntry"></p></div>
+      <div><label for="errElim">${t("input.errElim", "Errors eliminated %")} <span class="tag tD">D</span>${hlp("errElim",t("tip.drives","What this drives"))}</label><input type="number" id="errElim" value="${dv('errElim')}" min="0" max="100" step="1"><p class="hint" id="h-errElim"></p></div>
     </div>
 
     <p style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:var(--soon);margin:20px 0 8px">${t("assumptions.h.invest", "Investment &mdash; costs")} <span class="tag tD">D</span></p>
     <p class="hint" style="margin:-4px 0 8px;color:#e0907f">${t("assumptions.placeholders", "These figures are <strong>placeholders only</strong>. Please replace with vendor budgetary estimates and treat the ROI as illustrative, until actuals can be provided.")}</p>
     <div class="grid g4">
-      <div><label for="cImplS" style="font-size:11px">${t("input.cImplS", "Cost per SIMPLE integration")}${hlp("cImplS","What this drives")}</label><input type="number" id="cImplS" value="${dv('cImplS')}" min="0" step="1000"><p class="hint" id="h-cImplS"></p></div>
-      <div><label for="cImplC" style="font-size:11px">${t("input.cImplC", "Cost per COMPLEX integration")}${hlp("cImplC","What this drives")}</label><input type="number" id="cImplC" value="${dv('cImplC')}" min="0" step="1000"><p class="hint" id="h-cImplC"></p></div>
-      <div><label for="cPlat" style="font-size:11px">${t("input.cPlat", "Platform / network fees per year")}${hlp("cPlat","What this drives")}</label><input type="number" id="cPlat" value="${dv('cPlat')}" min="0" step="1000"><p class="hint" id="h-cPlat"></p></div>
-      <div><label for="cRun" style="font-size:11px">${t("input.cRun", "Internal run cost per year")}${hlp("cRun","What this drives")}</label><input type="number" id="cRun" value="${dv('cRun')}" min="0" step="1000"><p class="hint" id="h-cRun"></p></div>
+      <div><label for="cImplS" style="font-size:11px">${t("input.cImplS", "Cost per SIMPLE integration")}${hlp("cImplS",t("tip.drives","What this drives"))}</label><input type="number" id="cImplS" value="${dv('cImplS')}" min="0" step="1000"><p class="hint" id="h-cImplS"></p></div>
+      <div><label for="cImplC" style="font-size:11px">${t("input.cImplC", "Cost per COMPLEX integration")}${hlp("cImplC",t("tip.drives","What this drives"))}</label><input type="number" id="cImplC" value="${dv('cImplC')}" min="0" step="1000"><p class="hint" id="h-cImplC"></p></div>
+      <div><label for="cPlat" style="font-size:11px">${t("input.cPlat", "Platform / network fees per year")}${hlp("cPlat",t("tip.drives","What this drives"))}</label><input type="number" id="cPlat" value="${dv('cPlat')}" min="0" step="1000"><p class="hint" id="h-cPlat"></p></div>
+      <div><label for="cRun" style="font-size:11px">${t("input.cRun", "Internal run cost per year")}${hlp("cRun",t("tip.drives","What this drives"))}</label><input type="number" id="cRun" value="${dv('cRun')}" min="0" step="1000"><p class="hint" id="h-cRun"></p></div>
       <div></div>
     </div>
 
     <p style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:var(--soon);margin:20px 0 8px">${t("assumptions.h.weeks", "Implementation &mdash; weeks")} <span class="tag tD">D</span></p>
     <div class="grid g4">
-      <div><label for="wMob" style="font-size:11px">${t("input.wMob", "Mobilisation")}${hlp("wMob","What this phase covers")}</label><input type="number" id="wMob" value="${dv('wMob')}" min="0" step="0.5"></div>
-      <div><label for="wDes" style="font-size:11px">${t("input.wDes", "Design")}${hlp("wDes","What this phase covers")}</label><input type="number" id="wDes" value="${dv('wDes')}" min="0" step="0.5"></div>
-      <div><label for="wBld" style="font-size:11px">${t("input.wBld", "Build")}${hlp("wBld","What this phase covers")}</label><input type="number" id="wBld" value="${dv('wBld')}" min="0" step="0.5"></div>
-      <div><label for="wUat" style="font-size:11px">${t("input.wUat", "UAT")}${hlp("wUat","What this phase covers")}</label><input type="number" id="wUat" value="${dv('wUat')}" min="0" step="0.5"></div>
+      <div><label for="wMob" style="font-size:11px">${t("input.wMob", "Mobilisation")}${hlp("wMob",t("tip.phase","What this phase covers"))}</label><input type="number" id="wMob" value="${dv('wMob')}" min="0" step="0.5"></div>
+      <div><label for="wDes" style="font-size:11px">${t("input.wDes", "Design")}${hlp("wDes",t("tip.phase","What this phase covers"))}</label><input type="number" id="wDes" value="${dv('wDes')}" min="0" step="0.5"></div>
+      <div><label for="wBld" style="font-size:11px">${t("input.wBld", "Build")}${hlp("wBld",t("tip.phase","What this phase covers"))}</label><input type="number" id="wBld" value="${dv('wBld')}" min="0" step="0.5"></div>
+      <div><label for="wUat" style="font-size:11px">${t("input.wUat", "UAT")}${hlp("wUat",t("tip.phase","What this phase covers"))}</label><input type="number" id="wUat" value="${dv('wUat')}" min="0" step="0.5"></div>
     </div>
     <div class="grid g4" style="margin-top:12px" id="chgRow">
-      <div><label for="wChg" style="font-size:11px">${t("input.wChg", "Process change &amp; training")}${hlp("wChg","What this phase covers")}</label><input type="number" id="wChg" value="${dv('wChg')}" min="0" step="0.5"><p class="hint">${t("input.wChg.hint", "AP automation scope only.")}</p></div>
+      <div><label for="wChg" style="font-size:11px">${t("input.wChg", "Process change &amp; training")}${hlp("wChg",t("tip.phase","What this phase covers"))}</label><input type="number" id="wChg" value="${dv('wChg')}" min="0" step="0.5"><p class="hint">${t("input.wChg.hint", "AP automation scope only.")}</p></div>
       <div></div><div></div><div></div>
     </div>
     <div class="grid g4" style="margin-top:12px">
-      <div><label for="wVen" style="font-size:11px">${t("input.wVen", "Vendor selection (once)")}${hlp("wVen","What “once” means here")}</label><input type="number" id="wVen" value="${dv('wVen')}" min="0" step="1"></div>
-      <div><label for="wCon" style="font-size:11px">${t("input.wCon", "Contracting (once)")}${hlp("wCon","What “once” means here")}</label><input type="number" id="wCon" value="${dv('wCon')}" min="0" step="1"></div>
-      <div><label for="lanes" style="font-size:11px">${t("input.lanes", "Parallel workstreams")}${hlp("lanes","What this means")}</label><input type="number" id="lanes" value="${dv('lanes')}" min="1" max="10"></div>
-      <div><label for="pace" style="font-size:11px">${t("input.pace", "Delivery pace")}${hlp("pace","What this means")}</label><select id="pace">${[["0.75",t("pace.aggressive","Aggressive")],["1",t("pace.typical","Typical")],["1.3",t("pace.conservative","Conservative")]].map(([v,n])=>`<option value="${v}"${String(dv('pace'))===v?" selected":""}>${n}</option>`).join("")}</select></div>
+      <div><label for="wVen" style="font-size:11px">${t("input.wVen", "Vendor selection (once)")}${hlp("wVen",t("tip.once","What “once” means here"))}</label><input type="number" id="wVen" value="${dv('wVen')}" min="0" step="1"></div>
+      <div><label for="wCon" style="font-size:11px">${t("input.wCon", "Contracting (once)")}${hlp("wCon",t("tip.once","What “once” means here"))}</label><input type="number" id="wCon" value="${dv('wCon')}" min="0" step="1"></div>
+      <div><label for="lanes" style="font-size:11px">${t("input.lanes", "Parallel workstreams")}${hlp("lanes",t("tip.means","What this means"))}</label><input type="number" id="lanes" value="${dv('lanes')}" min="1" max="10"></div>
+      <div><label for="pace" style="font-size:11px">${t("input.pace", "Delivery pace")}${hlp("pace",t("tip.means","What this means"))}</label><select id="pace">${[["0.75",t("pace.aggressive","Aggressive")],["1",t("pace.typical","Typical")],["1.3",t("pace.conservative","Conservative")]].map(([v,n])=>`<option value="${v}"${String(dv('pace'))===v?" selected":""}>${n}</option>`).join("")}</select></div>
     </div>
     <p class="hint" style="margin-top:10px">${t("assumptions.durations", "Durations are per country. Countries sharing a go-live date form a wave, so a five-country wave costs roughly five country-tracks of effort, divided across however many workstreams you can genuinely run at once.")}</p>
   </div>
@@ -978,8 +978,13 @@ export function renderRoiPage({ countries, benchmarks = [], phases = [], strings
   const script = `
 const COUNTRIES = __ROI_COUNTRIES__;
 let unlocked = __ROI_UNLOCKED__;
-const REGION = {Eu:'Europe', Mi:'Middle East / Africa', As:'Asia-Pacific', Am:'Americas'};
-const STATUS = {i:['In force','p-inforce'], u:['Upcoming','p-upcoming'], b:['B2G only','p-b2gonly'], n:['No mandate','p-nomandate'], t:['Tracked','p-nomandate']};
+const REGION = {Eu:'${t("region.eu","Europe")}', Mi:'${t("region.mea","Middle East / Africa")}', As:'${t("region.apac","Asia-Pacific")}', Am:'${t("region.am","Americas")}'};
+// The five status labels, the three complexity labels and the four
+// region headings are what a reader sees on every country row, and all
+// twelve were English literals until 547. They are the page's taxonomy:
+// if they do not translate, nothing below them reads as translated
+// either, however carefully the prose around them is handled.
+const STATUS = {i:['${t("status.inforce","In force")}','p-inforce'], u:['${t("status.upcoming","Upcoming")}','p-upcoming'], b:['${t("status.b2g","B2G only")}','p-b2gonly'], n:['${t("status.nomandate","No mandate")}','p-nomandate'], t:['${t("status.tracked","Tracked")}','p-nomandate']};
 // Three values, not four (Dan, 12 Aug 2026). The dividing line is whether
 // the tax authority is a party to the transaction, which is also what
 // actually drives integration effort. The old four-point scale carried a
@@ -987,10 +992,10 @@ const STATUS = {i:['In force','p-inforce'], u:['Upcoming','p-upcoming'], b:['B2G
 // exchange with no authority involvement" — which is exactly where
 // Belgium, Norway, the UK and Slovenia live, and where the European
 // direction of travel is heading.
-const CXNAME = {2:['Complex','cx3'], 1:['Simple','cx2'], 0:['No mandate','cx0']};
-const CXNOTE = {2:'CTC or 5-corner: the tax authority is a party to the transaction — clearance, pre-validation, or invoice-level reporting. Certification, response handling and status reconciliation on top of the exchange.',
-  1:'Decentralised 4-corner exchange only. Structured invoices move between accredited access points; the tax authority is not in the loop.',
-  0:'No mandate to build for. Included only because you selected it — there is no deadline, so this work can start whenever you have capacity.'};
+const CXNAME = {2:['${t("cx.complex","Complex")}','cx3'], 1:['${t("cx.simple","Simple")}','cx2'], 0:['${t("status.nomandate","No mandate")}','cx0']};
+const CXNOTE = {2:'${tj("cx.complex.note","CTC or 5-corner: the tax authority is a party to the transaction &mdash; clearance, pre-validation, or invoice-level reporting. Certification, response handling and status reconciliation on top of the exchange.")}',
+  1:'${tj("cx.simple.note","Decentralised 4-corner exchange only. Structured invoices move between accredited access points; the tax authority is not in the loop.")}',
+  0:'${tj("cx.none.note","No mandate to build for. Included only because you selected it &mdash; there is no deadline, so this work can start whenever you have capacity.")}'};
 const SYM = {GBP:'£', EUR:'€', USD:'$'};
 let cur='USD';
 
@@ -2162,7 +2167,7 @@ function build(){
     \${placeholders.length ? \`<div class="note warn" style="margin-bottom:14px"><strong>\${placeholders.length} ${tj("res.placeholders","of 4 cost inputs are still placeholders.")}</strong> ${tj("res.placeholders2","Please replace them with vendor budgetary estimates in the assumptions panel, and treat the ROI as illustrative until actuals can be provided.")}</div>\` : ''}
     <div class="grid g5">
       <div class="stat"><div class="n" style="color:#7fd0a8">\${fmt(l1Banked + l2)}</div><div class="l">${tj("res.banked","Annual saving")}\${l1Unbanked > 0 ? \` (+\${fmt(l1Unbanked)} ${tj("res.unbanked","available on a wider scope")})\` : ''}</div></div>
-      <div class="stat"><div class="n" style="color:#e0907f">\${fmt(oneOff)}</div><div class="l">${tj("res.oneOff","One-off investment")} <span class="statwhat">${tj("res.oneOff2","implementation")}</span><span class="statrun">${tj("res.running","plus each year:")} \${fmt(cPlat)} ${tj("res.running2","platform")}${hlp('cPlat','What this covers')} + \${fmt(cRun)} ${tj("res.running3","internal")}${hlp('cRun','What this covers')}</span></div></div>
+      <div class="stat"><div class="n" style="color:#e0907f">\${fmt(oneOff)}</div><div class="l">${tj("res.oneOff","One-off investment")} <span class="statwhat">${tj("res.oneOff2","implementation")}</span><span class="statrun">${tj("res.running","plus each year:")} \${fmt(cPlat)} ${tj("res.running2","platform")}${hlp('cPlat',t("tip.covers","What this covers"))} + \${fmt(cRun)} ${tj("res.running3","internal")}${hlp('cRun',t("tip.covers","What this covers"))}</span></div></div>
       <div class="stat"><div class="n" style="color:\${netAnnual>=0?'#7fd0a8':'#e0907f'}">\${fmt(netAnnual)}</div><div class="l">${tj("res.netAnnual","Net annual saving")}</div></div>
       <div class="stat"><div class="n" style="color:\${paybackMonths&&paybackMonths<=24?'#7fd0a8':'#e2b978'}">\${paybackMonths===null?'n/a':paybackMonths<1?'&lt;1mo':Math.round(paybackMonths)+'mo'}</div><div class="l">${tj("res.payback","Payback on one-off")}</div></div>
       <div class="stat"><div class="n" style="color:\${dated.length?'#e08b7a':'#8d9bb5'}">\${dated.length}</div><div class="l">${tj("res.dated","With a dated deadline ahead")}</div></div>
@@ -2170,13 +2175,13 @@ function build(){
     <div class="note" style="margin-top:14px">\${banked
       ? \`<strong>${tj("sum.scopeBoth","Scope: compliance + AP process automation.")}</strong> ${tj("sum.scopeBoth2","Every direct row counts, and the timeline carries a process-change phase per country. The larger, less common programme.")}\`
       : \`<strong>${tj("sum.scopeOnly","Scope: compliance only.")}</strong> \${fmt(l1Banked + l2)} ${tj("sum.scopeOnly2","is saved from the integration itself; the remaining")} \${fmt(l1Unbanked)} ${tj("sum.scopeOnly3","needs a change programme you are not running.")}\`} ${tj("sum.bridge6","Net annual saving is the annual saving less the two running costs above; section 4 shows what makes up the annual saving, row by row.")} \${notesLink()}</div>
-    <div class="card"><p style="margin:0">Across <strong>\${sel.length}</strong> jurisdictions you have <strong>\${complex.length} complex</strong> (CTC or 5-corner) and <strong>\${simple.length} simple</strong> (4-corner exchange) regime\${simple.length===1?'':'s'}\${watch.length?\`, plus \${watch.length} with no mandate${hlp('nomandate','Why these are still in the plan')}\`:''}. With \${erp} ERP/billing system\${erp===1?'':'s'} that is roughly <strong>\${integrations} country-system integration\${integrations===1?'':'s'}</strong>${hlp('integrations','How this is derived')} to deliver. \${dated.length?\`The nearest binding date is <strong>\${dated[0][5]}</strong> (\${dated[0][0]}).\`:'None of the selected jurisdictions has a future dated deadline on the tracker today.'} \${ev('site','Source: live tracker data')}</p></div>\`;
+    <div class="card"><p style="margin:0">Across <strong>\${sel.length}</strong> jurisdictions you have <strong>\${complex.length} complex</strong> (CTC or 5-corner) and <strong>\${simple.length} simple</strong> (4-corner exchange) regime\${simple.length===1?'':'s'}\${watch.length?\`, plus \${watch.length} with no mandate${hlp('nomandate',t("tip.nomandate","Why these are still in the plan"))}\`:''}. With \${erp} ERP/billing system\${erp===1?'':'s'} that is roughly <strong>\${integrations} country-system integration\${integrations===1?'':'s'}</strong>${hlp('integrations',t("tip.derived","How this is derived"))} to deliver. \${dated.length?\`The nearest binding date is <strong>\${dated[0][5]}</strong> (\${dated[0][0]}).\`:'None of the selected jurisdictions has a future dated deadline on the tracker today.'} \${ev('site','Source: live tracker data')}</p></div>\`;
 
   const pace = +document.getElementById('pace').value || 1;
   const ganttRows = buildGantt(tracks, erp, pace);
   const euDrivenCount = sel.filter(c=>c[8]).length;
-  document.getElementById('waveIntro').innerHTML = \`${tj("waves.intro","Back-planned from each jurisdiction&rsquo;s published deadline")} \${ev('site','tracker dates')} ${tj("waves.intro2","through phase durations you control")} \${ev('durations','practitioner estimates')}. ${tj("waves.intro3","Procurement is modelled once, not per country.")}\${euDrivenCount?\` <strong>\${euDrivenCount}</strong> ${tj("waves.intro4","are here on an EU-wide obligation, not a national mandate")}${hlp('vida','Where these deadlines come from')}.\`:''}\`;
-  let w = dated.length ? \`<table><thead><tr><th>Deadline</th><th>Jurisdiction</th><th>Status</th><th>Model${hlp('complexity','How complexity is assigned')}</th><th class="num">Integrations${hlp('integrations','How this is derived')}</th><th>Why</th></tr></thead><tbody>\` : '';
+  document.getElementById('waveIntro').innerHTML = \`${tj("waves.intro","Back-planned from each jurisdiction&rsquo;s published deadline")} \${ev('site','tracker dates')} ${tj("waves.intro2","through phase durations you control")} \${ev('durations','practitioner estimates')}. ${tj("waves.intro3","Procurement is modelled once, not per country.")}\${euDrivenCount?\` <strong>\${euDrivenCount}</strong> ${tj("waves.intro4","are here on an EU-wide obligation, not a national mandate")}${hlp('vida',t("tip.deadlines","Where these deadlines come from"))}.\`:''}\`;
+  let w = dated.length ? \`<table><thead><tr><th>Deadline</th><th>Jurisdiction</th><th>Status</th><th>Model${hlp('complexity',t("tip.complexity","How complexity is assigned"))}</th><th class="num">Integrations${hlp('integrations',t("tip.derived","How this is derived"))}</th><th>Why</th></tr></thead><tbody>\` : '';
   dated.forEach(c=>{
     const st=STATUS[c[3]], cx=CXNAME[c[4]];
     const ints = erp;   // every country you build for, once per ERP system

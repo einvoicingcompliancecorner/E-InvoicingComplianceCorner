@@ -75,8 +75,21 @@ export async function buildRoiPage(opts = {}) {
       ? Object.fromEntries(Object.keys(strings).map((k) => [k, `«${k}»`]))
       : strings;
 
+    // Benchmarks and phases carry user-facing text of their own — labels,
+    // hints, citations, phase names and notes — and it is all D1-backed.
+    // Stub it too, or the detector reports every citation on the page as
+    // hardcoded and buries the real findings in noise.
+    const stubRow = (row, fields) => opts.stubStrings
+      ? { ...row, ...Object.fromEntries(fields
+          .filter((f) => row[f] != null && row[f] !== "")
+          .map((f) => [f, `«${row.key || row.id}.${f}»`])) }
+      : row;
+    const usedBenchmarks = benchmarks.map((b) => stubRow(b, ["label", "hint", "citation"]));
+    const usedPhases = phases.map((p) => stubRow(p, ["name", "note"]));
+
     const { body, script } = roi.renderRoiPage({
-      countries, benchmarks, phases, strings: used, fx,
+      countries, benchmarks: usedBenchmarks, phases: usedPhases,
+      strings: used, fx,
       locked: false, subscribed, signedInAs: "tests@example.com",
     });
 
