@@ -10796,6 +10796,108 @@ sum to their own totals**, at both scopes.
 savings kinds are kept apart, because section 5 and the pie add them.
 
 
+## 15 August 2026 (cont'd) — One savings table, and the end of direct vs indirect (migrations 537-539)
+
+Three migrations in one sitting, each one Dan's answer to what the last
+one exposed. Worth reading as an arc, because the destination was not
+visible from the start.
+
+### 537 — the indirect row joins the banking model
+
+Asked whether indirect savings are banked, the honest answer was **neither
+0% nor 100% — it had never been put through the banking model at all**. It
+entered `netAnnual` in full on both scopes while every direct row beside
+it declared a rate. Not a wrong number: an absent decision, which is
+indistinguishable from a decision to anyone auditing the page.
+
+That mattered because rework is held to **zero** for being "the
+weakest-evidenced row here", and the ranking does not survive the grades:
+
+```
+rework, banked 0%    manual_error_rate  10  B   rework_per_error  45  D
+                     error_elimination  80  D
+tax effort, in full  ap_invoices_per_fte 12000 A  tax_effort_per_jur 0.018 D
+                     tax_effort_cap    0.20  D   loaded_fte_cost 116800 B
+```
+
+Two D-grade assumptions each. The reason one banked at zero and the other
+in full was not evidence quality — it was that the banking model had only
+ever been built for the direct table. Dan: *"which seems like a valid
+saving to bank."*
+
+### 538 — two tables become one
+
+Dan: *"I would like to combine direct and indirect tables, such as to tidy
+the savings section... With tangible banked entries at the top, and
+intangible savings at the bottom."*
+
+After 536 and 537 the two tables had identical headers, an identical
+banking rule and a subtotal each, while section 5 only ever quoted their
+sum. The merged table is ordered by **whether a number exists**: priced
+rows above the total with the banked ones first, and the five benefits
+this model refuses to price below it under their own heading.
+
+**The total changed meaning, which is the part to check.** It was the
+direct table's subtotal ($448,045 banked); it is now the section's
+($518,125) — and that is exactly the figure section 5 divides into for
+payback. Before this, *section 5's headline number appeared nowhere in
+section 4*, which is a large part of why the roll-up was hard to follow.
+
+Rows gained `data-row` handles, so the tests stopped depending on
+positional indices — which is what had made them fragile through 536.
+
+### 539 — savings are savings
+
+Dan: *"I don't think we need to differentiate between direct and indirect
+savings. Savings are savings - let the reader decide."*
+
+538 had kept the distinction alive as a per-row tag. Once both kinds share
+a column, a banking rule, a table, a total and a payback calculation, the
+tag was teaching a taxonomy that changed no decision. It comes off, along
+with the lede clause explaining it and — the substantive part — **the
+split headline in section 2**, which showed "Direct — banked annually"
+beside "Indirect — modelled", two stats the page then added together
+everywhere else.
+
+**$518,125 now appears in sections 2, 4 and 5 as the same number. First
+time that has been true.**
+
+What stays: every row's evidence citation and its tangible/intangible tag,
+so a reader who wants the distinction can still make it. A label was
+removed, nothing was hidden.
+
+### What did not change, across all three
+
+**Not one figure.** Four migrations now (536-539) have changed what this
+page says about its numbers without changing any of them — which is worth
+stating because it is the reason the numbers stayed trustworthy while the
+presentation was rebuilt underneath them.
+
+### The 300-character prose budget earned its keep
+
+Migration 530's standing invariant rejected the first draft of 538's lede
+at 312 characters. Not exempted — rewritten to 268. The invariant is the
+only check in the suite guarding a *quality* rather than a fact, and it
+did the job it was added for without anyone remembering it existed.
+
+### Twelve orphaned keys, deliberately not cleaned
+
+`sec.direct`, `sec.indirect`, both their ledes, `sec.savings.lede`,
+`sec.savings.lede2`, `res.direct`, `res.indirect`, `res.indirectWhy`,
+`row.directTotal`, `sum.scopeBoth3`, `tag.direct`, `tag.indirect`.
+
+**Left in place on purpose, three migrations running.** Retiring them by
+hand in the migration that orphaned them is precisely how the last six
+orphans were created. `npm test` prints the list on every run, so they are
+visible rather than lurking, and the dead-data sweep — recommendation 1 on
+the design review — now has a twelve-row worked example waiting for it.
+
+### Verified
+
+`npm test`: 8 suites, all passing. ROI regression **147 checks** (was
+135). PDF still exactly two pages, 191mm and 209mm against A4's 271mm.
+
+
 ## Open items / next steps
 
 ### Where things stand — 15 August 2026
