@@ -1810,7 +1810,7 @@ function buildGantt(sel0, erp, pace){
     : '';
   document.getElementById('ganttHead').innerHTML = critPath + (late
     ? \`<div class="note warn"><strong>\${late} ${tj("chart.late","of")} \${waveMeta.length} ${tj("chart.late2","waves back-plan to a start date that has already passed.")}</strong> ${tj("chart.late3","Compressed delivery, an interim filing approach, or an accepted late position &mdash; but the latest responsible start is behind you.")} \${notesLink()}</div>\`
-    : soon ? \`<div class="note"><strong>\${soon} wave\${soon===1?'':'s'} must start within 90 days</strong> to hit the published deadline on your current phase assumptions.</div>\`
+    : soon ? \`<div class="note">\${fill('${tj("guard.soon","<strong>{0} must start within 90 days</strong> to hit the published deadline on your current phase assumptions.")}', soon + ' ' + plur(soon, '${tj("word.wave","wave")}', '${tj("word.waves","waves")}'))}</div>\`
     : \`<div class="note"><strong>Runway is comfortable across all \${waveMeta.length} waves</strong> on your current assumptions.</div>\`);
 
   document.getElementById('ganttLegend').innerHTML =
@@ -2230,9 +2230,9 @@ function build(){
     w += \`<tr><td><strong>\${c[5]}</strong>\${c[8]?' <span class="pill p-upcoming">EU</span>':''}</td><td>\${c[0]}</td><td><span class="pill \${st[1]}">\${st[0]}</span></td><td><span class="pill \${cx[1]}">\${cx[0]}</span></td><td class="num">\${ints}</td><td style="font-size:12px;color:var(--muted)">\${why}</td></tr>\`;
   });
   w += dated.length ? '</tbody></table>' : '<div class="note">No selected jurisdiction has a future dated deadline. Those already in force still need remediation work &mdash; see the in-force list below.</div>';
-  if(watch.length) w += \`<div class="note" style="margin-top:12px"><strong>No mandate, included by your selection (\${watch.length}):</strong> \${watch.map(c=>c[0]).join(', ')}. Costed at the simple rate and scheduled as one discretionary wave &mdash; there is no deadline to miss, so this work can start whenever you have capacity.</div>\`;
+  if(watch.length) w += \`<div class="note" style="margin-top:12px">\${fill('${tj("waves.noMandate","<strong>No mandate, included by your selection ({0}):</strong> {1}. Costed at the simple rate and scheduled as one discretionary wave &mdash; there is no deadline to miss, so this work can start whenever you have capacity.")}', watch.length, watch.map(c=>c[0]).join(', '))}</div>\`;
   const inforceNoDate = sel.filter(c=>c[3]==='i' && !c[5]);
-  if(inforceNoDate.length) w += \`<div class="note" style="margin-top:12px"><strong>Already in force, no further dated step (\${inforceNoDate.length}):</strong> \${inforceNoDate.map(c=>c[0]).join(', ')}. These are compliance-now, not project-plan items.</div>\`;
+  if(inforceNoDate.length) w += \`<div class="note" style="margin-top:12px">\${fill('${tj("waves.inforce","<strong>Already in force, no further dated step ({0}):</strong> {1}. These are compliance-now, not project-plan items.")}', inforceNoDate.length, inforceNoDate.map(c=>c[0]).join(', '))}</div>\`;
   document.getElementById('waves').innerHTML = w;
   const gt = document.getElementById('ganttToggle');
   if(gt && !gt.dataset.wired){
@@ -2385,7 +2385,13 @@ function build(){
   //    with a straight face.
   const mistimed = sel.filter(c => c[9] && (!c[5] || c[9] < c[5]));
   if(mistimed.length){
-    warn.push(\`<strong>\${mistimed.length} selected \${mistimed.length===1?'jurisdiction has an obligation':'jurisdictions have obligations'} earlier than the date this plan plans for.</strong> \${mistimed.map(c => \`\${c[0]} &mdash; \${c[9]}\${c[5] ? \` (planned for \${c[5]})\` : ' (planned as discretionary)'}\`).join('; ')}. These are dated, live obligations that the arrivals board does not display, so the wave plan below does not schedule them. The runway shown for \${mistimed.length===1?'it':'them'} is longer than the runway \${mistimed.length===1?'it':'they'} actually \${mistimed.length===1?'has':'have'}.\`);
+    warn.push(fill(plur(mistimed.length,
+        '${tj("guard.mistimed.one","<strong>{0} selected jurisdiction has an obligation earlier than the date this plan plans for.</strong> {1}. These are dated, live obligations that the arrivals board does not display, so the wave plan does not schedule it. The runway shown for it is longer than the runway it actually has.")}',
+        '${tj("guard.mistimed.many","<strong>{0} selected jurisdictions have obligations earlier than the date this plan plans for.</strong> {1}. These are dated, live obligations that the arrivals board does not display, so the wave plan does not schedule them. The runway shown for them is longer than the runway they actually have.")}'),
+      mistimed.length,
+      mistimed.map(c => fill(c[5] ? '${tj("guard.mistimed.planned","{0} &mdash; {1} (planned for {2})")}'
+                                  : '${tj("guard.mistimed.disc","{0} &mdash; {1} (planned as discretionary)")}',
+                             c[0], c[9], c[5])).join('; ')));
   }
 
   // 4. An override that pushes a country past its own deadline. Not an
