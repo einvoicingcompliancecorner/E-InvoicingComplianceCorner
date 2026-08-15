@@ -324,7 +324,8 @@ table{color:var(--text-lo)}
 .wrap{color:var(--text-lo)}
 footer{color:var(--muted)}
 .grid{display:grid;gap:14px}
-@media(min-width:760px){.g2{grid-template-columns:1fr 1fr}.g3{grid-template-columns:repeat(3,1fr)}.g4{grid-template-columns:repeat(4,1fr)}}
+@media(min-width:760px){.g2{grid-template-columns:1fr 1fr}.g3{grid-template-columns:repeat(3,1fr)}.g4{grid-template-columns:repeat(4,1fr)}.g5{grid-template-columns:repeat(3,1fr)}}
+@media(min-width:1000px){.g5{grid-template-columns:repeat(5,1fr)}}
 label{display:block;font-size:12px;font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin:0 0 5px}
 input[type=number],input[type=text],select{width:100%;background:var(--ink);border:1px solid var(--line);color:var(--text-lo);border-radius:6px;padding:9px 11px;font:inherit;font-size:15px}
 input:focus,select:focus{outline:2px solid var(--soon);outline-offset:1px}
@@ -908,7 +909,7 @@ export function renderRoiPage({ countries, benchmarks = [], phases = [], strings
 
 <div id="results" class="hidden">
   <div id="guards"></div>
-  <h2>2 &middot; ${t("sec.summary", "Executive summary")}</h2>
+  <h2>2 &middot; ${t("sec.summary2", "Executive summary &mdash; savings, investment and payback")}</h2>
   <div id="summary"></div>
   <div id="savings"></div>
   <h2>3 &middot; ${t("sec.waves", "Compliance wave plan")}</h2>
@@ -935,14 +936,12 @@ export function renderRoiPage({ countries, benchmarks = [], phases = [], strings
   <p class="noprint" style="margin:-4px 0 14px"><button id="ganttToggle" style="padding:5px 11px;font-size:12.5px">${t("btn.expand", "Show every jurisdiction")}</button> <button id="tblToggle" style="padding:5px 11px;font-size:12.5px">${t("btn.table", "Show as table")}</button></p>
   <div id="waves" class="hidden"></div>
   <h2>4 &middot; ${t("sec.savings", "Savings")}</h2>
-  <p class="lede">${t("sec.savings.lede3", "Priced savings first, banked ones at the top; what this model will not put a number on is named below the total. Every priced row says what it banks on the scope you chose, and section 5 works from the banked figure.")}</p>
+  <p class="lede">${t("sec.savings.lede4", "Priced savings first, banked ones at the top; what this model will not put a number on is named below the total. Every priced row says what it banks on the scope you chose, and the banked total is the figure section 2 works from.")}</p>
   <div id="savingsTable"></div>
-  <h2>5 &middot; ${t("sec.invest", "Investment &amp; payback")}</h2>
-  <div id="invest"></div>
   <details class="card" id="notes" style="padding:0">
     <summary style="cursor:pointer;padding:14px 18px;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:12px">
       <span>
-        <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:var(--soon)">6 &middot; ${t("sec.evidence", "Assumptions, sources and caveats")}</span>
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:var(--soon)">5 &middot; ${t("sec.evidence", "Assumptions, sources and caveats")}</span>
         <span class="hint" style="display:block;margin:4px 0 0">${t("sec.evidence.hint", "Every figure above, where it came from, and what it deliberately does not claim.")}</span>
       </span>
       <span id="notesChevron" style="font-family:'IBM Plex Mono',monospace;color:var(--muted);font-size:12px;white-space:nowrap">${t("assumptions.show", "show &#9662;")}</span>
@@ -2105,15 +2104,30 @@ function build(){
   const bankedErr = banked ? errSave : 0;
   const l1Banked  = bankedAP + savingAR + bankedErr;
   const l1Unbanked = l1 - l1Banked;
+  // ---- investment: without a cost side this is a benefits calculator, not ROI
+  const cImplS = +document.getElementById('cImplS').value || 0;
+  const cImplC = +document.getElementById('cImplC').value || 0;
+  const cPlat = +document.getElementById('cPlat').value || 0;
+  const cRun  = +document.getElementById('cRun').value || 0;
+  const oneOff = intSimple * cImplS + intComplex * cImplC;
+  const annualCost = cPlat + cRun;
+  const annualBenefit = l1Banked + l2;
+  const netAnnual = annualBenefit - annualCost;
+  const paybackMonths = netAnnual > 0 ? (oneOff / netAnnual) * 12 : null;
+  const placeholders = ['cImplS','cImplC','cPlat','cRun'].filter(id => String(document.getElementById(id).value) === String(DEFAULTS[id].v));
+
   document.getElementById('summary').innerHTML = \`
-    <div class="grid g3">
+    \${placeholders.length ? \`<div class="note warn" style="margin-bottom:14px"><strong>\${placeholders.length} ${tj("res.placeholders","of 4 cost inputs are still placeholders.")}</strong> ${tj("res.placeholders2","Please replace them with vendor budgetary estimates in the assumptions panel, and treat the ROI as illustrative until actuals can be provided.")}</div>\` : ''}
+    <div class="grid g5">
       <div class="stat"><div class="n" style="color:#7fd0a8">\${fmt(l1Banked + l2)}</div><div class="l">${tj("res.banked","banked annually")}\${l1Unbanked > 0 ? \` (+\${fmt(l1Unbanked)} ${tj("res.unbanked","unlocked, not banked")})\` : ''}</div></div>
-      <div class="stat"><div class="n">\${sel.length}</div><div class="l">${tj("res.inScope","Jurisdictions in scope")}</div></div>
+      <div class="stat"><div class="n" style="color:#e0907f">\${fmt(oneOff)}</div><div class="l">${tj("res.oneOff","One-off investment")}</div></div>
+      <div class="stat"><div class="n" style="color:\${netAnnual>=0?'#7fd0a8':'#e0907f'}">\${fmt(netAnnual)}</div><div class="l">${tj("res.netAnnual","Net annual")}\${banked?'':\` ${tj("res.netAnnualScope","(compliance scope)")}\`}</div></div>
+      <div class="stat"><div class="n" style="color:\${paybackMonths&&paybackMonths<=24?'#7fd0a8':'#e2b978'}">\${paybackMonths===null?'n/a':paybackMonths<1?'&lt;1mo':Math.round(paybackMonths)+'mo'}</div><div class="l">${tj("res.payback","Payback on one-off")}</div></div>
       <div class="stat"><div class="n" style="color:\${dated.length?'#e08b7a':'#8d9bb5'}">\${dated.length}</div><div class="l">${tj("res.dated","With a dated deadline ahead")}</div></div>
     </div>
     <div class="note" style="margin-top:14px">\${banked
       ? \`<strong>${tj("sum.scopeBoth","Scope: compliance + AP process automation.")}</strong> ${tj("sum.scopeBoth2","Every direct row counts, and the timeline carries a process-change phase per country. The larger, less common programme.")}\`
-      : \`<strong>${tj("sum.scopeOnly","Scope: compliance only.")}</strong> \${fmt(l1Banked)} ${tj("sum.scopeOnly2","banks from the integration itself; the remaining")} \${fmt(l1Unbanked)} ${tj("sum.scopeOnly3","needs a change programme you are not running.")}\`} ${tj("sum.scopeBoth4","Section 4 shows what makes up this figure, row by row")} \${notesLink()}</div>
+      : \`<strong>${tj("sum.scopeOnly","Scope: compliance only.")}</strong> \${fmt(l1Banked + l2)} ${tj("sum.scopeOnly2","banks from the integration itself; the remaining")} \${fmt(l1Unbanked)} ${tj("sum.scopeOnly3","needs a change programme you are not running.")}\`} ${tj("sum.bridge","Net annual is the banked figure less")} \${fmt(annualCost)} ${tj("sum.bridge2","of annual run cost; section 4 shows what makes up the banked figure, row by row.")} \${notesLink()}</div>
     <div class="card"><p style="margin:0">Across <strong>\${sel.length}</strong> jurisdictions you have <strong>\${complex.length} complex</strong> (CTC or 5-corner) and <strong>\${simple.length} simple</strong> (4-corner exchange) regime\${simple.length===1?'':'s'}\${watch.length?\`, plus \${watch.length} with no mandate${hlp('nomandate','Why these are still in the plan')}\`:''}. With \${erp} ERP/billing system\${erp===1?'':'s'} that is roughly <strong>\${integrations} country-system integration\${integrations===1?'':'s'}</strong>${hlp('integrations','How this is derived')} to deliver. \${dated.length?\`The nearest binding date is <strong>\${dated[0][5]}</strong> (\${dated[0][0]}).\`:'None of the selected jurisdictions has a future dated deadline on the tracker today.'} \${ev('site','Source: live tracker data')}</p></div>\`;
 
   const pace = +document.getElementById('pace').value || 1;
@@ -2206,30 +2220,8 @@ function build(){
     <tr class="tierD" data-row="fraud"><td>Fraud detection, working-capital visibility <span class="tag intang">intangible</span></td><td>Strategic benefits; no benchmark exists \${ev('yours','your call')}</td>\${dash}</tr>
     </tbody></table>
     <div class="note" style="margin-top:12px"><strong>${tj("res.headcount.h","In headcount:")}</strong> \${captureFte.toFixed(1)} ${tj("res.headcount.line","FTE keying invoices today, of which")} <strong>\${captureSaved.toFixed(1)}</strong> ${tj("res.headcount.line2","are released &mdash; the same money as the AP capture row above, priced as people rather than an addition to it.")} \${notesLink()}</div>
-    <div class="note" style="margin-top:12px">${tj("res.indirectWhy2","That last group is long because almost every circulating number in this field fails verification. What survives is priced above; what does not is named rather than quietly dropped.")} \${notesLink()}</div>\`;
+    <div class="note" style="margin-top:12px">${tj("res.namedWhy","Everything priced here is tangible; the intangible benefits are named and carry no value on purpose. That group is long because almost every circulating number in this field fails verification &mdash; what survives is priced, what does not is named rather than quietly dropped.")} \${notesLink()}</div>\`;
 
-  // ---- investment: without a cost side this is a benefits calculator, not ROI
-  const cImplS = +document.getElementById('cImplS').value || 0;
-  const cImplC = +document.getElementById('cImplC').value || 0;
-  const cPlat = +document.getElementById('cPlat').value || 0;
-  const cRun  = +document.getElementById('cRun').value || 0;
-  const oneOff = intSimple * cImplS + intComplex * cImplC;
-  const annualCost = cPlat + cRun;
-  const annualBenefit = l1Banked + l2;
-  const netAnnual = annualBenefit - annualCost;
-  const paybackMonths = netAnnual > 0 ? (oneOff / netAnnual) * 12 : null;
-  const placeholders = ['cImplS','cImplC','cPlat','cRun'].filter(id => String(document.getElementById(id).value) === String(DEFAULTS[id].v));
-
-  document.getElementById('invest').innerHTML = \`
-    \${placeholders.length ? \`<div class="note warn"><strong>\${placeholders.length} of 4 cost inputs are still placeholders.</strong> Please replace them with vendor budgetary estimates in the assumptions panel, and treat the ROI as illustrative until actuals can be provided.</div>\` : ''}
-    <div class="grid g4">
-      <div class="stat"><div class="n" style="color:#e0907f">\${fmt(oneOff)}</div><div class="l">One-off &mdash; \${intComplex} complex + \${intSimple} simple</div></div>
-      <div class="stat"><div class="n" style="color:#e0907f">\${fmt(annualCost)}</div><div class="l">${tj("res.annualRun","Annual run cost")}</div></div>
-      <div class="stat"><div class="n" style="color:\${netAnnual>=0?'#7fd0a8':'#e0907f'}">\${fmt(netAnnual)}</div><div class="l">Net annual \${banked?'benefit':'(compliance scope)'}</div></div>
-      <div class="stat"><div class="n" style="color:\${paybackMonths&&paybackMonths<=24?'#7fd0a8':'#e2b978'}">\${paybackMonths===null?'n/a':paybackMonths<1?'&lt;1mo':Math.round(paybackMonths)+'mo'}</div><div class="l">${tj("res.payback","Payback on one-off")}</div></div>
-    </div>
-    \${!banked ? \`<div class="note" style="margin-top:12px">${tj("res.complianceOnly","Compliance-only, the normal shape. Counts what the integration itself delivers;")} \${fmt(l1Unbanked)} ${tj("res.complianceOnly3","more is the option it buys you for later.")} \${notesLink()}</div>\` : ''}
-    <div class="note" style="margin-top:12px">${tj("res.tangible","Everything counted here is tangible. The intangible benefits are named above and carry no value on purpose.")} \${notesLink()}</div>\`;
 
   // ---- savings composition ------------------------------------------
   //

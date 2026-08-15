@@ -99,7 +99,7 @@ try {
     ["a savings group label", "Named, not priced"],
     ["a savings column heading", "Banks on this scope"],
     ["a runtime stat label", "With a dated deadline ahead"],
-    ["a runtime note", "Everything counted here is tangible"],
+    ["a runtime note", "Everything priced here is tangible"],
     ["an evidence card", "credible body, unattributed"],
     ["the footer", "not tax, legal or investment advice"],
   ];

@@ -504,11 +504,18 @@ const totGross = Number(totCells[totCells.length - 2].replace(/[^\d]/g, ""));
 const totBanked = Number(totCells[totCells.length - 1].replace(/[^\d]/g, ""));
 t.check(`the total row states the gross and the banked figure side by side (${totGross} / ${totBanked})`,
   totGross > 0 && totBanked > 0 && totGross > totBanked, totCells.join(" | "));
-t.check("and the banked total is what section 5 divides into for payback",
-  totBanked === Number((await page.locator("#invest .stat").nth(2).locator(".n").innerText())
-    .replace(/[^\d]/g, "")) + Number((await page.locator("#invest .stat").nth(1).locator(".n").innerText())
-    .replace(/[^\d]/g, "")),
-  `${totBanked} vs net+run`);
+const runFromNote = async () => {
+  const note = await page.locator("#summary .note:not(.warn)").innerText();
+  const m = note.match(/less\s+\D?([\d,]+)\s+of annual run cost/i);
+  return m ? Number(m[1].replace(/,/g, "")) : null;
+};
+const netStat = async () => Number((await page.locator("#summary .stat").nth(2)
+  .locator(".n").innerText()).replace(/[^\d]/g, ""));
+t.check("and the banked total is what the executive summary works from",
+  totBanked === (await netStat()) + (await runFromNote()),
+  `${totBanked} vs net ${await netStat()} + run ${await runFromNote()}`);
+t.check("the run cost that bridges banked to net is stated, not left implicit",
+  (await runFromNote()) !== null, await page.locator("#summary .note:not(.warn)").innerText());
 t.check("and the unlocked remainder is still stated somewhere on the page",
   (await page.locator("body").innerText()).includes("697,355"));
 
@@ -763,7 +770,8 @@ t.check("a member state with no national mandate is still plannable",
 
 // One complex build plus a simple connection per member state. 27 members
 // on this preset, so the EU row adds 1 complex and 26 simple.
-const oneOff = Number((await page.locator("#invest .stat .n").first().innerText()).replace(/[^\d]/g, ""));
+const oneOff = Number((await page.locator("#summary .stat").nth(1)
+  .locator(".n").innerText()).replace(/[^\d]/g, ""));
 t.check(`the EU row costs one build plus a connection each (${oneOff})`,
   oneOff === 770000, oneOff);
 
@@ -855,7 +863,7 @@ t.check(`the strip is one line at desktop width (${steps.rows} row)`,
 // invariant and not a preference. Migration 535 carries the reasoning.
 const sav = await page.evaluate(() => {
   const hs = [...document.querySelectorAll("h2")];
-  const head = hs.find((e) => /Savings/i.test(e.textContent));
+  const head = hs.find((e) => /^4\s/.test(e.textContent.trim()));
   const idx = hs.indexOf(head);
   const next = idx >= 0 ? hs[idx + 1] : null;
   const own = [];
@@ -865,13 +873,14 @@ const sav = await page.evaluate(() => {
   }
   return {
     headings: hs.map((e) => e.textContent.trim()),
-    savingsHeadings: hs.filter((e) => /Savings/i.test(e.textContent)).length,
+    savingsHeadings: hs.filter((e) => /^\d+\s\S+\s*Savings$/.test(e.textContent.trim())).length,
     holdsBoth: own.some((e) => e.id === "savingsTable"),
     subheads: [...document.querySelectorAll("#savingsTable tr.grp td")].map((e) => e.textContent.trim()),
     lede: (own.find((e) => e.classList.contains("lede")) || {}).textContent || "",
   };
 });
-t.check("exactly one Savings heading", sav.savingsHeadings === 1, sav.savingsHeadings);
+t.check("exactly one numbered Savings section", sav.savingsHeadings === 1,
+  `${sav.savingsHeadings}: ${sav.headings.join(" / ")}`);
 t.check("and the savings table hangs off it", sav.holdsBoth, sav.headings.join(" / "));
 // 535 split the section into a Direct and an Indirect subhead. 538
 // merged the two tables and reordered by whether a number exists, so the
@@ -900,11 +909,15 @@ t.check("but every priced row still shows the evidence to judge it by",
 // unchanged: state, once and where both halves can see it, how the two
 // kinds relate. Only the true version of that sentence differs.
 t.check("the lede describes the order the single table is actually in",
-  /named below the total/.test(sav.lede) && /banked figure/i.test(sav.lede),
+  /named below the total/.test(sav.lede) && /section 2 works from/i.test(sav.lede),
   sav.lede.slice(0, 110));
-t.check("sections renumber with the merge — 4 Savings, 5 Investment",
-  sav.headings.some((x) => /^4 \S* Savings/.test(x))
-  && sav.headings.some((x) => /^5 \S* Investment/.test(x)),
+t.check("the page is four numbered sections, with investment inside the summary",
+  sav.headings.some((x) => /^2 \S* Executive summary/.test(x))
+  && sav.headings.some((x) => /^4 \S* Savings$/.test(x))
+  && !sav.headings.some((x) => /^5 /.test(x)),
+  sav.headings.join(" / "));
+t.check("and the summary heading says it carries the investment case",
+  sav.headings.some((x) => /^2 .*(investment|payback)/i.test(x)),
   sav.headings.join(" / "));
 
 
@@ -978,7 +991,7 @@ await page.fill("#volAP", "1000000"); await page.fill("#volAR", "500000");
 await page.fill("#cImplS", "500"); await page.fill("#cImplC", "500");
 await page.click("#run"); await page.waitForTimeout(900);
 const pb = await page.evaluate(() =>
-  [...document.querySelectorAll("#invest .stat")].map((e) => e.querySelector(".n").textContent.trim()));
+  [...document.querySelectorAll("#summary .stat")].map((e) => e.querySelector(".n").textContent.trim()));
 t.check(`a sub-month payback reads as under a month, not 0mo (${pb[3]})`,
   /^<\s*1\s*mo$/.test(pb[3]), pb[3]);
 await page.fill("#cImplS", "8000"); await page.fill("#cImplC", "22000");
@@ -1063,8 +1076,11 @@ const net538 = await page.evaluate(() => {
   const n = (x) => parseFloat(String(x).replace(/[^0-9.]/g, ""));
   const tot = document.querySelector('#savingsTable tr[data-row="total"]');
   const cells = [...tot.children];
-  const stat = (i) => n([...document.querySelectorAll("#invest .stat")][i].querySelector(".n").textContent);
-  return { banked: n(cells[cells.length - 1].textContent), net: stat(2), run: stat(1) };
+  const stat = (i) => n([...document.querySelectorAll("#summary .stat")][i].querySelector(".n").textContent);
+  const note = document.querySelector("#summary .note:not(.warn)").textContent;
+  const m = note.match(/less\s+\D?([\d,]+)\s+of annual run cost/i);
+  return { banked: n(cells[cells.length - 1].textContent), net: stat(2),
+           run: m ? Number(m[1].replace(/,/g, "")) : NaN };
 });
 t.check(`net annual is the section's banked total minus run cost (${net538.net.toLocaleString()})`,
   Math.abs((net538.banked - net538.run) - net538.net) <= 1,

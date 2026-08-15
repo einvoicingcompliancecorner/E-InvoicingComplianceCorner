@@ -10898,6 +10898,89 @@ the design review — now has a twelve-row worked example waiting for it.
 135). PDF still exactly two pages, 191mm and 209mm against A4's 271mm.
 
 
+## 15 August 2026 (cont'd) — One financial section (migration 540)
+
+Dan: *"Is there any reason that the investment and payback section 5, could
+not be baked into the Executive summary in section 2. It seems like
+information an executive would want to read, and combined the financial
+analysis into one section."*
+
+### No reason — and the PDF had been doing it since 531
+
+Page 1 of the export opens with a single four-figure strip: annual
+benefit, one-off investment, net annual, payback. **That is exactly this
+merge.** The board-facing artefact had been treating these as one story
+for a fortnight while the interactive page split them across two sections.
+When a page and its own export disagree about structure, the export is
+usually right — it was designed for the reader who matters most.
+
+No dependency blocked it either. The cost figures rest on
+`intSimple`/`intComplex`, computed at line 1972, long before the summary
+renders; `oneOff`, `netAnnual` and `paybackMonths` were calculated further
+down only because they sat beside the block that rendered them.
+
+### The stat set
+
+Dan's choice of three offered: banked annually, one-off, net annual,
+payback, dated-deadline count. Dropped from the grid are "Jurisdictions in
+scope" and the one-off's "N complex + N simple" sublabel — the card
+directly below already states both in prose.
+
+**Annual run cost came out of the grid and had to go somewhere.** It is
+the bridge between banked and net ($518,125 − $90,000 = $428,125), and
+this page has just spent a week making every total reconcile to something
+visible. Dropping it would have rebuilt the exact defect 536 fixed, one
+section higher. It moved into the note in prose, where it still closes the
+arithmetic without taking a sixth slot — and there is now a standing
+invariant plus a regression check that the bridge is rendered.
+
+### The placeholder warning is promoted, which is the best part
+
+*"N of 4 cost inputs are still placeholders — treat the ROI as
+illustrative"* used to sit in section 5, **below the payback figure it
+qualifies**. It now sits at the top of the executive summary, above every
+number it applies to. An executive reading a four-month payback built on
+placeholder costs is told before they read it, not after.
+
+### What the merge exposed
+
+Bringing two sections together put near-identical sentences side by side —
+which is the value of merging by hand rather than mechanically:
+
+- `res.complianceOnly` said what `sum.scopeOnly` already says, better and
+  two lines above it. Dropped.
+- `res.tangible` and `res.indirectWhy2` were one thought split across two
+  sections. Merged into `res.namedWhy`, under the table they describe.
+
+**And one real error.** The scope note quoted `l1Banked` — $448,045,
+direct only — while the headline stat above it now reads $518,125
+including the indirect row. Correct in its old home beneath a direct-only
+total; wrong the moment it moved. Both figures on screen together,
+disagreeing: this project's signature failure, caught by looking at the
+rendered page rather than at the diff.
+
+### The page is now four sections
+
+Footprint, executive summary, wave plan, savings — with the evidence panel
+renumbering 6 → 5. Down from seven when this week started.
+
+### Verified
+
+`npm test`: 8 suites, all passing. ROI regression **150 checks** (was
+147). PDF still exactly two pages. $518,125 reads identically in the
+summary stat, the section 4 total, and the note between them; net annual
+reconciles to it less the stated run cost.
+
+### Orphans: sixteen
+
+`sec.invest`, `sec.summary`, `res.annualRun`, `res.complianceOnly`,
+`res.complianceOnly3`, `res.tangible`, `res.inScope`, `res.indirectWhy2`,
+`sec.savings.lede3`, `sum.scopeBoth4` join the twelve from 538/539.
+**Still not cleaned here, and now well past the point where doing it
+in-flight would be safe.** The dead-data sweep is the next thing to do on
+this page.
+
+
 ## Open items / next steps
 
 ### Where things stand — 15 August 2026
