@@ -99,7 +99,7 @@ export async function getRoiCountries(db, todayISO) {
     : [];
 
   const REG = { "Europe": "Eu", "Middle East / Africa": "Mi", "Asia-Pacific": "As", "Americas": "Am" };
-  return countries.filter((c) => c.code !== "EU").map((c) => {
+  const out = countries.filter((c) => c.code !== "EU").map((c) => {
     const mine = byCountry.get(c.id) || [];
     let status = "t";
     if (mine.some((m) => m.mandate_scope === "b2b" && m.date <= today)) status = "i";
@@ -131,16 +131,34 @@ export async function getRoiCountries(db, todayISO) {
     const CXVAL = { complex: 2, simple: 1, none: 0 };
     const cx = CXVAL[c.roi_complexity] ?? 0;
 
+    // ONLY NATIONAL OBLIGATIONS BELONG TO A COUNTRY (Dan, 15 Aug 2026).
+    //
+    // This used to fold the EU-wide ViDA date into every member state, so
+    // Austria appeared in the plan as a country with a 2030 deadline when
+    // Austria has no national mandate at all — the chart then had to print
+    // "EU-WIDE" beside it to explain why it was there. Migration 532 made
+    // it worse by giving the fourteen states with an earlier national date
+    // a second row each, which put 27 rows in one wave.
+    //
+    // Migration 504 had already settled this for the arrivals board:
+    // ViDA is ONE EU fact, not twenty-seven national ones, which is why
+    // only the European Union entry was kept on the board. The planner
+    // now agrees with it. The EU obligation is returned separately and
+    // rendered as a single European Union row.
     const national = mine.filter((m) => m.date > today && m.mandate_scope === "b2b").map((m) => m.date).sort();
-    const euDates = c.eu_member ? euWide.map((m) => m.date).sort() : [];
-    const future = [...national, ...euDates].sort();
+    const future = national;
 
     // Status stays NATIONAL. An EU-wide deadline changes what you have to
     // deliver and when, but calling Austria "Upcoming" on a page where the
     // tracker board calls it "B2G only" would put two of this site's own
     // surfaces in visible disagreement. The EU-derived deadline is flagged
     // instead, and labelled EU-WIDE wherever it drives a row.
-    const euDriven = future.length > 0 && !national.length && euDates.length > 0 ? 1 : 0;
+    // Index 8 was `euDriven` — "this country's deadline came from EU law".
+    // Nothing is EU-driven any more, because EU law now has its own row.
+    // Repurposed to plain membership, which is what the client actually
+    // needs: how many of the selected jurisdictions the European Union
+    // row covers.
+    const euMember = c.eu_member ? 1 : 0;
 
     // AN EU-DRIVEN DEADLINE IS COMPLEX WORK.
     //
@@ -162,7 +180,7 @@ export async function getRoiCountries(db, todayISO) {
     // complex. Getting that backwards in either direction would misprice
     // it — leaving it simple understates a reporting build, and changing
     // the stored value would misdescribe Austria everywhere else.
-    const cxEff = euDriven ? 2 : cx;
+    const cxEff = cx;   // no EU-driven override: the EU row carries its own complexity
 
     // Index 9: the earliest live obligation this country has that the board
     // does not show, or "" — surfaced so the render can warn when it is
@@ -183,13 +201,26 @@ export async function getRoiCountries(db, todayISO) {
     // needs `eu_member`. Deriving it from the tuple would sweep in Norway
     // and the United Kingdom, which sit in the Europe region and are not
     // bound by ViDA at all. That mistake was made and caught on the way in.
-    const vidaSecond = (c.eu_member && national.length && euDates.length
-                        && national[0] < euDates[0]) ? euDates[0] : "";
-
-    return [c.name_en, c.code, REG[c.region] || "Eu", status, cxEff, future[0] || "", c.penalty_rows || 0, c.slug, euDriven,
-            hiddenDate && (!future.length || hiddenDate < future[0]) ? hiddenDate : "",
-            vidaSecond];
+    return [c.name_en, c.code, REG[c.region] || "Eu", status, cxEff, future[0] || "", c.penalty_rows || 0, c.slug, euMember,
+            hiddenDate && (!future.length || hiddenDate < future[0]) ? hiddenDate : ""];
   });
+
+  // THE EUROPEAN UNION AS A ROW OF ITS OWN.
+  //
+  // Returned in the same array as the jurisdictions, with code "EU", and
+  // skipped by the country picker — nobody selects the EU, it applies to
+  // you if any member state does. The planner adds it automatically.
+  //
+  // Complexity is fixed at 2 rather than read from `roi_complexity`,
+  // which is 'none' on this row because the EU is not a jurisdiction that
+  // runs a regime. ViDA is a Digital Reporting Requirement: the tax
+  // authority receives invoice-level data, which is complex work on the
+  // rule Dan set on 12 August.
+  if (euRow && euWide.length) {
+    out.push(["European Union", "EU", "Eu", "u", 2, euWide.map((m) => m.date).sort()[0],
+              0, null, 0, ""]);
+  }
+  return out;
 }
 
 
@@ -1185,7 +1216,10 @@ applyCurrency(document.getElementById('cur').value);
 // ---- country picker --------------------------------------------------
 const list = document.getElementById('countryList');
 const byRegion = {};
-COUNTRIES.forEach((c,i) => { (byRegion[c[2]] ||= []).push([c,i]); });
+// The EU row is in COUNTRIES but not in the picker: nobody selects the
+// European Union, it applies to you if any member state does. Indices are
+// left untouched, because data-i points into the unfiltered array.
+COUNTRIES.forEach((c,i) => { if(c[1] !== 'EU') (byRegion[c[2]] ||= []).push([c,i]); });
 // One header row, sticky, sharing the grid template with every country
 // row. The empty first cell is the checkbox column: aligning against a
 // control the header cannot label is the whole reason the template is
@@ -1344,7 +1378,7 @@ function buildGantt(sel0, erp, pace){
   // full duration back-planned to 42 weeks, twice what the same wave took
   // before, so it swallowed most of the chart.
   const durOf = c => {
-    const w = c[11] === undefined ? 1 : c[11];
+    const w = c[10] === undefined ? 1 : c[10];
     const phases = PH().map(p => ({...p, weeks: Math.max(1, Math.round(p.w * CXF[c[4]] * pace * w * ((p.k==='design'||p.k==='build') ? erpF : 1)))}));
     return {phases, total: phases.reduce((a,p)=>a+p.weeks,0)};
   };
@@ -1439,7 +1473,8 @@ function buildGantt(sel0, erp, pace){
   // draws a header plus a row per jurisdiction. Getting this wrong leaves
   // either a tall band of empty space or a chart clipped at the bottom.
   const bodyRows = ganttExpanded ? rows.length + groups.length : groups.length;
-  const H = HEAD + (RH+GAP)*(bodyRows + 2 + (undated.length ? undated.length + 1 : 0)) + 16;
+  const undatedRows = undated.length ? (ganttExpanded ? undated.length + 1 : 1) : 0;
+  const H = HEAD + (RH+GAP)*(bodyRows + 2 + undatedRows) + 16;
   const x = t => L + ((t - X0)/(X1 - X0))*(W - L - R);
 
   let s = \`<svg viewBox="0 0 \${W} \${H}" width="100%" style="min-width:820px;display:block" role="img" aria-label="Back-planned delivery timeline by jurisdiction">\`;
@@ -1493,7 +1528,14 @@ function buildGantt(sel0, erp, pace){
       // gutter: an ISO date is always ten monospace characters, so the two
       // labels can never collide. Right-anchoring put "27 JURISDICTIONS"
       // straight through "2030-07-01".
-      s += \`<text x="88" y="\${y+15}" fill="#93a3c0" font-family="'IBM Plex Mono',monospace" font-size="9">\${wm.n} \${wm.n===1?'JURISDICTION':'JURISDICTIONS'} &middot; \${wm.elapsed}W</text>\`;
+      // A wave whose only track is the European Union covers every member
+      // state selected, so counting tracks would print "1 JURISDICTION"
+      // over an obligation binding twenty-seven of them.
+      const euOnly = members.length === 1 && members[0].c[11];
+      const metaTxt = euOnly
+        ? members[0].c[12] + ' ${tj("wave.members","MEMBER STATES")} &middot; ' + wm.elapsed + 'W'
+        : wm.n + ' ' + (wm.n===1?'${tj("wave.jur","JURISDICTION")}':'${tj("wave.jurs","JURISDICTIONS")}') + ' &middot; ' + wm.elapsed + 'W';
+      s += \`<text x="88" y="\${y+15}" fill="#93a3c0" font-family="'IBM Plex Mono',monospace" font-size="9">\${metaTxt}</text>\`;
       s += \`<rect x="\${x1+1}" y="\${y+4}" width="\${Math.max(2,x2-x1-2)}" height="\${RH-8}" rx="3" fill="#3d5a86"><title>Wave \${wm.dl} — \${wm.n} jurisdiction\${wm.n===1?'':'s'}, \${wm.effort}w effort, \${wm.elapsed}w elapsed\${lanes>1&&wm.n>1?\` across \${Math.min(lanes,wm.n)} lanes\`:''}\n\${names.join(', ')}</title></rect>\`;
       const gx = x(wm.golive.getTime());
       s += \`<polygon points="\${gx},\${y+3} \${gx+7},\${y+RH/2} \${gx},\${y+RH-3} \${gx-7},\${y+RH/2}" fill="#efe9db" stroke="#0f1a2b" stroke-width="2"><title>Wave go-live — mandate deadline \${wm.dl}</title></polygon>\`;
@@ -1518,7 +1560,7 @@ function buildGantt(sel0, erp, pace){
     // country's own legislature. Worth saying on the row: a reader who
     // knows Austria has no national mandate needs to see why it is in a
     // 2030 wave, or they will assume the plan is wrong.
-    s += \`<text x="\${L-10}" y="\${y+15}" fill="\${r.c[8] ? '#c98a3a' : '#93a3c0'}" font-family="'IBM Plex Mono',monospace" font-size="9" text-anchor="end">\${r.c[8] ? 'EU-WIDE' : REGSHORT[r.c[2]]} &middot; \${cx[0].toUpperCase()}\${lanes>1?\` &middot; L\${r.lane+1}\`:''}</text>\`;
+    s += \`<text x="\${L-10}" y="\${y+15}" fill="\${r.c[11] ? '#c98a3a' : '#93a3c0'}" font-family="'IBM Plex Mono',monospace" font-size="9" text-anchor="end">\${r.c[11] ? 'EU-WIDE' : REGSHORT[r.c[2]]} &middot; \${cx[0].toUpperCase()}\${lanes>1?\` &middot; L\${r.lane+1}\`:''}</text>\`;
     r.segs.forEach(sg => {
       const x1 = x(sg.s.getTime()), x2 = x(sg.e.getTime());
       s += \`<rect x="\${x1+1}" y="\${y+4}" width="\${Math.max(2,x2-x1-2)}" height="\${RH-8}" rx="3" fill="\${sg.c}"><title>\${r.c[0]} — \${sg.n}\\n\${sg.weeks} weeks: \${isoD(sg.s)} to \${isoD(sg.e)}</title></rect>\`;
@@ -1561,8 +1603,24 @@ function buildGantt(sel0, erp, pace){
     // screenshot review when Portugal and Ecuador, both live clearance
     // regimes, appeared under a "NO MANDATE" heading.
     const anyOverdue = undated.some(c => c[3] === 'i');
-    s += \`<text x="0" y="\${y+15}" font-family="'IBM Plex Mono',monospace" font-size="9.5" letter-spacing="1"><tspan fill="#8d9bb5">NO FIXED DEADLINE</tspan><tspan fill="#93a3c0" letter-spacing="0"> &middot; \${undated.length} jurisdiction\${undated.length===1?'':'s'} &middot; \${anyOverdue ? 'already in force, or startable any time' : 'start any time'} once contracting completes</tspan></text>\`;
-    y += RH + GAP;
+    const discStart0 = Math.max(progEnd.getTime(), NOW.getTime());
+    // Collapsed, the band is a single row like a wave: the long
+    // explanation moves into the tooltip, because at 9.5px it is 570px
+    // wide and would run straight under the bars.
+    if(!ganttExpanded){
+      s += \`<text x="0" y="\${y+15}" fill="#8d9bb5" font-size="12" font-family="'IBM Plex Mono',monospace">${tj("chart.nofixed","NO DATE")}<title>\${undated.map(c=>c[0]).join(', ')}</title></text>\`;
+      s += \`<text x="88" y="\${y+15}" fill="#93a3c0" font-family="'IBM Plex Mono',monospace" font-size="9">\${undated.length} \${undated.length===1?'${tj("wave.jur","JURISDICTION")}':'${tj("wave.jurs","JURISDICTIONS")}'}</text>\`;
+      // Indicative only, and drawn at half opacity to say so: there is no
+      // deadline to back-plan from, so this shows the earliest the work
+      // COULD start and roughly how long the longest of them runs.
+      const longest = Math.max(...undated.map(c => durOf(c).total));
+      const bx1 = x(discStart0), bx2 = x(addW(new Date(discStart0), longest).getTime());
+      s += \`<rect x="\${bx1+1}" y="\${y+4}" width="\${Math.max(2,bx2-bx1-2)}" height="\${RH-8}" rx="3" fill="#4a5670" opacity="0.55"><title>\${undated.length} jurisdiction\${undated.length===1?'':'s'} with no fixed deadline\${anyOverdue ? ', some already in force' : ''}. Indicative placement only — nothing can start before contracting completes, and there is no date to work back from.\n\${undated.map(c=>c[0]).join(', ')}</title></rect>\`;
+      y += RH + GAP;
+    } else {
+      s += \`<text x="0" y="\${y+15}" font-family="'IBM Plex Mono',monospace" font-size="9.5" letter-spacing="1"><tspan fill="#8d9bb5">NO FIXED DEADLINE</tspan><tspan fill="#93a3c0" letter-spacing="0"> &middot; \${undated.length} jurisdiction\${undated.length===1?'':'s'} &middot; \${anyOverdue ? 'already in force, or startable any time' : 'start any time'} once contracting completes</tspan></text>\`;
+      y += RH + GAP;
+    }
     // NO COUNTRY TRACK MAY BEGIN BEFORE PROCUREMENT COMPLETES.
     // Dan, 12 Aug 2026: "all implementation phases need to start after the
     // contracting phase has complete." The dated waves already satisfy
@@ -1575,7 +1633,7 @@ function buildGantt(sel0, erp, pace){
     // Clamped to NOW as well, because when a wave is already late progEnd
     // sits in the past and no work can start there either.
     const discStart = Math.max(progEnd.getTime(), NOW.getTime());
-    undated.forEach(c => {
+    if(ganttExpanded) undated.forEach(c => {
       const {phases, total} = durOf(c);
       // A pinned start applies here too. "Start any time" is the default,
       // not a constraint — and "any time" is exactly the thing a planner
@@ -1777,38 +1835,41 @@ function build(){
   const fteEntry = +document.getElementById('fteEntry').value || 0;
   const sel = chosen();
 
-  // ONE ROW PER OBLIGATION, NOT PER COUNTRY.
+  // THE EUROPEAN UNION IS ONE ROW, NOT ONE PER MEMBER STATE.
   //
-  // Fourteen EU member states carry two: a national deadline and then
-  // ViDA's digital reporting requirement in July 2030. The planner used
-  // to schedule only the earlier one, so Germany showed a simple 2027
-  // exchange build and hid a complex 2030 reporting build entirely.
+  // Dan, 15 Aug 2026: the per-country ViDA waves migration 532 added were
+  // "too messy", and the EU already exists as its own entry on the board.
+  // He is right, and migration 504 had settled the same argument there:
+  // ViDA is ONE EU fact, not twenty-seven national ones, which is why
+  // only the European Union entry was kept on the arrivals board. The
+  // planner had been going the other way ever since.
   //
-  // The second track is a copy carrying its own deadline, its own
-  // complexity (ViDA is a DRR, so complex regardless of what the country
-  // runs today) and its own cost weight. It takes a distinct NAME rather
-  // than a separate identifier, because the name is already the key for
-  // the chart labels, the wave table and the adjust panel's overrides —
-  // threading a parallel track id through all of those would be a lot of
-  // surface for no gain.
+  // So member states carry only their NATIONAL obligations, and the EU
+  // obligation is a single automatic row. It is not selectable: ViDA
+  // binds you whether or not you remember to tick a box, and requiring
+  // the tick would silently omit a real obligation from the plan, which
+  // is the failure mode this project keeps finding.
   //
-  // penalty_rows is zeroed on the second track: it counts jurisdictions
-  // publishing a penalty schedule, and Germany must not count twice.
-  const tracks = [];
-  sel.forEach(c => {
-    tracks.push(c.concat([1]));                     // index 11: cost weight
-    if(c[10]){
-      const v = c.slice();
-      v[0] = c[0] + ' ${tj("wave.vidaSuffix","(ViDA)")}';
-      v[4] = 2;                                     // DRR is complex work
-      v[5] = c[10];
-      v[6] = 0;
-      v[8] = 1;
-      v[9] = '';
-      v[10] = '';
-      tracks.push(v.concat([TAXM.vidaRatio]));
-    }
-  });
+  // Index 10 is the track weight, which scales duration. Index 11 marks
+  // the EU row, whose integrations are counted separately below because
+  // it is one build plus a connection per member state, not a country
+  // track.
+  // A member state with no national deadline STAYS IN THE PLAN, as a
+  // discretionary implementation. Dan, correcting a first attempt that
+  // dropped them: "an EU country with no national mandate can still be
+  // added to the planner, just with no current fixed date. We can
+  // implement eInvoicing in those countries directly between two peers."
+  //
+  // He is right, and the two are different builds rather than the same
+  // one counted twice: a voluntary four-corner exchange with your trading
+  // partners in Austria is not the ViDA reporting connection to the
+  // Austrian tax authority in 2030. The first is optional and undated,
+  // the second is neither. Austria therefore appears in the discretionary
+  // band AND is covered by the European Union row, and pays for both.
+  const euMembers = sel.filter(c => c[8]).length;
+  const euTrack = euMembers ? COUNTRIES.find(c => c[1] === 'EU') : null;
+  const tracks = sel.map(c => c.concat([1, 0]));
+  if(euTrack) tracks.push(euTrack.concat([1, 1, euMembers]));
 
   // --- Layer 1
   // AR is included deliberately. An earlier version collected the AR volume
@@ -1841,9 +1902,22 @@ function build(){
   // rather than charging twice for a platform you buy once. Rounded up:
   // half an integration is not a thing you can buy, and rounding down
   // would let a single second wave cost nothing at all.
-  const wsum = a => a.reduce((t, c) => t + (c[11] === undefined ? 1 : c[11]), 0);
-  const intSimple  = Math.ceil(wsum(simple.concat(watch)) * erp);
-  const intComplex = Math.ceil(wsum(complex) * erp);
+  // The EU row is excluded from the weighted sums and costed explicitly,
+  // because it is not a country track. ViDA's payload is harmonised —
+  // one EN 16931-based dataset, one ruleset — so you BUILD the reporting
+  // extract once, at the complex rate. But each member state runs its own
+  // reporting endpoint, so you CONNECT to each, at the simple rate.
+  //
+  // Dan's choice from four costed options, and the one that needed no new
+  // assumption: it reuses the model's existing complex and simple rates
+  // rather than inventing a ratio. A flat single build would have charged
+  // a 27-country footprint the same as a one-country one, which is the
+  // volume-blindness removed from the platform fee a day earlier.
+  const wsum = a => a.reduce((t, c) => t + (c[11] ? 0 : (c[10] === undefined ? 1 : c[10])), 0);
+  const euIntComplex = euMembers ? erp : 0;
+  const euIntSimple  = euMembers ? (euMembers - 1) * erp : 0;
+  const intSimple  = Math.ceil(wsum(simple.concat(watch)) * erp) + euIntSimple;
+  const intComplex = Math.ceil(wsum(complex) * erp) + euIntComplex;
   const integrations = intSimple + intComplex;
 
   // --- Layer 2 (modelled from assumptions only)
@@ -2333,12 +2407,11 @@ function build(){
       // quartile and everyone else — used as a ceiling on what this
       // model may claim, never as a target.
       excGapPp: val("exception_reduction_pp", 9.8),
-      // What a ViDA second wave costs relative to a full country build.
-      // Vendor selection and contracting are already programme-level and
-      // do not repeat; the platform, the ERP connection and the master
-      // data exist. What is genuinely new is the reporting extract, the
-      // transmission to the tax authority, and testing it.
-      vidaRatio: val("vida_second_wave_ratio", 0.5),
+      // vidaRatio retired 15 Aug 2026. Migration 532 priced a per-country
+      // ViDA second wave at half a build; the European Union row replaced
+      // those entirely, and its cost is one complex build plus a simple
+      // connection per member state, expressed in the model's existing
+      // rates rather than a ratio of its own.
     }))
     .replace("__ROI_PLATFEE__", JSON.stringify({
       fee: val("platform_fee_per_invoice", 0.4),   // USD, per invoice, either direction
