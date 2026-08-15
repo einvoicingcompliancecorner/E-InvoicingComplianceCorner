@@ -59,31 +59,18 @@ const KNOWN = new Set([
   "# selected jurisdictions have obligations earlier than the date this plan plans for.",
   "# selected jurisdictions have obligations earlier than the date this plan plans for. «pdf.flagsMore»",
   "# wave must start within # days",
-  "#% query reduction",
-  "#.# vs #.# days",
   "(# data)",
   "(# estimates)",
-  "(#) — from your saved preferences",
   "(updated Jan #)",
   ". Your # AP invoices imply",
   "; # clearance or reporting jurisdictions put",
-  "APQC median, # per FTE",
   "ATO / Deloitte task times",
   "Already in force, no further dated step (#):",
-  "Ardent Partners, # data",
-  "Back-planned delivery timeline by jurisdiction",
-  "Benchmark defaults are published in US dollars.",
   "Comfortable runway",
   "Council Directive (EU) #/# binds this member state from # July # regardless of whether it legislates a domestic mandate. «cx.complex.note»",
-  "Czech Republic, Portugal, Australia, New Zealand, Canada, Ecuador",
   "Czech Republic. Costed at the simple rate and scheduled as one discretionary wave — there is no deadline to miss, so this work can start whenever you have capacity.",
-  "Durations: practitioner estimates",
   "EU-wide obligation.",
   "Ecuador. These are compliance-now, not project-plan items.",
-  "Evidence grade A",
-  "Evidence grade B",
-  "Evidence grade C",
-  "Evidence grade D",
   "HMRC / DBT consultation #",
   "Live mandate data from this site's own tracker: status, model and dated deadlines per jurisdiction, each traceable to the cited legal instrument on that country's deep dive.",
   "Mechanism evidenced",
@@ -98,15 +85,9 @@ const KNOWN = new Set([
   "Wave go-live — mandate deadline #-#-#",
   "Your assumption. Nothing is claimed for this figure — it is exposed so the model can be argued with rather than believed.",
   "hide ▴",
-  "not Ardent’s #.#% exception rate",
   "of that in scope",
-  "our assumption",
-  "our estimate, not yours",
-  "practitioner estimates",
   "source",
   "to hit the published deadline on your current phase assumptions.",
-  "tracker dates",
-  "why not all of them",
   "«contract.name» — # weeks (#-#-# to #-#-#) Programme-level: run once, not per country.",
   "«notes.headcount» $# of $#, or #%; the rest is review, technology and overhead. «notes.headcount#»",
   "«vendor.name» — # weeks (#-#-# to #-#-#) Programme-level: run once, not per country.",
@@ -157,6 +138,10 @@ for (const raw of chunks) {
   if (SAFE.some((re) => re.test(raw))) continue;
   if (names.has(raw)) continue;
   let probe = raw;
+  // Country names are data, not copy — and they appear in comma-joined
+  // lists ("Czech Republic, Portugal, Australia"), which an exact-match
+  // filter never catches. Strip them all before probing.
+  for (const n of names) if (n.length > 3) probe = probe.split(n).join("");
   for (const p of PROPER) probe = probe.split(p).join("");
   probe = probe.replace(/«[a-zA-Z0-9._]+»/g, "")
     .replace(/[\d\s.,%$£€+\-–—×/()·|:;\[\]]+/g, " ").trim();

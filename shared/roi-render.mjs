@@ -1060,7 +1060,7 @@ const fmt1 = n => SYM[cur] + n.toLocaleString('en-US', { minimumFractionDigits: 
 // A = measured, primary, attributable      B = published by a credible body but unattributed within it
 // C = single anecdote, not a benchmark     D = your assumption, nothing claimed
 const EV = __ROI_EVIDENCE__;
-const ev = (key, txt) => \`<span class="ev" tabindex="0">\${txt}<span class="tip"><b>Evidence grade \${EV[key].t}</b>\${EV[key].s}</span></span>\`;
+const ev = (key, txt) => \`<span class="ev" tabindex="0">\${txt}<span class="tip"><b>\${fill('${tj("ev.gradeLabel","Evidence grade {0}")}', EV[key].t)}</b>\${EV[key].s}</span></span>\`;
 
 // ---- tooltip edge handling -------------------------------------------
 // A 330px tooltip anchored left:0 runs off the RIGHT edge whenever its
@@ -1251,7 +1251,7 @@ function applyCurrency(next){
     // migration 513 existed because a material warning about this control
     // sat behind a hover instead of in front of the reader.
     note.innerHTML = next === 'USD' || !f
-      ? 'Benchmark defaults are published in US dollars.'
+      ? '${tj("fx.usdNote","Benchmark defaults are published in US dollars.")}'
       : \`Converted at a <strong>fixed rate</strong> of 1 \${next} = \${f.r} USD\${f.asOf ? ', spot ' + f.asOf : ''} &mdash; not updated daily. \${ev('yours','Use your own treasury rate for anything you will sign')}\`;
   }
   // recalcPlat() rather than markOverridden() directly: the platform fee's
@@ -1353,7 +1353,7 @@ function setSubsAvailable(on){
   subsBox.disabled = !on;
   subsRow.style.opacity = on ? '1' : '.55';
   document.getElementById('subsCount').textContent = on
-    ? \`(\${MOCK_SUBSCRIBED.length}) — from your saved preferences\`
+    ? fill('${tj("subs.fromSaved","({0}) — from your saved preferences")}', MOCK_SUBSCRIBED.length)
     : '— ${t("subs.locked","sign in to use your saved countries")}';
 }
 // Initialise from the unlock state, NOT unconditionally false. On the
@@ -1578,7 +1578,7 @@ function buildGantt(sel0, erp, pace){
   const H = HEAD + (RH+GAP)*(bodyRows + 2 + undatedRows) + 16;
   const x = t => L + ((t - X0)/(X1 - X0))*(W - L - R);
 
-  let s = \`<svg viewBox="0 0 \${W} \${H}" width="100%" style="min-width:820px;display:block" role="img" aria-label="Back-planned delivery timeline by jurisdiction">\`;
+  let s = \`<svg viewBox="0 0 \${W} \${H}" width="100%" style="min-width:820px;display:block" role="img" aria-label="${tj("chart.alt","Back-planned delivery timeline by jurisdiction")}">\`;
   // quarter gridlines
   let q = new Date(Date.UTC(t0.getUTCFullYear(), Math.floor(t0.getUTCMonth()/3)*3, 1));
   while(q.getTime() < X1){
@@ -1821,7 +1821,7 @@ function buildGantt(sel0, erp, pace){
       <span style="display:inline-flex;align-items:center;gap:5px;color:#e0907f">▲ already late</span>
       <span style="display:inline-flex;align-items:center;gap:5px;color:#e2b978">● start &lt;90d</span>
       <span style="display:inline-flex;align-items:center;gap:5px;color:#7fd0a8">✓ runway</span>
-      <span>\${ev('durations','Durations: practitioner estimates')}</span>
+      <span>\${ev('durations','${tj("ev.durationsLong","Durations: practitioner estimates")}')}</span>
     </div>\`;
   return rows;
 }
@@ -1914,7 +1914,7 @@ document.getElementById('adjustReset').onclick = (e) => {
 };
 document.getElementById('adjust').addEventListener('toggle', function(){
   document.getElementById('adjustChevron').textContent =
-    this.open ? 'hide ▴' : 'show ▾';
+    this.open ? '${tj("btn.hide","hide ▴")}' : '${tj("btn.show","show ▾")}';
 });
 
 // The scroll argument is opt-in, and only the two deliberate "show me
@@ -2219,7 +2219,7 @@ function build(){
   const pace = +document.getElementById('pace').value || 1;
   const ganttRows = buildGantt(tracks, erp, pace);
   const euDrivenCount = sel.filter(c=>c[8]).length;
-  document.getElementById('waveIntro').innerHTML = \`${tj("waves.intro","Back-planned from each jurisdiction&rsquo;s published deadline")} \${ev('site','tracker dates')} ${tj("waves.intro2","through phase durations you control")} \${ev('durations','practitioner estimates')}. ${tj("waves.intro3","Procurement is modelled once, not per country.")}\${euDrivenCount?\` <strong>\${euDrivenCount}</strong> ${tj("waves.intro4","are here on an EU-wide obligation, not a national mandate")}${hlp('vida',t("tip.deadlines","Where these deadlines come from"))}.\`:''}\`;
+  document.getElementById('waveIntro').innerHTML = \`${tj("waves.intro","Back-planned from each jurisdiction&rsquo;s published deadline")} \${ev('site','${tj("ev.trackerDates","tracker dates")}')} ${tj("waves.intro2","through phase durations you control")} \${ev('durations','${tj("ev.durations","practitioner estimates")}')}. ${tj("waves.intro3","Procurement is modelled once, not per country.")}\${euDrivenCount?\` <strong>\${euDrivenCount}</strong> ${tj("waves.intro4","are here on an EU-wide obligation, not a national mandate")}${hlp('vida',t("tip.deadlines","Where these deadlines come from"))}.\`:''}\`;
   let w = dated.length ? \`<table><thead><tr><th>${tj("th.deadline","Deadline")}</th><th>${tj("adjust.jur","Jurisdiction")}</th><th>${tj("th.status","Status")}</th><th>${tj("th.model","Model")}${hlp('complexity',t("tip.complexity","How complexity is assigned"))}</th><th class="num">${tj("th.integrations","Integrations")}${hlp('integrations',t("tip.derived","How this is derived"))}</th><th>${tj("th.why","Why")}</th></tr></thead><tbody>\` : '';
   dated.forEach(c=>{
     const st=STATUS[c[3]], cx=CXNAME[c[4]];
@@ -2287,15 +2287,15 @@ function build(){
 
     <tr class="tierA" data-row="ar"><td>${t("row.ar","Issuing cost reduction (AR)")} <span class="tag tang">${t("tag.tangible","tangible")}</span> <span class="tag bank">${t("tag.saved","saved")}</span></td><td>\${fill('${tj("basis.ar","{0} invoices &times; {1} {2} &times; {3}% {4}")}', volAR.toLocaleString(), fmt1(costAR), ev('ato','ATO / Deloitte'), Math.round(savePct*100), ev('hmrc60','${tj("ev.reduction","reduction")}'))}</td><td class="num">\${fmt(savingAR)}</td><td class="num">\${fmt(savingAR)}</td></tr>
 
-    <tr class="tierA" data-row="tax"><td>${t("row.tax","Reduced tax reporting &amp; audit-prep effort")} <span class="tag tang">${t("tag.tangible","tangible")}</span> <span class="tag bank">${t("tag.saved","saved")}</span></td><td>Mechanism evidenced \${ev('oecd','OECD DCTR, 2026')}. Your \${volAP.toLocaleString()} AP invoices imply <strong>\${apFteImplied.toFixed(1)} AP FTE</strong> \${ev('apqc','APQC median, 12,000 per FTE')}; \${ctcCount} clearance or reporting \${ctcCount===1?'jurisdiction':'jurisdictions'} put <strong>\${(shareUsed*100).toFixed(1)}%</strong> of that in scope \${ev('yours','our assumption')}\${taxCapBinds?' <em>(capped)</em>':''} &mdash; \${taxFteSaved.toFixed(2)} FTE &times; \${fmt(fteCost)}. ${tj("row.tax.banks","Saved on either scope: the reporting effort falls with the compliance build itself, not with a workflow change.")}</td><td class="num">\${fmt(l2)}</td><td class="num">\${fmt(l2)}</td></tr>
+    <tr class="tierA" data-row="tax"><td>${t("row.tax","Reduced tax reporting &amp; audit-prep effort")} <span class="tag tang">${t("tag.tangible","tangible")}</span> <span class="tag bank">${t("tag.saved","saved")}</span></td><td>Mechanism evidenced \${ev('oecd','OECD DCTR, 2026')}. Your \${volAP.toLocaleString()} AP invoices imply <strong>\${apFteImplied.toFixed(1)} AP FTE</strong> \${ev('apqc','${tj("ev.apqcMedian","APQC median, 12,000 per FTE")}')}; \${ctcCount} clearance or reporting \${ctcCount===1?'jurisdiction':'jurisdictions'} put <strong>\${(shareUsed*100).toFixed(1)}%</strong> of that in scope \${ev('yours','${tj("ev.ourAssumption","our assumption")}')}\${taxCapBinds?' <em>(capped)</em>':''} &mdash; \${taxFteSaved.toFixed(2)} FTE &times; \${fmt(fteCost)}. ${tj("row.tax.banks","Saved on either scope: the reporting effort falls with the compliance build itself, not with a workflow change.")}</td><td class="num">\${fmt(l2)}</td><td class="num">\${fmt(l2)}</td></tr>
 
-    <tr class="tierB" data-row="rework"><td>${t("row.rework","Avoided rework on data-entry errors")} <span class="tag tang">${t("tag.tangible","tangible")}</span> <span class="tag \${banked?'bank':'unbank'}">\${banked?'${t("tag.saved","saved")}':'${t("tag.notSaved","not saved")}'}</span></td><td>\${Math.round(errNow).toLocaleString()} errored invoices \${ev('hmrcErr',\`at ~\${Math.round(errRate*100)}%\`)} &times; \${fmt(errCost)} \${overridden('errCost') ? ev('yours','your rework cost') : ev('rework','our estimate, not yours')} &times; \${Math.round(errElim*100)}% \${ev('errElim','why not all of them')} \${ev('ardentExc','not Ardent&rsquo;s 18.4% exception rate')}</td><td class="num">\${fmt(errSave)}</td><td class="num">\${bankedErr > 0 ? fmt(bankedErr) : '&mdash;'}</td></tr>
+    <tr class="tierB" data-row="rework"><td>${t("row.rework","Avoided rework on data-entry errors")} <span class="tag tang">${t("tag.tangible","tangible")}</span> <span class="tag \${banked?'bank':'unbank'}">\${banked?'${t("tag.saved","saved")}':'${t("tag.notSaved","not saved")}'}</span></td><td>\${Math.round(errNow).toLocaleString()} errored invoices \${ev('hmrcErr',\`at ~\${Math.round(errRate*100)}%\`)} &times; \${fmt(errCost)} \${overridden('errCost') ? ev('yours','${tj("ev.yourRework","your rework cost")}') : ev('rework','${tj("ev.ourEstimate","our estimate, not yours")}')} &times; \${Math.round(errElim*100)}% \${ev('errElim','${tj("ev.whyNotAll","why not all of them")}')} \${ev('ardentExc','${tj("ev.excRate","not Ardent&rsquo;s 18.4% exception rate")}')}</td><td class="num">\${fmt(errSave)}</td><td class="num">\${bankedErr > 0 ? fmt(bankedErr) : '&mdash;'}</td></tr>
 
     <tr class="tot" data-row="total"><td colspan="2"><strong>${t("row.savingsTotal","Annual benefit")}</strong>\${l1Unbanked > 0 ? \` <span class="hint" style="display:inline">&mdash; ${t("row.directTotal.gap","the difference needs a change programme you are not running")}</span>\` : ''}</td><td class="num"><strong>\${fmt(l1 + l2)}</strong></td><td class="num"><strong style="color:#7fd0a8">\${fmt(l1Banked + l2)}</strong></td></tr>
 
     <tr class="grp"><td colspan="4">${t("grp.named","Named, not priced &mdash; real, and this model will not invent a number for them")}</td></tr>
 
-    <tr class="tierA" data-row="cycle"><td>${t("row.cycle","Faster cycle time &amp; fewer supplier queries")} <span class="tag intang">${t("tag.intangible","intangible")}</span></td><td>${tj("row.cycle.basis","Top-performing AP spends")} <strong>12.8%</strong> ${tj("row.cycle.basis2","of staff time on supplier inquiries against")} <strong>24.0%</strong> \${ev('ardentInq','Ardent Partners, 2025 data')} &mdash; ${tj("row.cycle.basis3","an association with high-performing AP, not a measured effect of e-invoicing, so")} <strong>${tj("row.cycle.basis4","not monetised")}</strong>. \${notesLink()}</td>\${dash}</tr>
+    <tr class="tierA" data-row="cycle"><td>${t("row.cycle","Faster cycle time &amp; fewer supplier queries")} <span class="tag intang">${t("tag.intangible","intangible")}</span></td><td>${tj("row.cycle.basis","Top-performing AP spends")} <strong>12.8%</strong> ${tj("row.cycle.basis2","of staff time on supplier inquiries against")} <strong>24.0%</strong> \${ev('ardentInq','${tj("ev.ardent2025","Ardent Partners, 2025 data")}')} &mdash; ${tj("row.cycle.basis3","an association with high-performing AP, not a measured effect of e-invoicing, so")} <strong>${tj("row.cycle.basis4","not monetised")}</strong>. \${notesLink()}</td>\${dash}</tr>
 
     <tr class="tierA" data-row="paper"><td>${t("row.paper","Paper, print, postage, storage")} <span class="tag tang">${t("tag.tangible","tangible")}</span></td><td>\${fill('${tj("basis.paper","Paper AUD 30.87 vs e-invoice AUD 9.18 {0}; your own spend is the better input")}', ev('ato','ATO / Deloitte'))}</td>\${dash}</tr>
 
@@ -2343,7 +2343,7 @@ function build(){
       <div class="card"><h3>${tj("notes.banks.h","What compliance alone saves")}</h3><p class="hint">${tj("notes.banks","Capture and issuing arrive with the integration: once invoices come in structured and go out cleared, nobody keys or posts them. Review and approval are workflow and need a separate change programme. The split is the ATO / Deloitte task times &mdash; receipt 7 and validation 2 minutes against review 7 and approval 5 &mdash; not our judgement. Tax reporting and audit-prep effort is saved in full on either scope: you file structured data to the tax authority whether or not you ever touch AP workflow, so there is no equivalent split to make.")}</p></div>
       <div class="card"><h3>${tj("notes.rework.h","Why rework is held back")}</h3><p class="hint">${tj("notes.rework","It rests on HMRC&rsquo;s unsourced 10% error rate, a cost you set yourself, and our assumption about how many errors actually go away. Least evidenced row here and the largest beneficiary of any change, so it is not counted as saved, even on a compliance scope. Ardent gives the mechanism but no quantified reduction; their Best-in-Class exception gap of 9.8 points is used as a ceiling on what this model may claim.")}</p></div>
       <div class="card"><h3>${tj("notes.headcount.h","Headcount restates, it does not add")}</h3><p class="hint">${tj("notes.headcount","The capture-FTE figure prices the processing-cost row in people. It is the same money &mdash; the per-invoice benchmark is labour-dominated, so counting both would count it twice.")}\${saving > 0 ? \` \${fmt(captureValue)} of \${fmt(saving)}, or \${Math.round(captureValue/saving*100)}%; the rest is review, technology and overhead.\` : ''} ${tj("notes.headcount2","Released capacity is only cash if the post goes or is not backfilled.")} \${ev('apqc','APQC')} &middot; \${ev('atoCapture','ATO / Deloitte')}</p></div>
-      <div class="card"><h3>${tj("notes.unmonetised.h","What carries no value on purpose")}</h3><p class="hint">${tj("notes.unmonetised","Paper and postage, because your own spend is the only honest input. Cycle time and supplier queries, because nobody has measured how much of that gap e-invoicing causes &mdash; Ardent&rsquo;s own")} \${ev('ardentCycle','2.9 vs 13.5 days')} ${tj("notes.unmonetised2","is circular by construction, and the")} \${ev('nhs','15% query reduction')} ${tj("notes.unmonetised3","is a single anecdote. VAT leakage, penalty exposure and fraud, because the mechanisms are real and the magnitudes are not evidenced. They belong in the qualitative case beside this number, not inside it.")}</p></div>
+      <div class="card"><h3>${tj("notes.unmonetised.h","What carries no value on purpose")}</h3><p class="hint">${tj("notes.unmonetised","Paper and postage, because your own spend is the only honest input. Cycle time and supplier queries, because nobody has measured how much of that gap e-invoicing causes &mdash; Ardent&rsquo;s own")} \${ev('ardentCycle','${tj("ev.cycleGap","2.9 vs 13.5 days")}')} ${tj("notes.unmonetised2","is circular by construction, and the")} \${ev('nhs','${tj("ev.nhsQuery","15% query reduction")}')} ${tj("notes.unmonetised3","is a single anecdote. VAT leakage, penalty exposure and fraud, because the mechanisms are real and the magnitudes are not evidenced. They belong in the qualitative case beside this number, not inside it.")}</p></div>
     </div>
     <p style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:var(--soon);margin:0 0 8px">${tj("notes.h.grades","Evidence grades")}</p>
     <div class="grid g2">
@@ -2437,7 +2437,7 @@ function build(){
   //    which is not a big number, it is a wrong one.
   const claimedPp = errRate * errElim * 100;
   if(TAXM.excGapPp > 0 && claimedPp > TAXM.excGapPp){
-    warn.push(\`<strong>This model removes more exceptions than separate the best quartile of AP from everyone else.</strong> Your error rate and elimination assumption together take \${claimedPp.toFixed(1)} points of invoices out of exception; Ardent measures the whole gap between Best-in-Class and all others at \${TAXM.excGapPp} points \${ev('excGap','11.1% against 20.9%')}, across every cause and with e-invoicing only one contributor. Lower the error rate or the elimination percentage &mdash; as it stands the rework row is claiming more than the market's best performers achieve.\`);
+    warn.push(\`<strong>This model removes more exceptions than separate the best quartile of AP from everyone else.</strong> Your error rate and elimination assumption together take \${claimedPp.toFixed(1)} points of invoices out of exception; Ardent measures the whole gap between Best-in-Class and all others at \${TAXM.excGapPp} points \${ev('excGap','${tj("ev.excSplit","11.1% against 20.9%")}')}, across every cause and with e-invoicing only one contributor. Lower the error rate or the elimination percentage &mdash; as it stands the rework row is claiming more than the market's best performers achieve.\`);
   }
 
   document.getElementById('guards').innerHTML = warn.length
