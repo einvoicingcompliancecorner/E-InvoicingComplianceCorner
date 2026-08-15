@@ -168,8 +168,27 @@ export async function getRoiCountries(db, todayISO) {
     // does not show, or "" — surfaced so the render can warn when it is
     // planning a country as deadline-free that is not.
     const hiddenDate = hiddenBy.get(c.id) || "";
+
+    // INDEX 10: THE SECOND WAVE.
+    //
+    // An EU member state with a national deadline before July 2030 has TWO
+    // obligations, and until now the planner scheduled only the first.
+    // Germany is the case the design review named: a 4-corner exchange
+    // build in 2027, scored SIMPLE, and then ViDA's digital reporting
+    // requirement in 2030, which is COMPLEX. The tool showed the easier,
+    // nearer build and hid the harder, later one — for fourteen member
+    // states, over half of those tracked.
+    //
+    // Note this is computed HERE rather than in the client, because it
+    // needs `eu_member`. Deriving it from the tuple would sweep in Norway
+    // and the United Kingdom, which sit in the Europe region and are not
+    // bound by ViDA at all. That mistake was made and caught on the way in.
+    const vidaSecond = (c.eu_member && national.length && euDates.length
+                        && national[0] < euDates[0]) ? euDates[0] : "";
+
     return [c.name_en, c.code, REG[c.region] || "Eu", status, cxEff, future[0] || "", c.penalty_rows || 0, c.slug, euDriven,
-            hiddenDate && (!future.length || hiddenDate < future[0]) ? hiddenDate : ""];
+            hiddenDate && (!future.length || hiddenDate < future[0]) ? hiddenDate : "",
+            vidaSecond];
   });
 }
 
@@ -456,6 +475,10 @@ footer{margin-top:40px;padding-top:16px;border-top:1px solid var(--line);font-si
      the table itself rather than relying on inheritance. */
   #pdfdoc table{width:100%;border-collapse:collapse;font-size:8.6pt;color:#111}
   #pdfdoc td{color:#222}
+  /* The second waves widened the jurisdictions column enough to wrap the
+     ISO dates beside it, which reads as a data error rather than a
+     layout one. */
+  #pdfdoc td:first-child{white-space:nowrap}
   #pdfdoc td strong{color:#111}
   #pdfdoc th{text-align:left;font-family:'IBM Plex Mono',monospace;font-size:7.2pt;letter-spacing:.8px;
     text-transform:uppercase;color:#555;border-bottom:1px solid #999;padding:4px 6px}
@@ -1402,7 +1425,7 @@ function buildGantt(sel0, erp, pace){
   // text nodes overlap, it just becomes unreadable). Long names are also
   // truncated, with the full name kept in a <title> for hover.
   const L = 190, R = 116, W = 1000, RH = 24, GAP = 4, HEAD = 34;
-  const shortName = n => n.length > 18 ? n.slice(0, 17) + '\u2026' : n;
+  const shortName = n => n.length > 22 ? n.slice(0, 21) + '\u2026' : n;
   const groups = [...new Set(rows.map(r=>r.waveKey))];
   const H = HEAD + (RH+GAP)*(rows.length + groups.length + 2 + (undated.length ? undated.length + 1 : 0)) + 16;
   const x = t => L + ((t - X0)/(X1 - X0))*(W - L - R);
@@ -1707,6 +1730,39 @@ function build(){
   const fteEntry = +document.getElementById('fteEntry').value || 0;
   const sel = chosen();
 
+  // ONE ROW PER OBLIGATION, NOT PER COUNTRY.
+  //
+  // Fourteen EU member states carry two: a national deadline and then
+  // ViDA's digital reporting requirement in July 2030. The planner used
+  // to schedule only the earlier one, so Germany showed a simple 2027
+  // exchange build and hid a complex 2030 reporting build entirely.
+  //
+  // The second track is a copy carrying its own deadline, its own
+  // complexity (ViDA is a DRR, so complex regardless of what the country
+  // runs today) and its own cost weight. It takes a distinct NAME rather
+  // than a separate identifier, because the name is already the key for
+  // the chart labels, the wave table and the adjust panel's overrides —
+  // threading a parallel track id through all of those would be a lot of
+  // surface for no gain.
+  //
+  // penalty_rows is zeroed on the second track: it counts jurisdictions
+  // publishing a penalty schedule, and Germany must not count twice.
+  const tracks = [];
+  sel.forEach(c => {
+    tracks.push(c.concat([1]));                     // index 11: cost weight
+    if(c[10]){
+      const v = c.slice();
+      v[0] = c[0] + ' ${tj("wave.vidaSuffix","(ViDA)")}';
+      v[4] = 2;                                     // DRR is complex work
+      v[5] = c[10];
+      v[6] = 0;
+      v[8] = 1;
+      v[9] = '';
+      v[10] = '';
+      tracks.push(v.concat([TAXM.vidaRatio]));
+    }
+  });
+
   // --- Layer 1
   // AR is included deliberately. An earlier version collected the AR volume
   // and then never used it, which was backwards: a mandate applies to what
@@ -1722,9 +1778,10 @@ function build(){
   const l1 = saving + savingAR + errSave;
 
   // --- complexity / waves
-  const complex = sel.filter(c=>c[4]===2), simple = sel.filter(c=>c[4]===1);
-  const watch = sel.filter(c=>c[4]===0);
-  const dated = sel.filter(c=>c[5]).sort((a,b)=>a[5]<b[5]?-1:1);
+  const complex = tracks.filter(c=>c[4]===2), simple = tracks.filter(c=>c[4]===1);
+  const watch = tracks.filter(c=>c[4]===0);
+  const dated = tracks.filter(c=>c[5]).sort((a,b)=>a[5]<b[5]?-1:1);
+  const secondWaves = tracks.filter(c=>c[11] !== 1).length;
   // Every country you build for counts once per ERP system. The old model
   // counted clearance countries at full rate and "reporting" countries at
   // HALF — a fudge that stood in for "reporting is a bit easier" without
@@ -1733,8 +1790,13 @@ function build(){
   // instead, which is both easier to defend and easier to override with a
   // real quote. No-mandate countries are costed at the simple rate: with
   // nothing to comply with, a plain connection is all that is left.
-  const intSimple  = (simple.length + watch.length) * erp;
-  const intComplex = complex.length * erp;
+  // Weighted, so a ViDA second wave costs a fraction of a full build
+  // rather than charging twice for a platform you buy once. Rounded up:
+  // half an integration is not a thing you can buy, and rounding down
+  // would let a single second wave cost nothing at all.
+  const wsum = a => a.reduce((t, c) => t + (c[11] === undefined ? 1 : c[11]), 0);
+  const intSimple  = Math.ceil(wsum(simple.concat(watch)) * erp);
+  const intComplex = Math.ceil(wsum(complex) * erp);
   const integrations = intSimple + intComplex;
 
   // --- Layer 2 (modelled from assumptions only)
@@ -1876,7 +1938,7 @@ function build(){
     <div class="card"><p style="margin:0">Across <strong>\${sel.length}</strong> jurisdictions you have <strong>\${complex.length} complex</strong> (CTC or 5-corner) and <strong>\${simple.length} simple</strong> (4-corner exchange) regime\${simple.length===1?'':'s'}\${watch.length?\`, plus \${watch.length} with no mandate${hlp('nomandate','Why these are still in the plan')}\`:''}. With \${erp} ERP/billing system\${erp===1?'':'s'} that is roughly <strong>\${integrations} country-system integration\${integrations===1?'':'s'}</strong>${hlp('integrations','How this is derived')} to deliver. \${dated.length?\`The nearest binding date is <strong>\${dated[0][5]}</strong> (\${dated[0][0]}).\`:'None of the selected jurisdictions has a future dated deadline on the tracker today.'} \${ev('site','Source: live tracker data')}</p></div>\`;
 
   const pace = +document.getElementById('pace').value || 1;
-  const ganttRows = buildGantt(sel, erp, pace);
+  const ganttRows = buildGantt(tracks, erp, pace);
   const euDrivenCount = sel.filter(c=>c[8]).length;
   document.getElementById('waveIntro').innerHTML = \`${tj("waves.intro","Back-planned from each jurisdiction&rsquo;s published deadline")} \${ev('site','tracker dates')} ${tj("waves.intro2","through phase durations you control")} \${ev('durations','practitioner estimates')}. ${tj("waves.intro3","Procurement is modelled once, not per country.")}\${euDrivenCount?\` <strong>\${euDrivenCount}</strong> ${tj("waves.intro4","are here on an EU-wide obligation, not a national mandate")}${hlp('vida','Where these deadlines come from')}.\`:''}\`;
   let w = dated.length ? \`<table><thead><tr><th>Deadline</th><th>Jurisdiction</th><th>Status</th><th>Model${hlp('complexity','How complexity is assigned')}</th><th class="num">Integrations${hlp('integrations','How this is derived')}</th><th>Why</th></tr></thead><tbody>\` : '';
@@ -2185,7 +2247,7 @@ function build(){
       + '</section>';
   }
 
-  renderAdjust(sel);
+  renderAdjust(tracks);
 
 }
 `
@@ -2213,6 +2275,12 @@ function build(){
       // quartile and everyone else — used as a ceiling on what this
       // model may claim, never as a target.
       excGapPp: val("exception_reduction_pp", 9.8),
+      // What a ViDA second wave costs relative to a full country build.
+      // Vendor selection and contracting are already programme-level and
+      // do not repeat; the platform, the ERP connection and the master
+      // data exist. What is genuinely new is the reporting extract, the
+      // transmission to the tax authority, and testing it.
+      vidaRatio: val("vida_second_wave_ratio", 0.5),
     }))
     .replace("__ROI_PLATFEE__", JSON.stringify({
       fee: val("platform_fee_per_invoice", 0.4),   // USD, per invoice, either direction

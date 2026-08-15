@@ -669,5 +669,47 @@ printed.heights.forEach((h, i) =>
   t.check(`PDF page ${i + 1} fits on A4 (${h}mm of 271mm)`, h <= 271, h));
 await page.emulateMedia({ media: "screen" });
 
+// ---- 23. two waves per EU member state ----
+// The last substantive item from the design review. An EU member state
+// with a national deadline before July 2030 has TWO obligations, and the
+// planner used to schedule only the first — Germany showed a simple 2027
+// exchange build and hid a complex 2030 reporting build entirely.
+await page.goto(`file://${file}`);
+await page.click("#selEU"); await page.waitForTimeout(200);
+await page.click("#run"); await page.waitForTimeout(900);
+
+const vida = await page.evaluate(() =>
+  [...document.querySelectorAll("#gantt svg text")]
+    .map((n) => n.textContent).filter((x) => /\(ViDA\)/.test(x)));
+t.check(`fourteen member states get a second wave (${vida.length})`, vida.length === 14, vida.length);
+t.check("Germany is one of them", vida.some((x) => /^Germany/.test(x)), vida.slice(0, 4));
+// The mistake made on the way in: deriving this from the region rather
+// than eu_member sweeps in countries ViDA does not bind.
+t.check("Norway and the UK are not, because ViDA does not bind them",
+  !vida.some((x) => /Norway|United Kingdom/.test(x)), vida);
+
+// Read firstChild, not textContent: each <text> carries a <title> child
+// holding the untruncated name, so textContent returns the label twice.
+t.check("both of Germany's obligations are scheduled, and in different waves",
+  await page.evaluate(() => {
+    const labels = [...document.querySelectorAll("#gantt svg text")]
+      .map((n) => (n.firstChild && n.firstChild.textContent) || "");
+    return labels.includes("Germany") && labels.includes("Germany (ViDA)");
+  }));
+
+// Cost: half a complex integration each, not a second platform.
+const oneOff = Number((await page.locator("#invest .stat .n").first().innerText()).replace(/[^\d]/g, ""));
+t.check(`a second wave costs half a build, not a whole one (${oneOff})`, oneOff === 710000, oneOff);
+
+// And each is separately adjustable — the point of two rows rather than
+// an annotation is that you can move one obligation without the other.
+await page.evaluate(() => { document.getElementById("adjust").open = true; });
+await page.waitForTimeout(250);
+const adj = await page.evaluate(() =>
+  [...document.querySelectorAll("[data-ovr-dl]")].map((e) => e.getAttribute("data-ovr-dl")));
+t.check("each obligation is separately adjustable",
+  adj.includes("Germany") && adj.includes("Germany (ViDA)"),
+  adj.filter((a) => /Germany/.test(a)));
+
 await browser.close();
 process.exit(t.report() ? 0 : 1);
