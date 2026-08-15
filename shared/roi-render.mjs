@@ -928,7 +928,7 @@ export function renderRoiPage({ countries, benchmarks = [], phases = [], strings
   <p class="noprint" style="margin:-4px 0 14px"><button id="ganttToggle" style="padding:5px 11px;font-size:12.5px">${t("btn.expand", "Show every jurisdiction")}</button> <button id="tblToggle" style="padding:5px 11px;font-size:12.5px">${t("btn.table", "Show as table")}</button></p>
   <div id="waves" class="hidden"></div>
   <h2>4 &middot; ${t("sec.savings", "Savings")}</h2>
-  <p class="lede">${t("sec.savings.lede", "Two kinds, kept apart on purpose and never added together. Direct savings are cash that stops leaving the business; indirect savings are cost and risk you avoid rather than money you release.")}</p>
+  <p class="lede">${t("sec.savings.lede", "Two kinds, reported separately because the evidence behind them differs. Direct savings are cash that stops leaving the business; indirect savings are cost and risk you avoid rather than money you release. Section 5 uses both.")}</p>
   <p class="subhead">${t("sec.direct", "Direct &mdash; cash-releasing")}</p>
   <p class="lede">${t("sec.direct.lede", "Money that stops leaving the business: processing cost per invoice, and rework you no longer pay for. Available wherever you digitise, mandate or not.")}</p>
   <div id="direct"></div>
@@ -999,7 +999,13 @@ const CUR_INPUTS = ['costNow','costAR','errCost','fteCost','fteEntry','cImplS','
 const roundCur = v => v >= 1000 ? Math.round(v) : Math.round(v*100)/100;
 const usdDefault = {}, usdCurrent = {};
 const fmt = n => SYM[cur] + Math.round(n).toLocaleString('en-US');
-const fmt1 = n => SYM[cur] + (Math.round(n*10)/10).toLocaleString('en-US');
+// Two decimals, not one. This formats per-invoice costs and nothing else,
+// and at one decimal the AP baseline printed as "$9.8" while the row was
+// computed from 9.84 — so a reader multiplying out the basis on screen
+// got $588,000 against the $590,400 beside it and had no way to see why.
+// A $2,400 gap in the one row a finance reader is most likely to check
+// by hand. Dan found it by doing exactly that.
+const fmt1 = n => SYM[cur] + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 // ---- evidence grades -------------------------------------------------
 // A = measured, primary, attributable      B = published by a credible body but unattributed within it
@@ -1096,10 +1102,10 @@ function renderSavings(){
 
   el.innerHTML = '<div class="card svwrap">'
     + '<svg class="svpie" viewBox="0 0 ' + S + ' ' + S + '" width="' + S + '" height="' + S + '" role="img"'
-    + ' aria-label="${tj("sv.alt","Composition of annual savings this scope banks")}">' + slices + '</svg>'
-    + '<div class="svside"><p class="svtitle">${tj("sv.title","Where the banked saving comes from")}</p>'
+    + ' aria-label="${tj("sv.alt","Composition of the annual benefit on this scope")}">' + slices + '</svg>'
+    + '<div class="svside"><p class="svtitle">${tj("sv.title","Where the annual benefit comes from")}</p>'
     + '<ul class="svkey">' + key + '</ul>'
-    + '<p class="svtot">${tj("sv.total","Banked annually")} <strong>' + fmt(total) + '</strong>'
+    + '<p class="svtot">${tj("sv.total","Annual benefit")} <strong>' + fmt(total) + '</strong>'
     + (SV.unbanked > 0 ? '<span>${tj("sv.unbankedNote","plus")} ' + fmt(SV.unbanked)
         + ' ${tj("sv.unbankedTail","unlocked, not banked")}</span>' : '') + '</p>'
     + '<p class="hint" style="margin:8px 0 0">${tj("sv.note","Faster cycle time, fewer supplier queries and avoided penalty exposure carry no slice, because this model does not price them.")} ' + notesLink() + '</p>'
@@ -2100,7 +2106,7 @@ function build(){
     </div>
     <div class="note" style="margin-top:14px">\${banked
       ? \`<strong>${tj("sum.scopeBoth","Scope: compliance + AP process automation.")}</strong> ${tj("sum.scopeBoth2","Every direct row counts, and the timeline carries a process-change phase per country. The larger, less common programme.")}\`
-      : \`<strong>${tj("sum.scopeOnly","Scope: compliance only.")}</strong> \${fmt(l1Banked)} ${tj("sum.scopeOnly2","banks from the integration itself; the remaining")} \${fmt(l1Unbanked)} ${tj("sum.scopeOnly3","needs a change programme you are not running.")}\`} ${tj("sum.scopeBoth3","Direct and indirect are deliberately not added together")} \${notesLink()}</div>
+      : \`<strong>${tj("sum.scopeOnly","Scope: compliance only.")}</strong> \${fmt(l1Banked)} ${tj("sum.scopeOnly2","banks from the integration itself; the remaining")} \${fmt(l1Unbanked)} ${tj("sum.scopeOnly3","needs a change programme you are not running.")}\`} ${tj("sum.scopeBoth3","Reported separately because the evidence behind them differs; the investment case below uses both")} \${notesLink()}</div>
     <div class="card"><p style="margin:0">Across <strong>\${sel.length}</strong> jurisdictions you have <strong>\${complex.length} complex</strong> (CTC or 5-corner) and <strong>\${simple.length} simple</strong> (4-corner exchange) regime\${simple.length===1?'':'s'}\${watch.length?\`, plus \${watch.length} with no mandate${hlp('nomandate','Why these are still in the plan')}\`:''}. With \${erp} ERP/billing system\${erp===1?'':'s'} that is roughly <strong>\${integrations} country-system integration\${integrations===1?'':'s'}</strong>${hlp('integrations','How this is derived')} to deliver. \${dated.length?\`The nearest binding date is <strong>\${dated[0][5]}</strong> (\${dated[0][0]}).\`:'None of the selected jurisdictions has a future dated deadline on the tracker today.'} \${ev('site','Source: live tracker data')}</p></div>\`;
 
   const pace = +document.getElementById('pace').value || 1;
@@ -2141,13 +2147,13 @@ function build(){
   };
 
   document.getElementById('direct').innerHTML = \`
-    <table><thead><tr><th>Benefit</th><th>Basis</th><th class="num">Annual value</th></tr></thead><tbody>
-    <tr class="tierA"><td>Processing cost reduction (AP) <span class="tag tang">tangible</span> <span class="tag \${banked?'bank':'unbank'}">\${banked?'banks':Math.round(TAXM.captureShare*100)+'% banks'}</span></td><td>\${volAP.toLocaleString()} invoices &times; \${fmt1(costNow)} \${ev('ardent','baseline')} &times; \${Math.round(savePct*100)}% \${ev('hmrc60','reduction')}</td><td class="num">\${fmt(saving)}</td></tr>
-    <tr class="tierA"><td>Issuing cost reduction (AR) <span class="tag tang">tangible</span> <span class="tag bank">banks</span></td><td>\${volAR.toLocaleString()} invoices &times; \${fmt1(costAR)} \${ev('ato','ATO / Deloitte')} &times; \${Math.round(savePct*100)}% \${ev('hmrc60','reduction')}</td><td class="num">\${fmt(savingAR)}</td></tr>
-    <tr class="tierB"><td>Avoided rework on data-entry errors <span class="tag tang">tangible</span> <span class="tag \${banked?'bank':'unbank'}">\${banked?'banks':'not banked'}</span></td><td>\${Math.round(errNow).toLocaleString()} errored invoices \${ev('hmrcErr',\`at ~\${Math.round(errRate*100)}%\`)} &times; \${fmt(errCost)} \${overridden('errCost') ? ev('yours','your rework cost') : ev('rework','our estimate, not yours')} &times; \${Math.round(errElim*100)}% \${ev('errElim','why not all of them')} \${ev('ardentExc','not Ardent&rsquo;s 18.4% exception rate')}</td><td class="num">\${fmt(errSave)}</td></tr>
-    <tr class="tierA"><td>${t("row.cycle","Faster cycle time &amp; fewer supplier queries")} <span class="tag intang">intangible</span></td><td>${tj("row.cycle.basis","Top-performing AP spends")} <strong>12.8%</strong> ${tj("row.cycle.basis2","of staff time on supplier inquiries against")} <strong>24.0%</strong> \${ev('ardentInq','Ardent Partners, 2025 data')} &mdash; ${tj("row.cycle.basis3","an association with high-performing AP, not a measured effect of e-invoicing, so")} <strong>${tj("row.cycle.basis4","not monetised")}</strong>. \${notesLink()}</td><td class="num">&mdash;</td></tr>
-    <tr class="tierA"><td>Paper, print, postage, storage <span class="tag tang">tangible</span></td><td>Paper AUD 30.87 vs e-invoice AUD 9.18 \${ev('ato','ATO / Deloitte')}; your own spend is the better input</td><td class="num">&mdash;</td></tr>
-    <tr style="border-top:2px solid var(--line)"><td colspan="2"><strong>Direct total &mdash; banked on this scope</strong>\${l1Unbanked > 0 ? \` <span class="hint" style="display:inline">(\${fmt(l1Unbanked)} unlocked and not banked, of \${fmt(l1)})</span>\` : ''}</td><td class="num"><strong style="color:#7fd0a8">\${fmt(l1Banked)}</strong></td></tr>
+    <table><thead><tr><th>Benefit</th><th>Basis</th><th class="num">${t("col.gross","Annual value")}</th><th class="num">${t("col.banks","Banks on this scope")}</th></tr></thead><tbody>
+    <tr class="tierA"><td>Processing cost reduction (AP) <span class="tag tang">tangible</span> <span class="tag \${banked?'bank':'unbank'}">\${banked?'banks':Math.round(TAXM.captureShare*100)+'% banks'}</span></td><td>\${volAP.toLocaleString()} invoices &times; \${fmt1(costNow)} \${ev('ardent','baseline')} &times; \${Math.round(savePct*100)}% \${ev('hmrc60','reduction')}</td><td class="num">\${fmt(saving)}</td><td class="num">\${fmt(bankedAP)}</td></tr>
+    <tr class="tierA"><td>Issuing cost reduction (AR) <span class="tag tang">tangible</span> <span class="tag bank">banks</span></td><td>\${volAR.toLocaleString()} invoices &times; \${fmt1(costAR)} \${ev('ato','ATO / Deloitte')} &times; \${Math.round(savePct*100)}% \${ev('hmrc60','reduction')}</td><td class="num">\${fmt(savingAR)}</td><td class="num">\${fmt(savingAR)}</td></tr>
+    <tr class="tierB"><td>Avoided rework on data-entry errors <span class="tag tang">tangible</span> <span class="tag \${banked?'bank':'unbank'}">\${banked?'banks':'not banked'}</span></td><td>\${Math.round(errNow).toLocaleString()} errored invoices \${ev('hmrcErr',\`at ~\${Math.round(errRate*100)}%\`)} &times; \${fmt(errCost)} \${overridden('errCost') ? ev('yours','your rework cost') : ev('rework','our estimate, not yours')} &times; \${Math.round(errElim*100)}% \${ev('errElim','why not all of them')} \${ev('ardentExc','not Ardent&rsquo;s 18.4% exception rate')}</td><td class="num">\${fmt(errSave)}</td><td class="num">\${bankedErr > 0 ? fmt(bankedErr) : '&mdash;'}</td></tr>
+    <tr class="tierA"><td>${t("row.cycle","Faster cycle time &amp; fewer supplier queries")} <span class="tag intang">intangible</span></td><td>${tj("row.cycle.basis","Top-performing AP spends")} <strong>12.8%</strong> ${tj("row.cycle.basis2","of staff time on supplier inquiries against")} <strong>24.0%</strong> \${ev('ardentInq','Ardent Partners, 2025 data')} &mdash; ${tj("row.cycle.basis3","an association with high-performing AP, not a measured effect of e-invoicing, so")} <strong>${tj("row.cycle.basis4","not monetised")}</strong>. \${notesLink()}</td><td class="num">&mdash;</td><td class="num">&mdash;</td></tr>
+    <tr class="tierA"><td>Paper, print, postage, storage <span class="tag tang">tangible</span></td><td>Paper AUD 30.87 vs e-invoice AUD 9.18 \${ev('ato','ATO / Deloitte')}; your own spend is the better input</td><td class="num">&mdash;</td><td class="num">&mdash;</td></tr>
+    <tr style="border-top:2px solid var(--line)"><td colspan="2"><strong>${t("row.directTotal","Direct total")}</strong>\${l1Unbanked > 0 ? \` <span class="hint" style="display:inline">&mdash; ${t("row.directTotal.gap","the difference needs a change programme you are not running")}</span>\` : ''}</td><td class="num"><strong>\${fmt(l1)}</strong></td><td class="num"><strong style="color:#7fd0a8">\${fmt(l1Banked)}</strong></td></tr>
     </tbody></table>
     <div class="note" style="margin-top:12px"><strong>${tj("res.headcount.h","In headcount:")}</strong> \${captureFte.toFixed(1)} ${tj("res.headcount.line","FTE keying invoices today, of which")} <strong>\${captureSaved.toFixed(1)}</strong> ${tj("res.headcount.line2","are released &mdash; the same money as the row above, priced as people rather than an addition to it.")} \${notesLink()}</div>\`;
 
@@ -2178,7 +2184,7 @@ function build(){
       <div class="stat"><div class="n" style="color:#e0907f">\${fmt(oneOff)}</div><div class="l">One-off &mdash; \${intComplex} complex + \${intSimple} simple</div></div>
       <div class="stat"><div class="n" style="color:#e0907f">\${fmt(annualCost)}</div><div class="l">${tj("res.annualRun","Annual run cost")}</div></div>
       <div class="stat"><div class="n" style="color:\${netAnnual>=0?'#7fd0a8':'#e0907f'}">\${fmt(netAnnual)}</div><div class="l">Net annual \${banked?'benefit':'(compliance scope)'}</div></div>
-      <div class="stat"><div class="n" style="color:\${paybackMonths&&paybackMonths<=24?'#7fd0a8':'#e2b978'}">\${paybackMonths===null?'n/a':Math.round(paybackMonths)+'mo'}</div><div class="l">${tj("res.payback","Payback on one-off")}</div></div>
+      <div class="stat"><div class="n" style="color:\${paybackMonths&&paybackMonths<=24?'#7fd0a8':'#e2b978'}">\${paybackMonths===null?'n/a':paybackMonths<1?'&lt;1mo':Math.round(paybackMonths)+'mo'}</div><div class="l">${tj("res.payback","Payback on one-off")}</div></div>
     </div>
     \${!banked ? \`<div class="note" style="margin-top:12px">${tj("res.complianceOnly","Compliance-only, the normal shape. Counts what the integration itself delivers;")} \${fmt(l1Unbanked)} ${tj("res.complianceOnly3","more is the option it buys you for later.")} \${notesLink()}</div>\` : ''}
     <div class="note" style="margin-top:12px">${tj("res.tangible","Everything counted here is tangible. The intangible benefits are named above and carry no value on purpose.")} \${notesLink()}</div>\`;
@@ -2344,13 +2350,13 @@ function build(){
       + ' &middot; ' + when + '</div></div>'
 
       + '<div class="kpis">'
-      + kpi(money(l1Banked + l2), '${tj("pdf.kpi1","Banked annually")}')
+      + kpi(money(l1Banked + l2), '${tj("pdf.kpi1","Annual benefit")}')
       + kpi(money(oneOff), '${tj("pdf.kpi2","One-off investment")}')
       + kpi(money(netAnnual), '${tj("pdf.kpi3","Net annual")}')
-      + kpi(paybackMonths === null ? 'n/a' : Math.round(paybackMonths) + ' mo', '${tj("pdf.kpi4","Payback")}')
+      + kpi(paybackMonths === null ? 'n/a' : paybackMonths < 1 ? '&lt;1 mo' : Math.round(paybackMonths) + ' mo', '${tj("pdf.kpi4","Payback")}')
       + '</div>'
 
-      + '<h2>${tj("pdf.h.mix","Where the banked saving comes from")}</h2>'
+      + '<h2>${tj("pdf.h.mix","Where the annual benefit comes from")}</h2>'
       + '<div class="pielay">' + (pieSvg ? pieSvg.outerHTML.replace(/width="\d+"/, 'width="150"').replace(/height="\d+"/, 'height="150"') : '')
       + '<ul class="pkey">' + rows
       + (l1Unbanked > 0 ? '<li><i style="background:repeating-linear-gradient(45deg,#888 0 2px,transparent 2px 5px);border:1px solid #999"></i><span>${tj("sv.unbanked","Unlocked, not banked")}</span><b>' + money(l1Unbanked) + '</b><em>&mdash;</em></li>' : '')
