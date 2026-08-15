@@ -72,4 +72,14 @@ INSERT OR IGNORE INTO translations (namespace, key, lang, value) VALUES
 -- which. Recombining them would restore a sum that answers no question
 -- anyone asks.
 --
--- ASSERT ALWAYS: SELECT count(*) FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key IN ('sum.bridge3','sum.bridge5') = 2
+-- EDITED 15 Aug 2026, comment only, same day and for the same reason as
+-- the equivalent line in 540: `sum.bridge3` / `sum.bridge5` named the
+-- two components while they lived in the note. 544 moved them to the
+-- One-off stat as `res.running2` (platform) and `res.running3`
+-- (internal); 545 deleted the note keys. Still two components, still
+-- separately named, different rows.
+--
+-- Invariant moved to 545 for the same reason as the equivalent line in
+-- 540: it would have to name keys that do not exist until 544, and an
+-- ASSERT ALWAYS is checked at its own point in the chain, not only at
+-- the end.

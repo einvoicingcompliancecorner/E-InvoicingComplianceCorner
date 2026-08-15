@@ -11254,6 +11254,116 @@ roi string, excluding the orphans by name so they keep their original
 wording as a record.
 
 
+## 15 August 2026 (cont'd) — The dead-data sweep (migration 545), and the design review refreshed
+
+Dan: *"please can you address - The dead-data sweep now has twelve
+orphaned keys waiting for it... And the design review has drifted again."*
+
+### Twelve when he raised it, thirty-three when it ran
+
+Migrations 540–544 restructured the page around them. **That growth is the
+argument for the sweep, not against it**: every orphan was left
+deliberately, by a migration that said so, and the list still tripled in a
+day. Restraint kept them findable; it was never going to clean them.
+
+### Three tables, one question each
+
+```
+translations, 'roi'   278 rows   33 unread
+roi_phases              7 rows    0 unread
+roi_benchmarks         26 rows    0 unread that are still active
+```
+
+**The two clean tables matter as much as the dirty one.** *Retire, don't
+delete* has worked exactly as designed on benchmarks — three inactive,
+unread, correctly retired by 511, 524 and 534. Phases have never drifted
+because every row is reached through `PHASE_INPUT` rather than by name.
+The rot was only ever in the table where keys are referenced individually.
+
+### The detector was wrong twice before it was right
+
+Worth recording, because a sweep that trusts a bad detector deletes live
+content. Version one reported **all 25 help keys and 4 of the 7 phases as
+dead**:
+
+- help rows are read through `hlp(id)` after the `help.` prefix is
+  stripped, and 26 of the 32 call sites use double quotes where the regex
+  matched only single. **Deleting on that evidence would have removed
+  every tooltip on the page.**
+- phases are reached through a map, never by literal, so searching the
+  source for their key finds nothing.
+
+Both caught by disbelieving a result that was too convenient.
+
+### Three rows were not dead, they were stranded
+
+`tag.tangible`, `tag.intangible` and `subs.locked` were unread because
+**the renderer hardcoded their English** — nine literal tag spans and one
+signed-out hint, exactly the gap 544 closed for `tag.saved`. Wired up, not
+deleted. A mechanical sweep would have deleted the evidence and left the
+bug.
+
+That is nine hardcoded English strings fixed in two days.
+
+### 30 rows deleted, and why deleted rather than retired
+
+`translations` has no `active` column, and adding one to hold thirty dead
+strings would be schema for hoarding. The text is not lost: every row was
+inserted by a migration in this directory under a comment explaining why,
+and git holds all of it. **That is the audit trail the convention protects,
+and it survives deletion intact.**
+
+### A mechanism lesson: standing invariants cannot be repointed backwards
+
+540 and 542 both carried an `ASSERT ALWAYS` that the run-cost bridge stays
+stated, naming `sum.bridge*`. 544 moved the bridge onto the One-off stat
+and 545 deleted those keys, so the invariants broke — correctly.
+
+Repointing them at `res.running*` **failed too**, and the reason is worth
+knowing: an `ASSERT ALWAYS` is checked at its own migration's position in
+the chain as well as at the end, and those keys do not exist until 544.
+**A standing invariant can only reference rows that exist by the time its
+own file runs** — so when the thing it protects moves forward, the
+invariant has to move with it. It now lives in 545.
+
+Comment-only edits to 540 and 542, per migration 525's precedent: replay
+stays byte-identical, `--refresh-checksums` re-records them.
+
+### The report becomes a check
+
+`roi-i18n`'s unused-key list printed and never failed, deliberately, so
+content was never deleted to make a number look round. Right while the
+list was long and each row needed judgement; **wrong now that it is
+empty**. It fails, names the keys, and offers a `KEPT` allowlist for
+deliberate exceptions. Verified it bites by faking an orphan.
+
+### Design review refreshed
+
+Now reflects 545. Beyond the figures, two substantive changes:
+
+- **The dead-data card moved from "What will hurt" to "What is working"**
+  and became the resolved record of the sweep.
+- **A failure mode the document had not named**: *prose that outlives the
+  model it describes*. Two instances in two days — the "(compliance
+  scope)" label and the `scope` tooltip, both describing the pre-528
+  model. A wrong figure can be caught by an assertion; **stale prose
+  renders perfectly, passes all 166 ROI checks, and reads as authoritative
+  precisely because it was written carefully at the time.** The only
+  detector is a reader asking what something means, which is not a
+  control, it is a person. Named rather than papered over, with no cheap
+  fix claimed.
+
+Recommendation 1 is now **"finish moving the ROI page's English into
+D1"** — the mirror of the check that now exists: not *is every D1 row
+rendered* but *is every rendered string a D1 row*. All ten original
+recommendations are done.
+
+### Verified
+
+`npm test`: 8 suites, all passing. ROI regression 166, i18n 7. Zero unread
+rows across all three ROI tables.
+
+
 ## Open items / next steps
 
 ### Where things stand — 15 August 2026

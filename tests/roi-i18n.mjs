@@ -111,13 +111,34 @@ try {
     SAMPLE.every(([, phrase]) => real.includes(phrase)),
     SAMPLE.filter(([, p]) => !real.includes(p)).map(([w]) => w).join(", "));
 
-  // 4. unused rows: reported, never failed. A key nothing renders is
-  // usually a string the page will want later, and deleting content to
-  // make a number come out round is how you lose it.
-  const unused = [...d1.keys()].filter((k) => !k.startsWith("help.") && !sites.has(k));
-  console.log(unused.length
-    ? `  note  ${unused.length} D1 key(s) the page does not use: ${unused.join(", ")}`
-    : "  note  no unused roi keys");
+  // 4. unused rows. This REPORTED and never failed until 15 Aug 2026, on
+  // the reasoning that a key nothing renders is usually a string the page
+  // will want later, and deleting content to make a number come out round
+  // is how you lose it. That was right while the list was long and the
+  // answer to each row was judgement.
+  //
+  // It is wrong now. Migration 545 swept the list to zero, and the sweep
+  // found that three of the thirty-three "unused" rows were not dead at
+  // all — the renderer was hardcoding their English. A report nobody has
+  // to act on would have hidden that for another month. Keeping the list
+  // empty costs nothing, and a new orphan is now a signal at the moment
+  // it appears.
+  //
+  // A key genuinely worth keeping unused is a decision, so make it one:
+  // add it to KEPT with the reason. That is friction on purpose — the
+  // same shape as the hand-maintained grade-A allowlist in migration 525,
+  // which has caught its own author three times.
+  const KEPT = new Set([
+    // (empty — every roi key is currently rendered)
+  ]);
+  const helpIds = new Set([...readFileSync(SRC, "utf8")
+    .matchAll(/\bhlp\(\s*['"]([a-zA-Z0-9._]+)['"]/g)].map((m) => m[1]));
+  const unused = [...d1.keys()].filter((k) => !KEPT.has(k)
+    && (k.startsWith("help.") ? !helpIds.has(k.slice(5)) : !sites.has(k)));
+  t.check(`no D1 key is left unrendered (${d1.size} keys, ${KEPT.size} kept by decision)`,
+    unused.length === 0,
+    unused.length ? `${unused.length} unused: ${unused.join(", ")}`
+      + "\n    Either wire it up, delete it in a migration, or add it to KEPT with a reason." : "");
 
   // 5. and the help layer, which was already wired, still is
   const helpKeys = [...d1.keys()].filter((k) => k.startsWith("help."));
