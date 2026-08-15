@@ -758,7 +758,7 @@ export function renderRoiPage({ countries, benchmarks = [], phases = [], strings
     const b = byKey[k];
     if (!b) return { t: "D", s: "" };
     const yr = b.source_year ? ` <span style="opacity:.75">(${b.source_year})</span>` : "";
-    const link = b.source_url ? ` <a href="${b.source_url}" style="color:#241d10">source</a>` : "";
+    const link = b.source_url ? ` <a href="${b.source_url}" style="color:#241d10">${t("ev.sourceLink","source")}</a>` : "";
     return { t: b.evidence_grade, s: `${b.citation || ""}${yr}${link}` };
   };
   const evidence = {
@@ -784,9 +784,9 @@ export function renderRoiPage({ countries, benchmarks = [], phases = [], strings
     rework: cite("rework_per_error"),
     errElim: cite("error_elimination_pct"),
     excGap: cite("exception_reduction_pp"),
-    durations: { t: "D", s: "Phase durations are practitioner estimates for a country rollout once a platform is in place, held in D1 and editable above. No analyst firm publishes credible per-country e-invoicing implementation durations — this was checked." },
-    yours: { t: "D", s: "Your assumption. Nothing is claimed for this figure — it is exposed so the model can be argued with rather than believed." },
-    site: { t: "A", s: "Live mandate data from this site's own tracker: status, model and dated deadlines per jurisdiction, each traceable to the cited legal instrument on that country's deep dive." },
+    durations: { t: "D", s: t("ev.durations.body", "Phase durations are practitioner estimates for a country rollout once a platform is in place, held in D1 and editable above. No analyst firm publishes credible per-country e-invoicing implementation durations &mdash; this was checked.") },
+    yours: { t: "D", s: t("ev.yours.body", "Your assumption. Nothing is claimed for this figure &mdash; it is exposed so the model can be argued with rather than believed.") },
+    site: { t: "A", s: t("ev.site.body", "Live mandate data from this site&rsquo;s own tracker: status, model and dated deadlines per jurisdiction, each traceable to the cited legal instrument on that country&rsquo;s deep dive.") },
   };
   const chartPhases = phases.map((p) => ({ k: p.key, n: p.name, w: p.default_weeks, c: p.colour,
                                            prog: !!p.is_programme, scope: p.scope }));
@@ -1198,7 +1198,7 @@ function markOverridden(){
   });
 }
 document.getElementById('assump').addEventListener('toggle', e => {
-  document.getElementById('assumpChevron').innerHTML = e.target.open ? 'hide &#9652;' : 'show &#9662;';
+  document.getElementById('assumpChevron').innerHTML = e.target.open ? '${t("assumptions.hide","hide &#9652;")}' : '${t("assumptions.show","show &#9662;")}';
 });
 document.getElementById('resetDefaults').onclick = () => {
   Object.entries(DEFAULTS).forEach(([id,d]) => { const el = document.getElementById(id); if(el) el.value = d.v; });
@@ -1637,7 +1637,7 @@ function buildGantt(sel0, erp, pace){
         ? members[0].c[12] + ' ${tj("wave.members","MEMBER STATES")} &middot; ' + wm.elapsed + 'W'
         : wm.n + ' ' + (wm.n===1?'${tj("wave.jur","JURISDICTION")}':'${tj("wave.jurs","JURISDICTIONS")}') + ' &middot; ' + wm.elapsed + 'W';
       s += \`<text x="88" y="\${y+15}" fill="#93a3c0" font-family="'IBM Plex Mono',monospace" font-size="9">\${metaTxt}</text>\`;
-      s += \`<rect x="\${x1+1}" y="\${y+4}" width="\${Math.max(2,x2-x1-2)}" height="\${RH-8}" rx="3" fill="#3d5a86"><title>Wave \${wm.dl} — \${wm.n} jurisdiction\${wm.n===1?'':'s'}, \${wm.effort}w effort, \${wm.elapsed}w elapsed\${lanes>1&&wm.n>1?\` across \${Math.min(lanes,wm.n)} lanes\`:''}\n\${names.join(', ')}</title></rect>\`;
+      s += \`<rect x="\${x1+1}" y="\${y+4}" width="\${Math.max(2,x2-x1-2)}" height="\${RH-8}" rx="3" fill="#3d5a86"><title>\${fill('${tj("chart.waveTip","Wave {0} — {1}, {2}w effort, {3}w elapsed{4}")}', wm.dl, wm.n + ' ' + plur(wm.n, '${tj("word.jur","jurisdiction")}', '${tj("word.jurs","jurisdictions")}'), wm.effort, wm.elapsed, lanes>1&&wm.n>1 ? fill('${tj("chart.acrossLanes"," across {0} lanes")}', Math.min(lanes,wm.n)) : '')}\n\${names.join(', ')}</title></rect>\`;
       const gx = x(wm.golive.getTime());
       s += \`<polygon points="\${gx},\${y+3} \${gx+7},\${y+RH/2} \${gx},\${y+RH-3} \${gx-7},\${y+RH/2}" fill="#efe9db" stroke="#0f1a2b" stroke-width="2"><title>\${fill('${tj("chart.goliveTip","Wave go-live — mandate deadline {0}")}', wm.dl)}</title></polygon>\`;
       const ICON = {critical:'\u25b2', warning:'\u25cf', good:'\u2713'};
@@ -1716,7 +1716,7 @@ function buildGantt(sel0, erp, pace){
       // COULD start and roughly how long the longest of them runs.
       const longest = Math.max(...undated.map(c => durOf(c).total));
       const bx1 = x(discStart0), bx2 = x(addW(new Date(discStart0), longest).getTime());
-      s += \`<rect x="\${bx1+1}" y="\${y+4}" width="\${Math.max(2,bx2-bx1-2)}" height="\${RH-8}" rx="3" fill="#4a5670" opacity="0.55"><title>\${undated.length} jurisdiction\${undated.length===1?'':'s'} with no fixed deadline\${anyOverdue ? ', some already in force' : ''}. Indicative placement only — nothing can start before contracting completes, and there is no date to work back from.\n\${undated.map(c=>c[0]).join(', ')}</title></rect>\`;
+      s += \`<rect x="\${bx1+1}" y="\${y+4}" width="\${Math.max(2,bx2-bx1-2)}" height="\${RH-8}" rx="3" fill="#4a5670" opacity="0.55"><title>\${fill('${tj("chart.discTip","{0} with no fixed deadline{1}. Indicative placement only — nothing can start before contracting completes, and there is no date to work back from.")}', undated.length + ' ' + plur(undated.length, '${tj("word.jur","jurisdiction")}', '${tj("word.jurs","jurisdictions")}'), anyOverdue ? '${tj("chart.someInForce",", some already in force")}' : '')}\n\${undated.map(c=>c[0]).join(', ')}</title></rect>\`;
       y += RH + GAP;
     } else {
       s += \`<text x="0" y="\${y+15}" font-family="'IBM Plex Mono',monospace" font-size="9.5" letter-spacing="1"><tspan fill="#8d9bb5">NO FIXED DEADLINE</tspan><tspan fill="#93a3c0" letter-spacing="0"> &middot; \${undated.length} jurisdiction\${undated.length===1?'':'s'} &middot; \${anyOverdue ? 'already in force, or startable any time' : 'start any time'} once contracting completes</tspan></text>\`;
@@ -1782,7 +1782,7 @@ function buildGantt(sel0, erp, pace){
       phases.forEach(pz => {
         const st = new Date(t), en = addW(st, pz.weeks);
         const x1 = x(st.getTime()), x2 = x(en.getTime());
-        s += \`<rect x="\${x1+1}" y="\${y+4}" width="\${Math.max(2,x2-x1-2)}" height="\${RH-8}" rx="3" fill="\${pz.c}" opacity="0.5"><title>\${c[0]} — \${pz.n}\\n\${pz.weeks} weeks. Indicative placement only: there is no fixed deadline, so this can move — but it cannot start before contracting completes.</title></rect>\`;
+        s += \`<rect x="\${x1+1}" y="\${y+4}" width="\${Math.max(2,x2-x1-2)}" height="\${RH-8}" rx="3" fill="\${pz.c}" opacity="0.5"><title>\${c[0]} — \${pz.n}\\n\${fill('${tj("chart.discRowTip","{0} weeks. Indicative placement only: there is no fixed deadline, so this can move — but it cannot start before contracting completes.")}', pz.weeks)}</title></rect>\`;
         t = en.getTime();
       });
       s += \`<text x="\${x(t)+6}" y="\${y+16}" fill="#6b7a95" font-family="'IBM Plex Mono',monospace" font-size="9.5">\${total}w</text>\`;
@@ -2342,7 +2342,7 @@ function build(){
     <div class="grid g2" style="margin-bottom:16px">
       <div class="card"><h3>${tj("notes.banks.h","What compliance alone saves")}</h3><p class="hint">${tj("notes.banks","Capture and issuing arrive with the integration: once invoices come in structured and go out cleared, nobody keys or posts them. Review and approval are workflow and need a separate change programme. The split is the ATO / Deloitte task times &mdash; receipt 7 and validation 2 minutes against review 7 and approval 5 &mdash; not our judgement. Tax reporting and audit-prep effort is saved in full on either scope: you file structured data to the tax authority whether or not you ever touch AP workflow, so there is no equivalent split to make.")}</p></div>
       <div class="card"><h3>${tj("notes.rework.h","Why rework is held back")}</h3><p class="hint">${tj("notes.rework","It rests on HMRC&rsquo;s unsourced 10% error rate, a cost you set yourself, and our assumption about how many errors actually go away. Least evidenced row here and the largest beneficiary of any change, so it is not counted as saved, even on a compliance scope. Ardent gives the mechanism but no quantified reduction; their Best-in-Class exception gap of 9.8 points is used as a ceiling on what this model may claim.")}</p></div>
-      <div class="card"><h3>${tj("notes.headcount.h","Headcount restates, it does not add")}</h3><p class="hint">${tj("notes.headcount","The capture-FTE figure prices the processing-cost row in people. It is the same money &mdash; the per-invoice benchmark is labour-dominated, so counting both would count it twice.")}\${saving > 0 ? \` \${fmt(captureValue)} of \${fmt(saving)}, or \${Math.round(captureValue/saving*100)}%; the rest is review, technology and overhead.\` : ''} ${tj("notes.headcount2","Released capacity is only cash if the post goes or is not backfilled.")} \${ev('apqc','APQC')} &middot; \${ev('atoCapture','ATO / Deloitte')}</p></div>
+      <div class="card"><h3>${tj("notes.headcount.h","Headcount restates, it does not add")}</h3><p class="hint">${tj("notes.headcount","The capture-FTE figure prices the processing-cost row in people. It is the same money &mdash; the per-invoice benchmark is labour-dominated, so counting both would count it twice.")}\${saving > 0 ? ' ' + fill('${tj("notes.headcountSplit","{0} of {1}, or {2}%; the rest is review, technology and overhead.")}', fmt(captureValue), fmt(saving), Math.round(captureValue/saving*100)) : ''} ${tj("notes.headcount2","Released capacity is only cash if the post goes or is not backfilled.")} \${ev('apqc','APQC')} &middot; \${ev('atoCapture','ATO / Deloitte')}</p></div>
       <div class="card"><h3>${tj("notes.unmonetised.h","What carries no value on purpose")}</h3><p class="hint">${tj("notes.unmonetised","Paper and postage, because your own spend is the only honest input. Cycle time and supplier queries, because nobody has measured how much of that gap e-invoicing causes &mdash; Ardent&rsquo;s own")} \${ev('ardentCycle','${tj("ev.cycleGap","2.9 vs 13.5 days")}')} ${tj("notes.unmonetised2","is circular by construction, and the")} \${ev('nhs','${tj("ev.nhsQuery","15% query reduction")}')} ${tj("notes.unmonetised3","is a single anecdote. VAT leakage, penalty exposure and fraud, because the mechanisms are real and the magnitudes are not evidenced. They belong in the qualitative case beside this number, not inside it.")}</p></div>
     </div>
     <p style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:var(--soon);margin:0 0 8px">${tj("notes.h.grades","Evidence grades")}</p>
@@ -2562,13 +2562,13 @@ function build(){
       + '<table><thead><tr><th>${tj("pdf.th.fig","Figure")}</th><th class="num">${tj("pdf.th.val","Value")}</th><th>${tj("pdf.th.src","Source")}</th><th>${tj("pdf.th.grade","Grade")}</th></tr></thead><tbody>'
       + [['${tj("input.costNow","AP cost per invoice")}', fmt1(costNow), 'Ardent Partners 2025', 'A'],
          ['${tj("input.costAR","AR cost per invoice")}', fmt1(costAR), 'ATO / Deloitte Access Economics', 'B'],
-         ['${tj("input.savePct","Cost reduction %")}', Math.round(savePct*100) + '%', 'HMRC / DBT consultation 2025', 'B'],
-         ['${tj("input.errRate","Manual error rate %")}', Math.round(errRate*100) + '%', 'HMRC / DBT consultation 2025', 'B'],
-         ['${tj("input.errElim","Errors eliminated %")}', Math.round(errElim*100) + '%', 'Our assumption, capped by Ardent exception gap', 'D'],
+         ['${tj("input.savePct","Cost reduction %")}', Math.round(savePct*100) + '%', '${tj("src.hmrcDbt","HMRC / DBT consultation 2025")}', 'B'],
+         ['${tj("input.errRate","Manual error rate %")}', Math.round(errRate*100) + '%', '${tj("src.hmrcDbt","HMRC / DBT consultation 2025")}', 'B'],
+         ['${tj("input.errElim","Errors eliminated %")}', Math.round(errElim*100) + '%', '${tj("src.cappedAssumption","Our assumption, capped by Ardent exception gap")}', 'D'],
          ['${tj("input.fteCost","Loaded cost / tax or finance FTE")}', fmt(fteCost), 'US BLS OEWS + ECEC', 'B'],
          ['${tj("input.fteEntry","Loaded cost / data-entry FTE")}', fmt(fteEntry), 'US BLS OEWS + ECEC', 'B'],
          ['${tj("pdf.fig.apfte","Invoices per AP FTE / year")}', TAXM.invPerFte.toLocaleString(), 'APQC Open Standards Benchmarking', 'A'],
-         ['${tj("pdf.fig.capture","Capture share of AP effort")}', Math.round(TAXM.captureShare*100) + '%', 'ATO / Deloitte task times', 'A'],
+         ['${tj("pdf.fig.capture","Capture share of AP effort")}', Math.round(TAXM.captureShare*100) + '%', '${tj("src.atoTaskTimes","ATO / Deloitte task times")}', 'A'],
          ['${tj("input.cImplS","Cost per SIMPLE integration")}', fmt(cImplS), '${tj("pdf.placeholder","Placeholder &mdash; replace with a vendor quote")}', 'D'],
          ['${tj("input.cImplC","Cost per COMPLEX integration")}', fmt(cImplC), '${tj("pdf.placeholder","Placeholder &mdash; replace with a vendor quote")}', 'D'],
          ['${tj("input.cPlat","Platform / network fees per year")}', fmt(cPlat), '${tj("pdf.derivedfee","Derived from your volumes &times; per-invoice fee")}', 'D'],

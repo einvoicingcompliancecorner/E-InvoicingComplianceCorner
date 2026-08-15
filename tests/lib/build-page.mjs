@@ -84,7 +84,10 @@ export async function buildRoiPage(opts = {}) {
           .filter((f) => row[f] != null && row[f] !== "")
           .map((f) => [f, `«${row.key || row.id}.${f}»`])) }
       : row;
-    const usedBenchmarks = benchmarks.map((b) => stubRow(b, ["label", "hint", "citation"]));
+    // source_year carries user-facing words too ("2025 data", "2016
+    // estimates", "updated Jan 2026"), so it is D1-backed text and must be
+    // stubbed or the detector reports it as hardcoded.
+    const usedBenchmarks = benchmarks.map((b) => stubRow(b, ["label", "hint", "citation", "source_year"]));
     const usedPhases = phases.map((p) => stubRow(p, ["name", "note"]));
 
     const { body, script } = roi.renderRoiPage({

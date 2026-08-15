@@ -50,25 +50,13 @@ const norm = (s) => s.replace(/[\d,]*\d/g, "#").replace(/\s+/g, " ").trim();
 // Every entry is a string a reader sees that does not come from D1.
 // Grouped by why it is still here.
 const KNOWN = new Set([
-  // Generated from a real run rather than typed by hand — the same
-  // rule the string migrations follow, and for the same reason: a
-  // retyped inventory drifts from what the page actually renders and
-  // then hides the next regression behind a stale entry.
-  "# jurisdictions with no fixed deadline, some already in force. Indicative placement only — nothing can start before contracting completes, and there is no date to work back from. Czech Republic, Portugal, Australia, New Zealand, Canada, Ecuador",
-  "(# data)",
-  "(# estimates)",
-  "(updated Jan #)",
-  "ATO / Deloitte task times",
-  "HMRC / DBT consultation #",
-  "Live mandate data from this site's own tracker: status, model and dated deadlines per jurisdiction, each traceable to the cited legal instrument on that country's deep dive.",
-  "Our assumption, capped by Ardent exception gap",
-  "Phase durations are practitioner estimates for a country rollout once a platform is in place, held in D# and editable above. No analyst firm publishes credible per-country e-invoicing implementation durations — this was checked.",
-  "Wave #-#-# — # jurisdiction, #w effort, #w elapsed European Union",
-  "Wave #-#-# — # jurisdiction, #w effort, #w elapsed Poland",
-  "Wave #-#-# — # jurisdiction, #w effort, #w elapsed United Kingdom",
-  "hide ▴",
-  "source",
-  "«notes.headcount» $# of $#, or #%; the rest is review, technology and overhead. «notes.headcount#»",
+  // EMPTY, and that is the finished state: every string a reader sees on
+  // this page now comes from D1. Migrations 547-554 moved 166 of them.
+  //
+  // If a line appears here again it should be a proper noun that must NOT
+  // be translated — an organisation name, a legal instrument, a currency
+  // code. Anything else belongs in the database, and the check above will
+  // say so by name.
 ]);
 
 const { file, countries } = await buildRoiPage({
