@@ -412,6 +412,35 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
    reserved height computable rather than guessed.
    Applied to every .grid, not just #assump: the footprint row had the
    worse offset and no rule at all. */
+/* THE STEP STRIP. Numbered chips with chevrons between them, each linking
+   to the control it names. Two are marked optional, which is the whole
+   point of showing them: a reader who does not know the assumptions and
+   adjust panels are skippable will either work through them dutifully or
+   give up. Wraps to two lines on a phone rather than scrolling
+   horizontally, because a step you cannot see is a step you will not
+   take. */
+/* Five chips have to clear 1040px of wrap, separators included, or the
+   strip wraps to two rows on a full-width desktop and stops reading as
+   one route. The measured need was 1087; the spacing below is what
+   brought it under, and is the reason these numbers look over-specified. */
+.steps{list-style:none;display:flex;flex-wrap:wrap;align-items:stretch;gap:5px;margin:0 0 24px;padding:0}
+.steps li{display:flex;align-items:center}
+.steps li+li::before{content:'\\203a';color:var(--upcoming);font-size:16px;margin-right:5px;line-height:1}
+.steps a{display:flex;align-items:center;gap:8px;text-decoration:none;background:var(--ink-2);
+  border:1px solid var(--line);border-radius:99px;padding:7px 12px 7px 7px;transition:border-color .15s}
+.steps a:hover,.steps a:focus{border-color:var(--soon);outline:none}
+.steps b{flex:none;width:20px;height:20px;border-radius:50%;background:var(--soon-dim);color:#ecd0a6;
+  border:1px solid var(--soon);font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;
+  display:flex;align-items:center;justify-content:center;line-height:1}
+.steps span{font-size:13px;color:var(--text-lo);white-space:nowrap}
+.steps em{font-style:normal;font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.06em;
+  text-transform:uppercase;color:var(--muted);margin-left:6px}
+@media(max-width:700px){.steps span{white-space:normal}.steps em{display:block;margin:1px 0 0}}
+/* A section subhead inside the merged Savings section. Not an h3: the two
+   halves are peers under one heading, and an h3 would imply the second is
+   subordinate to the first. */
+.subhead{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1.4px;text-transform:uppercase;
+  color:var(--soon);margin:0 0 6px;padding-top:2px}
 .grid > div{display:flex;flex-direction:column;min-width:0}
 .grid label{line-height:1.35;min-height:38px}
 .grid > div > .hint{margin-top:6px}
@@ -747,7 +776,21 @@ export function renderRoiPage({ countries, benchmarks = [], phases = [], strings
 <p class="lede">${t("page.lede", "Build a board-ready business case from your own volumes and footprint &mdash; with a dated, sourced compliance wave plan drawn from the 70 jurisdictions this site tracks. Every benchmark carries a visible evidence grade, so your CFO can see exactly which numbers are independently evidenced and which are your own assumptions.")}</p>
 
 
-<h2 class="noprint">1 &middot; ${t("sec.footprint", "Your footprint")}</h2>
+<!-- Dan, 15 Aug 2026: "add simple and discrete instructions at the top of
+     the page for the business case, such as Step 1 -> Step 2 -> Step 3".
+     Four steps, two of them optional and labelled as such, each linking to
+     the thing it names. The optional pair matter: a reader who does not
+     know the assumptions panel and the adjust panel are skippable will
+     either work through them dutifully or bounce off the page. -->
+<ol class="steps noprint" aria-label="${t("steps.aria","How to use this planner")}">
+  <li><a href="#s-footprint"><b>1</b><span>${t("steps.1","Enter your footprint")}</span></a></li>
+  <li><a href="#s-countries"><b>2</b><span>${t("steps.2","Select your countries")}</span></a></li>
+  <li><a href="#assump"><b>3</b><span>${t("steps.3","Adjust assumptions")}<em>${t("steps.optional","optional")}</em></span></a></li>
+  <li><a href="#run"><b>4</b><span>${t("steps.4","Calculate")}</span></a></li>
+  <li><a href="#adjust"><b>5</b><span>${t("steps.5","Move go-live dates")}<em>${t("steps.optional","optional")}</em></span></a></li>
+</ol>
+
+<h2 class="noprint" id="s-footprint">1 &middot; ${t("sec.footprint", "Your footprint")}</h2>
 <div class="card noprint">
   <div class="grid g4">
     <div>
@@ -780,7 +823,7 @@ export function renderRoiPage({ countries, benchmarks = [], phases = [], strings
   <p class="hint">${t("input.scope.hint", "A scoping decision, not a benchmark &mdash; it changes both the numbers and the timeline.")}</p>
 </div>
 
-<div class="card noprint">
+<div class="card noprint" id="s-countries">
   <label>${t("input.countries", "Countries in scope")}${hlp("countries","Where this data comes from")}</label>
   <p class="hint" style="margin-bottom:8px">${t("input.countries.hint", "Live mandate data for all 70 tracked jurisdictions.")} <button id="selEU" style="padding:3px 9px;font-size:12px">${t("btn.selEU", "EU only")}</button> <button id="selMandate" style="padding:3px 9px;font-size:12px">${t("btn.selMandate", "Everywhere with a mandate")}</button> <button id="selNone" style="padding:3px 9px;font-size:12px">${t("btn.selNone", "Clear")}</button></p>
   <label class="cbox" id="subsRow" style="align-items:center;gap:8px;padding:9px 12px;margin:0 0 10px;background:var(--ink-3);border:1px solid var(--line);border-radius:6px;font-size:13.5px">
@@ -884,18 +927,20 @@ export function renderRoiPage({ countries, benchmarks = [], phases = [], strings
 
   <p class="noprint" style="margin:-4px 0 14px"><button id="ganttToggle" style="padding:5px 11px;font-size:12.5px">${t("btn.expand", "Show every jurisdiction")}</button> <button id="tblToggle" style="padding:5px 11px;font-size:12.5px">${t("btn.table", "Show as table")}</button></p>
   <div id="waves" class="hidden"></div>
-  <h2>4 &middot; ${t("sec.direct", "Direct savings &mdash; cash-releasing")}</h2>
+  <h2>4 &middot; ${t("sec.savings", "Savings")}</h2>
+  <p class="lede">${t("sec.savings.lede", "Two kinds, kept apart on purpose and never added together. Direct savings are cash that stops leaving the business; indirect savings are cost and risk you avoid rather than money you release.")}</p>
+  <p class="subhead">${t("sec.direct", "Direct &mdash; cash-releasing")}</p>
   <p class="lede">${t("sec.direct.lede", "Money that stops leaving the business: processing cost per invoice, and rework you no longer pay for. Available wherever you digitise, mandate or not.")}</p>
   <div id="direct"></div>
-  <h2>5 &middot; ${t("sec.indirect", "Indirect savings &mdash; cost and risk avoided")}</h2>
+  <p class="subhead" style="margin-top:26px">${t("sec.indirect", "Indirect &mdash; cost and risk avoided")}</p>
   <p class="lede">${t("sec.indirect.lede", "Cost you avoid rather than cash you release. Mechanisms are well evidenced; magnitudes mostly are not, so much of this section is named rather than priced.")}</p>
   <div id="indirect"></div>
-  <h2>6 &middot; ${t("sec.invest", "Investment &amp; payback")}</h2>
+  <h2>5 &middot; ${t("sec.invest", "Investment &amp; payback")}</h2>
   <div id="invest"></div>
   <details class="card" id="notes" style="padding:0">
     <summary style="cursor:pointer;padding:14px 18px;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:12px">
       <span>
-        <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:var(--soon)">7 &middot; ${t("sec.evidence", "Assumptions, sources and caveats")}</span>
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:var(--soon)">6 &middot; ${t("sec.evidence", "Assumptions, sources and caveats")}</span>
         <span class="hint" style="display:block;margin:4px 0 0">${t("sec.evidence.hint", "Every figure above, where it came from, and what it deliberately does not claim.")}</span>
       </span>
       <span id="notesChevron" style="font-family:'IBM Plex Mono',monospace;color:var(--muted);font-size:12px;white-space:nowrap">${t("assumptions.show", "show &#9662;")}</span>

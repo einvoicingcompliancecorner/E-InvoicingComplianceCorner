@@ -10629,6 +10629,77 @@ flagged, or the EU row would quietly cover fewer countries than the
 reader selected.
 
 
+## 15 August 2026 (cont'd) — A route through the page, and one Savings section (migration 535)
+
+Dan, two requests in one message: *"1) Can we add simple and discrete
+instructions at the top of the page for the business case, such as 'Step
+1 -> Step 2 -> Step 3' etc. The user needs to Enter footprint values,
+select countries, Update assumptions and Benchmark (Optional), and adjust
+go-live dates on wave planner (optional). 2) Can the sections 4 and 5 be
+combined into one 'Savings' section listing both direct and indirect
+savings."*
+
+### The steps strip
+
+Five chips, not the three the shorthand suggests and not the four Dan
+listed. His list has four *actions*; the fifth is **Calculate**, which
+sits between them and which the page had been leaving the reader to find
+on their own. Two of the five carry an `OPTIONAL` tag in the chip itself
+rather than in a footnote, because the honest shape of this tool is *two
+inputs, a button, and two things you may never touch* — and a reader who
+does not know that assumes all five are homework.
+
+It links to anchors that already existed (`#s-footprint`, `#s-countries`,
+`#assump`, `#run`, `#adjust`); nothing was moved to accommodate it, and
+it is `noprint`, so it does not follow the reader into the PDF.
+
+**It wrapped on first build, and that mattered.** Five chips plus four
+separators measured 1087px against 1040px of wrap — two rows on a
+full-width desktop, which reads as two ideas rather than one route. Gap,
+separator margin and chip padding were cut until it fit (981px). Below
+1040px of wrap it wraps deliberately, and under 700px the OPTIONAL tag
+drops to its own line. There is now a regression check on the row count,
+because the next word chosen for a chip could quietly undo it.
+
+### Merging 4 and 5
+
+More than cosmetic. The two sections were already one argument split
+across a heading boundary, and the page's most important claim about them
+— that the two totals are **deliberately never added together** — had
+nowhere to live, because it belongs to the *pair* rather than to either
+one. It is now the first line of the section.
+
+The two subheads were reworded with it: "Direct savings — cash-releasing"
+became "Direct — cash-releasing", and likewise for indirect. Under a
+heading that says Savings, the old strings said the word twice in eight
+words.
+
+That reword had to be an `UPDATE`, not an `INSERT OR IGNORE` — the keys
+were seeded by 505 and reseeded by 518, so an insert would have declined
+in silence and the page would have kept rendering the old wording while
+the migration file claimed otherwise. That is the trap migration 522
+exists to remember, and it is the fourth time it has come up.
+
+Headings now run 1 Your footprint, 2 Executive summary, 3 Compliance wave
+plan, 4 Savings, 5 Investment & payback, 6 Assumptions, sources and
+caveats. No string carries its own number, so the renumbering is renderer
+only.
+
+### One assertion caught itself
+
+The standing invariant "neither subhead may say *savings* while the
+heading above it already does" was first written across all three keys
+including `sec.savings` — whose value is the word *Savings*. SQLite's
+LIKE is case-insensitive for ASCII, so it failed on the migration that
+introduced it. Narrowed to the two subheads, which is what it always
+meant.
+
+### Verified
+
+122 regression checks (was 110), all 8 suites green. The PDF is still
+exactly two pages, 191mm and 205mm against A4's 271mm.
+
+
 ## Open items / next steps
 
 ### Where things stand — 15 August 2026

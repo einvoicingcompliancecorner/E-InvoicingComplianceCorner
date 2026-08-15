@@ -763,5 +763,79 @@ t.check("and every jurisdiction is named once expanded",
 await page.click("#ganttToggle"); await page.waitForTimeout(700);
 t.check("and it folds back", (await chartH()) === grouped);
 
+
+// ---- 25. the steps strip is navigation, not decoration ----
+// Dan asked for "simple and discrete instructions at the top". The risk
+// with a strip like this is that it becomes a picture of a workflow
+// rather than a route through one: a chip whose href points at an anchor
+// nobody emits looks identical to a working one until it is clicked.
+const steps = await page.evaluate(() => {
+  const li = [...document.querySelectorAll(".steps li")];
+  return {
+    n: li.length,
+    labels: li.map((e) => e.querySelector("span").firstChild.textContent.trim()),
+    optional: li.filter((e) => e.querySelector("em")).length,
+    noprint: !![...document.querySelectorAll(".steps")].every((e) => e.classList.contains("noprint")),
+    rows: new Set(li.map((e) => Math.round(e.getBoundingClientRect().top))).size,
+    dead: li.map((e) => e.querySelector("a").getAttribute("href"))
+      .filter((h) => !h || !document.querySelector(h)),
+    numbered: li.map((e) => e.querySelector("b").textContent).join(""),
+  };
+});
+t.check(`five steps, in order (${steps.numbered})`,
+  steps.n === 5 && steps.numbered === "12345", `${steps.n} / ${steps.numbered}`);
+t.check(`they name the four actions and the button (${steps.labels.join(" > ")})`,
+  ["footprint", "countries", "assumptions", "Calculate", "go-live"]
+    .every((w, i) => (steps.labels[i] || "").includes(w)), steps.labels.join(" | "));
+t.check("every chip points at an anchor the page actually emits",
+  steps.dead.length === 0, steps.dead.join(", "));
+t.check("exactly two are marked optional — assumptions and go-live dates",
+  steps.optional === 2, steps.optional);
+t.check("and the strip does not follow the reader into the PDF", steps.noprint);
+// It reads as one route only while it is one line. Five chips plus four
+// separators measured 1087px against 1040px of wrap on first build, so
+// this wrapped on a full-width desktop; the spacing in .steps was cut to
+// fit and this check is what stops a later word choice undoing that.
+t.check(`the strip is one line at desktop width (${steps.rows} row)`,
+  steps.rows === 1, steps.rows);
+
+// ---- 26. direct and indirect live under one Savings heading ----
+// The page's most important claim about these two totals is that they
+// are never added together. That claim belongs to the pair, so it can
+// only be stated once they share a heading — which is why this is an
+// invariant and not a preference. Migration 535 carries the reasoning.
+const sav = await page.evaluate(() => {
+  const hs = [...document.querySelectorAll("h2")];
+  const head = hs.find((e) => /Savings/i.test(e.textContent));
+  const idx = hs.indexOf(head);
+  const next = idx >= 0 ? hs[idx + 1] : null;
+  const own = [];
+  if (head) {
+    let n = head.nextElementSibling;
+    while (n && n !== next) { own.push(n); n = n.nextElementSibling; }
+  }
+  return {
+    headings: hs.map((e) => e.textContent.trim()),
+    savingsHeadings: hs.filter((e) => /Savings/i.test(e.textContent)).length,
+    holdsBoth: own.some((e) => e.id === "direct") && own.some((e) => e.id === "indirect"),
+    subheads: own.filter((e) => e.classList.contains("subhead")).map((e) => e.textContent.trim()),
+    lede: (own.find((e) => e.classList.contains("lede")) || {}).textContent || "",
+  };
+});
+t.check("exactly one Savings heading", sav.savingsHeadings === 1, sav.savingsHeadings);
+t.check("and both result containers hang off it", sav.holdsBoth, sav.headings.join(" / "));
+t.check(`the two halves are subheads now, not headings (${sav.subheads.join(" / ")})`,
+  sav.subheads.length === 2
+  && /^Direct\b/.test(sav.subheads[0]) && /^Indirect\b/.test(sav.subheads[1]),
+  sav.subheads.join(" | "));
+t.check("neither repeats the word the heading above already says",
+  sav.subheads.every((s) => !/savings/i.test(s)), sav.subheads.join(" | "));
+t.check("the lede states the rule that needed a shared heading to be stated",
+  /never added together/.test(sav.lede), sav.lede.slice(0, 60));
+t.check("sections renumber with the merge — 4 Savings, 5 Investment",
+  sav.headings.some((x) => /^4 \S* Savings/.test(x))
+  && sav.headings.some((x) => /^5 \S* Investment/.test(x)),
+  sav.headings.join(" / "));
+
 await browser.close();
 process.exit(t.report() ? 0 : 1);
