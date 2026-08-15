@@ -1639,10 +1639,10 @@ function buildGantt(sel0, erp, pace){
       s += \`<text x="88" y="\${y+15}" fill="#93a3c0" font-family="'IBM Plex Mono',monospace" font-size="9">\${metaTxt}</text>\`;
       s += \`<rect x="\${x1+1}" y="\${y+4}" width="\${Math.max(2,x2-x1-2)}" height="\${RH-8}" rx="3" fill="#3d5a86"><title>Wave \${wm.dl} — \${wm.n} jurisdiction\${wm.n===1?'':'s'}, \${wm.effort}w effort, \${wm.elapsed}w elapsed\${lanes>1&&wm.n>1?\` across \${Math.min(lanes,wm.n)} lanes\`:''}\n\${names.join(', ')}</title></rect>\`;
       const gx = x(wm.golive.getTime());
-      s += \`<polygon points="\${gx},\${y+3} \${gx+7},\${y+RH/2} \${gx},\${y+RH-3} \${gx-7},\${y+RH/2}" fill="#efe9db" stroke="#0f1a2b" stroke-width="2"><title>Wave go-live — mandate deadline \${wm.dl}</title></polygon>\`;
+      s += \`<polygon points="\${gx},\${y+3} \${gx+7},\${y+RH/2} \${gx},\${y+RH-3} \${gx-7},\${y+RH/2}" fill="#efe9db" stroke="#0f1a2b" stroke-width="2"><title>\${fill('${tj("chart.goliveTip","Wave go-live — mandate deadline {0}")}', wm.dl)}</title></polygon>\`;
       const ICON = {critical:'\u25b2', warning:'\u25cf', good:'\u2713'};
       const COL  = {critical:'#e0907f', warning:'#e2b978', good:'#7fd0a8'};
-      s += \`<text x="\${W-R+8}" y="\${y+15}" fill="\${COL[wm.risk]}" font-size="11">\${ICON[wm.risk]}<title>\${wm.risk === 'critical' ? 'Latest responsible start is in the past' : wm.risk === 'warning' ? 'Starts within 3 months' : 'Comfortable runway'}</title></text>\`;
+      s += \`<text x="\${W-R+8}" y="\${y+15}" fill="\${COL[wm.risk]}" font-size="11">\${ICON[wm.risk]}<title>\${wm.risk === 'critical' ? '${tj("chart.risk.late","Latest responsible start is in the past")}' : wm.risk === 'warning' ? '${tj("chart.risk.soon","Starts within 3 months")}' : '${tj("chart.risk.ok","Comfortable runway")}'}</title></text>\`;
       y += RH + GAP;
     });
   }
@@ -1818,9 +1818,9 @@ function buildGantt(sel0, erp, pace){
       <span style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:1px;text-transform:uppercase">${tj("chart.phase","Phase")}</span>
       \${PROG().concat(PH()).map(p=>\`<span style="display:inline-flex;align-items:center;gap:5px"><span style="width:11px;height:11px;border-radius:2px;background:\${p.c};display:inline-block"></span>\${p.n}</span>\`).join('')}
       <span style="display:inline-flex;align-items:center;gap:5px"><span style="display:inline-block;width:0;height:0;border:6px solid transparent;border-left-color:#efe9db;transform:rotate(45deg)"></span>${tj("chart.golive","Go-live")}</span>
-      <span style="display:inline-flex;align-items:center;gap:5px;color:#e0907f">▲ already late</span>
-      <span style="display:inline-flex;align-items:center;gap:5px;color:#e2b978">● start &lt;90d</span>
-      <span style="display:inline-flex;align-items:center;gap:5px;color:#7fd0a8">✓ runway</span>
+      <span style="display:inline-flex;align-items:center;gap:5px;color:#e0907f">${tj("chart.key.late","▲ already late")}</span>
+      <span style="display:inline-flex;align-items:center;gap:5px;color:#e2b978">${tj("chart.key.soon","● start &lt;90d")}</span>
+      <span style="display:inline-flex;align-items:center;gap:5px;color:#7fd0a8">${tj("chart.key.ok","✓ runway")}</span>
       <span>\${ev('durations','${tj("ev.durationsLong","Durations: practitioner estimates")}')}</span>
     </div>\`;
   return rows;
@@ -2225,7 +2225,7 @@ function build(){
     const st=STATUS[c[3]], cx=CXNAME[c[4]];
     const ints = erp;   // every country you build for, once per ERP system
     const why = c[8]
-      ? \`<strong style="color:#e2b978">EU-wide obligation.</strong> Council Directive (EU) 2025/516 binds this member state from 1 July 2030 regardless of whether it legislates a domestic mandate. \${CXNOTE[c[4]]}\`
+      ? \`<strong style="color:#e2b978">${tj("waves.euWide.h","EU-wide obligation.")}</strong> \${fill('${tj("waves.euWide","Council Directive (EU) 2025/516 binds this member state from 1 July 2030 regardless of whether it legislates a domestic mandate. {0}")}', CXNOTE[c[4]])}\`
       : CXNOTE[c[4]];
     w += \`<tr><td><strong>\${c[5]}</strong>\${c[8]?' <span class="pill p-upcoming">EU</span>':''}</td><td>\${c[0]}</td><td><span class="pill \${st[1]}">\${st[0]}</span></td><td><span class="pill \${cx[1]}">\${cx[0]}</span></td><td class="num">\${ints}</td><td style="font-size:12px;color:var(--muted)">\${why}</td></tr>\`;
   });
