@@ -851,7 +851,7 @@ export function renderRoiPage({ countries, benchmarks = [], phases = [], strings
     </div>
   </details>
 
-  <p class="noprint" style="margin:-4px 0 14px"><button id="tblToggle" style="padding:5px 11px;font-size:12.5px">${t("btn.table", "Show as table")}</button></p>
+  <p class="noprint" style="margin:-4px 0 14px"><button id="ganttToggle" style="padding:5px 11px;font-size:12.5px">${t("btn.expand", "Show every jurisdiction")}</button> <button id="tblToggle" style="padding:5px 11px;font-size:12.5px">${t("btn.table", "Show as table")}</button></p>
   <div id="waves" class="hidden"></div>
   <h2>4 &middot; ${t("sec.direct", "Direct savings &mdash; cash-releasing")}</h2>
   <p class="lede">${t("sec.direct.lede", "Money that stops leaving the business: processing cost per invoice, and rework you no longer pay for. Available wherever you digitise, mandate or not.")}</p>
@@ -980,7 +980,7 @@ document.getElementById('notes').addEventListener('toggle', function(){
 // the savings, and on a compliance scope it is larger than all three
 // combined, so as a slice it would dominate a chart about savings with
 // money the scope does not realise.
-let SV = null, WAVES = [];
+let SV = null, WAVES = [], ganttExpanded = false;
 function renderSavings(){
   const el = document.getElementById('savings');
   if(!el || !SV || !SV.segs.length) return;
@@ -1336,8 +1336,16 @@ function buildGantt(sel0, erp, pace){
   // shared deadline, so the last country in a lane finishes on the date and
   // the earlier ones sit behind it.
   const lanes = Math.max(1, +document.getElementById('lanes').value || 1);
+  // The track weight applies to DURATION as well as cost. Migration 532
+  // priced a ViDA second wave at half a build on the reasoning that the
+  // platform already exists by 2030 — and then left it taking a full
+  // complex country track of elapsed time, which is the same claim
+  // contradicting itself. It also made that one wave sprawl: 27 tracks at
+  // full duration back-planned to 42 weeks, twice what the same wave took
+  // before, so it swallowed most of the chart.
   const durOf = c => {
-    const phases = PH().map(p => ({...p, weeks: Math.max(1, Math.round(p.w * CXF[c[4]] * pace * ((p.k==='design'||p.k==='build') ? erpF : 1)))}));
+    const w = c[11] === undefined ? 1 : c[11];
+    const phases = PH().map(p => ({...p, weeks: Math.max(1, Math.round(p.w * CXF[c[4]] * pace * w * ((p.k==='design'||p.k==='build') ? erpF : 1)))}));
     return {phases, total: phases.reduce((a,p)=>a+p.weeks,0)};
   };
   const waveMap = {};
@@ -1427,7 +1435,11 @@ function buildGantt(sel0, erp, pace){
   const L = 190, R = 116, W = 1000, RH = 24, GAP = 4, HEAD = 34;
   const shortName = n => n.length > 22 ? n.slice(0, 21) + '\u2026' : n;
   const groups = [...new Set(rows.map(r=>r.waveKey))];
-  const H = HEAD + (RH+GAP)*(rows.length + groups.length + 2 + (undated.length ? undated.length + 1 : 0)) + 16;
+  // Grouped mode draws one row per wave and no wave headers; expanded
+  // draws a header plus a row per jurisdiction. Getting this wrong leaves
+  // either a tall band of empty space or a chart clipped at the bottom.
+  const bodyRows = ganttExpanded ? rows.length + groups.length : groups.length;
+  const H = HEAD + (RH+GAP)*(bodyRows + 2 + (undated.length ? undated.length + 1 : 0)) + 16;
   const x = t => L + ((t - X0)/(X1 - X0))*(W - L - R);
 
   let s = \`<svg viewBox="0 0 \${W} \${H}" width="100%" style="min-width:820px;display:block" role="img" aria-label="Back-planned delivery timeline by jurisdiction">\`;
@@ -1457,8 +1469,43 @@ function buildGantt(sel0, erp, pace){
   y += RH + GAP + 6;
 
   const REGSHORT = {Eu:'EU', Mi:'MEA', As:'APAC', Am:'AM'};
+
+  // GROUPED BY DEFAULT. Dan, after the ViDA second waves landed: the plan
+  // "becomes difficult to read". Measured — the time axis had not moved at
+  // all (18 quarters either way, because the 2030 edge already existed for
+  // the member states with no national date), but the chart grew 31% taller
+  // and ONE wave held 27 of its 46 rows. Density, not extent.
+  //
+  // The wave is the unit anyone plans in, so it is the unit the chart shows
+  // first: nine rows instead of forty-six. Per-jurisdiction lanes are one
+  // button away, and the table below and the PDF both carry the full list,
+  // so nothing is hidden — it is just not the default.
+  if(!ganttExpanded){
+    waveMeta.forEach(wm => {
+      const members = rows.filter(r => r.waveKey === wm.dl);
+      if(!members.length) return;
+      const s0 = Math.min(...members.map(r => r.start.getTime()));
+      const e0 = Math.max(...members.map(r => r.segs[r.segs.length-1].e.getTime()));
+      const x1 = x(s0), x2 = x(e0);
+      const names = members.map(m => m.c[0]);
+      s += \`<text x="0" y="\${y+15}" fill="#f2f0e8" font-size="12" font-family="'IBM Plex Mono',monospace">\${wm.dl}<title>\${names.join(', ')}</title></text>\`;
+      // Left-anchored at a fixed offset rather than right-anchored at the
+      // gutter: an ISO date is always ten monospace characters, so the two
+      // labels can never collide. Right-anchoring put "27 JURISDICTIONS"
+      // straight through "2030-07-01".
+      s += \`<text x="88" y="\${y+15}" fill="#93a3c0" font-family="'IBM Plex Mono',monospace" font-size="9">\${wm.n} \${wm.n===1?'JURISDICTION':'JURISDICTIONS'} &middot; \${wm.elapsed}W</text>\`;
+      s += \`<rect x="\${x1+1}" y="\${y+4}" width="\${Math.max(2,x2-x1-2)}" height="\${RH-8}" rx="3" fill="#3d5a86"><title>Wave \${wm.dl} — \${wm.n} jurisdiction\${wm.n===1?'':'s'}, \${wm.effort}w effort, \${wm.elapsed}w elapsed\${lanes>1&&wm.n>1?\` across \${Math.min(lanes,wm.n)} lanes\`:''}\n\${names.join(', ')}</title></rect>\`;
+      const gx = x(wm.golive.getTime());
+      s += \`<polygon points="\${gx},\${y+3} \${gx+7},\${y+RH/2} \${gx},\${y+RH-3} \${gx-7},\${y+RH/2}" fill="#efe9db" stroke="#0f1a2b" stroke-width="2"><title>Wave go-live — mandate deadline \${wm.dl}</title></polygon>\`;
+      const ICON = {critical:'\u25b2', warning:'\u25cf', good:'\u2713'};
+      const COL  = {critical:'#e0907f', warning:'#e2b978', good:'#7fd0a8'};
+      s += \`<text x="\${W-R+8}" y="\${y+15}" fill="\${COL[wm.risk]}" font-size="11">\${ICON[wm.risk]}<title>\${wm.risk === 'critical' ? 'Latest responsible start is in the past' : wm.risk === 'warning' ? 'Starts within 3 months' : 'Comfortable runway'}</title></text>\`;
+      y += RH + GAP;
+    });
+  }
+
   let lastWave = null;
-  rows.forEach(r => {
+  if(ganttExpanded) rows.forEach(r => {
     if(r.waveKey !== lastWave){
       lastWave = r.waveKey;
       const wm = waveMeta.find(w => w.dl === lastWave);
@@ -1955,6 +2002,17 @@ function build(){
   const inforceNoDate = sel.filter(c=>c[3]==='i' && !c[5]);
   if(inforceNoDate.length) w += \`<div class="note" style="margin-top:12px"><strong>Already in force, no further dated step (\${inforceNoDate.length}):</strong> \${inforceNoDate.map(c=>c[0]).join(', ')}. These are compliance-now, not project-plan items.</div>\`;
   document.getElementById('waves').innerHTML = w;
+  const gt = document.getElementById('ganttToggle');
+  if(gt && !gt.dataset.wired){
+    gt.dataset.wired = '1';
+    gt.onclick = () => {
+      ganttExpanded = !ganttExpanded;
+      gt.textContent = ganttExpanded
+        ? '${t("btn.group", "Group by wave")}'
+        : '${t("btn.expand", "Show every jurisdiction")}';
+      showResults();
+    };
+  }
   const tbl = document.getElementById('tblToggle');
   tbl.onclick = () => {
     const el = document.getElementById('waves');
