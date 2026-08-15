@@ -10700,6 +10700,102 @@ meant.
 exactly two pages, 191mm and 205mm against A4's 271mm.
 
 
+## 15 August 2026 (cont'd) — Totals that add up, and a claim the page could not keep (migration 536)
+
+Dan, validating the model: *"I'm a bit confused by the figures that are
+shared in section 2, section 4 and section 5. For example - the annual
+values shared in section 4, how do these factor into the direct total
+banked savings at the bottom of the same section?"*
+
+### The arithmetic was right
+
+Every figure was recomputed from the inputs in a **separate harness** —
+deliberately not importing anything from `roi-render.mjs`, since
+re-running the same code only proves it is deterministic — at both
+scopes and at 100k and 1M invoices. Every one reconciled to the penny.
+No number changes in this migration.
+
+### What he actually hit
+
+Section 4's "Annual value" column listed **gross** savings:
+
+```
+Processing cost reduction (AP)   $590,400   x 42.86% banks  =  $253,045
+Issuing cost reduction (AR)      $195,000   x 100%  banks   =  $195,000
+Avoided rework                   $360,000   x 0%    banks   =        $0
+                                ----------                     --------
+column sums to                 $1,145,400   total shown      =  $448,045
+```
+
+The banking rates lived only in tags ("43% banks", "not banked") and the
+reconciliation in a grey parenthetical. **A finance reader adds a column
+and expects the total to match it**, and no column matched. Section 4 now
+carries two numeric columns — gross, and what this scope banks — and both
+sum to their own total. On compliance + AP automation they are identical,
+which says "everything banks here" better than a sentence could.
+
+### The worse thing validation turned up
+
+The page said in **two** places that direct and indirect savings are never
+added together — and added them in **three**: section 5's net annual
+benefit (`l1Banked + l2`, which payback divides into), the savings pie
+(whose whole is $518,125, exactly direct-banked plus indirect, so the tax
+slice's 13% was a share of a total the page said did not exist), and the
+PDF's "Banked annually" headline over that same combined figure.
+
+Both statements and all three contradictions were on screen at once. Same
+shape as the Ardent contradiction migration 525 exists to remember: not a
+wrong number, **a page disagreeing with itself about what its numbers
+mean**.
+
+Offered the choice between honouring the rule (payback on direct only,
+4mo → 5mo) and dropping it, Dan: *"The page can include direct and
+indirect savings added together. please update accordingly, and amend
+wording."* So the arithmetic stands and seven strings were corrected to
+describe it. The reason for reporting them apart survives — the evidence
+behind them differs — but "never added together" was a claim about
+arithmetic and it was false.
+
+`res.banked` was deliberately **not** touched: it labels the section 2
+stat showing `l1Banked` alone, which genuinely is banked annually.
+Changing it would have been a sweep by string match rather than by
+meaning.
+
+### Two smaller defects, both found the same way
+
+- Payback rendered **"0mo"** at 1M invoices (0.395 months, rounded) —
+  reads as a failure rather than as very fast. Now `<1mo`.
+- The AP row's basis printed **"$9.8"** from a 9.84 benchmark, so
+  multiplying it out on screen gave $588,000 against the $590,400 beside
+  it. A **$2,400 gap in the one row a finance reader is most likely to
+  check by hand** — which is precisely what Dan was doing. `fmt1` now
+  formats to two decimals; it formats per-invoice costs and nothing else.
+
+### Four existing checks failed, and two of them were wrong before this
+
+Worth recording, because they are the more interesting failures:
+
+- **`rework is not banked on a compliance scope`** was matching lowercase
+  "not banked" inside the *total row's parenthetical*, not the tag on the
+  rework row. `innerText` applies `text-transform`, so the tag reads "NOT
+  BANKED" and never matched. The check had never tested the row it names;
+  removing the parenthetical is what exposed it.
+- **`directTotal`** read the AP row's *last* cell. That stopped meaning
+  "annual value" the moment a second numeric column existed.
+- The other two — the unlocked-remainder parenthetical and the PDF's
+  "Banked annually" — were correct failures detecting real changes.
+
+A new check asserts the property that was actually missing: **both columns
+sum to their own totals**, at both scopes.
+
+### Verified
+
+`npm test`: 8 suites, all passing. ROI regression **135 checks** (was
+122). The PDF is still exactly two pages, 191mm and 205mm against A4's
+271mm. One standing invariant added: no `roi` string may claim the two
+savings kinds are kept apart, because section 5 and the pie add them.
+
+
 ## Open items / next steps
 
 ### Where things stand — 15 August 2026

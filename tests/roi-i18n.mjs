@@ -95,7 +95,7 @@ try {
     ["the paywall gate", "Your results are ready"],
     ["a results heading", "Assumptions, sources and caveats"],
     ["a step chip", "Move go-live dates"],
-    ["the savings lede", "never added together"],
+    ["the savings lede", "evidence behind them differs"],
     ["a savings subhead", "Indirect &mdash; cost and risk avoided"],
     ["a runtime stat label", "With a dated deadline ahead"],
     ["a runtime note", "Everything counted here is tangible"],

@@ -420,7 +420,7 @@ t.check("both rates are in the assumptions panel, and differ",
   `${await page.inputValue("#fteCost")} / ${await page.inputValue("#fteEntry")}`);
 
 const directTotal = Number((await page.locator("#direct tbody tr").first()
-  .locator("td").last().innerText()).replace(/[^\d]/g, ""));
+  .locator("td").nth(2).innerText()).replace(/[^\d]/g, ""));
 const head = await page.locator("#direct .note").last().innerText();
 t.check("the headcount line states the capture FTE it derived",
   /3\.6 FTE keying invoices today/.test(head), head.slice(0, 200));
@@ -477,9 +477,17 @@ const bankedTotal = async () =>
 const complianceBanked = await bankedTotal();
 t.check(`compliance-only banks capture and issuing, not nothing (${complianceBanked})`,
   complianceBanked === 448045, complianceBanked);
-t.check("and states what is left unlocked against the full total",
-  /697,355/.test(await totalRow().innerText()) && /1,145,400/.test(await totalRow().innerText()),
+// Until 536 this asserted a parenthetical reading "($697,355 unlocked and
+// not banked, of $1,145,400)", which was the only bridge between a column
+// summing to 1,145,400 and a total reading 448,045. Dan hit exactly that
+// gap while checking the model by hand. The bridge is now a second column,
+// so the property to assert is that the total row states BOTH figures —
+// and, separately, that the unbanked amount is still named on the page.
+t.check("the total row states the gross and the banked figure side by side",
+  /1,145,400/.test(await totalRow().innerText()) && /448,045/.test(await totalRow().innerText()),
   await totalRow().innerText());
+t.check("and the unlocked remainder is still stated somewhere on the page",
+  (await page.locator("body").innerText()).includes("697,355"));
 
 // The tags are the whole defence of this change: the reasoning has to be
 // on the row, not in a footnote, because the change makes the answer
@@ -489,9 +497,15 @@ const tags = await page.evaluate(() =>
 t.check("every direct row says whether it banks on compliance",
   tags.includes("43% banks") && tags.includes("banks") && tags.includes("not banked"), tags);
 
-const directText = await page.locator("#direct").innerText();
+// This used to match lowercase "not banked" inside the total row's
+// parenthetical rather than the tag on the rework row — so when 536
+// replaced the parenthetical it failed, having never tested the row it
+// names. innerText applies text-transform, so the tag reads "NOT BANKED":
+// match case-insensitively, and against the rework row specifically.
+const reworkBankRow = await page.locator("#direct tbody tr").nth(2).innerText();
 t.check("rework is not banked on a compliance scope",
-  /not banked/.test(directText) && !/banks in full/.test(directText));
+  /not banked/i.test(reworkBankRow) && /—|&mdash;/.test(reworkBankRow.split("\t").pop()),
+  reworkBankRow.slice(0, 120));
 
 await page.selectOption("#scope", "both"); await page.waitForTimeout(400);
 await page.click("#run"); await page.waitForTimeout(700);
@@ -656,7 +670,10 @@ const pdf = await page.evaluate(() => {
   return { pages: pgs.length, p1: pgs[0] ? pgs[0].innerText : "", p2: pgs[1] ? pgs[1].innerText : "" };
 });
 t.check(`the PDF document is exactly two pages (${pdf.pages})`, pdf.pages === 2, pdf.pages);
-t.check("page 1 carries the headline findings", /Banked annually/.test(pdf.p1) && /Payback/.test(pdf.p1));
+// "Banked annually" sat over l1Banked + l2 — a figure including the
+// modelled indirect row, which is not banked in this page's sense of the
+// word. 536 relabelled it rather than changing the arithmetic, per Dan.
+t.check("page 1 carries the headline findings", /Annual benefit/.test(pdf.p1) && /Payback/.test(pdf.p1));
 t.check("page 1 carries the wave plan", /Latest responsible start/i.test(pdf.p1));
 t.check("page 2 carries the assumptions and their grades",
   /Assumptions/i.test(pdf.p2) && /Grade A measured/i.test(pdf.p2));
@@ -830,12 +847,109 @@ t.check(`the two halves are subheads now, not headings (${sav.subheads.join(" / 
   sav.subheads.join(" | "));
 t.check("neither repeats the word the heading above already says",
   sav.subheads.every((s) => !/savings/i.test(s)), sav.subheads.join(" | "));
-t.check("the lede states the rule that needed a shared heading to be stated",
-  /never added together/.test(sav.lede), sav.lede.slice(0, 60));
+// This asserted "never added together" when 535 wrote it. Validating the
+// arithmetic showed that was false — section 5 and the pie both add them
+// — so 536 reworded it and this check follows. What the lede has to do is
+// unchanged: state, once and where both halves can see it, how the two
+// kinds relate. Only the true version of that sentence differs.
+t.check("the lede says why the two are reported apart, and that section 5 uses both",
+  /evidence behind them differs/.test(sav.lede) && /uses both/i.test(sav.lede),
+  sav.lede.slice(0, 90));
 t.check("sections renumber with the merge — 4 Savings, 5 Investment",
   sav.headings.some((x) => /^4 \S* Savings/.test(x))
   && sav.headings.some((x) => /^5 \S* Investment/.test(x)),
   sav.headings.join(" / "));
+
+
+// ---- 27. section 4's totals are the sums of their own columns ----
+// Dan, validating the model: "the annual values shared in section 4, how
+// do these factor into the direct total banked savings at the bottom of
+// the same section?" They did not, and could not: the column was gross
+// and the total was banked, with the reconciliation in a grey
+// parenthetical. Two numeric columns now, and this asserts that BOTH add
+// up — which is the property that was missing, not the arithmetic.
+const money = (x) => { const m = String(x).replace(/[^0-9.\-]/g, ""); return m === "" ? null : parseFloat(m); };
+const readDirect = () => page.evaluate(() => {
+  const trs = [...document.querySelectorAll("#direct tbody tr")];
+  const cells = (tr) => [...tr.children].map((c) => c.textContent.trim());
+  return { body: trs.slice(0, -1).map(cells), total: cells(trs[trs.length - 1]) };
+});
+for (const scope of ["compliance", "both"]) {
+  await page.selectOption("#scope", scope);
+  await page.click("#run"); await page.waitForTimeout(800);
+  const { body, total } = await readDirect();
+  const col = (i) => body.map((r) => money(r[r.length - i])).filter((v) => v !== null)
+    .reduce((a, b) => a + b, 0);
+  const banksSum = col(1), grossSum = col(2);
+  const banksTot = money(total[total.length - 1]), grossTot = money(total[total.length - 2]);
+  t.check(`${scope}: gross column sums to its total (${Math.round(grossSum).toLocaleString()})`,
+    Math.abs(grossSum - grossTot) <= 1, `${grossSum} vs ${grossTot}`);
+  t.check(`${scope}: banks column sums to its total (${Math.round(banksTot).toLocaleString()})`,
+    Math.abs(banksSum - banksTot) <= 1, `${banksSum} vs ${banksTot}`);
+  t.check(`${scope}: every monetised row states what it banks`,
+    body.slice(0, 3).every((r) => money(r[r.length - 1]) !== null || r[r.length - 1].includes("—")),
+    JSON.stringify(body.map((r) => r[r.length - 1])));
+}
+await page.selectOption("#scope", "compliance");
+await page.click("#run"); await page.waitForTimeout(800);
+const dcols = await readDirect();
+t.check("on compliance the two totals differ — that is the point",
+  money(dcols.total[dcols.total.length - 2]) > money(dcols.total[dcols.total.length - 1]));
+
+// ---- 28. the page no longer claims a rule it breaks ----
+// It said in two places that direct and indirect are never added
+// together, while section 5 and the pie both add them. Dan: "The page can
+// include direct and indirect savings added together." So the arithmetic
+// stands and the wording has to match it — in D1 and in the fallbacks.
+const claims = await page.evaluate(() => document.body.innerText);
+t.check("no text claims the two savings kinds are never combined",
+  !/never added together|not added together|kept apart/i.test(claims),
+  (claims.match(/[^.]*(never added together|not added together|kept apart)[^.]*/i) || [""])[0].slice(0, 90));
+const pieWhole = await page.evaluate(() => {
+  const tot = document.querySelector(".svtot strong");
+  const segs = [...document.querySelectorAll(".svkey li b")].map((e) => e.textContent.trim());
+  return { total: tot && tot.textContent.trim(), segs,
+           title: (document.querySelector(".svtitle") || {}).textContent };
+});
+t.check(`the pie's whole is labelled as benefit, not as banked (${pieWhole.title})`,
+  !/banked/i.test(pieWhole.title || ""), pieWhole.title);
+t.check("and its slices sum to the total it prints",
+  Math.abs(pieWhole.segs.map(money).reduce((a, b) => a + b, 0) - money(pieWhole.total)) <= 1,
+  `${pieWhole.segs.join("+")} vs ${pieWhole.total}`);
+
+// ---- 29. a sub-month payback reads as one ----
+// At 1M invoices payback is 0.4 months and rendered "0mo", which reads as
+// a failure rather than as very fast.
+// Drive the one-off down as well as the volume up, so this genuinely
+// lands under a month. The first version of this check asserted at 1M
+// invoices alone, got 2mo, and passed without ever reaching the branch
+// it exists to test.
+await page.evaluate(() => { document.getElementById("assump").open = true; });
+await page.fill("#volAP", "1000000"); await page.fill("#volAR", "500000");
+await page.fill("#cImplS", "500"); await page.fill("#cImplC", "500");
+await page.click("#run"); await page.waitForTimeout(900);
+const pb = await page.evaluate(() =>
+  [...document.querySelectorAll("#invest .stat")].map((e) => e.querySelector(".n").textContent.trim()));
+t.check(`a sub-month payback reads as under a month, not 0mo (${pb[3]})`,
+  /^<\s*1\s*mo$/.test(pb[3]), pb[3]);
+await page.fill("#cImplS", "8000"); await page.fill("#cImplC", "22000");
+
+// ---- 30. the AP row's basis reproduces the AP row's value ----
+// It printed "$9.8" from a 9.84 benchmark, so multiplying out the basis
+// on screen gave $588,000 against the $590,400 beside it. A $2,400 gap in
+// the row a finance reader is most likely to check by hand.
+await page.fill("#volAP", "100000"); await page.fill("#volAR", "50000");
+await page.click("#run"); await page.waitForTimeout(900);
+const apRow = await page.evaluate(() => {
+  const tr = document.querySelector("#direct tbody tr");
+  return { basis: tr.children[1].textContent.replace(/\s+/g, " "),
+           value: tr.children[2].textContent.trim() };
+});
+const rate = parseFloat((apRow.basis.match(/invoices\s*\S\s*[^\d]*([\d.]+)/) || [])[1]);
+const pctOff = parseFloat((apRow.basis.match(/(\d+)%/) || [])[1]);
+t.check(`the AP basis multiplies out to the AP value (${rate} x 60%)`,
+  Math.abs(100000 * rate * (pctOff / 100) - money(apRow.value)) <= 1,
+  `${100000 * rate * (pctOff / 100)} vs ${apRow.value}`);
 
 await browser.close();
 process.exit(t.report() ? 0 : 1);
