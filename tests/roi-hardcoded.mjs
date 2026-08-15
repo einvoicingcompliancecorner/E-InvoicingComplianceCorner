@@ -54,29 +54,21 @@ const KNOWN = new Set([
   // rule the string migrations follow, and for the same reason: a
   // retyped inventory drifts from what the page actually renders and
   // then hides the next regression behind a stale entry.
-  "# errored invoices",
   "# jurisdictions with no fixed deadline, some already in force. Indicative placement only — nothing can start before contracting completes, and there is no date to work back from. Czech Republic, Portugal, Australia, New Zealand, Canada, Ecuador",
   "(# data)",
   "(# estimates)",
   "(updated Jan #)",
-  ". Your # AP invoices imply",
-  "; # clearance or reporting jurisdictions put",
   "ATO / Deloitte task times",
   "HMRC / DBT consultation #",
   "Live mandate data from this site's own tracker: status, model and dated deadlines per jurisdiction, each traceable to the cited legal instrument on that country's deep dive.",
-  "Mechanism evidenced",
   "Our assumption, capped by Ardent exception gap",
   "Phase durations are practitioner estimates for a country rollout once a platform is in place, held in D# and editable above. No analyst firm publishes credible per-country e-invoicing implementation durations — this was checked.",
   "Wave #-#-# — # jurisdiction, #w effort, #w elapsed European Union",
   "Wave #-#-# — # jurisdiction, #w effort, #w elapsed Poland",
   "Wave #-#-# — # jurisdiction, #w effort, #w elapsed United Kingdom",
-  "Your assumption. Nothing is claimed for this figure — it is exposed so the model can be argued with rather than believed.",
   "hide ▴",
-  "of that in scope",
   "source",
-  "«contract.name» — # weeks (#-#-# to #-#-#) Programme-level: run once, not per country.",
   "«notes.headcount» $# of $#, or #%; the rest is review, technology and overhead. «notes.headcount#»",
-  "«vendor.name» — # weeks (#-#-# to #-#-#) Programme-level: run once, not per country.",
 ]);
 
 const { file, countries } = await buildRoiPage({
