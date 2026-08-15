@@ -10550,6 +10550,85 @@ toggled it shut for whichever section ran second, which is the same trap
 the adjust panel set in section 10.
 
 
+## 15 August 2026 (cont'd) — The European Union becomes one row (migration 534)
+
+Dan: *"the inclusion of the earlier twowave fix to introduce ViDA for each
+EU country is too messy. We have a European Union country listed on the
+main side menu. Would it be possible... to simply have an European Union
+region placeholder in the wave planner, which effectively represents any
+EU country."*
+
+He is right, and this is the planner catching up with a decision the rest
+of the site took months ago. **Migration 504 collapsed eleven per-country
+ViDA 2030 cards into the single European Union entry on the arrivals
+board**, on exactly this reasoning: ViDA is one EU fact, not twenty-seven
+national ones. The planner went the other way — it filtered the EU row
+out and redistributed its date to member states — and 532 doubled down.
+
+It also fixes something conceptually odd I had been papering over. Austria
+appeared as a country with a 2030 deadline when Austria has no national
+mandate at all, so the chart had to print "EU-WIDE" beside it to explain
+why it was there. Under a single EU row that explanation is unnecessary,
+because the row *is* the EU.
+
+### The correction Dan made mid-build
+
+My first attempt dropped member states with no national deadline from the
+plan entirely, reasoning that the EU row represented them. Dan: *"an EU
+country with no national mandate can still be added to the planner, just
+with no current fixed date. We can implement eInvoicing in those
+countries directly between two peers."*
+
+Right, and the two are **different builds rather than one counted twice**:
+a voluntary four-corner exchange with your trading partners in Austria is
+not the ViDA reporting connection to the Austrian tax authority in 2030.
+The first is optional and undated; the second is neither. Austria now
+appears in the discretionary band *and* is covered by the EU row, and
+pays for both.
+
+I had called that a double count and removed it. It wasn't.
+
+### Cost
+
+Dan's choice from four costed options, and the only one needing no new
+assumption: **one complex build plus a simple connection per member
+state**. ViDA's payload is harmonised — one EN 16931-based dataset, one
+ruleset — so the reporting extract is built once at the complex rate;
+each member state runs its own reporting endpoint, so you connect to each
+at the simple rate. It reuses the model's existing rates rather than
+inventing a ratio.
+
+EU preset: one-off **$710,000 → $770,000**, chart **470px → 386px**. The
+money barely moved; what changed is that it is now named correctly —
+roughly $130,000 of optional peer-to-peer builds and $280,000 of ViDA
+reporting, where before it was one undifferentiated $400,000 of
+per-country tracks.
+
+`vida_second_wave_ratio` from 532 is retired here rather than left active
+with nothing reading it, and `wave.vidaSuffix` deleted. That is the
+dead-data pattern this project has now found **five** times, and this is
+the first time it was cleaned up in the same migration that orphaned it.
+
+The discretionary band collapses in grouped mode too, so the chart is
+consistently one row per group.
+
+### Verification
+
+`npm test`: 8 suites, all passing. ROI regression **110 checks**. Section
+23 was rewritten rather than patched, because it tested a design that no
+longer exists: the EU is not in the picker but appears automatically;
+exactly once however many members are selected; Germany appears once on
+its national date; a member state with no national mandate is still
+plannable; the cost is one build plus a connection each; and the EU
+obligation is adjustable like any other.
+
+Two standing invariants: `eu-drr` must stay on the board as a live b2b
+milestone, because nothing else carries the EU obligation now — that is
+the point of 504 and the risk of it — and all 27 member states must stay
+flagged, or the EU row would quietly cover fewer countries than the
+reader selected.
+
+
 ## Open items / next steps
 
 ### Where things stand — 15 August 2026

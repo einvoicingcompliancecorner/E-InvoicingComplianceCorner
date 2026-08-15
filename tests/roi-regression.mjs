@@ -681,48 +681,49 @@ printed.heights.forEach((h, i) =>
   t.check(`PDF page ${i + 1} fits on A4 (${h}mm of 271mm)`, h <= 271, h));
 await page.emulateMedia({ media: "screen" });
 
-// ---- 23. two waves per EU member state ----
-// The last substantive item from the design review. An EU member state
-// with a national deadline before July 2030 has TWO obligations, and the
-// planner used to schedule only the first — Germany showed a simple 2027
-// exchange build and hid a complex 2030 reporting build entirely.
+// ---- 23. the European Union is one row ----
+// Dan: the per-country ViDA waves were "too messy", and the EU already
+// exists as its own entry on the board. Migration 504 had settled the
+// same argument there — ViDA is ONE EU fact, not twenty-seven national
+// ones — and the planner had been going the other way ever since.
 await page.goto(`file://${file}`);
 await page.click("#selEU"); await page.waitForTimeout(200);
 await page.click("#run"); await page.waitForTimeout(900);
 
+// Nobody selects the EU. It binds you if any member state does, and
+// requiring a tick would silently omit a real obligation.
+t.check("the EU is not in the country picker",
+  !(await page.locator("#countryList").innerText()).includes("European Union"));
+
 await expandGantt();
-const vida = await page.evaluate(() =>
+const labels = () => page.evaluate(() =>
   [...document.querySelectorAll("#gantt svg text")]
-    .map((n) => n.textContent).filter((x) => /\(ViDA\)/.test(x)));
-t.check(`fourteen member states get a second wave (${vida.length})`, vida.length === 14, vida.length);
-t.check("Germany is one of them", vida.some((x) => /^Germany/.test(x)), vida.slice(0, 4));
-// The mistake made on the way in: deriving this from the region rather
-// than eu_member sweeps in countries ViDA does not bind.
-t.check("Norway and the UK are not, because ViDA does not bind them",
-  !vida.some((x) => /Norway|United Kingdom/.test(x)), vida);
+    .map((n) => (n.firstChild && n.firstChild.textContent) || ""));
+const lab = await labels();
+t.check("but it appears in the plan automatically", lab.includes("European Union"), lab.slice(0, 6));
+t.check("exactly once, however many member states are selected",
+  lab.filter((x) => x === "European Union").length === 1);
+t.check("and Germany appears once, on its national date only",
+  lab.filter((x) => /^Germany/.test(x)).length === 1, lab.filter((x) => /Germany/.test(x)));
 
-// Read firstChild, not textContent: each <text> carries a <title> child
-// holding the untruncated name, so textContent returns the label twice.
-t.check("both of Germany's obligations are scheduled, and in different waves",
-  await page.evaluate(() => {
-    const labels = [...document.querySelectorAll("#gantt svg text")]
-      .map((n) => (n.firstChild && n.firstChild.textContent) || "");
-    return labels.includes("Germany") && labels.includes("Germany (ViDA)");
-  }));
+// Dan's correction mid-build: a member state with no national mandate is
+// still implementable, peer to peer, so it stays in the plan as
+// discretionary rather than being dropped.
+t.check("a member state with no national mandate is still plannable",
+  lab.includes("Austria"), lab.filter((x) => /Austria/.test(x)));
 
-// Cost: half a complex integration each, not a second platform.
+// One complex build plus a simple connection per member state. 27 members
+// on this preset, so the EU row adds 1 complex and 26 simple.
 const oneOff = Number((await page.locator("#invest .stat .n").first().innerText()).replace(/[^\d]/g, ""));
-t.check(`a second wave costs half a build, not a whole one (${oneOff})`, oneOff === 710000, oneOff);
+t.check(`the EU row costs one build plus a connection each (${oneOff})`,
+  oneOff === 770000, oneOff);
 
-// And each is separately adjustable — the point of two rows rather than
-// an annotation is that you can move one obligation without the other.
 await page.evaluate(() => { document.getElementById("adjust").open = true; });
 await page.waitForTimeout(250);
 const adj = await page.evaluate(() =>
   [...document.querySelectorAll("[data-ovr-dl]")].map((e) => e.getAttribute("data-ovr-dl")));
-t.check("each obligation is separately adjustable",
-  adj.includes("Germany") && adj.includes("Germany (ViDA)"),
-  adj.filter((a) => /Germany/.test(a)));
+t.check("and the EU obligation is adjustable like any other",
+  adj.includes("European Union"), adj.filter((a) => /Euro|Germany/.test(a)));
 
 // ---- 24. the chart groups by wave, and expands on demand ----
 // Dan, after the ViDA second waves landed: the plan "becomes difficult to
@@ -739,9 +740,11 @@ const chartH = () => page.evaluate(() =>
 const grouped = await chartH();
 t.check(`grouped by default, and it fits on a screen (${grouped}px, was 1674)`,
   grouped < 600, grouped);
-t.check("one row per wave, labelled with its count",
+// The EU wave covers every member state selected, so counting tracks
+// would print "1 JURISDICTION" over an obligation binding twenty-seven.
+t.check("the EU wave is labelled by member states, not by track count",
   await page.evaluate(() => [...document.querySelectorAll("#gantt svg text")]
-    .some((n) => /27 JURISDICTIONS/.test(n.textContent))));
+    .some((n) => /27 MEMBER STATES/.test(n.textContent))));
 // The whole point of grouping is that nothing is lost, only folded.
 t.check("no per-jurisdiction row is drawn while grouped",
   await page.evaluate(() => ![...document.querySelectorAll("#gantt svg text")]
@@ -751,11 +754,11 @@ await page.click("#ganttToggle"); await page.waitForTimeout(700);
 const expanded = await chartH();
 t.check(`expanding restores every jurisdiction (${grouped} -> ${expanded}px)`,
   expanded > grouped * 2, `${grouped} -> ${expanded}`);
-t.check("and Germany's two obligations are both there",
+t.check("and every jurisdiction is named once expanded",
   await page.evaluate(() => {
     const l = [...document.querySelectorAll("#gantt svg text")]
       .map((n) => (n.firstChild && n.firstChild.textContent) || "");
-    return l.includes("Germany") && l.includes("Germany (ViDA)");
+    return l.includes("Germany") && l.includes("European Union");
   }));
 await page.click("#ganttToggle"); await page.waitForTimeout(700);
 t.check("and it folds back", (await chartH()) === grouped);
