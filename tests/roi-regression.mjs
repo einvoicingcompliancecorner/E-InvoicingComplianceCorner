@@ -1160,5 +1160,39 @@ t.check("while internal run cost does not",
   Number(platAfter[2].replace(/,/g, "")) === run);
 await page.fill("#volAP", "100000");
 
+
+// ---- 34. the summary labels avoid the untranslatable idiom ----
+// Dan: "The banked term, I think might not translate well - when we look
+// at internationalising the page." Correct: "banked" is a finance idiom
+// meaning realised-and-keepable as distinct from identified. English
+// carries that in one word; a translator falls back on "saved", and the
+// distinction migrations 528 and 536 built collapses into the ordinary
+// word for saving, in three languages at once, silently.
+await page.selectOption("#scope", "compliance");
+await page.click("#run"); await page.waitForTimeout(800);
+const sumLabels = await page.evaluate(() => [...document.querySelectorAll("#summary .stat")]
+  .map((e) => e.querySelector(".l").textContent.replace(/\s+/g, " ").trim()));
+t.check(`no summary stat label uses "bank" (${sumLabels.length} labels)`,
+  sumLabels.every((l) => !/bank/i.test(l)), sumLabels.filter((l) => /bank/i.test(l)).join(" | "));
+t.check(`the headline reads as a saving (${sumLabels[0]})`,
+  /annual saving/i.test(sumLabels[0]), sumLabels[0]);
+t.check(`and the net figure too (${sumLabels[2]})`,
+  /net annual saving/i.test(sumLabels[2]), sumLabels[2]);
+// res.unbanked renders INSIDE the res.banked label, so fixing the
+// heading and leaving the parenthetical would have put the idiom back
+// three words later.
+t.check("including the parenthetical inside the headline label",
+  /available on a wider scope/i.test(sumLabels[0]), sumLabels[0]);
+
+// The known gap, asserted so it cannot be forgotten when i18n is scoped:
+// the banking TAGS are English literals in the template, not D1 rows, so
+// no amount of translation reaches them. This check documents the debt
+// rather than failing on it.
+const tagText = await page.evaluate(() =>
+  [...document.querySelectorAll("#savingsTable .tag.bank, #savingsTable .tag.unbank")]
+    .map((e) => e.textContent.trim()));
+t.check(`the row tags are still hardcoded English — known i18n debt (${tagText.join(", ")})`,
+  tagText.length > 0, tagText.join(", "));
+
 await browser.close();
 process.exit(t.report() ? 0 : 1);

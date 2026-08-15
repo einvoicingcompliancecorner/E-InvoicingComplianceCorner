@@ -11100,6 +11100,66 @@ and left in place — seventeenth on the sweep list, and unlike
 `res.netAnnualScope` it is a sentence a future layout would want back.
 
 
+## 15 August 2026 (cont'd) — "Banked" leaves the executive summary (migration 543)
+
+Dan: *"Can you update the headings on the executive summary; From 'banked
+annually' to Annual Saving', and from 'Net annual' to Net Annual Saving'.
+The banked term, I think might not translate well - when we look at
+internationalising the page."*
+
+**He is right, and the reason generalises.** "Banked" here is a finance
+idiom meaning realised-and-keepable, as distinct from identified. English
+carries that in one word; Spanish, German and French do not. A translator
+handed "banked annually" either coins a phrase or falls back on "saved" —
+at which point the distinction migrations 528 and 536 spent real effort
+building collapses into the ordinary word for saving, in three languages
+at once, silently, because a fluent translation looks correct.
+
+```
+res.banked     'banked annually'      -> 'Annual saving'
+res.netAnnual  'Net annual'           -> 'Net annual saving'
+res.unbanked   'unlocked, not banked' -> 'available on a wider scope'
+```
+
+**The third was not requested and was not optional.** `res.unbanked`
+renders *inside* the label `res.banked` produces — the stat reads "Annual
+saving (+$697,355 unlocked, not banked)". Changing the heading and leaving
+the parenthetical would have put the untranslatable word back into the
+very label being fixed, three words later. Its replacement is also truer:
+that money is not un-bankable, it is available on a wider scope.
+
+(The labels render through `text-transform: uppercase`, so the title case
+Dan wrote does not appear. Stored as written anyway — the CSS is a
+presentation choice that could change.)
+
+### What was deliberately not changed
+
+"Banked" is load-bearing across the rest of the page: `col.banks`,
+`notes.banks.h`, `row.tax.banks`, `sum.scopeOnly2`, `sum.bridge`,
+`sum.bridge5`, `sec.savings.lede4`, `sv.unbanked`, `sv.unbankedTail`,
+`notes.rework` — **ten live strings**.
+
+Changing three and leaving ten would make the page less coherent than
+changing all or none: the summary would say "saving" while the table it
+summarises says "banks". Raised as a decision rather than taken quietly.
+
+### The part an i18n pass would hit first
+
+**Three banking labels are not in D1 at all.** `banks`, `not banked` and
+the `43% banks` construction are English literals in the renderer's
+template, on the tags attached to every priced row. They cannot be
+translated by adding rows — they need code changes. Any
+internationalisation of this page starts there, not with the strings
+above. There is now a regression check that names them, so the debt is
+discovered when i18n is *scoped* rather than during it.
+
+### Verified
+
+`npm test`: 8 suites, all passing. ROI regression **166 checks**. A
+standing invariant keeps the three summary labels free of the idiom — it
+is a natural phrase to reach for when editing a stat about money kept.
+
+
 ## Open items / next steps
 
 ### Where things stand — 15 August 2026
