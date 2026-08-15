@@ -351,7 +351,21 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
    nothing was broken, it just looked untidy). Reserving two lines of label
    height inside the panel keeps every input on the same baseline whether
    its label wraps or not. */
-#assump .grid label{min-height:36px}
+/* GRID CELLS ARE FLEX COLUMNS WITH A RESERVED LABEL HEIGHT.
+   Dan, 15 Aug 2026: "section 1 the field headings wrap sometimes causing
+   the fields to appear at different heights." Measured: 19px out in the
+   footprint row — a whole wrapped line — and 1px in the assumptions
+   grids, where a min-height was already reserved but sat BELOW the
+   natural two-line height, so it did not bind. The .hlp marker is an
+   inline-flex 14px box inside a 12px label, which raises the line box
+   above what the font size alone predicts; pinning line-height makes the
+   reserved height computable rather than guessed.
+   Applied to every .grid, not just #assump: the footprint row had the
+   worse offset and no rule at all. */
+.grid > div{display:flex;flex-direction:column;min-width:0}
+.grid label{line-height:1.35;min-height:38px}
+.grid > div > .hint{margin-top:6px}
+@media(max-width:759px){.grid label{min-height:0}}
 .hlp:hover .tip,.hlp:focus .tip{display:block}
 .hlp .tip b{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px}
 .tierA{border-left:4px solid var(--live)}.tierB{border-left:4px solid var(--soon)}.tierC{border-left:4px solid var(--stamp)}.tierD{border-left:4px solid var(--upcoming)}
@@ -364,6 +378,30 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
    arrive with the mandate or do I have to go and get it?" is the one the
    reader is actually asking of every line. */
 .bank{color:#7fd0a8;border-color:#3f7d5c}.unbank{color:#8d9bb5;border-color:#3a4864}
+/* SAVINGS-COMPOSITION PALETTE. Three categorical slots, stepped for the
+   dark card surface and validated with the dataviz validator against BOTH
+   that surface and white paper, because the same bar has to survive the
+   PDF. The site's existing pill colours FAILED as a categorical set — too
+   light, chroma below the floor, and green/amber only 13.0 apart on the
+   normal-vision scale, under the 15 hard floor. These are the same hue
+   families re-stepped: worst adjacent CVD dE 8.4, normal-vision 17.7,
+   every slot over 3:1 on both surfaces.
+   The fourth band is deliberately NOT a fourth category — it is money the
+   model does not count, so it carries no hue, only a 45-degree hatch. */
+.sv1{fill:#399a6c}.sv2{fill:#c07d1c}.sv3{fill:#6b86d8}
+.svwrap{display:flex;gap:22px;align-items:center;flex-wrap:wrap;margin:14px 0 0}
+.svpie{flex:none}
+.svpie text{font-family:'IBM Plex Mono',monospace}
+.svside{flex:1;min-width:260px}
+.svtitle{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:var(--soon);margin:0 0 8px}
+.svkey{list-style:none;margin:0;padding:0;font-size:13px}
+.svkey li{display:grid;grid-template-columns:12px 1fr auto 46px;align-items:center;gap:9px;padding:3px 0}
+.svkey i{width:12px;height:12px;border-radius:3px;display:inline-block}
+.svkey b{font-variant-numeric:tabular-nums}
+.svkey em{font-style:normal;font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--muted);text-align:right}
+.svtot{margin:10px 0 0;padding-top:9px;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}
+.svtot strong{color:#7fd0a8;font-size:15px}
+.svtot span{display:block;font-size:12px}
 /* The pointer from a one-line caveat to the full reasoning in section 7.
    Dan, 15 Aug 2026: "The UI is difficult to read and follow because there
    are so many caveats and assumptions... could those be hidden in a
@@ -377,16 +415,71 @@ a.nlink:hover,a.nlink:focus{color:var(--text);border-bottom-color:var(--text)}
 .hidden{display:none !important}
 .blur{filter:blur(5px);opacity:.55;pointer-events:none;user-select:none}
 footer{margin-top:40px;padding-top:16px;border-top:1px solid var(--line);font-size:12px;color:var(--muted)}
+/* ---- the PDF ------------------------------------------------------
+   Dan, 15 Aug 2026: "Rather than printing the page, I would like a
+   professionally oriented PDF download that summarises the page outputs
+   ... It should outline headline findings, and display the wave plan.
+   However, any assumptions, or caveats should be displayed on page 2. It
+   should be no longer than 2 pages."
+   So this is not the page with things hidden. #pdfdoc is a separate
+   two-page document, built from the same numbers at the same moment, and
+   the entire interactive page is suppressed. Everything is laid out for
+   ink on white: no dark surfaces to burn through a printer, hairline
+   rules, and the pie redrawn on the light surface it was validated
+   against. */
+#pdfdoc{display:none}
 @media print{
-  body{background:#fff;color:#111}
-  .noprint{display:none !important}
-  .wrap{max-width:none;padding:0}
-  .card,.stat{background:#fff;border:1px solid #bbb;break-inside:avoid}
-  h1,h2,h3{color:#111}.lede,.hint,th,.stat .l,footer{color:#444}
-  .ev{color:#111;border-bottom:none}.ev .tip{display:none !important}
-  .hlp{display:none !important}
-  table{font-size:11px}
-  h2{border-bottom:1px solid #999}
+  @page{size:A4 portrait;margin:13mm 12mm}
+  html,body{background:#fff !important;color:#111 !important}
+  /* Hide everything the host page wraps around us, not just .wrap — the
+     members shell contributes a back-link bar of its own, and naming the
+     pieces individually means the next thing it adds prints too. */
+  body>*{display:none !important}
+  body>#pdfdoc{display:block !important;font-size:9.6pt;line-height:1.42}
+  #pdfdoc{width:100%;max-width:100%;overflow:hidden}
+  #pdfdoc .pg{page-break-after:always;break-after:page}
+  #pdfdoc .pg:last-child{page-break-after:auto;break-after:auto}
+  #pdfdoc .mast{display:flex;justify-content:space-between;align-items:flex-end;
+    border-bottom:2px solid #111;padding-bottom:6px;margin:0 0 12px}
+  #pdfdoc .mast h1{font-family:'Big Shoulders Display',sans-serif;font-size:23pt;line-height:.95;
+    margin:0;text-transform:uppercase;letter-spacing:.4px;color:#111}
+  #pdfdoc .mast .who{font-family:'IBM Plex Mono',monospace;font-size:7.4pt;letter-spacing:.7px;
+    text-transform:uppercase;color:#555;text-align:right;line-height:1.5}
+  #pdfdoc h2{font-family:'IBM Plex Mono',monospace;font-size:8pt;letter-spacing:1.3px;
+    text-transform:uppercase;color:#7a5a20;border:0;margin:13px 0 6px;padding:0}
+  #pdfdoc .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+  #pdfdoc .kpi{border:1px solid #c9c9c9;border-left:3px solid #399a6c;padding:7px 9px}
+  #pdfdoc .kpi .n{font-family:'Big Shoulders Display',sans-serif;font-size:19pt;line-height:1;color:#111}
+  #pdfdoc .kpi .l{font-size:7.4pt;color:#555;margin-top:3px}
+  /* The screen rule table{color:var(--text-lo)} is near-white and beat the
+     colour set on body, so every cell printed at about 8% ink. Set it on
+     the table itself rather than relying on inheritance. */
+  #pdfdoc table{width:100%;border-collapse:collapse;font-size:8.6pt;color:#111}
+  #pdfdoc td{color:#222}
+  #pdfdoc td strong{color:#111}
+  #pdfdoc th{text-align:left;font-family:'IBM Plex Mono',monospace;font-size:7.2pt;letter-spacing:.8px;
+    text-transform:uppercase;color:#555;border-bottom:1px solid #999;padding:4px 6px}
+  #pdfdoc td{padding:3.5px 6px;border-bottom:1px solid #e2e2e2;vertical-align:top}
+  #pdfdoc td.num,#pdfdoc th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+  /* The chart carries min-width:820px on screen so it never squashes into
+     an unreadable smear in a scrolling div. On paper there is no scroll
+     container to protect, and 820px is wider than A4 minus margins, so it
+     clipped both edges. Released here, and capped in height so the plan
+     and the findings share page one. */
+  #pdfdoc .gantt svg{width:100%;height:auto;min-width:0 !important;max-height:108mm}
+  #pdfdoc .note{border-left:2px solid #7a5a20;background:#f6f3ec;padding:6px 9px;margin:8px 0 0;
+    font-size:8.4pt;color:#333;break-inside:avoid}
+  #pdfdoc .cards{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  #pdfdoc .cards div{border:1px solid #d3d3d3;padding:7px 9px;break-inside:avoid}
+  #pdfdoc .cards h3{margin:0 0 3px;font-size:9pt;color:#111}
+  #pdfdoc .cards p{margin:0;font-size:8.2pt;color:#444}
+  #pdfdoc .foot{margin-top:10px;border-top:1px solid #bbb;padding-top:5px;font-size:7.2pt;color:#666}
+  #pdfdoc .pielay{display:flex;gap:14px;align-items:center}
+  #pdfdoc .pielay svg{flex:none}
+  #pdfdoc .pkey{flex:1;list-style:none;margin:0;padding:0;font-size:8.6pt}
+  #pdfdoc .pkey li{display:grid;grid-template-columns:10px 1fr auto 40px;gap:7px;align-items:center;padding:2px 0}
+  #pdfdoc .pkey i{width:10px;height:10px;border-radius:2px;display:inline-block}
+  #pdfdoc .pkey em{font-style:normal;text-align:right;color:#555;font-family:'IBM Plex Mono',monospace}
 }
 `;
 
@@ -713,6 +806,7 @@ export function renderRoiPage({ countries, benchmarks = [], phases = [], strings
   <div id="guards"></div>
   <h2>2 &middot; ${t("sec.summary", "Executive summary")}</h2>
   <div id="summary"></div>
+  <div id="savings"></div>
   <h2>3 &middot; ${t("sec.waves", "Compliance wave plan")}</h2>
   <p class="lede" id="waveIntro"></p>
   <div class="card" style="padding:14px 16px 6px">
@@ -760,6 +854,11 @@ export function renderRoiPage({ countries, benchmarks = [], phases = [], strings
   <p>${t("footer.text", "<strong>The E-Invoicing Compliance Corner</strong> &mdash; ROI &amp; wave planner. Country mandate data is live as of 11 August 2026 and traceable to the per-country deep dives. Benchmark figures carry the evidence grade shown against each. This tool models a business case; it is not tax, legal or investment advice.")}</p>
 </footer>
 </div>
+
+<!-- Outside .wrap on purpose: the print rule hides .wrap wholesale, so a
+     PDF document nested inside it would be hidden with everything else.
+     Cost me a blank first attempt. -->
+<div id="pdfdoc" aria-hidden="true"></div>
 
 `;
   const script = `
@@ -841,6 +940,74 @@ document.getElementById('notes').addEventListener('toggle', function(){
   document.getElementById('notesChevron').innerHTML =
     this.open ? '${tj("assumptions.hide","hide &#9652;")}' : '${tj("assumptions.show","show &#9662;")}';
 });
+
+// SV is module-level so a viewport change can redraw without recomputing
+// the model.
+//
+// A pie, at Dan's request, over the stacked bar the form guidance
+// prefers. The guidance's specific objection is that a pie cannot compare
+// close values — and here two slices are $195,000 and $194,667, which is
+// 0.2% apart and genuinely indistinguishable as geometry. So every slice
+// is direct-labelled with BOTH its percentage and its value: the ranking
+// is read from the labels, the shape carries the gist. That is the
+// documented relief for this exact case rather than a workaround.
+//
+// The pie shows what the scope BANKS. The unlocked-but-unbanked figure
+// sits beside it rather than becoming a slice: it is not a component of
+// the savings, and on a compliance scope it is larger than all three
+// combined, so as a slice it would dominate a chart about savings with
+// money the scope does not realise.
+let SV = null, WAVES = [];
+function renderSavings(){
+  const el = document.getElementById('savings');
+  if(!el || !SV || !SV.segs.length) return;
+  const total = SV.segs.reduce((a, c) => a + c.v, 0);
+  if(total <= 0){ el.innerHTML = ''; return; }
+
+  // Largest remainder, so the labels sum to 100 rather than 99. Three
+  // rounded-down percentages that visibly do not add up is the kind of
+  // small wrongness that makes a reader distrust the large numbers.
+  const raw = SV.segs.map(sg => sg.v / total * 100);
+  const pct = raw.map(Math.floor);
+  let short = 100 - pct.reduce((a, c) => a + c, 0);
+  raw.map((r, i) => [r - Math.floor(r), i]).sort((a, b) => b[0] - a[0])
+     .forEach(([, i]) => { if(short > 0){ pct[i]++; short--; } });
+
+  const S = 210, C = S / 2, R = 92, GAP = 0.012;   // GAP: 2px-equivalent surface gap
+  let a0 = -Math.PI / 2;
+  const slices = SV.segs.map((sg, i) => {
+    const frac = sg.v / total;
+    const a1 = a0 + frac * Math.PI * 2;
+    const s = a0 + GAP, e = a1 - GAP;
+    const big = (e - s) > Math.PI ? 1 : 0;
+    const d = frac >= 0.9995
+      ? 'M ' + C + ' ' + (C - R) + ' A ' + R + ' ' + R + ' 0 1 1 ' + (C - 0.01) + ' ' + (C - R) + ' Z'
+      : ['M', C, C, 'L', (C + R * Math.cos(s)).toFixed(2), (C + R * Math.sin(s)).toFixed(2),
+         'A', R, R, 0, big, 1, (C + R * Math.cos(e)).toFixed(2), (C + R * Math.sin(e)).toFixed(2), 'Z'].join(' ');
+    const mid = (s + e) / 2;
+    const lx = C + R * 0.62 * Math.cos(mid), ly = C + R * 0.62 * Math.sin(mid);
+    a0 = a1;
+    return '<path d="' + d + '" fill="' + sg.c + '"/>'
+      + (frac > 0.08 ? '<text x="' + lx.toFixed(1) + '" y="' + (ly + 5).toFixed(1)
+         + '" text-anchor="middle" font-size="15" font-weight="700" fill="#0f1a2b">' + pct[i] + '%</text>' : '');
+  }).join('');
+
+  const key = SV.segs.map((sg, i) => '<li><i style="background:' + sg.c + '"></i><span>' + sg.n
+      + '</span><b>' + fmt(sg.v) + '</b><em>' + pct[i] + '%</em></li>').join('');
+
+  el.innerHTML = '<div class="card svwrap">'
+    + '<svg class="svpie" viewBox="0 0 ' + S + ' ' + S + '" width="' + S + '" height="' + S + '" role="img"'
+    + ' aria-label="${tj("sv.alt","Composition of annual savings this scope banks")}">' + slices + '</svg>'
+    + '<div class="svside"><p class="svtitle">${tj("sv.title","Where the banked saving comes from")}</p>'
+    + '<ul class="svkey">' + key + '</ul>'
+    + '<p class="svtot">${tj("sv.total","Banked annually")} <strong>' + fmt(total) + '</strong>'
+    + (SV.unbanked > 0 ? '<span>${tj("sv.unbankedNote","plus")} ' + fmt(SV.unbanked)
+        + ' ${tj("sv.unbankedTail","unlocked, not banked")}</span>' : '') + '</p>'
+    + '<p class="hint" style="margin:8px 0 0">${tj("sv.note","Faster cycle time, fewer supplier queries and avoided penalty exposure carry no slice, because this model does not price them.")} ' + notesLink() + '</p>'
+    + '</div></div>';
+}
+let svResize;
+window.addEventListener('resize', () => { clearTimeout(svResize); svResize = setTimeout(renderSavings, 150); });
 
 function fitTip(el){
   const t = el.querySelector('.tip'); if(!t) return;
@@ -1155,6 +1322,7 @@ function buildGantt(sel0, erp, pace){
   const REGORDER = ['Eu','Mi','As','Am'];
   const rows = [];
   const waveMeta = [];
+  WAVES = waveMeta;   // the PDF builds its wave table from this
   Object.keys(waveMap).sort().forEach(dl => {
     const members = [...waveMap[dl]].sort((a,b) => b[4]-a[4] || REGORDER.indexOf(a[2])-REGORDER.indexOf(b[2]) || a[0].localeCompare(b[0]));
     const lane = Array.from({length: lanes}, () => []);
@@ -1776,6 +1944,34 @@ function build(){
     \${!banked ? \`<div class="note" style="margin-top:12px">${tj("res.complianceOnly","Compliance-only, the normal shape. Counts what the integration itself delivers;")} \${fmt(l1Unbanked)} ${tj("res.complianceOnly3","more is the option it buys you for later.")} \${notesLink()}</div>\` : ''}
     <div class="note" style="margin-top:12px">${tj("res.tangible","Everything counted here is tangible. The intangible benefits are named above and carry no value on purpose.")} \${notesLink()}</div>\`;
 
+  // ---- savings composition ------------------------------------------
+  //
+  // Dan: "It might be useful to include a barchart summarising the savings
+  // from the project. I.e. x% from data entry reduction y% from tax
+  // preparation savings z% from improved invoice cycle time."
+  //
+  // Two notes on what this can honestly show. Cycle time is NOT in the
+  // bar, because this page deliberately does not price it — putting it in
+  // would mean inventing the number the rest of the model refuses to
+  // invent. It is named underneath with no bar, the same treatment it
+  // gets everywhere else here.
+  //
+  // And the unbanked remainder is a hatched band, not a fourth colour. It
+  // is not a category of saving, it is money this scope does not realise;
+  // a hue would seat it alongside the three that count. Hatched at 45
+  // degrees per the texture rule, which also survives greyscale printing.
+  //
+  // Part-to-whole with long category names, so: horizontal stacked bar.
+  // The three hues are stepped for this surface and validated against it
+  // AND white paper, because the same bar goes into the PDF.
+  SV = { segs: [
+    { k: 'sv1', c: '#399a6c', n: '${tj("sv.capture","Invoice capture and keying")}', v: bankedAP },
+    { k: 'sv2', c: '#c07d1c', n: '${tj("sv.issue","Invoice issuing (AR)")}',        v: savingAR },
+    { k: 'sv3', c: '#6b86d8', n: '${tj("sv.tax","Tax reporting and audit prep")}',  v: l2 },
+  ].concat(banked ? [{ k: 'sv4', c: '#b5432f', n: '${tj("sv.rework","Rework avoided")}', v: bankedErr }] : [])
+   .filter(x => x.v > 0), unbanked: Math.max(0, l1Unbanked) };
+  renderSavings();
+
   document.getElementById('evidence').innerHTML = \`
     <p style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:var(--soon);margin:0 0 8px">${tj("notes.h.reasoning","The reasoning")}</p>
     <div class="grid g2" style="margin-bottom:16px">
@@ -1882,6 +2078,112 @@ function build(){
   document.getElementById('guards').innerHTML = warn.length
     ? warn.map(w => \`<div class="note warn" style="margin:0 0 12px">\${w}</div>\`).join('')
     : '';
+
+  // ---- the two-page PDF ---------------------------------------------
+  // Built here, from the same variables that just rendered the page, so
+  // it cannot drift from what the reader saw. Page 1 is the findings and
+  // the wave plan; page 2 is every assumption and caveat, which is where
+  // Dan asked for them and also where they belong: a board reads page 1
+  // and a finance analyst turns over.
+  const pdfEl = document.getElementById('pdfdoc');
+  if(pdfEl){
+    const gantt = document.querySelector('#gantt svg');
+    const pieSvg = document.querySelector('#savings .svpie');
+    const kpi = (n, l) => '<div class="kpi"><div class="n">' + n + '</div><div class="l">' + l + '</div></div>';
+    const money = (v) => fmt(v);
+    const rows = SV.segs.map((sg, i) => '<li><i style="background:' + sg.c + '"></i><span>' + sg.n
+      + '</span><b>' + money(sg.v) + '</b><em>'
+      + Math.round(sg.v / SV.segs.reduce((a, c) => a + c.v, 0) * 100) + '%</em></li>').join('');
+    const when = new Date().toISOString().slice(0, 10);
+
+    pdfEl.innerHTML =
+      '<section class="pg">'
+      + '<div class="mast"><h1>${tj("pdf.title","E-Invoicing ROI<br>&amp; Wave Plan")}</h1>'
+      + '<div class="who">${tj("pdf.masthead","The E-Invoicing Compliance Corner")}<br>'
+      + sel.length + ' ${tj("pdf.jur","jurisdictions")} &middot; ' + volAP.toLocaleString() + ' AP / '
+      + volAR.toLocaleString() + ' AR<br>' + (banked ? '${tj("pdf.scopeBoth","Compliance + AP automation")}' : '${tj("pdf.scopeOnly","Compliance only")}')
+      + ' &middot; ' + when + '</div></div>'
+
+      + '<div class="kpis">'
+      + kpi(money(l1Banked + l2), '${tj("pdf.kpi1","Banked annually")}')
+      + kpi(money(oneOff), '${tj("pdf.kpi2","One-off investment")}')
+      + kpi(money(netAnnual), '${tj("pdf.kpi3","Net annual")}')
+      + kpi(paybackMonths === null ? 'n/a' : Math.round(paybackMonths) + ' mo', '${tj("pdf.kpi4","Payback")}')
+      + '</div>'
+
+      + '<h2>${tj("pdf.h.mix","Where the banked saving comes from")}</h2>'
+      + '<div class="pielay">' + (pieSvg ? pieSvg.outerHTML.replace(/width="\d+"/, 'width="150"').replace(/height="\d+"/, 'height="150"') : '')
+      + '<ul class="pkey">' + rows
+      + (l1Unbanked > 0 ? '<li><i style="background:repeating-linear-gradient(45deg,#888 0 2px,transparent 2px 5px);border:1px solid #999"></i><span>${tj("sv.unbanked","Unlocked, not banked")}</span><b>' + money(l1Unbanked) + '</b><em>&mdash;</em></li>' : '')
+      + '</ul></div>'
+
+      // The on-screen chart is 1000x1282 — portrait — so capping its height
+      // to fit the page squeezed it to a third of the width and it became
+      // an unreadable smear. A wave table is the right artefact on paper
+      // anyway: it is legible at 8pt, it fits, and it states the latest
+      // responsible start date, which the chart only implies through the
+      // position of a bar.
+      + '<h2>${tj("pdf.h.plan","Compliance wave plan")}</h2>'
+      + (WAVES.length ? '<table><thead><tr><th>${tj("pdf.th.golive","Go-live")}</th>'
+          + '<th>${tj("pdf.th.who","Jurisdictions")}</th><th class="num">${tj("pdf.th.n","No.")}</th>'
+          + '<th class="num">${tj("pdf.th.start","Latest responsible start")}</th>'
+          + '<th class="num">${tj("pdf.th.elapsed","Elapsed")}</th></tr></thead><tbody>'
+          + WAVES.map(wv => {
+              const who = ganttRows.filter(r => r.waveKey === wv.dl).map(r => r.c[0]);
+              const flag = wv.risk === 'critical' ? ' &#9888;' : '';
+              return '<tr><td><strong>' + wv.dl + '</strong>' + flag + '</td><td>'
+                + (who.length > 6 ? who.slice(0, 6).join(', ') + ' +' + (who.length - 6) : who.join(', '))
+                + '</td><td class="num">' + wv.n + '</td><td class="num">'
+                + wv.waveStart.toISOString().slice(0, 10) + '</td><td class="num">'
+                + Math.round(wv.elapsed) + 'w</td></tr>';
+            }).join('')
+          + '</tbody></table>' : '')
+      // Headlines only. Each guard opens with a bolded sentence that is the
+      // whole finding; the body after it is the explanation, which belongs
+      // with the other reasoning on page 2. Printing them whole cost 33mm
+      // and pushed page one onto a third page.
+      + (warn.length ? '<div class="note"><strong>${tj("pdf.flags","Flagged by the model:")}</strong> '
+          + warn.map(w => { const i = w.indexOf('<strong>'), j = w.indexOf('</strong>');
+                            const head = (i >= 0 && j > i) ? w.slice(i + 8, j) : w;
+                            return head.replace(/<[^>]+>/g, ''); }).join(' ')
+          + ' ${tj("pdf.flagsMore","Reasoning overleaf.")}</div>' : '')
+      + '<div class="foot">${tj("pdf.foot1","Mandate data is live from this site&rsquo;s tracker and traceable to each country&rsquo;s deep dive. Assumptions, sources and evidence grades are on page 2.")}</div>'
+      + '</section>'
+
+      + '<section class="pg">'
+      + '<div class="mast"><h1>${tj("pdf.title2","Assumptions<br>&amp; sources")}</h1>'
+      + '<div class="who">${tj("pdf.masthead","The E-Invoicing Compliance Corner")}<br>${tj("pdf.page2","Page 2 of 2")} &middot; ' + when + '</div></div>'
+      + '<h2>${tj("pdf.h.reasoning","The reasoning")}</h2>'
+      // Lifted from the panel that just rendered, rather than restated with
+      // its own copy of the strings. Two copies of the same paragraph is
+      // how the page ended up contradicting itself over Ardent, and an
+      // empty inline fallback would fail the fallback-parity check for a
+      // string that is not actually missing.
+      + '<div class="cards">'
+      + [...document.querySelectorAll('#evidence .grid.g2:first-of-type > .card')]
+          .map(c => '<div>' + c.innerHTML + '</div>').join('')
+      + '</div>'
+      + '<h2>${tj("pdf.h.figures","The figures this rests on")}</h2>'
+      + '<table><thead><tr><th>${tj("pdf.th.fig","Figure")}</th><th class="num">${tj("pdf.th.val","Value")}</th><th>${tj("pdf.th.src","Source")}</th><th>${tj("pdf.th.grade","Grade")}</th></tr></thead><tbody>'
+      + [['${tj("input.costNow","AP cost per invoice")}', fmt1(costNow), 'Ardent Partners 2025', 'A'],
+         ['${tj("input.costAR","AR cost per invoice")}', fmt1(costAR), 'ATO / Deloitte Access Economics', 'B'],
+         ['${tj("input.savePct","Cost reduction %")}', Math.round(savePct*100) + '%', 'HMRC / DBT consultation 2025', 'B'],
+         ['${tj("input.errRate","Manual error rate %")}', Math.round(errRate*100) + '%', 'HMRC / DBT consultation 2025', 'B'],
+         ['${tj("input.errElim","Errors eliminated %")}', Math.round(errElim*100) + '%', 'Our assumption, capped by Ardent exception gap', 'D'],
+         ['${tj("input.fteCost","Loaded cost / tax or finance FTE")}', fmt(fteCost), 'US BLS OEWS + ECEC', 'B'],
+         ['${tj("input.fteEntry","Loaded cost / data-entry FTE")}', fmt(fteEntry), 'US BLS OEWS + ECEC', 'B'],
+         ['${tj("pdf.fig.apfte","Invoices per AP FTE / year")}', TAXM.invPerFte.toLocaleString(), 'APQC Open Standards Benchmarking', 'A'],
+         ['${tj("pdf.fig.capture","Capture share of AP effort")}', Math.round(TAXM.captureShare*100) + '%', 'ATO / Deloitte task times', 'A'],
+         ['${tj("input.cImplS","Cost per SIMPLE integration")}', fmt(cImplS), '${tj("pdf.placeholder","Placeholder &mdash; replace with a vendor quote")}', 'D'],
+         ['${tj("input.cImplC","Cost per COMPLEX integration")}', fmt(cImplC), '${tj("pdf.placeholder","Placeholder &mdash; replace with a vendor quote")}', 'D'],
+         ['${tj("input.cPlat","Platform / network fees per year")}', fmt(cPlat), '${tj("pdf.derivedfee","Derived from your volumes &times; per-invoice fee")}', 'D'],
+         ['${tj("input.cRun","Internal run cost per year")}', fmt(cRun), '${tj("pdf.placeholder","Placeholder &mdash; replace with a vendor quote")}', 'D']]
+        .map(r => '<tr><td>' + r[0] + '</td><td class="num">' + r[1] + '</td><td>' + r[2] + '</td><td>' + r[3] + '</td></tr>').join('')
+      + '</tbody></table>'
+      + '<div class="note">${tj("pdf.grades","Grade A measured, primary and attributable &middot; B published by a credible body but unattributed within it &middot; C a single anecdote &middot; D our assumption, nothing claimed. Every D figure is exposed in the tool so it can be argued with rather than believed.")}</div>'
+      + '<div class="foot">${tj("footer.pdf","This tool models a business case; it is not tax, legal or investment advice. Figures marked D are assumptions, not benchmarks, and should be replaced with your own before any decision rests on them.")}</div>'
+      + '</section>';
+  }
 
   renderAdjust(sel);
 

@@ -10309,6 +10309,99 @@ assertions declared, 103 durable, 20 superseded. Migration generated from
 the renderer's own fallbacks rather than retyped.
 
 
+## 15 Aug 2026 (cont'd) — A pie, a two-page PDF, and fields that line up (migration 531)
+
+Three requests from Dan in one go.
+
+### 1. Alignment
+
+*"section 1 the field headings wrap sometimes causing the fields to appear
+at different heights."*
+
+Measured: the footprint row was **19px out** — a whole wrapped line — and
+the assumptions grids 1px. A reserved label height already existed, but
+only on `#assump`, and it was set *below* the natural two-line height so
+it never bound. Grid cells are now flex columns with a computed reserved
+height, applied to every grid. Checked at three widths, because the wrap
+point moves with the viewport.
+
+### 2. The pie
+
+*"It might be useful to include a barchart"* — corrected a minute later to
+*"I mean piechart, not barchart"*.
+
+Built as asked, with one compensation. The form guidance prefers a stacked
+bar for part-to-whole and objects to pies specifically for **comparing
+close values** — which this is: two slices are $195,000 and $194,667,
+0.2% apart and impossible to rank by angle. So every slice is
+direct-labelled with both its percentage and its value; the ranking is
+read from the labels and the shape carries the gist. That is the
+documented relief for this exact case rather than a workaround.
+
+**The palette was computed, not chosen.** The site's existing pill colours
+*failed* validation as a categorical set: above the lightness band, chroma
+below the floor, and green/amber only 13.0 apart on the normal-vision
+scale against a hard floor of 15 — two slices most people would struggle
+to tell apart. Re-stepped from the same hue families to worst-adjacent CVD
+8.4 and normal-vision 17.7, over 3:1 on **both** the dark card surface and
+white paper, because the same pie goes into the PDF. One palette, two
+surfaces, every check green.
+
+Percentages use largest-remainder so they sum to 100. Three rounded
+percentages that visibly total 99 is the small wrongness that makes a
+reader doubt the large numbers.
+
+Cycle time gets no slice — the page does not price it, and inventing a
+number for a chart is the one thing this model refuses to do. The unbanked
+remainder is not a slice either: it is not a component of the savings, and
+on a compliance scope it exceeds all three combined, so it would dominate
+a chart about savings with money the scope does not realise. It sits
+beside the pie.
+
+### 3. The PDF
+
+*"Rather than printing the page... a professionally oriented PDF download
+that summarises the page outputs... assumptions or caveats on page 2... no
+longer than 2 pages."*
+
+`#pdfdoc` is a separate two-page document built from the same variables at
+the same moment, with the entire interactive page suppressed. Page 1:
+masthead, four KPIs, the pie, the wave plan, flagged findings. Page 2: the
+four reasoning cards, a figure table with source and evidence grade for
+every input, and the disclaimer.
+
+**The on-screen wave chart is deliberately not in it.** That chart is
+1000×1282 — portrait — so capping its height to fit squeezed it to a third
+of the page width and it became an unreadable smear. A wave table is the
+better artefact on paper anyway: legible at 8pt, and it states the latest
+responsible start date, which the chart only implies through the position
+of a bar.
+
+Three bugs on the way, each worth remembering. `#pdfdoc` was nested inside
+`.wrap`, which the print rule hides wholesale — the first PDF was blank.
+The wave chart carries `min-width:820px` for screen, wider than A4 minus
+margins, so it clipped both edges. And `table{color:var(--text-lo)}` beat
+the colour set on `body`, so every cell printed at about 8% ink.
+
+Verified by generating real PDFs across four shapes — 51 jurisdictions,
+both scopes, a million invoices, a single country — all two pages.
+
+### Verification
+
+`npm test`: 8 suites, all passing. ROI regression **97 checks** (was 81).
+Sixteen new: field baselines at three widths; the pie's slice count,
+percentage sum, direct labels, and that nothing unpriced is charted; the
+PDF's page count, what is on each page, that the reasoning is *not* on
+page 1, that the interactive page is suppressed in print, and that both
+pages fit inside A4's 271mm. Contrast clean. Replay: 127 assertions
+declared, 106 durable, 21 superseded.
+
+Two test bugs fixed in passing: the prose budget counted `#pdfdoc` because
+`innerText` falls back to `textContent` for a `display:none` element, and
+`sv.unbanked` was used with two different capitalisations, which the
+string extractor silently resolved to whichever it met first.
+
+
 ## Open items / next steps
 
 ### Real open work
