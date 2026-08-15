@@ -11160,6 +11160,100 @@ standing invariant keeps the three summary labels free of the idiom — it
 is a natural phrase to reach for when editing a stat about money kept.
 
 
+## 15 August 2026 (cont'd) — "Banked" leaves the page, and the cost side is spelled out (migration 544)
+
+Dan: *"1) yes, please relabel to savings generally where banked is used. so
+long as it makes sense in the sentence context. 2) please explicitly under
+One-off investment, state the implementation (cost) + annual saas (cost).
+This will make the net annual savings amount easier to decode."*
+
+### The relabel, judged per sentence
+
+543 fixed three summary labels and left ten live strings using the idiom.
+This finishes it — and *"so long as it makes sense in the sentence
+context"* is why it is eleven separate rewrites rather than a
+find-and-replace:
+
+```
+'Banks on this scope'         -> 'Saved on this scope'
+'What compliance alone banks' -> 'What compliance alone saves'
+'banks in full on either'     -> 'is saved in full on either'
+'it stays unbanked even on'   -> 'it is not counted as saved, even on'
+'banks from the integration'  -> 'is saved from the integration'
+'Unlocked, not banked'        -> 'Available on a wider scope'
+```
+
+A blind replace would have produced "saves from the integration itself"
+and "it stays unsaved", both wrong English, and "Unlocked, not saved" —
+worse than the original, because *unlocked but not saved* invites the
+question the phrase exists to answer.
+
+### The three tags that were never translatable
+
+543's comment flagged that `banks`, `not banked` and the `43% banks`
+construction were English **literals in the template**, not D1 rows, so no
+translation could reach them. Relabelling meant touching those lines
+anyway, so they are now `tag.saved` and `tag.notSaved`. The percentage tag
+composes the number with the same `tag.saved` row rather than carrying its
+own copy of the word.
+
+**That closed the i18n gap at the point it was found rather than logging
+it. It was three lines of code.**
+
+### help.scope was not idiomatic — it was wrong
+
+It read: *"it unlocks the direct savings but does not bank them, because
+nothing about AP actually changes."*
+
+That describes the **pre-528 model**, where compliance-only multiplied the
+entire direct total by zero. Since 528 a compliance-only programme saves
+capture and issuing — $518,125 of $1,215,480 at the defaults — and this
+tooltip has been telling readers the opposite, on the one control that
+changes both the totals and the timeline.
+
+**Second time this week that prose outlived the model it described**,
+after "(compliance scope)" in 541. Both found by a reader asking what
+something meant. Worth stating plainly: *the test suite cannot see stale
+prose.* It is 166 checks deep and blind to the class of defect that has
+now produced two migrations in two days.
+
+### The cost side, stated where the reader needs it
+
+The One-off stat carries two sub-lines: what the big number **is**
+("implementation"), and the recurring money it is **not** ("plus each
+year: $60,000 platform + $30,000 internal", each with its tooltip).
+
+Dan's reason is the right one — it makes the net figure decode without
+hunting. Annual saving $518,125, less the two running costs immediately
+beside it, is net annual saving $428,125. **Three of the five stats now
+reconcile against each other inside the grid.**
+
+The bridge note gives those figures up, because they would otherwise be
+stated twice within four lines. 542 put them in the note precisely because
+the grid had no room; the grid has made room. `sum.bridge`, `bridge3`,
+`bridge4` and `bridge5` are orphaned — four keys, one day old.
+
+### A CSS class-name collision, found by measuring
+
+The sub-lines were first written as `.sub` / `.sub2`. **members-worker's
+own page shell defines a global `.sub`** at 13.8px in #4a4030 — a dark
+brown sized for its paper surfaces — and the ROI page inherits that
+stylesheet. Silent collision: the sub-label rendered 38% larger than the
+label above it with a 22px margin nobody asked for, and it looked like a
+deliberate hierarchy rather than a bug. Caught by reading computed styles
+rather than the screenshot. Renamed `.statwhat` / `.statrun`.
+
+**The ROI page is not the only author of its stylesheet**, which is worth
+remembering the next time a class is added here.
+
+### Verified
+
+`npm test`: 8 suites, all passing. ROI regression **166 checks**. PDF
+still two pages. A standing invariant now rejects the idiom across every
+roi string, excluding the orphans by name so they keep their original
+wording as a record.
+
+
 ## Open items / next steps
 
 ### Where things stand — 15 August 2026
