@@ -10404,6 +10404,74 @@ string extractor silently resolved to whichever it met first.
 
 ## Open items / next steps
 
+### Where things stand — 15 August 2026
+
+The current list, in the order I would pick things up. Everything below
+this block is historical narrative kept for context; this is the live
+state.
+
+1. **Two waves per EU member state.** A member state with both a
+   national deadline and the 2030 ViDA obligation is only ever scheduled
+   for the earlier one. The last substantive item from the original
+   design review. The data has been in place since `obligation_status`
+   shipped (migration 520) — what is left is a decision, because it
+   changes the planner's output for every EU member state. Denmark,
+   Portugal and Brazil are currently *named on the page* by guard 3
+   rather than silently mis-scheduled, so the symptom is disclosed and
+   the cause is not fixed.
+
+2. **A deliberate sweep for dead data.** Four instances surfaced by
+   accident in one week: `cycle_time_days` and `exception_rate` (two
+   grade-A benchmarks cited on the evidence card that no consumer read),
+   `platform_cost_year`, `btn.recalculate`, and six `res.*` keys
+   orphaned by the caveat rewrite. The schema cannot express "nothing
+   consumes this", so a retired row and a live one look identical. There
+   is now a standing invariant for active grade-A benchmarks — it has
+   caught its own author three times — but it is a hand-maintained
+   allowlist over one table. An afternoon of mechanical checking against
+   `roi_benchmarks`, the `roi` translation namespace and `roi_phases`
+   would close the rest.
+
+3. **Whether the planner should schedule from `obligation_status`
+   rather than `on_tracker`.** `on_tracker` is a presentation flag;
+   `obligation_status` exists precisely so a consumer can ask for real
+   obligations directly, and no consumer does yet. Deliberately left
+   alone since it shipped, but pending long enough to be worth closing
+   either way.
+
+4. **The 179 `unreviewed` milestones.** Off the board, past-dated,
+   honestly labelled as not yet read. Nothing plans against them, so
+   there is no urgency — but the column exists to be emptied.
+
+5. **`ROI_PUBLIC = "false"`.** The planner is still members-only. A
+   product decision, not a technical one.
+
+6. **`fetch_applied(...) or {}` in the migration runner.** An unreadable
+   `schema_migrations` prints the same "No checksum drift" as a
+   genuinely clean tree. Two very different states, one reassuring
+   message. Small, and exactly the shape of defect this project keeps
+   finding.
+
+7. **No CI.** Still the single most valuable thing missing, and still
+   the same argument: every defence built since 13 August is opt-in and
+   runs when a human remembers. `npm test` plus
+   `apply_migrations.py --remote --assert-only` on a schedule would
+   finish what the test work started.
+
+**Worth recording about the week of 14–15 August**, because it changes
+what the tests are for. The ROI planner's economics were substantially
+rebuilt across migrations 522–531, and *almost every defect corrected
+was found by Dan asking where a number came from* — not by a test
+failing. The indirect saving did not scale with volume at all. One field
+priced both a tax professional and a mailroom clerk. The rework row
+rested on a hardcoded `0.8` no control could reach. Compliance-only —
+the scope every real customer picks — multiplied the entire direct total
+by zero. The suites were green throughout all of it.
+
+The tests defend against *regression*. They cannot defend against a
+model that was wrong the day it was written. That is an argument for the
+product owner staying close to the output, not for more tests.
+
 ### Real open work
 
 1. **Coverage expansion** — Netherlands, Austria, Greece, Cyprus, Oman,
