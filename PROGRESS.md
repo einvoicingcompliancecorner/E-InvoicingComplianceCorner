@@ -10402,6 +10402,92 @@ Two test bugs fixed in passing: the prose budget counted `#pdfdoc` because
 string extractor silently resolved to whichever it met first.
 
 
+## 15 August 2026 (cont'd) — Two waves per EU member state (migration 532)
+
+The last substantive recommendation from the design review, and the
+oldest one on the list.
+
+An EU member state with a national deadline before July 2030 has **two**
+obligations. The planner scheduled only the first. Germany is the case
+the review named: a 4-corner exchange build in January 2027, scored
+**simple**, and then ViDA's digital reporting requirement in July 2030,
+which is **complex**. The tool showed the easier, nearer build and hid
+the harder, later one.
+
+Not just Germany — **fourteen member states**, over half of those
+tracked. Estonia, Germany, Luxembourg and Slovenia all run a simple
+regime today and face complex work in 2030, so for them the hidden wave
+is not merely later, it is harder.
+
+### The mistake made on the way in
+
+My first pass derived the second wave client-side from the country tuple
+and got **16** countries — it had swept in Norway and the United
+Kingdom, which sit in this site's Europe *region* and are not bound by
+ViDA at all. The tuple carries `euDriven` (set only when the deadline
+*came from* the EU row) but not `eu_member`, so the distinction was not
+expressible where I was standing.
+
+Caught by checking the list against the database rather than reading it
+approvingly. The second date is now computed in `getRoiCountries()`,
+where `eu_member` is in scope, and there is a standing invariant that no
+non-member ever acquires `eu_member = 1`.
+
+### What a second wave costs
+
+Dan's call from three options, with numbers on each: **half a complex
+integration**. Vendor selection and contracting are already modelled as
+programme-level and do not repeat; by 2030 the platform, the access-point
+connection and the master data exist. What is genuinely new is the
+reporting extract, the transmission to the tax authority, and testing it.
+
+EU preset: one-off **$570,000 → $710,000**, payback 12 → 15 months. A
+full second integration each would have been $850,000, which charges
+twice for a platform bought once; costing it at zero would have shown the
+deadline and denied the work. The ratio is grade D in D1, so it is
+argued with like every other assumption here rather than buried in the
+renderer.
+
+Weights are summed and rounded **up** into integration counts — half an
+integration is not a thing anyone can buy, and rounding down would let a
+lone second wave cost nothing.
+
+### One row per obligation, not per country
+
+The second track is a copy carrying its own deadline, its own complexity
+(ViDA is a DRR, so complex regardless of the national regime) and its own
+cost weight. It takes a distinct **name** — "Germany (ViDA)" — rather
+than a parallel track identifier, because the name is already the key for
+the chart labels, the wave table, the PDF and the adjust panel's
+overrides. Threading a track id through all of those would have been a
+lot of surface for nothing.
+
+`penalty_rows` is zeroed on the second track, so Germany is not counted
+twice in "how many of your jurisdictions publish a penalty schedule".
+
+Each obligation is separately adjustable, which is the point of two rows
+over an annotation: you can move Germany's ViDA wave without touching its
+2027 build.
+
+### Verification
+
+`npm test`: 8 suites, all passing. ROI regression **103 checks** (was
+97). Six new: fourteen member states get a second wave; Germany is one;
+Norway and the UK are not; both of Germany's obligations are scheduled in
+different waves; a second wave costs half a build; each is separately
+adjustable.
+
+The migration asserts the population **against the data** rather than
+against a number counted once — an EU member with a national B2B deadline
+earlier than the EU-wide one — so if a future country build changes the
+set, the count moves and the assertion says so. The alternative is a
+feature that silently stops applying to somebody.
+
+PDF still two pages. One cosmetic fix: the wider jurisdictions column had
+started wrapping the ISO dates beside it, which reads as a data error
+rather than a layout one.
+
+
 ## Open items / next steps
 
 ### Where things stand — 15 August 2026
@@ -10410,17 +10496,11 @@ The current list, in the order I would pick things up. Everything below
 this block is historical narrative kept for context; this is the live
 state.
 
-1. **Two waves per EU member state.** A member state with both a
-   national deadline and the 2030 ViDA obligation is only ever scheduled
-   for the earlier one. The last substantive item from the original
-   design review. The data has been in place since `obligation_status`
-   shipped (migration 520) — what is left is a decision, because it
-   changes the planner's output for every EU member state. Denmark,
-   Portugal and Brazil are currently *named on the page* by guard 3
-   rather than silently mis-scheduled, so the symptom is disclosed and
-   the cause is not fixed.
+~~1. **Two waves per EU member state.**~~ **Done 15 Aug 2026, migration
+   532.** Fourteen member states now carry a second, ViDA 2030 track at
+   half a complex integration each. See the entry above.
 
-2. **A deliberate sweep for dead data.** Four instances surfaced by
+1. **A deliberate sweep for dead data.** Four instances surfaced by
    accident in one week: `cycle_time_days` and `exception_rate` (two
    grade-A benchmarks cited on the evidence card that no consumer read),
    `platform_cost_year`, `btn.recalculate`, and six `res.*` keys
@@ -10432,27 +10512,27 @@ state.
    `roi_benchmarks`, the `roi` translation namespace and `roi_phases`
    would close the rest.
 
-3. **Whether the planner should schedule from `obligation_status`
+2. **Whether the planner should schedule from `obligation_status`
    rather than `on_tracker`.** `on_tracker` is a presentation flag;
    `obligation_status` exists precisely so a consumer can ask for real
    obligations directly, and no consumer does yet. Deliberately left
    alone since it shipped, but pending long enough to be worth closing
    either way.
 
-4. **The 179 `unreviewed` milestones.** Off the board, past-dated,
+3. **The 179 `unreviewed` milestones.** Off the board, past-dated,
    honestly labelled as not yet read. Nothing plans against them, so
    there is no urgency — but the column exists to be emptied.
 
-5. **`ROI_PUBLIC = "false"`.** The planner is still members-only. A
+4. **`ROI_PUBLIC = "false"`.** The planner is still members-only. A
    product decision, not a technical one.
 
-6. **`fetch_applied(...) or {}` in the migration runner.** An unreadable
+5. **`fetch_applied(...) or {}` in the migration runner.** An unreadable
    `schema_migrations` prints the same "No checksum drift" as a
    genuinely clean tree. Two very different states, one reassuring
    message. Small, and exactly the shape of defect this project keeps
    finding.
 
-7. **No CI.** Still the single most valuable thing missing, and still
+6. **No CI.** Still the single most valuable thing missing, and still
    the same argument: every defence built since 13 August is opt-in and
    runs when a human remembers. `npm test` plus
    `apply_migrations.py --remote --assert-only` on a schedule would
