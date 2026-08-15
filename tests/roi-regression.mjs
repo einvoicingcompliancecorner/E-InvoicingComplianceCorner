@@ -1089,5 +1089,38 @@ t.check("and the banked total is the figure section 4 now shows, not one only se
   net538.banked > 0 && net538.banked === net538.net + net538.run,
   `${net538.banked} vs ${net538.net}+${net538.run}`);
 
+
+// ---- 32. the scope is stated once, and where the figures are ----
+// Dan: "what does 'Net annual (compliance scope)' mean?" — a label whose
+// job is preventing confusion, asked about by the person who commissioned
+// the page. It was a survivor from the pre-528 model, where compliance
+// scope zeroed every direct saving and the parenthetical warned you were
+// looking at the crippled figure. 528 fixed the model; the label outlived
+// it by thirteen migrations.
+//
+// Dropping it is only safe while the bold "Scope:" note beneath the grid
+// carries the fact, so that is what this asserts — plus the consistency
+// problem the parenthetical had: three stats move with scope and only one
+// was ever labelled.
+for (const scope of ["compliance", "both"]) {
+  await page.selectOption("#scope", scope);
+  await page.click("#run"); await page.waitForTimeout(800);
+  const labels = await page.evaluate(() => [...document.querySelectorAll("#summary .stat")]
+    .map((e) => e.querySelector(".l").textContent.replace(/\s+/g, " ").trim()));
+  t.check(`${scope}: no stat carries a scope parenthetical`,
+    labels.every((l) => !/\(compliance scope\)/i.test(l)), labels.join(" | "));
+  const note = await page.locator("#summary .note:not(.warn)").innerText();
+  t.check(`${scope}: the note states which scope the figures are on`,
+    /^\s*Scope:/i.test(note), note.slice(0, 70));
+}
+// And the thing the parenthetical was half-doing: the reader can still
+// see that these figures move with scope, because the note quantifies
+// what compliance-only leaves on the table.
+await page.selectOption("#scope", "compliance");
+await page.click("#run"); await page.waitForTimeout(800);
+t.check("and on compliance scope it quantifies what is excluded",
+  /needs a change programme you are not running/.test(
+    await page.locator("#summary .note:not(.warn)").innerText()));
+
 await browser.close();
 process.exit(t.report() ? 0 : 1);
