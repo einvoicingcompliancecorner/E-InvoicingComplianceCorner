@@ -11452,6 +11452,87 @@ cannot go up. Verified it bites by hardcoding a column header.
 hardcoded 2. PDF still exactly two pages.
 
 
+## 15 August 2026 (cont'd) — The ROI page's English is all in D1 (migrations 548-554)
+
+Dan: *"Please can you action '1 · Finish moving the ROI page's English
+into D1 days, not hours'"*, having first asked whether to switch models
+for it. The answer given was that the dominant cost is accumulated
+codebase context rather than reasoning difficulty — six named traps in
+this repo that a fresh session rediscovers by breaking them.
+
+**Result: 166 hardcoded strings → 0**, across seven migrations.
+
+### The design decision, taken before any code
+
+Dan chose the **positional formatter** over fragment-by-fragment. That
+choice is the whole shape of the work. This page built prose by
+concatenating English around computed values; split into rows, each
+fragment is translatable and the sentence is not, because word order
+moves between languages and no translator can reorder pieces JavaScript
+joins in a fixed sequence. The result would look finished and be
+unusable.
+
+One row holds the whole sentence with `{0}` slots and `fill()` substitutes
+them. Ten slots in `basis.tax` is a symptom of the sentence doing real
+work, not of the approach failing.
+
+### Plurals: sixteen rows, eight nouns
+
+Nine places did `n===1?'':'s'`. English pluralises by suffix and nothing
+else does. Each countable noun is now two rows and the count picks one;
+**nothing in the code decides plurality any more.** The rework row had
+been rendering "errored invoices" with no singular branch at all —
+correct at every volume the page has been run at, wrong at exactly one
+invoice.
+
+### The bugs the work surfaced
+
+- **The assumptions chevron.** The panel wrote its toggle label in two
+  places: the server-rendered HTML used `assumptions.show` from D1, and
+  the click handler wrote `'hide ▴'` as a literal. **The first render was
+  translated and every render after a click was not.** The hardest i18n
+  bug to find by reading: the string exists, the key exists, the key is
+  used, and a second code path quietly overwrites it. Migration 549 had
+  caught the identical literal on the notes panel — a fix applied to the
+  instance rather than the pattern.
+- **A quoting trap that stated the rule.** The EU-wide note was first
+  written with its markup inside the translated value; the attribute's
+  own double quote closed the fallback string and the file stopped
+  parsing. Escaping harder would have worked and been wrong. **A
+  translatable row should contain language, not presentation** — now a
+  standing invariant that no `roi` row contains a `style=` attribute.
+- **`fill()`'s regex silently matched nothing.** Written `/\{(\d+)\}/`
+  inside the client-script template literal, where `\d` collapses to `d`.
+  Every slot rendered as a literal `{0}`. Same escaping trap as `[\s\S]`
+  in 523.
+
+### The detector was wrong three times, always toward alarm
+
+It reported all 25 help keys as dead (call sites use double quotes, the
+regex matched single). It reported 4 of 7 phases as dead (reached through
+a map, never by literal). It reported `source_year` as hardcoded (a D1
+column the harness was not stubbing). **Three errors in the direction of
+alarm, none in the direction of comfort** — the right way round for a tool
+whose output drives deletions.
+
+### What is finished, and what is not
+
+The inventory is empty and the suite fails if that stops being true.
+**That is not the same as the page being translatable**, and the
+distinction matters: 278 rows exist in English only, the plural rules are
+two-form (right for English, German, Spanish, French; wrong for Polish
+and Arabic), and no date or number formatting is localised.
+
+**What is finished is the extraction. What remains is translation — now a
+data job rather than a code job, which was the entire point.**
+
+### Verified
+
+`npm test`: 9 suites, all passing. ROI regression 172, i18n 7, hardcoded
+2. PDF still exactly two pages. Detector verified to bite by hardcoding a
+table heading.
+
+
 ## Open items / next steps
 
 ### Where things stand — 15 August 2026

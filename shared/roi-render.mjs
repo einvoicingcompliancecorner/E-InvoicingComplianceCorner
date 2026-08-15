@@ -758,7 +758,7 @@ export function renderRoiPage({ countries, benchmarks = [], phases = [], strings
     const b = byKey[k];
     if (!b) return { t: "D", s: "" };
     const yr = b.source_year ? ` <span style="opacity:.75">(${b.source_year})</span>` : "";
-    const link = b.source_url ? ` <a href="${b.source_url}" style="color:#241d10">source</a>` : "";
+    const link = b.source_url ? ` <a href="${b.source_url}" style="color:#241d10">${t("ev.sourceLink","source")}</a>` : "";
     return { t: b.evidence_grade, s: `${b.citation || ""}${yr}${link}` };
   };
   const evidence = {
@@ -784,9 +784,9 @@ export function renderRoiPage({ countries, benchmarks = [], phases = [], strings
     rework: cite("rework_per_error"),
     errElim: cite("error_elimination_pct"),
     excGap: cite("exception_reduction_pp"),
-    durations: { t: "D", s: "Phase durations are practitioner estimates for a country rollout once a platform is in place, held in D1 and editable above. No analyst firm publishes credible per-country e-invoicing implementation durations — this was checked." },
-    yours: { t: "D", s: "Your assumption. Nothing is claimed for this figure — it is exposed so the model can be argued with rather than believed." },
-    site: { t: "A", s: "Live mandate data from this site's own tracker: status, model and dated deadlines per jurisdiction, each traceable to the cited legal instrument on that country's deep dive." },
+    durations: { t: "D", s: t("ev.durations.body", "Phase durations are practitioner estimates for a country rollout once a platform is in place, held in D1 and editable above. No analyst firm publishes credible per-country e-invoicing implementation durations &mdash; this was checked.") },
+    yours: { t: "D", s: t("ev.yours.body", "Your assumption. Nothing is claimed for this figure &mdash; it is exposed so the model can be argued with rather than believed.") },
+    site: { t: "A", s: t("ev.site.body", "Live mandate data from this site&rsquo;s own tracker: status, model and dated deadlines per jurisdiction, each traceable to the cited legal instrument on that country&rsquo;s deep dive.") },
   };
   const chartPhases = phases.map((p) => ({ k: p.key, n: p.name, w: p.default_weeks, c: p.colour,
                                            prog: !!p.is_programme, scope: p.scope }));
@@ -1018,6 +1018,35 @@ const CUR_INPUTS = ['costNow','costAR','errCost','fteCost','fteEntry','cImplS','
 // 45,888.53 for a placeholder implies a precision nobody has.
 const roundCur = v => v >= 1000 ? Math.round(v) : Math.round(v*100)/100;
 const usdDefault = {}, usdCurrent = {};
+// ---- positional slots, so a sentence can survive translation --------
+//
+// Dan chose this over fragment-by-fragment when the hardcoded-string
+// detector found 103 of these. The problem it solves: this page builds
+// prose by concatenating English around computed values, e.g.
+//
+//   'Across ' + n + ' jurisdictions you have ' + x + ' complex...'
+//
+// Split into rows, each fragment is translatable and the sentence is
+// not, because word order moves between languages and a translator
+// cannot reorder pieces that JavaScript joins in a fixed sequence. One
+// row holding the whole sentence with {0}-style slots can be reordered
+// freely -- the slot carries its meaning with it.
+//
+// Slots may contain HTML: several of these wrap their value in <strong>,
+// and the substitution is textual so that keeps working. Unmatched slots
+// are left visible rather than blanked, because "{3}" on screen is a bug
+// report and an empty gap is not.
+//
+// NOT called fmt: that is the money formatter, three lines below.
+const fill = (tpl, ...a) => String(tpl).replace(/\\{(\\d+)\\}/g,
+  (m, i) => a[i] === undefined ? m : a[i]);
+// English pluralises by adding an s, which is why this codebase did it
+// with a ternary on n===1 in nine places. No other language works that way,
+// and half of them inflect the surrounding words too. Two rows per noun
+// is the smallest honest fix: the sentence template holds a slot, and
+// the slot is filled with whichever row the count selects. Languages
+// with more than two plural forms need more rows, not different code.
+const plur = (n, one, many) => (n === 1 ? one : many);
 const fmt = n => SYM[cur] + Math.round(n).toLocaleString('en-US');
 // Two decimals, not one. This formats per-invoice costs and nothing else,
 // and at one decimal the AP baseline printed as "$9.8" while the row was
@@ -1031,7 +1060,7 @@ const fmt1 = n => SYM[cur] + n.toLocaleString('en-US', { minimumFractionDigits: 
 // A = measured, primary, attributable      B = published by a credible body but unattributed within it
 // C = single anecdote, not a benchmark     D = your assumption, nothing claimed
 const EV = __ROI_EVIDENCE__;
-const ev = (key, txt) => \`<span class="ev" tabindex="0">\${txt}<span class="tip"><b>Evidence grade \${EV[key].t}</b>\${EV[key].s}</span></span>\`;
+const ev = (key, txt) => \`<span class="ev" tabindex="0">\${txt}<span class="tip"><b>\${fill('${tj("ev.gradeLabel","Evidence grade {0}")}', EV[key].t)}</b>\${EV[key].s}</span></span>\`;
 
 // ---- tooltip edge handling -------------------------------------------
 // A 330px tooltip anchored left:0 runs off the RIGHT edge whenever its
@@ -1169,7 +1198,7 @@ function markOverridden(){
   });
 }
 document.getElementById('assump').addEventListener('toggle', e => {
-  document.getElementById('assumpChevron').innerHTML = e.target.open ? 'hide &#9652;' : 'show &#9662;';
+  document.getElementById('assumpChevron').innerHTML = e.target.open ? '${t("assumptions.hide","hide &#9652;")}' : '${t("assumptions.show","show &#9662;")}';
 });
 document.getElementById('resetDefaults').onclick = () => {
   Object.entries(DEFAULTS).forEach(([id,d]) => { const el = document.getElementById(id); if(el) el.value = d.v; });
@@ -1222,7 +1251,7 @@ function applyCurrency(next){
     // migration 513 existed because a material warning about this control
     // sat behind a hover instead of in front of the reader.
     note.innerHTML = next === 'USD' || !f
-      ? 'Benchmark defaults are published in US dollars.'
+      ? '${tj("fx.usdNote","Benchmark defaults are published in US dollars.")}'
       : \`Converted at a <strong>fixed rate</strong> of 1 \${next} = \${f.r} USD\${f.asOf ? ', spot ' + f.asOf : ''} &mdash; not updated daily. \${ev('yours','Use your own treasury rate for anything you will sign')}\`;
   }
   // recalcPlat() rather than markOverridden() directly: the platform fee's
@@ -1324,7 +1353,7 @@ function setSubsAvailable(on){
   subsBox.disabled = !on;
   subsRow.style.opacity = on ? '1' : '.55';
   document.getElementById('subsCount').textContent = on
-    ? \`(\${MOCK_SUBSCRIBED.length}) — from your saved preferences\`
+    ? fill('${tj("subs.fromSaved","({0}) — from your saved preferences")}', MOCK_SUBSCRIBED.length)
     : '— ${t("subs.locked","sign in to use your saved countries")}';
 }
 // Initialise from the unlock state, NOT unconditionally false. On the
@@ -1549,7 +1578,7 @@ function buildGantt(sel0, erp, pace){
   const H = HEAD + (RH+GAP)*(bodyRows + 2 + undatedRows) + 16;
   const x = t => L + ((t - X0)/(X1 - X0))*(W - L - R);
 
-  let s = \`<svg viewBox="0 0 \${W} \${H}" width="100%" style="min-width:820px;display:block" role="img" aria-label="Back-planned delivery timeline by jurisdiction">\`;
+  let s = \`<svg viewBox="0 0 \${W} \${H}" width="100%" style="min-width:820px;display:block" role="img" aria-label="${tj("chart.alt","Back-planned delivery timeline by jurisdiction")}">\`;
   // quarter gridlines
   let q = new Date(Date.UTC(t0.getUTCFullYear(), Math.floor(t0.getUTCMonth()/3)*3, 1));
   while(q.getTime() < X1){
@@ -1565,11 +1594,11 @@ function buildGantt(sel0, erp, pace){
   s += \`<text x="0" y="\${y+15}" fill="#e2b978" font-family="'IBM Plex Mono',monospace" font-size="9.5" letter-spacing="1">PROGRAMME</text>\`;
   y += RH + GAP;
   let pt = progBegin.getTime();
-  s += \`<text x="0" y="\${y+15}" fill="#f2f0e8" font-size="12">Select &amp; contract</text>\`;
+  s += \`<text x="0" y="\${y+15}" fill="#f2f0e8" font-size="12">${tj("chart.procure","Select &amp; contract")}</text>\`;
   progPhases.forEach(p => {
     const e = addW(new Date(pt), p.weeks);
     const x1 = x(pt), x2 = x(e.getTime());
-    s += \`<rect x="\${x1+1}" y="\${y+4}" width="\${Math.max(2,x2-x1-2)}" height="\${RH-8}" rx="3" fill="\${p.c}"><title>\${p.n} — \${p.weeks} weeks (\${isoD(new Date(pt))} to \${isoD(e)})\\nProgramme-level: run once, not per country.</title></rect>\`;
+    s += \`<rect x="\${x1+1}" y="\${y+4}" width="\${Math.max(2,x2-x1-2)}" height="\${RH-8}" rx="3" fill="\${p.c}"><title>\${fill('${tj("chart.progTip","{0} — {1} weeks ({2} to {3})")}', p.n, p.weeks, isoD(new Date(pt)), isoD(e))}\\n${tj("chart.progNote","Programme-level: run once, not per country.")}</title></rect>\`;
     pt = e.getTime();
   });
   s += \`<text x="\${x(pt)+6}" y="\${y+16}" fill="#93a3c0" font-family="'IBM Plex Mono',monospace" font-size="9.5">\${progWeeks}w</text>\`;
@@ -1608,12 +1637,12 @@ function buildGantt(sel0, erp, pace){
         ? members[0].c[12] + ' ${tj("wave.members","MEMBER STATES")} &middot; ' + wm.elapsed + 'W'
         : wm.n + ' ' + (wm.n===1?'${tj("wave.jur","JURISDICTION")}':'${tj("wave.jurs","JURISDICTIONS")}') + ' &middot; ' + wm.elapsed + 'W';
       s += \`<text x="88" y="\${y+15}" fill="#93a3c0" font-family="'IBM Plex Mono',monospace" font-size="9">\${metaTxt}</text>\`;
-      s += \`<rect x="\${x1+1}" y="\${y+4}" width="\${Math.max(2,x2-x1-2)}" height="\${RH-8}" rx="3" fill="#3d5a86"><title>Wave \${wm.dl} — \${wm.n} jurisdiction\${wm.n===1?'':'s'}, \${wm.effort}w effort, \${wm.elapsed}w elapsed\${lanes>1&&wm.n>1?\` across \${Math.min(lanes,wm.n)} lanes\`:''}\n\${names.join(', ')}</title></rect>\`;
+      s += \`<rect x="\${x1+1}" y="\${y+4}" width="\${Math.max(2,x2-x1-2)}" height="\${RH-8}" rx="3" fill="#3d5a86"><title>\${fill('${tj("chart.waveTip","Wave {0} — {1}, {2}w effort, {3}w elapsed{4}")}', wm.dl, wm.n + ' ' + plur(wm.n, '${tj("word.jur","jurisdiction")}', '${tj("word.jurs","jurisdictions")}'), wm.effort, wm.elapsed, lanes>1&&wm.n>1 ? fill('${tj("chart.acrossLanes"," across {0} lanes")}', Math.min(lanes,wm.n)) : '')}\n\${names.join(', ')}</title></rect>\`;
       const gx = x(wm.golive.getTime());
-      s += \`<polygon points="\${gx},\${y+3} \${gx+7},\${y+RH/2} \${gx},\${y+RH-3} \${gx-7},\${y+RH/2}" fill="#efe9db" stroke="#0f1a2b" stroke-width="2"><title>Wave go-live — mandate deadline \${wm.dl}</title></polygon>\`;
+      s += \`<polygon points="\${gx},\${y+3} \${gx+7},\${y+RH/2} \${gx},\${y+RH-3} \${gx-7},\${y+RH/2}" fill="#efe9db" stroke="#0f1a2b" stroke-width="2"><title>\${fill('${tj("chart.goliveTip","Wave go-live — mandate deadline {0}")}', wm.dl)}</title></polygon>\`;
       const ICON = {critical:'\u25b2', warning:'\u25cf', good:'\u2713'};
       const COL  = {critical:'#e0907f', warning:'#e2b978', good:'#7fd0a8'};
-      s += \`<text x="\${W-R+8}" y="\${y+15}" fill="\${COL[wm.risk]}" font-size="11">\${ICON[wm.risk]}<title>\${wm.risk === 'critical' ? 'Latest responsible start is in the past' : wm.risk === 'warning' ? 'Starts within 3 months' : 'Comfortable runway'}</title></text>\`;
+      s += \`<text x="\${W-R+8}" y="\${y+15}" fill="\${COL[wm.risk]}" font-size="11">\${ICON[wm.risk]}<title>\${wm.risk === 'critical' ? '${tj("chart.risk.late","Latest responsible start is in the past")}' : wm.risk === 'warning' ? '${tj("chart.risk.soon","Starts within 3 months")}' : '${tj("chart.risk.ok","Comfortable runway")}'}</title></text>\`;
       y += RH + GAP;
     });
   }
@@ -1687,7 +1716,7 @@ function buildGantt(sel0, erp, pace){
       // COULD start and roughly how long the longest of them runs.
       const longest = Math.max(...undated.map(c => durOf(c).total));
       const bx1 = x(discStart0), bx2 = x(addW(new Date(discStart0), longest).getTime());
-      s += \`<rect x="\${bx1+1}" y="\${y+4}" width="\${Math.max(2,bx2-bx1-2)}" height="\${RH-8}" rx="3" fill="#4a5670" opacity="0.55"><title>\${undated.length} jurisdiction\${undated.length===1?'':'s'} with no fixed deadline\${anyOverdue ? ', some already in force' : ''}. Indicative placement only — nothing can start before contracting completes, and there is no date to work back from.\n\${undated.map(c=>c[0]).join(', ')}</title></rect>\`;
+      s += \`<rect x="\${bx1+1}" y="\${y+4}" width="\${Math.max(2,bx2-bx1-2)}" height="\${RH-8}" rx="3" fill="#4a5670" opacity="0.55"><title>\${fill('${tj("chart.discTip","{0} with no fixed deadline{1}. Indicative placement only — nothing can start before contracting completes, and there is no date to work back from.")}', undated.length + ' ' + plur(undated.length, '${tj("word.jur","jurisdiction")}', '${tj("word.jurs","jurisdictions")}'), anyOverdue ? '${tj("chart.someInForce",", some already in force")}' : '')}\n\${undated.map(c=>c[0]).join(', ')}</title></rect>\`;
       y += RH + GAP;
     } else {
       s += \`<text x="0" y="\${y+15}" font-family="'IBM Plex Mono',monospace" font-size="9.5" letter-spacing="1"><tspan fill="#8d9bb5">NO FIXED DEADLINE</tspan><tspan fill="#93a3c0" letter-spacing="0"> &middot; \${undated.length} jurisdiction\${undated.length===1?'':'s'} &middot; \${anyOverdue ? 'already in force, or startable any time' : 'start any time'} once contracting completes</tspan></text>\`;
@@ -1753,7 +1782,7 @@ function buildGantt(sel0, erp, pace){
       phases.forEach(pz => {
         const st = new Date(t), en = addW(st, pz.weeks);
         const x1 = x(st.getTime()), x2 = x(en.getTime());
-        s += \`<rect x="\${x1+1}" y="\${y+4}" width="\${Math.max(2,x2-x1-2)}" height="\${RH-8}" rx="3" fill="\${pz.c}" opacity="0.5"><title>\${c[0]} — \${pz.n}\\n\${pz.weeks} weeks. Indicative placement only: there is no fixed deadline, so this can move — but it cannot start before contracting completes.</title></rect>\`;
+        s += \`<rect x="\${x1+1}" y="\${y+4}" width="\${Math.max(2,x2-x1-2)}" height="\${RH-8}" rx="3" fill="\${pz.c}" opacity="0.5"><title>\${c[0]} — \${pz.n}\\n\${fill('${tj("chart.discRowTip","{0} weeks. Indicative placement only: there is no fixed deadline, so this can move — but it cannot start before contracting completes.")}', pz.weeks)}</title></rect>\`;
         t = en.getTime();
       });
       s += \`<text x="\${x(t)+6}" y="\${y+16}" fill="#6b7a95" font-family="'IBM Plex Mono',monospace" font-size="9.5">\${total}w</text>\`;
@@ -1765,7 +1794,7 @@ function buildGantt(sel0, erp, pace){
   const nx = x(NOW.getTime());
   if(nx > L && nx < W-R){
     s += \`<line x1="\${nx}" y1="\${HEAD-8}" x2="\${nx}" y2="\${H-10}" stroke="#b5432f" stroke-width="2" stroke-dasharray="4 3"/>\`;
-    s += \`<text x="\${nx+5}" y="\${H-1}" fill="#b5432f" font-family="'IBM Plex Mono',monospace" font-size="9.5">today</text>\`;
+    s += \`<text x="\${nx+5}" y="\${H-1}" fill="#b5432f" font-family="'IBM Plex Mono',monospace" font-size="9.5">${tj("chart.today","today")}</text>\`;
   }
   s += \`</svg>\`;
   host.innerHTML = s;
@@ -1781,18 +1810,18 @@ function buildGantt(sel0, erp, pace){
     : '';
   document.getElementById('ganttHead').innerHTML = critPath + (late
     ? \`<div class="note warn"><strong>\${late} ${tj("chart.late","of")} \${waveMeta.length} ${tj("chart.late2","waves back-plan to a start date that has already passed.")}</strong> ${tj("chart.late3","Compressed delivery, an interim filing approach, or an accepted late position &mdash; but the latest responsible start is behind you.")} \${notesLink()}</div>\`
-    : soon ? \`<div class="note"><strong>\${soon} wave\${soon===1?'':'s'} must start within 90 days</strong> to hit the published deadline on your current phase assumptions.</div>\`
+    : soon ? \`<div class="note">\${fill('${tj("guard.soon","<strong>{0} must start within 90 days</strong> to hit the published deadline on your current phase assumptions.")}', soon + ' ' + plur(soon, '${tj("word.wave","wave")}', '${tj("word.waves","waves")}'))}</div>\`
     : \`<div class="note"><strong>Runway is comfortable across all \${waveMeta.length} waves</strong> on your current assumptions.</div>\`);
 
   document.getElementById('ganttLegend').innerHTML =
     \`<div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;padding:8px 0 10px;font-size:11.5px;color:#93a3c0">
-      <span style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:1px;text-transform:uppercase">Phase</span>
+      <span style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:1px;text-transform:uppercase">${tj("chart.phase","Phase")}</span>
       \${PROG().concat(PH()).map(p=>\`<span style="display:inline-flex;align-items:center;gap:5px"><span style="width:11px;height:11px;border-radius:2px;background:\${p.c};display:inline-block"></span>\${p.n}</span>\`).join('')}
-      <span style="display:inline-flex;align-items:center;gap:5px"><span style="display:inline-block;width:0;height:0;border:6px solid transparent;border-left-color:#efe9db;transform:rotate(45deg)"></span>Go-live</span>
-      <span style="display:inline-flex;align-items:center;gap:5px;color:#e0907f">▲ already late</span>
-      <span style="display:inline-flex;align-items:center;gap:5px;color:#e2b978">● start &lt;90d</span>
-      <span style="display:inline-flex;align-items:center;gap:5px;color:#7fd0a8">✓ runway</span>
-      <span>\${ev('durations','Durations: practitioner estimates')}</span>
+      <span style="display:inline-flex;align-items:center;gap:5px"><span style="display:inline-block;width:0;height:0;border:6px solid transparent;border-left-color:#efe9db;transform:rotate(45deg)"></span>${tj("chart.golive","Go-live")}</span>
+      <span style="display:inline-flex;align-items:center;gap:5px;color:#e0907f">${tj("chart.key.late","▲ already late")}</span>
+      <span style="display:inline-flex;align-items:center;gap:5px;color:#e2b978">${tj("chart.key.soon","● start &lt;90d")}</span>
+      <span style="display:inline-flex;align-items:center;gap:5px;color:#7fd0a8">${tj("chart.key.ok","✓ runway")}</span>
+      <span>\${ev('durations','${tj("ev.durationsLong","Durations: practitioner estimates")}')}</span>
     </div>\`;
   return rows;
 }
@@ -1829,9 +1858,9 @@ function renderAdjust(sel){
   }
   host.innerHTML = \`
     <div class="grid" style="grid-template-columns:1fr auto auto;gap:8px 12px;align-items:center">
-      <span class="hint" style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase">Jurisdiction</span>
-      <span class="hint" style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase">Wave (go-live)</span>
-      <span class="hint" style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase">Pinned start</span>
+      <span class="hint" style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase">${tj("adjust.jur","Jurisdiction")}</span>
+      <span class="hint" style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase">${tj("adjust.wave","Wave (go-live)")}</span>
+      <span class="hint" style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase">${tj("adjust.pin","Pinned start")}</span>
       \${dated.map(c => {
         const o = ovrOf(c[0]);
         const cur = o.dl || c[5];
@@ -1885,7 +1914,7 @@ document.getElementById('adjustReset').onclick = (e) => {
 };
 document.getElementById('adjust').addEventListener('toggle', function(){
   document.getElementById('adjustChevron').textContent =
-    this.open ? 'hide ▴' : 'show ▾';
+    this.open ? '${tj("btn.hide","hide ▴")}' : '${tj("btn.show","show ▾")}';
 });
 
 // The scroll argument is opt-in, and only the two deliberate "show me
@@ -2175,25 +2204,35 @@ function build(){
     <div class="note" style="margin-top:14px">\${banked
       ? \`<strong>${tj("sum.scopeBoth","Scope: compliance + AP process automation.")}</strong> ${tj("sum.scopeBoth2","Every direct row counts, and the timeline carries a process-change phase per country. The larger, less common programme.")}\`
       : \`<strong>${tj("sum.scopeOnly","Scope: compliance only.")}</strong> \${fmt(l1Banked + l2)} ${tj("sum.scopeOnly2","is saved from the integration itself; the remaining")} \${fmt(l1Unbanked)} ${tj("sum.scopeOnly3","needs a change programme you are not running.")}\`} ${tj("sum.bridge6","Net annual saving is the annual saving less the two running costs above; section 4 shows what makes up the annual saving, row by row.")} \${notesLink()}</div>
-    <div class="card"><p style="margin:0">Across <strong>\${sel.length}</strong> jurisdictions you have <strong>\${complex.length} complex</strong> (CTC or 5-corner) and <strong>\${simple.length} simple</strong> (4-corner exchange) regime\${simple.length===1?'':'s'}\${watch.length?\`, plus \${watch.length} with no mandate${hlp('nomandate',t("tip.nomandate","Why these are still in the plan"))}\`:''}. With \${erp} ERP/billing system\${erp===1?'':'s'} that is roughly <strong>\${integrations} country-system integration\${integrations===1?'':'s'}</strong>${hlp('integrations',t("tip.derived","How this is derived"))} to deliver. \${dated.length?\`The nearest binding date is <strong>\${dated[0][5]}</strong> (\${dated[0][0]}).\`:'None of the selected jurisdictions has a future dated deadline on the tracker today.'} \${ev('site','Source: live tracker data')}</p></div>\`;
+    <div class="card"><p style="margin:0">\${fill('${tj("card.mix","Across {0} jurisdictions you have {1} (CTC or 5-corner) and {2} (4-corner exchange){3}.")}',
+        '<strong>' + sel.length + '</strong>',
+        '<strong>' + complex.length + ' ${tj("word.complex","complex")}</strong>',
+        '<strong>' + simple.length + ' ' + plur(simple.length, '${tj("word.regime","simple regime")}', '${tj("word.regimes","simple regimes")}') + '</strong>',
+        watch.length ? fill('${tj("card.plusNoMandate",", plus {0} with no mandate{1}")}', watch.length, '${hlp('nomandate',t("tip.nomandate","Why these are still in the plan"))}') : '')}
+      \${fill('${tj("card.integrations","With {0} that is roughly {1}{2} to deliver.")}',
+        erp + ' ' + plur(erp, '${tj("word.erp","ERP/billing system")}', '${tj("word.erps","ERP/billing systems")}'),
+        '<strong>' + integrations + ' ' + plur(integrations, '${tj("word.integration","country-system integration")}', '${tj("word.integrations","country-system integrations")}') + '</strong>',
+        '${hlp('integrations',t("tip.derived","How this is derived"))}')}
+      \${dated.length ? fill('${tj("card.nearest","The nearest binding date is {0} ({1}).")}', '<strong>' + dated[0][5] + '</strong>', dated[0][0])
+        : '${tj("card.noDated","None of the selected jurisdictions has a future dated deadline on the tracker today.")}'} \${ev('site','${tj("ev.siteLabel","Source: live tracker data")}')}</p></div>\`;
 
   const pace = +document.getElementById('pace').value || 1;
   const ganttRows = buildGantt(tracks, erp, pace);
   const euDrivenCount = sel.filter(c=>c[8]).length;
-  document.getElementById('waveIntro').innerHTML = \`${tj("waves.intro","Back-planned from each jurisdiction&rsquo;s published deadline")} \${ev('site','tracker dates')} ${tj("waves.intro2","through phase durations you control")} \${ev('durations','practitioner estimates')}. ${tj("waves.intro3","Procurement is modelled once, not per country.")}\${euDrivenCount?\` <strong>\${euDrivenCount}</strong> ${tj("waves.intro4","are here on an EU-wide obligation, not a national mandate")}${hlp('vida',t("tip.deadlines","Where these deadlines come from"))}.\`:''}\`;
-  let w = dated.length ? \`<table><thead><tr><th>Deadline</th><th>Jurisdiction</th><th>Status</th><th>Model${hlp('complexity',t("tip.complexity","How complexity is assigned"))}</th><th class="num">Integrations${hlp('integrations',t("tip.derived","How this is derived"))}</th><th>Why</th></tr></thead><tbody>\` : '';
+  document.getElementById('waveIntro').innerHTML = \`${tj("waves.intro","Back-planned from each jurisdiction&rsquo;s published deadline")} \${ev('site','${tj("ev.trackerDates","tracker dates")}')} ${tj("waves.intro2","through phase durations you control")} \${ev('durations','${tj("ev.durations","practitioner estimates")}')}. ${tj("waves.intro3","Procurement is modelled once, not per country.")}\${euDrivenCount?\` <strong>\${euDrivenCount}</strong> ${tj("waves.intro4","are here on an EU-wide obligation, not a national mandate")}${hlp('vida',t("tip.deadlines","Where these deadlines come from"))}.\`:''}\`;
+  let w = dated.length ? \`<table><thead><tr><th>${tj("th.deadline","Deadline")}</th><th>${tj("adjust.jur","Jurisdiction")}</th><th>${tj("th.status","Status")}</th><th>${tj("th.model","Model")}${hlp('complexity',t("tip.complexity","How complexity is assigned"))}</th><th class="num">${tj("th.integrations","Integrations")}${hlp('integrations',t("tip.derived","How this is derived"))}</th><th>${tj("th.why","Why")}</th></tr></thead><tbody>\` : '';
   dated.forEach(c=>{
     const st=STATUS[c[3]], cx=CXNAME[c[4]];
     const ints = erp;   // every country you build for, once per ERP system
     const why = c[8]
-      ? \`<strong style="color:#e2b978">EU-wide obligation.</strong> Council Directive (EU) 2025/516 binds this member state from 1 July 2030 regardless of whether it legislates a domestic mandate. \${CXNOTE[c[4]]}\`
+      ? \`<strong style="color:#e2b978">${tj("waves.euWide.h","EU-wide obligation.")}</strong> \${fill('${tj("waves.euWide","Council Directive (EU) 2025/516 binds this member state from 1 July 2030 regardless of whether it legislates a domestic mandate. {0}")}', CXNOTE[c[4]])}\`
       : CXNOTE[c[4]];
     w += \`<tr><td><strong>\${c[5]}</strong>\${c[8]?' <span class="pill p-upcoming">EU</span>':''}</td><td>\${c[0]}</td><td><span class="pill \${st[1]}">\${st[0]}</span></td><td><span class="pill \${cx[1]}">\${cx[0]}</span></td><td class="num">\${ints}</td><td style="font-size:12px;color:var(--muted)">\${why}</td></tr>\`;
   });
   w += dated.length ? '</tbody></table>' : '<div class="note">No selected jurisdiction has a future dated deadline. Those already in force still need remediation work &mdash; see the in-force list below.</div>';
-  if(watch.length) w += \`<div class="note" style="margin-top:12px"><strong>No mandate, included by your selection (\${watch.length}):</strong> \${watch.map(c=>c[0]).join(', ')}. Costed at the simple rate and scheduled as one discretionary wave &mdash; there is no deadline to miss, so this work can start whenever you have capacity.</div>\`;
+  if(watch.length) w += \`<div class="note" style="margin-top:12px">\${fill('${tj("waves.noMandate","<strong>No mandate, included by your selection ({0}):</strong> {1}. Costed at the simple rate and scheduled as one discretionary wave &mdash; there is no deadline to miss, so this work can start whenever you have capacity.")}', watch.length, watch.map(c=>c[0]).join(', '))}</div>\`;
   const inforceNoDate = sel.filter(c=>c[3]==='i' && !c[5]);
-  if(inforceNoDate.length) w += \`<div class="note" style="margin-top:12px"><strong>Already in force, no further dated step (\${inforceNoDate.length}):</strong> \${inforceNoDate.map(c=>c[0]).join(', ')}. These are compliance-now, not project-plan items.</div>\`;
+  if(inforceNoDate.length) w += \`<div class="note" style="margin-top:12px">\${fill('${tj("waves.inforce","<strong>Already in force, no further dated step ({0}):</strong> {1}. These are compliance-now, not project-plan items.")}', inforceNoDate.length, inforceNoDate.map(c=>c[0]).join(', '))}</div>\`;
   document.getElementById('waves').innerHTML = w;
   const gt = document.getElementById('ganttToggle');
   if(gt && !gt.dataset.wired){
@@ -2211,7 +2250,7 @@ function build(){
     const el = document.getElementById('waves');
     const shown = !el.classList.contains('hidden');
     el.classList.toggle('hidden');
-    tbl.textContent = shown ? 'Show as table' : 'Hide table';
+    tbl.textContent = shown ? '${tj("btn.showTable","Show as table")}' : '${tj("btn.hideTable","Hide table")}';
   };
 
   // ---- one savings table -------------------------------------------
@@ -2244,27 +2283,27 @@ function build(){
 
     <tr class="grp"><td colspan="4">${t("grp.priced","Priced &mdash; counted in the business case")}</td></tr>
 
-    <tr class="tierA" data-row="ap"><td>Processing cost reduction (AP) <span class="tag tang">${t("tag.tangible","tangible")}</span> <span class="tag \${banked?'bank':'unbank'}">\${banked?'${t("tag.saved","saved")}':Math.round(TAXM.captureShare*100)+'% ${t("tag.saved","saved")}'}</span></td><td>\${volAP.toLocaleString()} invoices &times; \${fmt1(costNow)} \${ev('ardent','baseline')} &times; \${Math.round(savePct*100)}% \${ev('hmrc60','reduction')}</td><td class="num">\${fmt(saving)}</td><td class="num">\${fmt(bankedAP)}</td></tr>
+    <tr class="tierA" data-row="ap"><td>${t("row.ap","Processing cost reduction (AP)")} <span class="tag tang">${t("tag.tangible","tangible")}</span> <span class="tag \${banked?'bank':'unbank'}">\${banked?'${t("tag.saved","saved")}':Math.round(TAXM.captureShare*100)+'% ${t("tag.saved","saved")}'}</span></td><td>\${fill('${tj("basis.ap","{0} invoices &times; {1} {2} &times; {3}% {4}")}', volAP.toLocaleString(), fmt1(costNow), ev('ardent','${tj("ev.baseline","baseline")}'), Math.round(savePct*100), ev('hmrc60','${tj("ev.reduction","reduction")}'))}</td><td class="num">\${fmt(saving)}</td><td class="num">\${fmt(bankedAP)}</td></tr>
 
-    <tr class="tierA" data-row="ar"><td>Issuing cost reduction (AR) <span class="tag tang">${t("tag.tangible","tangible")}</span> <span class="tag bank">${t("tag.saved","saved")}</span></td><td>\${volAR.toLocaleString()} invoices &times; \${fmt1(costAR)} \${ev('ato','ATO / Deloitte')} &times; \${Math.round(savePct*100)}% \${ev('hmrc60','reduction')}</td><td class="num">\${fmt(savingAR)}</td><td class="num">\${fmt(savingAR)}</td></tr>
+    <tr class="tierA" data-row="ar"><td>${t("row.ar","Issuing cost reduction (AR)")} <span class="tag tang">${t("tag.tangible","tangible")}</span> <span class="tag bank">${t("tag.saved","saved")}</span></td><td>\${fill('${tj("basis.ar","{0} invoices &times; {1} {2} &times; {3}% {4}")}', volAR.toLocaleString(), fmt1(costAR), ev('ato','ATO / Deloitte'), Math.round(savePct*100), ev('hmrc60','${tj("ev.reduction","reduction")}'))}</td><td class="num">\${fmt(savingAR)}</td><td class="num">\${fmt(savingAR)}</td></tr>
 
-    <tr class="tierA" data-row="tax"><td>Reduced tax reporting &amp; audit-prep effort <span class="tag tang">${t("tag.tangible","tangible")}</span> <span class="tag bank">${t("tag.saved","saved")}</span></td><td>Mechanism evidenced \${ev('oecd','OECD DCTR, 2026')}. Your \${volAP.toLocaleString()} AP invoices imply <strong>\${apFteImplied.toFixed(1)} AP FTE</strong> \${ev('apqc','APQC median, 12,000 per FTE')}; \${ctcCount} clearance or reporting \${ctcCount===1?'jurisdiction':'jurisdictions'} put <strong>\${(shareUsed*100).toFixed(1)}%</strong> of that in scope \${ev('yours','our assumption')}\${taxCapBinds?' <em>(capped)</em>':''} &mdash; \${taxFteSaved.toFixed(2)} FTE &times; \${fmt(fteCost)}. ${tj("row.tax.banks","Saved on either scope: the reporting effort falls with the compliance build itself, not with a workflow change.")}</td><td class="num">\${fmt(l2)}</td><td class="num">\${fmt(l2)}</td></tr>
+    <tr class="tierA" data-row="tax"><td>${t("row.tax","Reduced tax reporting &amp; audit-prep effort")} <span class="tag tang">${t("tag.tangible","tangible")}</span> <span class="tag bank">${t("tag.saved","saved")}</span></td><td>\${fill('${tj("basis.tax","Mechanism evidenced {0}. Your {1} AP invoices imply <strong>{2} AP FTE</strong> {3}; {4} put <strong>{5}%</strong> of that in scope {6}{7} &mdash; {8} FTE &times; {9}.")}', ev('oecd','OECD DCTR, 2026'), volAP.toLocaleString(), apFteImplied.toFixed(1), ev('apqc','${tj("ev.apqcMedian","APQC median, 12,000 per FTE")}'), ctcCount + ' ' + plur(ctcCount, '${tj("word.ctcJur","clearance or reporting jurisdiction")}', '${tj("word.ctcJurs","clearance or reporting jurisdictions")}'), (shareUsed*100).toFixed(1), ev('yours','${tj("ev.ourAssumption","our assumption")}'), taxCapBinds?' <em>${tj("word.capped","(capped)")}</em>':'', taxFteSaved.toFixed(2), fmt(fteCost))}. ${tj("row.tax.banks","Saved on either scope: the reporting effort falls with the compliance build itself, not with a workflow change.")}</td><td class="num">\${fmt(l2)}</td><td class="num">\${fmt(l2)}</td></tr>
 
-    <tr class="tierB" data-row="rework"><td>Avoided rework on data-entry errors <span class="tag tang">${t("tag.tangible","tangible")}</span> <span class="tag \${banked?'bank':'unbank'}">\${banked?'${t("tag.saved","saved")}':'${t("tag.notSaved","not saved")}'}</span></td><td>\${Math.round(errNow).toLocaleString()} errored invoices \${ev('hmrcErr',\`at ~\${Math.round(errRate*100)}%\`)} &times; \${fmt(errCost)} \${overridden('errCost') ? ev('yours','your rework cost') : ev('rework','our estimate, not yours')} &times; \${Math.round(errElim*100)}% \${ev('errElim','why not all of them')} \${ev('ardentExc','not Ardent&rsquo;s 18.4% exception rate')}</td><td class="num">\${fmt(errSave)}</td><td class="num">\${bankedErr > 0 ? fmt(bankedErr) : '&mdash;'}</td></tr>
+    <tr class="tierB" data-row="rework"><td>${t("row.rework","Avoided rework on data-entry errors")} <span class="tag tang">${t("tag.tangible","tangible")}</span> <span class="tag \${banked?'bank':'unbank'}">\${banked?'${t("tag.saved","saved")}':'${t("tag.notSaved","not saved")}'}</span></td><td>\${fill('${tj("basis.rework","{0} {1} &times; {2} {3} &times; {4}% {5} {6}")}', Math.round(errNow).toLocaleString() + ' ' + plur(Math.round(errNow), '${tj("word.erroredInvoice","errored invoice")}', '${tj("word.erroredInvoices","errored invoices")}'), ev('hmrcErr', fill('${tj("ev.atRate","at ~{0}%")}', Math.round(errRate*100))), fmt(errCost), overridden('errCost') ? ev('yours','${tj("ev.yourRework","your rework cost")}') : ev('rework','${tj("ev.ourEstimate","our estimate, not yours")}'), Math.round(errElim*100), ev('errElim','${tj("ev.whyNotAll","why not all of them")}'), ev('ardentExc','${tj("ev.excRate","not Ardent&rsquo;s 18.4% exception rate")}'))}</td><td class="num">\${fmt(errSave)}</td><td class="num">\${bankedErr > 0 ? fmt(bankedErr) : '&mdash;'}</td></tr>
 
     <tr class="tot" data-row="total"><td colspan="2"><strong>${t("row.savingsTotal","Annual benefit")}</strong>\${l1Unbanked > 0 ? \` <span class="hint" style="display:inline">&mdash; ${t("row.directTotal.gap","the difference needs a change programme you are not running")}</span>\` : ''}</td><td class="num"><strong>\${fmt(l1 + l2)}</strong></td><td class="num"><strong style="color:#7fd0a8">\${fmt(l1Banked + l2)}</strong></td></tr>
 
     <tr class="grp"><td colspan="4">${t("grp.named","Named, not priced &mdash; real, and this model will not invent a number for them")}</td></tr>
 
-    <tr class="tierA" data-row="cycle"><td>${t("row.cycle","Faster cycle time &amp; fewer supplier queries")} <span class="tag intang">${t("tag.intangible","intangible")}</span></td><td>${tj("row.cycle.basis","Top-performing AP spends")} <strong>12.8%</strong> ${tj("row.cycle.basis2","of staff time on supplier inquiries against")} <strong>24.0%</strong> \${ev('ardentInq','Ardent Partners, 2025 data')} &mdash; ${tj("row.cycle.basis3","an association with high-performing AP, not a measured effect of e-invoicing, so")} <strong>${tj("row.cycle.basis4","not monetised")}</strong>. \${notesLink()}</td>\${dash}</tr>
+    <tr class="tierA" data-row="cycle"><td>${t("row.cycle","Faster cycle time &amp; fewer supplier queries")} <span class="tag intang">${t("tag.intangible","intangible")}</span></td><td>${tj("row.cycle.basis","Top-performing AP spends")} <strong>12.8%</strong> ${tj("row.cycle.basis2","of staff time on supplier inquiries against")} <strong>24.0%</strong> \${ev('ardentInq','${tj("ev.ardent2025","Ardent Partners, 2025 data")}')} &mdash; ${tj("row.cycle.basis3","an association with high-performing AP, not a measured effect of e-invoicing, so")} <strong>${tj("row.cycle.basis4","not monetised")}</strong>. \${notesLink()}</td>\${dash}</tr>
 
-    <tr class="tierA" data-row="paper"><td>Paper, print, postage, storage <span class="tag tang">${t("tag.tangible","tangible")}</span></td><td>Paper AUD 30.87 vs e-invoice AUD 9.18 \${ev('ato','ATO / Deloitte')}; your own spend is the better input</td>\${dash}</tr>
+    <tr class="tierA" data-row="paper"><td>${t("row.paper","Paper, print, postage, storage")} <span class="tag tang">${t("tag.tangible","tangible")}</span></td><td>\${fill('${tj("basis.paper","Paper AUD 30.87 vs e-invoice AUD 9.18 {0}; your own spend is the better input")}', ev('ato','ATO / Deloitte'))}</td>\${dash}</tr>
 
-    <tr class="tierC" data-row="vat"><td>VAT leakage / gap recovery <span class="tag intang">${t("tag.intangible","intangible")}</span></td><td>Often quoted, <strong>not defensible</strong> \${ev('vatgap','why not')} &mdash; excluded from this model entirely</td>\${dash}</tr>
+    <tr class="tierC" data-row="vat"><td>${t("row.vat","VAT leakage / gap recovery")} <span class="tag intang">${t("tag.intangible","intangible")}</span></td><td>\${fill('${tj("basis.vat","Often quoted, <strong>not defensible</strong> {0} &mdash; excluded from this model entirely")}', ev('vatgap','${tj("ev.whyNot","why not")}'))}</td>\${dash}</tr>
 
-    <tr class="tierD" data-row="penalty"><td>Penalty &amp; remediation exposure avoided <span class="tag intang">${t("tag.intangible","intangible")}</span></td><td>\${sel.filter(c=>c[6]>0).length} of your jurisdictions publish a quantified penalty schedule \${ev('site','on their deep dives')}. Size it from those, per country &mdash; there is no credible aggregate</td>\${dash}</tr>
+    <tr class="tierD" data-row="penalty"><td>${t("row.penalty","Penalty &amp; remediation exposure avoided")} <span class="tag intang">${t("tag.intangible","intangible")}</span></td><td>\${fill('${tj("basis.penalty","{0} of your jurisdictions publish a quantified penalty schedule {1}. Size it from those, per country &mdash; there is no credible aggregate")}', sel.filter(c=>c[6]>0).length, ev('site','${tj("ev.deepDives","on their deep dives")}'))}</td>\${dash}</tr>
 
-    <tr class="tierD" data-row="fraud"><td>Fraud detection, working-capital visibility <span class="tag intang">${t("tag.intangible","intangible")}</span></td><td>Strategic benefits; no benchmark exists \${ev('yours','your call')}</td>\${dash}</tr>
+    <tr class="tierD" data-row="fraud"><td>${t("row.fraud","Fraud detection, working-capital visibility")} <span class="tag intang">${t("tag.intangible","intangible")}</span></td><td>\${fill('${tj("basis.fraud","Strategic benefits; no benchmark exists {0}")}', ev('yours','${tj("ev.yourCall","your call")}'))}</td>\${dash}</tr>
     </tbody></table>
     <div class="note" style="margin-top:12px"><strong>${tj("res.headcount.h","In headcount:")}</strong> \${captureFte.toFixed(1)} ${tj("res.headcount.line","FTE keying invoices today, of which")} <strong>\${captureSaved.toFixed(1)}</strong> ${tj("res.headcount.line2","are released &mdash; the same money as the AP capture row above, priced as people rather than an addition to it.")} \${notesLink()}</div>
     <div class="note" style="margin-top:12px">${tj("res.namedWhy","Everything priced here is tangible; the intangible benefits are named and carry no value on purpose. That group is long because almost every circulating number in this field fails verification &mdash; what survives is priced, what does not is named rather than quietly dropped.")} \${notesLink()}</div>\`;
@@ -2303,8 +2342,8 @@ function build(){
     <div class="grid g2" style="margin-bottom:16px">
       <div class="card"><h3>${tj("notes.banks.h","What compliance alone saves")}</h3><p class="hint">${tj("notes.banks","Capture and issuing arrive with the integration: once invoices come in structured and go out cleared, nobody keys or posts them. Review and approval are workflow and need a separate change programme. The split is the ATO / Deloitte task times &mdash; receipt 7 and validation 2 minutes against review 7 and approval 5 &mdash; not our judgement. Tax reporting and audit-prep effort is saved in full on either scope: you file structured data to the tax authority whether or not you ever touch AP workflow, so there is no equivalent split to make.")}</p></div>
       <div class="card"><h3>${tj("notes.rework.h","Why rework is held back")}</h3><p class="hint">${tj("notes.rework","It rests on HMRC&rsquo;s unsourced 10% error rate, a cost you set yourself, and our assumption about how many errors actually go away. Least evidenced row here and the largest beneficiary of any change, so it is not counted as saved, even on a compliance scope. Ardent gives the mechanism but no quantified reduction; their Best-in-Class exception gap of 9.8 points is used as a ceiling on what this model may claim.")}</p></div>
-      <div class="card"><h3>${tj("notes.headcount.h","Headcount restates, it does not add")}</h3><p class="hint">${tj("notes.headcount","The capture-FTE figure prices the processing-cost row in people. It is the same money &mdash; the per-invoice benchmark is labour-dominated, so counting both would count it twice.")}\${saving > 0 ? \` \${fmt(captureValue)} of \${fmt(saving)}, or \${Math.round(captureValue/saving*100)}%; the rest is review, technology and overhead.\` : ''} ${tj("notes.headcount2","Released capacity is only cash if the post goes or is not backfilled.")} \${ev('apqc','APQC')} &middot; \${ev('atoCapture','ATO / Deloitte')}</p></div>
-      <div class="card"><h3>${tj("notes.unmonetised.h","What carries no value on purpose")}</h3><p class="hint">${tj("notes.unmonetised","Paper and postage, because your own spend is the only honest input. Cycle time and supplier queries, because nobody has measured how much of that gap e-invoicing causes &mdash; Ardent&rsquo;s own")} \${ev('ardentCycle','2.9 vs 13.5 days')} ${tj("notes.unmonetised2","is circular by construction, and the")} \${ev('nhs','15% query reduction')} ${tj("notes.unmonetised3","is a single anecdote. VAT leakage, penalty exposure and fraud, because the mechanisms are real and the magnitudes are not evidenced. They belong in the qualitative case beside this number, not inside it.")}</p></div>
+      <div class="card"><h3>${tj("notes.headcount.h","Headcount restates, it does not add")}</h3><p class="hint">${tj("notes.headcount","The capture-FTE figure prices the processing-cost row in people. It is the same money &mdash; the per-invoice benchmark is labour-dominated, so counting both would count it twice.")}\${saving > 0 ? ' ' + fill('${tj("notes.headcountSplit","{0} of {1}, or {2}%; the rest is review, technology and overhead.")}', fmt(captureValue), fmt(saving), Math.round(captureValue/saving*100)) : ''} ${tj("notes.headcount2","Released capacity is only cash if the post goes or is not backfilled.")} \${ev('apqc','APQC')} &middot; \${ev('atoCapture','ATO / Deloitte')}</p></div>
+      <div class="card"><h3>${tj("notes.unmonetised.h","What carries no value on purpose")}</h3><p class="hint">${tj("notes.unmonetised","Paper and postage, because your own spend is the only honest input. Cycle time and supplier queries, because nobody has measured how much of that gap e-invoicing causes &mdash; Ardent&rsquo;s own")} \${ev('ardentCycle','${tj("ev.cycleGap","2.9 vs 13.5 days")}')} ${tj("notes.unmonetised2","is circular by construction, and the")} \${ev('nhs','${tj("ev.nhsQuery","15% query reduction")}')} ${tj("notes.unmonetised3","is a single anecdote. VAT leakage, penalty exposure and fraud, because the mechanisms are real and the magnitudes are not evidenced. They belong in the qualitative case beside this number, not inside it.")}</p></div>
     </div>
     <p style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:var(--soon);margin:0 0 8px">${tj("notes.h.grades","Evidence grades")}</p>
     <div class="grid g2">
@@ -2346,7 +2385,13 @@ function build(){
   //    with a straight face.
   const mistimed = sel.filter(c => c[9] && (!c[5] || c[9] < c[5]));
   if(mistimed.length){
-    warn.push(\`<strong>\${mistimed.length} selected \${mistimed.length===1?'jurisdiction has an obligation':'jurisdictions have obligations'} earlier than the date this plan plans for.</strong> \${mistimed.map(c => \`\${c[0]} &mdash; \${c[9]}\${c[5] ? \` (planned for \${c[5]})\` : ' (planned as discretionary)'}\`).join('; ')}. These are dated, live obligations that the arrivals board does not display, so the wave plan below does not schedule them. The runway shown for \${mistimed.length===1?'it':'them'} is longer than the runway \${mistimed.length===1?'it':'they'} actually \${mistimed.length===1?'has':'have'}.\`);
+    warn.push(fill(plur(mistimed.length,
+        '${tj("guard.mistimed.one","<strong>{0} selected jurisdiction has an obligation earlier than the date this plan plans for.</strong> {1}. These are dated, live obligations that the arrivals board does not display, so the wave plan does not schedule it. The runway shown for it is longer than the runway it actually has.")}',
+        '${tj("guard.mistimed.many","<strong>{0} selected jurisdictions have obligations earlier than the date this plan plans for.</strong> {1}. These are dated, live obligations that the arrivals board does not display, so the wave plan does not schedule them. The runway shown for them is longer than the runway they actually have.")}'),
+      mistimed.length,
+      mistimed.map(c => fill(c[5] ? '${tj("guard.mistimed.planned","{0} &mdash; {1} (planned for {2})")}'
+                                  : '${tj("guard.mistimed.disc","{0} &mdash; {1} (planned as discretionary)")}',
+                             c[0], c[9], c[5])).join('; ')));
   }
 
   // 4. An override that pushes a country past its own deadline. Not an
@@ -2398,7 +2443,7 @@ function build(){
   //    which is not a big number, it is a wrong one.
   const claimedPp = errRate * errElim * 100;
   if(TAXM.excGapPp > 0 && claimedPp > TAXM.excGapPp){
-    warn.push(\`<strong>This model removes more exceptions than separate the best quartile of AP from everyone else.</strong> Your error rate and elimination assumption together take \${claimedPp.toFixed(1)} points of invoices out of exception; Ardent measures the whole gap between Best-in-Class and all others at \${TAXM.excGapPp} points \${ev('excGap','11.1% against 20.9%')}, across every cause and with e-invoicing only one contributor. Lower the error rate or the elimination percentage &mdash; as it stands the rework row is claiming more than the market's best performers achieve.\`);
+    warn.push(\`<strong>This model removes more exceptions than separate the best quartile of AP from everyone else.</strong> Your error rate and elimination assumption together take \${claimedPp.toFixed(1)} points of invoices out of exception; Ardent measures the whole gap between Best-in-Class and all others at \${TAXM.excGapPp} points \${ev('excGap','${tj("ev.excSplit","11.1% against 20.9%")}')}, across every cause and with e-invoicing only one contributor. Lower the error rate or the elimination percentage &mdash; as it stands the rework row is claiming more than the market's best performers achieve.\`);
   }
 
   document.getElementById('guards').innerHTML = warn.length
@@ -2517,13 +2562,13 @@ function build(){
       + '<table><thead><tr><th>${tj("pdf.th.fig","Figure")}</th><th class="num">${tj("pdf.th.val","Value")}</th><th>${tj("pdf.th.src","Source")}</th><th>${tj("pdf.th.grade","Grade")}</th></tr></thead><tbody>'
       + [['${tj("input.costNow","AP cost per invoice")}', fmt1(costNow), 'Ardent Partners 2025', 'A'],
          ['${tj("input.costAR","AR cost per invoice")}', fmt1(costAR), 'ATO / Deloitte Access Economics', 'B'],
-         ['${tj("input.savePct","Cost reduction %")}', Math.round(savePct*100) + '%', 'HMRC / DBT consultation 2025', 'B'],
-         ['${tj("input.errRate","Manual error rate %")}', Math.round(errRate*100) + '%', 'HMRC / DBT consultation 2025', 'B'],
-         ['${tj("input.errElim","Errors eliminated %")}', Math.round(errElim*100) + '%', 'Our assumption, capped by Ardent exception gap', 'D'],
+         ['${tj("input.savePct","Cost reduction %")}', Math.round(savePct*100) + '%', '${tj("src.hmrcDbt","HMRC / DBT consultation 2025")}', 'B'],
+         ['${tj("input.errRate","Manual error rate %")}', Math.round(errRate*100) + '%', '${tj("src.hmrcDbt","HMRC / DBT consultation 2025")}', 'B'],
+         ['${tj("input.errElim","Errors eliminated %")}', Math.round(errElim*100) + '%', '${tj("src.cappedAssumption","Our assumption, capped by Ardent exception gap")}', 'D'],
          ['${tj("input.fteCost","Loaded cost / tax or finance FTE")}', fmt(fteCost), 'US BLS OEWS + ECEC', 'B'],
          ['${tj("input.fteEntry","Loaded cost / data-entry FTE")}', fmt(fteEntry), 'US BLS OEWS + ECEC', 'B'],
          ['${tj("pdf.fig.apfte","Invoices per AP FTE / year")}', TAXM.invPerFte.toLocaleString(), 'APQC Open Standards Benchmarking', 'A'],
-         ['${tj("pdf.fig.capture","Capture share of AP effort")}', Math.round(TAXM.captureShare*100) + '%', 'ATO / Deloitte task times', 'A'],
+         ['${tj("pdf.fig.capture","Capture share of AP effort")}', Math.round(TAXM.captureShare*100) + '%', '${tj("src.atoTaskTimes","ATO / Deloitte task times")}', 'A'],
          ['${tj("input.cImplS","Cost per SIMPLE integration")}', fmt(cImplS), '${tj("pdf.placeholder","Placeholder &mdash; replace with a vendor quote")}', 'D'],
          ['${tj("input.cImplC","Cost per COMPLEX integration")}', fmt(cImplC), '${tj("pdf.placeholder","Placeholder &mdash; replace with a vendor quote")}', 'D'],
          ['${tj("input.cPlat","Platform / network fees per year")}', fmt(cPlat), '${tj("pdf.derivedfee","Derived from your volumes &times; per-invoice fee")}', 'D'],
