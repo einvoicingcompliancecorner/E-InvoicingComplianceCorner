@@ -839,19 +839,34 @@ const steps = await page.evaluate(() => {
   return {
     n: li.length,
     labels: li.map((e) => e.querySelector("span").firstChild.textContent.trim()),
+    numbered: li.filter((e) => e.querySelector("b")).length,
     optional: li.filter((e) => e.querySelector("em")).length,
     noprint: !![...document.querySelectorAll(".steps")].every((e) => e.classList.contains("noprint")),
     rows: new Set(li.map((e) => Math.round(e.getBoundingClientRect().top))).size,
     dead: li.map((e) => e.querySelector("a").getAttribute("href"))
       .filter((h) => !h || !document.querySelector(h)),
-    numbered: li.map((e) => e.querySelector("b").textContent).join(""),
   };
 });
-t.check(`five steps, in order (${steps.numbered})`,
-  steps.n === 5 && steps.numbered === "12345", `${steps.n} / ${steps.numbered}`);
-t.check(`they name the four actions and the button (${steps.labels.join(" > ")})`,
-  ["footprint", "countries", "assumptions", "Calculate", "go-live"]
+// Dan: "the steps numbering does not follow the headings in the body of
+// the roi-calculator." It could not: four of the five old steps happened
+// inside section 1 and the fifth in section 3, so two numbering systems
+// shared one page and agreed nowhere. The digits are gone and the
+// headings are now the only numbering — asserted, because re-adding them
+// is the obvious "improvement" for someone who has not read this.
+t.check(`six steps, none of them numbered (${steps.n})`,
+  steps.n === 6 && steps.numbered === 0, `${steps.n} chips / ${steps.numbered} numbered`);
+t.check(`they run from footprint to download (${steps.labels.join(" > ")})`,
+  ["footprint", "countries", "assumptions", "Calculate", "go-live", "Download"]
     .every((w, i) => (steps.labels[i] || "").includes(w)), steps.labels.join(" | "));
+// Dan asked whether go-live could move before Calculate so the flow ended
+// on "Calculate and download". It cannot — #adjust lives inside #results,
+// which is hidden until Calculate runs — but Download genuinely is the
+// last action, and the strip had stopped one step short of saying so.
+t.check("Calculate sits before the adjust step, because the panel does not exist until it runs",
+  steps.labels.findIndex((l) => l.includes("Calculate"))
+    < steps.labels.findIndex((l) => l.includes("go-live")));
+t.check("and Download is last",
+  steps.labels[steps.labels.length - 1].includes("Download"), steps.labels.join(" | "));
 t.check("every chip points at an anchor the page actually emits",
   steps.dead.length === 0, steps.dead.join(", "));
 t.check("exactly two are marked optional — assumptions and go-live dates",

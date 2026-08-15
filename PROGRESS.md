@@ -11533,6 +11533,62 @@ data job rather than a code job, which was the entire point.**
 table heading.
 
 
+## 15 August 2026 (cont'd) — The step strip stops competing with the headings (migration 555)
+
+Dan: *"1) The steps numbering does not follow the headings in the body of
+the roi-calculator... 2) Would it make sense to move step 5 - Move go-live
+dates before step 4 - calculate. So therefore the final action could be
+Calculate and Download."*
+
+### The numbering could not be aligned, so it is gone
+
+The mismatch was worse than it looked. **Four of the five steps happened
+inside section 1** — the country picker, the assumptions panel and the
+Calculate button all sit under the "1 · Your footprint" heading — and the
+fifth happened in section 3. Section 2, the executive summary, was no step
+at all.
+
+```
+Step 1 Enter footprint     -> section 1
+Step 2 Select countries    -> section 1
+Step 3 Adjust assumptions  -> section 1
+Step 4 Calculate           -> section 1
+Step 5 Move go-live dates  -> section 3
+```
+
+Numbering the chips by the section they act in would have printed "1" four
+times: accurate, and reads as a bug. So the digits go and the chevrons
+stay. **The strip is a sequence; the headings are the numbering; there is
+one of each.**
+
+This is the rare case where the fix for "these two disagree" is to delete
+one rather than reconcile them, because the disagreement was structural —
+steps are actions, headings are places, and four actions genuinely happen
+in one place.
+
+### Go-live dates cannot move before Calculate
+
+The adjust panel lives inside `#results`, which is `hidden` until Calculate
+runs. There are no dates to move until the plan exists, so a reader
+following that order would find nothing on screen.
+
+**But the instinct behind the question was the more useful half**:
+Calculate is the middle of this flow, not the end. The reader's job
+finishes with a PDF in hand, the Download button has sat beside Calculate
+since 531, and the strip stopped one chip short of saying so. Download is
+now the last step.
+
+Six chips at 1009px against 1040px of wrap — still one line at desktop
+width, which the suite has asserted since 535.
+
+### Verified
+
+`npm test`: 9 suites, all passing. ROI regression **174 checks**. New
+checks assert the chips carry no numbers (re-adding them is the obvious
+"improvement" for someone who has not read this), that Calculate precedes
+the adjust step, and that Download is last.
+
+
 ## Open items / next steps
 
 ### Where things stand — 15 August 2026
