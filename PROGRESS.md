@@ -10231,6 +10231,84 @@ so the loose match had started selecting the wrong one. Replay: 117
 assertions declared, 101 durable, 16 superseded.
 
 
+## 15 Aug 2026 — The caveats move out of the reader's way (migration 530)
+
+Dan: *"The UI is difficult to read and follow because there are so many
+caveats and assumptions. Would it be possible to read through those
+comments and ensure they are concise, well reasoned rather than 'wordy'.
+Also could those be hidden in a popout... The calculator is very high
+level, so I think we don't need to have on full-display because it
+detracts from the intent of the calculator."*
+
+Measured before touching anything: **1,539 words of always-on prose
+across 27 blocks** before the reader reaches a number. Roughly half of it
+arrived in the two days before he asked, while making the model
+defensible.
+
+That is the failure mode of writing caveats one at a time. Each is a
+paragraph you can defend on its own; nobody reads the page end to end and
+asks whether the sum of them is still a tool. Every note here was added
+for a good reason and the accumulation was indefensible.
+
+### What changed
+
+Section 7 became a collapsed `<details>` panel — "Assumptions, sources
+and caveats" — using the same idiom as the assumptions and adjust panels,
+so the page gains no new interaction vocabulary. Every long caveat is one
+line where it sits, with a small `why ›` link to the panel, which carries
+the full reasoning and the citations in four cards: what compliance alone
+banks, why rework is held back, headcount restates rather than adds, and
+what carries no value on purpose.
+
+**Result: 482 words always-on, down from 1,539.** A 69% cut with nothing
+deleted — the reasoning moved one click away and is linked from the
+number it belongs to, which is the difference between an honest page and
+a defensive one.
+
+### What deliberately stayed inline
+
+The seven sanity guards (133 words). They are *conditional* — they fire
+on a specific bad state and they are why the page can be trusted to say
+when it is wrong. Hiding a warning behind a click inverts its purpose.
+There is now a test asserting they are still inline, so a future tidy-up
+cannot sweep them into the panel with everything else.
+
+Also: "the same money as the row above, priced as people rather than an
+addition to it", because without it the headcount figure reads as a
+second saving; the three-word per-row banking tags; and the
+placeholder-cost warning, which is actionable.
+
+### Two things this nearly broke
+
+Condensing the intangible row dropped the cycle-time citation entirely —
+a grade-A benchmark rendered nowhere, which is the orphaning pattern
+found three times already this week. Caught by an existing test, and the
+citation moved into the panel rather than being deleted.
+
+And six D1 keys were orphaned by the rewrite. They are `DELETE`d in the
+migration rather than left: a superseded row that still looks live is
+exactly what `platform_cost_year` and `btn.recalculate` were.
+
+### The budget is now a test
+
+`always-on prose stays within budget (482 words, ceiling 650)` — the only
+check in the suite that guards a *quality* rather than a fact, plus a
+standing invariant that no body-rendered string may exceed 300
+characters, with the panel keys exempt by name. Both exist because this
+problem returns by accumulation, not by a single bad decision, and
+accumulation is invisible to review.
+
+### Verification
+
+`npm test`: 8 suites, all passing. ROI regression 81 checks (was 69).
+Twelve new: the word budget; guards still inline; the panel closed on
+arrival; its reasoning absent from the body; a `why ›` link opens it; and
+seven assertions that each relocated section is actually in it. Contrast
+audit clean across all four states with the new panel. Replay: 123
+assertions declared, 103 durable, 20 superseded. Migration generated from
+the renderer's own fallbacks rather than retyped.
+
+
 ## Open items / next steps
 
 ### Real open work

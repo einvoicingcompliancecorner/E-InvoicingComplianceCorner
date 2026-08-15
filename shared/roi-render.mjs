@@ -364,6 +364,13 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
    arrive with the mandate or do I have to go and get it?" is the one the
    reader is actually asking of every line. */
 .bank{color:#7fd0a8;border-color:#3f7d5c}.unbank{color:#8d9bb5;border-color:#3a4864}
+/* The pointer from a one-line caveat to the full reasoning in section 7.
+   Dan, 15 Aug 2026: "The UI is difficult to read and follow because there
+   are so many caveats and assumptions... could those be hidden in a
+   popout". The reasoning is not deleted, it is moved one click away and
+   linked from the number it belongs to. */
+a.nlink{color:var(--soon);border-bottom:1px dotted var(--soon);text-decoration:none;white-space:nowrap;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.4px}
+a.nlink:hover,a.nlink:focus{color:var(--text);border-bottom-color:var(--text)}
 .gate{background:linear-gradient(180deg,rgba(21,34,56,0) 0%,var(--ink-2) 42%);border:1px solid var(--soon);border-radius:var(--radius);padding:26px 22px;text-align:center;margin:18px 0}
 .note{background:var(--ink-3);border-left:3px solid var(--soon);border-radius:0 6px 6px 0;padding:11px 14px;font-size:13px;color:var(--muted);margin:0 0 14px}
 .warn{border-left-color:var(--stamp)}
@@ -623,7 +630,7 @@ export function renderRoiPage({ countries, benchmarks = [], phases = [], strings
     <option value="compliance" selected>${t("scope.compliance", "Compliance only &mdash; meet the mandates (what most programmes do)")}</option>
     <option value="both">${t("scope.both", "Compliance + AP process automation &mdash; the fuller, larger programme")}</option>
   </select>
-  <p class="hint">${t("input.scope.hint", "Kept out front rather than buried in the assumptions: it is a scoping decision, not a benchmark, and it changes both the numbers and the timeline.")}</p>
+  <p class="hint">${t("input.scope.hint", "A scoping decision, not a benchmark &mdash; it changes both the numbers and the timeline.")}</p>
 </div>
 
 <div class="card noprint">
@@ -733,12 +740,20 @@ export function renderRoiPage({ countries, benchmarks = [], phases = [], strings
   <p class="lede">${t("sec.direct.lede", "Money that stops leaving the business: processing cost per invoice, and rework you no longer pay for. Available wherever you digitise, mandate or not.")}</p>
   <div id="direct"></div>
   <h2>5 &middot; ${t("sec.indirect", "Indirect savings &mdash; cost and risk avoided")}</h2>
-  <p class="lede">${t("sec.indirect.lede", "Cost you avoid rather than cash you release: tax and audit effort, penalty exposure, fraud. The <em>mechanisms</em> are well evidenced; the <em>magnitudes</em> mostly are not, which is why so much of this section is named rather than monetised.")}</p>
+  <p class="lede">${t("sec.indirect.lede", "Cost you avoid rather than cash you release. Mechanisms are well evidenced; magnitudes mostly are not, so much of this section is named rather than priced.")}</p>
   <div id="indirect"></div>
   <h2>6 &middot; ${t("sec.invest", "Investment &amp; payback")}</h2>
   <div id="invest"></div>
-  <h2>7 &middot; ${t("sec.evidence", "What the evidence actually supports")}</h2>
-  <div id="evidence"></div>
+  <details class="card" id="notes" style="padding:0">
+    <summary style="cursor:pointer;padding:14px 18px;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:12px">
+      <span>
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:var(--soon)">7 &middot; ${t("sec.evidence", "Assumptions, sources and caveats")}</span>
+        <span class="hint" style="display:block;margin:4px 0 0">${t("sec.evidence.hint", "Every figure above, where it came from, and what it deliberately does not claim.")}</span>
+      </span>
+      <span id="notesChevron" style="font-family:'IBM Plex Mono',monospace;color:var(--muted);font-size:12px;white-space:nowrap">${t("assumptions.show", "show &#9662;")}</span>
+    </summary>
+    <div style="padding:0 18px 18px"><div id="evidence"></div></div>
+  </details>
 </div>
 
 <footer>
@@ -809,6 +824,24 @@ const ev = (key, txt) => \`<span class="ev" tabindex="0">\${txt}<span class="tip
 // until hover and would measure zero. Delegated from document so it also
 // covers markers that build() renders later, and re-run on every hover
 // because column widths move with the viewport.
+// One click from any condensed caveat to the section that explains it.
+// Scrolling IS wanted here, unlike everywhere else on this page — the
+// reader has asked to go and read something.
+const notesLink = () => \`<a href="#notes" class="nlink">${tj("notes.link","why &rsaquo;")}</a>\`;
+document.addEventListener('click', (e) => {
+  const a = e.target.closest && e.target.closest('a.nlink');
+  if(!a) return;
+  e.preventDefault();
+  const d = document.getElementById('notes');
+  if(!d) return;
+  d.open = true;
+  d.scrollIntoView({behavior:'smooth', block:'start'});
+});
+document.getElementById('notes').addEventListener('toggle', function(){
+  document.getElementById('notesChevron').innerHTML =
+    this.open ? '${tj("assumptions.hide","hide &#9652;")}' : '${tj("assumptions.show","show &#9662;")}';
+});
+
 function fitTip(el){
   const t = el.querySelector('.tip'); if(!t) return;
   const r = el.getBoundingClientRect();
@@ -1349,10 +1382,10 @@ function buildGantt(sel0, erp, pace){
   // overwritten with a reassurance about zero waves.
   if(!waveMeta.length){ document.getElementById('ganttLegend').innerHTML = ''; return rows; }
   const critPath = progWeeks > typicalTrack
-    ? \`<div class="note"><strong>Procurement is your critical path, not delivery.</strong> Vendor selection and contracting run \${progWeeks} weeks against a typical wave of \${typicalTrack} weeks elapsed &mdash; so the date that actually moves everything is when you start procurement, not when a country team mobilises. Shortening the country build saves little; shortening procurement moves every deadline.</div>\`
+    ? \`<div class="note"><strong>${tj("chart.procure","Procurement is your critical path, not delivery.")}</strong> \${progWeeks} ${tj("chart.procure2","weeks of vendor selection and contracting against a typical")} \${typicalTrack} ${tj("chart.procure3","week wave. Shortening the country build saves little; shortening procurement moves every deadline.")}</div>\`
     : '';
   document.getElementById('ganttHead').innerHTML = critPath + (late
-    ? \`<div class="note warn"><strong>\${late} of \${waveMeta.length} waves back-plan to a start date that has already passed.</strong> Working backwards from the published deadline through your own phase assumptions, the latest responsible start for \${late === 1 ? 'that wave' : 'those waves'} in the past — so \${late === 1 ? 'it needs' : 'they need'} either compressed delivery, an interim filing approach, or an accepted late position. This is the single most useful output on the page, and it only exists because the deadlines are real.</div>\`
+    ? \`<div class="note warn"><strong>\${late} ${tj("chart.late","of")} \${waveMeta.length} ${tj("chart.late2","waves back-plan to a start date that has already passed.")}</strong> ${tj("chart.late3","Compressed delivery, an interim filing approach, or an accepted late position &mdash; but the latest responsible start is behind you.")} \${notesLink()}</div>\`
     : soon ? \`<div class="note"><strong>\${soon} wave\${soon===1?'':'s'} must start within 90 days</strong> to hit the published deadline on your current phase assumptions.</div>\`
     : \`<div class="note"><strong>Runway is comfortable across all \${waveMeta.length} waves</strong> on your current assumptions.</div>\`);
 
@@ -1670,14 +1703,14 @@ function build(){
       <div class="stat"><div class="n" style="color:\${dated.length?'#e08b7a':'#8d9bb5'}">\${dated.length}</div><div class="l">${tj("res.dated","With a dated deadline ahead")}</div></div>
     </div>
     <div class="note" style="margin-top:14px">\${banked
-      ? \`<strong>Scope: compliance + AP process automation.</strong> Every direct row counts, because your programme includes the process redesign and retraining, and the timeline below carries a process-change phase per country to match. This is the less common shape: most enterprises meet the mandate on its own first, because doing both at once is too large a programme to land in one go. \`
-      : \`<strong>Scope: compliance only &mdash; the usual shape.</strong> \${fmt(l1Banked)} a year banks without any process-change programme, because the integration that makes you compliant is the same integration that stops you keying invoices and stops you posting paper. The remaining \${fmt(l1Unbanked)} is review, approval and rework &mdash; workflow, which needs the change programme, and which is why it sits unbanked above rather than counted. \`}Direct savings are what AP process automation delivers; indirect savings are what the compliance regime itself delivers. A mandate integration is an IT workstream that unlocks the first and delivers the second &mdash; worth separating in front of a board, because only one of them is non-negotiable. The two are deliberately <strong>not</strong> added together. Direct savings rest on published figures; indirect ones rest on assumptions you set, because no credible source quantifies them. A CFO will trust a smaller defended number over a larger asserted one.</div>
+      ? \`<strong>${tj("sum.scopeBoth","Scope: compliance + AP process automation.")}</strong> ${tj("sum.scopeBoth2","Every direct row counts, and the timeline carries a process-change phase per country. The larger, less common programme.")}\`
+      : \`<strong>${tj("sum.scopeOnly","Scope: compliance only.")}</strong> \${fmt(l1Banked)} ${tj("sum.scopeOnly2","banks from the integration itself; the remaining")} \${fmt(l1Unbanked)} ${tj("sum.scopeOnly3","needs a change programme you are not running.")}\`} ${tj("sum.scopeBoth3","Direct and indirect are deliberately not added together")} \${notesLink()}</div>
     <div class="card"><p style="margin:0">Across <strong>\${sel.length}</strong> jurisdictions you have <strong>\${complex.length} complex</strong> (CTC or 5-corner) and <strong>\${simple.length} simple</strong> (4-corner exchange) regime\${simple.length===1?'':'s'}\${watch.length?\`, plus \${watch.length} with no mandate${hlp('nomandate','Why these are still in the plan')}\`:''}. With \${erp} ERP/billing system\${erp===1?'':'s'} that is roughly <strong>\${integrations} country-system integration\${integrations===1?'':'s'}</strong>${hlp('integrations','How this is derived')} to deliver. \${dated.length?\`The nearest binding date is <strong>\${dated[0][5]}</strong> (\${dated[0][0]}).\`:'None of the selected jurisdictions has a future dated deadline on the tracker today.'} \${ev('site','Source: live tracker data')}</p></div>\`;
 
   const pace = +document.getElementById('pace').value || 1;
   const ganttRows = buildGantt(sel, erp, pace);
   const euDrivenCount = sel.filter(c=>c[8]).length;
-  document.getElementById('waveIntro').innerHTML = \`Back-planned from each jurisdiction's actual published deadline \${ev('site','dates from the tracker')}, through phase durations you control \${ev('durations','practitioner estimates')}. Grouped by region, then by go-live date. Vendor selection and contracting are modelled once at programme level rather than repeated per country.\${euDrivenCount?\` <strong>\${euDrivenCount} of your jurisdictions are here on an EU-wide obligation</strong> rather than a national mandate${hlp('vida','Where these deadlines come from')}.\`:''}\`;
+  document.getElementById('waveIntro').innerHTML = \`${tj("waves.intro","Back-planned from each jurisdiction&rsquo;s published deadline")} \${ev('site','tracker dates')} ${tj("waves.intro2","through phase durations you control")} \${ev('durations','practitioner estimates')}. ${tj("waves.intro3","Procurement is modelled once, not per country.")}\${euDrivenCount?\` <strong>\${euDrivenCount}</strong> ${tj("waves.intro4","are here on an EU-wide obligation, not a national mandate")}${hlp('vida','Where these deadlines come from')}.\`:''}\`;
   let w = dated.length ? \`<table><thead><tr><th>Deadline</th><th>Jurisdiction</th><th>Status</th><th>Model${hlp('complexity','How complexity is assigned')}</th><th class="num">Integrations${hlp('integrations','How this is derived')}</th><th>Why</th></tr></thead><tbody>\` : '';
   dated.forEach(c=>{
     const st=STATUS[c[3]], cx=CXNAME[c[4]];
@@ -1705,13 +1738,11 @@ function build(){
     <tr class="tierA"><td>Processing cost reduction (AP) <span class="tag tang">tangible</span> <span class="tag \${banked?'bank':'unbank'}">\${banked?'banks':Math.round(TAXM.captureShare*100)+'% banks'}</span></td><td>\${volAP.toLocaleString()} invoices &times; \${fmt1(costNow)} \${ev('ardent','baseline')} &times; \${Math.round(savePct*100)}% \${ev('hmrc60','reduction')}</td><td class="num">\${fmt(saving)}</td></tr>
     <tr class="tierA"><td>Issuing cost reduction (AR) <span class="tag tang">tangible</span> <span class="tag bank">banks</span></td><td>\${volAR.toLocaleString()} invoices &times; \${fmt1(costAR)} \${ev('ato','ATO / Deloitte')} &times; \${Math.round(savePct*100)}% \${ev('hmrc60','reduction')}</td><td class="num">\${fmt(savingAR)}</td></tr>
     <tr class="tierB"><td>Avoided rework on data-entry errors <span class="tag tang">tangible</span> <span class="tag \${banked?'bank':'unbank'}">\${banked?'banks':'not banked'}</span></td><td>\${Math.round(errNow).toLocaleString()} errored invoices \${ev('hmrcErr',\`at ~\${Math.round(errRate*100)}%\`)} &times; \${fmt(errCost)} \${overridden('errCost') ? ev('yours','your rework cost') : ev('rework','our estimate, not yours')} &times; \${Math.round(errElim*100)}% \${ev('errElim','why not all of them')} \${ev('ardentExc','not Ardent&rsquo;s 18.4% exception rate')}</td><td class="num">\${fmt(errSave)}</td></tr>
-    <tr class="tierA"><td>Faster cycle time &amp; fewer supplier queries <span class="tag intang">intangible</span></td><td>Top-performing AP spends <strong>12.8%</strong> of staff time on supplier inquiries against <strong>24.0%</strong> for everyone else \${ev('ardentInq','Ardent Partners, 2025 data')}. Measured and primary &mdash; but an association with high-performing AP as a whole, not a measured effect of e-invoicing, so <strong>deliberately not monetised</strong>. The matching cycle-time gap \${ev('ardentCycle','2.9 vs 13.5 days')} is circular by construction and is not offered as evidence; \${ev('nhs','one NHS trust')} reports queries down ~15%, which is an anecdote.</td><td class="num">&mdash;</td></tr>
+    <tr class="tierA"><td>${t("row.cycle","Faster cycle time &amp; fewer supplier queries")} <span class="tag intang">intangible</span></td><td>${tj("row.cycle.basis","Top-performing AP spends")} <strong>12.8%</strong> ${tj("row.cycle.basis2","of staff time on supplier inquiries against")} <strong>24.0%</strong> \${ev('ardentInq','Ardent Partners, 2025 data')} &mdash; ${tj("row.cycle.basis3","an association with high-performing AP, not a measured effect of e-invoicing, so")} <strong>${tj("row.cycle.basis4","not monetised")}</strong>. \${notesLink()}</td><td class="num">&mdash;</td></tr>
     <tr class="tierA"><td>Paper, print, postage, storage <span class="tag tang">tangible</span></td><td>Paper AUD 30.87 vs e-invoice AUD 9.18 \${ev('ato','ATO / Deloitte')}; your own spend is the better input</td><td class="num">&mdash;</td></tr>
     <tr style="border-top:2px solid var(--line)"><td colspan="2"><strong>Direct total &mdash; banked on this scope</strong>\${l1Unbanked > 0 ? \` <span class="hint" style="display:inline">(\${fmt(l1Unbanked)} unlocked and not banked, of \${fmt(l1)})</span>\` : ''}</td><td class="num"><strong style="color:#7fd0a8">\${fmt(l1Banked)}</strong></td></tr>
     </tbody></table>
-    <div class="note warn" style="margin-top:12px">${tj("res.scopeCaveat","<strong>What banks, and what you have to go and get.</strong> Each row above says which it is. Capture and issuing arrive with the integration &mdash; once invoices come in structured and go out cleared, nobody is keying or posting them, whatever else you do or do not change. Review, approval and the rework that follows them are workflow, and workflow only improves if you redesign and retrain, which is a separate programme with its own cost and its own risk. The split between the two comes from the ATO / Deloitte task times, not from us. Rework is held unbanked even on a compliance scope despite a decent argument that it should not be: it rests on the least well-evidenced figures in this model, and the row that gains most from a change is the wrong row to be generous with.")}</div>
-    <div class="note warn" style="margin-top:12px"><strong>${tj("res.headcount.h","What this means in headcount.")}</strong> Your \${volAP.toLocaleString()} AP invoices imply <strong>\${apFteImplied.toFixed(1)} AP FTE</strong> \${ev('apqc','APQC median, 12,000 per FTE')}, of which \${Math.round(TAXM.captureShare*100)}% is capture and validation \${ev('atoCapture','ATO / Deloitte task times')} &mdash; about <strong>\${captureFte.toFixed(1)} FTE keying invoices today</strong>. At \${Math.round(savePct*100)}% reduction that releases <strong>\${captureSaved.toFixed(1)} FTE</strong>, worth \${fmt(captureValue)} at your data-entry rate.<br><br>${tj("res.headcount.same","<strong>This is the same money as the processing-cost row above, expressed as people &mdash; not an additional saving.</strong> The per-invoice benchmark is labour-dominated, so counting both would count it twice.")}\${saving > 0 ? \`<br><br>${tj("res.headcount.gap","Worth noticing how much of the top line it accounts for:")} \${fmt(captureValue)} of \${fmt(saving)}, or \${Math.round(captureValue/saving*100)}%. ${tj("res.headcount.gap2","The rest is the review-and-approve half of the process, technology and overhead &mdash; all inside the per-invoice benchmark, none of it a data-entry head. And released capacity is only cash if the post goes or is not backfilled, which is a decision rather than a benefit.")}\` : ''}</div>
-    <div class="note" style="margin-top:10px">${tj("res.unmonetised", "Two benefits above are left unmonetised on purpose, and for <em>different</em> reasons. Paper, print and postage has no benchmark worth defending &mdash; your own spend is the only honest input. Cycle time and supplier queries has a good one, and still cannot be monetised: nobody has measured how much of that gap e-invoicing itself causes, and assuming all of it would undermine every other number on this page.")}</div>\`;
+    <div class="note" style="margin-top:12px"><strong>${tj("res.headcount.h","In headcount:")}</strong> \${captureFte.toFixed(1)} ${tj("res.headcount.line","FTE keying invoices today, of which")} <strong>\${captureSaved.toFixed(1)}</strong> ${tj("res.headcount.line2","are released &mdash; the same money as the row above, priced as people rather than an addition to it.")} \${notesLink()}</div>\`;
 
   document.getElementById('indirect').innerHTML = \`
     <table><thead><tr><th>Benefit</th><th>Evidence position</th><th class="num">Annual value</th></tr></thead><tbody>
@@ -1720,7 +1751,7 @@ function build(){
     <tr class="tierD"><td>Penalty &amp; remediation exposure avoided <span class="tag intang">intangible</span></td><td>\${sel.filter(c=>c[6]>0).length} of your jurisdictions publish a quantified penalty schedule \${ev('site','on their deep dives')}. Size it from those, per country &mdash; there is no credible aggregate</td><td class="num">&mdash;</td></tr>
     <tr class="tierD"><td>Fraud detection, working-capital visibility <span class="tag intang">intangible</span></td><td>Strategic benefits; no benchmark exists \${ev('yours','your call')}</td><td class="num">&mdash;</td></tr>
     </tbody></table>
-    <div class="note warn" style="margin-top:12px">${tj("res.indirectWhy","<strong>Why the indirect column is smaller than you would expect.</strong> The compliance case is genuinely compelling &mdash; but almost every circulating number attached to it fails verification. This model shows only what can be defended and names what cannot, which is a stronger position in front of a finance committee than a bigger number that collapses under a single question.")}</div>\`;
+    <div class="note" style="margin-top:12px">${tj("res.indirectWhy","Small because almost every circulating number here fails verification. What survives is shown; what does not is named.")} \${notesLink()}</div>\`;
 
   // ---- investment: without a cost side this is a benefits calculator, not ROI
   const cImplS = +document.getElementById('cImplS').value || 0;
@@ -1742,17 +1773,25 @@ function build(){
       <div class="stat"><div class="n" style="color:\${netAnnual>=0?'#7fd0a8':'#e0907f'}">\${fmt(netAnnual)}</div><div class="l">Net annual \${banked?'benefit':'(compliance scope)'}</div></div>
       <div class="stat"><div class="n" style="color:\${paybackMonths&&paybackMonths<=24?'#7fd0a8':'#e2b978'}">\${paybackMonths===null?'n/a':Math.round(paybackMonths)+'mo'}</div><div class="l">${tj("res.payback","Payback on one-off")}</div></div>
     </div>
-    \${!banked ? \`<div class="note" style="margin-top:12px">${tj("res.complianceOnly","<strong>This is a compliance-only case, and it is the normal one.</strong> Enterprises meeting a mandate almost never bundle AP process automation into the same programme &mdash; it is too large to land in one go. What counts above is only what the integration itself delivers: you stop keying inbound invoices and stop issuing paper, because the mandate leaves you no way to do either.")} \${l1Unbanked > 0 ? \`${tj("res.complianceOnly2","The further")} \${fmt(l1Unbanked)} ${tj("res.complianceOnly3","is review, approval and rework. It stays unbanked because it needs a change programme you are not running &mdash; but it does not go away, and it is the option this integration buys you for later. If the net figure is negative, that is a real answer rather than a broken one: you are buying the right to keep trading in these markets.")}\` : ''}</div>\` : ''}
-    <div class="note" style="margin-top:12px">${tj("res.tangible","<strong>Tangible versus intangible.</strong> Everything counted above is tangible: a number someone can be held to. The intangible benefits &mdash; faster cycle times, penalty exposure avoided, fraud detection, VAT position &mdash; are listed in the two sections above and deliberately carry no value. They are real, they often matter more to a board than the arithmetic, and there is no honest way to price them. Present them as the qualitative case alongside this number, not inside it.")}</div>\`;
+    \${!banked ? \`<div class="note" style="margin-top:12px">${tj("res.complianceOnly","Compliance-only, the normal shape. Counts what the integration itself delivers;")} \${fmt(l1Unbanked)} ${tj("res.complianceOnly3","more is the option it buys you for later.")} \${notesLink()}</div>\` : ''}
+    <div class="note" style="margin-top:12px">${tj("res.tangible","Everything counted here is tangible. The intangible benefits are named above and carry no value on purpose.")} \${notesLink()}</div>\`;
 
   document.getElementById('evidence').innerHTML = \`
+    <p style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:var(--soon);margin:0 0 8px">${tj("notes.h.reasoning","The reasoning")}</p>
+    <div class="grid g2" style="margin-bottom:16px">
+      <div class="card"><h3>${tj("notes.banks.h","What compliance alone banks")}</h3><p class="hint">${tj("notes.banks","Capture and issuing arrive with the integration: once invoices come in structured and go out cleared, nobody keys or posts them. Review and approval are workflow and need a separate change programme. The split is the ATO / Deloitte task times &mdash; receipt 7 and validation 2 minutes against review 7 and approval 5 &mdash; not our judgement.")}</p></div>
+      <div class="card"><h3>${tj("notes.rework.h","Why rework is held back")}</h3><p class="hint">${tj("notes.rework","It rests on HMRC&rsquo;s unsourced 10% error rate, a cost you set yourself, and our assumption about how many errors actually go away. Least evidenced row here and the largest beneficiary of any change, so it stays unbanked even on a compliance scope. Ardent gives the mechanism but no quantified reduction; their Best-in-Class exception gap of 9.8 points is used as a ceiling on what this model may claim.")}</p></div>
+      <div class="card"><h3>${tj("notes.headcount.h","Headcount restates, it does not add")}</h3><p class="hint">${tj("notes.headcount","The capture-FTE figure prices the processing-cost row in people. It is the same money &mdash; the per-invoice benchmark is labour-dominated, so counting both would count it twice.")}\${saving > 0 ? \` \${fmt(captureValue)} of \${fmt(saving)}, or \${Math.round(captureValue/saving*100)}%; the rest is review, technology and overhead.\` : ''} ${tj("notes.headcount2","Released capacity is only cash if the post goes or is not backfilled.")} \${ev('apqc','APQC')} &middot; \${ev('atoCapture','ATO / Deloitte')}</p></div>
+      <div class="card"><h3>${tj("notes.unmonetised.h","What carries no value on purpose")}</h3><p class="hint">${tj("notes.unmonetised","Paper and postage, because your own spend is the only honest input. Cycle time and supplier queries, because nobody has measured how much of that gap e-invoicing causes &mdash; Ardent&rsquo;s own")} \${ev('ardentCycle','2.9 vs 13.5 days')} ${tj("notes.unmonetised2","is circular by construction, and the")} \${ev('nhs','15% query reduction')} ${tj("notes.unmonetised3","is a single anecdote. VAT leakage, penalty exposure and fraud, because the mechanisms are real and the magnitudes are not evidenced. They belong in the qualitative case beside this number, not inside it.")}</p></div>
+    </div>
+    <p style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:var(--soon);margin:0 0 8px">${tj("notes.h.grades","Evidence grades")}</p>
     <div class="grid g2">
       <div class="card tierA"><h3>${tj("ev.gradeA","Grade A")} <span class="tag tA">${tj("ev.gradeA.tag","measured &amp; primary")}</span></h3><p class="hint">${tj("ev.gradeA.body","Ardent Partners 2025 (cost, cycle time, exception and supplier-inquiry rates) &middot; ATO / Deloitte Access Economics (paper vs PDF vs e-invoice, 2016 vintage, stated) &middot; OECD DCTR 2026 (mechanism) &middot; this site&rsquo;s own tracker data.")}</p></div>
       <div class="card tierB"><h3>${tj("ev.gradeB","Grade B")} <span class="tag tB">${tj("ev.gradeB.tag","credible body, unattributed")}</span></h3><p class="hint">${tj("ev.gradeB.body","HMRC/DBT 60&ndash;80% cost reduction and ~10% manual error rate. Both appear in a UK government consultation; neither carries a source within it. Real enough to use, not strong enough to lead with.")}</p></div>
       <div class="card tierC"><h3>${tj("ev.gradeC","Grade C")} <span class="tag tC">${tj("ev.gradeC.tag","anecdote, not benchmark")}</span></h3><p class="hint">${tj("ev.gradeC.body","The NHS trust figures (24h vs 10 days, 2&times; payment speed, 15% fewer queries) &mdash; one unnamed, undated organisation. The VAT-gap figures, which are European Commission/CASE rather than OECD, and whose own country analyses credit economic recovery rather than digital reporting.")}</p></div>
       <div class="card tierD"><h3>${tj("ev.gradeD","Grade D")} <span class="tag tD">${tj("ev.gradeD.tag","your assumption")}</span></h3><p class="hint">${tj("ev.gradeD.body","Rework cost per errored invoice, loaded FTE cost, tax-effort saving. Nothing is claimed for these; they are exposed so the model can be argued with rather than believed.")}</p></div>
     </div>
-    <div class="note" style="margin-top:14px">Corrections applied during verification: the VAT-gap figures were re-attributed from OECD to the European Commission, Hungary&rsquo;s start figure corrected 9.8%&rarr;10.4% and Poland&rsquo;s 12.7%&rarr;12.5%, and the &ldquo;reduced penalty exposure&rdquo; claim was removed from the HMRC attribution &mdash; the word &ldquo;penalty&rdquo; does not appear in that consultation.</div>\`;
+    <div class="note" style="margin-top:14px">${tj("notes.corrections","<strong>Corrections applied during verification.</strong> The VAT-gap figures were re-attributed from OECD to the European Commission; Hungary&rsquo;s start figure corrected 9.8%&rarr;10.4% and Poland&rsquo;s 12.7%&rarr;12.5%; and the &ldquo;reduced penalty exposure&rdquo; claim was removed from the HMRC attribution, because the word &ldquo;penalty&rdquo; does not appear in that consultation.")}</div>\`;
 
   // ---- sanity guards on what we just rendered ----------------------
   // Design review, "add sanity assertions to rendered output": the page

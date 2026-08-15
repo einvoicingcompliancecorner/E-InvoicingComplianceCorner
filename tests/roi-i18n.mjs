@@ -93,9 +93,9 @@ try {
     ["an assumptions heading", "Implementation &mdash; weeks"],
     ["the placeholder warning", "placeholders only"],
     ["the paywall gate", "Your results are ready"],
-    ["a results heading", "What the evidence actually supports"],
+    ["a results heading", "Assumptions, sources and caveats"],
     ["a runtime stat label", "With a dated deadline ahead"],
-    ["a runtime note", "Tangible versus intangible"],
+    ["a runtime note", "Everything counted here is tangible"],
     ["an evidence card", "credible body, unattributed"],
     ["the footer", "not tax, legal or investment advice"],
   ];

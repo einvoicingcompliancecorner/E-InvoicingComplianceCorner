@@ -107,11 +107,17 @@ t.check("the cycle-time row carries Ardent's supplier-inquiry split",
 t.check("and no longer says the only figure is an anecdote",
   !/only figures available are one NHS anecdote/i.test(direct));
 
+// The citation lives in the notes panel now, not in the table cell — the
+// row was condensed, and dropping a grade-A citation instead of moving it
+// is the orphaning this project has already found three times.
+await page.evaluate(() => { document.getElementById("notes").open = true; });
+await page.waitForTimeout(200);
 const cycTip = await page.evaluate(() => {
-  const el = [...document.querySelectorAll("#direct .ev")]
-    .find((e) => /2\.9 vs 13\.5 days/.test(e.textContent));
+  const el = [...document.querySelectorAll("#notes .ev")]
+    .find((e) => e.firstChild && /2\.9 vs 13\.5 days/.test(e.firstChild.textContent || ""));
   return el ? el.querySelector(".tip").textContent : "";
 });
+await page.evaluate(() => { document.getElementById("notes").open = false; });
 // The figure is quoted; the reason it proves nothing has to be quoted
 // with it, or citing it is worse than omitting it.
 t.check("the cycle-time citation explains that the gap is definitional",
@@ -403,18 +409,25 @@ t.check("both rates are in the assumptions panel, and differ",
 
 const directTotal = Number((await page.locator("#direct tbody tr").first()
   .locator("td").last().innerText()).replace(/[^\d]/g, ""));
-const head = await page.locator("#direct .note.warn").last().innerText();
-t.check("the headcount block states the capture FTE it derived",
+const head = await page.locator("#direct .note").last().innerText();
+t.check("the headcount line states the capture FTE it derived",
   /3\.6 FTE keying invoices today/.test(head), head.slice(0, 200));
-t.check("and the FTE it releases at the stated reduction",
-  /releases 2\.1 FTE/.test(head), head.slice(0, 260));
+t.check("and the FTE it releases",
+  /2\.1/.test(head) && /released/.test(head), head.slice(0, 260));
 
-// The load-bearing sentence. Without it this is a double count, and it is
-// the first thing a finance committee would challenge.
-t.check("it says in terms that this is not an additional saving",
-  /not an additional saving/i.test(head));
-t.check("and reconciles itself against the processing row it decomposes",
-  head.includes(String(directTotal.toLocaleString("en-US"))), head.slice(-260));
+// The load-bearing clause. Without it this is a double count, and it is
+// the first thing a finance committee would challenge — so it stays
+// INLINE even after the caveat pass, rather than moving to the panel.
+t.check("it says inline that this is a restatement, not an addition",
+  /rather than an addition to it/i.test(head), head);
+
+// The full reconciliation moved into the notes panel rather than being
+// dropped: condensing the page must not lose the arithmetic.
+await page.evaluate(() => { document.getElementById("notes").open = true; });
+await page.waitForTimeout(200);
+const notesText = await page.locator("#notes").innerText();
+t.check("and the panel still reconciles it against the row it decomposes",
+  notesText.includes(String(directTotal.toLocaleString("en-US"))), notesText.slice(0, 300));
 
 // Guard 6: the bottom-up labour cannot exceed the top-down saving it is a
 // component of. Forced by pushing the data-entry rate far past market.
@@ -519,6 +532,60 @@ await page.fill("#errCost", "70");
 await page.click("#run"); await page.waitForTimeout(700);
 t.check("and becomes theirs once they change it",
   /your rework cost/.test(await page.locator("#direct tbody tr").nth(2).innerText()));
+
+// ---- 18. the page stays readable ----
+// Dan, 15 Aug 2026: "The UI is difficult to read and follow because there
+// are so many caveats and assumptions... could those be hidden in a
+// popout." Measured at the time: 1,539 words of always-on prose across 27
+// blocks before the reader reaches a number, roughly half of it added in
+// the preceding two days while making the model defensible.
+//
+// That is the failure mode of writing caveats one at a time — each is a
+// paragraph you can defend, and nobody reads the page end to end and asks
+// whether the sum is still a tool. So the budget is a test, not a
+// resolution. It is the only check here that guards a quality rather than
+// a fact.
+// Reload first. Earlier sections leave the assumptions and adjust panels
+// open and the volumes edited, and a budget measured against that state
+// is not the state any reader arrives in.
+await page.goto(`file://${file}`);
+await page.click("#selEU"); await page.waitForTimeout(200);
+await page.click("#run"); await page.waitForTimeout(800);
+const prose = await page.evaluate(() => {
+  const words = (s) => (s.trim().match(/\S+/g) || []).length;
+  let body = 0, guards = 0;
+  document.querySelectorAll(".note, .hint, p.lede").forEach((el) => {
+    if (el.closest("#notes")) return;              // behind the click, exempt
+    const t = el.innerText.trim(); if (words(t) < 12) return;
+    const id = el.closest("[id]") ? el.closest("[id]").id : "";
+    if (id === "guards") guards += words(t); else body += words(t);
+  });
+  return { body, guards };
+});
+t.check(`always-on prose stays within budget (${prose.body} words, ceiling 650, was 1539)`,
+  prose.body <= 650, prose.body);
+// Guards are exempt and must stay that way: they are conditional, they
+// fire on a specific bad state, and hiding a warning behind a click would
+// inevert their whole purpose. Asserted non-zero so a future tidy-up
+// cannot quietly sweep them into the panel along with everything else.
+t.check(`conditional guards are still inline (${prose.guards} words)`, prose.guards > 0);
+
+// ---- 19. the notes panel holds what the body gave up ----
+t.check("the panel is closed on arrival",
+  !(await page.locator("#notes").evaluate((e) => e.open)));
+const beforeOpen = await page.locator("#results").innerText();
+t.check("so its reasoning is not in the body text",
+  !/ATO \/ Deloitte task times — receipt 7/.test(beforeOpen));
+
+await page.locator("a.nlink").first().click();
+await page.waitForTimeout(600);
+t.check("a 'why' link opens it", await page.locator("#notes").evaluate((e) => e.open));
+
+const notes = await page.locator("#notes").innerText();
+["What compliance alone banks", "Why rework is held back",
+ "Headcount restates", "carries no value on purpose",
+ "Grade A", "Grade D", "Corrections applied"].forEach((phrase) =>
+  t.check(`the panel carries: ${phrase}`, notes.includes(phrase)));
 
 await browser.close();
 process.exit(t.report() ? 0 : 1);
