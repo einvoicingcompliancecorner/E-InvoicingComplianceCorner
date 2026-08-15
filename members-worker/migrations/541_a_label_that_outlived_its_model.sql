@@ -1,0 +1,72 @@
+-- ================================================================
+-- "Net annual (compliance scope)" loses its parenthetical.
+--
+-- Dan: "what does 'Net annual (compliance scope)' mean?"
+--
+-- THE QUESTION IS THE ANSWER. A label whose job is to prevent confusion,
+-- asked about by the person who commissioned the page, is not doing its
+-- job. What it meant: the suffix rendered only on compliance-only scope,
+-- flagging that the net figure excluded the savings AP automation would
+-- unlock.
+--
+-- IT IS A SURVIVOR FROM A MODEL THAT NO LONGER EXISTS, which is why it
+-- reads oddly now. The original build computed:
+--
+--     const annualBenefit = (banked ? l1 : 0) + l2;
+--
+-- On compliance-only, EVERY direct saving was multiplied by zero, so net
+-- annual was a badly diminished number and "(compliance scope)" was a
+-- real warning: you are looking at the crippled figure. Migration 528
+-- fixed that model -- compliance-only now banks capture and issuing
+-- properly, because that is what every real customer buys -- and the
+-- label outlived the defect it was warning about by thirteen migrations.
+--
+-- This is the dead-data pattern in COPY rather than in D1, and it is
+-- worse there: an orphaned translation key is at least reported by
+-- `npm test` on every run, whereas prose that has quietly stopped being
+-- true renders perfectly and no check in this repository can see it. The
+-- only detector is a reader asking what a sentence means. That is now
+-- twice this week -- the rework provenance in 529, and this.
+--
+-- ---- and the two problems it had even before that -------------------
+--
+-- INCONSISTENT. Three of the five summary stats move with scope: banked
+-- annually ($518,125 against $1,215,480), net annual, and payback (4mo
+-- against 2mo). Only ONE carried the qualifier, so a reader could
+-- reasonably infer the other two were scope-independent. Payback halves
+-- with no label at all.
+--
+-- REDUNDANT. The note immediately beneath the grid opens with a bold
+-- "Scope: compliance only." and then quantifies exactly what is excluded
+-- and what it would take to get it. The scope selector says it a third
+-- time. The parenthetical was the fourth statement of the same fact, on
+-- one arbitrary stat.
+--
+-- Dan's call from three options, and the one that removes rather than
+-- adds: drop it. Nothing is lost -- the scope is still stated in bold two
+-- lines below, with the number attached.
+-- ================================================================
+
+-- `res.netAnnualScope` is retired, not deleted. It has been live for one
+-- migration and would otherwise be the seventeenth orphan; naming it here
+-- means the sweep finds it with its reasoning attached rather than as an
+-- unexplained row. Nothing else reads it.
+DELETE FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key = 'res.netAnnualScope';
+
+-- ---- what this migration claims it did (see apply_migrations.py) ----
+-- ASSERT: SELECT count(*) FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key = 'res.netAnnualScope' = 0
+-- ASSERT: SELECT count(*) FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key = 'res.netAnnual' AND value = 'Net annual' = 1
+--
+-- Deleted rather than left for the sweep, and the difference matters:
+-- every other orphan on that list was a string the page USED to render
+-- and might want back. This one was introduced by migration 540 hours
+-- ago, in a form nobody asked for, and there is no version of this page
+-- that wants it. Leaving it would be hoarding rather than caution.
+--
+-- The standing invariant is about the fact the label was restating. The
+-- scope must remain stated in the summary note, because dropping the
+-- parenthetical is only safe while the bold "Scope:" line beneath the
+-- grid carries it -- and that line is now the ONLY place on the page,
+-- outside the selector itself, that says which scope the figures are on.
+--
+-- ASSERT ALWAYS: SELECT count(*) FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key IN ('sum.scopeOnly','sum.scopeBoth') = 2

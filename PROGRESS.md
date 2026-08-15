@@ -10981,6 +10981,66 @@ in-flight would be safe.** The dead-data sweep is the next thing to do on
 this page.
 
 
+## 15 August 2026 (cont'd) — A label that outlived its model (migration 541)
+
+Dan: *"what does 'Net annual (compliance scope)' mean?"*
+
+**The question is the answer.** A label whose job is preventing confusion,
+asked about by the person who commissioned the page, is not doing its job.
+
+What it meant: the suffix rendered only on compliance-only scope, flagging
+that the net figure excluded what AP automation would unlock.
+
+### It was a survivor from a model that no longer exists
+
+The original build computed:
+
+```js
+const annualBenefit = (banked ? l1 : 0) + l2;
+```
+
+On compliance-only, **every direct saving was multiplied by zero**, so net
+annual was a badly diminished number and "(compliance scope)" was a real
+warning: you are looking at the crippled figure. Migration 528 fixed that
+model. The label outlived the defect it warned about by thirteen
+migrations.
+
+This is the dead-data pattern **in copy rather than in D1**, and it is
+worse there: an orphaned key is at least printed by `npm test` on every
+run, whereas prose that has quietly stopped being true renders perfectly
+and no check in this repository can see it. The only detector is a reader
+asking what a sentence means — twice this week now, counting the rework
+provenance in 529.
+
+### Two problems it had regardless
+
+**Inconsistent.** Three of the five summary stats move with scope: banked
+annually ($518,125 against $1,215,480), net annual, and payback (4mo
+against 2mo). Only one carried the qualifier, so a reader could reasonably
+infer the other two were scope-independent. Payback halves with no label.
+
+**Redundant.** The note immediately beneath opens with a bold "Scope:
+compliance only." and quantifies exactly what is excluded. The selector
+says it a third time. The parenthetical was the fourth statement of the
+same fact, on one arbitrary stat.
+
+Dan's call from three options: drop it.
+
+### Deleted, not left for the sweep
+
+`res.netAnnualScope` is `DELETE`d rather than orphaned, and the difference
+is deliberate. Every other key on the sixteen-row orphan list is a string
+the page **used to** render and might want back. This one was introduced
+by 540 hours earlier, in a form nobody asked for, and no version of this
+page wants it. Leaving it would be hoarding rather than caution.
+
+### Verified
+
+`npm test`: 8 suites, all passing. ROI regression **156 checks**. A
+standing invariant now holds the scope note in place, since dropping the
+parenthetical is only safe while that line carries the fact.
+
+
 ## Open items / next steps
 
 ### Where things stand — 15 August 2026
