@@ -66,8 +66,30 @@ export async function buildRoiPage(opts = {}) {
       roi.getRoiFxRates(db.d1),
     ]);
 
+    // opts.stubStrings replaces every D1 value with a sentinel, so a
+    // rendered page can be searched for English that survived — the
+    // reverse of asking whether every D1 row is used. Recommendation 1
+    // on the design review, and the check that would have found the nine
+    // hardcoded strings migrations 544 and 545 fixed by accident.
+    const used = opts.stubStrings
+      ? Object.fromEntries(Object.keys(strings).map((k) => [k, `«${k}»`]))
+      : strings;
+
+    // Benchmarks and phases carry user-facing text of their own — labels,
+    // hints, citations, phase names and notes — and it is all D1-backed.
+    // Stub it too, or the detector reports every citation on the page as
+    // hardcoded and buries the real findings in noise.
+    const stubRow = (row, fields) => opts.stubStrings
+      ? { ...row, ...Object.fromEntries(fields
+          .filter((f) => row[f] != null && row[f] !== "")
+          .map((f) => [f, `«${row.key || row.id}.${f}»`])) }
+      : row;
+    const usedBenchmarks = benchmarks.map((b) => stubRow(b, ["label", "hint", "citation"]));
+    const usedPhases = phases.map((p) => stubRow(p, ["name", "note"]));
+
     const { body, script } = roi.renderRoiPage({
-      countries, benchmarks, phases, strings, fx,
+      countries, benchmarks: usedBenchmarks, phases: usedPhases,
+      strings: used, fx,
       locked: false, subscribed, signedInAs: "tests@example.com",
     });
 
@@ -83,7 +105,7 @@ ${body}
 </body></html>`;
 
     mkdirSync(TMP, { recursive: true });
-    const file = join(TMP, `roi-${lang}.html`);
+    const file = join(TMP, `roi-${lang}${opts.stubStrings ? "-stub" : ""}.html`);
     writeFileSync(file, html);
     return { file, html, body, script, countries, benchmarks, phases, strings, fx,
              migrations: db.migrations };

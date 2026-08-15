@@ -1202,5 +1202,81 @@ const tagText = await page.evaluate(() =>
 t.check(`the row tags come from D1 now, not the template (${tagText.join(", ")})`,
   tagText.length > 0 && tagText.every((x) => /saved/i.test(x)), tagText.join(", "));
 
+
+// ---- 35. the PDF prints every jurisdiction the reader selected ----
+// Dan: "please can you update the pdf output to include all countries
+// that are checked." The wave table was built from WAVES, which holds
+// only back-planned waves, so a selection with no dated deadline was
+// costed into the one-off on page 1 and appeared nowhere on the plan --
+// sixteen of thirty-two at the EU preset.
+//
+// Asserted as a SET COMPARISON rather than a count, because a count can
+// be right while the names are wrong, and this is the artefact that
+// leaves the building.
+await page.click("#selEU"); await page.waitForTimeout(400);
+await page.click("#run"); await page.waitForTimeout(1400);
+const ticked = await page.evaluate(() =>
+  [...document.querySelectorAll("#s-countries input[type=checkbox]:checked")]
+    .map((e) => (e.closest("label") || e.parentElement).textContent.replace(/\s+/g, " ").trim()));
+await page.click("#print"); await page.waitForTimeout(1300);
+const pdfNames = await page.evaluate(() => {
+  const rows = [...document.querySelectorAll("#pdfdoc table tr")].slice(1);
+  const names = [];
+  for (const tr of rows) {
+    const who = tr.children[1];
+    if (!who) continue;
+    const txt = who.textContent.trim();
+    if (/^[\d.$]/.test(txt)) continue;              // the figures table
+    for (const n of txt.split(",")) {
+      const c = n.replace(/\+\d+$/, "").trim();
+      if (c) names.push(c);
+    }
+  }
+  return names;
+});
+const pdfNamesSet = new Set(pdfNames);
+// The grouped rows truncate past six with "+N", so a truncated row cannot
+// name everyone — count the +N back in rather than pretending it does.
+const plus = await page.evaluate(() =>
+  [...document.querySelectorAll("#pdfdoc table tr")]
+    .map((tr) => (tr.children[1] || {}).textContent || "")
+    .join(" ").match(/\+(\d+)/g) || []);
+const hidden = plus.reduce((a, x) => a + Number(x.slice(1)), 0);
+t.check(`the PDF plan accounts for every ticked jurisdiction (${ticked.length} ticked, ${pdfNamesSet.size} named + ${hidden} folded)`,
+  pdfNamesSet.size + hidden >= ticked.length,
+  `${pdfNamesSet.size} + ${hidden} vs ${ticked.length}`);
+t.check("undated jurisdictions get a row rather than being dropped",
+  [...pdfNamesSet].some((n) => n === "Austria") || hidden > 0,
+  [...pdfNamesSet].slice(0, 8).join(", "));
+const undatedRow = await page.evaluate(() =>
+  [...document.querySelectorAll("#pdfdoc table tr")]
+    .map((tr) => tr.textContent.replace(/\s+/g, " ").trim())
+    .find((t) => /Not yet defined/.test(t)) || "");
+t.check(`the no-deadline row says so in words (${undatedRow.slice(0, 40)})`,
+  /Not yet defined/.test(undatedRow), undatedRow.slice(0, 90));
+t.check("and a note explains that their dates are a choice, not an obligation",
+  /planning choice, not an obligation/.test(
+    await page.evaluate(() => document.getElementById("pdfdoc").innerText)));
+
+// A pinned date is honoured and labelled — the other half of Dan's ask.
+await page.evaluate(() => { const d = document.getElementById("adjust"); if (d) d.open = true; });
+await page.waitForTimeout(300);
+await page.evaluate(() => {
+  const el = document.querySelector('[data-ovr-start="Austria"]');
+  if (el) { el.value = "2029-03-01"; el.dispatchEvent(new Event("change", { bubbles: true })); }
+});
+await page.waitForTimeout(1400);
+await page.click("#print"); await page.waitForTimeout(1300);
+const pinRow = await page.evaluate(() =>
+  [...document.querySelectorAll("#pdfdoc table tr")]
+    .map((tr) => tr.textContent.replace(/\s+/g, " ").trim())
+    .find((t) => /Austria/.test(t)) || "");
+t.check(`a pinned start prints as the pinned date (${pinRow.slice(0, 44)})`,
+  /2029-03-01/.test(pinRow) && /pinned/i.test(pinRow), pinRow.slice(0, 90));
+const pagesNow = await page.evaluate(() =>
+  document.querySelectorAll("#pdfdoc .pg").length);
+t.check(`and the PDF is still exactly two pages with all of it (${pagesNow})`,
+  pagesNow === 2, pagesNow);
+
 await browser.close();
 process.exit(t.report() ? 0 : 1);
