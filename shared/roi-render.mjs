@@ -1018,6 +1018,35 @@ const CUR_INPUTS = ['costNow','costAR','errCost','fteCost','fteEntry','cImplS','
 // 45,888.53 for a placeholder implies a precision nobody has.
 const roundCur = v => v >= 1000 ? Math.round(v) : Math.round(v*100)/100;
 const usdDefault = {}, usdCurrent = {};
+// ---- positional slots, so a sentence can survive translation --------
+//
+// Dan chose this over fragment-by-fragment when the hardcoded-string
+// detector found 103 of these. The problem it solves: this page builds
+// prose by concatenating English around computed values, e.g.
+//
+//   'Across ' + n + ' jurisdictions you have ' + x + ' complex...'
+//
+// Split into rows, each fragment is translatable and the sentence is
+// not, because word order moves between languages and a translator
+// cannot reorder pieces that JavaScript joins in a fixed sequence. One
+// row holding the whole sentence with {0}-style slots can be reordered
+// freely -- the slot carries its meaning with it.
+//
+// Slots may contain HTML: several of these wrap their value in <strong>,
+// and the substitution is textual so that keeps working. Unmatched slots
+// are left visible rather than blanked, because "{3}" on screen is a bug
+// report and an empty gap is not.
+//
+// NOT called fmt: that is the money formatter, three lines below.
+const fill = (tpl, ...a) => String(tpl).replace(/\\{(\\d+)\\}/g,
+  (m, i) => a[i] === undefined ? m : a[i]);
+// English pluralises by adding an s, which is why this codebase did it
+// with a ternary on n===1 in nine places. No other language works that way,
+// and half of them inflect the surrounding words too. Two rows per noun
+// is the smallest honest fix: the sentence template holds a slot, and
+// the slot is filled with whichever row the count selects. Languages
+// with more than two plural forms need more rows, not different code.
+const plur = (n, one, many) => (n === 1 ? one : many);
 const fmt = n => SYM[cur] + Math.round(n).toLocaleString('en-US');
 // Two decimals, not one. This formats per-invoice costs and nothing else,
 // and at one decimal the AP baseline printed as "$9.8" while the row was
@@ -1565,7 +1594,7 @@ function buildGantt(sel0, erp, pace){
   s += \`<text x="0" y="\${y+15}" fill="#e2b978" font-family="'IBM Plex Mono',monospace" font-size="9.5" letter-spacing="1">PROGRAMME</text>\`;
   y += RH + GAP;
   let pt = progBegin.getTime();
-  s += \`<text x="0" y="\${y+15}" fill="#f2f0e8" font-size="12">Select &amp; contract</text>\`;
+  s += \`<text x="0" y="\${y+15}" fill="#f2f0e8" font-size="12">${tj("chart.procure","Select &amp; contract")}</text>\`;
   progPhases.forEach(p => {
     const e = addW(new Date(pt), p.weeks);
     const x1 = x(pt), x2 = x(e.getTime());
@@ -1765,7 +1794,7 @@ function buildGantt(sel0, erp, pace){
   const nx = x(NOW.getTime());
   if(nx > L && nx < W-R){
     s += \`<line x1="\${nx}" y1="\${HEAD-8}" x2="\${nx}" y2="\${H-10}" stroke="#b5432f" stroke-width="2" stroke-dasharray="4 3"/>\`;
-    s += \`<text x="\${nx+5}" y="\${H-1}" fill="#b5432f" font-family="'IBM Plex Mono',monospace" font-size="9.5">today</text>\`;
+    s += \`<text x="\${nx+5}" y="\${H-1}" fill="#b5432f" font-family="'IBM Plex Mono',monospace" font-size="9.5">${tj("chart.today","today")}</text>\`;
   }
   s += \`</svg>\`;
   host.innerHTML = s;
@@ -1786,9 +1815,9 @@ function buildGantt(sel0, erp, pace){
 
   document.getElementById('ganttLegend').innerHTML =
     \`<div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;padding:8px 0 10px;font-size:11.5px;color:#93a3c0">
-      <span style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:1px;text-transform:uppercase">Phase</span>
+      <span style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:1px;text-transform:uppercase">${tj("chart.phase","Phase")}</span>
       \${PROG().concat(PH()).map(p=>\`<span style="display:inline-flex;align-items:center;gap:5px"><span style="width:11px;height:11px;border-radius:2px;background:\${p.c};display:inline-block"></span>\${p.n}</span>\`).join('')}
-      <span style="display:inline-flex;align-items:center;gap:5px"><span style="display:inline-block;width:0;height:0;border:6px solid transparent;border-left-color:#efe9db;transform:rotate(45deg)"></span>Go-live</span>
+      <span style="display:inline-flex;align-items:center;gap:5px"><span style="display:inline-block;width:0;height:0;border:6px solid transparent;border-left-color:#efe9db;transform:rotate(45deg)"></span>${tj("chart.golive","Go-live")}</span>
       <span style="display:inline-flex;align-items:center;gap:5px;color:#e0907f">▲ already late</span>
       <span style="display:inline-flex;align-items:center;gap:5px;color:#e2b978">● start &lt;90d</span>
       <span style="display:inline-flex;align-items:center;gap:5px;color:#7fd0a8">✓ runway</span>
@@ -1829,9 +1858,9 @@ function renderAdjust(sel){
   }
   host.innerHTML = \`
     <div class="grid" style="grid-template-columns:1fr auto auto;gap:8px 12px;align-items:center">
-      <span class="hint" style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase">Jurisdiction</span>
-      <span class="hint" style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase">Wave (go-live)</span>
-      <span class="hint" style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase">Pinned start</span>
+      <span class="hint" style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase">${tj("adjust.jur","Jurisdiction")}</span>
+      <span class="hint" style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase">${tj("adjust.wave","Wave (go-live)")}</span>
+      <span class="hint" style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase">${tj("adjust.pin","Pinned start")}</span>
       \${dated.map(c => {
         const o = ovrOf(c[0]);
         const cur = o.dl || c[5];
@@ -2175,13 +2204,23 @@ function build(){
     <div class="note" style="margin-top:14px">\${banked
       ? \`<strong>${tj("sum.scopeBoth","Scope: compliance + AP process automation.")}</strong> ${tj("sum.scopeBoth2","Every direct row counts, and the timeline carries a process-change phase per country. The larger, less common programme.")}\`
       : \`<strong>${tj("sum.scopeOnly","Scope: compliance only.")}</strong> \${fmt(l1Banked + l2)} ${tj("sum.scopeOnly2","is saved from the integration itself; the remaining")} \${fmt(l1Unbanked)} ${tj("sum.scopeOnly3","needs a change programme you are not running.")}\`} ${tj("sum.bridge6","Net annual saving is the annual saving less the two running costs above; section 4 shows what makes up the annual saving, row by row.")} \${notesLink()}</div>
-    <div class="card"><p style="margin:0">Across <strong>\${sel.length}</strong> jurisdictions you have <strong>\${complex.length} complex</strong> (CTC or 5-corner) and <strong>\${simple.length} simple</strong> (4-corner exchange) regime\${simple.length===1?'':'s'}\${watch.length?\`, plus \${watch.length} with no mandate${hlp('nomandate',t("tip.nomandate","Why these are still in the plan"))}\`:''}. With \${erp} ERP/billing system\${erp===1?'':'s'} that is roughly <strong>\${integrations} country-system integration\${integrations===1?'':'s'}</strong>${hlp('integrations',t("tip.derived","How this is derived"))} to deliver. \${dated.length?\`The nearest binding date is <strong>\${dated[0][5]}</strong> (\${dated[0][0]}).\`:'None of the selected jurisdictions has a future dated deadline on the tracker today.'} \${ev('site','Source: live tracker data')}</p></div>\`;
+    <div class="card"><p style="margin:0">\${fill('${tj("card.mix","Across {0} jurisdictions you have {1} (CTC or 5-corner) and {2} (4-corner exchange){3}.")}',
+        '<strong>' + sel.length + '</strong>',
+        '<strong>' + complex.length + ' ${tj("word.complex","complex")}</strong>',
+        '<strong>' + simple.length + ' ' + plur(simple.length, '${tj("word.regime","simple regime")}', '${tj("word.regimes","simple regimes")}') + '</strong>',
+        watch.length ? fill('${tj("card.plusNoMandate",", plus {0} with no mandate{1}")}', watch.length, '${hlp('nomandate',t("tip.nomandate","Why these are still in the plan"))}') : '')}
+      \${fill('${tj("card.integrations","With {0} that is roughly {1}{2} to deliver.")}',
+        erp + ' ' + plur(erp, '${tj("word.erp","ERP/billing system")}', '${tj("word.erps","ERP/billing systems")}'),
+        '<strong>' + integrations + ' ' + plur(integrations, '${tj("word.integration","country-system integration")}', '${tj("word.integrations","country-system integrations")}') + '</strong>',
+        '${hlp('integrations',t("tip.derived","How this is derived"))}')}
+      \${dated.length ? fill('${tj("card.nearest","The nearest binding date is {0} ({1}).")}', '<strong>' + dated[0][5] + '</strong>', dated[0][0])
+        : '${tj("card.noDated","None of the selected jurisdictions has a future dated deadline on the tracker today.")}'} \${ev('site','${tj("ev.siteLabel","Source: live tracker data")}')}</p></div>\`;
 
   const pace = +document.getElementById('pace').value || 1;
   const ganttRows = buildGantt(tracks, erp, pace);
   const euDrivenCount = sel.filter(c=>c[8]).length;
   document.getElementById('waveIntro').innerHTML = \`${tj("waves.intro","Back-planned from each jurisdiction&rsquo;s published deadline")} \${ev('site','tracker dates')} ${tj("waves.intro2","through phase durations you control")} \${ev('durations','practitioner estimates')}. ${tj("waves.intro3","Procurement is modelled once, not per country.")}\${euDrivenCount?\` <strong>\${euDrivenCount}</strong> ${tj("waves.intro4","are here on an EU-wide obligation, not a national mandate")}${hlp('vida',t("tip.deadlines","Where these deadlines come from"))}.\`:''}\`;
-  let w = dated.length ? \`<table><thead><tr><th>Deadline</th><th>Jurisdiction</th><th>Status</th><th>Model${hlp('complexity',t("tip.complexity","How complexity is assigned"))}</th><th class="num">Integrations${hlp('integrations',t("tip.derived","How this is derived"))}</th><th>Why</th></tr></thead><tbody>\` : '';
+  let w = dated.length ? \`<table><thead><tr><th>${tj("th.deadline","Deadline")}</th><th>${tj("adjust.jur","Jurisdiction")}</th><th>${tj("th.status","Status")}</th><th>${tj("th.model","Model")}${hlp('complexity',t("tip.complexity","How complexity is assigned"))}</th><th class="num">${tj("th.integrations","Integrations")}${hlp('integrations',t("tip.derived","How this is derived"))}</th><th>${tj("th.why","Why")}</th></tr></thead><tbody>\` : '';
   dated.forEach(c=>{
     const st=STATUS[c[3]], cx=CXNAME[c[4]];
     const ints = erp;   // every country you build for, once per ERP system
@@ -2211,7 +2250,7 @@ function build(){
     const el = document.getElementById('waves');
     const shown = !el.classList.contains('hidden');
     el.classList.toggle('hidden');
-    tbl.textContent = shown ? 'Show as table' : 'Hide table';
+    tbl.textContent = shown ? '${tj("btn.showTable","Show as table")}' : '${tj("btn.hideTable","Hide table")}';
   };
 
   // ---- one savings table -------------------------------------------
@@ -2244,13 +2283,13 @@ function build(){
 
     <tr class="grp"><td colspan="4">${t("grp.priced","Priced &mdash; counted in the business case")}</td></tr>
 
-    <tr class="tierA" data-row="ap"><td>Processing cost reduction (AP) <span class="tag tang">${t("tag.tangible","tangible")}</span> <span class="tag \${banked?'bank':'unbank'}">\${banked?'${t("tag.saved","saved")}':Math.round(TAXM.captureShare*100)+'% ${t("tag.saved","saved")}'}</span></td><td>\${volAP.toLocaleString()} invoices &times; \${fmt1(costNow)} \${ev('ardent','baseline')} &times; \${Math.round(savePct*100)}% \${ev('hmrc60','reduction')}</td><td class="num">\${fmt(saving)}</td><td class="num">\${fmt(bankedAP)}</td></tr>
+    <tr class="tierA" data-row="ap"><td>${t("row.ap","Processing cost reduction (AP)")} <span class="tag tang">${t("tag.tangible","tangible")}</span> <span class="tag \${banked?'bank':'unbank'}">\${banked?'${t("tag.saved","saved")}':Math.round(TAXM.captureShare*100)+'% ${t("tag.saved","saved")}'}</span></td><td>\${fill('${tj("basis.ap","{0} invoices &times; {1} {2} &times; {3}% {4}")}', volAP.toLocaleString(), fmt1(costNow), ev('ardent','${tj("ev.baseline","baseline")}'), Math.round(savePct*100), ev('hmrc60','${tj("ev.reduction","reduction")}'))}</td><td class="num">\${fmt(saving)}</td><td class="num">\${fmt(bankedAP)}</td></tr>
 
-    <tr class="tierA" data-row="ar"><td>Issuing cost reduction (AR) <span class="tag tang">${t("tag.tangible","tangible")}</span> <span class="tag bank">${t("tag.saved","saved")}</span></td><td>\${volAR.toLocaleString()} invoices &times; \${fmt1(costAR)} \${ev('ato','ATO / Deloitte')} &times; \${Math.round(savePct*100)}% \${ev('hmrc60','reduction')}</td><td class="num">\${fmt(savingAR)}</td><td class="num">\${fmt(savingAR)}</td></tr>
+    <tr class="tierA" data-row="ar"><td>${t("row.ar","Issuing cost reduction (AR)")} <span class="tag tang">${t("tag.tangible","tangible")}</span> <span class="tag bank">${t("tag.saved","saved")}</span></td><td>\${fill('${tj("basis.ar","{0} invoices &times; {1} {2} &times; {3}% {4}")}', volAR.toLocaleString(), fmt1(costAR), ev('ato','ATO / Deloitte'), Math.round(savePct*100), ev('hmrc60','${tj("ev.reduction","reduction")}'))}</td><td class="num">\${fmt(savingAR)}</td><td class="num">\${fmt(savingAR)}</td></tr>
 
-    <tr class="tierA" data-row="tax"><td>Reduced tax reporting &amp; audit-prep effort <span class="tag tang">${t("tag.tangible","tangible")}</span> <span class="tag bank">${t("tag.saved","saved")}</span></td><td>Mechanism evidenced \${ev('oecd','OECD DCTR, 2026')}. Your \${volAP.toLocaleString()} AP invoices imply <strong>\${apFteImplied.toFixed(1)} AP FTE</strong> \${ev('apqc','APQC median, 12,000 per FTE')}; \${ctcCount} clearance or reporting \${ctcCount===1?'jurisdiction':'jurisdictions'} put <strong>\${(shareUsed*100).toFixed(1)}%</strong> of that in scope \${ev('yours','our assumption')}\${taxCapBinds?' <em>(capped)</em>':''} &mdash; \${taxFteSaved.toFixed(2)} FTE &times; \${fmt(fteCost)}. ${tj("row.tax.banks","Saved on either scope: the reporting effort falls with the compliance build itself, not with a workflow change.")}</td><td class="num">\${fmt(l2)}</td><td class="num">\${fmt(l2)}</td></tr>
+    <tr class="tierA" data-row="tax"><td>${t("row.tax","Reduced tax reporting &amp; audit-prep effort")} <span class="tag tang">${t("tag.tangible","tangible")}</span> <span class="tag bank">${t("tag.saved","saved")}</span></td><td>Mechanism evidenced \${ev('oecd','OECD DCTR, 2026')}. Your \${volAP.toLocaleString()} AP invoices imply <strong>\${apFteImplied.toFixed(1)} AP FTE</strong> \${ev('apqc','APQC median, 12,000 per FTE')}; \${ctcCount} clearance or reporting \${ctcCount===1?'jurisdiction':'jurisdictions'} put <strong>\${(shareUsed*100).toFixed(1)}%</strong> of that in scope \${ev('yours','our assumption')}\${taxCapBinds?' <em>(capped)</em>':''} &mdash; \${taxFteSaved.toFixed(2)} FTE &times; \${fmt(fteCost)}. ${tj("row.tax.banks","Saved on either scope: the reporting effort falls with the compliance build itself, not with a workflow change.")}</td><td class="num">\${fmt(l2)}</td><td class="num">\${fmt(l2)}</td></tr>
 
-    <tr class="tierB" data-row="rework"><td>Avoided rework on data-entry errors <span class="tag tang">${t("tag.tangible","tangible")}</span> <span class="tag \${banked?'bank':'unbank'}">\${banked?'${t("tag.saved","saved")}':'${t("tag.notSaved","not saved")}'}</span></td><td>\${Math.round(errNow).toLocaleString()} errored invoices \${ev('hmrcErr',\`at ~\${Math.round(errRate*100)}%\`)} &times; \${fmt(errCost)} \${overridden('errCost') ? ev('yours','your rework cost') : ev('rework','our estimate, not yours')} &times; \${Math.round(errElim*100)}% \${ev('errElim','why not all of them')} \${ev('ardentExc','not Ardent&rsquo;s 18.4% exception rate')}</td><td class="num">\${fmt(errSave)}</td><td class="num">\${bankedErr > 0 ? fmt(bankedErr) : '&mdash;'}</td></tr>
+    <tr class="tierB" data-row="rework"><td>${t("row.rework","Avoided rework on data-entry errors")} <span class="tag tang">${t("tag.tangible","tangible")}</span> <span class="tag \${banked?'bank':'unbank'}">\${banked?'${t("tag.saved","saved")}':'${t("tag.notSaved","not saved")}'}</span></td><td>\${Math.round(errNow).toLocaleString()} errored invoices \${ev('hmrcErr',\`at ~\${Math.round(errRate*100)}%\`)} &times; \${fmt(errCost)} \${overridden('errCost') ? ev('yours','your rework cost') : ev('rework','our estimate, not yours')} &times; \${Math.round(errElim*100)}% \${ev('errElim','why not all of them')} \${ev('ardentExc','not Ardent&rsquo;s 18.4% exception rate')}</td><td class="num">\${fmt(errSave)}</td><td class="num">\${bankedErr > 0 ? fmt(bankedErr) : '&mdash;'}</td></tr>
 
     <tr class="tot" data-row="total"><td colspan="2"><strong>${t("row.savingsTotal","Annual benefit")}</strong>\${l1Unbanked > 0 ? \` <span class="hint" style="display:inline">&mdash; ${t("row.directTotal.gap","the difference needs a change programme you are not running")}</span>\` : ''}</td><td class="num"><strong>\${fmt(l1 + l2)}</strong></td><td class="num"><strong style="color:#7fd0a8">\${fmt(l1Banked + l2)}</strong></td></tr>
 
@@ -2258,13 +2297,13 @@ function build(){
 
     <tr class="tierA" data-row="cycle"><td>${t("row.cycle","Faster cycle time &amp; fewer supplier queries")} <span class="tag intang">${t("tag.intangible","intangible")}</span></td><td>${tj("row.cycle.basis","Top-performing AP spends")} <strong>12.8%</strong> ${tj("row.cycle.basis2","of staff time on supplier inquiries against")} <strong>24.0%</strong> \${ev('ardentInq','Ardent Partners, 2025 data')} &mdash; ${tj("row.cycle.basis3","an association with high-performing AP, not a measured effect of e-invoicing, so")} <strong>${tj("row.cycle.basis4","not monetised")}</strong>. \${notesLink()}</td>\${dash}</tr>
 
-    <tr class="tierA" data-row="paper"><td>Paper, print, postage, storage <span class="tag tang">${t("tag.tangible","tangible")}</span></td><td>Paper AUD 30.87 vs e-invoice AUD 9.18 \${ev('ato','ATO / Deloitte')}; your own spend is the better input</td>\${dash}</tr>
+    <tr class="tierA" data-row="paper"><td>${t("row.paper","Paper, print, postage, storage")} <span class="tag tang">${t("tag.tangible","tangible")}</span></td><td>\${fill('${tj("basis.paper","Paper AUD 30.87 vs e-invoice AUD 9.18 {0}; your own spend is the better input")}', ev('ato','ATO / Deloitte'))}</td>\${dash}</tr>
 
-    <tr class="tierC" data-row="vat"><td>VAT leakage / gap recovery <span class="tag intang">${t("tag.intangible","intangible")}</span></td><td>Often quoted, <strong>not defensible</strong> \${ev('vatgap','why not')} &mdash; excluded from this model entirely</td>\${dash}</tr>
+    <tr class="tierC" data-row="vat"><td>${t("row.vat","VAT leakage / gap recovery")} <span class="tag intang">${t("tag.intangible","intangible")}</span></td><td>\${fill('${tj("basis.vat","Often quoted, <strong>not defensible</strong> {0} &mdash; excluded from this model entirely")}', ev('vatgap','${tj("ev.whyNot","why not")}'))}</td>\${dash}</tr>
 
-    <tr class="tierD" data-row="penalty"><td>Penalty &amp; remediation exposure avoided <span class="tag intang">${t("tag.intangible","intangible")}</span></td><td>\${sel.filter(c=>c[6]>0).length} of your jurisdictions publish a quantified penalty schedule \${ev('site','on their deep dives')}. Size it from those, per country &mdash; there is no credible aggregate</td>\${dash}</tr>
+    <tr class="tierD" data-row="penalty"><td>${t("row.penalty","Penalty &amp; remediation exposure avoided")} <span class="tag intang">${t("tag.intangible","intangible")}</span></td><td>\${fill('${tj("basis.penalty","{0} of your jurisdictions publish a quantified penalty schedule {1}. Size it from those, per country &mdash; there is no credible aggregate")}', sel.filter(c=>c[6]>0).length, ev('site','${tj("ev.deepDives","on their deep dives")}'))}</td>\${dash}</tr>
 
-    <tr class="tierD" data-row="fraud"><td>Fraud detection, working-capital visibility <span class="tag intang">${t("tag.intangible","intangible")}</span></td><td>Strategic benefits; no benchmark exists \${ev('yours','your call')}</td>\${dash}</tr>
+    <tr class="tierD" data-row="fraud"><td>${t("row.fraud","Fraud detection, working-capital visibility")} <span class="tag intang">${t("tag.intangible","intangible")}</span></td><td>\${fill('${tj("basis.fraud","Strategic benefits; no benchmark exists {0}")}', ev('yours','${tj("ev.yourCall","your call")}'))}</td>\${dash}</tr>
     </tbody></table>
     <div class="note" style="margin-top:12px"><strong>${tj("res.headcount.h","In headcount:")}</strong> \${captureFte.toFixed(1)} ${tj("res.headcount.line","FTE keying invoices today, of which")} <strong>\${captureSaved.toFixed(1)}</strong> ${tj("res.headcount.line2","are released &mdash; the same money as the AP capture row above, priced as people rather than an addition to it.")} \${notesLink()}</div>
     <div class="note" style="margin-top:12px">${tj("res.namedWhy","Everything priced here is tangible; the intangible benefits are named and carry no value on purpose. That group is long because almost every circulating number in this field fails verification &mdash; what survives is priced, what does not is named rather than quietly dropped.")} \${notesLink()}</div>\`;
