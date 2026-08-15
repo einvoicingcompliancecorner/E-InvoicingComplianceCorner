@@ -1,0 +1,52 @@
+-- ================================================================
+-- The wave plan groups by wave, and expands on demand.
+--
+-- Dan, after 532 shipped: the second waves "stretch the timeframe to such
+-- an extent that the graph becomes difficult to read."
+--
+-- MEASURED BEFORE CHANGING ANYTHING, and it was not the timeframe. The
+-- axis is 18 quarters, Q2 2026 to Q3 2030, both before and after -- the
+-- 2030 edge already existed, because thirteen member states with no
+-- national date were always scheduled there. Nothing got wider.
+--
+-- What changed was DENSITY. The EU preset went from 1,282px of chart to
+-- 1,674px, and one wave went from holding 13 rows to holding 27 of the
+-- chart's 46. A band that size stops being a plan and becomes a wall.
+--
+-- AND A REAL BUG, found while measuring and fixed here. Migration 532
+-- priced a ViDA second wave at half a build, on the reasoning that the
+-- platform exists by 2030 -- and then left `durOf` ignoring that weight,
+-- so the same track took a FULL complex country duration. The cost said
+-- half and the schedule said whole: one claim contradicting itself. That
+-- also doubled the 2030 wave's span, 21 weeks to 42. Weighted, it is 36.
+--
+-- THE FIX. The wave is the unit anyone actually plans in, so it is the
+-- unit the chart shows first: nine rows instead of forty-six, each
+-- carrying its date, its jurisdiction count, its elapsed weeks and its
+-- risk marker, with every member listed in the bar's tooltip. One button
+-- expands to the per-jurisdiction lanes, and the table below and the PDF
+-- both carry the full list regardless -- so nothing is hidden, it is
+-- simply no longer the default.
+--
+-- EU preset: 1,674px -> 470px. The whole plan now fits on one screen.
+--
+-- One layout note worth keeping. The wave label and its meta text were
+-- right-anchored at the gutter and collided -- "27 JURISDICTIONS" printed
+-- straight through "2030-07-01". An ISO date is always ten monospace
+-- characters, so the meta is now left-anchored at a fixed offset, where
+-- the two can never overlap whatever the numbers do.
+-- ================================================================
+
+INSERT OR IGNORE INTO translations (namespace, key, lang, value) VALUES
+  ('roi', 'btn.expand', 'en', 'Show every jurisdiction'),
+  ('roi', 'btn.group',  'en', 'Group by wave');
+
+-- ---- what this migration claims it did (see apply_migrations.py) ----
+-- ASSERT: SELECT count(*) FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key IN ('btn.expand','btn.group') = 2
+--
+-- The two labels are a toggle: one names the state you are in, the other
+-- the state you would move to. Identical text would leave the reader
+-- unable to tell which way the button goes, which is a real failure mode
+-- for a control whose whole job is switching between two views.
+--
+-- ASSERT ALWAYS: SELECT count(*) FROM (SELECT DISTINCT value FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key IN ('btn.expand','btn.group')) = 2

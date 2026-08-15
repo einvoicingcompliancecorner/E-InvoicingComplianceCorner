@@ -10488,6 +10488,68 @@ started wrapping the ISO dates beside it, which reads as a data error
 rather than a layout one.
 
 
+## 15 August 2026 (cont'd) — The wave plan groups by wave (migration 533)
+
+Dan, after 532 shipped: the second waves *"stretch the timeframe to such
+an extent that the graph becomes difficult to read."*
+
+### Measured before changing anything, and it was not the timeframe
+
+The axis is **18 quarters, Q2 2026 to Q3 2030, both before and after**.
+Nothing got wider — the 2030 edge already existed, because thirteen
+member states with no national date were always scheduled there.
+
+What changed was **density**. The EU preset went from 1,282px of chart to
+1,674px, and one wave went from 13 rows to **27 of the chart's 46**. A
+band that size stops being a plan and becomes a wall.
+
+Worth recording that the reported symptom and the actual cause were
+different things. "The timeframe stretched" was a reasonable reading of
+what it felt like, and building against it — compressing the axis, say —
+would have made the chart worse while leaving the real problem untouched.
+
+### A real bug found while measuring
+
+Migration 532 priced a ViDA second wave at half a build, on the reasoning
+that the platform exists by 2030 — and then left `durOf` ignoring that
+weight, so the same track took a **full** complex country duration. The
+cost said half and the schedule said whole: one claim contradicting
+itself, shipped by me the same day.
+
+It also doubled the 2030 wave's span, 21 weeks to 42, which is most of
+what made that band sprawl horizontally. Weighted, it is 36.
+
+### The fix
+
+The wave is the unit anyone plans in, so it is the unit the chart shows
+first: **nine rows instead of forty-six**, each carrying its date,
+jurisdiction count, elapsed weeks and risk marker, with every member
+listed in the bar's tooltip. One button expands to the per-jurisdiction
+lanes; the table below and the PDF carry the full list regardless. So
+nothing is hidden — it is simply no longer the default.
+
+**EU preset: 1,674px → 470px.** The whole plan fits on one screen.
+
+One layout note. The wave label and its meta were right-anchored at the
+gutter and collided — "27 JURISDICTIONS" printed straight through
+"2030-07-01". An ISO date is always ten monospace characters, so the meta
+is now left-anchored at a fixed offset, where the two can never overlap
+whatever the numbers do.
+
+### Verification
+
+`npm test`: 8 suites, all passing. ROI regression **109 checks** (was
+103). Six new: grouped by default and under 600px; one row per wave with
+its count; no per-jurisdiction row drawn while grouped; expanding more
+than doubles the height; Germany's two obligations both present when
+expanded; and it folds back.
+
+Existing checks that read per-jurisdiction rows now call an idempotent
+`expandGantt()` first — idempotent because a plain click would have
+toggled it shut for whichever section ran second, which is the same trap
+the adjust panel set in section 10.
+
+
 ## Open items / next steps
 
 ### Where things stand — 15 August 2026

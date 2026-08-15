@@ -29,6 +29,17 @@ const page = await browser.newPage({ viewport: { width: 1280, height: 1000 } });
 t.watch(page);
 await page.goto(`file://${file}`);
 
+// The chart groups by wave by default (Dan, 15 Aug: 27 rows in one band
+// made it unreadable). Checks that inspect per-jurisdiction scheduling
+// have to open it first, and must be able to do so more than once
+// without toggling it shut again.
+const expandGantt = async () => {
+  if (/Show every/.test(await page.locator("#ganttToggle").innerText())) {
+    await page.click("#ganttToggle");
+    await page.waitForTimeout(600);
+  }
+};
+
 // ---- 1. it calculates at all ----
 await page.click("#run");
 await page.waitForTimeout(500);
@@ -159,6 +170,7 @@ const waveText = () => page.evaluate(() =>
   [...document.querySelectorAll("#gantt svg text")].map((n) => n.textContent).filter((x) => /w elapsed/.test(x)));
 await page.click("#selMandate"); await page.waitForTimeout(150);
 await page.click("#run"); await page.waitForTimeout(600);
+await expandGantt();
 const before = await waveText();
 await page.evaluate(() => { document.getElementById("adjust").open = true; });
 await page.waitForTimeout(200);
@@ -678,6 +690,7 @@ await page.goto(`file://${file}`);
 await page.click("#selEU"); await page.waitForTimeout(200);
 await page.click("#run"); await page.waitForTimeout(900);
 
+await expandGantt();
 const vida = await page.evaluate(() =>
   [...document.querySelectorAll("#gantt svg text")]
     .map((n) => n.textContent).filter((x) => /\(ViDA\)/.test(x)));
@@ -710,6 +723,42 @@ const adj = await page.evaluate(() =>
 t.check("each obligation is separately adjustable",
   adj.includes("Germany") && adj.includes("Germany (ViDA)"),
   adj.filter((a) => /Germany/.test(a)));
+
+// ---- 24. the chart groups by wave, and expands on demand ----
+// Dan, after the ViDA second waves landed: the plan "becomes difficult to
+// read". Measured — the time axis had not moved (18 quarters either way,
+// because the 2030 edge already existed for the member states with no
+// national date), but the chart grew 31% taller and ONE wave held 27 of
+// its 46 rows. Density, not extent.
+await page.goto(`file://${file}`);
+await page.click("#selEU"); await page.waitForTimeout(200);
+await page.click("#run"); await page.waitForTimeout(900);
+
+const chartH = () => page.evaluate(() =>
+  +document.querySelector("#gantt svg").getAttribute("viewBox").split(" ")[3]);
+const grouped = await chartH();
+t.check(`grouped by default, and it fits on a screen (${grouped}px, was 1674)`,
+  grouped < 600, grouped);
+t.check("one row per wave, labelled with its count",
+  await page.evaluate(() => [...document.querySelectorAll("#gantt svg text")]
+    .some((n) => /27 JURISDICTIONS/.test(n.textContent))));
+// The whole point of grouping is that nothing is lost, only folded.
+t.check("no per-jurisdiction row is drawn while grouped",
+  await page.evaluate(() => ![...document.querySelectorAll("#gantt svg text")]
+    .some((n) => /^Germany/.test((n.firstChild && n.firstChild.textContent) || ""))));
+
+await page.click("#ganttToggle"); await page.waitForTimeout(700);
+const expanded = await chartH();
+t.check(`expanding restores every jurisdiction (${grouped} -> ${expanded}px)`,
+  expanded > grouped * 2, `${grouped} -> ${expanded}`);
+t.check("and Germany's two obligations are both there",
+  await page.evaluate(() => {
+    const l = [...document.querySelectorAll("#gantt svg text")]
+      .map((n) => (n.firstChild && n.firstChild.textContent) || "");
+    return l.includes("Germany") && l.includes("Germany (ViDA)");
+  }));
+await page.click("#ganttToggle"); await page.waitForTimeout(700);
+t.check("and it folds back", (await chartH()) === grouped);
 
 await browser.close();
 process.exit(t.report() ? 0 : 1);
