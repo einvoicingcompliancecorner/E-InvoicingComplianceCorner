@@ -951,5 +951,62 @@ t.check(`the AP basis multiplies out to the AP value (${rate} x 60%)`,
   Math.abs(100000 * rate * (pctOff / 100) - money(apRow.value)) <= 1,
   `${100000 * rate * (pctOff / 100)} vs ${apRow.value}`);
 
+
+// ---- 31. every monetised row declares a banking position ----
+// Indirect was never put through the banking model: no column, no tag,
+// and it entered netAnnual in full on both scopes while every direct row
+// beside it declared a rate. Not a wrong number, an absent decision --
+// which is indistinguishable from a decision to anyone auditing the page,
+// and which meant a row resting on two D-grade assumptions banked in full
+// while rework, resting on two D-grade assumptions, banked at zero.
+// Dan: "which seems like a valid saving to bank." Migration 537.
+await page.selectOption("#scope", "compliance");
+await page.click("#run"); await page.waitForTimeout(800);
+const bothTables = await page.evaluate(() => {
+  const read = (id) => {
+    const rows = [...document.querySelectorAll(`#${id} tbody tr`)]
+      .filter((tr) => !/Direct total/i.test(tr.textContent));
+    return {
+      cols: [...document.querySelectorAll(`#${id} thead th`)].map((e) => e.textContent.trim()),
+      monetised: rows.filter((tr) => /[\d]/.test(tr.children[2].textContent))
+        .map((tr) => ({
+          name: tr.children[0].textContent.replace(/\s+/g, " ").trim().slice(0, 40),
+          tag: [...tr.querySelectorAll(".tag.bank, .tag.unbank")].map((e) => e.textContent).join("/"),
+          banks: tr.children[3] ? tr.children[3].textContent.trim() : null,
+        })),
+    };
+  };
+  return { direct: read("direct"), indirect: read("indirect") };
+});
+t.check("both tables carry the same two numeric columns",
+  bothTables.direct.cols.slice(-2).join("|") === bothTables.indirect.cols.slice(-2).join("|"),
+  `${bothTables.direct.cols.slice(-2)} vs ${bothTables.indirect.cols.slice(-2)}`);
+const allMon = [...bothTables.direct.monetised, ...bothTables.indirect.monetised];
+t.check(`every monetised row on the page declares a banking position (${allMon.length} rows)`,
+  allMon.every((r) => r.tag && r.banks !== null),
+  JSON.stringify(allMon.filter((r) => !r.tag || r.banks === null)));
+const tax = bothTables.indirect.monetised[0];
+t.check(`the indirect row banks in full and says so (${tax.tag})`,
+  tax.tag === "banks" && tax.banks === bothTables.indirect.monetised[0].banks,
+  JSON.stringify(tax));
+t.check("and states its reason inline, as the direct rows do",
+  /falls with the compliance build itself/.test(
+    await page.locator("#indirect tbody tr").first().innerText()));
+
+// The arithmetic must NOT have moved: 537 makes a decision visible, it
+// does not change one. Net annual is still banked direct + indirect - cost.
+const net537 = await page.evaluate(() => {
+  const n = (s) => parseFloat(String(s).replace(/[^0-9.]/g, ""));
+  const dir = [...document.querySelectorAll("#direct tbody tr")].pop();
+  const ind = document.querySelector("#indirect tbody tr");
+  return { banked: n(dir.children[dir.children.length - 1].textContent),
+           l2: n(ind.children[2].textContent),
+           net: n([...document.querySelectorAll("#invest .stat")][2].querySelector(".n").textContent),
+           run: n([...document.querySelectorAll("#invest .stat")][1].querySelector(".n").textContent) };
+});
+t.check(`net annual is still banked direct + indirect - run cost (${net537.net.toLocaleString()})`,
+  Math.abs((net537.banked + net537.l2 - net537.run) - net537.net) <= 1,
+  `${net537.banked} + ${net537.l2} - ${net537.run} vs ${net537.net}`);
+
 await browser.close();
 process.exit(t.report() ? 0 : 1);

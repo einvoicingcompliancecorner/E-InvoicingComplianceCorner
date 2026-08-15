@@ -928,12 +928,12 @@ export function renderRoiPage({ countries, benchmarks = [], phases = [], strings
   <p class="noprint" style="margin:-4px 0 14px"><button id="ganttToggle" style="padding:5px 11px;font-size:12.5px">${t("btn.expand", "Show every jurisdiction")}</button> <button id="tblToggle" style="padding:5px 11px;font-size:12.5px">${t("btn.table", "Show as table")}</button></p>
   <div id="waves" class="hidden"></div>
   <h2>4 &middot; ${t("sec.savings", "Savings")}</h2>
-  <p class="lede">${t("sec.savings.lede", "Two kinds, reported separately because the evidence behind them differs. Direct savings are cash that stops leaving the business; indirect savings are cost and risk you avoid rather than money you release. Section 5 uses both.")}</p>
+  <p class="lede">${t("sec.savings.lede", "Two kinds, reported separately because the evidence behind them differs. Direct savings are cash that stops leaving the business; indirect savings are cost and risk you avoid rather than money you release. Every priced row states what it banks on the scope you chose, and section 5 uses both.")}</p>
   <p class="subhead">${t("sec.direct", "Direct &mdash; cash-releasing")}</p>
   <p class="lede">${t("sec.direct.lede", "Money that stops leaving the business: processing cost per invoice, and rework you no longer pay for. Available wherever you digitise, mandate or not.")}</p>
   <div id="direct"></div>
   <p class="subhead" style="margin-top:26px">${t("sec.indirect", "Indirect &mdash; cost and risk avoided")}</p>
-  <p class="lede">${t("sec.indirect.lede", "Cost you avoid rather than cash you release. Mechanisms are well evidenced; magnitudes mostly are not, so much of this section is named rather than priced.")}</p>
+  <p class="lede">${t("sec.indirect.lede", "Cost you avoid rather than cash you release. Mechanisms are well evidenced; magnitudes mostly are not, so most of this section is named rather than priced. The one row that is priced banks in full on either scope.")}</p>
   <div id="indirect"></div>
   <h2>5 &middot; ${t("sec.invest", "Investment &amp; payback")}</h2>
   <div id="invest"></div>
@@ -1997,13 +1997,19 @@ function build(){
   // a headcount pulled out of the air, so the answer scales with the
   // business instead of standing still.
   //
-  // CALIBRATED FOR EXACT CONTINUITY. 0.018 and 0.36 are not new opinions:
-  // at the page's default 100k AP volume they reproduce the old 0.15 and
-  // 3 to the penny (100,000/12,000 = 8.333 implied FTE; 8.333 x 0.018 =
-  // 0.15; 8.333 x 0.36 = 3.00), and the cap still starts binding at 20
-  // complex jurisdictions. Nothing a reader saw yesterday moves. This
-  // change is about SHAPE, not magnitude, and doing both at once would
-  // have made it impossible to tell which one caused a number to move.
+  // CALIBRATED FOR EXACT CONTINUITY when this shipped: 0.018 and a cap of
+  // 0.36 reproduced the old 0.15 and 3 to the penny at the default 100k
+  // volume (100,000/12,000 = 8.333 implied FTE; 8.333 x 0.018 = 0.15).
+  // The change was about SHAPE, not magnitude, so nothing a reader saw
+  // moved on the day.
+  //
+  // THE CAP IS NOW 0.20, not the 0.36 this comment described until
+  // 15 Aug 2026. Migration 527 lowered it -- 36% of an entire AP function
+  // saved on tax reporting alone was never defensible, and expressing it
+  // as a proportion is what made that arguable at all. At 0.20 the cap
+  // starts binding at 12 complex jurisdictions rather than 20. Read the
+  // live value from D1 below; this paragraph is history, not the source
+  // of truth, and it was itself a migration out of date for a week.
   //
   // The magnitude is a separate and open question, raised with Dan rather
   // than decided here: 0.36 means 36% of the entire AP function saved on
@@ -2158,11 +2164,11 @@ function build(){
     <div class="note" style="margin-top:12px"><strong>${tj("res.headcount.h","In headcount:")}</strong> \${captureFte.toFixed(1)} ${tj("res.headcount.line","FTE keying invoices today, of which")} <strong>\${captureSaved.toFixed(1)}</strong> ${tj("res.headcount.line2","are released &mdash; the same money as the row above, priced as people rather than an addition to it.")} \${notesLink()}</div>\`;
 
   document.getElementById('indirect').innerHTML = \`
-    <table><thead><tr><th>Benefit</th><th>Evidence position</th><th class="num">Annual value</th></tr></thead><tbody>
-    <tr class="tierA"><td>Reduced tax reporting &amp; audit-prep effort <span class="tag tang">tangible</span></td><td>Mechanism evidenced \${ev('oecd','OECD DCTR, 2026')}. Your \${volAP.toLocaleString()} AP invoices imply <strong>\${apFteImplied.toFixed(1)} AP FTE</strong> \${ev('apqc','APQC median, 12,000 per FTE')}; \${ctcCount} clearance or reporting \${ctcCount===1?'jurisdiction':'jurisdictions'} put <strong>\${(shareUsed*100).toFixed(1)}%</strong> of that in scope \${ev('yours','our assumption')}\${taxCapBinds?' <em>(capped)</em>':''} &mdash; \${taxFteSaved.toFixed(2)} FTE &times; \${fmt(fteCost)}</td><td class="num">\${fmt(l2)}</td></tr>
-    <tr class="tierC"><td>VAT leakage / gap recovery <span class="tag intang">intangible</span></td><td>Often quoted, <strong>not defensible</strong> \${ev('vatgap','why not')} &mdash; excluded from this model entirely</td><td class="num">&mdash;</td></tr>
-    <tr class="tierD"><td>Penalty &amp; remediation exposure avoided <span class="tag intang">intangible</span></td><td>\${sel.filter(c=>c[6]>0).length} of your jurisdictions publish a quantified penalty schedule \${ev('site','on their deep dives')}. Size it from those, per country &mdash; there is no credible aggregate</td><td class="num">&mdash;</td></tr>
-    <tr class="tierD"><td>Fraud detection, working-capital visibility <span class="tag intang">intangible</span></td><td>Strategic benefits; no benchmark exists \${ev('yours','your call')}</td><td class="num">&mdash;</td></tr>
+    <table><thead><tr><th>Benefit</th><th>Evidence position</th><th class="num">${t("col.gross","Annual value")}</th><th class="num">${t("col.banks","Banks on this scope")}</th></tr></thead><tbody>
+    <tr class="tierA"><td>Reduced tax reporting &amp; audit-prep effort <span class="tag tang">tangible</span> <span class="tag bank">banks</span></td><td>Mechanism evidenced \${ev('oecd','OECD DCTR, 2026')}. Your \${volAP.toLocaleString()} AP invoices imply <strong>\${apFteImplied.toFixed(1)} AP FTE</strong> \${ev('apqc','APQC median, 12,000 per FTE')}; \${ctcCount} clearance or reporting \${ctcCount===1?'jurisdiction':'jurisdictions'} put <strong>\${(shareUsed*100).toFixed(1)}%</strong> of that in scope \${ev('yours','our assumption')}\${taxCapBinds?' <em>(capped)</em>':''} &mdash; \${taxFteSaved.toFixed(2)} FTE &times; \${fmt(fteCost)}. ${tj("row.tax.banks","Banks on either scope: the reporting effort falls with the compliance build itself, not with a workflow change.")}</td><td class="num">\${fmt(l2)}</td><td class="num">\${fmt(l2)}</td></tr>
+    <tr class="tierC"><td>VAT leakage / gap recovery <span class="tag intang">intangible</span></td><td>Often quoted, <strong>not defensible</strong> \${ev('vatgap','why not')} &mdash; excluded from this model entirely</td><td class="num">&mdash;</td><td class="num">&mdash;</td></tr>
+    <tr class="tierD"><td>Penalty &amp; remediation exposure avoided <span class="tag intang">intangible</span></td><td>\${sel.filter(c=>c[6]>0).length} of your jurisdictions publish a quantified penalty schedule \${ev('site','on their deep dives')}. Size it from those, per country &mdash; there is no credible aggregate</td><td class="num">&mdash;</td><td class="num">&mdash;</td></tr>
+    <tr class="tierD"><td>Fraud detection, working-capital visibility <span class="tag intang">intangible</span></td><td>Strategic benefits; no benchmark exists \${ev('yours','your call')}</td><td class="num">&mdash;</td><td class="num">&mdash;</td></tr>
     </tbody></table>
     <div class="note" style="margin-top:12px">${tj("res.indirectWhy","Small because almost every circulating number here fails verification. What survives is shown; what does not is named.")} \${notesLink()}</div>\`;
 
@@ -2220,7 +2226,7 @@ function build(){
   document.getElementById('evidence').innerHTML = \`
     <p style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:var(--soon);margin:0 0 8px">${tj("notes.h.reasoning","The reasoning")}</p>
     <div class="grid g2" style="margin-bottom:16px">
-      <div class="card"><h3>${tj("notes.banks.h","What compliance alone banks")}</h3><p class="hint">${tj("notes.banks","Capture and issuing arrive with the integration: once invoices come in structured and go out cleared, nobody keys or posts them. Review and approval are workflow and need a separate change programme. The split is the ATO / Deloitte task times &mdash; receipt 7 and validation 2 minutes against review 7 and approval 5 &mdash; not our judgement.")}</p></div>
+      <div class="card"><h3>${tj("notes.banks.h","What compliance alone banks")}</h3><p class="hint">${tj("notes.banks","Capture and issuing arrive with the integration: once invoices come in structured and go out cleared, nobody keys or posts them. Review and approval are workflow and need a separate change programme. The split is the ATO / Deloitte task times &mdash; receipt 7 and validation 2 minutes against review 7 and approval 5 &mdash; not our judgement. Tax reporting and audit-prep effort banks in full on either scope: you file structured data to the tax authority whether or not you ever touch AP workflow, so there is no equivalent split to make.")}</p></div>
       <div class="card"><h3>${tj("notes.rework.h","Why rework is held back")}</h3><p class="hint">${tj("notes.rework","It rests on HMRC&rsquo;s unsourced 10% error rate, a cost you set yourself, and our assumption about how many errors actually go away. Least evidenced row here and the largest beneficiary of any change, so it stays unbanked even on a compliance scope. Ardent gives the mechanism but no quantified reduction; their Best-in-Class exception gap of 9.8 points is used as a ceiling on what this model may claim.")}</p></div>
       <div class="card"><h3>${tj("notes.headcount.h","Headcount restates, it does not add")}</h3><p class="hint">${tj("notes.headcount","The capture-FTE figure prices the processing-cost row in people. It is the same money &mdash; the per-invoice benchmark is labour-dominated, so counting both would count it twice.")}\${saving > 0 ? \` \${fmt(captureValue)} of \${fmt(saving)}, or \${Math.round(captureValue/saving*100)}%; the rest is review, technology and overhead.\` : ''} ${tj("notes.headcount2","Released capacity is only cash if the post goes or is not backfilled.")} \${ev('apqc','APQC')} &middot; \${ev('atoCapture','ATO / Deloitte')}</p></div>
       <div class="card"><h3>${tj("notes.unmonetised.h","What carries no value on purpose")}</h3><p class="hint">${tj("notes.unmonetised","Paper and postage, because your own spend is the only honest input. Cycle time and supplier queries, because nobody has measured how much of that gap e-invoicing causes &mdash; Ardent&rsquo;s own")} \${ev('ardentCycle','2.9 vs 13.5 days')} ${tj("notes.unmonetised2","is circular by construction, and the")} \${ev('nhs','15% query reduction')} ${tj("notes.unmonetised3","is a single anecdote. VAT leakage, penalty exposure and fraud, because the mechanisms are real and the magnitudes are not evidenced. They belong in the qualitative case beside this number, not inside it.")}</p></div>
