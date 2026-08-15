@@ -1,0 +1,75 @@
+-- ================================================================
+-- The recurring cost is split into the two things it actually is.
+--
+-- Dan: "should the executive summary include - Estimated Annual SaaS
+-- cost, next to one-off costs, or is that included already in the cost
+-- element?"
+--
+-- IT WAS ALREADY INCLUDED, and invisible, which is the worst of both.
+-- `cPlat` -- "Platform / network fees per year", $60,000 at the default
+-- volumes, derived as $0.40 per document across AP and AR together -- was
+-- being added to `cRun` and reported as a single "$90,000 annual run
+-- cost". The money was counted. The SaaS line could not be seen.
+--
+-- WHY BUNDLING THEM WAS WRONG. They are two things a buyer thinks about
+-- completely differently:
+--
+--   $60,000  platform / network fees   a subscription you negotiate with
+--                                      a vendor, and go and get a quote for
+--   $30,000  internal run cost         headcount you absorb: monitoring,
+--                                      exceptions, mandate tracking
+--
+-- The first is the number an executive is most likely to challenge,
+-- because it has a supplier attached and -- by this page's own tooltip --
+-- vendor pricing "varies by an order of magnitude, is rarely published".
+-- A reader who wants to test the business case starts there, and the
+-- page was giving them a sum instead.
+--
+-- MIGRATION 540 MADE THIS WORSE, HOURS EARLIER. Until then "Annual run
+-- cost $90,000" was its own stat in section 5. Merging the sections and
+-- taking Dan's five-stat set dropped it into prose. Five stats is still
+-- the right call, but the effect was to make the recurring cost less
+-- visible on the same day it was asked about -- so the fix belongs in
+-- the note rather than by adding a sixth stat back.
+--
+-- Dan's choice of three, and the one that costs no grid slot: split the
+-- bridge line. It now reads "less $60,000 of platform fees and $30,000
+-- of internal run cost", with the platform figure carrying the existing
+-- `help.cPlat` tooltip -- which already explains the per-document
+-- derivation and warns that a typed value wins permanently and stops
+-- tracking volumes.
+--
+-- REUSING help.cPlat RATHER THAN MINTING help.platform is deliberate.
+-- The tooltip already says everything this second use site needs, and a
+-- near-duplicate help row is how a page ends up with two explanations of
+-- one number that drift apart -- which is the failure this project has
+-- now catalogued five times in data and twice in copy.
+--
+-- The arithmetic is untouched: annualCost is still cPlat + cRun, and net
+-- annual is still the banked figure less that sum.
+-- ================================================================
+
+INSERT OR IGNORE INTO translations (namespace, key, lang, value) VALUES
+  ('roi', 'sum.bridge3', 'en', 'of platform fees'),
+  ('roi', 'sum.bridge4', 'en', 'and'),
+  ('roi', 'sum.bridge5', 'en', 'of internal run cost; section 4 shows what makes up the banked figure, row by row.');
+
+-- ---- what this migration claims it did (see apply_migrations.py) ----
+-- ASSERT: SELECT count(*) FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key IN ('sum.bridge3','sum.bridge4','sum.bridge5') = 3
+-- ASSERT: SELECT count(*) FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key = 'sum.bridge5' AND value LIKE '%internal run cost%' = 1
+-- ASSERT: SELECT count(*) FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key = 'help.cPlat' = 1
+--
+-- `sum.bridge2` is orphaned by this file -- it carried both components in
+-- one clause. Seventeenth on the sweep list, and unlike
+-- `res.netAnnualScope` in 541 it is left in place: it is a string the
+-- page rendered correctly until this migration, and a future layout that
+-- wants the combined figure back would want exactly this sentence.
+--
+-- The standing invariant is the point of the whole change. The two
+-- components must remain separately named, because the reason for
+-- splitting them is that one is a vendor quote and the other is
+-- headcount, and a reader auditing the cost side needs to know which is
+-- which. Recombining them would restore a sum that answers no question
+-- anyone asks.
+--
+-- ASSERT ALWAYS: SELECT count(*) FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key IN ('sum.bridge3','sum.bridge5') = 2

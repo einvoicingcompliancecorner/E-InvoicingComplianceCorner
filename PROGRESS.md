@@ -11041,6 +11041,125 @@ standing invariant now holds the scope note in place, since dropping the
 parenthetical is only safe while that line carries the fact.
 
 
+## 15 August 2026 (cont'd) — Name the SaaS cost (migration 542)
+
+Dan: *"should the executive summary include - Estimated Annual SaaS cost,
+next to one-off costs, or is that included already in the cost element?"*
+
+**It was already included, and invisible** — the worst of both. `cPlat`,
+"Platform / network fees per year", $60,000 at default volumes (derived as
+$0.40 per document across AP and AR together), was added to `cRun` and
+reported as a single "$90,000 annual run cost".
+
+### Why bundling them was wrong
+
+```
+$60,000  platform / network fees   a subscription you negotiate with a
+                                   vendor, and go and get a quote for
+$30,000  internal run cost         headcount you absorb: monitoring,
+                                   exceptions, mandate tracking
+```
+
+The first is **the number an executive is most likely to challenge**,
+because it has a supplier attached and — by this page's own tooltip —
+vendor pricing "varies by an order of magnitude, is rarely published". A
+reader testing the business case starts there, and the page handed them a
+sum.
+
+### 540 made this worse, hours earlier
+
+Until this morning "Annual run cost $90,000" was its own stat in section
+5. Merging the sections and taking the five-stat set dropped it into
+prose. Five stats is still right — but the effect was to make the
+recurring cost *less* visible on the same day it was asked about, which is
+a fair signal the trade was slightly off. The fix therefore belongs in the
+note rather than in a sixth stat.
+
+The bridge line now reads "less $60,000 of platform fees and $30,000 of
+internal run cost", with the platform figure carrying the existing
+`help.cPlat` tooltip.
+
+**Reusing `help.cPlat` rather than minting `help.platform`** is
+deliberate: the tooltip already says what the second use site needs, and a
+near-duplicate help row is how a page ends up with two explanations of one
+number that drift apart.
+
+### The check worth having
+
+Not just that both figures render, but that **platform fees track volume
+and internal run cost does not** — 100k → 200k AP moves the first from
+$60,000 to $100,000 and leaves the second at $30,000. That is the
+substantive difference between them and the reason the split is more than
+cosmetic.
+
+### Verified
+
+`npm test`: 8 suites, all passing. ROI regression **161 checks**. The two
+components still bridge banked to net exactly. `sum.bridge2` is orphaned
+and left in place — seventeenth on the sweep list, and unlike
+`res.netAnnualScope` it is a sentence a future layout would want back.
+
+
+## 15 August 2026 (cont'd) — "Banked" leaves the executive summary (migration 543)
+
+Dan: *"Can you update the headings on the executive summary; From 'banked
+annually' to Annual Saving', and from 'Net annual' to Net Annual Saving'.
+The banked term, I think might not translate well - when we look at
+internationalising the page."*
+
+**He is right, and the reason generalises.** "Banked" here is a finance
+idiom meaning realised-and-keepable, as distinct from identified. English
+carries that in one word; Spanish, German and French do not. A translator
+handed "banked annually" either coins a phrase or falls back on "saved" —
+at which point the distinction migrations 528 and 536 spent real effort
+building collapses into the ordinary word for saving, in three languages
+at once, silently, because a fluent translation looks correct.
+
+```
+res.banked     'banked annually'      -> 'Annual saving'
+res.netAnnual  'Net annual'           -> 'Net annual saving'
+res.unbanked   'unlocked, not banked' -> 'available on a wider scope'
+```
+
+**The third was not requested and was not optional.** `res.unbanked`
+renders *inside* the label `res.banked` produces — the stat reads "Annual
+saving (+$697,355 unlocked, not banked)". Changing the heading and leaving
+the parenthetical would have put the untranslatable word back into the
+very label being fixed, three words later. Its replacement is also truer:
+that money is not un-bankable, it is available on a wider scope.
+
+(The labels render through `text-transform: uppercase`, so the title case
+Dan wrote does not appear. Stored as written anyway — the CSS is a
+presentation choice that could change.)
+
+### What was deliberately not changed
+
+"Banked" is load-bearing across the rest of the page: `col.banks`,
+`notes.banks.h`, `row.tax.banks`, `sum.scopeOnly2`, `sum.bridge`,
+`sum.bridge5`, `sec.savings.lede4`, `sv.unbanked`, `sv.unbankedTail`,
+`notes.rework` — **ten live strings**.
+
+Changing three and leaving ten would make the page less coherent than
+changing all or none: the summary would say "saving" while the table it
+summarises says "banks". Raised as a decision rather than taken quietly.
+
+### The part an i18n pass would hit first
+
+**Three banking labels are not in D1 at all.** `banks`, `not banked` and
+the `43% banks` construction are English literals in the renderer's
+template, on the tags attached to every priced row. They cannot be
+translated by adding rows — they need code changes. Any
+internationalisation of this page starts there, not with the strings
+above. There is now a regression check that names them, so the debt is
+discovered when i18n is *scoped* rather than during it.
+
+### Verified
+
+`npm test`: 8 suites, all passing. ROI regression **166 checks**. A
+standing invariant keeps the three summary labels free of the idiom — it
+is a natural phrase to reach for when editing a stat about money kept.
+
+
 ## Open items / next steps
 
 ### Where things stand — 15 August 2026

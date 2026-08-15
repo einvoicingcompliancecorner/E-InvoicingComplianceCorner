@@ -506,8 +506,8 @@ t.check(`the total row states the gross and the banked figure side by side (${to
   totGross > 0 && totBanked > 0 && totGross > totBanked, totCells.join(" | "));
 const runFromNote = async () => {
   const note = await page.locator("#summary .note:not(.warn)").innerText();
-  const m = note.match(/less\s+\D?([\d,]+)\s+of annual run cost/i);
-  return m ? Number(m[1].replace(/,/g, "")) : null;
+  const m = note.match(/less\s+\D?([\d,]+)\s+of platform fees.*?\D([\d,]+)\s+of internal run cost/is);
+  return m ? Number(m[1].replace(/,/g, "")) + Number(m[2].replace(/,/g, "")) : null;
 };
 const netStat = async () => Number((await page.locator("#summary .stat").nth(2)
   .locator(".n").innerText()).replace(/[^\d]/g, ""));
@@ -1078,9 +1078,9 @@ const net538 = await page.evaluate(() => {
   const cells = [...tot.children];
   const stat = (i) => n([...document.querySelectorAll("#summary .stat")][i].querySelector(".n").textContent);
   const note = document.querySelector("#summary .note:not(.warn)").textContent;
-  const m = note.match(/less\s+\D?([\d,]+)\s+of annual run cost/i);
+  const m = note.match(/less\s+\D?([\d,]+)\s+of platform fees[\s\S]*?\D([\d,]+)\s+of internal run cost/i);
   return { banked: n(cells[cells.length - 1].textContent), net: stat(2),
-           run: m ? Number(m[1].replace(/,/g, "")) : NaN };
+           run: m ? Number(m[1].replace(/,/g, "")) + Number(m[2].replace(/,/g, "")) : NaN };
 });
 t.check(`net annual is the section's banked total minus run cost (${net538.net.toLocaleString()})`,
   Math.abs((net538.banked - net538.run) - net538.net) <= 1,
@@ -1121,6 +1121,78 @@ await page.click("#run"); await page.waitForTimeout(800);
 t.check("and on compliance scope it quantifies what is excluded",
   /needs a change programme you are not running/.test(
     await page.locator("#summary .note:not(.warn)").innerText()));
+
+
+// ---- 33. the SaaS cost is named, not buried in a sum ----
+// Dan: "should the executive summary include - Estimated Annual SaaS
+// cost... or is that included already in the cost element?" It was
+// included and invisible: $60,000 of platform fees added to $30,000 of
+// internal run cost and reported as one "$90,000 annual run cost". Those
+// are a vendor subscription and absorbed headcount — the first is the
+// number an executive challenges first, and the page showed them a sum.
+await page.selectOption("#scope", "compliance");
+await page.click("#run"); await page.waitForTimeout(800);
+const bridgeNote = await page.locator("#summary .note:not(.warn)").innerText();
+const parts = bridgeNote.match(/less\s+\D?([\d,]+)\s+of platform fees[\s\S]*?\D([\d,]+)\s+of internal run cost/i);
+t.check("the note names platform fees and internal run cost separately",
+  parts !== null, bridgeNote.slice(0, 150));
+const plat = Number(parts[1].replace(/,/g, "")), run = Number(parts[2].replace(/,/g, ""));
+t.check(`platform fees are stated in their own right (${plat.toLocaleString()})`, plat > 0);
+t.check(`internal run cost is stated separately (${run.toLocaleString()})`, run > 0 && run !== plat);
+// It still has to close the arithmetic — that is why it is in the note.
+const netNow = Number((await page.locator("#summary .stat").nth(2).locator(".n").innerText())
+  .replace(/[^\d]/g, ""));
+const bankedNow = Number((await page.locator('#savingsTable tr[data-row="total"] td').last().innerText())
+  .replace(/[^\d]/g, ""));
+t.check(`the two still bridge banked to net (${bankedNow} - ${plat} - ${run} = ${netNow})`,
+  bankedNow - plat - run === netNow, `${bankedNow - plat - run} vs ${netNow}`);
+// Platform fees scale with volume, internal run cost does not — which is
+// the substantive difference between them and the reason the split is
+// worth making rather than cosmetic.
+await page.evaluate(() => { document.getElementById("assump").open = true; });
+await page.fill("#volAP", "200000");
+await page.click("#run"); await page.waitForTimeout(900);
+const platAfter = (await page.locator("#summary .note:not(.warn)").innerText())
+  .match(/less\s+\D?([\d,]+)\s+of platform fees[\s\S]*?\D([\d,]+)\s+of internal run cost/i);
+t.check(`platform fees track volume (${plat.toLocaleString()} -> ${Number(platAfter[1].replace(/,/g,"")).toLocaleString()})`,
+  Number(platAfter[1].replace(/,/g, "")) > plat);
+t.check("while internal run cost does not",
+  Number(platAfter[2].replace(/,/g, "")) === run);
+await page.fill("#volAP", "100000");
+
+
+// ---- 34. the summary labels avoid the untranslatable idiom ----
+// Dan: "The banked term, I think might not translate well - when we look
+// at internationalising the page." Correct: "banked" is a finance idiom
+// meaning realised-and-keepable as distinct from identified. English
+// carries that in one word; a translator falls back on "saved", and the
+// distinction migrations 528 and 536 built collapses into the ordinary
+// word for saving, in three languages at once, silently.
+await page.selectOption("#scope", "compliance");
+await page.click("#run"); await page.waitForTimeout(800);
+const sumLabels = await page.evaluate(() => [...document.querySelectorAll("#summary .stat")]
+  .map((e) => e.querySelector(".l").textContent.replace(/\s+/g, " ").trim()));
+t.check(`no summary stat label uses "bank" (${sumLabels.length} labels)`,
+  sumLabels.every((l) => !/bank/i.test(l)), sumLabels.filter((l) => /bank/i.test(l)).join(" | "));
+t.check(`the headline reads as a saving (${sumLabels[0]})`,
+  /annual saving/i.test(sumLabels[0]), sumLabels[0]);
+t.check(`and the net figure too (${sumLabels[2]})`,
+  /net annual saving/i.test(sumLabels[2]), sumLabels[2]);
+// res.unbanked renders INSIDE the res.banked label, so fixing the
+// heading and leaving the parenthetical would have put the idiom back
+// three words later.
+t.check("including the parenthetical inside the headline label",
+  /available on a wider scope/i.test(sumLabels[0]), sumLabels[0]);
+
+// The known gap, asserted so it cannot be forgotten when i18n is scoped:
+// the banking TAGS are English literals in the template, not D1 rows, so
+// no amount of translation reaches them. This check documents the debt
+// rather than failing on it.
+const tagText = await page.evaluate(() =>
+  [...document.querySelectorAll("#savingsTable .tag.bank, #savingsTable .tag.unbank")]
+    .map((e) => e.textContent.trim()));
+t.check(`the row tags are still hardcoded English — known i18n debt (${tagText.join(", ")})`,
+  tagText.length > 0, tagText.join(", "));
 
 await browser.close();
 process.exit(t.report() ? 0 : 1);
