@@ -1077,7 +1077,7 @@ document.getElementById('notes').addEventListener('toggle', function(){
 // the savings, and on a compliance scope it is larger than all three
 // combined, so as a slice it would dominate a chart about savings with
 // money the scope does not realise.
-let SV = null, WAVES = [], ganttExpanded = false;
+let SV = null, WAVES = [], UNDATED = [], ganttExpanded = false;
 function renderSavings(){
   const el = document.getElementById('savings');
   if(!el || !SV || !SV.segs.length) return;
@@ -1454,6 +1454,7 @@ function buildGantt(sel0, erp, pace){
   const rows = [];
   const waveMeta = [];
   WAVES = waveMeta;   // the PDF builds its wave table from this
+  UNDATED = [];       // and, since Dan asked for it, everything else selected
   Object.keys(waveMap).sort().forEach(dl => {
     const members = [...waveMap[dl]].sort((a,b) => b[4]-a[4] || REGORDER.indexOf(a[2])-REGORDER.indexOf(b[2]) || a[0].localeCompare(b[0]));
     const lane = Array.from({length: lanes}, () => []);
@@ -1699,6 +1700,33 @@ function buildGantt(sel0, erp, pace){
     // Clamped to NOW as well, because when a wave is already late progEnd
     // sits in the past and no work can start there either.
     const discStart = Math.max(progEnd.getTime(), NOW.getTime());
+
+    // Dan: "update the pdf output to include all countries that are
+    // checked. Where no mandate exists and no date has been defined you
+    // can either accept the pinned date, or say not yet defined, if the
+    // date is not pinned."
+    //
+    // The PDF's wave table was built from WAVES alone, so a selected
+    // jurisdiction with no dated deadline appeared nowhere on the printed
+    // plan -- it was costed, it was in the one-off total, and the reader
+    // taking the PDF into a meeting could not see it. Recorded here
+    // rather than in the drawing branches below, because the chart draws
+    // this band differently depending on whether it is expanded and the
+    // PDF should not care which way the reader happened to leave it.
+    UNDATED = undated.map(c => {
+      const o = ovrOf(c[0]);
+      const wanted = o.start ? D(o.start).getTime() : NaN;
+      const pinned = !isNaN(wanted);
+      return { name: c[0], pinned,
+               start: new Date(pinned ? Math.max(wanted, discStart) : discStart),
+               weeks: durOf(c).total,
+               // A pin earlier than contracting-complete is clamped, not
+               // honoured, exactly as the chart does it. Saying "pinned"
+               // while showing a different date would be a small lie on
+               // the one artefact that leaves the building.
+               clamped: pinned && wanted < discStart };
+    });
+
     if(ganttExpanded) undated.forEach(c => {
       const {phases, total} = durOf(c);
       // A pinned start applies here too. "Start any time" is the default,
@@ -2417,7 +2445,7 @@ function build(){
       // responsible start date, which the chart only implies through the
       // position of a bar.
       + '<h2>${tj("pdf.h.plan","Compliance wave plan")}</h2>'
-      + (WAVES.length ? '<table><thead><tr><th>${tj("pdf.th.golive","Go-live")}</th>'
+      + ((WAVES.length || UNDATED.length) ? '<table><thead><tr><th>${tj("pdf.th.golive","Go-live")}</th>'
           + '<th>${tj("pdf.th.who","Jurisdictions")}</th><th class="num">${tj("pdf.th.n","No.")}</th>'
           + '<th class="num">${tj("pdf.th.start","Latest responsible start")}</th>'
           + '<th class="num">${tj("pdf.th.elapsed","Elapsed")}</th></tr></thead><tbody>'
@@ -2430,7 +2458,31 @@ function build(){
                 + wv.waveStart.toISOString().slice(0, 10) + '</td><td class="num">'
                 + Math.round(wv.elapsed) + 'w</td></tr>';
             }).join('')
+          // One row per PINNED jurisdiction, because the reader chose that
+          // date and it is the whole reason they pinned it. The rest share
+          // a single row, the same shape the dated waves use and the same
+          // shape the chart collapses them into. Printing eleven one-line
+          // rows instead pushed page one to 307mm against A4's 271.
+          + UNDATED.filter(u => u.pinned).map(u => '<tr><td><strong>'
+              + u.start.toISOString().slice(0, 10) + '</strong> ${tj("pdf.pinned","pinned")}'
+              + (u.clamped ? ' ${tj("pdf.clamped","(moved to earliest)")}' : '')
+              + '</td><td>' + u.name + '</td><td class="num">1</td><td class="num">'
+              + u.start.toISOString().slice(0, 10) + '</td><td class="num">'
+              + Math.round(u.weeks) + 'w</td></tr>').join('')
+          + (UNDATED.some(u => !u.pinned) ? (() => {
+              const free = UNDATED.filter(u => !u.pinned);
+              const who = free.map(u => u.name);
+              return '<tr><td>${tj("pdf.nodate","Not yet defined")}</td><td>'
+                + (who.length > 6 ? who.slice(0, 6).join(', ') + ' +' + (who.length - 6) : who.join(', '))
+                + '</td><td class="num">' + free.length + '</td><td class="num">'
+                + free[0].start.toISOString().slice(0, 10) + '</td><td class="num">'
+                + Math.round(Math.max(...free.map(u => u.weeks))) + 'w</td></tr>';
+            })() : '')
           + '</tbody></table>' : '')
+      // The table above is now every selected jurisdiction, so say which
+      // rows carry no deadline rather than leaving a reader to infer it
+      // from a blank Go-live cell.
+      + (UNDATED.length ? '<div class="note">' + UNDATED.length + ' ${tj("pdf.undatedNote","selected jurisdictions have no mandated go-live. They are costed and scheduled; any date shown for them is a planning choice, not an obligation.")}</div>' : '')
       // Headlines only. Each guard opens with a bolded sentence that is the
       // whole finding; the body after it is the explanation, which belongs
       // with the other reasoning on page 2. Printing them whole cost 33mm

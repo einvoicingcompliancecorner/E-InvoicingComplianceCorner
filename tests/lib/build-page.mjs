@@ -66,8 +66,17 @@ export async function buildRoiPage(opts = {}) {
       roi.getRoiFxRates(db.d1),
     ]);
 
+    // opts.stubStrings replaces every D1 value with a sentinel, so a
+    // rendered page can be searched for English that survived — the
+    // reverse of asking whether every D1 row is used. Recommendation 1
+    // on the design review, and the check that would have found the nine
+    // hardcoded strings migrations 544 and 545 fixed by accident.
+    const used = opts.stubStrings
+      ? Object.fromEntries(Object.keys(strings).map((k) => [k, `«${k}»`]))
+      : strings;
+
     const { body, script } = roi.renderRoiPage({
-      countries, benchmarks, phases, strings, fx,
+      countries, benchmarks, phases, strings: used, fx,
       locked: false, subscribed, signedInAs: "tests@example.com",
     });
 
@@ -83,7 +92,7 @@ ${body}
 </body></html>`;
 
     mkdirSync(TMP, { recursive: true });
-    const file = join(TMP, `roi-${lang}.html`);
+    const file = join(TMP, `roi-${lang}${opts.stubStrings ? "-stub" : ""}.html`);
     writeFileSync(file, html);
     return { file, html, body, script, countries, benchmarks, phases, strings, fx,
              migrations: db.migrations };
