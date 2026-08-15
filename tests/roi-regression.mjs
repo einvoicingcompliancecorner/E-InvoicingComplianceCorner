@@ -555,7 +555,10 @@ const prose = await page.evaluate(() => {
   const words = (s) => (s.trim().match(/\S+/g) || []).length;
   let body = 0, guards = 0;
   document.querySelectorAll(".note, .hint, p.lede").forEach((el) => {
-    if (el.closest("#notes")) return;              // behind the click, exempt
+    // Exempt: behind the click, or inside the print-only document. An
+    // element with display:none returns textContent from innerText, so
+    // #pdfdoc counted as if it were on screen and blew the budget to 1195.
+    if (el.closest("#notes") || el.closest("#pdfdoc")) return;
     const t = el.innerText.trim(); if (words(t) < 12) return;
     const id = el.closest("[id]") ? el.closest("[id]").id : "";
     if (id === "guards") guards += words(t); else body += words(t);
@@ -586,6 +589,85 @@ const notes = await page.locator("#notes").innerText();
  "Headcount restates", "carries no value on purpose",
  "Grade A", "Grade D", "Corrections applied"].forEach((phrase) =>
   t.check(`the panel carries: ${phrase}`, notes.includes(phrase)));
+
+// ---- 20. fields line up ----
+// Dan: "section 1 the field headings wrap sometimes causing the fields to
+// appear at different heights." Measured 19px out in the footprint row —
+// a whole wrapped line — because the reserved label height existed only
+// on #assump and was set below the natural two-line height, so it never
+// bound. Checked at three widths because the wrap point moves.
+await page.evaluate(() => { document.getElementById("assump").open = true; });
+for (const w of [1280, 1000, 860]) {
+  await page.setViewportSize({ width: w, height: 1000 });
+  await page.waitForTimeout(150);
+  const off = await page.evaluate(() => {
+    const bad = [];
+    document.querySelectorAll(".grid").forEach((g) => {
+      const f = [...g.querySelectorAll(":scope > div > input, :scope > div > select")];
+      if (f.length < 2) return;
+      const tops = [...new Set(f.map((i) => Math.round(i.getBoundingClientRect().top)))];
+      if (tops.length > 1) bad.push(Math.max(...tops) - Math.min(...tops));
+    });
+    return bad;
+  });
+  t.check(`grid fields share a baseline at ${w}px`, off.length === 0, off.join("/"));
+}
+await page.setViewportSize({ width: 1280, height: 1000 });
+await page.waitForTimeout(150);
+
+// ---- 21. the savings pie ----
+await page.click("#selEU"); await page.waitForTimeout(200);
+await page.click("#run"); await page.waitForTimeout(800);
+const pie = await page.evaluate(() => {
+  const svg = document.querySelector("#savings .svpie");
+  const pct = [...svg.querySelectorAll("text")].map((t) => parseInt(t.textContent, 10));
+  return { slices: svg.querySelectorAll("path").length, pct,
+           keys: document.querySelectorAll("#savings .svkey li").length };
+});
+t.check(`the pie has one slice per banked component (${pie.slices})`, pie.slices === 3, pie.slices);
+// Largest remainder, so the labels total 100. Three rounded percentages
+// that visibly sum to 99 is the small wrongness that makes a reader doubt
+// the large numbers.
+t.check(`slice percentages sum to 100 (${pie.pct.join("+")})`,
+  pie.pct.reduce((a, c) => a + c, 0) === 100, pie.pct);
+t.check("and each is direct-labelled in the legend with its value",
+  pie.keys === 3, pie.keys);
+// Cycle time must never acquire a slice: the model does not price it, and
+// inventing a number for the chart is the one thing it refuses to do.
+t.check("nothing unpriced is charted",
+  !/cycle time/i.test(await page.locator("#savings .svkey").innerText()));
+
+// ---- 22. the PDF is two pages, and the right things are on each ----
+const pdf = await page.evaluate(() => {
+  const d = document.getElementById("pdfdoc");
+  const pgs = [...d.querySelectorAll(".pg")];
+  return { pages: pgs.length, p1: pgs[0] ? pgs[0].innerText : "", p2: pgs[1] ? pgs[1].innerText : "" };
+});
+t.check(`the PDF document is exactly two pages (${pdf.pages})`, pdf.pages === 2, pdf.pages);
+t.check("page 1 carries the headline findings", /Banked annually/.test(pdf.p1) && /Payback/.test(pdf.p1));
+t.check("page 1 carries the wave plan", /Latest responsible start/i.test(pdf.p1));
+t.check("page 2 carries the assumptions and their grades",
+  /Assumptions/i.test(pdf.p2) && /Grade A measured/i.test(pdf.p2));
+t.check("and the disclaimer, which is load-bearing on a forwarded document",
+  /not tax, legal or investment advice/i.test(pdf.p2));
+// Dan asked for caveats on page 2 specifically. This is the check that
+// they did not creep back onto page 1 with the next edit.
+t.check("the reasoning is NOT on page 1",
+  !/ATO \/ Deloitte task times/.test(pdf.p1));
+
+await page.emulateMedia({ media: "print" });
+await page.waitForTimeout(300);
+const printed = await page.evaluate(() => {
+  const mm = (px) => px / 96 * 25.4;
+  const pgs = [...document.querySelectorAll("#pdfdoc .pg")];
+  return { wrap: getComputedStyle(document.querySelector("body>.wrap")).display,
+           heights: pgs.map((p) => Math.round(mm(p.getBoundingClientRect().height))) };
+});
+t.check("the interactive page is suppressed in print", printed.wrap === "none");
+// A4 is 297mm less 13mm margins top and bottom.
+printed.heights.forEach((h, i) =>
+  t.check(`PDF page ${i + 1} fits on A4 (${h}mm of 271mm)`, h <= 271, h));
+await page.emulateMedia({ media: "screen" });
 
 await browser.close();
 process.exit(t.report() ? 0 : 1);
