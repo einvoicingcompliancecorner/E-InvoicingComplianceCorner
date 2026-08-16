@@ -533,8 +533,17 @@ t.check("and the banked total is what the executive summary works from",
 t.check("the running costs that bridge saving to net are stated beside the one-off",
   (await runFromNote()) !== null,
   await page.locator("#summary .stat").nth(1).innerText());
-t.check("and the unlocked remainder is still stated somewhere on the page",
-  (await page.locator("body").innerText()).includes("603,931"));
+// DERIVED, not hardcoded. This read `.includes("603,931")` until
+// migration 558, and that literal broke on every legitimate change to
+// any priced row — three times in a fortnight. A baseline you re-type
+// each time it goes red is not a check, it is a chore that teaches you
+// to silence it. What the page actually promises is that the gap
+// between the two totals is stated rather than left for the reader to
+// subtract, so assert exactly that and let the value move.
+const unlocked = totGross - totBanked;
+t.check(`and the unlocked remainder is stated, not left to be subtracted (${unlocked.toLocaleString()})`,
+  (await page.locator("body").innerText()).includes(unlocked.toLocaleString()),
+  `${unlocked.toLocaleString()} not found on the page`);
 
 // The tags are the whole defence of this change: the reasoning has to be
 // on the row, not in a footnote, because the change makes the answer
@@ -609,14 +618,51 @@ await page.click("#run"); await page.waitForTimeout(700);
 t.check("reset restores the elimination assumption too",
   (await page.inputValue("#errElim")) === "80");
 
-// The $45 is ours until it is theirs, and the page now says which.
+// Migration 558 replaced the $45 with a duration. Until then the row was
+// priced by an ungraded guess, so the label had to say "our estimate,
+// not yours" — the honest thing to do with a number nobody could source.
+// It is now the ATO's 15 minutes at the BLS-derived data-entry rate, so
+// the unchanged state cites a source rather than apologising for the
+// absence of one, and the changed state is still attributed to the
+// reader.
 const reworkRow = await page.locator('#savingsTable tr[data-row="rework"]').innerText();
-t.check("an unchanged rework cost is labelled as our estimate, not the reader's",
-  /our estimate, not yours/.test(reworkRow), reworkRow.slice(0, 200));
-await page.fill("#errCost", "70");
+t.check("an unchanged resolution time cites the ATO rather than apologising",
+  /ATO, 15 min per processing exception/.test(reworkRow), reworkRow.slice(0, 220));
+t.check("and shows the rate it is priced at, so the money is traceable",
+  /at \$25\.96\/h/.test(reworkRow) && /loaded data-entry rate/.test(reworkRow),
+  reworkRow.slice(0, 220));
+await page.fill("#errMins", "30");
 await page.click("#run"); await page.waitForTimeout(700);
+const reworkMine = await page.locator('#savingsTable tr[data-row="rework"]').innerText();
 t.check("and becomes theirs once they change it",
-  /your rework cost/.test(await page.locator('#savingsTable tr[data-row="rework"]').innerText()));
+  /your resolution time/.test(reworkMine), reworkMine.slice(0, 220));
+
+// The lever has to be linear in minutes, which is the whole argument for
+// asking for a duration: doubling the time doubles the cost, and a
+// reader can sanity-check that against their own experience.
+const reworkAt = async (mins) => {
+  await page.fill("#errMins", String(mins));
+  await page.click("#run"); await page.waitForTimeout(700);
+  return +(await page.locator('#savingsTable tr[data-row="rework"] td').nth(2).innerText())
+    .replace(/[^\d]/g, "");
+};
+const m15 = await reworkAt(15), m30 = await reworkAt(30), m0 = await reworkAt(0);
+t.check(`doubling the minutes doubles the row (${m15.toLocaleString()} -> ${m30.toLocaleString()})`,
+  Math.abs(m30 - m15 * 2) <= 2, `${m15} x 2 vs ${m30}`);
+t.check("and zero minutes prices nothing", m0 === 0, m0);
+// The ATO's own data-accuracy line is 5 minutes and the citation offers
+// it. A reader taking that option must not meet a broken page.
+const m5 = await reworkAt(5);
+// Tolerance is the cent-rounding, not slack. The per-error cost is
+// rounded to cents so the basis sentence and the arithmetic agree —
+// the same fix migrations 536 and 557 applied after a printed figure
+// disagreed with the total computed from it. At 10,000 errors and 80%
+// elimination, a half-cent is $40 per comparison.
+const centSlack = 10_000 * 0.8 * 0.005 * 3;
+t.check(`the citation's narrower 5-minute option works too (${m5.toLocaleString()})`,
+  m5 > 0 && Math.abs(m5 * 3 - m15) <= centSlack, `${m5} x 3 vs ${m15}, slack ${centSlack}`);
+await page.fill("#errMins", "15");
+await page.click("#run"); await page.waitForTimeout(700);
 
 // ---- 18. the page stays readable ----
 // Dan, 15 Aug 2026: "The UI is difficult to read and follow because there
@@ -1381,15 +1427,26 @@ await apAt(50);
 // we need them to update to make the business case real." Six fields are
 // ours rather than theirs, and the line counts down as they are set --
 // a static warning becomes furniture, a shrinking one is progress.
+// Counted across the PAGE, not inside #assump. Scoping this to the panel
+// was the same assumption as the word "below" in the counter it checks:
+// true while all six lived there, false the moment migration 559 moved
+// two into section 1. It is also the check that caught the real bug in
+// that migration — two fields outside the panel stopped firing the
+// delegated input listener bound to it, so their marks never retired.
 const needs = await page.evaluate(() => ({
-  marked: document.querySelectorAll("#assump .needsyou").length,
+  marked: document.querySelectorAll(".needsyou").length,
   note: (document.getElementById("needsYou") || {}).innerText || "",
   warn: (document.getElementById("needsYou") || {}).className || "",
 }));
 t.check(`six fields are marked as the reader's to set (${needs.marked})`,
   needs.marked === 6, needs.marked);
-t.check(`the panel says how many are still ours (${needs.note.slice(0, 54)})`,
-  /still our numbers, not yours/.test(needs.note), needs.note);
+t.check(`the page says how many are still ours (${needs.note.slice(0, 54)})`,
+  /figures we need from you are still our defaults/.test(needs.note), needs.note);
+// 559: the counter must not tell the reader which direction to look. It
+// said "fields below" and two of the six then moved above it. There is a
+// standing invariant on the D1 rows; this is the rendered half.
+t.check("and does not name a direction that a later move would falsify",
+  !/\b(below|above)\b/i.test(needs.note), needs.note);
 t.check("and says it as a warning while any remain", /warn/.test(needs.warn), needs.warn);
 // "They are highlighted" has to be true, and the first cut of this change
 // shipped that sentence with no CSS behind it at all — the note counted
@@ -1407,7 +1464,7 @@ t.check("and the mark is not the amber that already means ‘your value’",
   !/201,\s*138,\s*58/.test(mark.on), mark.on);
 // Fill every one of them and the warning should turn into an all-clear.
 await page.evaluate(() => {
-  for (const id of ["cImplS", "cImplC", "cPlat", "cRun", "errCost", "eShare"]) {
+  for (const id of ["cImplS", "cImplC", "cPlat", "cRun", "errMins", "eShare"]) {
     const el = document.getElementById(id);
     el.value = String(Number(el.value) + 1);
     el.dispatchEvent(new Event("input", { bubbles: true }));
@@ -1424,7 +1481,7 @@ t.check(`setting all six clears the warning (${done.note.slice(0, 46)})`,
 // reader four of six through needs to see WHICH two are left without
 // re-reading twenty fields.
 const cleared = await page.evaluate(() =>
-  document.querySelectorAll("#assump .needsyou.done").length);
+  document.querySelectorAll(".needsyou.done").length);
 t.check(`and every field's own mark retires with it (${cleared} of 6)`,
   cleared === 6, cleared);
 
