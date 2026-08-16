@@ -27,6 +27,27 @@ const { file } = await buildRoiPage();
 const browser = await launch();
 const page = await browser.newPage({ viewport: { width: 1280, height: 1000 } });
 t.watch(page);
+
+// Dan removed the "EU only" and "Everywhere with a mandate" presets from
+// the country selector on 16 Aug 2026. They were also how most of this
+// suite built a selection, so the SELECTION LOGIC MOVES HERE rather than
+// the coverage going with the buttons. Same rules the handlers used:
+// region 'Eu' for the first, status in-force or upcoming for the second.
+//
+// Deliberately not a click on some other control: these set up a state
+// so that a later assertion has something to measure, and a setup step
+// that depends on UI chrome is a setup step that breaks when the chrome
+// moves — which is exactly what happened here.
+const selectEU = () => page.evaluate(() => {
+  document.getElementById("useSubs").checked = false;
+  document.querySelectorAll("#countryList input[type=checkbox][data-i]")
+    .forEach((b) => { b.checked = COUNTRIES[+b.dataset.i][2] === "Eu"; });
+});
+const selectMandate = () => page.evaluate(() => {
+  document.getElementById("useSubs").checked = false;
+  document.querySelectorAll("#countryList input[type=checkbox][data-i]")
+    .forEach((b) => { const st = COUNTRIES[+b.dataset.i][3]; b.checked = st === "i" || st === "u"; });
+});
 await page.goto(`file://${file}`);
 
 // The chart groups by wave by default (Dan, 15 Aug: 27 rows in one band
@@ -50,11 +71,11 @@ const headline = await page.locator("#summary .stat .n").first().textContent();
 t.check("summary carries a money figure", /[\d,]+/.test(headline), headline);
 
 // ---- 2. presets actually select ----
-await page.click("#selEU"); await page.waitForTimeout(100);
+await selectEU(); await page.waitForTimeout(100);
 const eu = await page.locator("#countryList input:checked").count();
 await page.click("#selNone"); await page.waitForTimeout(100);
 const none = await page.locator("#countryList input:checked").count();
-await page.click("#selMandate"); await page.waitForTimeout(100);
+await selectMandate(); await page.waitForTimeout(100);
 const mandate = await page.locator("#countryList input:checked").count();
 t.check(`EU preset selects (${eu})`, eu > 10);
 t.check("clear preset clears", none === 0);
@@ -168,7 +189,7 @@ t.check("it names the countries and both dates",
 // ---- 9. the adjust panel actually rearranges the plan ----
 const waveText = () => page.evaluate(() =>
   [...document.querySelectorAll("#gantt svg text")].map((n) => n.textContent).filter((x) => /w elapsed/.test(x)));
-await page.click("#selMandate"); await page.waitForTimeout(150);
+await selectMandate(); await page.waitForTimeout(150);
 await page.click("#run"); await page.waitForTimeout(600);
 await expandGantt();
 const before = await waveText();
@@ -279,7 +300,7 @@ t.check("reset clears discretionary pins too",
   !(await bandLabels()).some((l) => /PINNED|CLAMPED/.test(l)), await bandLabels());
 
 // ---- back to the dated case for the final reset check ----
-await page.click("#selMandate"); await page.waitForTimeout(150);
+await selectMandate(); await page.waitForTimeout(150);
 await page.click("#run"); await page.waitForTimeout(600);
 t.check("reset restores the computed plan exactly",
   JSON.stringify(await waveText()) === JSON.stringify(before));
@@ -364,7 +385,7 @@ const indirect = () => page.locator('#savingsTable tr[data-row="tax"]');
 const indValue = async () =>
   Number((await indirect().locator("td").last().innerText()).replace(/[^\d]/g, ""));
 
-await page.click("#selEU"); await page.waitForTimeout(200);
+await selectEU(); await page.waitForTimeout(200);
 await page.fill("#volAP", "100000"); await page.fill("#volAR", "50000");
 await page.click("#run"); await page.waitForTimeout(700);
 const ind100k = await indValue();
@@ -410,7 +431,7 @@ t.check("and stays quiet when the cap is not binding",
 // roughly double and offshore completely differently. The data-entry rate
 // exists to restate a saving already counted, never to add one, because
 // the ATO source says the per-invoice benchmark IS the labour.
-await page.click("#selEU"); await page.waitForTimeout(200);
+await selectEU(); await page.waitForTimeout(200);
 await page.fill("#volAP", "100000"); await page.fill("#volAR", "50000");
 await page.click("#run"); await page.waitForTimeout(700);
 
@@ -469,7 +490,7 @@ t.check("and reset restores both rates",
 // direct total was multiplied by zero on the scope everybody picks, and
 // the page told them the real answer was to widen scope. Now each row
 // declares what it depends on.
-await page.click("#selEU"); await page.waitForTimeout(200);
+await selectEU(); await page.waitForTimeout(200);
 await page.fill("#volAP", "100000"); await page.fill("#volAR", "50000");
 await page.selectOption("#scope", "compliance"); await page.waitForTimeout(300);
 await page.click("#run"); await page.waitForTimeout(700);
@@ -680,7 +701,7 @@ await page.click("#run"); await page.waitForTimeout(700);
 // open and the volumes edited, and a budget measured against that state
 // is not the state any reader arrives in.
 await page.goto(`file://${file}`);
-await page.click("#selEU"); await page.waitForTimeout(200);
+await selectEU(); await page.waitForTimeout(200);
 await page.click("#run"); await page.waitForTimeout(800);
 const prose = await page.evaluate(() => {
   const words = (s) => (s.trim().match(/\S+/g) || []).length;
@@ -764,7 +785,7 @@ await page.setViewportSize({ width: 1280, height: 1000 });
 await page.waitForTimeout(150);
 
 // ---- 21. the savings pie ----
-await page.click("#selEU"); await page.waitForTimeout(200);
+await selectEU(); await page.waitForTimeout(200);
 await page.click("#run"); await page.waitForTimeout(800);
 const pie = await page.evaluate(() => {
   const svg = document.querySelector("#savings .svpie");
@@ -826,7 +847,7 @@ await page.emulateMedia({ media: "screen" });
 // same argument there — ViDA is ONE EU fact, not twenty-seven national
 // ones — and the planner had been going the other way ever since.
 await page.goto(`file://${file}`);
-await page.click("#selEU"); await page.waitForTimeout(200);
+await selectEU(); await page.waitForTimeout(200);
 await page.click("#run"); await page.waitForTimeout(900);
 
 // Nobody selects the EU. It binds you if any member state does, and
@@ -872,7 +893,7 @@ t.check("and the EU obligation is adjustable like any other",
 // national date), but the chart grew 31% taller and ONE wave held 27 of
 // its 46 rows. Density, not extent.
 await page.goto(`file://${file}`);
-await page.click("#selEU"); await page.waitForTimeout(200);
+await selectEU(); await page.waitForTimeout(200);
 await page.click("#run"); await page.waitForTimeout(900);
 
 const chartH = () => page.evaluate(() =>
@@ -1335,7 +1356,7 @@ t.check(`the row tags come from D1 now, not the template (${tagText.join(", ")})
 // Asserted as a SET COMPARISON rather than a count, because a count can
 // be right while the names are wrong, and this is the artefact that
 // leaves the building.
-await page.click("#selEU"); await page.waitForTimeout(400);
+await selectEU(); await page.waitForTimeout(400);
 await page.click("#run"); await page.waitForTimeout(1400);
 const ticked = await page.evaluate(() =>
   [...document.querySelectorAll("#s-countries input[type=checkbox]:checked")]
@@ -1438,16 +1459,24 @@ const needs = await page.evaluate(() => ({
   note: (document.getElementById("needsYou") || {}).innerText || "",
   warn: (document.getElementById("needsYou") || {}).className || "",
 }));
-t.check(`six fields are marked as the reader's to set (${needs.marked})`,
-  needs.marked === 6, needs.marked);
-t.check(`the page says how many are still ours (${needs.note.slice(0, 54)})`,
-  /figures we need from you are still our defaults/.test(needs.note), needs.note);
-// 559: the counter must not tell the reader which direction to look. It
-// said "fields below" and two of the six then moved above it. There is a
-// standing invariant on the D1 rows; this is the rendered half.
-t.check("and does not name a direction that a later move would falsify",
-  !/\b(below|above)\b/i.test(needs.note), needs.note);
-t.check("and says it as a warning while any remain", /warn/.test(needs.warn), needs.warn);
+// Ten now, not six. Dan, 16 Aug 2026: "all input fields in the 'your
+// footprint' section can have an amber ribbon, until updated and turn
+// green." Section 1 is entirely facts about the reader, so every field
+// in it starts as our guess; the panel keeps ribbons on its four vendor
+// placeholders and not on the benchmarks, which are ours on purpose.
+// Counted per region rather than as a total, because a total of ten
+// would pass if all ten were in one place.
+const marked = await page.evaluate(() => ({
+  foot: document.querySelectorAll(".foot2 .needsyou").length,
+  panel: document.querySelectorAll("#assump .needsyou").length,
+}));
+t.check(`every footprint field is marked (${marked.foot}) and the panel's four placeholders (${marked.panel})`,
+  marked.foot === 6 && marked.panel === 4, JSON.stringify(marked));
+// Migration 562 removed the counting sentence at Dan's request. The
+// ribbons carry the whole message now, which is why the colour checks
+// below matter more than they did: there is no prose to fall back on.
+t.check("the counting sentence is gone, not merely emptied",
+  await page.evaluate(() => !document.getElementById("needsYou")));
 // "They are highlighted" has to be true, and the first cut of this change
 // shipped that sentence with no CSS behind it at all — the note counted
 // six fields and pointed at nothing. Assert the mark is really painted,
@@ -1455,13 +1484,23 @@ t.check("and says it as a warning while any remain", /warn/.test(needs.warn), ne
 // this", because one colour cannot mean a claim and its negation.
 const mark = await page.evaluate(() => {
   const s = getComputedStyle(document.getElementById("cPlat"));
-  const plain = getComputedStyle(document.getElementById("volAP"));
-  return { on: s.boxShadow, off: plain.boxShadow };
+  // costNow, not volAP: every field in section 1 carries a ribbon now, so
+  // volAP stopped being a valid "unmarked" control on 16 Aug. A benchmark
+  // in the panel is the real negative case.
+  const plain = getComputedStyle(document.getElementById("costNow"));
+  return { on: s.boxShadow, off: plain.boxShadow, border: s.borderColor };
 });
 t.check(`a needs-you field is visibly marked (${mark.on.slice(0, 40)})`,
   mark.on !== mark.off && /inset/.test(mark.on), `${mark.on} vs ${mark.off}`);
-t.check("and the mark is not the amber that already means ‘your value’",
-  !/201,\s*138,\s*58/.test(mark.on), mark.on);
+// 557 used red here, reasoning that amber was taken by markOverridden().
+// Dan asked for amber, and it resolves because the two states are
+// mutually exclusive: an amber RIBBON means untouched, so the field
+// cannot also carry the amber BORDER that means you set it. That
+// exclusivity is the thing worth asserting — if it ever breaks, one
+// colour is claiming a thing and its opposite on one control.
+t.check("a still-ours field is amber-ribboned and has no amber border",
+  /201,\s*138,\s*58/.test(mark.on) && !/201,\s*138,\s*58/.test(mark.border),
+  `${mark.on} :: ${mark.border}`);
 // Fill every one of them and the warning should turn into an all-clear.
 await page.evaluate(() => {
   for (const id of ["cImplS", "cImplC", "cPlat", "cRun", "errMins", "eShare"]) {
@@ -1471,17 +1510,26 @@ await page.evaluate(() => {
   }
 });
 await page.click("#run"); await page.waitForTimeout(800);
-const done = await page.evaluate(() => ({
-  note: document.getElementById("needsYou").innerText,
-  warn: document.getElementById("needsYou").className,
-}));
-t.check(`setting all six clears the warning (${done.note.slice(0, 46)})`,
-  /has one/.test(done.note) && !/warn/.test(done.warn), `${done.warn} :: ${done.note}`);
+// With the sentence gone, the ribbons ARE the message — so the check
+// that used to read the note now reads the colour that replaced it.
+const allGreen = await page.evaluate(() => {
+  const ids = ["cImplS", "cImplC", "cPlat", "cRun", "errMins", "eShare"];
+  return ids.map((id) => getComputedStyle(document.getElementById(id)).boxShadow)
+    .every((sh) => /63,\s*125,\s*92/.test(sh));
+});
+t.check("setting all six turns every ribbon green", allGreen);
 // Each field's own mark retires too, not just the aggregate count — a
 // reader four of six through needs to see WHICH two are left without
 // re-reading twenty fields.
-const cleared = await page.evaluate(() =>
-  document.querySelectorAll(".needsyou.done").length);
+// Six, counted among the six that were filled — not a page-wide total.
+// The total is 8 here because the volume fields were touched earlier in
+// this suite, and a page-wide count would have quietly passed on the
+// wrong six.
+const cleared = await page.evaluate(() => {
+  const ids = ["cImplS", "cImplC", "cPlat", "cRun", "errMins", "eShare"];
+  return ids.filter((id) => document.getElementById(id).parentElement
+    .classList.contains("done")).length;
+});
 t.check(`and every field's own mark retires with it (${cleared} of 6)`,
   cleared === 6, cleared);
 
