@@ -489,8 +489,13 @@ const bankedTotal = async () =>
 // banking. The rows are where the banking decision actually lives.
 const cell = async (row, n) => Number((await page.locator(`#savingsTable tr[data-row="${row}"]`)
   .locator("td").nth(n).innerText()).replace(/[^\d]/g, ""));
+// Recalculated for migration 557. The AP baseline is no longer Ardent's
+// blended $9.84 but the manual-invoice cost implied by it ($14.23), and
+// the saving is scaled by how much is NOT already arriving structured.
+// At the 50% default: 100,000 x 14.23 x 60% x 50% = $426,900 gross,
+// x 42.86% capture share = $182,969 banked.
 t.check("compliance-only banks the capture share of AP, not all of it",
-  (await cell("ap", 3)) === 253045, await cell("ap", 3));
+  (await cell("ap", 3)) === 182969, await cell("ap", 3));
 t.check("and banks AR in full, because the mandate compels structured issuing",
   (await cell("ar", 3)) === 195000 && (await cell("ar", 2)) === 195000);
 t.check("and banks none of the rework",
@@ -529,7 +534,7 @@ t.check("the running costs that bridge saving to net are stated beside the one-o
   (await runFromNote()) !== null,
   await page.locator("#summary .stat").nth(1).innerText());
 t.check("and the unlocked remainder is still stated somewhere on the page",
-  (await page.locator("body").innerText()).includes("697,355"));
+  (await page.locator("body").innerText()).includes("603,931"));
 
 // The tags are the whole defence of this change: the reasoning has to be
 // on the row, not in a footnote, because the change makes the answer
@@ -681,12 +686,29 @@ for (const w of [1280, 1000, 860]) {
   await page.setViewportSize({ width: w, height: 1000 });
   await page.waitForTimeout(150);
   const off = await page.evaluate(() => {
+    // A grid may legitimately WRAP -- the cost group holds five fields in
+    // four columns since migration 557 -- so "every input shares a top"
+    // stopped being the property. What still has to hold is that inputs
+    // in the SAME ROW line up: the original defect was a label wrapping
+    // to two lines and pushing its input below its neighbours'.
+    // Rows are identified by the CELL top, not the input top, because a
+    // misaligned input is exactly what this is looking for.
     const bad = [];
     document.querySelectorAll(".grid").forEach((g) => {
-      const f = [...g.querySelectorAll(":scope > div > input, :scope > div > select")];
-      if (f.length < 2) return;
-      const tops = [...new Set(f.map((i) => Math.round(i.getBoundingClientRect().top)))];
-      if (tops.length > 1) bad.push(Math.max(...tops) - Math.min(...tops));
+      const cells = [...g.querySelectorAll(":scope > div")]
+        .filter((d) => d.querySelector("input, select"));
+      if (cells.length < 2) return;
+      const rows = new Map();
+      for (const c of cells) {
+        const key = Math.round(c.getBoundingClientRect().top);
+        (rows.get(key) || rows.set(key, []).get(key)).push(c);
+      }
+      for (const row of rows.values()) {
+        if (row.length < 2) continue;
+        const tops = [...new Set(row.map((c) =>
+          Math.round(c.querySelector("input, select").getBoundingClientRect().top)))];
+        if (tops.length > 1) bad.push(Math.max(...tops) - Math.min(...tops));
+      }
     });
     return bad;
   });
@@ -1056,14 +1078,24 @@ await page.fill("#volAP", "100000"); await page.fill("#volAR", "50000");
 await page.click("#run"); await page.waitForTimeout(900);
 const apRow = await page.evaluate(() => {
   const tr = document.querySelector('#savingsTable tr[data-row="ap"]');
-  return { basis: tr.children[1].textContent.replace(/\s+/g, " "),
+  // Tooltip bodies live inside the cell and carry percentages of their
+  // own -- the reduction citation quotes "60-80%", the capture one "43%".
+  // Reading the raw cell text picked those up and multiplied the row out
+  // against a number the reader never sees. Strip the tips first.
+  const cell = tr.children[1].cloneNode(true);
+  cell.querySelectorAll(".tip").forEach((n) => n.remove());
+  return { basis: cell.textContent.replace(/\s+/g, " "),
            value: tr.children[2].textContent.trim() };
 });
 const rate = parseFloat((apRow.basis.match(/invoices\s*\S\s*[^\d]*([\d.]+)/) || [])[1]);
-const pctOff = parseFloat((apRow.basis.match(/(\d+)%/) || [])[1]);
-t.check(`the AP basis multiplies out to the AP value (${rate} x 60%)`,
-  Math.abs(100000 * rate * (pctOff / 100) - money(apRow.value)) <= 1,
-  `${100000 * rate * (pctOff / 100)} vs ${apRow.value}`);
+const pcts = [...apRow.basis.matchAll(/(\d+)%/g)].map((m) => Number(m[1]));
+// Since 557 the row states three numbers, not two: the manual-invoice
+// baseline, the reduction, and the share already arriving structured.
+// A reader multiplying them out must land on the printed value, which is
+// the whole point of showing the basis at all.
+t.check(`the AP basis multiplies out to the AP value (${rate} x ${pcts[0]}% x ${100 - pcts[1]}%)`,
+  Math.abs(100000 * rate * (pcts[0] / 100) * (1 - pcts[1] / 100) - money(apRow.value)) <= 1,
+  `${100000 * rate * (pcts[0] / 100) * (1 - pcts[1] / 100)} vs ${apRow.value}`);
 
 
 // ---- 31. every monetised row declares a banking position ----
@@ -1321,6 +1353,80 @@ const pagesNow = await page.evaluate(() =>
   document.querySelectorAll("#pdfdoc .pg").length);
 t.check(`and the PDF is still exactly two pages with all of it (${pagesNow})`,
   pagesNow === 2, pagesNow);
+
+
+// ---- 36. the e-invoice share is a live lever, and guidance points at it ----
+// Dan: "Is the Current eInvoice rate, as a percentage - something we could
+// assert in the assumptions, with the user having to update." It is now
+// the largest single lever on the processing row, because a saving can
+// only be taken once: whatever already arrives structured has taken it.
+await page.evaluate(() => { document.getElementById("assump").open = true; });
+await page.waitForTimeout(200);
+const apAt = async (pct) => {
+  await page.fill("#eShare", String(pct));
+  await page.click("#run"); await page.waitForTimeout(800);
+  return Number((await page.locator('#savingsTable tr[data-row="ap"] td').nth(2).innerText())
+    .replace(/[^\d]/g, ""));
+};
+const at0 = await apAt(0), at50 = await apAt(50), at100 = await apAt(100);
+t.check(`0% already structured gives the largest saving (${at0.toLocaleString()})`,
+  at0 > at50 && at50 > at100, `${at0} / ${at50} / ${at100}`);
+t.check("and 100% gives none, because there is nothing left to take",
+  at100 === 0, at100);
+t.check("the halfway point is half the full saving, so the lever is linear",
+  Math.abs(at50 * 2 - at0) <= 2, `${at50} x 2 vs ${at0}`);
+await apAt(50);
+
+// Dan, same message: "ensure that the user is guided to those fields that
+// we need them to update to make the business case real." Six fields are
+// ours rather than theirs, and the line counts down as they are set --
+// a static warning becomes furniture, a shrinking one is progress.
+const needs = await page.evaluate(() => ({
+  marked: document.querySelectorAll("#assump .needsyou").length,
+  note: (document.getElementById("needsYou") || {}).innerText || "",
+  warn: (document.getElementById("needsYou") || {}).className || "",
+}));
+t.check(`six fields are marked as the reader's to set (${needs.marked})`,
+  needs.marked === 6, needs.marked);
+t.check(`the panel says how many are still ours (${needs.note.slice(0, 54)})`,
+  /still our numbers, not yours/.test(needs.note), needs.note);
+t.check("and says it as a warning while any remain", /warn/.test(needs.warn), needs.warn);
+// "They are highlighted" has to be true, and the first cut of this change
+// shipped that sentence with no CSS behind it at all — the note counted
+// six fields and pointed at nothing. Assert the mark is really painted,
+// and that it is NOT the amber markOverridden() already uses for "you set
+// this", because one colour cannot mean a claim and its negation.
+const mark = await page.evaluate(() => {
+  const s = getComputedStyle(document.getElementById("cPlat"));
+  const plain = getComputedStyle(document.getElementById("volAP"));
+  return { on: s.boxShadow, off: plain.boxShadow };
+});
+t.check(`a needs-you field is visibly marked (${mark.on.slice(0, 40)})`,
+  mark.on !== mark.off && /inset/.test(mark.on), `${mark.on} vs ${mark.off}`);
+t.check("and the mark is not the amber that already means ‘your value’",
+  !/201,\s*138,\s*58/.test(mark.on), mark.on);
+// Fill every one of them and the warning should turn into an all-clear.
+await page.evaluate(() => {
+  for (const id of ["cImplS", "cImplC", "cPlat", "cRun", "errCost", "eShare"]) {
+    const el = document.getElementById(id);
+    el.value = String(Number(el.value) + 1);
+    el.dispatchEvent(new Event("input", { bubbles: true }));
+  }
+});
+await page.click("#run"); await page.waitForTimeout(800);
+const done = await page.evaluate(() => ({
+  note: document.getElementById("needsYou").innerText,
+  warn: document.getElementById("needsYou").className,
+}));
+t.check(`setting all six clears the warning (${done.note.slice(0, 46)})`,
+  /has one/.test(done.note) && !/warn/.test(done.warn), `${done.warn} :: ${done.note}`);
+// Each field's own mark retires too, not just the aggregate count — a
+// reader four of six through needs to see WHICH two are left without
+// re-reading twenty fields.
+const cleared = await page.evaluate(() =>
+  document.querySelectorAll("#assump .needsyou.done").length);
+t.check(`and every field's own mark retires with it (${cleared} of 6)`,
+  cleared === 6, cleared);
 
 await browser.close();
 process.exit(t.report() ? 0 : 1);

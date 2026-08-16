@@ -338,12 +338,36 @@ table{color:var(--text-lo)}
 .wrap{color:var(--text-lo)}
 footer{color:var(--muted)}
 .grid{display:grid;gap:14px}
+/* Inputs sit at the BOTTOM of their cell, so a label that wraps to two
+   lines cannot push its field below its neighbours'. Migration 531 fixed
+   one instance of that by shortening a label; 557 reintroduced it at
+   860px with "Invoices already received as e-invoices %". Shortening
+   again would only defer it -- every future label is a chance to break
+   the row. Reserving two lines of label height in every such cell is the
+   general fix. Bottom-aligning the inputs was tried first and was worse:
+   several cells carry a hint paragraph BELOW the input, so pushing the
+   input to the bottom of the cell misaligned the ones that do not. */
+.grid > div:has(> input, > select) > label{min-height:37px}
 @media(min-width:760px){.g2{grid-template-columns:1fr 1fr}.g3{grid-template-columns:repeat(3,1fr)}.g4{grid-template-columns:repeat(4,1fr)}.g5{grid-template-columns:repeat(3,1fr)}}
 @media(min-width:1000px){.g5{grid-template-columns:repeat(5,1fr)}}
 label{display:block;font-size:12px;font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin:0 0 5px}
 input[type=number],input[type=text],select{width:100%;background:var(--ink);border:1px solid var(--line);color:var(--text-lo);border-radius:6px;padding:9px 11px;font:inherit;font-size:15px}
 input:focus,select:focus{outline:2px solid var(--soon);outline-offset:1px}
 .hint{font-size:11.5px;color:var(--muted);margin:5px 0 0}
+/* The six fields the reader has to own, marked so the counting note above
+   the panel means something -- it says "they are highlighted".
+   AMBER IS ALREADY SPOKEN FOR HERE, and that constraint decided the
+   design. markOverridden() borders any changed input in --soon and
+   prefixes its hint with "Your value.", so on this panel amber already
+   means YOU SET THIS. Using it for "we still need you to set this" would
+   make one colour carry a claim and its opposite, three fields apart.
+   So the marker is an inset rule in --stamp, and it turns --live when the
+   field is set rather than disappearing: no layout shift, and the reader
+   watches the marks go green instead of watching them vanish. Inset
+   box-shadow rather than a border or padding because both of those move
+   the cell, and these six sit in a grid row beside fields that do not. */
+.needsyou > input{box-shadow:inset 3px 0 0 var(--stamp)}
+.needsyou.done > input{box-shadow:inset 3px 0 0 var(--live)}
 button{font:inherit;cursor:pointer;border-radius:6px;border:1px solid var(--line);background:var(--ink-3);color:var(--text-lo);padding:10px 16px}
 button.primary{background:var(--soon);border-color:var(--soon);color:#231a09;font-weight:700}
 button.primary:hover{filter:brightness(1.08)}
@@ -645,6 +669,12 @@ export function renderRoiPage({ countries, benchmarks = [], phases = [], strings
     costNow: { v: val("ap_cost_per_invoice", 9.84), h: hintOf("ap_cost_per_invoice") },
     costAR:  { v: val("ar_cost_per_invoice", 6.5),  h: hintOf("ar_cost_per_invoice") },
     savePct: { v: val("cost_reduction_pct", 60),    h: hintOf("cost_reduction_pct") },
+    // Dan, 15 Aug 2026: "Is the Current eInvoice rate, as a percentage -
+    // something we could assert in the assumptions, with the user having
+    // to update." It is now the largest single lever on the processing
+    // row, because a saving can only be taken once and whatever already
+    // arrives structured has already taken it.
+    eShare:  { v: val("einvoice_share_now", 50),    h: hintOf("einvoice_share_now") },
     errRate: { v: val("manual_error_rate", 10),     h: hintOf("manual_error_rate") },
     errCost: { v: val("rework_per_error", 45),      h: hintOf("rework_per_error") },
     // THE ONLY MULTIPLIER ON THIS PAGE YOU COULD NOT TOUCH, until Dan
@@ -895,14 +925,23 @@ export function renderRoiPage({ countries, benchmarks = [], phases = [], strings
     <span id="assumpChevron" style="font-family:'IBM Plex Mono',monospace;color:var(--muted);font-size:12px;white-space:nowrap">${t("assumptions.show", "show &#9662;")}</span>
   </summary>
   <div style="padding:0 20px 18px">
+    <!-- Dan, 15 Aug 2026: "ensure that the user is guided to those fields
+         that we need them to update to make the business case real."
+         The grade tags answer "how good is your number"; this answers
+         "which of these are not mine to give". Six fields carry it: the
+         four cost placeholders, the rework cost, and the reader's own
+         e-invoice share. It counts down live as they are set, because a
+         static warning is furniture and a shrinking one is progress. -->
+    <p class="note warn" id="needsYou" style="margin-bottom:14px"></p>
     <p class="note" style="margin-bottom:14px">${t("assumptions.grades", "Each figure shows where it came from. <span class=\"tag tA\">A</span> measured and primary &middot; <span class=\"tag tB\">B</span> credible body, unattributed &middot; <span class=\"tag tD\">D</span> our estimate. Overriding a value with your own always beats our default &mdash; that is what this panel is for.")} <button type="button" id="resetDefaults" style="padding:3px 9px;font-size:12px;margin-left:6px">${t("btn.reset", "Reset all to defaults")}</button></p>
 
     <p style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:var(--soon);margin:0 0 8px">${t("assumptions.h.cost", "Cost &amp; benefit")}</p>
     <div class="grid g4">
       <div><label for="costNow">${t("input.costNow", "AP cost per invoice")} <span class="tag tA">A</span>${hlp("costNow",t("tip.drives","What this drives"))}</label><input type="number" id="costNow" value="${dv('costNow')}" min="0" step="0.01"><p class="hint" id="h-costNow"></p></div>
+      <div class="needsyou"><label for="eShare">${t("input.eShare", "E-invoices received today %")}${hlp("eShare",t("tip.drives","What this drives"))}</label><input type="number" id="eShare" value="${dv('eShare')}" min="0" max="100" step="1"><p class="hint" id="h-eShare"></p></div>
       <div><label for="costAR">${t("input.costAR", "AR cost per invoice")} <span class="tag tA">A</span>${hlp("costAR",t("tip.drives","What this drives"))}</label><input type="number" id="costAR" value="${dv('costAR')}" min="0" step="0.01"><p class="hint" id="h-costAR"></p></div>
       <div><label for="savePct">${t("input.savePct", "Cost reduction %")} <span class="tag tB">B</span>${hlp("savePct",t("tip.drives","What this drives"))}</label><input type="number" id="savePct" value="${dv('savePct')}" min="0" max="95"><p class="hint" id="h-savePct"></p></div>
-      <div><label for="errCost">${t("input.errCost", "Rework per errored invoice")} <span class="tag tD">D</span>${hlp("errCost",t("tip.drives","What this drives"))}</label><input type="number" id="errCost" value="${dv('errCost')}" min="0" step="1"><p class="hint" id="h-errCost"></p></div>
+      <div class="needsyou"><label for="errCost">${t("input.errCost", "Rework per errored invoice")} <span class="tag tD">D</span>${hlp("errCost",t("tip.drives","What this drives"))}</label><input type="number" id="errCost" value="${dv('errCost')}" min="0" step="1"><p class="hint" id="h-errCost"></p></div>
     </div>
     <div class="grid g4" style="margin-top:12px">
       <div><label for="errRate">${t("input.errRate", "Manual error rate %")} <span class="tag tB">B</span>${hlp("errRate",t("tip.drives","What this drives"))}</label><input type="number" id="errRate" value="${dv('errRate')}" min="0" max="100" step="0.5"><p class="hint" id="h-errRate"></p></div>
@@ -914,10 +953,10 @@ export function renderRoiPage({ countries, benchmarks = [], phases = [], strings
     <p style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:var(--soon);margin:20px 0 8px">${t("assumptions.h.invest", "Investment &mdash; costs")} <span class="tag tD">D</span></p>
     <p class="hint" style="margin:-4px 0 8px;color:#e0907f">${t("assumptions.placeholders", "These figures are <strong>placeholders only</strong>. Please replace with vendor budgetary estimates and treat the ROI as illustrative, until actuals can be provided.")}</p>
     <div class="grid g4">
-      <div><label for="cImplS" style="font-size:11px">${t("input.cImplS", "Cost per SIMPLE integration")}${hlp("cImplS",t("tip.drives","What this drives"))}</label><input type="number" id="cImplS" value="${dv('cImplS')}" min="0" step="1000"><p class="hint" id="h-cImplS"></p></div>
-      <div><label for="cImplC" style="font-size:11px">${t("input.cImplC", "Cost per COMPLEX integration")}${hlp("cImplC",t("tip.drives","What this drives"))}</label><input type="number" id="cImplC" value="${dv('cImplC')}" min="0" step="1000"><p class="hint" id="h-cImplC"></p></div>
-      <div><label for="cPlat" style="font-size:11px">${t("input.cPlat", "Platform / network fees per year")}${hlp("cPlat",t("tip.drives","What this drives"))}</label><input type="number" id="cPlat" value="${dv('cPlat')}" min="0" step="1000"><p class="hint" id="h-cPlat"></p></div>
-      <div><label for="cRun" style="font-size:11px">${t("input.cRun", "Internal run cost per year")}${hlp("cRun",t("tip.drives","What this drives"))}</label><input type="number" id="cRun" value="${dv('cRun')}" min="0" step="1000"><p class="hint" id="h-cRun"></p></div>
+      <div class="needsyou"><label for="cImplS" style="font-size:11px">${t("input.cImplS", "Cost per SIMPLE integration")}${hlp("cImplS",t("tip.drives","What this drives"))}</label><input type="number" id="cImplS" value="${dv('cImplS')}" min="0" step="1000"><p class="hint" id="h-cImplS"></p></div>
+      <div class="needsyou"><label for="cImplC" style="font-size:11px">${t("input.cImplC", "Cost per COMPLEX integration")}${hlp("cImplC",t("tip.drives","What this drives"))}</label><input type="number" id="cImplC" value="${dv('cImplC')}" min="0" step="1000"><p class="hint" id="h-cImplC"></p></div>
+      <div class="needsyou"><label for="cPlat" style="font-size:11px">${t("input.cPlat", "Platform / network fees per year")}${hlp("cPlat",t("tip.drives","What this drives"))}</label><input type="number" id="cPlat" value="${dv('cPlat')}" min="0" step="1000"><p class="hint" id="h-cPlat"></p></div>
+      <div class="needsyou"><label for="cRun" style="font-size:11px">${t("input.cRun", "Internal run cost per year")}${hlp("cRun",t("tip.drives","What this drives"))}</label><input type="number" id="cRun" value="${dv('cRun')}" min="0" step="1000"><p class="hint" id="h-cRun"></p></div>
       <div></div>
     </div>
 
@@ -1217,7 +1256,32 @@ Object.entries(DEFAULTS).forEach(([id,d]) => {
   const hint = document.getElementById('h-'+id);
   if(hint && d.h) hint.textContent = d.h;
 });
+// The fields the reader has to own for the case to be theirs. Four are
+// vendor placeholders, one is a cost only they know, and one is a fact
+// about their own operation that no published source defines (see
+// migration 557 on Ardent's undefined "electronically").
+const NEEDS_YOU = ['cImplS','cImplC','cPlat','cRun','errCost','eShare'];
+const stillDefault = () => NEEDS_YOU.filter(id => {
+  const el = document.getElementById(id);
+  return el && DEFAULTS[id] && String(el.value) === String(DEFAULTS[id].v);
+});
+function paintNeedsYou(){
+  const el = document.getElementById('needsYou'); if(!el) return;
+  const left = stillDefault();
+  // Retire each field's own mark as it is set, not just the count. A
+  // reader who has answered four of six should be able to see WHICH two
+  // are left without re-reading twenty fields.
+  NEEDS_YOU.forEach(id => {
+    const cell = (document.getElementById(id) || {}).parentElement;
+    if(cell) cell.classList.toggle('done', left.indexOf(id) === -1);
+  });
+  el.className = left.length ? 'note warn' : 'note';
+  el.innerHTML = left.length
+    ? fill('${tj("assumptions.needsYou","<strong>{0} of {1} fields below are still our numbers, not yours.</strong> They are highlighted, and the business case is illustrative until they are set.")}', left.length, NEEDS_YOU.length)
+    : '${tj("assumptions.needsYouDone","<strong>Every field that needs your own number has one.</strong> The rest are benchmarks, and the grades below say how far to trust each.")}';
+}
 function markOverridden(){
+  paintNeedsYou();
   Object.entries(DEFAULTS).forEach(([id,d]) => {
     const el = document.getElementById(id); if(!el) return;
     const changed = String(el.value) !== String(d.v);
@@ -2041,8 +2105,29 @@ function build(){
   const costAR  = +document.getElementById('costAR').value || 0;
   const errRate = (+document.getElementById('errRate').value || 0)/100;
   const errElim = (+document.getElementById('errElim').value || 0)/100;
-  const baseline = volAP * costNow;
-  const saving   = baseline * savePct;
+  // WHAT SHARE HAS ALREADY BANKED IT (migration 557).
+  //
+  // Ardent's $9.84 is a BLENDED market average -- the same report puts
+  // 51.4% of invoices already arriving electronically -- while the 60-80%
+  // range it also publishes is measured "compared to manual- and
+  // paper-based methods". Multiplying one by the other took 60% off a
+  // cost that was already half optimised.
+  //
+  // Split the blend at the market share to recover the two channel costs,
+  // then apply the READER's share to the gap between them. A business
+  // already fully structured saves nothing more; one starting from paper
+  // saves the lot.
+  const eShare  = Math.min(1, Math.max(0, (+document.getElementById('eShare').value || 0)/100));
+  const mkt     = TAXM.mktShare;
+  // Rounded to the cent because the row PRINTS it to the cent. Left at
+  // full precision the basis reads "$14.23 x 60% x 50%" and the value
+  // beside it is $426,836 rather than the $426,900 a reader multiplying
+  // it out would get -- a $64 gap with no visible cause. Same defect as
+  // the "$9.8" baseline fixed in migration 536, and the same fix: the
+  // number shown and the number used are one number.
+  const manualCost = Math.round(costNow / ((1 - mkt) + mkt * (1 - savePct)) * 100) / 100;
+  const baseline = volAP * manualCost;
+  const saving   = baseline * savePct * (1 - eShare);
   const savingAR = volAR * costAR * savePct;
   const errNow   = volAP * errRate;
   const errSave  = errNow * errCost * errElim;    // now a real, gradeable input
@@ -2225,10 +2310,10 @@ function build(){
   const annualBenefit = l1Banked + l2;
   const netAnnual = annualBenefit - annualCost;
   const paybackMonths = netAnnual > 0 ? (oneOff / netAnnual) * 12 : null;
-  const placeholders = ['cImplS','cImplC','cPlat','cRun'].filter(id => String(document.getElementById(id).value) === String(DEFAULTS[id].v));
+  const placeholders = stillDefault();
 
   document.getElementById('summary').innerHTML = \`
-    \${placeholders.length ? \`<div class="note warn" style="margin-bottom:14px"><strong>\${placeholders.length} ${tj("res.placeholders","of 4 cost inputs are still placeholders.")}</strong> ${tj("res.placeholders2","Please replace them with vendor budgetary estimates in the assumptions panel, and treat the ROI as illustrative until actuals can be provided.")}</div>\` : ''}
+    \${placeholders.length ? \`<div class="note warn" style="margin-bottom:14px"><strong>\${placeholders.length} ${tj("res.placeholders2b","fields still hold our numbers rather than yours.")}</strong> ${tj("res.placeholders2","Please replace them with vendor budgetary estimates in the assumptions panel, and treat the ROI as illustrative until actuals can be provided.")}</div>\` : ''}
     <div class="grid g5">
       <div class="stat"><div class="n" style="color:#7fd0a8">\${fmt(l1Banked + l2)}</div><div class="l">${tj("res.banked","Annual saving")}\${l1Unbanked > 0 ? \` (+\${fmt(l1Unbanked)} ${tj("res.unbanked","available on a wider scope")})\` : ''}</div></div>
       <div class="stat"><div class="n" style="color:#e0907f">\${fmt(oneOff)}</div><div class="l">${tj("res.oneOff","One-off investment")} <span class="statwhat">${tj("res.oneOff2","implementation")}</span><span class="statrun">${tj("res.running","plus each year:")} \${fmt(cPlat)} ${tj("res.running2","platform")}${hlp('cPlat',t("tip.covers","What this covers"))} + \${fmt(cRun)} ${tj("res.running3","internal")}${hlp('cRun',t("tip.covers","What this covers"))}</span></div></div>
@@ -2318,7 +2403,7 @@ function build(){
 
     <tr class="grp"><td colspan="4">${t("grp.priced","Priced &mdash; counted in the business case")}</td></tr>
 
-    <tr class="tierA" data-row="ap"><td>${t("row.ap","Processing cost reduction (AP)")} <span class="tag tang">${t("tag.tangible","tangible")}</span> <span class="tag \${banked?'bank':'unbank'}">\${banked?'${t("tag.saved","saved")}':Math.round(TAXM.captureShare*100)+'% ${t("tag.saved","saved")}'}</span></td><td>\${fill('${tj("basis.ap","{0} invoices &times; {1} {2} &times; {3}% {4}")}', volAP.toLocaleString(), fmt1(costNow), ev('ardent','${tj("ev.baseline","baseline")}'), Math.round(savePct*100), ev('hmrc60','${tj("ev.reduction","reduction")}'))}</td><td class="num">\${fmt(saving)}</td><td class="num">\${fmt(bankedAP)}</td></tr>
+    <tr class="tierA" data-row="ap"><td>${t("row.ap","Processing cost reduction (AP)")} <span class="tag tang">${t("tag.tangible","tangible")}</span> <span class="tag \${banked?'bank':'unbank'}">\${banked?'${t("tag.saved","saved")}':Math.round(TAXM.captureShare*100)+'% ${t("tag.saved","saved")}'}</span></td><td>\${fill('${tj("basis.apShare","{0} invoices &times; {1} {2} &times; {3}% {4}, less the {5}% already arriving structured {6}")}', volAP.toLocaleString(), fmt1(manualCost), ev('ardent','${tj("ev.baseline","baseline")}'), Math.round(savePct*100), ev('hmrc60','${tj("ev.reduction","reduction")}'), Math.round(eShare*100), ev('yours','${tj("ev.ourAssumption","our assumption")}'))}</td><td class="num">\${fmt(saving)}</td><td class="num">\${fmt(bankedAP)}</td></tr>
 
     <tr class="tierA" data-row="ar"><td>${t("row.ar","Issuing cost reduction (AR)")} <span class="tag tang">${t("tag.tangible","tangible")}</span> <span class="tag bank">${t("tag.saved","saved")}</span></td><td>\${fill('${tj("basis.ar","{0} invoices &times; {1} {2} &times; {3}% {4}")}', volAR.toLocaleString(), fmt1(costAR), ev('ato','ATO / Deloitte'), Math.round(savePct*100), ev('hmrc60','${tj("ev.reduction","reduction")}'))}</td><td class="num">\${fmt(savingAR)}</td><td class="num">\${fmt(savingAR)}</td></tr>
 
@@ -2637,6 +2722,11 @@ function build(){
       // validation 2 min of a 21-minute process. The capture-and-key
       // portion, which is the part e-invoicing actually removes.
       captureShare: val("capture_share_of_ap", 0.4286),
+      // The share the BENCHMARK was measured at, not the reader's. It
+      // exists only to split Ardent's blended $9.84 into its manual and
+      // electronic halves so the reader's own share can be applied to
+      // the right one. See migration 557.
+      mktShare: val("market_einvoice_share", 51.4) / 100,
       // Ardent's Best-in-Class exception rate against all others, 11.1
       // vs 20.9. The entire observed gap between the most automated
       // quartile and everyone else — used as a ceiling on what this
