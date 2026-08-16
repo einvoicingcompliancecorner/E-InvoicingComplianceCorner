@@ -12393,3 +12393,162 @@ Three options Dan has not yet chosen: correcting the `cost_reduction_pct`
 citation wording, deriving the compliance-only saving directly from the
 task split rather than compounding two ratios, and re-grounding the
 benchmark on the ATO's channel measurement instead of Ardent's blend.
+
+
+## 16 August 2026 (cont'd) — The rework row asks for a duration (migrations 558-559)
+
+Dan: *"how was the default rework amount estimated?"* Then, on being told:
+*"I like the change to Average total resolution time for an exception
+rework, instead of cost per rework. Especially if we have a better
+citation to support it."*
+
+### The answer was: it wasn't
+
+`rework_per_error` was seeded by migration 505 on 11 August at 45, grade D,
+`source_url` NULL, with a citation that said so — *"Our estimate. No
+analyst firm publishes a defensible cost-per-exception figure."* No
+migration in the 53 that followed revisited it.
+
+**Dan had already asked a version of this on 14 August** — *"where did the
+rework number come from. It's not something I have provided?"* — and
+migration 529 answered a *different part of the same row*. It turned the
+bare `0.8` elimination literal into a graded input and stopped the $45
+labelling itself "your rework cost". The $45 got a new label and no new
+evidence. The question was answered halfway and nobody noticed which half.
+
+### What $45 was actually claiming
+
+At the loaded data-entry rate already on the page — $54,000 / 2,080h =
+$25.96/h — **$45 asserts 104 minutes of hands-on work per mis-keyed
+invoice.** Nobody had written that down because nobody had converted it.
+Stating an assumption in units the reader cannot check is how it survives
+three months without being argued with.
+
+### The citation, on a page we already cite
+
+The ATO's Peppol eInvoicing value assessment publishes per-exception
+**correction time in minutes** — on the same page this model already uses
+for `ar_cost_per_invoice`:
+
+```
+contested payment      10%     20 min
+processing exception   24%     15 min
+late payment           48%      5 min
+data accuracy         3.6%      5 min
+```
+
+It is **labour effort, not elapsed time**, and the page's own construction
+proves it: the ATO monetises these minutes against ABS wage data, which
+you cannot do to a duration that includes waiting for a supplier.
+
+Dan's choice of three: **processing exception, 15 minutes**. The narrower
+data-accuracy line at 5 min matches the row's *name* better, but its help
+text has always described "chasing, re-keying, re-approval" — a processing
+exception, not a corrected keystroke. The citation names all four so a
+reader can set 5 or 20.
+
+### The trap this walked up to and did not fall into
+
+APQC publishes two measures that look perfect and are not: **5.0 working
+days** (n=461) and **4.0 calendar days** (n=2,861). Bigger samples than the
+ATO, from a source this page grades A elsewhere. Both are **elapsed** by
+APQC's own definition. Multiplying either by an FTE rate gives **$1,038 per
+exception** — twenty-three times the figure being replaced — and it would
+have looked impeccably sourced.
+
+**That is migration 557's defect wearing different clothes: a real
+citation, correctly quoted, measuring a different quantity from the one
+the model needs.** Two in three days. Written into the migration because
+the next person to improve this row will find those same two measures
+first.
+
+Also rejected, and recorded so nobody reintroduces them as corroboration:
+the widely-quoted "12 minutes" and "15 minutes" vendor figures are
+unsourced, and one page attributes "15–45 minutes" to APQC, which
+publishes no such measure.
+
+### The cross-population join, stated rather than hidden
+
+The row now multiplies an **ATO duration** by an **HMRC rate** (10%, where
+the ATO's own data-accuracy rate is 3.6%). Dan's call was to keep HMRC and
+say so in the tooltip, on the grounds that they are not the same
+measurement — HMRC counts errors introduced by keying, the ATO counts
+exceptions raised. Silently adopting 3.6% would have looked like
+tightening the evidence while quietly changing what the row counts.
+
+### What moved
+
+```
+cost per error        $45.00     ->  $6.49
+rework row            $360,000   ->  $51,920
+savings table, full   $1,051,980 ->  $743,900
+savings table, saved  $448,049   ->  $448,049   (unchanged)
+```
+
+The headline does not move: the row has been held back from the saved
+column since 529. **The first draft of the migration comment quoted
+$450,000 and $64,904 — the pre-elimination products, figures the page has
+never displayed.** Caught by reading the rendered row instead of trusting
+the recomputation.
+
+---
+
+## 559 — the two levers move to section 1
+
+Dan, same session: *"Given that the 'e-Invoices Received Today' and 'Time
+to fix an exception' fields are so integral to the business case. I think
+it makes sense to move these two fields into section 1."*
+
+He is right and the reason is arithmetic. The assumptions panel is
+**collapsed by default** — correct for twenty benchmark defaults, wrong for
+the two inputs with the most leverage on the savings table. `eShare` can
+take a row to zero; `errMins` is linear with no cap. Both arrived in the
+last three days and inherited the panel because that is where inputs went,
+not because anyone decided it.
+
+### A caveat that would have rotted on the spot
+
+The counter read *"N of 6 fields **below** are still our numbers."* Moving
+two of them up would have made it false immediately, on a line whose whole
+job is telling the reader where to look. **Caught inside the change that
+would have caused it** — the first time that has happened here, and it
+happened because the failure mode had been written down the day before.
+Reworded to name no location, and moved above the fields it counts (the
+same promotion migration 540 gave the placeholder warning).
+
+**The standing invariant then caught the sibling string on its first run:**
+`assumptions.needsYouDone` ended *"the grades below say how far to trust
+each"* — equally false once the line moved. Two strings, one habit:
+describing a layout instead of a fact.
+
+### And a real bug the move created
+
+`markOverridden` and the currency-canon tracker were both bound to
+`#assump` and relied on events **bubbling out of it**. True for every
+graded input until two of them left the panel. The moment they did, the
+two fields stopped firing both handlers: no amber border, no "Your value."
+hint, and the counter stuck at "2 of 6 still ours" however many times the
+reader typed in them.
+
+Nothing errors when that happens — the fields accept input and the page
+recalculates. Only the guidance silently stops tracking, on the two fields
+559 exists to make prominent. **Caught by the regression check that counts
+marked fields**, which found four where it expected six. Both listeners now
+delegate from `document`: an ancestor is a fact about today's layout, and
+that assumption is what broke.
+
+Also restored: `eShare`'s evidence chip, dropped by 557 when its YOURS tag
+was removed. Invisible among twenty fields, obvious beside `errMins`.
+
+### Verified
+
+`npm test`: 9 suites, all passing. ROI regression **193 checks** (was 188).
+Replay OK across 559 files — **253 assertions, 57 standing invariants**.
+Currency suite gained the duration-is-not-money pair: minutes must not
+convert, the money they buy must.
+
+One test improved rather than re-baselined: the unlocked-remainder check
+asserted `.includes("603,931")`, a literal that broke on every legitimate
+change to any priced row — three times in a fortnight. It now derives the
+figure from the two totals. A baseline you re-type each time it goes red is
+not a check, it is a chore that teaches you to silence it.

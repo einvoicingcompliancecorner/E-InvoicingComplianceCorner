@@ -30,7 +30,15 @@ await page.click("#assump summary");
 
 // The money inputs, and the page's own rounding rule: pennies below a
 // thousand, whole units above it.
-const MONEY = ["costNow", "costAR", "errCost", "fteCost", "cImplS", "cImplC", "cPlat", "cRun"];
+//
+// `errMins` is NOT here, and its absence is the point of the check
+// below. Migration 558 replaced the $45 rework cost with a duration in
+// minutes; a duration does not convert into GBP, but the money it
+// produces has to, because it is priced at the data-entry rate that
+// does. Dropping errCost from this list without asserting that would
+// have quietly removed coverage of the rework row's currency behaviour
+// rather than moving it.
+const MONEY = ["costNow", "costAR", "fteCost", "cImplS", "cImplC", "cPlat", "cRun"];
 const roundCur = (v) => (v >= 1000 ? Math.round(v) : Math.round(v * 100) / 100);
 const read = async () => Object.fromEntries(await Promise.all(
   MONEY.map(async (id) => [id, +(await page.inputValue(`#${id}`))])));
@@ -115,6 +123,29 @@ t.check("and dates it", note.includes(fx.GBP.asOf), note);
 await setCur("USD");
 t.check("USD note explains the benchmark basis",
   /US dollars/i.test(await page.locator("#fxNote").textContent()));
+
+// ---- 7. a duration is not money, but what it buys is ----
+// Migration 558. The rework row is now minutes x the loaded data-entry
+// rate. If errMins were ever added to CUR_INPUTS the input would be
+// "converted" from 15 minutes to 11, which is meaningless and would
+// look like a rounding bug rather than a category error. And if the
+// derived cost stopped converting, a sterling business case would carry
+// a dollar rework line.
+await setCur("USD");
+await page.click("#run"); await page.waitForTimeout(900);
+const reworkUsd = await page.locator('#savingsTable tr[data-row="rework"] td').nth(2).innerText();
+const minsUsd = await page.inputValue("#errMins");
+await setCur("GBP");
+await page.click("#run"); await page.waitForTimeout(900);
+const reworkGbp = await page.locator('#savingsTable tr[data-row="rework"] td').nth(2).innerText();
+const minsGbp = await page.inputValue("#errMins");
+t.check(`minutes do not convert (${minsUsd} -> ${minsGbp})`,
+  minsUsd === minsGbp, `${minsUsd} vs ${minsGbp}`);
+const num = (s) => +String(s).replace(/[^\d.]/g, "");
+t.check(`but the money the minutes buy does (${reworkUsd} -> ${reworkGbp})`,
+  Math.abs(num(reworkGbp) - num(reworkUsd) / fx.GBP.r) <= Math.max(2, num(reworkUsd) * 0.002),
+  `${num(reworkUsd)} / ${fx.GBP.r} = ${Math.round(num(reworkUsd) / fx.GBP.r)} vs ${num(reworkGbp)}`);
+await setCur("USD");
 
 await browser.close();
 process.exit(t.report() ? 0 : 1);

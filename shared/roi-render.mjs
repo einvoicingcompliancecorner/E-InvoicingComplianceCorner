@@ -676,7 +676,7 @@ export function renderRoiPage({ countries, benchmarks = [], phases = [], strings
     // arrives structured has already taken it.
     eShare:  { v: val("einvoice_share_now", 50),    h: hintOf("einvoice_share_now") },
     errRate: { v: val("manual_error_rate", 10),     h: hintOf("manual_error_rate") },
-    errCost: { v: val("rework_per_error", 45),      h: hintOf("rework_per_error") },
+    errMins: { v: val("rework_minutes", 15),        h: hintOf("rework_minutes") },
     // THE ONLY MULTIPLIER ON THIS PAGE YOU COULD NOT TOUCH, until Dan
     // asked where the rework number came from and the honest answer was
     // "partly from a bare 0.8 in the source". The reasoning behind it was
@@ -817,12 +817,18 @@ export function renderRoiPage({ countries, benchmarks = [], phases = [], strings
     // survived checking. Without it the indirect layer had no way to know
     // how big the business was.
     apqc: cite("ap_invoices_per_fte"),
+    // 558: the rework row prices a duration at this rate, so the rate
+    // needs its own tag on the row rather than only in the panel.
+    blsEntry: cite("loaded_fte_cost_entry"),
     atoCapture: cite("capture_share_of_ap"),
     // Both were previously rendered as ev('yours', ...) — "your rework
     // cost" for a figure the reader had not supplied, and nothing at all
     // for the 80%. A default of ours labelled as theirs is worse than an
     // unlabelled default: it borrows credibility it has not earned.
-    rework: cite("rework_per_error"),
+    // 558: the row is priced from a duration now, so the citation that
+    // matters is the one behind the duration. `rework_per_error` is
+    // retired (active = 0) and cite() would return an empty shell.
+    rework: cite("rework_minutes"),
     errElim: cite("error_elimination_pct"),
     excGap: cite("exception_reduction_pp"),
     durations: { t: "D", s: t("ev.durations.body", "Phase durations are practitioner estimates for a country rollout once a platform is in place, held in D1 and editable above. No analyst firm publishes credible per-country e-invoicing implementation durations &mdash; this was checked.") },
@@ -895,6 +901,29 @@ export function renderRoiPage({ countries, benchmarks = [], phases = [], strings
       <p class="hint" id="fxNote"></p>
     </div>
   </div>
+  <!-- Dan, 16 Aug 2026: "Given that the 'e-Invoices Received Today' and
+       'Time to fix an exception' fields are so integral to the business
+       case. I think it makes sense to move these two fields into section
+       1." They were in the assumptions panel, which is COLLAPSED BY
+       DEFAULT — so the two largest levers on the savings table were the
+       two the reader was least likely to meet. Everything else in this
+       card is a fact about how big you are; these two are facts about
+       where you start, which is why they get their own row and label
+       rather than being appended to the volumes. -->
+  <p style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:var(--soon);margin:18px 0 8px">${t("input.h.today", "Where you are today")}</p>
+  <div class="grid g4">
+    <div class="needsyou"><label for="eShare">${t("input.eShare", "E-invoices received today %")} <span class="tag tB">B</span>${hlp("eShare",t("tip.drives","What this drives"))}</label><input type="number" id="eShare" value="${dv('eShare')}" min="0" max="100" step="1"><p class="hint" id="h-eShare"></p></div>
+    <div class="needsyou"><label for="errMins">${t("input.errMins", "Minutes to resolve one error")} <span class="tag tB">B</span>${hlp("errMins",t("tip.drives","What this drives"))}</label><input type="number" id="errMins" value="${dv('errMins')}" min="0" step="1"><p class="hint" id="h-errMins"></p></div>
+  </div>
+  <!-- The counter follows the fields it counts. It used to sit inside
+       the assumptions panel and say "fields BELOW", which stopped being
+       true the moment two of the six moved up here -- the same shape as
+       the "Net annual (compliance scope)" label migration 541 removed.
+       Promoting it is also what migration 540 did with the placeholder
+       warning, and for the same reason: a caveat belongs above the
+       numbers it qualifies, not inside a panel the reader may never
+       open. -->
+  <p class="note warn" id="needsYou" style="margin:14px 0 0"></p>
 </div>
 
 <div class="card noprint">
@@ -932,16 +961,13 @@ export function renderRoiPage({ countries, benchmarks = [], phases = [], strings
          four cost placeholders, the rework cost, and the reader's own
          e-invoice share. It counts down live as they are set, because a
          static warning is furniture and a shrinking one is progress. -->
-    <p class="note warn" id="needsYou" style="margin-bottom:14px"></p>
     <p class="note" style="margin-bottom:14px">${t("assumptions.grades", "Each figure shows where it came from. <span class=\"tag tA\">A</span> measured and primary &middot; <span class=\"tag tB\">B</span> credible body, unattributed &middot; <span class=\"tag tD\">D</span> our estimate. Overriding a value with your own always beats our default &mdash; that is what this panel is for.")} <button type="button" id="resetDefaults" style="padding:3px 9px;font-size:12px;margin-left:6px">${t("btn.reset", "Reset all to defaults")}</button></p>
 
     <p style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:var(--soon);margin:0 0 8px">${t("assumptions.h.cost", "Cost &amp; benefit")}</p>
     <div class="grid g4">
       <div><label for="costNow">${t("input.costNow", "AP cost per invoice")} <span class="tag tA">A</span>${hlp("costNow",t("tip.drives","What this drives"))}</label><input type="number" id="costNow" value="${dv('costNow')}" min="0" step="0.01"><p class="hint" id="h-costNow"></p></div>
-      <div class="needsyou"><label for="eShare">${t("input.eShare", "E-invoices received today %")}${hlp("eShare",t("tip.drives","What this drives"))}</label><input type="number" id="eShare" value="${dv('eShare')}" min="0" max="100" step="1"><p class="hint" id="h-eShare"></p></div>
       <div><label for="costAR">${t("input.costAR", "AR cost per invoice")} <span class="tag tA">A</span>${hlp("costAR",t("tip.drives","What this drives"))}</label><input type="number" id="costAR" value="${dv('costAR')}" min="0" step="0.01"><p class="hint" id="h-costAR"></p></div>
       <div><label for="savePct">${t("input.savePct", "Cost reduction %")} <span class="tag tB">B</span>${hlp("savePct",t("tip.drives","What this drives"))}</label><input type="number" id="savePct" value="${dv('savePct')}" min="0" max="95"><p class="hint" id="h-savePct"></p></div>
-      <div class="needsyou"><label for="errCost">${t("input.errCost", "Rework per errored invoice")} <span class="tag tD">D</span>${hlp("errCost",t("tip.drives","What this drives"))}</label><input type="number" id="errCost" value="${dv('errCost')}" min="0" step="1"><p class="hint" id="h-errCost"></p></div>
     </div>
     <div class="grid g4" style="margin-top:12px">
       <div><label for="errRate">${t("input.errRate", "Manual error rate %")} <span class="tag tB">B</span>${hlp("errRate",t("tip.drives","What this drives"))}</label><input type="number" id="errRate" value="${dv('errRate')}" min="0" max="100" step="0.5"><p class="hint" id="h-errRate"></p></div>
@@ -1083,7 +1109,10 @@ let cur='USD';
 // toggle a dropdown destroys confidence in everything else on the page.
 const FX = __ROI_FX__;
 const rateOf = c => (FX[c] && FX[c].r) || 1;
-const CUR_INPUTS = ['costNow','costAR','errCost','fteCost','fteEntry','cImplS','cImplC','cPlat','cRun'];
+// errMins is deliberately ABSENT: it is a duration, and converting it
+// to GBP would be nonsense. The money it produces still converts,
+// because fteEntry is in this list and the cost is derived from it.
+const CUR_INPUTS = ['costNow','costAR','fteCost','fteEntry','cImplS','cImplC','cPlat','cRun'];
 // Per-invoice figures need pennies; five-figure ones do not, and showing
 // 45,888.53 for a placeholder implies a precision nobody has.
 const roundCur = v => v >= 1000 ? Math.round(v) : Math.round(v*100)/100;
@@ -1260,7 +1289,7 @@ Object.entries(DEFAULTS).forEach(([id,d]) => {
 // vendor placeholders, one is a cost only they know, and one is a fact
 // about their own operation that no published source defines (see
 // migration 557 on Ardent's undefined "electronically").
-const NEEDS_YOU = ['cImplS','cImplC','cPlat','cRun','errCost','eShare'];
+const NEEDS_YOU = ['cImplS','cImplC','cPlat','cRun','errMins','eShare'];
 const stillDefault = () => NEEDS_YOU.filter(id => {
   const el = document.getElementById(id);
   return el && DEFAULTS[id] && String(el.value) === String(DEFAULTS[id].v);
@@ -1277,8 +1306,8 @@ function paintNeedsYou(){
   });
   el.className = left.length ? 'note warn' : 'note';
   el.innerHTML = left.length
-    ? fill('${tj("assumptions.needsYou","<strong>{0} of {1} fields below are still our numbers, not yours.</strong> They are highlighted, and the business case is illustrative until they are set.")}', left.length, NEEDS_YOU.length)
-    : '${tj("assumptions.needsYouDone","<strong>Every field that needs your own number has one.</strong> The rest are benchmarks, and the grades below say how far to trust each.")}';
+    ? fill('${tj("assumptions.needsYou","<strong>{0} of {1} figures we need from you are still our defaults.</strong> They are marked wherever they appear, here and in the assumptions panel, and the business case is illustrative until they are set.")}', left.length, NEEDS_YOU.length)
+    : '${tj("assumptions.needsYouDone","<strong>Every figure that needs your own number has one.</strong> The rest are benchmarks, and the grade beside each says how far to trust it.")}';
 }
 function markOverridden(){
   paintNeedsYou();
@@ -1301,7 +1330,23 @@ document.getElementById('resetDefaults').onclick = () => {
   dirtyCur.clear();
   markOverridden(); syncScope(); if(unlocked) showResults();
 };
-document.getElementById('assump').addEventListener('input', markOverridden);
+// DELEGATED FROM document, not from the assumptions panel. Both of these
+// listeners were bound to #assump and relied on events bubbling out of
+// it, which was true for every graded input until migration 559 moved
+// eShare and errMins into section 1. The moment they left the panel they
+// stopped bubbling into it: no amber border, no "Your value." hint, and
+// the needs-you counter would sit at "2 of 6 still ours" however many
+// times the reader typed in them.
+//
+// Nothing errors when that happens. The fields accept input, the page
+// recalculates on Calculate, and only the guidance silently stops
+// tracking -- on the two fields 559 exists to make prominent. Caught by
+// the regression suite, which counted six marked fields and found four.
+//
+// Binding to document rather than re-scoping to a new common ancestor is
+// deliberate: an ancestor is a fact about today's layout, and this bug
+// was caused by exactly that assumption.
+document.addEventListener('input', markOverridden);
 
 // ---- currency: convert the values, not just the symbol ------------------
 // Seed the canon from the server's USD-normalised defaults. DEFAULTS[id].v
@@ -1323,7 +1368,7 @@ CUR_INPUTS.forEach(id => {
 // value forever; edited ones are captured once, which is the user's
 // intent, and never re-rounded afterwards.
 const dirtyCur = new Set();
-document.getElementById('assump').addEventListener('input', (e) => {
+document.addEventListener('input', (e) => {
   const id = e.target && e.target.id;
   if(!CUR_INPUTS.includes(id)) return;
   dirtyCur.add(id);
@@ -2057,9 +2102,19 @@ function build(){
   const erp   = +document.getElementById('erp').value || 1;
   const costNow = +document.getElementById('costNow').value || 0;
   const savePct = (+document.getElementById('savePct').value || 0)/100;
-  const errCost = +document.getElementById('errCost').value || 0;
+  const errMins = +document.getElementById('errMins').value || 0;
   const fteCost = +document.getElementById('fteCost').value || 0;
   const fteEntry = +document.getElementById('fteEntry').value || 0;
+  // Migration 558: the reader sets a DURATION and the page prices it.
+  // $45 was ungraded and, converted, asserted 104 minutes per errored
+  // invoice -- which nobody had ever written down, because nobody had
+  // ever converted it. Minutes x the loaded data-entry rate inherits
+  // that rate's grade B instead of inventing a grade D.
+  // 2,080 h is the standard paid year; the rate is per PAID hour, which
+  // is what a loaded annual cost divides into.
+  const entryPerMin = fteEntry / 2080 / 60;
+  const entryPerHr  = fteEntry / 2080;
+  const errCost = Math.round(errMins * entryPerMin * 100) / 100;
   const sel = chosen();
 
   // THE EUROPEAN UNION IS ONE ROW, NOT ONE PER MEMBER STATE.
@@ -2130,7 +2185,7 @@ function build(){
   const saving   = baseline * savePct * (1 - eShare);
   const savingAR = volAR * costAR * savePct;
   const errNow   = volAP * errRate;
-  const errSave  = errNow * errCost * errElim;    // now a real, gradeable input
+  const errSave  = errNow * errCost * errElim;    // duration x rate x share
   const l1 = saving + savingAR + errSave;
 
   // --- complexity / waves
@@ -2409,7 +2464,7 @@ function build(){
 
     <tr class="tierA" data-row="tax"><td>${t("row.tax","Reduced tax reporting &amp; audit-prep effort")} <span class="tag tang">${t("tag.tangible","tangible")}</span> <span class="tag bank">${t("tag.saved","saved")}</span></td><td>\${fill('${tj("basis.tax","Mechanism evidenced {0}. Your {1} AP invoices imply <strong>{2} AP FTE</strong> {3}; {4} put <strong>{5}%</strong> of that in scope {6}{7} &mdash; {8} FTE &times; {9}.")}', ev('oecd','OECD DCTR, 2026'), volAP.toLocaleString(), apFteImplied.toFixed(1), ev('apqc','${tj("ev.apqcMedian","APQC median, 12,000 per FTE")}'), ctcCount + ' ' + plur(ctcCount, '${tj("word.ctcJur","clearance or reporting jurisdiction")}', '${tj("word.ctcJurs","clearance or reporting jurisdictions")}'), (shareUsed*100).toFixed(1), ev('yours','${tj("ev.ourAssumption","our assumption")}'), taxCapBinds?' <em>${tj("word.capped","(capped)")}</em>':'', taxFteSaved.toFixed(2), fmt(fteCost))} ${tj("row.tax.banks","Saved on either scope: the reporting effort falls with the compliance build itself, not with a workflow change.")}</td><td class="num">\${fmt(l2)}</td><td class="num">\${fmt(l2)}</td></tr>
 
-    <tr class="tierB" data-row="rework"><td>${t("row.rework","Avoided rework on data-entry errors")} <span class="tag tang">${t("tag.tangible","tangible")}</span> <span class="tag \${banked?'bank':'unbank'}">\${banked?'${t("tag.saved","saved")}':'${t("tag.notSaved","not saved")}'}</span></td><td>\${fill('${tj("basis.rework","{0} {1} &times; {2} {3} &times; {4}% {5} {6}")}', Math.round(errNow).toLocaleString() + ' ' + plur(Math.round(errNow), '${tj("word.erroredInvoice","errored invoice")}', '${tj("word.erroredInvoices","errored invoices")}'), ev('hmrcErr', fill('${tj("ev.atRate","at ~{0}%")}', Math.round(errRate*100))), fmt(errCost), overridden('errCost') ? ev('yours','${tj("ev.yourRework","your rework cost")}') : ev('rework','${tj("ev.ourEstimate","our estimate, not yours")}'), Math.round(errElim*100), ev('errElim','${tj("ev.whyNotAll","why not all of them")}'), ev('ardentExc','${tj("ev.excRate","not Ardent&rsquo;s 18.4% exception rate")}'))}</td><td class="num">\${fmt(errSave)}</td><td class="num">\${bankedErr > 0 ? fmt(bankedErr) : '&mdash;'}</td></tr>
+    <tr class="tierB" data-row="rework"><td>${t("row.rework","Avoided rework on data-entry errors")} <span class="tag tang">${t("tag.tangible","tangible")}</span> <span class="tag \${banked?'bank':'unbank'}">\${banked?'${t("tag.saved","saved")}':'${t("tag.notSaved","not saved")}'}</span></td><td>\${fill('${tj("basis.rework2","{0} {1} &times; {2} min {3} at {4}/h {5} &times; {6}% {7} {8}")}', Math.round(errNow).toLocaleString() + ' ' + plur(Math.round(errNow), '${tj("word.erroredInvoice","errored invoice")}', '${tj("word.erroredInvoices","errored invoices")}'), ev('hmrcErr', fill('${tj("ev.atRate","at ~{0}%")}', Math.round(errRate*100))), errMins, overridden('errMins') ? ev('yours','${tj("ev.yourMins","your resolution time")}') : ev('rework','${tj("ev.atoMins","ATO, 15 min per processing exception")}'), fmt1(entryPerHr), ev('blsEntry','${tj("ev.blsEntry","loaded data-entry rate")}'), Math.round(errElim*100), ev('errElim','${tj("ev.whyNotAll","why not all of them")}'), ev('ardentExc','${tj("ev.excRate","not Ardent&rsquo;s 18.4% exception rate")}'))}</td><td class="num">\${fmt(errSave)}</td><td class="num">\${bankedErr > 0 ? fmt(bankedErr) : '&mdash;'}</td></tr>
 
     <tr class="tot" data-row="total"><td colspan="2"><strong>${t("row.savingsTotal","Annual benefit")}</strong>\${l1Unbanked > 0 ? \` <span class="hint" style="display:inline">&mdash; ${t("row.directTotal.gap","the difference needs a change programme you are not running")}</span>\` : ''}</td><td class="num"><strong>\${fmt(l1 + l2)}</strong></td><td class="num"><strong style="color:#7fd0a8">\${fmt(l1Banked + l2)}</strong></td></tr>
 
