@@ -157,6 +157,35 @@ try {
   // 5. and the help layer, which was already wired, still is
   const helpKeys = [...d1.keys()].filter((k) => k.startsWith("help."));
   t.check(`the help layer still has its rows (${helpKeys.length})`, helpKeys.length >= 20, helpKeys.length);
+
+  // 6. THE REVERSE, which nothing asked until 16 Aug 2026. Check (4)
+  // above asks whether every help row is rendered. Nothing asked whether
+  // every hlp() call site HAS a row — and hlp() renders nothing at all
+  // when the text is missing, no icon and no error. Migration 557 added
+  // the e-invoice share input, called it "the single largest lever on the
+  // processing-cost row" in its own comment, wired hlp("eShare") into the
+  // label, and never wrote the row. It shipped and was deployed.
+  //
+  // Same asymmetry the eighth and ninth suites closed for strings, in the
+  // help layer: one direction covered, the other not, and the gap in the
+  // SHAPE of the coverage rather than in any single check.
+  //
+  // The phase inputs are the documented exception — their text comes from
+  // roi_phases.note through PHASE_INPUT, not from a help.% row.
+  const PHASE_IDS = new Set(["wMob", "wDes", "wBld", "wUat", "wChg", "wVen", "wCon"]);
+  const noRow = [...helpIds].filter((id) => !PHASE_IDS.has(id) && !d1.has("help." + id));
+  t.check(`every hlp() call site has text behind it (${helpIds.size} sites)`,
+    noRow.length === 0,
+    noRow.length ? `${noRow.join(", ")}\n    hlp() renders NOTHING when the row is missing — no icon, no error.`
+      : "");
+
+  // 7. help is the one string channel that is escaped rather than
+  // rendered, so an HTML entity reaches the reader as its source text.
+  // Two rows shipped with a literal "&mdash;" before anyone looked.
+  const entity = helpKeys.filter((k) => /&[a-z]+;|&#\d+;/i.test(String(d1.get(k))));
+  t.check("no help row contains an HTML entity, which would render literally",
+    entity.length === 0,
+    entity.map((k) => `${k}: ${(String(d1.get(k)).match(/&[a-z]+;/gi) || []).join(" ")}`).join(", "));
 } finally {
   db.close();
 }

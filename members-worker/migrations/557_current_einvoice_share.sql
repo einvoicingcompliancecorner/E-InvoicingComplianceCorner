@@ -162,7 +162,26 @@ INSERT OR IGNORE INTO translations (namespace, key, lang, value) VALUES
 -- a reader who has filled everything in staring at a warning that no
 -- longer applies, which teaches them to ignore the next one.
 --
--- ASSERT ALWAYS: SELECT count(*) FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key IN ('assumptions.needsYou','assumptions.needsYouDone') = 2
+-- RETIRED 16 Aug 2026 by migration 562. Dan, on the counting note:
+-- "please remove this." The invariant guarded a rule about a sentence
+-- that no longer exists, and it did its job on the way out -- the replay
+-- refused 562 until this line was dealt with, which is exactly what an
+-- ASSERT ALWAYS is for. Retiring it is a decision, so it is recorded as
+-- one here rather than deleted:
+--
+--   was: ASSERT ALWAYS: SELECT count(*) FROM translations WHERE
+--        namespace = 'roi' AND lang = 'en' AND key IN
+--        ('assumptions.needsYou','assumptions.needsYouDone') = 2
+--
+-- The RULE behind it survives in a better form. What mattered was never
+-- that two particular rows exist, but that a reader is told which
+-- figures are still ours. That is now carried by the ribbons themselves
+-- -- amber while ours, green once theirs -- which cannot go stale,
+-- cannot point in the wrong direction, and need no translation.
+--
+-- Precedent for editing an applied migration's assertion comments is
+-- migration 525: no executable change, replay is byte-identical, and
+-- --refresh-checksums re-records the file.
 
 -- ---- two keys the change orphans --------------------------------------
 -- `res.placeholders` hardcoded "of 4 cost inputs" and the set is now six

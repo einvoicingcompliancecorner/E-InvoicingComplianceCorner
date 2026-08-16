@@ -354,20 +354,34 @@ label{display:block;font-size:12px;font-family:'IBM Plex Mono',monospace;text-tr
 input[type=number],input[type=text],select{width:100%;background:var(--ink);border:1px solid var(--line);color:var(--text-lo);border-radius:6px;padding:9px 11px;font:inherit;font-size:15px}
 input:focus,select:focus{outline:2px solid var(--soon);outline-offset:1px}
 .hint{font-size:11.5px;color:var(--muted);margin:5px 0 0}
-/* The six fields the reader has to own, marked so the counting note above
-   the panel means something -- it says "they are highlighted".
-   AMBER IS ALREADY SPOKEN FOR HERE, and that constraint decided the
-   design. markOverridden() borders any changed input in --soon and
-   prefixes its hint with "Your value.", so on this panel amber already
-   means YOU SET THIS. Using it for "we still need you to set this" would
-   make one colour carry a claim and its opposite, three fields apart.
-   So the marker is an inset rule in --stamp, and it turns --live when the
-   field is set rather than disappearing: no layout shift, and the reader
-   watches the marks go green instead of watching them vanish. Inset
-   box-shadow rather than a border or padding because both of those move
-   the cell, and these six sit in a grid row beside fields that do not. */
-.needsyou > input{box-shadow:inset 3px 0 0 var(--stamp)}
-.needsyou.done > input{box-shadow:inset 3px 0 0 var(--live)}
+/* The six fields the reader has to own: AMBER while the number is still
+   ours, GREEN once it is theirs.
+   Migration 557 used red here, reasoning that amber was already spoken
+   for -- markOverridden() borders any changed input in --soon. Dan asked
+   for amber, and it resolves: the two states are MUTUALLY EXCLUSIVE. A
+   field with an amber ribbon has never been touched, so it has no amber
+   border; a field with an amber border is set, so its ribbon is green.
+   The pair can only ever read "untouched" or "yours", never both. Red
+   was also carrying a severity this never had -- six unset defaults on a
+   first visit is the expected state of the page, not an error.
+   Inset box-shadow rather than a border or padding because both of those
+   move the cell, and these sit in a grid beside fields that do not. */
+/* Section 1: inputs stacked left, country selection right. One column
+   below 900px -- two columns of anything on a phone is a scroll trap. The
+   country list stretches to the height the inputs set instead of its old
+   fixed 260px, which is why the cap moves onto the flex child. */
+.foot2{display:grid;gap:22px}
+@media(min-width:900px){.foot2{grid-template-columns:minmax(260px,1fr) minmax(0,1.25fr)}}
+.footcol{display:flex;flex-direction:column;gap:14px;min-width:0}
+.footcol > .cwrap{display:flex;flex-direction:column;flex:1;min-height:0}
+.footcol > .cwrap > .countries{flex:1;min-height:220px;max-height:430px}
+/* Taller than the old 260px, because the column has the room now --
+   but still capped. Uncapped it drew all 70 jurisdictions and took
+   the card past 1,100px, which is not 'using the space', it is
+   losing the scroll. */
+.cbox,.cbox *{text-transform:none;font-family:'IBM Plex Sans',system-ui,sans-serif;letter-spacing:0}
+.needsyou > input,.needsyou > select{box-shadow:inset 3px 0 0 var(--soon)}
+.needsyou.done > input,.needsyou.done > select{box-shadow:inset 3px 0 0 var(--live)}
 button{font:inherit;cursor:pointer;border-radius:6px;border:1px solid var(--line);background:var(--ink-3);color:var(--text-lo);padding:10px 16px}
 button.primary{background:var(--soon);border-color:var(--soon);color:#231a09;font-weight:700}
 button.primary:hover{filter:brightness(1.08)}
@@ -395,7 +409,7 @@ button:disabled{opacity:.5;cursor:not-allowed}
    between a country and its own mandate, which is aligned but no easier
    to read. Both elements declare six columns and fill five; the sixth is
    the slack. */
-.crow,.chead{display:grid;grid-template-columns:15px minmax(70px,190px) 100px 100px 84px 1fr;align-items:center;gap:0 10px}
+.crow,.chead{display:grid;grid-template-columns:15px 1fr 84px;align-items:center;gap:0 10px}
 .crow{padding:3px 0;font-size:13.5px}
 .crow input{margin:0}
 .crow .pill{justify-self:start}
@@ -880,69 +894,63 @@ export function renderRoiPage({ countries, benchmarks = [], phases = [], strings
 </ol>
 
 <h2 class="noprint" id="s-footprint">1 &middot; ${t("sec.footprint", "Your footprint")}</h2>
-<div class="card noprint">
-  <div class="grid g4">
-    <div>
+<!-- Dan, 16 Aug 2026: "I would like the fields in section 1 to run
+     vertically - i.e. stacked one on top of each other. I would then like
+     the countries check list box to be moved to the right of the stacked
+     list of input fields."
+     The six inputs and the country selection are ONE question -- who you
+     are and where you operate -- and were three stacked cards you scrolled
+     through. Side by side they are answered together, and the country list
+     gets the vertical room it always wanted: it was capped at 260px beside
+     nothing, and now fills the height the inputs set. -->
+<div class="card noprint foot2">
+  <div class="footcol">
+    <div class="needsyou">
       <label for="volAP">${t("input.volAP", "Invoices received / year (AP)")}${hlp("volAP",t("tip.drives","What this drives"))}</label>
       <input type="number" id="volAP" value="${OPEN_VOL_AP}" min="0" step="1000">
     </div>
-    <div>
+    <div class="needsyou">
       <label for="volAR">${t("input.volAR", "Invoices issued / year (AR)")}${hlp("volAR",t("tip.drives","What this drives"))}</label>
       <input type="number" id="volAR" value="${OPEN_VOL_AR}" min="0" step="1000">
-      <p class="hint">${t("input.volAR.hint", "What the mandates actually bite on.")}</p>
     </div>
-    <div>
+    <div class="needsyou">
       <label for="erp">${t("input.erp", "ERP / billing integrations")}${hlp("erp",t("tip.drives","What this drives"))}</label>
       <input type="number" id="erp" value="1" min="1" max="60">
     </div>
-    <div>
+    <div class="needsyou"><label for="eShare">${t("input.eShare", "E-invoices received today %")} <span class="tag tB">B</span>${hlp("eShare",t("tip.drives","What this drives"))}</label><input type="number" id="eShare" value="${dv('eShare')}" min="0" max="100" step="1"><p class="hint" id="h-eShare"></p></div>
+    <div class="needsyou"><label for="errMins">${t("input.errMins", "Minutes to resolve one error")} <span class="tag tB">B</span>${hlp("errMins",t("tip.drives","What this drives"))}</label><input type="number" id="errMins" value="${dv('errMins')}" min="0" step="1"><p class="hint" id="h-errMins"></p></div>
+    <div class="needsyou">
       <label for="cur">${t("input.currency", "Currency")}${hlp("cur",t("tip.changes","What this changes"))}${hlp("fx",t("tip.rate","Where the rate comes from"))}</label>
       <select id="cur"><option value="GBP">GBP &pound;</option><option value="EUR">EUR &euro;</option><option value="USD" selected>USD $</option></select>
       <p class="hint" id="fxNote"></p>
     </div>
   </div>
-  <!-- Dan, 16 Aug 2026: "Given that the 'e-Invoices Received Today' and
-       'Time to fix an exception' fields are so integral to the business
-       case. I think it makes sense to move these two fields into section
-       1." They were in the assumptions panel, which is COLLAPSED BY
-       DEFAULT — so the two largest levers on the savings table were the
-       two the reader was least likely to meet. Everything else in this
-       card is a fact about how big you are; these two are facts about
-       where you start, which is why they get their own row and label
-       rather than being appended to the volumes. -->
-  <p style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:var(--soon);margin:18px 0 8px">${t("input.h.today", "Where you are today")}</p>
-  <div class="grid g4">
-    <div class="needsyou"><label for="eShare">${t("input.eShare", "E-invoices received today %")} <span class="tag tB">B</span>${hlp("eShare",t("tip.drives","What this drives"))}</label><input type="number" id="eShare" value="${dv('eShare')}" min="0" max="100" step="1"><p class="hint" id="h-eShare"></p></div>
-    <div class="needsyou"><label for="errMins">${t("input.errMins", "Minutes to resolve one error")} <span class="tag tB">B</span>${hlp("errMins",t("tip.drives","What this drives"))}</label><input type="number" id="errMins" value="${dv('errMins')}" min="0" step="1"><p class="hint" id="h-errMins"></p></div>
+
+  <div class="footcol" id="s-countries">
+    <div class="cwrap">
+      <label>${t("input.countries", "Countries in scope")}${hlp("countries",t("tip.data","Where this data comes from"))}</label>
+      <p class="hint" style="margin-bottom:8px">${t("input.countries.hint", "Live mandate data for all 70 tracked jurisdictions.")} <button id="selNone" style="padding:3px 9px;font-size:12px">${t("btn.selNone", "Clear")}</button></p>
+      <label class="cbox" id="subsRow" style="align-items:center;gap:8px;padding:9px 12px;margin:0 0 10px;background:var(--ink-3);border:1px solid var(--line);border-radius:6px;font-size:13.5px">
+        <input type="checkbox" id="useSubs">
+        <span>${t("subs.label", "Use <strong>my subscribed countries</strong>")} <span id="subsCount" class="hint" style="display:inline"></span></span>
+      </label>
+      <div class="countries" id="countryList"></div>
+    </div>
   </div>
-  <!-- The counter follows the fields it counts. It used to sit inside
-       the assumptions panel and say "fields BELOW", which stopped being
-       true the moment two of the six moved up here -- the same shape as
-       the "Net annual (compliance scope)" label migration 541 removed.
-       Promoting it is also what migration 540 did with the placeholder
-       warning, and for the same reason: a caveat belongs above the
-       numbers it qualifies, not inside a panel the reader may never
-       open. -->
-  <p class="note warn" id="needsYou" style="margin:14px 0 0"></p>
 </div>
 
+<!-- Scope stays full width and outside the two columns. It is a <select>
+     carrying a 60-character option, and a select TRUNCATES rather than
+     wraps -- in the right-hand column it read "Compliance only - meet the
+     mandates (what most programmes c". The one control that changes both
+     the totals and the timeline is not one to abbreviate. -->
 <div class="card noprint">
   <label for="scope">${t("input.scope", "What are you modelling?")}${hlp("scope",t("tip.changes","What this changes"))}</label>
-  <select id="scope" style="max-width:460px">
+  <select id="scope" style="max-width:560px">
     <option value="compliance" selected>${t("scope.compliance", "Compliance only &mdash; meet the mandates (what most programmes do)")}</option>
     <option value="both">${t("scope.both", "Compliance + AP process automation &mdash; the fuller, larger programme")}</option>
   </select>
   <p class="hint">${t("input.scope.hint", "A scoping decision, not a benchmark &mdash; it changes both the numbers and the timeline.")}</p>
-</div>
-
-<div class="card noprint" id="s-countries">
-  <label>${t("input.countries", "Countries in scope")}${hlp("countries",t("tip.data","Where this data comes from"))}</label>
-  <p class="hint" style="margin-bottom:8px">${t("input.countries.hint", "Live mandate data for all 70 tracked jurisdictions.")} <button id="selEU" style="padding:3px 9px;font-size:12px">${t("btn.selEU", "EU only")}</button> <button id="selMandate" style="padding:3px 9px;font-size:12px">${t("btn.selMandate", "Everywhere with a mandate")}</button> <button id="selNone" style="padding:3px 9px;font-size:12px">${t("btn.selNone", "Clear")}</button></p>
-  <label class="cbox" id="subsRow" style="align-items:center;gap:8px;padding:9px 12px;margin:0 0 10px;background:var(--ink-3);border:1px solid var(--line);border-radius:6px;font-size:13.5px">
-    <input type="checkbox" id="useSubs">
-    <span>${t("subs.label", "Use <strong>my subscribed countries</strong>")} <span id="subsCount" class="hint" style="display:inline"></span></span>
-  </label>
-  <div class="countries" id="countryList"></div>
 </div>
 
 <details class="card noprint" id="assump" style="padding:0">
@@ -1290,31 +1298,71 @@ Object.entries(DEFAULTS).forEach(([id,d]) => {
 // about their own operation that no published source defines (see
 // migration 557 on Ardent's undefined "electronically").
 const NEEDS_YOU = ['cImplS','cImplC','cPlat','cRun','errMins','eShare'];
-const stillDefault = () => NEEDS_YOU.filter(id => {
-  const el = document.getElementById(id);
-  return el && DEFAULTS[id] && String(el.value) === String(DEFAULTS[id].v);
-});
+// Dan, 16 Aug 2026: "all input fields in the 'your footprint' section can
+// have an amber ribbon, until updated and turn green."
+// Every field in section 1 is a fact about the reader, so every one of
+// them starts as our guess. volAP, volAR, erp and cur are NOT in
+// DEFAULTS -- they are opening values in the markup, not benchmarks --
+// so they need their own baseline, snapshotted at load. Reading it from
+// the DOM rather than restating the numbers here means the two cannot
+// disagree, which is this project's most repeated defect.
+const FOOT_FIELDS = ['volAP','volAR','erp','eShare','errMins','cur'];
+// Dan, 16 Aug 2026: "Turn green on first update to the field."
+//
+// The first cut compared the value to its default, which meant a reader
+// whose number genuinely IS ours never got a green ribbon -- 100,000
+// invoices, or USD, or 15 minutes, stayed amber however carefully they
+// had been considered. Worse, typing a value and typing it back turned
+// the ribbon amber again, which reads as the page forgetting.
+//
+// What the colour is actually claiming is "has this been through your
+// hands", and that is a fact about the reader's attention, not about the
+// number. So it is recorded when they touch the field and never
+// withdrawn -- except by Reset, which is the one action that genuinely
+// un-does the review.
+//
+// Programmatic writes must NOT count: applyCurrency() rewrites every
+// money input on a currency switch and dispatches nothing, so it cannot
+// reach this. That is load-bearing rather than lucky -- switching to GBP
+// would otherwise green the whole panel.
+const touched = new Set();
+// The executive summary's placeholder warning counts the same thing the
+// ribbons show, so it reads from the same state. Redefining this in
+// terms of touched rather than value-difference is what keeps the two
+// from disagreeing -- which they would have done within a day, one
+// saying "4 fields still hold our numbers" while four ribbons were green.
+const stillDefault = () => NEEDS_YOU.filter(id => !touched.has(id));
+// Dan, 16 Aug 2026, on the counting note: "please remove this."
+// The ribbons stay and now carry the whole message on their own -- amber
+// is ours, green is yours, and a reader learns that from two fields
+// changing colour under their hands faster than from a sentence saying
+// so. The note was also the third always-on caveat in a card that is
+// meant to be six questions.
+//
+// NOTE THE EARLY RETURN THAT USED TO BE HERE. It read
+//   const el = document.getElementById('needsYou'); if(!el) return;
+// so deleting the element would have silently disabled every ribbon on
+// the page rather than just the sentence -- the guidance would have
+// vanished with the note that described it. Same shape as the delegated
+// listener bound to #assump: behaviour resting on a piece of markup
+// existing.
 function paintNeedsYou(){
-  const el = document.getElementById('needsYou'); if(!el) return;
-  const left = stillDefault();
-  // Retire each field's own mark as it is set, not just the count. A
-  // reader who has answered four of six should be able to see WHICH two
-  // are left without re-reading twenty fields.
-  NEEDS_YOU.forEach(id => {
+  NEEDS_YOU.concat(FOOT_FIELDS).forEach(id => {
     const cell = (document.getElementById(id) || {}).parentElement;
-    if(cell) cell.classList.toggle('done', left.indexOf(id) === -1);
+    if(cell) cell.classList.toggle('done', touched.has(id));
   });
-  el.className = left.length ? 'note warn' : 'note';
-  el.innerHTML = left.length
-    ? fill('${tj("assumptions.needsYou","<strong>{0} of {1} figures we need from you are still our defaults.</strong> They are marked wherever they appear, here and in the assumptions panel, and the business case is illustrative until they are set.")}', left.length, NEEDS_YOU.length)
-    : '${tj("assumptions.needsYouDone","<strong>Every figure that needs your own number has one.</strong> The rest are benchmarks, and the grade beside each says how far to trust it.")}';
 }
 function markOverridden(){
   paintNeedsYou();
   Object.entries(DEFAULTS).forEach(([id,d]) => {
     const el = document.getElementById(id); if(!el) return;
     const changed = String(el.value) !== String(d.v);
-    el.style.borderColor = changed ? '#c98a3a' : '';
+    // Dan: "The field outline does not need to turn amber once changed."
+    // It was the only marker of an override before the ribbons existed;
+    // now it is a third amber thing next to a ribbon and a hint that both
+    // say the same. Cleared rather than left unset, because a value
+    // typed before this ran would keep the inline style forever.
+    el.style.borderColor = '';
     const hint = document.getElementById('h-'+id);
     if(hint && d.h) hint.innerHTML = changed
       ? \`<span style="color:#e2b978">Your value.</span> Default \${d.v} &mdash; \${d.h}\`
@@ -1327,6 +1375,7 @@ document.getElementById('assump').addEventListener('toggle', e => {
 document.getElementById('resetDefaults').onclick = () => {
   Object.entries(DEFAULTS).forEach(([id,d]) => { const el = document.getElementById(id); if(el) el.value = d.v; });
   CUR_INPUTS.forEach(id => { usdCurrent[id] = usdDefault[id]; });   // re-anchor the canon too
+  touched.clear();                                  // every ribbon back to amber
   dirtyCur.clear();
   markOverridden(); syncScope(); if(unlocked) showResults();
 };
@@ -1346,7 +1395,17 @@ document.getElementById('resetDefaults').onclick = () => {
 // Binding to document rather than re-scoping to a new common ancestor is
 // deliberate: an ancestor is a fact about today's layout, and this bug
 // was caused by exactly that assumption.
-document.addEventListener('input', markOverridden);
+// Record the touch BEFORE painting, or the ribbon lags one keystroke
+// behind the reader. A <select> fires change and not input, which is why
+// both are bound -- caught by the currency ribbon staying amber after a
+// switch to GBP while every text field worked.
+const noteTouch = (e) => {
+  const id = e.target && e.target.id;
+  if(id && (touched.has(id) || NEEDS_YOU.indexOf(id) !== -1 || FOOT_FIELDS.indexOf(id) !== -1)) touched.add(id);
+  markOverridden();
+};
+document.addEventListener('input', noteTouch);
+document.addEventListener('change', noteTouch);
 
 // ---- currency: convert the values, not just the symbol ------------------
 // Seed the canon from the server's USD-normalised defaults. DEFAULTS[id].v
@@ -1390,8 +1449,18 @@ function applyCurrency(next){
     // project was bitten this week by exactly the opposite instinct:
     // migration 513 existed because a material warning about this control
     // sat behind a hover instead of in front of the reader.
+    // Dan, 16 Aug 2026: "remove the text that says 'Benchmark defaults are
+    // published in US dollars.'" It stated the obvious under a selector
+    // reading USD, and it was the only always-on line in section 1 that
+    // told the reader nothing they could act on.
+    //
+    // THE NON-USD NOTE STAYS. It carries the fixed-rate warning and its
+    // date, which is the whole reason migration 513 pulled that fact out
+    // of a tooltip and into the open -- a converted business case that
+    // does not say what rate it used is the defect Dan reported on 12
+    // August, one layer down.
     note.innerHTML = next === 'USD' || !f
-      ? '${tj("fx.usdNote","Benchmark defaults are published in US dollars.")}'
+      ? ''
       : \`Converted at a <strong>fixed rate</strong> of 1 \${next} = \${f.r} USD\${f.asOf ? ', spot ' + f.asOf : ''} &mdash; not updated daily. \${ev('yours','Use your own treasury rate for anything you will sign')}\`;
   }
   // recalcPlat() rather than markOverridden() directly: the platform fee's
@@ -1467,13 +1536,18 @@ COUNTRIES.forEach((c,i) => { if(c[1] !== 'EU') (byRegion[c[2]] ||= []).push([c,i
 // checkboxes are already individually labelled — a screen reader gets the
 // country name and both pill texts from the label itself, and announcing
 // four column headings that belong to no table would be noise.
-let html = \`<div class="chead" aria-hidden="true"><span></span><span>${tj("col.jurisdiction","Jurisdiction")}</span><span>${tj("col.mandate","Mandate")}</span><span>${tj("col.complexity","Complexity")}</span><span>${tj("col.deadline","Deadline")}</span></div>\`;
+// Dan, 16 Aug 2026: "The countries selector box include columns for
+// mandate and complexity. These can be removed, as that information is
+// superfluous at this stage." Both are still USED -- complexity drives
+// the one-off cost and mandate status drives the waves -- they are just
+// not what a reader is deciding while ticking boxes. Both remain visible
+// where they matter, in the wave plan and the figures table.
+let html = \`<div class="chead" aria-hidden="true"><span></span><span>${tj("col.jurisdiction","Jurisdiction")}</span><span>${tj("col.deadline","Deadline")}</span></div>\`;
 ['Eu','Mi','As','Am'].forEach(r => {
   if(!byRegion[r]) return;
   html += \`<div class="creg">\${REGION[r]}</div>\`;
   byRegion[r].forEach(([c,i]) => {
-    const st = STATUS[c[3]], cx = CXNAME[c[4]];
-    html += \`<label class="crow"><input type="checkbox" data-i="\${i}"><span>\${c[0]}</span><span class="pill \${st[1]}">\${st[0]}</span><span class="pill \${cx[1]}">\${cx[0]}</span><span class="cdate">\${c[5] || '&mdash;'}</span></label>\`;
+    html += \`<label class="crow"><input type="checkbox" data-i="\${i}"><span>\${c[0]}</span><span class="cdate">\${c[5] || '&mdash;'}</span></label>\`;
   });
 });
 list.innerHTML = html;
@@ -1515,8 +1589,6 @@ subsBox.onchange = () => {
 list.addEventListener('change', e => { if(e.target !== subsBox) subsBox.checked = false; });
 
 const chosen = () => boxes().filter(b=>b.checked).map(b=>COUNTRIES[+b.dataset.i]);
-document.getElementById('selEU').onclick = () => { subsBox.checked = false; boxes().forEach(b=>{ b.checked = COUNTRIES[+b.dataset.i][2]==='Eu'; }); };
-document.getElementById('selMandate').onclick = () => { subsBox.checked = false; boxes().forEach(b=>{ const s=COUNTRIES[+b.dataset.i][3]; b.checked = s==='i'||s==='u'; }); };
 document.getElementById('selNone').onclick = () => { subsBox.checked = false; boxes().forEach(b=>b.checked=false); };
 ['GB','FR','DE','IT','ES','PL','NL','BE'].forEach(code=>{const i=COUNTRIES.findIndex(c=>c[1]===code); if(i>=0) boxes()[i].checked=true;});
 

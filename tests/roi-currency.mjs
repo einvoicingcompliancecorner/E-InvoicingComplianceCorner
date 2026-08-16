@@ -120,9 +120,20 @@ t.check("reset in GBP restores GBP defaults",
 const note = await page.locator("#fxNote").textContent();
 t.check("the always-visible note calls the rate fixed", /fixed rate/i.test(note), note);
 t.check("and dates it", note.includes(fx.GBP.asOf), note);
+// Dan removed the USD line on 16 Aug: it stated the obvious under a
+// selector reading USD. The check inverts rather than disappearing,
+// because the thing worth guarding was never that line — it was that the
+// CONVERTED case still says what rate it used and when. That warning is
+// asserted two checks above and is the reason migration 513 exists.
 await setCur("USD");
-t.check("USD note explains the benchmark basis",
-  /US dollars/i.test(await page.locator("#fxNote").textContent()));
+t.check("no standing note under USD, where there is nothing to warn about",
+  (await page.locator("#fxNote").textContent()).trim() === "",
+  await page.locator("#fxNote").textContent());
+await setCur("GBP");
+const conv = await page.locator("#fxNote").textContent();
+t.check("but converting still declares the rate and its date",
+  /fixed rate/i.test(conv) && conv.includes(fx.GBP.asOf), conv);
+await setCur("USD");
 
 // ---- 7. a duration is not money, but what it buys is ----
 // Migration 558. The rework row is now minutes x the loaded data-entry

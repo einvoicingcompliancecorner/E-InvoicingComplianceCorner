@@ -12674,3 +12674,115 @@ generalisation behind it: **prose rots when it describes the layout rather
 than the fact.** Every instance this project has hit — "below", "of 4 cost
 inputs", "(compliance scope)" — encoded something structural that later
 moved. Sentences stating only facts have not rotted once.
+
+
+## 16 August 2026 (cont'd) — Five UI changes, mocked before built (migration 562)
+
+Dan: *"I have some ui changes I would like you to mock up, before
+building."* Five changes, then two more during review, then two
+refinements. All of it was rendered as the real page — built from the real
+D1 replay, interactive, uncommitted — before anything reached main. **Three
+of the four defects below were found by looking at that page, not by a
+check.**
+
+### What changed
+
+1. **The needs-you ribbon is amber until you touch a field, then green.**
+   Migration 557 used red, on the reasoning that amber already meant "you
+   set this" via `markOverridden()`. Dan asked for amber and it resolves:
+   the two states are **mutually exclusive**. An amber ribbon means
+   untouched, so the field cannot also carry the amber border that means
+   set. Red was carrying a severity this never had — six unset defaults on
+   a first visit is the expected state of the page, not an error.
+2. **Every field in section 1 carries the ribbon**, not just the two
+   levers. The whole section is facts about the reader, so every field in
+   it starts as our guess.
+3. **Section 1 is two columns** — inputs stacked left, country selection
+   right — collapsing to one below 900px.
+4. **The counting sentence is gone**, along with two always-on hints.
+5. **The countries list loses its Mandate and Complexity columns**, and the
+   two presets. `Clear` and *use my subscribed countries* stay: Dan called
+   the latter genuinely useful, and it is the one control that cannot work
+   for an anonymous visitor.
+
+### Green on touch, not on difference
+
+The first cut greened a ribbon when the value differed from the default.
+That meant a reader whose number genuinely **is** ours never got there —
+100,000 invoices, or USD, or 15 minutes stayed amber however carefully
+considered — and typing a value back to its default reverted the ribbon,
+which reads as the page forgetting.
+
+What the colour claims is *has this been through your hands*, which is a
+fact about attention, not about the number. Recorded on touch and never
+withdrawn except by Reset. **Programmatic writes deliberately do not
+count**: `applyCurrency()` rewrites every money field on a currency switch
+and dispatches nothing, so picking GBP would otherwise green the panel
+without the reader having looked at anything.
+
+### Four defects the mock exposed
+
+**Two tooltips were rendering raw HTML on production.** `hlp()` escapes
+its text, so an `&mdash;` reaches the reader as six literal characters.
+`help.scope` and `help.errMins` both had one — the second shipped the day
+before. **The tooltip rewrite would have added fourteen more**, because
+entities are correct everywhere else on this page; help is the one channel
+that isn't, and nothing said so. Fixed, with an invariant and a test.
+
+**The e-invoice share had no tooltip at all.** Migration 557 called it "the
+single largest lever on the processing-cost row" in its own comment, wired
+`hlp("eShare")` into the label, and never wrote the row. `hlp()` renders
+nothing when the text is missing — no icon, no error. **No check could see
+it**: `roi-i18n` asks whether every help row is rendered, and nothing asked
+the reverse. Same asymmetry the eighth and ninth suites closed for strings,
+sitting unnoticed in the help layer. The reverse check now exists.
+
+**Deleting the counter would have silently disabled every ribbon.**
+`paintNeedsYou()` opened with `const el = document.getElementById('needsYou'); if(!el) return;` — so removing the element would have taken the guidance with the sentence that described it. Same shape as the `#assump` listener bug from 559: behaviour resting on a piece of markup existing.
+
+**A `<select>` fires `change`, not `input`.** The currency ribbon stayed
+amber after switching to GBP while every text field worked — visible only
+because it is the one non-text control in the section.
+
+### Tooltips
+
+12,835 characters across 25 rows, down to **5,701 across 26**; longest was
+1,219, now 268. The shape is Dan's: what the field is, what it drives or
+what we assume, the source defending it. Every grade, source and "this is
+ours, not measured" survives. What went is project history — sentences like
+*"until 12 August 2026 this control changed only the symbol"* — which
+belongs in the migrations, not in a hover card.
+
+**Migration 530's 300-character prose budget explicitly exempts `help.%`**,
+and that exemption is why this happened. A tooltip is opt-in, so length
+looked free. What it missed is that a tooltip is opened by someone with a
+specific question, and five sentences of context is a worse answer than
+one, not a more generous one. The exemption removed the only pressure
+against length and 25 rows drifted for three months. There is a 320-char
+invariant now.
+
+### A standing invariant retired, correctly
+
+557's `ASSERT ALWAYS` required both counter strings to exist. Removing the
+counter broke it, **and the replay refused the migration until it was dealt
+with** — which is exactly what an `ASSERT ALWAYS` is for. Retired in place
+with its reasoning rather than deleted. The rule behind it survives in a
+better form: what mattered was never that two rows exist but that the
+reader is told which figures are still ours, and the ribbons carry that
+without prose that can go stale or point the wrong way.
+
+### And test setup that depended on chrome
+
+Removing the two presets broke about a dozen checks that used those buttons
+to build a country selection. The selection logic moved into the suite
+rather than the coverage being dropped: **a setup step that depends on UI
+chrome breaks whenever the chrome moves**, which is precisely what happened.
+
+### Verified
+
+`npm test`: 9 suites, all passing. ROI regression **198 checks**. Replay OK
+across 562 files — **272 assertions, 64 standing invariants**. Layout
+checked at 1440, 1100, 900, 860, 700 and 420px with no overflow.
+
+**Deploy note: 557's comments were edited, so the runner needs
+`--refresh-checksums`.** No executable change; replay is byte-identical.
