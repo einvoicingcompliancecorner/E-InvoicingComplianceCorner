@@ -61,4 +61,20 @@ INSERT OR IGNORE INTO translations (namespace, key, lang, value) VALUES
 -- makes it add up. That is the failure mode this whole page is built to
 -- avoid, so it gets an invariant rather than a comment.
 --
--- ASSERT ALWAYS: SELECT count(*) FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key = 'basis.tax' AND value LIKE '%{0}%' AND value LIKE '%{9}%' = 1
+-- RETIRED 16 Aug 2026 by migration 564. `basis.tax` no longer exists:
+-- the basis column was rebuilt as a Calculation / Justification pair, so
+-- the row's arithmetic is `basis.tax.calc` and its sourcing is
+-- `basis.tax.just`. The invariant guarded that the sentence kept all ten
+-- of its slots, which is meaningless once the sentence is two sentences.
+--
+--   was: ASSERT ALWAYS: ... key = 'basis.tax' AND value LIKE '%{0}%'
+--        AND value LIKE '%{9}%' = 1
+--
+-- What it was really protecting -- that this row shows its working
+-- rather than asserting a figure -- survives and is stated better in
+-- 564: every row must carry a justification, and the four priced rows
+-- must carry a calculation. That is checked there.
+--
+-- It did its job on the way out: the replay refused 564 until this was
+-- dealt with, which is the second time this week an ASSERT ALWAYS has
+-- caught its own retirement rather than letting a rewrite slip past.

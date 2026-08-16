@@ -97,10 +97,33 @@ export async function buildRoiPage(opts = {}) {
     });
 
     // pageShell()'s order, verbatim: BASE_STYLE first, page style second.
+    //
+    // WEBFONTS ARE OFF BY DEFAULT AND THAT IS A DELIBERATE TRADE, not an
+    // oversight -- but it was an unexamined one until Dan asked on 16 Aug
+    // 2026 why the headings had "strayed away from the former narrow
+    // format". They had not: members-worker's shell loads Big Shoulders
+    // Display, IBM Plex Sans and IBM Plex Mono from Google Fonts, and
+    // this harness never did. Production was always right; every page
+    // built here has rendered in system fallbacks.
+    //
+    // Tests keep it that way, because they are meant to run with no
+    // network and a build that reaches the internet is a build that fails
+    // on a train. The cost is that any width, wrap or overflow measured
+    // by this harness is measured in SUBSTITUTE METRICS -- close for the
+    // Plex faces, not close at all for a condensed display face.
+    //
+    // Mocks pass webfonts:true, because a mock is opened in a browser
+    // that does have a network, and showing someone a layout in the wrong
+    // typeface and asking them to approve it is worse than not showing
+    // them at all.
+    const FONTS = opts.webfonts ? `<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+` : "";
     const html = `<!DOCTYPE html>
 <html lang="${lang}">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<style>${extractBaseStyle()}${roi.ROI_STYLE}</style></head>
+${FONTS}<style>${extractBaseStyle()}${roi.ROI_STYLE}</style></head>
 <body>
 <div class="topbar"><a class="back-link" href="#" style="margin:0;">Back</a></div>
 ${body}
@@ -108,7 +131,7 @@ ${body}
 </body></html>`;
 
     mkdirSync(TMP, { recursive: true });
-    const file = join(TMP, `roi-${lang}${opts.stubStrings ? "-stub" : ""}.html`);
+    const file = join(TMP, `roi-${lang}${opts.stubStrings ? "-stub" : ""}${opts.webfonts ? "-fonts" : ""}.html`);
     writeFileSync(file, html);
     return { file, html, body, script, countries, benchmarks, phases, strings, fx,
              migrations: db.migrations };

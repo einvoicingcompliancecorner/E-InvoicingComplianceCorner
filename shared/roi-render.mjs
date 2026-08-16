@@ -354,8 +354,15 @@ label{display:block;font-size:12px;font-family:'IBM Plex Mono',monospace;text-tr
 input[type=number],input[type=text],select{width:100%;background:var(--ink);border:1px solid var(--line);color:var(--text-lo);border-radius:6px;padding:9px 11px;font:inherit;font-size:15px}
 input:focus,select:focus{outline:2px solid var(--soon);outline-offset:1px}
 .hint{font-size:11.5px;color:var(--muted);margin:5px 0 0}
-/* The six fields the reader has to own: AMBER while the number is still
-   ours, GREEN once it is theirs.
+/* AMBER while the value is still ours, GREEN once the reader has touched
+   it. Dan, 16 Aug 2026: "change all input fields in assumptions and
+   benchmarks to have a yellow unchanged ribbon... a useful distinction on
+   all fields to see if anything has changed."
+   THE CLASS IS RENAMED WITH THE MEANING. It was .needsyou, true while
+   six fields carried it and false the moment every field did: a benchmark
+   with a grade-A citation is not a figure we need from you. A class name
+   describing a retired model is the same defect as a caption that does --
+   it just rots somewhere only developers read.
    Migration 557 used red here, reasoning that amber was already spoken
    for -- markOverridden() borders any changed input in --soon. Dan asked
    for amber, and it resolves: the two states are MUTUALLY EXCLUSIVE. A
@@ -394,8 +401,19 @@ input:focus,select:focus{outline:2px solid var(--soon);outline-offset:1px}
    caught a colour chosen for the wrong surface. #5f5540 is the tone
    already used for secondary text on paper elsewhere. */
 .tipmeta{display:block;margin-top:7px;padding-top:6px;border-top:1px solid var(--paper-line);color:#5f5540}
-.needsyou > input,.needsyou > select{box-shadow:inset 3px 0 0 var(--soon)}
-.needsyou.done > input,.needsyou.done > select{box-shadow:inset 3px 0 0 var(--live)}
+/* The basis column, one labelled line each. Dan, 16 Aug 2026: "could the
+   basis column be a little more concise and consistent across all rows...
+   a 'Calculation:' sentence, and on the next line a 'Justification:'
+   sentence with citation and source."
+   The rows had drifted into nine different shapes -- the AP row ran two
+   full sentences together with no separator, the AR row was five words.
+   Same information, one form. */
+.bcalc,.bjust{display:block;margin:0}
+.bjust{margin-top:4px}
+.blab{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin-right:5px}
+.evg{margin-left:4px;padding:0 4px;font-size:9px}
+.ribbon > input,.ribbon > select{box-shadow:inset 3px 0 0 var(--soon)}
+.ribbon.changed > input,.ribbon.changed > select{box-shadow:inset 3px 0 0 var(--live)}
 button{font:inherit;cursor:pointer;border-radius:6px;border:1px solid var(--line);background:var(--ink-3);color:var(--text-lo);padding:10px 16px}
 button.primary{background:var(--soon);border-color:var(--soon);color:#231a09;font-weight:700}
 button.primary:hover{filter:brightness(1.08)}
@@ -947,21 +965,21 @@ export function renderRoiPage({ countries, benchmarks = [], phases = [], strings
      nothing, and now fills the height the inputs set. -->
 <div class="card noprint foot2">
   <div class="footcol">
-    <div class="needsyou">
+    <div class="ribbon">
       <label for="volAP">${t("input.volAP", "Invoices received / year (AP)")}${hlp("volAP",t("tip.drives","What this drives"))}</label>
       <input type="number" id="volAP" value="${OPEN_VOL_AP}" min="0" step="1000">
     </div>
-    <div class="needsyou">
+    <div class="ribbon">
       <label for="volAR">${t("input.volAR", "Invoices issued / year (AR)")}${hlp("volAR",t("tip.drives","What this drives"))}</label>
       <input type="number" id="volAR" value="${OPEN_VOL_AR}" min="0" step="1000">
     </div>
-    <div class="needsyou">
+    <div class="ribbon">
       <label for="erp">${t("input.erp", "ERP / billing integrations")}${hlp("erp",t("tip.drives","What this drives"))}</label>
       <input type="number" id="erp" value="1" min="1" max="60">
     </div>
-    <div class="needsyou"><label for="eShare">${t("input.eShare", "E-invoices received today %")} <span class="tag tB">B</span>${hlp("eShare",t("tip.drives","What this drives"))}</label><input type="number" id="eShare" value="${dv('eShare')}" min="0" max="100" step="1"><p class="hint" id="h-eShare"></p></div>
-    <div class="needsyou"><label for="errMins">${t("input.errMins", "Minutes to resolve one error")} <span class="tag tB">B</span>${hlp("errMins",t("tip.drives","What this drives"))}</label><input type="number" id="errMins" value="${dv('errMins')}" min="0" step="1"><p class="hint" id="h-errMins"></p></div>
-    <div class="needsyou">
+    <div class="ribbon"><label for="eShare">${t("input.eShare", "E-invoices received today %")} <span class="tag tB">B</span>${hlp("eShare",t("tip.drives","What this drives"))}</label><input type="number" id="eShare" value="${dv('eShare')}" min="0" max="100" step="1"><p class="hint" id="h-eShare"></p></div>
+    <div class="ribbon"><label for="errMins">${t("input.errMins", "Minutes to resolve one error")} <span class="tag tB">B</span>${hlp("errMins",t("tip.drives","What this drives"))}</label><input type="number" id="errMins" value="${dv('errMins')}" min="0" step="1"><p class="hint" id="h-errMins"></p></div>
+    <div class="ribbon">
       <label for="cur">${t("input.currency", "Currency")}${hlp("cur",t("tip.changes","What this changes"))}${hlp("fx",t("tip.rate","Where the rate comes from"))}</label>
       <select id="cur"><option value="GBP">GBP &pound;</option><option value="EUR">EUR &euro;</option><option value="USD" selected>USD $</option></select>
       <p class="hint" id="fxNote"></p>
@@ -1032,34 +1050,34 @@ export function renderRoiPage({ countries, benchmarks = [], phases = [], strings
     <div class="acol">
       <p style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:var(--soon);margin:0 0 10px">${t("assumptions.h.invest", "Investment &mdash; costs")} <span class="tag tD">D</span></p>
       <p class="hint" style="margin:-4px 0 4px;color:#e0907f">${t("assumptions.placeholders", "These figures are <strong>placeholders only</strong>. Please replace with vendor budgetary estimates and treat the ROI as illustrative, until actuals can be provided.")}</p>
-      <div class="needsyou"><label for="cImplS" style="font-size:11px">${t("input.cImplS", "Cost per SIMPLE integration")}${hlp("cImplS",t("tip.drives","What this drives"))}</label><input type="number" id="cImplS" value="${dv('cImplS')}" min="0" step="1000"></div>
-      <div class="needsyou"><label for="cImplC" style="font-size:11px">${t("input.cImplC", "Cost per COMPLEX integration")}${hlp("cImplC",t("tip.drives","What this drives"))}</label><input type="number" id="cImplC" value="${dv('cImplC')}" min="0" step="1000"></div>
-      <div class="needsyou"><label for="cPlat" style="font-size:11px">${t("input.cPlat", "Platform / network fees per year")}${hlp("cPlat",t("tip.drives","What this drives"))}</label><input type="number" id="cPlat" value="${dv('cPlat')}" min="0" step="1000"></div>
-      <div class="needsyou"><label for="cRun" style="font-size:11px">${t("input.cRun", "Internal run cost per year")}${hlp("cRun",t("tip.drives","What this drives"))}</label><input type="number" id="cRun" value="${dv('cRun')}" min="0" step="1000"></div>
+      <div class="ribbon"><label for="cImplS" style="font-size:11px">${t("input.cImplS", "Cost per SIMPLE integration")}${hlp("cImplS",t("tip.drives","What this drives"))}</label><input type="number" id="cImplS" value="${dv('cImplS')}" min="0" step="1000"></div>
+      <div class="ribbon"><label for="cImplC" style="font-size:11px">${t("input.cImplC", "Cost per COMPLEX integration")}${hlp("cImplC",t("tip.drives","What this drives"))}</label><input type="number" id="cImplC" value="${dv('cImplC')}" min="0" step="1000"></div>
+      <div class="ribbon"><label for="cPlat" style="font-size:11px">${t("input.cPlat", "Platform / network fees per year")}${hlp("cPlat",t("tip.drives","What this drives"))}</label><input type="number" id="cPlat" value="${dv('cPlat')}" min="0" step="1000"></div>
+      <div class="ribbon"><label for="cRun" style="font-size:11px">${t("input.cRun", "Internal run cost per year")}${hlp("cRun",t("tip.drives","What this drives"))}</label><input type="number" id="cRun" value="${dv('cRun')}" min="0" step="1000"></div>
     </div>
 
     <div class="acol">
       <p style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:var(--soon);margin:0 0 10px">${t("assumptions.h.cost", "Cost &amp; benefit")}</p>
-      <div><label for="costNow">${t("input.costNow", "AP cost per invoice")} <span class="tag tA">A</span>${hlp("costNow",t("tip.drives","What this drives"))}</label><input type="number" id="costNow" value="${dv('costNow')}" min="0" step="0.01"></div>
-      <div><label for="costAR">${t("input.costAR", "AR cost per invoice")} <span class="tag tA">A</span>${hlp("costAR",t("tip.drives","What this drives"))}</label><input type="number" id="costAR" value="${dv('costAR')}" min="0" step="0.01"></div>
-      <div><label for="savePct">${t("input.savePct", "Cost reduction %")} <span class="tag tB">B</span>${hlp("savePct",t("tip.drives","What this drives"))}</label><input type="number" id="savePct" value="${dv('savePct')}" min="0" max="95"></div>
-      <div><label for="errRate">${t("input.errRate", "Manual error rate %")} <span class="tag tB">B</span>${hlp("errRate",t("tip.drives","What this drives"))}</label><input type="number" id="errRate" value="${dv('errRate')}" min="0" max="100" step="0.5"></div>
-      <div><label for="fteCost" style="font-size:11px">${t("input.fteCost", "Loaded cost / tax or finance FTE")} <span class="tag tB">B</span>${hlp("fteCost",t("tip.drives","What this drives"))}</label><input type="number" id="fteCost" value="${dv('fteCost')}" min="0" step="1000"></div>
-      <div><label for="fteEntry" style="font-size:11px">${t("input.fteEntry", "Loaded cost / data-entry FTE")} <span class="tag tB">B</span>${hlp("fteEntry",t("tip.drives","What this drives"))}</label><input type="number" id="fteEntry" value="${dv('fteEntry')}" min="0" step="1000"></div>
-      <div><label for="errElim">${t("input.errElim", "Errors eliminated %")} <span class="tag tD">D</span>${hlp("errElim",t("tip.drives","What this drives"))}</label><input type="number" id="errElim" value="${dv('errElim')}" min="0" max="100" step="1"></div>
+      <div class="ribbon"><label for="costNow">${t("input.costNow", "AP cost per invoice")} <span class="tag tA">A</span>${hlp("costNow",t("tip.drives","What this drives"))}</label><input type="number" id="costNow" value="${dv('costNow')}" min="0" step="0.01"></div>
+      <div class="ribbon"><label for="costAR">${t("input.costAR", "AR cost per invoice")} <span class="tag tA">A</span>${hlp("costAR",t("tip.drives","What this drives"))}</label><input type="number" id="costAR" value="${dv('costAR')}" min="0" step="0.01"></div>
+      <div class="ribbon"><label for="savePct">${t("input.savePct", "Cost reduction %")} <span class="tag tB">B</span>${hlp("savePct",t("tip.drives","What this drives"))}</label><input type="number" id="savePct" value="${dv('savePct')}" min="0" max="95"></div>
+      <div class="ribbon"><label for="errRate">${t("input.errRate", "Manual error rate %")} <span class="tag tB">B</span>${hlp("errRate",t("tip.drives","What this drives"))}</label><input type="number" id="errRate" value="${dv('errRate')}" min="0" max="100" step="0.5"></div>
+      <div class="ribbon"><label for="fteCost" style="font-size:11px">${t("input.fteCost", "Loaded cost / tax or finance FTE")} <span class="tag tB">B</span>${hlp("fteCost",t("tip.drives","What this drives"))}</label><input type="number" id="fteCost" value="${dv('fteCost')}" min="0" step="1000"></div>
+      <div class="ribbon"><label for="fteEntry" style="font-size:11px">${t("input.fteEntry", "Loaded cost / data-entry FTE")} <span class="tag tB">B</span>${hlp("fteEntry",t("tip.drives","What this drives"))}</label><input type="number" id="fteEntry" value="${dv('fteEntry')}" min="0" step="1000"></div>
+      <div class="ribbon"><label for="errElim">${t("input.errElim", "Errors eliminated %")} <span class="tag tD">D</span>${hlp("errElim",t("tip.drives","What this drives"))}</label><input type="number" id="errElim" value="${dv('errElim')}" min="0" max="100" step="1"></div>
     </div>
 
     <div class="acol">
       <p style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:var(--soon);margin:0 0 10px">${t("assumptions.h.weeks", "Implementation &mdash; weeks")} <span class="tag tD">D</span></p>
-      <div><label for="wMob" style="font-size:11px">${t("input.wMob", "Mobilisation")}${hlp("wMob",t("tip.phase","What this phase covers"))}</label><input type="number" id="wMob" value="${dv('wMob')}" min="0" step="0.5"></div>
-      <div><label for="wDes" style="font-size:11px">${t("input.wDes", "Design")}${hlp("wDes",t("tip.phase","What this phase covers"))}</label><input type="number" id="wDes" value="${dv('wDes')}" min="0" step="0.5"></div>
-      <div><label for="wBld" style="font-size:11px">${t("input.wBld", "Build")}${hlp("wBld",t("tip.phase","What this phase covers"))}</label><input type="number" id="wBld" value="${dv('wBld')}" min="0" step="0.5"></div>
-      <div><label for="wUat" style="font-size:11px">${t("input.wUat", "UAT &amp; cutover")}${hlp("wUat",t("tip.phase","What this phase covers"))}</label><input type="number" id="wUat" value="${dv('wUat')}" min="0" step="0.5"></div>
-      <div id="chgRow"><label for="wChg" style="font-size:11px">${t("input.wChg", "Process change &amp; training")}${hlp("wChg",t("tip.phase","What this phase covers"))}</label><input type="number" id="wChg" value="${dv('wChg')}" min="0" step="0.5"></div>
-      <div><label for="wVen" style="font-size:11px">${t("input.wVen", "Vendor selection (once)")}${hlp("wVen",t("tip.once","What “once” means here"))}</label><input type="number" id="wVen" value="${dv('wVen')}" min="0" step="1"></div>
-      <div><label for="wCon" style="font-size:11px">${t("input.wCon", "Contracting (once)")}${hlp("wCon",t("tip.once","What “once” means here"))}</label><input type="number" id="wCon" value="${dv('wCon')}" min="0" step="1"></div>
-      <div><label for="lanes" style="font-size:11px">${t("input.lanes", "Parallel workstreams")}${hlp("lanes",t("tip.means","What this means"))}</label><input type="number" id="lanes" value="${dv('lanes')}" min="1" max="10"></div>
-      <div><label for="pace" style="font-size:11px">${t("input.pace", "Delivery pace")}${hlp("pace",t("tip.means","What this means"))}</label><select id="pace">${[["0.75",t("pace.aggressive","Aggressive")],["1",t("pace.typical","Typical")],["1.3",t("pace.conservative","Conservative")]].map(([v,n])=>`<option value="${v}"${String(dv('pace'))===v?" selected":""}>${n}</option>`).join("")}</select></div>
+      <div class="ribbon"><label for="wMob" style="font-size:11px">${t("input.wMob", "Mobilisation")}${hlp("wMob",t("tip.phase","What this phase covers"))}</label><input type="number" id="wMob" value="${dv('wMob')}" min="0" step="0.5"></div>
+      <div class="ribbon"><label for="wDes" style="font-size:11px">${t("input.wDes", "Design")}${hlp("wDes",t("tip.phase","What this phase covers"))}</label><input type="number" id="wDes" value="${dv('wDes')}" min="0" step="0.5"></div>
+      <div class="ribbon"><label for="wBld" style="font-size:11px">${t("input.wBld", "Build")}${hlp("wBld",t("tip.phase","What this phase covers"))}</label><input type="number" id="wBld" value="${dv('wBld')}" min="0" step="0.5"></div>
+      <div class="ribbon"><label for="wUat" style="font-size:11px">${t("input.wUat", "UAT &amp; cutover")}${hlp("wUat",t("tip.phase","What this phase covers"))}</label><input type="number" id="wUat" value="${dv('wUat')}" min="0" step="0.5"></div>
+      <div id="chgRow" class="ribbon"><label for="wChg" style="font-size:11px">${t("input.wChg", "Process change &amp; training")}${hlp("wChg",t("tip.phase","What this phase covers"))}</label><input type="number" id="wChg" value="${dv('wChg')}" min="0" step="0.5"></div>
+      <div class="ribbon"><label for="wVen" style="font-size:11px">${t("input.wVen", "Vendor selection (once)")}${hlp("wVen",t("tip.once","What “once” means here"))}</label><input type="number" id="wVen" value="${dv('wVen')}" min="0" step="1"></div>
+      <div class="ribbon"><label for="wCon" style="font-size:11px">${t("input.wCon", "Contracting (once)")}${hlp("wCon",t("tip.once","What “once” means here"))}</label><input type="number" id="wCon" value="${dv('wCon')}" min="0" step="1"></div>
+      <div class="ribbon"><label for="lanes" style="font-size:11px">${t("input.lanes", "Parallel workstreams")}${hlp("lanes",t("tip.means","What this means"))}</label><input type="number" id="lanes" value="${dv('lanes')}" min="1" max="10"></div>
+      <div class="ribbon"><label for="pace" style="font-size:11px">${t("input.pace", "Delivery pace")}${hlp("pace",t("tip.means","What this means"))}</label><select id="pace">${[["0.75",t("pace.aggressive","Aggressive")],["1",t("pace.typical","Typical")],["1.3",t("pace.conservative","Conservative")]].map(([v,n])=>`<option value="${v}"${String(dv('pace'))===v?" selected":""}>${n}</option>`).join("")}</select></div>
       <p class="hint" style="margin-top:4px">${t("assumptions.durations", "Durations are per country. Countries sharing a go-live date form a wave, so a five-country wave costs roughly five country-tracks of effort, divided across however many workstreams you can genuinely run at once.")}</p>
     </div>
     </div>
@@ -1077,7 +1095,13 @@ export function renderRoiPage({ countries, benchmarks = [], phases = [], strings
 </div>
 
 <div id="results" class="hidden">
-  <div id="guards"></div>
+  <!-- The guard block used to sit here, above the section heading, so a
+       scheduling warning was the first thing a reader met after pressing
+       Calculate. It now renders inside the executive summary under the
+       figures -- see the note in showResults(). The container is created
+       by the summary's own template, which is filled earlier in
+       showResults() than the guards are, so the element exists by the
+       time the guard code looks for it. -->
   <h2>2 &middot; ${t("sec.summary2", "Executive summary &mdash; savings, investment and payback")}</h2>
   <div id="summary"></div>
   <div id="savings"></div>
@@ -1218,7 +1242,15 @@ const fmt1 = n => SYM[cur] + n.toLocaleString('en-US', { minimumFractionDigits: 
 // A = measured, primary, attributable      B = published by a credible body but unattributed within it
 // C = single anecdote, not a benchmark     D = your assumption, nothing claimed
 const EV = __ROI_EVIDENCE__;
-const ev = (key, txt) => \`<span class="ev" tabindex="0">\${txt}<span class="tip"><b>\${fill('${tj("ev.gradeLabel","Evidence grade {0}")}', EV[key].t)}</b>\${EV[key].s}</span></span>\`;
+// Dan, 16 Aug 2026: "to be consistent with how evidence is referenced
+// earlier in the page, using [A], [B], [C] and [D] evidence grades".
+// The grade was ALREADY here and only visible on hover -- the tooltip has
+// always opened "Evidence grade B". Every other graded thing on the page
+// wears its letter in the open, so a reader scanning the savings table
+// had to hover eleven markers to learn what one glance gives them in the
+// assumptions panel. The chip sits OUTSIDE the .ev span so it does not
+// inherit the dotted underline that marks the hover target.
+const ev = (key, txt) => \`<span class="ev" tabindex="0">\${txt}<span class="tip"><b>\${fill('${tj("ev.gradeLabel","Evidence grade {0}")}', EV[key].t)}</b>\${EV[key].s}</span></span><span class="tag t\${EV[key].t} evg">\${EV[key].t}</span>\`;
 
 // ---- tooltip edge handling -------------------------------------------
 // A 330px tooltip anchored left:0 runs off the RIGHT edge whenever its
@@ -1358,6 +1390,14 @@ const NEEDS_YOU = ['cImplS','cImplC','cPlat','cRun','errMins','eShare'];
 // the DOM rather than restating the numbers here means the two cannot
 // disagree, which is this project's most repeated defect.
 const FOOT_FIELDS = ['volAP','volAR','erp','eShare','errMins','cur'];
+// Every input that carries a ribbon. NEEDS_YOU stays a separate, smaller
+// list on purpose: it is the six figures the executive summary counts as
+// "still our numbers", and letting it become "everything with a ribbon"
+// would turn a specific warning about vendor placeholders into a 26.
+const RIBBONED = FOOT_FIELDS.concat([
+  'costNow','costAR','savePct','errRate','fteCost','fteEntry','errElim',
+  'cImplS','cImplC','cPlat','cRun',
+  'wMob','wDes','wBld','wUat','wChg','wVen','wCon','lanes','pace']);
 // Dan, 16 Aug 2026: "Turn green on first update to the field."
 //
 // The first cut compared the value to its default, which meant a reader
@@ -1398,9 +1438,9 @@ const stillDefault = () => NEEDS_YOU.filter(id => !touched.has(id));
 // listener bound to #assump: behaviour resting on a piece of markup
 // existing.
 function paintNeedsYou(){
-  NEEDS_YOU.concat(FOOT_FIELDS).forEach(id => {
+  RIBBONED.forEach(id => {
     const cell = (document.getElementById(id) || {}).parentElement;
-    if(cell) cell.classList.toggle('done', touched.has(id));
+    if(cell) cell.classList.toggle('changed', touched.has(id));
   });
 }
 function markOverridden(){
@@ -1468,7 +1508,7 @@ document.getElementById('resetDefaults').onclick = () => {
 // switch to GBP while every text field worked.
 const noteTouch = (e) => {
   const id = e.target && e.target.id;
-  if(id && (touched.has(id) || NEEDS_YOU.indexOf(id) !== -1 || FOOT_FIELDS.indexOf(id) !== -1)) touched.add(id);
+  if(id && RIBBONED.indexOf(id) !== -1) touched.add(id);
   markOverridden();
 };
 document.addEventListener('input', noteTouch);
@@ -2507,8 +2547,22 @@ function build(){
   const paybackMonths = netAnnual > 0 ? (oneOff / netAnnual) * 12 : null;
   const placeholders = stillDefault();
 
+  // Dan, 16 Aug 2026: the placeholder warning and the scheduling guard
+  // both move BELOW the headline figures.
+  //
+  // This reverses migration 540, which promoted this warning to the top
+  // of the summary on the reasoning that "an executive reading a
+  // four-month payback built on placeholder costs is told before they
+  // read it, not after". That was right when it was the ONLY thing above
+  // the numbers. It is no longer alone: the guard block sat above the
+  // section heading as well, so a reader could meet two red boxes before
+  // meeting a single figure, and a summary that opens with warnings
+  // reads as a broken page rather than a qualified answer.
+  //
+  // The caveat is not weakened by moving -- it is immediately under the
+  // stats, in the same red, still before the savings table and the wave
+  // plan. What changes is that the headline gets to be the headline.
   document.getElementById('summary').innerHTML = \`
-    \${placeholders.length ? \`<div class="note warn" style="margin-bottom:14px"><strong>\${placeholders.length} ${tj("res.placeholders2b","fields still hold our numbers rather than yours.")}</strong> ${tj("res.placeholders2","Please replace them with vendor budgetary estimates in the assumptions panel, and treat the ROI as illustrative until actuals can be provided.")}</div>\` : ''}
     <div class="grid g5">
       <div class="stat"><div class="n" style="color:#7fd0a8">\${fmt(l1Banked + l2)}</div><div class="l">${tj("res.banked","Annual saving")}\${l1Unbanked > 0 ? \` (+\${fmt(l1Unbanked)} ${tj("res.unbanked","available on a wider scope")})\` : ''}</div></div>
       <div class="stat"><div class="n" style="color:#e0907f">\${fmt(oneOff)}</div><div class="l">${tj("res.oneOff","One-off investment")} <span class="statwhat">${tj("res.oneOff2","implementation")}</span><span class="statrun">${tj("res.running","plus each year:")} \${fmt(cPlat)} ${tj("res.running2","platform")}${hlp('cPlat',t("tip.covers","What this covers"))} + \${fmt(cRun)} ${tj("res.running3","internal")}${hlp('cRun',t("tip.covers","What this covers"))}</span></div></div>
@@ -2519,6 +2573,8 @@ function build(){
     <div class="note" style="margin-top:14px">\${banked
       ? \`<strong>${tj("sum.scopeBoth","Scope: compliance + AP process automation.")}</strong> ${tj("sum.scopeBoth2","Every direct row counts, and the timeline carries a process-change phase per country. The larger, less common programme.")}\`
       : \`<strong>${tj("sum.scopeOnly","Scope: compliance only.")}</strong> \${fmt(l1Banked + l2)} ${tj("sum.scopeOnly2","is saved from the integration itself; the remaining")} \${fmt(l1Unbanked)} ${tj("sum.scopeOnly3","needs a change programme you are not running.")}\`} ${tj("sum.bridge6","Net annual saving is the annual saving less the two running costs above; section 4 shows what makes up the annual saving, row by row.")} \${notesLink()}</div>
+    \${placeholders.length ? \`<div class="note warn" style="margin:14px 0 0"><strong>\${placeholders.length} ${tj("res.placeholders2b","fields still hold our numbers rather than yours.")}</strong> ${tj("res.placeholders2","Please replace them with vendor budgetary estimates in the assumptions panel, and treat the ROI as illustrative until actuals can be provided.")}</div>\` : ''}
+    <div id="guards"></div>
     <div class="card"><p style="margin:0">\${fill('${tj("card.mix","Across {0} jurisdictions you have {1} (CTC or 5-corner) and {2} (4-corner exchange){3}.")}',
         '<strong>' + sel.length + '</strong>',
         '<strong>' + complex.length + ' ${tj("word.complex","complex")}</strong>',
@@ -2598,27 +2654,27 @@ function build(){
 
     <tr class="grp"><td colspan="4">${t("grp.priced","Priced &mdash; counted in the business case")}</td></tr>
 
-    <tr class="tierA" data-row="ap"><td>${t("row.ap","Processing cost reduction (AP)")} <span class="tag tang">${t("tag.tangible","tangible")}</span> <span class="tag \${banked?'bank':'unbank'}">\${banked?'${t("tag.saved","saved")}':Math.round(TAXM.captureShare*100)+'% ${t("tag.saved","saved")}'}</span></td><td>\${fill('${tj("basis.apShare","{0} invoices &times; {1} {2} &times; {3}% {4}, less the {5}% already arriving structured {6}")}', volAP.toLocaleString(), fmt1(manualCost), ev('ardent','${tj("ev.baseline","baseline")}'), Math.round(savePct*100), ev('hmrc60','${tj("ev.reduction","reduction")}'), Math.round(eShare*100), ev('yours','${tj("ev.ourAssumption","our assumption")}'))}\${banked ? '' : ' ' + fill('${tj("basis.apScope","Compliance alone is credited with {0}% of that {1} &mdash; capture and validation are 9 of the 21 minutes of AP handling, and review and approval are business decisions that no invoice format removes.")}', Math.round(TAXM.captureShare*100), ev('atoCapture','${tj("ev.taskSplit","the task split")}'))}</td><td class="num">\${fmt(saving)}</td><td class="num">\${fmt(bankedAP)}</td></tr>
+    <tr class="tierA" data-row="ap"><td>${t("row.ap","Processing cost reduction (AP)")} <span class="tag tang">${t("tag.tangible","tangible")}</span> <span class="tag \${banked?'bank':'unbank'}">\${banked?'${t("tag.saved","saved")}':Math.round(TAXM.captureShare*100)+'% ${t("tag.saved","saved")}'}</span></td><td><span class="bcalc"><span class="blab">${tj("basis.lab.calc","Calculation:")}</span>\${fill('${tj("basis.ap.calc","{0} invoices &times; {1} manual cost &times; {2}% reduction &times; {3}% not yet structured{4}")}', volAP.toLocaleString(), fmt1(manualCost), Math.round(savePct*100), Math.round((1-eShare)*100), banked ? '' : fill('${tj("basis.ap.calc2"," &times; {0}% compliance share")}', Math.round(TAXM.captureShare*100)))}</span><span class="bjust"><span class="blab">${tj("basis.lab.just","Justification:")}</span>\${fill('${tj("basis.ap.just","Manual cost decomposed from the market average {0}. Reduction range {1}. Structured share is yours {2}.{3}")}', ev('ardent','${tj("ev.ardentAvg","Ardent Partners")}'), ev('hmrc60','${tj("ev.hmrcAto","HMRC, ATO-corroborated")}'), ev('yours','${tj("ev.yourShare","your figure")}'), banked ? '' : fill('${tj("basis.ap.just2"," Compliance is credited with capture and validation only &mdash; 9 of the 21 minutes of AP handling {0} &mdash; because review and approval are business decisions that no invoice format removes.")}', ev('atoCapture','${tj("ev.taskSplit","the task split")}')))}</span></td><td class="num">\${fmt(saving)}</td><td class="num">\${fmt(bankedAP)}</td></tr>
 
-    <tr class="tierA" data-row="ar"><td>${t("row.ar","Issuing cost reduction (AR)")} <span class="tag tang">${t("tag.tangible","tangible")}</span> <span class="tag bank">${t("tag.saved","saved")}</span></td><td>\${fill('${tj("basis.ar","{0} invoices &times; {1} {2} &times; {3}% {4}")}', volAR.toLocaleString(), fmt1(costAR), ev('ato','ATO / Deloitte'), Math.round(savePct*100), ev('hmrc60','${tj("ev.reduction","reduction")}'))}</td><td class="num">\${fmt(savingAR)}</td><td class="num">\${fmt(savingAR)}</td></tr>
+    <tr class="tierA" data-row="ar"><td>${t("row.ar","Issuing cost reduction (AR)")} <span class="tag tang">${t("tag.tangible","tangible")}</span> <span class="tag bank">${t("tag.saved","saved")}</span></td><td><span class="bcalc"><span class="blab">${tj("basis.lab.calc","Calculation:")}</span>\${fill('${tj("basis.ar.calc","{0} invoices &times; {1} issuing cost &times; {2}% reduction")}', volAR.toLocaleString(), fmt1(costAR), Math.round(savePct*100))}</span><span class="bjust"><span class="blab">${tj("basis.lab.just","Justification:")}</span>\${fill('${tj("basis.ar.just","Issuing cost from the ATO channel figures on its own 60/40 split {0}. Reduction range {1}.")}', ev('ato','${tj("ev.atoDeloitte","ATO / Deloitte")}'), ev('hmrc60','${tj("ev.hmrcAto","HMRC, ATO-corroborated")}'))}</span></td><td class="num">\${fmt(savingAR)}</td><td class="num">\${fmt(savingAR)}</td></tr>
 
-    <tr class="tierA" data-row="tax"><td>${t("row.tax","Reduced tax reporting &amp; audit-prep effort")} <span class="tag tang">${t("tag.tangible","tangible")}</span> <span class="tag bank">${t("tag.saved","saved")}</span></td><td>\${fill('${tj("basis.tax","Mechanism evidenced {0}. Your {1} AP invoices imply <strong>{2} AP FTE</strong> {3}; {4} put <strong>{5}%</strong> of that in scope {6}{7} &mdash; {8} FTE &times; {9}.")}', ev('oecd','OECD DCTR, 2026'), volAP.toLocaleString(), apFteImplied.toFixed(1), ev('apqc','${tj("ev.apqcMedian","APQC median, 12,000 per FTE")}'), ctcCount + ' ' + plur(ctcCount, '${tj("word.ctcJur","clearance or reporting jurisdiction")}', '${tj("word.ctcJurs","clearance or reporting jurisdictions")}'), (shareUsed*100).toFixed(1), ev('yours','${tj("ev.ourAssumption","our assumption")}'), taxCapBinds?' <em>${tj("word.capped","(capped)")}</em>':'', taxFteSaved.toFixed(2), fmt(fteCost))} ${tj("row.tax.banks","Saved on either scope: the reporting effort falls with the compliance build itself, not with a workflow change.")}</td><td class="num">\${fmt(l2)}</td><td class="num">\${fmt(l2)}</td></tr>
+    <tr class="tierA" data-row="tax"><td>${t("row.tax","Reduced tax reporting &amp; audit-prep effort")} <span class="tag tang">${t("tag.tangible","tangible")}</span> <span class="tag bank">${t("tag.saved","saved")}</span></td><td><span class="bcalc"><span class="blab">${tj("basis.lab.calc","Calculation:")}</span>\${fill('${tj("basis.tax.calc","{0} AP invoices imply {1} AP FTE; {2} put {3}% of that in scope{4} &mdash; {5} FTE &times; {6}")}', volAP.toLocaleString(), apFteImplied.toFixed(1), ctcCount + ' ' + plur(ctcCount, '${tj("word.ctcJur","clearance or reporting jurisdiction")}', '${tj("word.ctcJurs","clearance or reporting jurisdictions")}'), (shareUsed*100).toFixed(1), taxCapBinds?' <em>${tj("word.capped","(capped)")}</em>':'', taxFteSaved.toFixed(2), fmt(fteCost))}</span><span class="bjust"><span class="blab">${tj("basis.lab.just","Justification:")}</span>\${fill('${tj("basis.tax.just","Mechanism evidenced {0}; invoices per FTE {1}; the share in scope is ours and capped {2}. Saved on either scope &mdash; reporting effort falls with the compliance build, not with a workflow change.")}', ev('oecd','${tj("ev.oecdDctr","OECD DCTR, 2026")}'), ev('apqc','${tj("ev.apqcMedian","APQC median, 12,000 per FTE")}'), ev('yours','${tj("ev.ourAssumption","our assumption")}'))}</span></td><td class="num">\${fmt(l2)}</td><td class="num">\${fmt(l2)}</td></tr>
 
-    <tr class="tierB" data-row="rework"><td>${t("row.rework","Avoided rework on data-entry errors")} <span class="tag tang">${t("tag.tangible","tangible")}</span> <span class="tag \${banked?'bank':'unbank'}">\${banked?'${t("tag.saved","saved")}':'${t("tag.notSaved","not saved")}'}</span></td><td>\${fill('${tj("basis.rework2","{0} {1} &times; {2} min {3} at {4}/h {5} &times; {6}% {7} {8}")}', Math.round(errNow).toLocaleString() + ' ' + plur(Math.round(errNow), '${tj("word.erroredInvoice","errored invoice")}', '${tj("word.erroredInvoices","errored invoices")}'), ev('hmrcErr', fill('${tj("ev.atRate","at ~{0}%")}', Math.round(errRate*100))), errMins, overridden('errMins') ? ev('yours','${tj("ev.yourMins","your resolution time")}') : ev('rework','${tj("ev.atoMins","ATO, 15 min per processing exception")}'), fmt1(entryPerHr), ev('blsEntry','${tj("ev.blsEntry","loaded data-entry rate")}'), Math.round(errElim*100), ev('errElim','${tj("ev.whyNotAll","why not all of them")}'), ev('ardentExc','${tj("ev.excRate","not Ardent&rsquo;s 18.4% exception rate")}'))}</td><td class="num">\${fmt(errSave)}</td><td class="num">\${bankedErr > 0 ? fmt(bankedErr) : '&mdash;'}</td></tr>
+    <tr class="tierB" data-row="rework"><td>${t("row.rework","Avoided rework on data-entry errors")} <span class="tag tang">${t("tag.tangible","tangible")}</span> <span class="tag \${banked?'bank':'unbank'}">\${banked?'${t("tag.saved","saved")}':'${t("tag.notSaved","not saved")}'}</span></td><td><span class="bcalc"><span class="blab">${tj("basis.lab.calc","Calculation:")}</span>\${fill('${tj("basis.rework.calc","{0} {1} at {2}% &times; {3} min &times; {4}/h &times; {5}% eliminated")}', Math.round(errNow).toLocaleString(), plur(Math.round(errNow), '${tj("word.erroredInvoice","errored invoice")}', '${tj("word.erroredInvoices","errored invoices")}'), Math.round(errRate*100), errMins, fmt1(entryPerHr), Math.round(errElim*100))}</span><span class="bjust"><span class="blab">${tj("basis.lab.just","Justification:")}</span>\${fill('${tj("basis.rework.just","Error rate {0}; resolution time {1}; data-entry rate {2}; the share eliminated is ours {3}, held under Ardent&rsquo;s exception gap {4}.")}', ev('hmrcErr','${tj("ev.hmrcRate","HMRC consultation")}'), overridden('errMins') ? ev('yours','${tj("ev.yourMins","your resolution time")}') : ev('rework','${tj("ev.atoMins2","ATO exception times")}'), ev('blsEntry','${tj("ev.blsEntry","loaded data-entry rate")}'), ev('errElim','${tj("ev.whyNotAll","why not all of them")}'), ev('ardentExc','${tj("ev.excRate2","18.4% market exception rate")}'))}</span></td><td class="num">\${fmt(errSave)}</td><td class="num">\${bankedErr > 0 ? fmt(bankedErr) : '&mdash;'}</td></tr>
 
     <tr class="tot" data-row="total"><td colspan="2"><strong>${t("row.savingsTotal","Annual benefit")}</strong>\${l1Unbanked > 0 ? \` <span class="hint" style="display:inline">&mdash; ${t("row.directTotal.gap","the difference needs a change programme you are not running")}</span>\` : ''}</td><td class="num"><strong>\${fmt(l1 + l2)}</strong></td><td class="num"><strong style="color:#7fd0a8">\${fmt(l1Banked + l2)}</strong></td></tr>
 
     <tr class="grp"><td colspan="4">${t("grp.named","Named, not priced &mdash; real, and this model will not invent a number for them")}</td></tr>
 
-    <tr class="tierA" data-row="cycle"><td>${t("row.cycle","Faster cycle time &amp; fewer supplier queries")} <span class="tag intang">${t("tag.intangible","intangible")}</span></td><td>${tj("row.cycle.basis","Top-performing AP spends")} <strong>12.8%</strong> ${tj("row.cycle.basis2","of staff time on supplier inquiries against")} <strong>24.0%</strong> \${ev('ardentInq','${tj("ev.ardent2025","Ardent Partners, 2025 data")}')} &mdash; ${tj("row.cycle.basis3","an association with high-performing AP, not a measured effect of e-invoicing, so")} <strong>${tj("row.cycle.basis4","not monetised")}</strong>. \${notesLink()}</td>\${dash}</tr>
+    <tr class="tierA" data-row="cycle"><td>${t("row.cycle","Faster cycle time &amp; fewer supplier queries")} <span class="tag intang">${t("tag.intangible","intangible")}</span></td><td><span class="bcalc"><span class="blab">${tj("basis.lab.calc","Calculation:")}</span>${tj("basis.notPriced","Named, not priced.")}</span><span class="bjust"><span class="blab">${tj("basis.lab.just","Justification:")}</span>\${fill('${tj("basis.cycle.just","Top-performing AP spends <strong>12.8%</strong> of staff time on supplier inquiries against <strong>24.0%</strong> {0} &mdash; an association with high-performing AP, not a measured effect of e-invoicing.")}', ev('ardentInq','${tj("ev.ardent2025","Ardent Partners, 2025 data")}'))} \${notesLink()}</span></td>\${dash}</tr>
 
-    <tr class="tierA" data-row="paper"><td>${t("row.paper","Paper, print, postage, storage")} <span class="tag tang">${t("tag.tangible","tangible")}</span></td><td>\${fill('${tj("basis.paper","Paper AUD 30.87 vs e-invoice AUD 9.18 {0}; your own spend is the better input")}', ev('ato','ATO / Deloitte'))}</td>\${dash}</tr>
+    <tr class="tierA" data-row="paper"><td>${t("row.paper","Paper, print, postage, storage")} <span class="tag tang">${t("tag.tangible","tangible")}</span></td><td><span class="bcalc"><span class="blab">${tj("basis.lab.calc","Calculation:")}</span>${tj("basis.notPriced","Named, not priced.")}</span><span class="bjust"><span class="blab">${tj("basis.lab.just","Justification:")}</span>\${fill('${tj("basis.paper.just","Paper AUD 30.87 against AUD 9.18 for an e-invoice {0}; your own print, postage and storage spend is the better input.")}', ev('ato','${tj("ev.atoDeloitte","ATO / Deloitte")}'))}</span></td>\${dash}</tr>
 
-    <tr class="tierC" data-row="vat"><td>${t("row.vat","VAT leakage / gap recovery")} <span class="tag intang">${t("tag.intangible","intangible")}</span></td><td>\${fill('${tj("basis.vat","Often quoted, <strong>not defensible</strong> {0} &mdash; excluded from this model entirely")}', ev('vatgap','${tj("ev.whyNot","why not")}'))}</td>\${dash}</tr>
+    <tr class="tierC" data-row="vat"><td>${t("row.vat","VAT leakage / gap recovery")} <span class="tag intang">${t("tag.intangible","intangible")}</span></td><td><span class="bcalc"><span class="blab">${tj("basis.lab.calc","Calculation:")}</span>${tj("basis.notPriced","Named, not priced.")}</span><span class="bjust"><span class="blab">${tj("basis.lab.just","Justification:")}</span>\${fill('${tj("basis.vat.just","Often quoted and <strong>not defensible</strong> {0} &mdash; excluded from this model entirely.")}', ev('vatgap','${tj("ev.whyNot","why not")}'))}</span></td>\${dash}</tr>
 
-    <tr class="tierD" data-row="penalty"><td>${t("row.penalty","Penalty &amp; remediation exposure avoided")} <span class="tag intang">${t("tag.intangible","intangible")}</span></td><td>\${fill('${tj("basis.penalty","{0} of your jurisdictions publish a quantified penalty schedule {1}. Size it from those, per country &mdash; there is no credible aggregate")}', sel.filter(c=>c[6]>0).length, ev('site','${tj("ev.deepDives","on their deep dives")}'))}</td>\${dash}</tr>
+    <tr class="tierD" data-row="penalty"><td>${t("row.penalty","Penalty &amp; remediation exposure avoided")} <span class="tag intang">${t("tag.intangible","intangible")}</span></td><td><span class="bcalc"><span class="blab">${tj("basis.lab.calc","Calculation:")}</span>${tj("basis.notPriced","Named, not priced.")}</span><span class="bjust"><span class="blab">${tj("basis.lab.just","Justification:")}</span>\${fill('${tj("basis.penalty.just","{0} of your jurisdictions publish a quantified penalty schedule {1}. Size it per country; there is no credible aggregate.")}', sel.filter(c=>c[6]>0).length, ev('site','${tj("ev.deepDives","on their deep dives")}'))}</span></td>\${dash}</tr>
 
-    <tr class="tierD" data-row="fraud"><td>${t("row.fraud","Fraud detection, working-capital visibility")} <span class="tag intang">${t("tag.intangible","intangible")}</span></td><td>\${fill('${tj("basis.fraud","Strategic benefits; no benchmark exists {0}")}', ev('yours','${tj("ev.yourCall","your call")}'))}</td>\${dash}</tr>
+    <tr class="tierD" data-row="fraud"><td>${t("row.fraud","Fraud detection, working-capital visibility")} <span class="tag intang">${t("tag.intangible","intangible")}</span></td><td><span class="bcalc"><span class="blab">${tj("basis.lab.calc","Calculation:")}</span>${tj("basis.notPriced","Named, not priced.")}</span><span class="bjust"><span class="blab">${tj("basis.lab.just","Justification:")}</span>\${fill('${tj("basis.fraud.just","Strategic benefits with no published benchmark {0}.")}', ev('yours','${tj("ev.yourCall","your call")}'))}</span></td>\${dash}</tr>
     </tbody></table>
     \`;
 
