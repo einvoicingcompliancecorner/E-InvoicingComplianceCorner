@@ -941,6 +941,28 @@ t.check("but every priced row still shows the evidence to judge it by",
 t.check("the lede describes the order the single table is actually in",
   /named below the total/.test(sav.lede) && /section 2 works from/i.test(sav.lede),
   sav.lede.slice(0, 110));
+// Dan, 15 Aug 2026: the evidence panel should read "Assumptions, sources
+// and caveats" and "should not be a separate section". Dropping its "5 ·"
+// also settles a rule the page had been applying inconsistently: a
+// NUMBERED h2 is a section, an UNNUMBERED <details> is supporting detail
+// you open when you want it. The other two panels — assumptions and
+// adjust — were already unnumbered; the evidence panel was the only one
+// carrying a section number while behaving like a panel.
+const numbering = await page.evaluate(() => ({
+  sections: [...document.querySelectorAll(".wrap h2")].map((e) => e.textContent.trim()),
+  panels: [...document.querySelectorAll("details > summary")]
+    .map((e) => e.textContent.replace(/\s+/g, " ").trim()),
+}));
+t.check(`sections are numbered 1-4 and nothing beyond (${numbering.sections.length})`,
+  numbering.sections.every((h, i) => h.startsWith(`${i + 1} `)) && numbering.sections.length === 4,
+  numbering.sections.join(" / "));
+t.check("and no collapsible panel carries a section number",
+  numbering.panels.every((p) => !/^\d+\s*[·&]/.test(p)),
+  numbering.panels.filter((p) => /^\d+\s*[·&]/.test(p)).join(" | "));
+t.check("the evidence panel keeps its name without a number",
+  numbering.panels.some((p) => p.startsWith("Assumptions, sources and caveats")),
+  numbering.panels.join(" | "));
+
 t.check("the page is four numbered sections, with investment inside the summary",
   sav.headings.some((x) => /^2 \S* Executive summary/.test(x))
   && sav.headings.some((x) => /^4 \S* Savings$/.test(x))

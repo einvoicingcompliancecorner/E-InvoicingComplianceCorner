@@ -320,7 +320,21 @@ p{margin:0 0 12px}
 .note{color:var(--muted)}
 .gate{color:var(--text-lo)}
 .countries{color:var(--text-lo)}
+/* Dan, 15 Aug 2026: "all of the savings table font seems to be in bold...
+   It jumps off the page a little too much."
+   It was never bold -- computed weight is 400 in every cell, and only 6%
+   of a row sits inside a <strong>. It was CONTRAST. --text-lo is #f2f0e8
+   despite the name, so the table rendered at the brightest value on the
+   page while the prose around it sits at --muted #93a3c0. Dense 13.5px
+   rows at maximum brightness on dark navy read as heavier than the
+   paragraphs beside them.
+   Body cells drop to #c6cfdd -- 11.1:1 on --ink and 8.9:1 on --ink-3,
+   comfortably past AA -- and the NUMERIC cells stay at full strength.
+   That is the hierarchy the table never had: the money is what you are
+   meant to read first, and it was competing with its own labels. */
 table{color:var(--text-lo)}
+#savingsTable td{color:#c6cfdd}
+#savingsTable td.num,#savingsTable tr.tot td{color:var(--text-lo)}
 .wrap{color:var(--text-lo)}
 footer{color:var(--muted)}
 .grid{display:grid;gap:14px}
@@ -972,7 +986,7 @@ export function renderRoiPage({ countries, benchmarks = [], phases = [], strings
   <details class="card" id="notes" style="padding:0">
     <summary style="cursor:pointer;padding:14px 18px;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:12px">
       <span>
-        <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:var(--soon)">5 &middot; ${t("sec.evidence", "Assumptions, sources and caveats")}</span>
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:var(--soon)">${t("sec.evidence", "Assumptions, sources and caveats")}</span>
         <span class="hint" style="display:block;margin:4px 0 0">${t("sec.evidence.hint", "Every figure above, where it came from, and what it deliberately does not claim.")}</span>
       </span>
       <span id="notesChevron" style="font-family:'IBM Plex Mono',monospace;color:var(--muted);font-size:12px;white-space:nowrap">${t("assumptions.show", "show &#9662;")}</span>
@@ -2308,7 +2322,7 @@ function build(){
 
     <tr class="tierA" data-row="ar"><td>${t("row.ar","Issuing cost reduction (AR)")} <span class="tag tang">${t("tag.tangible","tangible")}</span> <span class="tag bank">${t("tag.saved","saved")}</span></td><td>\${fill('${tj("basis.ar","{0} invoices &times; {1} {2} &times; {3}% {4}")}', volAR.toLocaleString(), fmt1(costAR), ev('ato','ATO / Deloitte'), Math.round(savePct*100), ev('hmrc60','${tj("ev.reduction","reduction")}'))}</td><td class="num">\${fmt(savingAR)}</td><td class="num">\${fmt(savingAR)}</td></tr>
 
-    <tr class="tierA" data-row="tax"><td>${t("row.tax","Reduced tax reporting &amp; audit-prep effort")} <span class="tag tang">${t("tag.tangible","tangible")}</span> <span class="tag bank">${t("tag.saved","saved")}</span></td><td>\${fill('${tj("basis.tax","Mechanism evidenced {0}. Your {1} AP invoices imply <strong>{2} AP FTE</strong> {3}; {4} put <strong>{5}%</strong> of that in scope {6}{7} &mdash; {8} FTE &times; {9}.")}', ev('oecd','OECD DCTR, 2026'), volAP.toLocaleString(), apFteImplied.toFixed(1), ev('apqc','${tj("ev.apqcMedian","APQC median, 12,000 per FTE")}'), ctcCount + ' ' + plur(ctcCount, '${tj("word.ctcJur","clearance or reporting jurisdiction")}', '${tj("word.ctcJurs","clearance or reporting jurisdictions")}'), (shareUsed*100).toFixed(1), ev('yours','${tj("ev.ourAssumption","our assumption")}'), taxCapBinds?' <em>${tj("word.capped","(capped)")}</em>':'', taxFteSaved.toFixed(2), fmt(fteCost))}. ${tj("row.tax.banks","Saved on either scope: the reporting effort falls with the compliance build itself, not with a workflow change.")}</td><td class="num">\${fmt(l2)}</td><td class="num">\${fmt(l2)}</td></tr>
+    <tr class="tierA" data-row="tax"><td>${t("row.tax","Reduced tax reporting &amp; audit-prep effort")} <span class="tag tang">${t("tag.tangible","tangible")}</span> <span class="tag bank">${t("tag.saved","saved")}</span></td><td>\${fill('${tj("basis.tax","Mechanism evidenced {0}. Your {1} AP invoices imply <strong>{2} AP FTE</strong> {3}; {4} put <strong>{5}%</strong> of that in scope {6}{7} &mdash; {8} FTE &times; {9}.")}', ev('oecd','OECD DCTR, 2026'), volAP.toLocaleString(), apFteImplied.toFixed(1), ev('apqc','${tj("ev.apqcMedian","APQC median, 12,000 per FTE")}'), ctcCount + ' ' + plur(ctcCount, '${tj("word.ctcJur","clearance or reporting jurisdiction")}', '${tj("word.ctcJurs","clearance or reporting jurisdictions")}'), (shareUsed*100).toFixed(1), ev('yours','${tj("ev.ourAssumption","our assumption")}'), taxCapBinds?' <em>${tj("word.capped","(capped)")}</em>':'', taxFteSaved.toFixed(2), fmt(fteCost))} ${tj("row.tax.banks","Saved on either scope: the reporting effort falls with the compliance build itself, not with a workflow change.")}</td><td class="num">\${fmt(l2)}</td><td class="num">\${fmt(l2)}</td></tr>
 
     <tr class="tierB" data-row="rework"><td>${t("row.rework","Avoided rework on data-entry errors")} <span class="tag tang">${t("tag.tangible","tangible")}</span> <span class="tag \${banked?'bank':'unbank'}">\${banked?'${t("tag.saved","saved")}':'${t("tag.notSaved","not saved")}'}</span></td><td>\${fill('${tj("basis.rework","{0} {1} &times; {2} {3} &times; {4}% {5} {6}")}', Math.round(errNow).toLocaleString() + ' ' + plur(Math.round(errNow), '${tj("word.erroredInvoice","errored invoice")}', '${tj("word.erroredInvoices","errored invoices")}'), ev('hmrcErr', fill('${tj("ev.atRate","at ~{0}%")}', Math.round(errRate*100))), fmt(errCost), overridden('errCost') ? ev('yours','${tj("ev.yourRework","your rework cost")}') : ev('rework','${tj("ev.ourEstimate","our estimate, not yours")}'), Math.round(errElim*100), ev('errElim','${tj("ev.whyNotAll","why not all of them")}'), ev('ardentExc','${tj("ev.excRate","not Ardent&rsquo;s 18.4% exception rate")}'))}</td><td class="num">\${fmt(errSave)}</td><td class="num">\${bankedErr > 0 ? fmt(bankedErr) : '&mdash;'}</td></tr>
 
