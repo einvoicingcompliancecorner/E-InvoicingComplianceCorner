@@ -1611,7 +1611,7 @@ function buildGantt(sel0, erp, pace){
   s += \`<text x="0" y="\${y+15}" fill="#e2b978" font-family="'IBM Plex Mono',monospace" font-size="9.5" letter-spacing="1">PROGRAMME</text>\`;
   y += RH + GAP;
   let pt = progBegin.getTime();
-  s += \`<text x="0" y="\${y+15}" fill="#f2f0e8" font-size="12">${tj("chart.procure","Select &amp; contract")}</text>\`;
+  s += \`<text x="0" y="\${y+15}" fill="#f2f0e8" font-size="12">${tj("chart.procureBar","Select &amp; contract")}</text>\`;
   progPhases.forEach(p => {
     const e = addW(new Date(pt), p.weeks);
     const x1 = x(pt), x2 = x(e.getTime());
@@ -1822,10 +1822,14 @@ function buildGantt(sel0, erp, pace){
   // path to name, so the head note written above stands rather than being
   // overwritten with a reassurance about zero waves.
   if(!waveMeta.length){ document.getElementById('ganttLegend').innerHTML = ''; return rows; }
-  const critPath = progWeeks > typicalTrack
-    ? \`<div class="note"><strong>${tj("chart.procure","Procurement is your critical path, not delivery.")}</strong> \${progWeeks} ${tj("chart.procure2","weeks of vendor selection and contracting against a typical")} \${typicalTrack} ${tj("chart.procure3","week wave. Shortening the country build saves little; shortening procurement moves every deadline.")}</div>\`
-    : '';
-  document.getElementById('ganttHead').innerHTML = critPath + (late
+  // The critical-path note that used to open this block is gone (Dan,
+  // 15 Aug 2026: "I think this comment can be removed altogether"). It
+  // fired whenever procurement outran the average wave, which is almost
+  // always, so it read as a permanent fixture rather than a finding --
+  // and the chart already shows it: the programme bar runs from today to
+  // the first country start, in front of every wave, which is the same
+  // statement made in a way the reader cannot skim past.
+  document.getElementById('ganttHead').innerHTML = (late
     ? \`<div class="note warn"><strong>\${late} ${tj("chart.late","of")} \${waveMeta.length} ${tj("chart.late2","waves back-plan to a start date that has already passed.")}</strong> ${tj("chart.late3","Compressed delivery, an interim filing approach, or an accepted late position &mdash; but the latest responsible start is behind you.")} \${notesLink()}</div>\`
     : soon ? \`<div class="note">\${fill('${tj("guard.soon","<strong>{0} must start within 90 days</strong> to hit the published deadline on your current phase assumptions.")}', soon + ' ' + plur(soon, '${tj("word.wave","wave")}', '${tj("word.waves","waves")}'))}</div>\`
     : \`<div class="note"><strong>Runway is comfortable across all \${waveMeta.length} waves</strong> on your current assumptions.</div>\`);
@@ -2322,8 +2326,7 @@ function build(){
 
     <tr class="tierD" data-row="fraud"><td>${t("row.fraud","Fraud detection, working-capital visibility")} <span class="tag intang">${t("tag.intangible","intangible")}</span></td><td>\${fill('${tj("basis.fraud","Strategic benefits; no benchmark exists {0}")}', ev('yours','${tj("ev.yourCall","your call")}'))}</td>\${dash}</tr>
     </tbody></table>
-    <div class="note" style="margin-top:12px"><strong>${tj("res.headcount.h","In headcount:")}</strong> \${captureFte.toFixed(1)} ${tj("res.headcount.line","FTE keying invoices today, of which")} <strong>\${captureSaved.toFixed(1)}</strong> ${tj("res.headcount.line2","are released &mdash; the same money as the AP capture row above, priced as people rather than an addition to it.")} \${notesLink()}</div>
-    <div class="note" style="margin-top:12px">${tj("res.namedWhy","Everything priced here is tangible; the intangible benefits are named and carry no value on purpose. That group is long because almost every circulating number in this field fails verification &mdash; what survives is priced, what does not is named rather than quietly dropped.")} \${notesLink()}</div>\`;
+    \`;
 
 
   // ---- savings composition ------------------------------------------
@@ -2359,7 +2362,7 @@ function build(){
     <div class="grid g2" style="margin-bottom:16px">
       <div class="card"><h3>${tj("notes.banks.h","What compliance alone saves")}</h3><p class="hint">${tj("notes.banks","Capture and issuing arrive with the integration: once invoices come in structured and go out cleared, nobody keys or posts them. Review and approval are workflow and need a separate change programme. The split is the ATO / Deloitte task times &mdash; receipt 7 and validation 2 minutes against review 7 and approval 5 &mdash; not our judgement. Tax reporting and audit-prep effort is saved in full on either scope: you file structured data to the tax authority whether or not you ever touch AP workflow, so there is no equivalent split to make.")}</p></div>
       <div class="card"><h3>${tj("notes.rework.h","Why rework is held back")}</h3><p class="hint">${tj("notes.rework","It rests on HMRC&rsquo;s unsourced 10% error rate, a cost you set yourself, and our assumption about how many errors actually go away. Least evidenced row here and the largest beneficiary of any change, so it is not counted as saved, even on a compliance scope. Ardent gives the mechanism but no quantified reduction; their Best-in-Class exception gap of 9.8 points is used as a ceiling on what this model may claim.")}</p></div>
-      <div class="card"><h3>${tj("notes.headcount.h","Headcount restates, it does not add")}</h3><p class="hint">${tj("notes.headcount","The capture-FTE figure prices the processing-cost row in people. It is the same money &mdash; the per-invoice benchmark is labour-dominated, so counting both would count it twice.")}\${saving > 0 ? ' ' + fill('${tj("notes.headcountSplit","{0} of {1}, or {2}%; the rest is review, technology and overhead.")}', fmt(captureValue), fmt(saving), Math.round(captureValue/saving*100)) : ''} ${tj("notes.headcount2","Released capacity is only cash if the post goes or is not backfilled.")} \${ev('apqc','APQC')} &middot; \${ev('atoCapture','ATO / Deloitte')}</p></div>
+      <div class="card"><h3>${tj("notes.headcount.h","Headcount restates, it does not add")}</h3><p class="hint">${tj("notes.headcount","The capture-FTE figure prices the processing-cost row in people. It is the same money &mdash; the per-invoice benchmark is labour-dominated, so counting both would count it twice.")}\${saving > 0 ? ' ' + fill('${tj("notes.headcountSplit","{0} of {1}, or {2}%; the rest is review, technology and overhead.")}', fmt(captureValue), fmt(saving), Math.round(captureValue/saving*100)) : ''} \${fill('${tj("notes.headcountFte","In people: {0} FTE keying invoices today, of which {1} are released.")}', captureFte.toFixed(1), captureSaved.toFixed(1))} ${tj("notes.headcount2","Released capacity is only cash if the post goes or is not backfilled.")} \${ev('apqc','APQC')} &middot; \${ev('atoCapture','ATO / Deloitte')}</p></div>
       <div class="card"><h3>${tj("notes.unmonetised.h","What carries no value on purpose")}</h3><p class="hint">${tj("notes.unmonetised","Paper and postage, because your own spend is the only honest input. Cycle time and supplier queries, because nobody has measured how much of that gap e-invoicing causes &mdash; Ardent&rsquo;s own")} \${ev('ardentCycle','${tj("ev.cycleGap","2.9 vs 13.5 days")}')} ${tj("notes.unmonetised2","is circular by construction, and the")} \${ev('nhs','${tj("ev.nhsQuery","15% query reduction")}')} ${tj("notes.unmonetised3","is a single anecdote. VAT leakage, penalty exposure and fraud, because the mechanisms are real and the magnitudes are not evidenced. They belong in the qualitative case beside this number, not inside it.")}</p></div>
     </div>
     <p style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:var(--soon);margin:0 0 8px">${tj("notes.h.grades","Evidence grades")}</p>

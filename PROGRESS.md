@@ -11589,6 +11589,78 @@ checks assert the chips carry no numbers (re-adding them is the obvious
 the adjust step, and that Download is last.
 
 
+## 15 August 2026 (cont'd) — Three notes leave the page, and a defect they exposed (migration 556)
+
+Dan, on the commentary under the savings table: *"I think overcrowds the
+main roi-calculator page, and I think should reside in assumptions,
+sources and caveats"*. And on the chart's critical-path line: *"I think
+this comment can be removed altogether"*.
+
+### They were duplicates, not just clutter
+
+Better than a relocation. **Both already had a panel card saying more:**
+
+```
+the headcount note      -> "Headcount restates, it does not add"
+the tangible/named note -> "What carries no value on purpose"
+```
+
+`res.namedWhy` is retired outright — every clause was already in the
+panel, at greater length and with the evidence attached. The headcount
+note carried one thing the panel did not, the FTE figures (3.6 keying,
+2.1 released), and those move into the card that already explains them.
+
+**Migration 530 deliberately kept that clause inline**, reasoning that
+"without it this is a double count, and it is the first thing a finance
+committee would challenge". That reasoning retires with it, and correctly:
+the double-count risk existed *because* a headcount figure sat on the page
+beside a money figure. With no headcount on the page there is nothing to
+double-count, and the figure now sits in the same paragraph as its own
+caveat instead of one click away.
+
+The critical-path note is simply gone. It fired whenever procurement
+outran the average wave — almost always — so it read as furniture rather
+than a finding, and the chart already makes the point: the programme bar
+runs from today to the first country start, in front of every wave.
+
+### The defect this exposed, shipped in 551
+
+Deleting the note left `chart.procure` with one call site instead of two,
+and the i18n suite failed immediately on a mismatch **that had been live
+since 551 was deployed**.
+
+551 added `chart.procure` = "Select &amp; contract" for the gantt's
+programme bar. **The key already existed**, holding "Procurement is your
+critical path, not delivery." `INSERT OR IGNORE` declined in silence, and
+the programme bar has been rendering a full sentence where a two-word
+label belongs.
+
+**Why nothing caught it.** The i18n suite builds a map of key → fallback
+from the call sites. With two sites on one key it kept whichever came last
+in the file — the note — whose English matched D1 exactly. So the
+character-identical check passed *on the wrong pair*, and the
+rendered-strings check could not see it because both strings legitimately
+come from D1.
+
+This is migration 522's lesson in a form it had not taken: not "an UPDATE
+that should have been an INSERT", but a **key collision**, where the insert
+was correct and the key was already spoken for. The label is now
+`chart.procureBar`, and **the i18n suite fails on any key used twice with
+different English**.
+
+### And a SQL gotcha, caught by the assertion mechanism
+
+The first draft asserted `key LIKE 'chart.procure_%' = 0`. Underscore is a
+single-character wildcard in SQL `LIKE`, so it matched `chart.procureBar` —
+the row the same file adds — and the migration failed against its own new
+key. Rewritten as an explicit `IN` list.
+
+### Verified
+
+`npm test`: 9 suites, all passing. ROI regression **175 checks**. The
+gantt's programme bar reads "Select & contract" again.
+
+
 ## Open items / next steps
 
 ### Where things stand — 15 August 2026

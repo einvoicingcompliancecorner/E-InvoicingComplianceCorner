@@ -30,6 +30,7 @@ const t = suite("ROI i18n");
 const SRC = join(REPO, "shared", "roi-render.mjs");
 
 /** Every t()/tj() call site: key -> the English fallback beside it. */
+const clashes = [];
 function callSites() {
   const src = readFileSync(SRC, "utf8");
   const pat = /\bt(j?)\("([a-zA-Z0-9._]+)",\s*"/g;
@@ -42,7 +43,16 @@ function callSites() {
       if (src[i] === '"') break;
       buf += src[i]; i++;
     }
-    out.set(m[2], buf.replace(/\\"/g, '"').replace(/\\\\/g, "\\"));
+    const value = buf.replace(/\\"/g, '"').replace(/\\\\/g, "\\");
+    // TWO CALL SITES, ONE KEY, DIFFERENT ENGLISH is how migration 551
+    // shipped a chart label reading "Procurement is your critical path,
+    // not delivery." Its INSERT OR IGNORE declined against a key that
+    // already existed, and this map silently kept whichever fallback came
+    // last — which happened to match D1, so the character-identical check
+    // passed while the page rendered the wrong sentence. Collisions are
+    // now recorded rather than overwritten.
+    if (out.has(m[2]) && out.get(m[2]) !== value) clashes.push(m[2]);
+    out.set(m[2], value);
   }
   return out;
 }
@@ -51,6 +61,10 @@ const db = await openReplayDb();
 try {
   const sites = callSites();
   t.check(`the renderer asks for a real number of strings (${sites.size})`, sites.size >= 85, sites.size);
+  t.check("no key is used twice with different English",
+    clashes.length === 0,
+    clashes.length ? `${[...new Set(clashes)].join(", ")}\n    One key cannot hold two strings: D1 stores one value and both `
+      + `sites render it.` : "");
 
   const rows = await db.query("SELECT key, value FROM translations WHERE namespace = 'roi' AND lang = 'en'");
   const d1 = new Map(rows.map((r) => [r.key, r.value]));
@@ -100,7 +114,7 @@ try {
     ["a savings column heading", "Saved on this scope"],
     ["a row tag, newly translatable", "not saved"],
     ["a runtime stat label", "With a dated deadline ahead"],
-    ["a runtime note", "Everything priced here is tangible"],
+    ["a notes-panel card", "Headcount restates, it does not add"],
     ["an evidence card", "credible body, unattributed"],
     ["the footer", "not tax, legal or investment advice"],
   ];
