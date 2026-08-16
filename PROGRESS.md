@@ -12786,3 +12786,105 @@ checked at 1440, 1100, 900, 860, 700 and 420px with no overflow.
 
 **Deploy note: 557's comments were edited, so the runner needs
 `--refresh-checksums`.** No executable change; replay is byte-identical.
+
+
+## 16 August 2026 (cont'd) — The assumptions panel, tidied (migration 563)
+
+Dan: *"the text under each field in section 'Assumptions and benchmarks'
+can be removed, and should be a feature of the tooltip help. Also, can you
+tidy up the sections, so they appear as three individual columns."* Then,
+on review: move Investment to the left, and rename UAT.
+
+Mocked as the working page first. **Four of the five findings below came
+from looking at that page rather than from a check.**
+
+### The hint line was half redundant, and half load-bearing
+
+Each field carried a source line underneath — *"Ardent Partners market
+average, 2025 data"*. Migration 562 had rewritten every tooltip to end
+with its source and grade four days earlier, so the tooltip read *"…Ardent
+Partners market average, 2025 data (grade A)."*
+
+**Word for word the same sentence, twice, four lines apart.** 562 created
+that and nobody noticed, because the two live in different places — the
+hint in the benchmark's `hint` column, the tooltip in a `help.%` row.
+Nothing renders both together except the page.
+
+The other half was live state. `markOverridden()` rewrote the hint to
+*"Your value. Default 9.84 — …"* the moment a reader typed, and that was
+**the only place on the page showing what a figure used to be**, on the
+one panel whose entire purpose is overriding figures. Deleting the line
+and stopping there would have removed it silently — the same shape as
+562's `needsYou` early return.
+
+So the tooltip gained a last line, filled by the function that used to
+fill the hint. Rendered as an empty span and populated by script, because
+`DEFAULTS[id].v` is rewritten on every currency switch: a server-rendered
+"Default 9.84" would be a lie in sterling within one click. Verified in
+GBP — it reads 7.28.
+
+One hint wasn't a citation at all: the platform fee's is computed by
+`recalcPlat()` from live volumes. It follows the default into the tooltip
+rather than being lost with the rest.
+
+### The phase tooltips were invisible to 562, for the third time
+
+The seven implementation-week tooltips come from `roi_phases.note`,
+reached through the `PHASE_INPUT` map rather than by name — so 562's
+rewrite and its 320-character invariant never touched them. Four of seven
+were over budget. The panel had half its tooltips cut to one shape and
+half left as essays, which is worse than either.
+
+**Same blind spot that hid the four "dead" phases from the 545 sweep and
+the eight missing help rows from the i18n suite.** A thing reached through
+a map is invisible to anything that looks for names. Third occurrence. The
+budget invariant now covers both tables.
+
+### A duplicate-ID bug the mock caught
+
+The new tooltip line was first given an `id`. But `help.cPlat` is
+deliberately rendered twice — on the input and on the executive summary's
+running-cost line, which migration 542 chose over minting a near-duplicate
+help row. So `cPlat` and `cRun` rendered **two elements with the same id**,
+and `getElementById` would have filled the first and left the summary's
+copy blank. Same one-key-two-sites shape that shipped the wrong gantt label
+in 551. Caught because the page had 24 meta spans for 22 fields; now a
+`data-tm` attribute, and both copies update.
+
+### And two smaller catches
+
+The contrast auditor rejected the new line at **1.19:1** — the tooltip
+surface is cream, not the page's navy, and the colour had been chosen for
+the wrong background. Third time it has caught exactly that.
+
+The hardcoded-strings suite rejected *"Our default is X."* as English in
+the renderer — which would have been the first hardcoded string on this
+page since the count reached zero on 15 August. Both states are now D1
+rows.
+
+### Layout
+
+Three columns above 1000px, one below. **Investment leads**, at Dan's
+direction: it is the only column carrying a warning, all four of its
+figures are placeholders, and it had been sitting in the middle where a
+reader reached it after seven benchmark fields needing no attention at all.
+Panel height 990px → 747px.
+
+### UAT & cutover
+
+Renamed in **both** tables — `input.wUat` labels the panel field,
+`roi_phases` labels the chart bar and the PDF. Changing one would have left
+them disagreeing.
+
+The first draft was *"UAT & go-live"*, which put it directly beside the
+wave chart's existing **"Go-live"** legend key: two adjacent entries
+differing only in length, naming a phase you staff and a diamond marking a
+date the regulator set. Only visible by rendering the chart and reading the
+legend. Dan chose "cutover", which is also the more accurate word — it is
+the work of going live, where go-live is the moment.
+
+### Verified
+
+`npm test`: 9 suites, all passing. ROI regression **199 checks**. Replay OK
+across 563 files — **282 assertions, 67 standing invariants**. Panel checked
+at 1440, 1200, 1000, 900, 700 and 420px with no overflow.

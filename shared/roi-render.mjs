@@ -380,6 +380,20 @@ input:focus,select:focus{outline:2px solid var(--soon);outline-offset:1px}
    the card past 1,100px, which is not 'using the space', it is
    losing the scroll. */
 .cbox,.cbox *{text-transform:none;font-family:'IBM Plex Sans',system-ui,sans-serif;letter-spacing:0}
+/* The assumptions panel as three groups side by side rather than three
+   stacked full-width grids. One column below 1000px: three columns of
+   form fields on a phone is a scroll trap, and this panel is opt-in
+   anyway. align-items:start so a short column does not stretch. */
+.acols{display:grid;gap:26px;align-items:start}
+@media(min-width:1000px){.acols{grid-template-columns:repeat(3,1fr)}}
+.acol{display:flex;flex-direction:column;gap:12px;min-width:0}
+.acol > p{margin:0}
+/* The tip surface is --paper, a light cream, NOT the page's navy. The
+   first cut used the panel's light grey here and scored 1.19:1 --
+   caught by the contrast auditor, which is the third time it has
+   caught a colour chosen for the wrong surface. #5f5540 is the tone
+   already used for secondary text on paper elsewhere. */
+.tipmeta{display:block;margin-top:7px;padding-top:6px;border-top:1px solid var(--paper-line);color:#5f5540}
 .needsyou > input,.needsyou > select{box-shadow:inset 3px 0 0 var(--soon)}
 .needsyou.done > input,.needsyou.done > select{box-shadow:inset 3px 0 0 var(--live)}
 button{font:inherit;cursor:pointer;border-radius:6px;border:1px solid var(--line);background:var(--ink-3);color:var(--text-lo);padding:10px 16px}
@@ -805,8 +819,36 @@ export function renderRoiPage({ countries, benchmarks = [], phases = [], strings
     .replace(/\\/g, "\\\\").replace(/`/g, "\\`").replace(/\$\{/g, "\\${");
 
   const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  // Dan, 16 Aug 2026: "the text under each field in Assumptions and
+  // benchmarks can be removed, and should be a feature of the tooltip
+  // help."
+  //
+  // The hint line was carrying two things. The SOURCE shorthand ("Ardent
+  // Partners market average, 2025 data") was already duplicated word for
+  // word by the tooltip's third clause after migration 562 -- removing it
+  // loses nothing. The other was live state: markOverridden() rewrote it
+  // to "Your value. Default 9.84 -- ..." the moment a reader typed.
+  //
+  // THAT SECOND PART IS NOT DUPLICATED ANYWHERE, and deleting the line
+  // without replacing it would take away the only way to see what a
+  // figure used to be, on the one panel whose entire purpose is
+  // overriding figures. So the tooltip gets a slot for it, filled by the
+  // same function that used to fill the hint. Rendered as an empty span
+  // rather than as text, because the value has to survive a currency
+  // switch -- DEFAULTS[id].v is rewritten on every switch, and a
+  // server-rendered "Default 9.84" would be a lie in sterling.
   const hlp = (id, title = t("tip.derived","How this is derived")) => (helpText[id]
-    ? `<span class="hlp" tabindex="0" role="note" aria-label="${esc(title)}: ${esc(helpText[id])}">?<span class="tip"><b>${esc(title)}</b>${esc(helpText[id])}</span></span>`
+    ? `<span class="hlp" tabindex="0" role="note" aria-label="${esc(title)}: ${esc(helpText[id])}">?<span class="tip"><b>${esc(title)}</b>${esc(helpText[id])}`
+      // DATA ATTRIBUTE, NOT AN ID. hlp() is deliberately reused: migration
+      // 542 put help.cPlat on the executive summary's running-cost line as
+      // well as on the input, rather than minting a near-duplicate help
+      // row. An id here therefore rendered TWICE for cPlat and cRun, and
+      // getElementById would have filled the first and left the summary's
+      // copy blank. Same one-key-two-sites shape that shipped the wrong
+      // gantt label in 551 -- caught this time by the rendered page having
+      // 24 meta spans for 22 fields.
+      + (defaults[id] ? `<span class="tipmeta" data-tm="${id}"></span>` : "")
+      + `</span></span>`
     : "");
 
   const cite = (k) => {
@@ -971,47 +1013,56 @@ export function renderRoiPage({ countries, benchmarks = [], phases = [], strings
          static warning is furniture and a shrinking one is progress. -->
     <p class="note" style="margin-bottom:14px">${t("assumptions.grades", "Each figure shows where it came from. <span class=\"tag tA\">A</span> measured and primary &middot; <span class=\"tag tB\">B</span> credible body, unattributed &middot; <span class=\"tag tD\">D</span> our estimate. Overriding a value with your own always beats our default &mdash; that is what this panel is for.")} <button type="button" id="resetDefaults" style="padding:3px 9px;font-size:12px;margin-left:6px">${t("btn.reset", "Reset all to defaults")}</button></p>
 
-    <p style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:var(--soon);margin:0 0 8px">${t("assumptions.h.cost", "Cost &amp; benefit")}</p>
-    <div class="grid g4">
-      <div><label for="costNow">${t("input.costNow", "AP cost per invoice")} <span class="tag tA">A</span>${hlp("costNow",t("tip.drives","What this drives"))}</label><input type="number" id="costNow" value="${dv('costNow')}" min="0" step="0.01"><p class="hint" id="h-costNow"></p></div>
-      <div><label for="costAR">${t("input.costAR", "AR cost per invoice")} <span class="tag tA">A</span>${hlp("costAR",t("tip.drives","What this drives"))}</label><input type="number" id="costAR" value="${dv('costAR')}" min="0" step="0.01"><p class="hint" id="h-costAR"></p></div>
-      <div><label for="savePct">${t("input.savePct", "Cost reduction %")} <span class="tag tB">B</span>${hlp("savePct",t("tip.drives","What this drives"))}</label><input type="number" id="savePct" value="${dv('savePct')}" min="0" max="95"><p class="hint" id="h-savePct"></p></div>
-    </div>
-    <div class="grid g4" style="margin-top:12px">
-      <div><label for="errRate">${t("input.errRate", "Manual error rate %")} <span class="tag tB">B</span>${hlp("errRate",t("tip.drives","What this drives"))}</label><input type="number" id="errRate" value="${dv('errRate')}" min="0" max="100" step="0.5"><p class="hint" id="h-errRate"></p></div>
-      <div><label for="fteCost">${t("input.fteCost", "Loaded cost / tax or finance FTE")} <span class="tag tB">B</span>${hlp("fteCost",t("tip.drives","What this drives"))}</label><input type="number" id="fteCost" value="${dv('fteCost')}" min="0" step="1000"><p class="hint" id="h-fteCost"></p></div>
-      <div><label for="fteEntry">${t("input.fteEntry", "Loaded cost / data-entry FTE")} <span class="tag tB">B</span>${hlp("fteEntry",t("tip.drives","What this drives"))}</label><input type="number" id="fteEntry" value="${dv('fteEntry')}" min="0" step="1000"><p class="hint" id="h-fteEntry"></p></div>
-      <div><label for="errElim">${t("input.errElim", "Errors eliminated %")} <span class="tag tD">D</span>${hlp("errElim",t("tip.drives","What this drives"))}</label><input type="number" id="errElim" value="${dv('errElim')}" min="0" max="100" step="1"><p class="hint" id="h-errElim"></p></div>
+    <!-- Dan, 16 Aug 2026: "can you tidy up the sections, so they appear
+         as three individual columns, for cost & benefit,
+         investment-costs, and implementation - weeks."
+         Three groups that were three stacked full-width grids, so a
+         reader scrolled past all of Cost & benefit to reach a phase
+         duration. Side by side the panel is one screen and the
+         grouping does the work the headings were doing alone.
+         The per-field hint lines are gone in the same change, which
+         is what makes the columns fit.
+
+         INVESTMENT LEADS, at Dan's direction. It is the only column
+         carrying a warning -- all four figures are placeholders -- and
+         it was sitting in the middle where a reader arrives at it after
+         seven benchmark fields that need no attention at all. The four
+         numbers most likely to be wrong now come first. -->
+    <div class="acols">
+    <div class="acol">
+      <p style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:var(--soon);margin:0 0 10px">${t("assumptions.h.invest", "Investment &mdash; costs")} <span class="tag tD">D</span></p>
+      <p class="hint" style="margin:-4px 0 4px;color:#e0907f">${t("assumptions.placeholders", "These figures are <strong>placeholders only</strong>. Please replace with vendor budgetary estimates and treat the ROI as illustrative, until actuals can be provided.")}</p>
+      <div class="needsyou"><label for="cImplS" style="font-size:11px">${t("input.cImplS", "Cost per SIMPLE integration")}${hlp("cImplS",t("tip.drives","What this drives"))}</label><input type="number" id="cImplS" value="${dv('cImplS')}" min="0" step="1000"></div>
+      <div class="needsyou"><label for="cImplC" style="font-size:11px">${t("input.cImplC", "Cost per COMPLEX integration")}${hlp("cImplC",t("tip.drives","What this drives"))}</label><input type="number" id="cImplC" value="${dv('cImplC')}" min="0" step="1000"></div>
+      <div class="needsyou"><label for="cPlat" style="font-size:11px">${t("input.cPlat", "Platform / network fees per year")}${hlp("cPlat",t("tip.drives","What this drives"))}</label><input type="number" id="cPlat" value="${dv('cPlat')}" min="0" step="1000"></div>
+      <div class="needsyou"><label for="cRun" style="font-size:11px">${t("input.cRun", "Internal run cost per year")}${hlp("cRun",t("tip.drives","What this drives"))}</label><input type="number" id="cRun" value="${dv('cRun')}" min="0" step="1000"></div>
     </div>
 
-    <p style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:var(--soon);margin:20px 0 8px">${t("assumptions.h.invest", "Investment &mdash; costs")} <span class="tag tD">D</span></p>
-    <p class="hint" style="margin:-4px 0 8px;color:#e0907f">${t("assumptions.placeholders", "These figures are <strong>placeholders only</strong>. Please replace with vendor budgetary estimates and treat the ROI as illustrative, until actuals can be provided.")}</p>
-    <div class="grid g4">
-      <div class="needsyou"><label for="cImplS" style="font-size:11px">${t("input.cImplS", "Cost per SIMPLE integration")}${hlp("cImplS",t("tip.drives","What this drives"))}</label><input type="number" id="cImplS" value="${dv('cImplS')}" min="0" step="1000"><p class="hint" id="h-cImplS"></p></div>
-      <div class="needsyou"><label for="cImplC" style="font-size:11px">${t("input.cImplC", "Cost per COMPLEX integration")}${hlp("cImplC",t("tip.drives","What this drives"))}</label><input type="number" id="cImplC" value="${dv('cImplC')}" min="0" step="1000"><p class="hint" id="h-cImplC"></p></div>
-      <div class="needsyou"><label for="cPlat" style="font-size:11px">${t("input.cPlat", "Platform / network fees per year")}${hlp("cPlat",t("tip.drives","What this drives"))}</label><input type="number" id="cPlat" value="${dv('cPlat')}" min="0" step="1000"><p class="hint" id="h-cPlat"></p></div>
-      <div class="needsyou"><label for="cRun" style="font-size:11px">${t("input.cRun", "Internal run cost per year")}${hlp("cRun",t("tip.drives","What this drives"))}</label><input type="number" id="cRun" value="${dv('cRun')}" min="0" step="1000"><p class="hint" id="h-cRun"></p></div>
-      <div></div>
+    <div class="acol">
+      <p style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:var(--soon);margin:0 0 10px">${t("assumptions.h.cost", "Cost &amp; benefit")}</p>
+      <div><label for="costNow">${t("input.costNow", "AP cost per invoice")} <span class="tag tA">A</span>${hlp("costNow",t("tip.drives","What this drives"))}</label><input type="number" id="costNow" value="${dv('costNow')}" min="0" step="0.01"></div>
+      <div><label for="costAR">${t("input.costAR", "AR cost per invoice")} <span class="tag tA">A</span>${hlp("costAR",t("tip.drives","What this drives"))}</label><input type="number" id="costAR" value="${dv('costAR')}" min="0" step="0.01"></div>
+      <div><label for="savePct">${t("input.savePct", "Cost reduction %")} <span class="tag tB">B</span>${hlp("savePct",t("tip.drives","What this drives"))}</label><input type="number" id="savePct" value="${dv('savePct')}" min="0" max="95"></div>
+      <div><label for="errRate">${t("input.errRate", "Manual error rate %")} <span class="tag tB">B</span>${hlp("errRate",t("tip.drives","What this drives"))}</label><input type="number" id="errRate" value="${dv('errRate')}" min="0" max="100" step="0.5"></div>
+      <div><label for="fteCost" style="font-size:11px">${t("input.fteCost", "Loaded cost / tax or finance FTE")} <span class="tag tB">B</span>${hlp("fteCost",t("tip.drives","What this drives"))}</label><input type="number" id="fteCost" value="${dv('fteCost')}" min="0" step="1000"></div>
+      <div><label for="fteEntry" style="font-size:11px">${t("input.fteEntry", "Loaded cost / data-entry FTE")} <span class="tag tB">B</span>${hlp("fteEntry",t("tip.drives","What this drives"))}</label><input type="number" id="fteEntry" value="${dv('fteEntry')}" min="0" step="1000"></div>
+      <div><label for="errElim">${t("input.errElim", "Errors eliminated %")} <span class="tag tD">D</span>${hlp("errElim",t("tip.drives","What this drives"))}</label><input type="number" id="errElim" value="${dv('errElim')}" min="0" max="100" step="1"></div>
     </div>
 
-    <p style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:var(--soon);margin:20px 0 8px">${t("assumptions.h.weeks", "Implementation &mdash; weeks")} <span class="tag tD">D</span></p>
-    <div class="grid g4">
+    <div class="acol">
+      <p style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:var(--soon);margin:0 0 10px">${t("assumptions.h.weeks", "Implementation &mdash; weeks")} <span class="tag tD">D</span></p>
       <div><label for="wMob" style="font-size:11px">${t("input.wMob", "Mobilisation")}${hlp("wMob",t("tip.phase","What this phase covers"))}</label><input type="number" id="wMob" value="${dv('wMob')}" min="0" step="0.5"></div>
       <div><label for="wDes" style="font-size:11px">${t("input.wDes", "Design")}${hlp("wDes",t("tip.phase","What this phase covers"))}</label><input type="number" id="wDes" value="${dv('wDes')}" min="0" step="0.5"></div>
       <div><label for="wBld" style="font-size:11px">${t("input.wBld", "Build")}${hlp("wBld",t("tip.phase","What this phase covers"))}</label><input type="number" id="wBld" value="${dv('wBld')}" min="0" step="0.5"></div>
-      <div><label for="wUat" style="font-size:11px">${t("input.wUat", "UAT")}${hlp("wUat",t("tip.phase","What this phase covers"))}</label><input type="number" id="wUat" value="${dv('wUat')}" min="0" step="0.5"></div>
-    </div>
-    <div class="grid g4" style="margin-top:12px" id="chgRow">
-      <div><label for="wChg" style="font-size:11px">${t("input.wChg", "Process change &amp; training")}${hlp("wChg",t("tip.phase","What this phase covers"))}</label><input type="number" id="wChg" value="${dv('wChg')}" min="0" step="0.5"><p class="hint">${t("input.wChg.hint", "AP automation scope only.")}</p></div>
-      <div></div><div></div><div></div>
-    </div>
-    <div class="grid g4" style="margin-top:12px">
+      <div><label for="wUat" style="font-size:11px">${t("input.wUat", "UAT &amp; cutover")}${hlp("wUat",t("tip.phase","What this phase covers"))}</label><input type="number" id="wUat" value="${dv('wUat')}" min="0" step="0.5"></div>
+      <div id="chgRow"><label for="wChg" style="font-size:11px">${t("input.wChg", "Process change &amp; training")}${hlp("wChg",t("tip.phase","What this phase covers"))}</label><input type="number" id="wChg" value="${dv('wChg')}" min="0" step="0.5"></div>
       <div><label for="wVen" style="font-size:11px">${t("input.wVen", "Vendor selection (once)")}${hlp("wVen",t("tip.once","What “once” means here"))}</label><input type="number" id="wVen" value="${dv('wVen')}" min="0" step="1"></div>
       <div><label for="wCon" style="font-size:11px">${t("input.wCon", "Contracting (once)")}${hlp("wCon",t("tip.once","What “once” means here"))}</label><input type="number" id="wCon" value="${dv('wCon')}" min="0" step="1"></div>
       <div><label for="lanes" style="font-size:11px">${t("input.lanes", "Parallel workstreams")}${hlp("lanes",t("tip.means","What this means"))}</label><input type="number" id="lanes" value="${dv('lanes')}" min="1" max="10"></div>
       <div><label for="pace" style="font-size:11px">${t("input.pace", "Delivery pace")}${hlp("pace",t("tip.means","What this means"))}</label><select id="pace">${[["0.75",t("pace.aggressive","Aggressive")],["1",t("pace.typical","Typical")],["1.3",t("pace.conservative","Conservative")]].map(([v,n])=>`<option value="${v}"${String(dv('pace'))===v?" selected":""}>${n}</option>`).join("")}</select></div>
+      <p class="hint" style="margin-top:4px">${t("assumptions.durations", "Durations are per country. Countries sharing a go-live date form a wave, so a five-country wave costs roughly five country-tracks of effort, divided across however many workstreams you can genuinely run at once.")}</p>
     </div>
-    <p class="hint" style="margin-top:10px">${t("assumptions.durations", "Durations are per country. Countries sharing a go-live date form a wave, so a five-country wave costs roughly five country-tracks of effort, divided across however many workstreams you can genuinely run at once.")}</p>
+    </div>
   </div>
 </details>
 
@@ -1363,6 +1414,22 @@ function markOverridden(){
     // say the same. Cleared rather than left unset, because a value
     // typed before this ran would keep the inline style forever.
     el.style.borderColor = '';
+    // Was the hint under the field; now the last line of the tooltip.
+    // Both states still render, because "what was this before I changed
+    // it" is the question the assumptions panel exists to answer.
+    const metas = document.querySelectorAll('[data-tm="'+id+'"]');
+    metas.forEach(meta => {
+      // MOST hints were the benchmark's source shorthand, which migration
+      // 562 had already duplicated into the tooltip -- those are simply
+      // dropped. ONE is not: the platform fee's hint is rebuilt by
+      // recalcPlat() from live volumes and the per-invoice rate, so it is
+      // the only hint on the page that says something the tooltip does
+      // not. It follows the default rather than being lost with the rest.
+      const extra = d.derived && d.h ? ' ' + d.h : '';
+      meta.innerHTML = (changed
+        ? \`<span style="color:#8a6524"><strong>${tj("tip.yourValue","Your value.")}</strong></span> \`
+        : '') + fill('${tj("tip.ourDefault","Our default is {0}.")}', d.v) + extra;
+    });
     const hint = document.getElementById('h-'+id);
     if(hint && d.h) hint.innerHTML = changed
       ? \`<span style="color:#e2b978">Your value.</span> Default \${d.v} &mdash; \${d.h}\`
@@ -1507,6 +1574,7 @@ function recalcPlat(){
   const r = rateOf(cur);
   usdDefault.cPlat = Math.round(PLAT.fee * vol);
   DEFAULTS.cPlat.v = roundCur(usdDefault.cPlat / r);
+  DEFAULTS.cPlat.derived = true;   // its hint is computed, not a citation
   DEFAULTS.cPlat.h = PLAT.tpl
     .replace('{vol}', vol.toLocaleString('en-US'))
     .replace('{fee}', SYM[cur] + (PLAT.fee / r).toFixed(2));
