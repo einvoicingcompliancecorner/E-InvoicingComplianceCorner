@@ -12552,3 +12552,125 @@ asserted `.includes("603,931")`, a literal that broke on every legitimate
 change to any priced row — three times in a fortnight. It now derives the
 figure from the two totals. A baseline you re-type each time it goes red is
 not a check, it is a chore that teaches you to silence it.
+
+
+## 16 August 2026 (cont'd) — Two recommendations rejected while being built (migrations 560-561)
+
+Dan asked for all three remaining items from the cost-reduction evidence
+review. **One was built as described. Two did not survive contact with
+their own sources**, and what replaced them is more useful than what was
+asked for.
+
+### 560 — the reduction range gets its first independent support
+
+The proposal was to re-ground the AP baseline on the ATO's channel costs
+instead of Ardent's blend: channel-specific, so no decomposition, so
+`market_einvoice_share` could retire. Structurally clean and genuinely
+attractive.
+
+**Reading the primary source killed it.** The swap trades:
+
+```
+                    Ardent                 ATO / Deloitte
+vintage             2025 data              2016 estimates
+geography           US market              Australia
+sample              204 professionals      none published
+currency            USD, page-native       AUD, no rate on the page
+primary obtainable  yes, free              no
+grade               A                      B at best
+```
+
+The AP manual cost would have fallen from $14.23 to roughly $11–12 —
+cutting the headline for a reason that is **evidence quality going down**.
+A model that gets quieter every time you improve it is fine; one that gets
+quieter because you swapped in a weaker source is not the same thing, and
+afterwards nothing distinguishes them. Dan's call from three options: the
+ATO corroborates, Ardent stays.
+
+**What the ATO does give us is better than what it was asked for.** Its
+channel costs — paper AUD 30.87, PDF 27.67, eInvoice 9.18 — imply a
+**70.3% and 66.8% reduction**. Those ratios are scale-free, so neither the
+currency nor the sender/receiver split touches them, and both land inside
+HMRC's 60–80%. Until today every source for that range was either
+unattributed (HMRC names no study) or describing a different programme
+(Ardent's is full AP automation). **Two unrelated sources, two methods,
+one answer.** The default stays at 60% — the floor of a corroborated range
+beats the middle of an uncorroborated one — with a standing invariant
+stopping it drifting up on the strength of the new evidence.
+
+**And a citation that misdescribed its own source.** `ar_cost_per_invoice`
+had been graded B since migration 505 because "the split to an AR-only
+figure is *our derivation*, not the ATO's published number". The ATO
+publishes the split — 40% AR, 60% AP — three sentences below the costs.
+The grade was right; the stated reason had never been true. Being a
+*caveat* rather than a claim, **it made the page look more careful than it
+was**, and anyone finding the split sentence would reasonably have
+promoted a 2016 unsampled estimate to grade A. Reason corrected, letter
+kept.
+
+### 561 — the compliance-only share shows its working
+
+The proposal: stop compounding two ratios (60% reduction × 42.86% capture
+share = 25.71%) and derive the figure directly from the task split. The
+objection to compounding is real — two independently sourced ratios carry
+both their uncertainties and the product is a number nobody published.
+
+**The direct derivation assumes cost is proportional to touch time, and
+the ATO's own numbers say it is not.** Take its AP-side costs using the
+published 60/40 split: paper AUD 18.52, eInvoice AUD 5.51. Now suppose
+review and approval survive the format change — they are business
+decisions, which is why the model excludes them. At 12 of 21 minutes,
+proportional costing puts them at AUD 10.58 in the paper case. **The
+entire e-invoice AP cost is AUD 5.51.** The surviving tasks alone would
+cost twice the whole process.
+
+So the assumption is false, and it fails in the direction that would have
+made the page claim *more* — the direct route gives 42.86%, two thirds
+above today.
+
+**The finding is the spread.** Three defensible methods, same quantity:
+
+```
+compounded, what the page does           25.71%
+capture's share of touch time            42.86%
+the ATO's whole paper-to-eInvoice gap    70.26%
+```
+
+Nearly threefold, and the page had been presenting the lowest as if it
+were the answer — behind a tag reading "43% SAVED" that was explained
+nowhere on a page whose entire proposition is that its numbers are
+explained. **The conservative figure is unchanged.** What changed is that
+the row now states its derivation, the evidence panel carries the bracket,
+and an invariant requires all three figures to stay together — naming only
+the one the page uses would restore the exact state this fixed while
+looking like a citation.
+
+### An assertion too blunt to be useful
+
+560's first draft asserted the AR citation must not contain "our
+derivation". It failed against its own text: the new citation *quotes* the
+old claim in order to correct it. An assertion that cannot tell a claim
+from a description of a retracted claim is too blunt. Retargeted at the
+old sentence. The replay caught it immediately — the mechanism working on
+the person writing the mechanism.
+
+### Verified
+
+`npm test`: 9 suites, all passing. ROI regression **200 checks** (was 193).
+Replay OK across 561 files — **265 assertions, 61 standing invariants**.
+
+### Design review refreshed to 561
+
+Two new cards. **Behaviour bound to layout** — the first defect here that
+lived in the wiring rather than the data or the copy, and worth auditing
+the other Workers for. And the **elapsed-versus-effort near-miss**, which
+completes a pattern: *a real citation, correctly quoted, measuring a
+different quantity from the one the model needs*, twice in three days,
+once shipped and once caught. Both times the wrong number was the
+better-provenanced one.
+
+The prose-rot card also gained its first mechanical detector, and the
+generalisation behind it: **prose rots when it describes the layout rather
+than the fact.** Every instance this project has hit — "below", "of 4 cost
+inputs", "(compliance scope)" — encoded something structural that later
+moved. Sentences stating only facts have not rotted once.

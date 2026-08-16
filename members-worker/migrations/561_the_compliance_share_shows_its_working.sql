@@ -1,0 +1,109 @@
+-- ================================================================
+-- The compliance-only share stops being an unexplained 43% on a tag.
+--
+-- Scoped as "derive the compliance-only saving directly from the task
+-- split rather than compounding two ratios". THE DIRECT DERIVATION DOES
+-- NOT SURVIVE ITS OWN SOURCE, and what replaced it is more useful than
+-- what was asked for -- so the reasoning is set out at length rather
+-- than the change being made quietly.
+--
+-- ---- WHAT THE PAGE DOES TODAY ---------------------------------------
+--
+--     bankedAP = saving x capture_share_of_ap
+--              = (manual cost x 60% x (1 - eShare)) x 42.86%
+--
+-- Two ratios multiplied: HMRC's reduction and the ATO's capture share of
+-- AP touch time (receipt 7 + validation 2 of 21 minutes). Effective
+-- share of the manual cost: 25.71%.
+--
+-- The objection to compounding is real. Two independently sourced
+-- ratios multiplied carry both their uncertainties, and the product is
+-- a number no source has ever published.
+--
+-- ---- WHY THE OBVIOUS FIX IS WORSE -----------------------------------
+--
+-- The direct derivation says: compliance removes receipt and validation,
+-- which are 9 of 21 minutes, so it removes 42.86% of AP cost. That is
+-- one ratio instead of two, and it would raise the compliance-only
+-- figure by two thirds.
+--
+-- IT ASSUMES COST IS PROPORTIONAL TO TOUCH TIME, AND THE ATO'S OWN
+-- NUMBERS SAY IT IS NOT. Take the ATO's channel costs on the AP side
+-- using its published 60/40 split:
+--
+--     paper, AP side        AUD 18.52
+--     eInvoice, AP side     AUD  5.51
+--
+-- Now suppose review and approval survive the format change untouched --
+-- they are business decisions, which is exactly why this model excludes
+-- them. At 12 of 21 minutes, proportional costing puts them at AUD 10.58
+-- in the paper case. THE ENTIRE E-INVOICE AP COST IS AUD 5.51. The
+-- surviving tasks alone would cost twice what the whole e-invoice
+-- process costs.
+--
+-- So one of the two must be false: either cost is not proportional to
+-- touch time (it is not -- the ATO's figure includes exceptions and
+-- overhead, and its own text says most of the paper premium is manual
+-- entry and exception handling), or review and approval get cheaper too
+-- when the data arrives structured and matched. Both are probably true.
+-- Either way, the proportional derivation is unsound, and it fails in
+-- the direction that would have made the page claim MORE.
+--
+-- ---- THE THREE READINGS, WHICH BRACKET RATHER THAN AGREE ------------
+--
+-- Compliance-only saving, as a share of the manual AP cost:
+--
+--     compounded, what the page does          25.71%
+--     capture's share of touch time           42.86%
+--     the ATO's whole paper-to-eInvoice gap   70.26%
+--
+-- Three defensible methods spanning nearly threefold. That spread IS
+-- the finding. The page has been presenting the lowest of the three as
+-- if it were the answer, with no indication that the others exist.
+--
+-- Nothing here picks a different one. 25.71% stays, because a business
+-- case that quietly triples its own most contested figure on the
+-- strength of an internal re-derivation is precisely what this page
+-- exists not to be, and because the conservative reading is the one a
+-- reader can defend in a room. What changes is that the page now SHOWS
+-- the derivation and NAMES the bracket, so a reader who wants to argue
+-- for a higher figure has the argument in front of them rather than
+-- having to reconstruct it.
+--
+-- ---- WHAT THE READER SEES ------------------------------------------
+--
+-- Before: a tag reading "43% SAVED" next to a row, and nothing anywhere
+-- saying what 43% is, where it comes from, or why the other 57% is not
+-- counted. The single least explained number on a page whose entire
+-- proposition is that its numbers are explained.
+--
+-- After: the row states it -- capture and validation are 9 of the 21
+-- minutes of AP handling, so compliance alone is credited with that
+-- share of the reduction -- and the evidence panel carries the bracket.
+-- ================================================================
+
+INSERT OR IGNORE INTO translations (namespace, key, lang, value) VALUES
+  ('roi', 'basis.apScope', 'en', 'Compliance alone is credited with {0}% of that {1} &mdash; capture and validation are 9 of the 21 minutes of AP handling, and review and approval are business decisions that no invoice format removes.'),
+  ('roi', 'ev.taskSplit', 'en', 'the task split'),
+  ('roi', 'notes.bracket.h', 'en', 'How conservative is the compliance-only figure?'),
+  ('roi', 'notes.bracket', 'en', 'Three defensible methods give three answers for what a compliance-only programme saves, as a share of the manual AP cost: <strong>25.7%</strong> by the route this page takes, <strong>42.9%</strong> if you credit capture with its full share of handling time, and <strong>70.3%</strong> if you read the ATO&rsquo;s paper-to-eInvoice gap as capture and exception work throughout. The page takes the lowest. The spread is roughly threefold, so if this business case is marginal on the compliance scope, the honest conclusion is that it may be understated rather than that it fails.');
+
+-- ---- what this migration claims it did (see apply_migrations.py) ----
+-- ASSERT: SELECT count(*) FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key IN ('basis.apScope','ev.taskSplit','notes.bracket.h','notes.bracket') = 4
+-- ASSERT: SELECT count(*) FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key = 'basis.apScope' AND value LIKE '%9 of the 21 minutes%' = 1
+-- ASSERT: SELECT default_value FROM roi_benchmarks WHERE key = 'capture_share_of_ap' = 0.4286
+--
+-- The bracket must keep all three figures. Naming only the number the
+-- page uses would restore exactly the state this migration exists to
+-- fix, while looking like a citation; naming only the high one would
+-- turn a caveat into a sales argument. The value of the note is that a
+-- reader sees the range and can see which end was chosen.
+--
+-- ASSERT ALWAYS: SELECT count(*) FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key = 'notes.bracket' AND value LIKE '%25.7%' AND value LIKE '%42.9%' AND value LIKE '%70.3%' = 1
+--
+-- And the page must keep taking the lowest of the three. This is the
+-- one figure on the page with a documented argument for tripling it
+-- sitting in its own tooltip, which makes it the single most likely
+-- number here to drift upward by a well-meaning edit.
+--
+-- ASSERT ALWAYS: SELECT count(*) FROM roi_benchmarks WHERE key = 'capture_share_of_ap' AND default_value <= 0.4286 = 1

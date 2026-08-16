@@ -1485,5 +1485,41 @@ const cleared = await page.evaluate(() =>
 t.check(`and every field's own mark retires with it (${cleared} of 6)`,
   cleared === 6, cleared);
 
+// ---- 37. the compliance-only share shows its working ----
+// Migration 561. The page credited compliance with 43% of the AP
+// reduction and said nowhere what 43% was — the least explained number
+// on a page whose whole proposition is that its numbers are explained.
+// The derivation belongs on the row, and only on the scope where it
+// applies: on the wider scope the full saving is banked and a sentence
+// about crediting a share would be false.
+await page.selectOption("#scope", "compliance");
+await page.click("#run"); await page.waitForTimeout(900);
+const apCompliance = await page.locator('#savingsTable tr[data-row="ap"]').innerText();
+t.check("compliance scope states where the 43% comes from",
+  /9 of the 21 minutes of AP handling/.test(apCompliance), apCompliance.slice(0, 240));
+t.check("and says what is deliberately not counted",
+  /review and approval are business decisions/i.test(apCompliance), apCompliance.slice(0, 240));
+await page.selectOption("#scope", "both");
+await page.click("#run"); await page.waitForTimeout(900);
+const apBoth = await page.locator('#savingsTable tr[data-row="ap"]').innerText();
+t.check("the wider scope does not claim a share it is not taking",
+  !/9 of the 21 minutes/.test(apBoth), apBoth.slice(0, 200));
+await page.selectOption("#scope", "compliance");
+await page.click("#run"); await page.waitForTimeout(900);
+
+// The bracket has to carry all three readings. One of them is an
+// argument for tripling the figure, which is exactly why it must sit
+// beside the other two rather than alone.
+// The notes panel is a collapsed <details>, so innerText on body cannot
+// see it — open it first. Worth stating: a check that read textContent
+// instead would pass whether or not the card was ever reachable.
+await page.evaluate(() => { document.getElementById("notes").open = true; });
+await page.waitForTimeout(250);
+const bracket = await page.locator("#notes").innerText();
+for (const fig of ["25.7", "42.9", "70.3"]) {
+  t.check(`the bracket names the ${fig}% reading`, bracket.includes(fig + "%"), fig);
+}
+t.check("and says which end the page took", /takes the lowest/i.test(bracket));
+
 await browser.close();
 process.exit(t.report() ? 0 : 1);
