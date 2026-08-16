@@ -90,8 +90,14 @@ t.check("subscribed countries box selects the saved 11", subs === 11, subs);
 await page.click("#assump summary");
 await page.fill("#costNow", "15");
 await page.waitForTimeout(150);
-t.check("override annotates its hint",
-  /Your value/.test(await page.locator("#h-costNow").textContent()));
+// The hint line under each panel field went in migration 563; what it
+// said now lives in the last line of the tooltip. The check follows the
+// content rather than the element, because the content is the promise.
+t.check("override annotates the tooltip",
+  /Your value/.test(await page.locator('[data-tm="costNow"]').textContent()));
+t.check("and the tooltip still says what the default was",
+  /Our default is 9\.84/.test(await page.locator('[data-tm="costNow"]').textContent()),
+  await page.locator('[data-tm="costNow"]').textContent());
 await page.click("#resetDefaults"); await page.waitForTimeout(300);
 t.check("reset restores the benchmark default",
   (await page.inputValue("#costNow")) === "9.84", await page.inputValue("#costNow"));
@@ -319,8 +325,8 @@ await page.fill("#volAP", "500000"); await page.waitForTimeout(250);
 t.check("it follows a volume change (0.40 x 550,000)",
   (await page.inputValue("#cPlat")) === "220000", await page.inputValue("#cPlat"));
 t.check("and the hint shows its own arithmetic",
-  /550,000 invoices\s*×\s*\$0\.40/.test(await page.locator("#h-cPlat").textContent()),
-  await page.locator("#h-cPlat").textContent());
+  /550,000 invoices\s*×\s*\$0\.40/.test(await page.locator('#assump [data-tm="cPlat"]').textContent()),
+  await page.locator('#assump [data-tm="cPlat"]').textContent());
 
 // A vendor quote beats our multiplier permanently. Getting this wrong in
 // the other direction — recomputing over a number someone typed — would
@@ -330,12 +336,12 @@ await page.fill("#volAR", "250000"); await page.waitForTimeout(250);
 t.check("a typed vendor price stops tracking the volumes",
   (await page.inputValue("#cPlat")) === "125000", await page.inputValue("#cPlat"));
 t.check("and is flagged as an override",
-  /Your value/.test(await page.locator("#h-cPlat").textContent()));
+  /Your value/.test(await page.locator('#assump [data-tm="cPlat"]').textContent()));
 
 await page.selectOption("#cur", "GBP"); await page.waitForTimeout(400);
 t.check("the per-invoice rate is quoted in the selected currency",
-  /£0\.30/.test(await page.locator("#h-cPlat").textContent()),
-  await page.locator("#h-cPlat").textContent());
+  /£0\.30/.test(await page.locator('#assump [data-tm="cPlat"]').textContent()),
+  await page.locator('#assump [data-tm="cPlat"]').textContent());
 await page.selectOption("#cur", "USD"); await page.waitForTimeout(400);
 
 await page.click("#resetDefaults"); await page.waitForTimeout(400);
