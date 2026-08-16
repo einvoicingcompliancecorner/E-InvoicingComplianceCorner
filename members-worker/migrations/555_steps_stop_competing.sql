@@ -1,0 +1,66 @@
+-- ================================================================
+-- The step strip stops competing with the section headings.
+--
+-- Dan, two observations:
+--   "1) The steps numbering does not follow the headings in the body of
+--    the roi-calculator. It would be good to align that so it's logical
+--    on progress.
+--    2) Would it make sense to move step 5 - Move go-live dates before
+--    step 4 - calculate. So therefore the final action could be
+--    Calculate and Download."
+--
+-- ---- 1. THE NUMBERING COULD NOT BE ALIGNED, SO IT IS GONE -----------
+--
+-- The mismatch was worse than it looked. FOUR of the five steps happened
+-- inside section 1 -- the country picker, the assumptions panel and the
+-- Calculate button all sit under the "1 - Your footprint" heading -- and
+-- the fifth happened in section 3. Section 2, the executive summary, was
+-- no step at all.
+--
+--   Step 1 Enter footprint     -> section 1
+--   Step 2 Select countries    -> section 1
+--   Step 3 Adjust assumptions  -> section 1
+--   Step 4 Calculate           -> section 1
+--   Step 5 Move go-live dates  -> section 3
+--
+-- Two numbering systems sharing one page and agreeing nowhere. Numbering
+-- the chips by the section they act in would have printed "1" four times
+-- -- accurate, and reads as a bug.
+--
+-- So the digits go and the chevrons stay. The strip is a SEQUENCE; the
+-- headings are the NUMBERING; there is one of each. This is the rare
+-- case where the fix for "these two things disagree" is to delete one of
+-- them rather than reconcile them, because the disagreement was
+-- structural: the steps are actions and the headings are places, and
+-- four actions genuinely do happen in one place.
+--
+-- ---- 2. GO-LIVE DATES CANNOT MOVE BEFORE CALCULATE ------------------
+--
+-- The adjust panel lives inside `#results`, which is `hidden` until
+-- Calculate runs. There are no go-live dates to move until the plan has
+-- been built, so a reader following that order would find nothing.
+--
+-- But the instinct behind the question was right, and it is the more
+-- useful half: CALCULATE IS THE MIDDLE OF THIS FLOW, NOT THE END. The
+-- reader's job finishes with a PDF in their hand, the Download button
+-- has sat beside Calculate since migration 531, and the strip stopped
+-- one chip short of saying so. Download is now the last step.
+--
+-- Six chips, 1009px against 1040px of wrap -- still one line at desktop
+-- width, which the regression suite has asserted since 535.
+-- ================================================================
+
+INSERT OR IGNORE INTO translations (namespace, key, lang, value) VALUES
+  ('roi', 'steps.6', 'en', 'Download PDF');
+
+-- ---- what this migration claims it did (see apply_migrations.py) ----
+-- ASSERT: SELECT count(*) FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key LIKE 'steps.%' = 8
+-- ASSERT: SELECT count(*) FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key = 'steps.6' AND value LIKE '%Download%' = 1
+--
+-- The strip must keep all six steps, because the two optional ones are
+-- the reason it exists: a reader who does not know the assumptions and
+-- adjust panels are skippable either works through them dutifully or
+-- bounces off the page. Dropping a chip to save width would take an
+-- optional one first, since they are the longest.
+--
+-- ASSERT ALWAYS: SELECT count(*) FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key IN ('steps.1','steps.2','steps.3','steps.4','steps.5','steps.6','steps.optional') = 7

@@ -442,11 +442,8 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
 .steps li{display:flex;align-items:center}
 .steps li+li::before{content:'\\203a';color:var(--upcoming);font-size:16px;margin-right:5px;line-height:1}
 .steps a{display:flex;align-items:center;gap:8px;text-decoration:none;background:var(--ink-2);
-  border:1px solid var(--line);border-radius:99px;padding:7px 12px 7px 7px;transition:border-color .15s}
+  border:1px solid var(--line);border-radius:99px;padding:7px 13px;transition:border-color .15s}
 .steps a:hover,.steps a:focus{border-color:var(--soon);outline:none}
-.steps b{flex:none;width:20px;height:20px;border-radius:50%;background:var(--soon-dim);color:#ecd0a6;
-  border:1px solid var(--soon);font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;
-  display:flex;align-items:center;justify-content:center;line-height:1}
 .steps span{font-size:13px;color:var(--text-lo);white-space:nowrap}
 .steps em{font-style:normal;font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.06em;
   text-transform:uppercase;color:var(--muted);margin-left:6px}
@@ -800,16 +797,36 @@ export function renderRoiPage({ countries, benchmarks = [], phases = [], strings
 
 <!-- Dan, 15 Aug 2026: "add simple and discrete instructions at the top of
      the page for the business case, such as Step 1 -> Step 2 -> Step 3".
-     Four steps, two of them optional and labelled as such, each linking to
-     the thing it names. The optional pair matter: a reader who does not
-     know the assumptions panel and the adjust panel are skippable will
-     either work through them dutifully or bounce off the page. -->
+     Two of the six are optional and labelled as such, which matters: a
+     reader who does not know the assumptions panel and the adjust panel
+     are skippable will either work through them dutifully or bounce.
+
+     THE CHIPS CARRY NO NUMBERS, and that is the fix for the second thing
+     Dan noticed: "the steps numbering does not follow the headings in the
+     body". It did not, and could not. Four of the five old steps happened
+     inside section 1 -- the country picker, the assumptions panel and the
+     Calculate button all sit under "1 - Your footprint" -- while step 5
+     happened in section 3, and section 2 was no step at all. Two
+     numbering systems sharing one page and agreeing nowhere.
+
+     Numbering them by the section they act in would have printed "1" four
+     times, which is accurate and reads as a bug. So the digits go and the
+     chevrons stay: the strip is a sequence, the headings are the
+     numbering, and there is only one of each.
+
+     DOWNLOAD IS THE LAST CHIP. Dan asked whether go-live dates could move
+     before Calculate so the flow ended on "Calculate and download". They
+     cannot -- the adjust panel lives inside #results, which is hidden
+     until Calculate runs, so there are no dates to move yet. But the
+     instinct was right: Calculate is the middle of this flow and Download
+     is the end, and the strip stopped one step short of saying so. -->
 <ol class="steps noprint" aria-label="${t("steps.aria","How to use this planner")}">
-  <li><a href="#s-footprint"><b>1</b><span>${t("steps.1","Enter your footprint")}</span></a></li>
-  <li><a href="#s-countries"><b>2</b><span>${t("steps.2","Select your countries")}</span></a></li>
-  <li><a href="#assump"><b>3</b><span>${t("steps.3","Adjust assumptions")}<em>${t("steps.optional","optional")}</em></span></a></li>
-  <li><a href="#run"><b>4</b><span>${t("steps.4","Calculate")}</span></a></li>
-  <li><a href="#adjust"><b>5</b><span>${t("steps.5","Move go-live dates")}<em>${t("steps.optional","optional")}</em></span></a></li>
+  <li><a href="#s-footprint"><span>${t("steps.1","Enter your footprint")}</span></a></li>
+  <li><a href="#s-countries"><span>${t("steps.2","Select your countries")}</span></a></li>
+  <li><a href="#assump"><span>${t("steps.3","Adjust assumptions")}<em>${t("steps.optional","optional")}</em></span></a></li>
+  <li><a href="#run"><span>${t("steps.4","Calculate")}</span></a></li>
+  <li><a href="#adjust"><span>${t("steps.5","Move go-live dates")}<em>${t("steps.optional","optional")}</em></span></a></li>
+  <li><a href="#print"><span>${t("steps.6","Download PDF")}</span></a></li>
 </ol>
 
 <h2 class="noprint" id="s-footprint">1 &middot; ${t("sec.footprint", "Your footprint")}</h2>
