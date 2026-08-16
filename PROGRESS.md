@@ -11661,6 +11661,60 @@ key. Rewritten as an explicit `IN` list.
 gantt's programme bar reads "Select & contract" again.
 
 
+## 15 August 2026 (cont'd) — The evidence panel stops being a section, and the savings table stops shouting
+
+Two small changes, one of which was not what it looked like.
+
+### The panel is no longer numbered
+
+Dan: *"modify the section '5 · Assumptions, sources and caveats' to read
+only 'Assumptions, sources and caveats'. It should not be a separate
+section."*
+
+Dropping the number also settles a rule the page had been applying
+inconsistently: **a numbered `h2` is a section; an unnumbered `<details>`
+is supporting detail you open when you want it.** The assumptions and
+adjust panels were already unnumbered — the evidence panel was the only
+one carrying a section number while behaving like a panel. The page is
+now four numbered sections and three named panels, and there is a check
+for both halves of that rule.
+
+### The savings table was never bold
+
+Dan: *"all of the savings table font seems to be in bold... It jumps off
+the page a little too much."*
+
+**Measured before changing anything: computed weight is 400 in every
+cell, and only 6% of a row's text sits inside a `<strong>`.** It was
+contrast, not weight.
+
+`--text-lo` is `#f2f0e8` despite its name — the brightest value on the
+page. So the table rendered at maximum brightness while the prose around
+it sits at `--muted #93a3c0`. Dense 13.5px rows at full strength on dark
+navy read as heavier than the paragraphs beside them.
+
+Body cells now sit at `#c6cfdd` — **11.1:1 on `--ink` and 8.9:1 on
+`--ink-3`**, comfortably past AA — and the numeric cells stay at full
+strength. That is the hierarchy the table never had: the money is what a
+reader is meant to see first, and it had been competing with its own row
+labels for attention.
+
+Worth noting the fix was only findable by measuring. "Make it not bold"
+would have led to a `font-weight` rule that changed nothing, because
+nothing was bold.
+
+### And a stray full stop
+
+The tax row read `$116,800..` — migration 552 templated that clause into
+`basis.tax`, which ends its own sentence, and the original full stop was
+left outside the `fill()`. Caught on a screenshot, not by a test; no check
+can see punctuation it was never told about.
+
+### Verified
+
+`npm test`: 9 suites, all passing. Contrast audit clean at the new value.
+
+
 ## Open items / next steps
 
 ### Where things stand — 15 August 2026
