@@ -12888,3 +12888,120 @@ the work of going live, where go-live is the moment.
 `npm test`: 9 suites, all passing. ROI regression **199 checks**. Replay OK
 across 563 files — **282 assertions, 67 standing invariants**. Panel checked
 at 1440, 1200, 1000, 900, 700 and 420px with no overflow.
+
+
+## 16 August 2026 (cont'd) — Ribbons everywhere, notes under the figures, and one shape for the basis column (migration 564)
+
+Three UI requests and a fourth that turned into the largest of them. All
+mocked as the working page before anything reached main.
+
+### Ribbons on every input
+
+Dan: *"change all input fields in assumptions and benchmarks to have a
+yellow unchanged ribbon... a useful distinction on all fields to see if
+anything has changed."* Twenty panel fields join the six in section 1.
+
+**The class was renamed with the meaning.** It was `.needsyou`, true while
+six fields carried it and false the moment a grade-A benchmark did — a
+benchmark with a citation is not a figure we need from you. A class name
+describing a retired model is the same defect as a caption describing one;
+it just rots where only developers read it. It is `.ribbon` /
+`.ribbon.changed` now.
+
+`NEEDS_YOU` deliberately stays a separate, smaller list: it is what the
+executive summary counts as "still our numbers", and letting it become
+"everything with a ribbon" would turn a specific warning about vendor
+placeholders into a meaningless 26.
+
+### Both notes move below the headline figures
+
+**This reverses migration 540**, which promoted the placeholder warning to
+the top of the summary reasoning that "an executive reading a four-month
+payback built on placeholder costs is told before they read it, not
+after". That was right when it was the only thing up there. It no longer
+was — the guard block sat above the section heading too, so a reader could
+meet two red boxes before a single figure, and a summary that opens with
+warnings reads as a broken page rather than a qualified answer.
+
+Order is now figures → scope → placeholders → guards. Nothing is weakened:
+both are still red, immediately under the stats, well before the savings
+table.
+
+### The font finding
+
+Dan: *"the page heading and section heading fonts seem to have strayed away
+from the former 'narrow' format. Is that a glitch?"*
+
+**Not on the page — in the mocks.** `members-worker`'s shell loads Big
+Shoulders Display, IBM Plex Sans and IBM Plex Mono from Google Fonts. The
+test harness never has. Every mock sent this session rendered in system
+fallbacks, and the sandbox cannot reach `fonts.googleapis.com` at all
+(`ERR_TUNNEL_CONNECTION_FAILED`), so it cannot preview real typography.
+
+The mock builder now emits the production font links, because a mock is
+opened in a browser that *does* have a network. Tests stay offline —
+a build that reaches the internet is a build that fails on a train.
+
+**The wider consequence is not fixed and should be.** Every width, wrap and
+overflow this harness has ever measured was measured in substitute
+metrics: the 860px overflow checks, the `min-height:37px` label fix, the
+three-column widths, the finding that the scope selector truncated. Close
+enough for the Plex faces, meaningless for a condensed display face. The
+fix is to vendor the three fonts into the repo the way the world-atlas
+topology already is, and load them from disk in both tests and mocks.
+**Raised, not done.**
+
+### 564 — the basis column gets one shape
+
+Dan: *"could the basis column be a little more concise and consistent
+across all rows... a 'Calculation:' sentence, and on the next line a
+'Justification:' sentence with citation and source. Also to be consistent
+with how evidence is referenced earlier in the page, using [A], [B], [C]
+and [D] evidence grades."*
+
+Nine rows had nine shapes, because each was written when its row was added
+and none was ever read beside the others. **Not one was wrong. The problem
+was the set** — the same failure as 556's caveat sprawl and 535's section
+drift, where every diff looked like an improvement and nobody read the
+whole artefact.
+
+**The grades were already there and invisible.** Every `ev()` tooltip has
+opened with "Evidence grade B" since the page was built — one hover away,
+on eleven markers, in a table whose argument is that its numbers are
+graded, while the assumptions panel wears the same letters in the open.
+Not new information; information withheld by its own presentation. The
+chip uses the panel's own `.tag tA` classes so the two surfaces cannot
+drift into different vocabularies for one fact, and sits *outside* the
+`.ev` span so it does not inherit the dotted underline that advertises a
+tooltip it does not have.
+
+**Writing the justifications side by side exposed two things nine separate
+sentences had hidden.** The AP and AR rows cited their reduction
+identically, but AP applies it to a *decomposed* manual cost and AR to a
+blended one — migration 557's whole point, invisible in the old wording.
+And the rework row cited Ardent's exception rate as "not Ardent's 18.4%",
+phrasing a bound as a denial; it now names the bound.
+
+### Three things the rewrite got wrong first
+
+The first draft **silently dropped plural handling** on errored invoices
+and jurisdictions, and dropped the clause explaining why compliance gets
+only 43% — *"review and approval are business decisions that no invoice
+format removes"*. The regression suite caught the second.
+
+The assertion `basis.%.calc` counted **five instead of four**, because
+`basis.lab.calc` matches it. Same SQL `LIKE` trap as `chart.procure_%`
+matching `chart.procureBar` in 556 — a pattern over a dotted key namespace
+is a trap worth writing down twice.
+
+And migration 552's standing invariant refused the change until it was
+retired properly. **Second time this week an `ASSERT ALWAYS` has caught its
+own retirement** rather than letting a rewrite slip past.
+
+### Verified
+
+`npm test`: 9 suites, all passing. ROI regression **200 checks**. Replay OK
+across 564 files — **286 assertions, 67 standing invariants**.
+
+**Deploy note: 552's comments were edited, so the runner needs
+`--refresh-checksums`.** No executable change; replay is byte-identical.

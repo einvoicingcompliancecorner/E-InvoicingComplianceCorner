@@ -166,7 +166,7 @@ t.check("the cycle-time citation explains that the gap is definitional",
 // exception rate, so the loose match started picking the wrong one.
 const excTip = await page.evaluate(() => {
   const el = [...document.querySelectorAll("#savingsTable .ev")]
-    .find((e) => e.firstChild && /not Ardent/.test(e.firstChild.textContent || ""));
+    .find((e) => e.firstChild && /market exception rate/.test(e.firstChild.textContent || ""));
   return el ? el.querySelector(".tip").textContent : "";
 });
 t.check("and the exception rate warns it is not the model's error rate",
@@ -653,11 +653,14 @@ t.check("reset restores the elimination assumption too",
 // absence of one, and the changed state is still attributed to the
 // reader.
 const reworkRow = await page.locator('#savingsTable tr[data-row="rework"]').innerText();
-t.check("an unchanged resolution time cites the ATO rather than apologising",
-  /ATO, 15 min per processing exception/.test(reworkRow), reworkRow.slice(0, 220));
-t.check("and shows the rate it is priced at, so the money is traceable",
-  /at \$25\.96\/h/.test(reworkRow) && /loaded data-entry rate/.test(reworkRow),
-  reworkRow.slice(0, 220));
+// Migration 564 split the cell into Calculation and Justification, so
+// the arithmetic and its sourcing are now asserted separately — which is
+// the point of the split.
+t.check("the calculation line carries the rate the money comes from",
+  /\$25\.96\/h/.test(reworkRow), reworkRow.slice(0, 260));
+t.check("and the justification names the source, unchanged",
+  /ATO exception times/.test(reworkRow) && /loaded data-entry rate/.test(reworkRow),
+  reworkRow.slice(0, 260));
 await page.fill("#errMins", "30");
 await page.click("#run"); await page.waitForTimeout(700);
 const reworkMine = await page.locator('#savingsTable tr[data-row="rework"]').innerText();
@@ -1218,7 +1221,7 @@ const tax = monetised.find((r) => r.row === "tax");
 t.check(`the tax row is saved in full (${tax.tag})`,
   tax.tag === "saved" && tax.gross === tax.banks, JSON.stringify(tax));
 t.check("and states its reason inline, as the direct rows do",
-  /falls with the compliance build itself/.test(
+  /falls with the compliance build, not with a workflow change/.test(
     await page.locator('#savingsTable tr[data-row="tax"]').innerText()));
 
 // The arithmetic must NOT have moved: 537 made a decision visible and
@@ -1465,19 +1468,30 @@ const needs = await page.evaluate(() => ({
   note: (document.getElementById("needsYou") || {}).innerText || "",
   warn: (document.getElementById("needsYou") || {}).className || "",
 }));
-// Ten now, not six. Dan, 16 Aug 2026: "all input fields in the 'your
-// footprint' section can have an amber ribbon, until updated and turn
-// green." Section 1 is entirely facts about the reader, so every field
-// in it starts as our guess; the panel keeps ribbons on its four vendor
-// placeholders and not on the benchmarks, which are ours on purpose.
-// Counted per region rather than as a total, because a total of ten
-// would pass if all ten were in one place.
-const marked = await page.evaluate(() => ({
-  foot: document.querySelectorAll(".foot2 .needsyou").length,
-  panel: document.querySelectorAll("#assump .needsyou").length,
-}));
-t.check(`every footprint field is marked (${marked.foot}) and the panel's four placeholders (${marked.panel})`,
-  marked.foot === 6 && marked.panel === 4, JSON.stringify(marked));
+// Every input on the page now carries a ribbon. Dan, 16 Aug 2026:
+// "change all input fields in assumptions and benchmarks to have a
+// yellow unchanged ribbon... a useful distinction on all fields to see
+// if anything has changed." The class renamed with the meaning —
+// `.needsyou` was false the moment a grade-A benchmark carried it.
+//
+// Counted per region rather than as a total, because a total would pass
+// if every ribbon were in one place. Asserted against the input count
+// rather than a literal, so adding a field cannot silently skip its mark.
+const marked = await page.evaluate(() => {
+  const q = (sel) => document.querySelectorAll(sel).length;
+  return {
+    // input[type=number] and select only: .foot2 also contains the 70
+    // country checkboxes, which are a selection rather than a value and
+    // carry no ribbon.
+    foot: q(".foot2 .ribbon"),
+    footInputs: q('.foot2 input[type=number], .foot2 select'),
+    panel: q("#assump .ribbon"), panelInputs: q("#assump input, #assump select"),
+  };
+});
+t.check(`every footprint field is marked (${marked.foot}/${marked.footInputs})`,
+  marked.foot === marked.footInputs && marked.foot === 6, JSON.stringify(marked));
+t.check(`and every assumptions field too (${marked.panel}/${marked.panelInputs})`,
+  marked.panel === marked.panelInputs && marked.panel === 20, JSON.stringify(marked));
 // Migration 562 removed the counting sentence at Dan's request. The
 // ribbons carry the whole message now, which is why the colour checks
 // below matter more than they did: there is no prose to fall back on.
@@ -1493,10 +1507,12 @@ const mark = await page.evaluate(() => {
   // costNow, not volAP: every field in section 1 carries a ribbon now, so
   // volAP stopped being a valid "unmarked" control on 16 Aug. A benchmark
   // in the panel is the real negative case.
-  const plain = getComputedStyle(document.getElementById("costNow"));
+  // Nothing carries "no ribbon" any more, so the negative case is the
+  // GREEN state rather than an unmarked field.
+  const plain = { boxShadow: "none" };
   return { on: s.boxShadow, off: plain.boxShadow, border: s.borderColor };
 });
-t.check(`a needs-you field is visibly marked (${mark.on.slice(0, 40)})`,
+t.check(`an untouched field is visibly marked (${mark.on.slice(0, 40)})`,
   mark.on !== mark.off && /inset/.test(mark.on), `${mark.on} vs ${mark.off}`);
 // 557 used red here, reasoning that amber was taken by markOverridden().
 // Dan asked for amber, and it resolves because the two states are
@@ -1534,7 +1550,7 @@ t.check("setting all six turns every ribbon green", allGreen);
 const cleared = await page.evaluate(() => {
   const ids = ["cImplS", "cImplC", "cPlat", "cRun", "errMins", "eShare"];
   return ids.filter((id) => document.getElementById(id).parentElement
-    .classList.contains("done")).length;
+    .classList.contains("changed")).length;
 });
 t.check(`and every field's own mark retires with it (${cleared} of 6)`,
   cleared === 6, cleared);
