@@ -421,24 +421,31 @@ t.check("both rates are in the assumptions panel, and differ",
 
 const directTotal = Number((await page.locator('#savingsTable tr[data-row="ap"]')
   .locator("td").nth(2).innerText()).replace(/[^\d]/g, ""));
-const head = await page.locator("#savingsTable .note").first().innerText();
-t.check("the headcount line states the capture FTE it derived",
-  /3\.6 FTE keying invoices today/.test(head), head.slice(0, 200));
-t.check("and the FTE it releases",
-  /2\.1/.test(head) && /released/.test(head), head.slice(0, 260));
-
-// The load-bearing clause. Without it this is a double count, and it is
-// the first thing a finance committee would challenge — so it stays
-// INLINE even after the caveat pass, rather than moving to the panel.
-t.check("it says inline that this is a restatement, not an addition",
-  /rather than an addition to it/i.test(head), head);
-
-// The full reconciliation moved into the notes panel rather than being
-// dropped: condensing the page must not lose the arithmetic.
+// Dan, 15 Aug 2026: the headcount note and the tangible/intangible note
+// "overcrowd the main roi-calculator page, and I think should reside in
+// assumptions, sources and caveats". Both did — and both DUPLICATED a
+// panel card that already existed and said more. So the notes come off
+// the page entirely, and the only thing they carried that the panel did
+// not (the FTE figures) moves into the card that already explains them.
+//
+// The earlier reasoning for keeping the clause inline — "without it this
+// is a double count" — went with it, and correctly: the double-count risk
+// existed because a headcount figure was on the page beside a money
+// figure. With no headcount on the page there is nothing to double-count,
+// and the figure now sits in the same paragraph as its own caveat.
+t.check("the headcount note is off the main page",
+  (await page.locator("#savingsTable .note").count()) === 0,
+  await page.locator("#savingsTable").innerText().then((x) => x.slice(-160)));
 await page.evaluate(() => { document.getElementById("notes").open = true; });
 await page.waitForTimeout(200);
 const notesText = await page.locator("#notes").innerText();
-t.check("and the panel still reconciles it against the row it decomposes",
+t.check("the panel states the capture FTE it derived",
+  /3\.6 FTE keying invoices today/.test(notesText), notesText.slice(0, 200));
+t.check("and the FTE it releases",
+  /2\.1 are released/.test(notesText), notesText.slice(0, 260));
+t.check("and still says it is a restatement, not an addition",
+  /counting both would count it twice/i.test(notesText), notesText.slice(0, 300));
+t.check("and still reconciles it against the row it decomposes",
   notesText.includes(String(directTotal.toLocaleString("en-US"))), notesText.slice(0, 300));
 
 // Guard 6: the bottom-up labour cannot exceed the top-down saving it is a
