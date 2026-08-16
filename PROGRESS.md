@@ -12281,3 +12281,115 @@ product owner staying close to the output, not for more tests.
   chose to shelve the paid tier rather than pursue Paddle/Stripe as
   alternatives — see the dated entry above. If a paid tier is
   reconsidered later, start from Stripe or Paddle, not Lemon Squeezy.
+
+
+## 16 August 2026 — The saving is only what is not already saved (migration 557)
+
+Dan, after reading the cost-reduction evidence review: *"Is the Current
+eInvoice rate, as a percentage - something we could assert in the
+assumptions, with the user having to update. As we have done with other
+metrics?"* Default chosen: *"Default 50% already electronic."* And in the
+same message: *"Please also - under assumptions, ensure that the user is
+guided to those fields that we need them to update to make the business
+case real."*
+
+### The defect: a ratio and a baseline from different populations
+
+The processing-cost row was taking 60% off $9.84. Both numbers are
+Ardent's, and they do not belong together:
+
+```
+the 60-80% range    "ePayables solutions ... processing cost reductions
+                     that can be as much as 60-80% WHEN COMPARED TO
+                     MANUAL- AND PAPER-BASED METHODS"
+the $9.84 baseline   Ardent's BLENDED market average — which the same
+                     report says is already 51.4% electronic
+```
+
+**You cannot save 60% of a cost that is already half optimised.** The page
+was doing exactly that, and the size of the error depended on a fact it
+never asked the reader for.
+
+### The decomposition
+
+Two published numbers pin the two channel costs:
+
+```
+manual invoice   $14.23
+e-invoice        $5.69     0.486 × 14.23 + 0.514 × 5.69 = 9.84
+```
+
+The reader's saving is then `(1 − their share) × $8.54` per invoice —
+zero when everything already arrives structured, maximal when nothing
+does. That is the shape this row should always have had.
+
+**The headline goes down.** At the 50% default the AP saving falls from
+$5.90 to $4.27 per invoice, about 28%; banked drops $253,045 → $182,969.
+This is the first change in a fortnight of rebuilding that *reduces* the
+answer, and it is worth saying plainly: a model whose numbers only ever
+improve when its authors revisit it is a model nobody should trust.
+
+### A definitional problem neither source solves — and why it argues *for* the input
+
+**Ardent never defines "electronically."** Checked against the primary
+report: 51.4% received electronically against 48.6% paper, 57.4% of
+suppliers submitting electronically, no breakdown by format. If that
+counts emailed PDFs the decomposition is optimistic, because the ATO puts
+a PDF at AUD 27.67 against paper at 30.87 and a true e-invoice at 9.18 —
+a PDF is barely cheaper than paper.
+
+No published source resolves the term, so **the only honest number is the
+reader's own**, and the field asks for the *structured* share so they are
+not answering Ardent's ambiguous question. `market_einvoice_share` is
+graded **B**, not A, for the same reason: measured, which is grade A
+behaviour; published without a denominator, which is not.
+
+**AR is deliberately untouched.** `ar_cost_per_invoice` comes from the ATO
+channel figures, which are already channel-specific rather than blended,
+so it does not carry this defect. Applying the same share to it would be
+a guess wearing a number — issuing and receiving adoption are different
+facts about a business. Flagged rather than fixed.
+
+### The guidance, and a colour that was already spoken for
+
+Six fields are ours rather than the reader's — the four vendor
+placeholders, the rework cost, and now their own e-invoice share. The line
+above the panel **counts down** as they are set, because a static warning
+becomes furniture and a shrinking one is progress.
+
+The first cut of the marking was wrong twice, and **a screenshot caught
+both before any test could**:
+
+- **Amber was already taken.** `markOverridden()` has bordered every
+  changed input in `--soon` since the panel was built, and writes "Your
+  value." into its hint. On this panel amber already means *you set this*.
+  Using it for *we still need you to set this* would have one colour
+  asserting a thing and its negation in the same grid row.
+- **One chip on one field read as an exception.** A YOURS tag on `eShare`
+  alone implied the other five were fine — the opposite of the message.
+
+The mark is now an inset rule in `--stamp` on all six, turning `--live` as
+each is set: no layout shift, and the reader watches marks go green rather
+than watching them vanish. `tag.yours` was **removed from the migration
+rather than left in place** — an unused row would have failed roi-i18n's
+zero-orphan check, which is what that check exists for.
+
+Worth recording separately: the first draft of this change shipped the
+sentence *"they are highlighted"* **with no CSS behind it at all.** The
+note counted six fields and pointed at nothing, and every one of the 185
+checks passed. The regression suite now asserts the mark is really
+painted, and that it is not the amber that means something else.
+
+### Verified
+
+`npm test`: 9 suites, all passing. ROI regression **188 checks**.
+Migration replay OK across 557 files — **242 assertions, 54 standing
+invariants**. Lever confirmed linear: 0% gives the largest saving, 100%
+gives none, 50% gives exactly half.
+
+### Still open from the cost-reduction review
+
+Three options Dan has not yet chosen: correcting the `cost_reduction_pct`
+citation wording, deriving the compliance-only saving directly from the
+task split rather than compounding two ratios, and re-grounding the
+benchmark on the ATO's channel measurement instead of Ardent's blend.
