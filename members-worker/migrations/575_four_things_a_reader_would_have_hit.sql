@@ -1,0 +1,182 @@
+-- ================================================================
+-- Four defects found by looking at the page rather than at the code.
+--
+-- Dan asked for an honest usability assessment. These are the four items
+-- from it that were not judgement calls -- things that are wrong, not
+-- things that are awkward. The chart, the mobile layout and the country
+-- picker are larger and are being mocked separately.
+--
+-- Three of the four were found by rendering the page and reading it. Not
+-- one was found by any of the ten suites, and two of them are mine.
+--
+-- ================================================================
+-- 1. THE RESULTS WENT STALE IN SILENCE
+-- ================================================================
+--
+-- Press Calculate. Change the AP volume from 100,000 to 500,000. The
+-- headline stays at $483,089 and nothing on the page indicates that the
+-- figures no longer describe the inputs four inches above them.
+--
+-- On a page whose entire proposition is that every number is traceable to
+-- its inputs, a screenshot of stale figures is the worst artefact it can
+-- produce. It was also the only failure mode with no signal at all.
+--
+-- THE MECHANISM ALREADY EXISTED AND WAS WIRED TO THE WRONG EVENT. The
+-- button is supposed to relabel to "Recalculate", and that line lives in
+-- the SIGN-IN handler -- so it fires only on the public gated page, after
+-- someone signs in. A member is already unlocked and never triggers it,
+-- so the button read "Calculate business case" for ever, including with a
+-- full set of results on screen.
+--
+-- A correct mechanism, bound to an event that could not reach the people
+-- who needed it. Same shape as the layout guard in migration 572 that had
+-- stopped matching any element: the code was right and its reach was not.
+INSERT OR REPLACE INTO translations (namespace, key, lang, value) VALUES
+  ('roi', 'res.stale', 'en', '<strong>These figures no longer match the inputs above.</strong> Something changed since they were calculated &mdash; recalculate before quoting or exporting them.');
+
+-- ================================================================
+-- 2. AN EMPTY SELECTION PRODUCED A FREE PROGRAMME PAYING BACK AT ONCE
+-- ================================================================
+--
+-- Clear the country list, press Calculate:
+--
+--     Annual saving        $377,969
+--     One-off investment        $0
+--     Net annual saving    $287,969
+--     Payback                 <1mo
+--     Dated deadlines            0
+--
+-- and not one guard fired.
+--
+-- There is a guard for exactly this. "Payback under one month. No
+-- e-invoicing programme pays back that fast." It did not fire because its
+-- condition was `paybackMonths > 0 && paybackMonths < 1`, and a zero
+-- one-off cost gives a payback of exactly zero.
+--
+-- THE MOST IMPLAUSIBLE OUTPUT THE MODEL CAN PRODUCE WAS THE ONE CASE THE
+-- IMPLAUSIBILITY GUARD EXCLUDED. The boundary was chosen to skip the
+-- "nothing calculated yet" case and caught the worst real case with it.
+--
+-- Fixed to `>= 0`, and a second guard added for the selection itself.
+-- Guard 1 could never have caught this: it asks whether MANDATED
+-- countries were costed at zero integrations, and with nothing selected
+-- there are no mandated countries to ask about. The volume-driven savings
+-- do not depend on jurisdictions at all, which is why the page had a
+-- confident six-figure answer to a question nobody asked.
+INSERT OR REPLACE INTO translations (namespace, key, lang, value) VALUES
+  ('roi', 'guard.noCountries', 'en', '<strong>No jurisdictions are selected.</strong> The savings below are driven by your invoice volumes alone, so they still show a figure &mdash; but there is no compliance programme here to cost, no deadline to plan against, and nothing to take to a board. Select the countries you operate in.');
+
+-- ================================================================
+-- 3. A HINT THAT CLAIMED THE READER'S OWNERSHIP OF OUR NUMBER
+-- ================================================================
+--
+-- "E-invoices received today %" is one of the two fields migration 559
+-- moved into section 1 BECAUSE they are so integral to the case. Its hint
+-- read, before the reader had touched anything:
+--
+--     Your own figure -- the market average is 51%
+--
+-- The field holds 50, which is ours. The ribbon beside it was still
+-- amber, meaning untouched. Its own tooltip, four pixels away, correctly
+-- said "Our default is 50." The field and its tooltip contradicted each
+-- other on load, on the field the page calls the single largest lever on
+-- the processing-cost row.
+--
+-- After typing it became worse:
+--
+--     Your value. Default 50 -- Your own figure -- the market average is 51%
+--
+-- Two "your"s and a doubled clause, assembled from a hardcoded English
+-- template.
+--
+-- THIS IS THE MECHANISM MIGRATION 572 IDENTIFIED, called "genuinely worth
+-- removing", and left alone on the reasoning that it changes what two
+-- fields display and so did not belong in a subtraction-only file. That
+-- reasoning was fine and the follow-up never happened, which is how a
+-- known defect stays live -- not by being missed, but by being filed.
+--
+-- The state now lives only in the tooltip, which already carried it
+-- correctly and translatably. The hint carries the SOURCE, which does not
+-- change when a reader types. One fact, one home -- the decision
+-- migration 563 already made for every other field on the page; these two
+-- survived only because they moved out of the panel rather than staying
+-- in it.
+-- A LITERAL EM-DASH, NOT AN ENTITY, and that is not a style choice. The
+-- hint is written with textContent, so an entity reaches the reader as
+-- its six source characters. It rendered correctly before this migration
+-- only by accident: markOverridden() rewrote the same line with innerHTML
+-- during init, and removing that rewrite -- the whole point of item 3 --
+-- left the textContent path exposed.
+--
+-- Same trap as the help rows, which have carried a no-entities invariant
+-- since migration 562 for exactly this reason, in a channel nobody had
+-- checked. The invariant below now covers this one too.
+UPDATE roi_benchmark_translations SET hint = 'Market average is 51% — yours is the figure that matters'
+ WHERE lang = 'en' AND benchmark_id = (SELECT id FROM roi_benchmarks WHERE key = 'einvoice_share_now');
+
+-- Three more hints carried the same entity. They reach the reader only
+-- through the tooltip, which uses innerHTML, so they render correctly
+-- today -- and the invariant below would have had to know which hint
+-- takes which channel to allow that.
+--
+-- A rule that depends on knowing the channel is a rule nobody applies
+-- correctly a year later. HINTS ARE PLAIN TEXT, all of them, and then
+-- neither channel can be wrong. innerHTML renders a literal em-dash
+-- exactly as well.
+UPDATE roi_benchmark_translations SET hint = replace(hint, '&mdash;', '—')
+ WHERE hint LIKE '%&mdash;%';
+
+-- ================================================================
+-- 4. THE EUROPEAN UNION ROW COLLIDED WITH ITS OWN LABEL
+-- ================================================================
+--
+-- Measured at 1440px in the expanded chart: the row name and its
+-- right-anchored meta label overlapped by 25 pixels, rendering
+-- "European UnionEU-WIDE - COMPLEX - L1". United Kingdom cleared its own
+-- meta by 7 pixels -- one row broken and one a rounding error away, in
+-- English, on the widest common desktop.
+--
+-- Two SVG text nodes overlapping do not error, do not warn and do not
+-- fail any assertion. Found by looking at a screenshot, which is the
+-- third defect on this page found that way this week and none of them by
+-- a check.
+--
+-- The first fix measured the name against the meta and truncated to fit.
+-- It worked and it was wrong: it rendered "Europ..." and "United Ki...",
+-- because the meta alone is about 141px and the 190px gutter left the
+-- name 37 pixels. Passing a test by deleting the content is not passing.
+--
+-- SO THE GUTTER WIDENED, from 190 to 264. What made that obviously right
+-- is the measurement from the same review: THE PLOT AREA IS 90% EMPTY --
+-- median bar width on the default selection is TWO PIXELS -- so the space
+-- being defended was space nothing is drawn in. Both fixes stay: the
+-- gutter fits every European name on the tracker, and the measured
+-- truncation catches the ones it does not.
+--
+-- No D1 change. Recorded because "widen it until it fits" would have been
+-- the wrong lesson, and because the two-pixel measurement is the reason
+-- the trade was free.
+--
+-- ---- what this migration claims it did ------------------------------
+-- ASSERT: SELECT count(*) FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key IN ('res.stale','guard.noCountries') = 2
+-- ASSERT: SELECT count(*) FROM roi_benchmark_translations t JOIN roi_benchmarks b ON b.id = t.benchmark_id WHERE b.key = 'einvoice_share_now' AND t.lang = 'en' AND t.hint LIKE 'Market average%' = 1
+--
+-- No hint may tell a reader that our default is their figure. The whole
+-- ribbon-and-tooltip apparatus exists to keep that distinction visible,
+-- and a hint that pre-claims ownership undoes it silently -- the English
+-- reads perfectly either way, which is why it survived four migrations
+-- that touched this field.
+--
+-- ASSERT ALWAYS: SELECT count(*) FROM roi_benchmark_translations WHERE lang = 'en' AND (hint LIKE 'Your own%' OR hint LIKE 'Your value%') = 0
+--
+-- And no benchmark hint may contain an HTML entity. The two that render
+-- on the page are written with textContent, so an entity arrives as its
+-- source characters -- the same rule migration 562 put on help rows,
+-- extended to the channel that turned out to share the property.
+--
+-- ASSERT ALWAYS: SELECT count(*) FROM roi_benchmark_translations WHERE hint LIKE '%&%;%' = 0
+--
+-- The stale warning must keep saying what to do about it. A warning that
+-- states a problem and not its remedy is a warning a reader dismisses.
+--
+-- ASSERT ALWAYS: SELECT count(*) FROM translations WHERE namespace = 'roi' AND key = 'res.stale' AND value LIKE '%recalculate%' = 1

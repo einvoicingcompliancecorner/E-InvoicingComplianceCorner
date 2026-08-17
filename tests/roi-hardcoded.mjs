@@ -165,7 +165,15 @@ for (const raw of chunks) {
   // filter never catches. Strip them all before probing.
   for (const n of names) if (n.length > 3) probe = probe.split(n).join("");
   for (const p of PROPER) probe = probe.split(p).join("");
-  probe = probe.replace(/«[a-zA-Z0-9._]+»/g, "")
+  // A TRUNCATED SENTINEL IS STILL A SENTINEL. The wave chart shortens a
+  // row name that will not fit its gutter and appends an ellipsis, so a
+  // stubbed «country.eu» can reach the page as «coun… -- no closing
+  // guillemet, and the strip below used to miss it and report it as
+  // hardcoded English. Not a real finding, but a real behaviour: the
+  // detector has to understand truncation or it reports the renderer's
+  // own layout as untranslated copy.
+  probe = probe.replace(/«[a-zA-Z0-9._]*[»\u2026]/g, "")
+    .replace(/«[a-zA-Z0-9._]+»/g, "")
     .replace(/[\d\s.,%$£€+\-–—×/()·|:;\[\]]+/g, " ").trim();
   // TWO LETTERS, NOT THREE, since 17 August 2026.
   //

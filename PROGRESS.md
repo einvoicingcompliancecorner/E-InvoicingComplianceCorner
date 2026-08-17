@@ -13642,3 +13642,102 @@ invariants**.
 **Note for deploying:** migrations 530, 545 and 550 had comments edited
 (two standing invariants retired in place, one budget widened), so
 `apply_migrations.py` will need `--refresh-checksums`.
+
+---
+
+## 17 August 2026 (evening) — migration 575: what a usability read found
+
+Dan asked for an honest independent assessment of the planner's
+usability. I built most of the page, so I also ran a second reviewer over
+thirteen screenshots with no knowledge of who wrote it. Two of its
+findings were wrong and are corrected in the write-up; several were
+things I could not see.
+
+**Everything below was measured on the rendered page.** Not one of these
+was caught by any of the ten suites, and three were found by looking at a
+screenshot.
+
+### The four that were wrong rather than awkward — all fixed
+
+**Results went stale in silence.** Press Calculate, change the AP volume,
+and the headline stays put with nothing to say the figures no longer
+describe the inputs above them. On a page whose whole proposition is
+traceable numbers, a screenshot of stale figures is the worst artefact it
+can produce. **The mechanism already existed** — the button is meant to
+relabel to "Recalculate" — **and was bound to the sign-in handler**, so
+it only ever fired on the public gated page. A member never triggered it.
+
+**An empty selection produced a free programme paying back instantly.**
+$377,969 saving, $0 investment, `<1mo` payback, no warning. There is a
+guard for exactly this, and it did not fire because its condition was
+`paybackMonths > 0` — a zero one-off gives a payback of exactly zero.
+**The most implausible output the model can make was the one case the
+implausibility guard excluded.** Fixed to `>= 0`, plus a new guard for
+the selection itself.
+
+**A hint claimed our number was the reader's.** "E-invoices received
+today %" read *"Your own figure — the market average is 51%"* on load,
+untouched, holding our default, four pixels from a tooltip correctly
+saying "Our default is 50." After typing it became *"Your value. Default
+50 — Your own figure — the market average is 51%"*. This is the mechanism
+migration 572 called "genuinely worth removing" and left alone. **That
+was my call and the follow-up never happened** — which is how a known
+defect stays live: not by being missed, but by being filed.
+
+**The European Union row collided with its own label** by 25px at 1440px;
+United Kingdom cleared by 7px. The first fix truncated to fit and
+rendered "Europ…" — passing a test by deleting the content. So the gutter
+widened from 190 to 264, which the same review showed was free: **the
+plot area is 90% empty.**
+
+### Two more the new tests surfaced on their way past
+
+A regression check for a *different* defect walked a path nobody had:
+open the table view, then clear the selection. `ganttRows` is null when
+nothing is dated, and the table view called `.filter` on it — a crash,
+live since the table view was added, needing two actions in one order.
+The guard three hundred lines above already wrote `(ganttRows || [])`.
+
+And removing the hint rewrite exposed a literal `&mdash;`: the hint is
+written with `textContent`, so it had only ever rendered correctly
+because `markOverridden()` rewrote the same line with `innerHTML` during
+init. All benchmark hints are now plain text, with an invariant, rather
+than a rule that depends on knowing which channel each takes.
+
+### The suites caught two defects in my own new code
+
+`btn.recalculate` went in as `t()` inside a single-quoted string — the
+exact escaping defect migration 571 fixed across 109 call sites,
+reintroduced within the hour by someone who knew about it. The i18n
+suite's hostile-translation render failed on the first run after the
+edit.
+
+And the new measured truncation produced `«coun…`, which the
+hardcoded-strings detector reported as English. Not a real finding, but a
+real behaviour: the detector now understands truncated sentinels.
+
+### The chart, which is the big one and is not built
+
+Measured: **38 bars, median width two pixels**, on a 1000px canvas,
+because a 5–7 week programme is drawn on a four-year axis. The expanded
+view already prints "7w effort · 7w elapsed" as text — a chart captioning
+its own values is a chart that is not working.
+
+Three options mocked from real data rather than one proposed:
+**A — runway bars** (each row today→deadline, work block at the end,
+empty track is slack); **B — a start-date table** (no axis at all);
+**C — a broken axis** (equal slices, phases stay readable). Awaiting
+Dan's call.
+
+Still open from the assessment: mobile (the "Saved on this scope" column
+sits 81px off the right edge of a 390px screen, so the phone shows the
+gross number and hides the scope-adjusted one), the country picker, the
+five KPI boxes, and an evidence scorecard.
+
+### Verified
+
+`npm test`: 10 suites. ROI regression **246 checks** (was 236), including
+the stale signal, both new guards, the hint on load and after typing, and
+a measured no-collision check on every chart row that also fails if the
+fix becomes "truncate until it fits". Replay OK across 575 files —
+**339 assertions, 89 standing invariants**.

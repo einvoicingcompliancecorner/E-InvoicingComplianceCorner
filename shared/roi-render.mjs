@@ -1316,6 +1316,7 @@ export function renderRoiPage({ countries, benchmarks = [], phases = [], strings
 </div>
 
 <div id="results" class="hidden">
+<p id="stale" class="note warn hidden" style="margin:0 0 14px">${t("res.stale", "<strong>These figures no longer match the inputs above.</strong> Something changed since they were calculated &mdash; recalculate before quoting or exporting them.")}</p>
   <!-- The guard block used to sit here, above the section heading, so a
        scheduling warning was the first thing a reader met after pressing
        Calculate. It now renders inside the executive summary under the
@@ -1785,10 +1786,21 @@ function markOverridden(){
         ? \`<span style="color:#8a6524"><strong>${tj("tip.yourValue","Your value.")}</strong></span> \`
         : '') + fill('${tj("tip.ourDefault","Our default is {0}.")}', d.v) + extra;
     });
-    const hint = document.getElementById('h-'+id);
-    if(hint && d.h) hint.innerHTML = changed
-      ? \`<span style="color:#e2b978">Your value.</span> Default \${d.v} &mdash; \${d.h}\`
-      : d.h;
+    // THE HINT LINE NO LONGER CHANGES, and that is the fix rather than a
+    // simplification.
+    //
+    // It used to be rewritten here to "Your value. Default 50 — <source>",
+    // which put the your-value/our-default state in TWO places four pixels
+    // apart: this line and the tooltip meta above. Two homes for one fact,
+    // and the copy in this one was hardcoded English that read "Your
+    // value. Default 50 — Your own figure — the market average is 51%".
+    //
+    // The tooltip already carries the state correctly and translatably.
+    // The hint carries the SOURCE, which does not change when a reader
+    // types. One fact, one home, and migration 563 already made this
+    // decision for every other field on the page -- these two were the
+    // survivors because they moved into section 1 rather than staying in
+    // the panel.
   });
 }
 document.getElementById('assump').addEventListener('toggle', e => {
@@ -1821,10 +1833,40 @@ document.getElementById('resetDefaults').onclick = () => {
 // behind the reader. A <select> fires change and not input, which is why
 // both are bound -- caught by the currency ribbon staying amber after a
 // switch to GBP while every text field worked.
+// RESULTS GO STALE, AND THE PAGE SAYS SO.
+//
+// Until 17 August 2026 they went stale silently: press Calculate, change
+// the AP volume from 100,000 to 500,000, and the headline stayed where it
+// was with nothing to indicate the figures no longer described the inputs
+// four inches above them.
+//
+// On a page whose entire proposition is that every number is traceable to
+// its inputs, a screenshot of stale figures is the worst thing it can
+// produce -- and it was the one failure with no signal at all.
+//
+// The relabel to "Recalculate" already existed and was bound to the
+// SIGN-IN handler, so it only ever fired on the public gated page after
+// someone signed in. A member, already unlocked, never triggered it: the
+// button read "Calculate business case" forever, including with a full
+// set of results on screen. A mechanism that existed, was correct, and
+// was wired to an event that could not reach the people who needed it.
+const markStale = () => {
+  const res = document.getElementById('results');
+  if(!res || res.classList.contains('hidden')) return;   // nothing to stale
+  document.getElementById('stale').classList.remove('hidden');
+  // tj(), not t(). This is inside a single-quoted JavaScript string, so an
+  // apostrophe in the translation closes the literal and takes the client
+  // script with it -- the defect migration 571 fixed across 109 call
+  // sites, reintroduced here within the hour by someone who knew about it.
+  // Caught by the i18n suite's hostile-translation render on the first run
+  // after the edit, which is exactly the job it was added to do.
+  document.getElementById('run').textContent = '${tj("btn.recalculate", "Recalculate")}';
+};
 const noteTouch = (e) => {
   const id = e.target && e.target.id;
   if(id && RIBBONED.indexOf(id) !== -1) touched.add(id);
   markOverridden();
+  markStale();
 };
 document.addEventListener('input', noteTouch);
 document.addEventListener('change', noteTouch);
@@ -2040,7 +2082,7 @@ subsBox.onchange = () => {
   if(typeof unlocked !== 'undefined' && unlocked) showResults();
 };
 // Any manual change means the selection is no longer "my subscribed countries".
-list.addEventListener('change', e => { if(e.target !== subsBox) subsBox.checked = false; });
+list.addEventListener('change', e => { if(e.target !== subsBox) subsBox.checked = false; markStale(); });
 
 const chosen = () => boxes().filter(b=>b.checked).map(b=>COUNTRIES[+b.dataset.i]);
 document.getElementById('selNone').onclick = () => { subsBox.checked = false; boxes().forEach(b=>b.checked=false); };
@@ -2267,8 +2309,44 @@ function buildGantt(sel0, erp, pace){
   // screenshot review, not by any assertion — nothing errors when two SVG
   // text nodes overlap, it just becomes unreadable). Long names are also
   // truncated, with the full name kept in a <title> for hover.
-  const L = 190, R = 116, W = 1000, RH = 24, GAP = 4, HEAD = 34;
-  const shortName = n => n.length > 22 ? n.slice(0, 21) + '\u2026' : n;
+  // L WIDENED FROM 190 TO 264. Measuring the name against the meta stopped
+  // them colliding and immediately showed why they were colliding: the
+  // meta alone ("EU-WIDE - COMPLEX - L1") is about 141px, so 190 left the
+  // name 37px -- five characters. The first fix truncated "European Union"
+  // to "Europ..." and technically passed.
+  //
+  // The gutter was never the thing under pressure. THE PLOT AREA IS 90%
+  // EMPTY -- median bar width on the default selection is two pixels --
+  // so the space being defended was space nothing is drawn in. 264 gives
+  // the name ~110px, which fits every European name on the tracker, and
+  // costs the bars nothing they were using.
+  const L = 264, R = 116, W = 1000, RH = 24, GAP = 4, HEAD = 34;
+  // TRUNCATED AGAINST THE META LABEL, not against a fixed 22 characters.
+  //
+  // The old rule cut every name at 22 and the gutter was widened to 190
+  // to make that fit. It did not: the meta label is right-anchored at
+  // L-10 and its width varies with its own content, so a long name and a
+  // long meta still met in the middle. Measured on the shipped page,
+  // "European Union" overlapped "EU-WIDE - COMPLEX - L1" by 25px, and
+  // "United Kingdom" cleared its own meta by 7px -- one row broken and
+  // one a rounding error from breaking, in English, at 1440px.
+  //
+  // Two SVG text nodes overlapping do not error, do not warn and do not
+  // fail a layout assertion. It was found by looking at a screenshot,
+  // which is the third defect on this page found that way and none of
+  // them by a check.
+  //
+  // So the budget is computed from what is actually beside it. The two
+  // faces are known: the name is 12px IBM Plex Sans, the meta 9px mono
+  // with 1px tracking, which measure at roughly 6.4px and 6.4px per
+  // character respectively -- close enough that one constant serves both,
+  // and deliberately pessimistic so the estimate errs toward truncating.
+  const CHAR_PX = 6.4, GUTTER_GAP = 12;
+  const fitName = (name, meta) => {
+    const room = (L - 10) - (String(meta).length * CHAR_PX) - GUTTER_GAP;
+    const max = Math.max(6, Math.floor(room / CHAR_PX));
+    return name.length > max ? name.slice(0, max - 1) + '\u2026' : name;
+  };
   const groups = [...new Set(rows.map(r=>r.waveKey))];
   // Grouped mode draws one row per wave and no wave headers; expanded
   // draws a header plus a row per jurisdiction. Getting this wrong leaves
@@ -2356,7 +2434,11 @@ function buildGantt(sel0, erp, pace){
       y += RH + GAP;
     }
     const cx = CXNAME[r.c[4]];
-    s += \`<text x="0" y="\${y+15}" fill="#f2f0e8" font-size="12">\${shortName(r.c[0])}<title>\${r.c[0]}</title></text>\`;
+    // The meta label this name has to share the gutter with, built here so
+    // the name can be measured against it rather than against a guess.
+    const metaTxt = (r.c[11] ? '${tj("chart.euWide","EU-WIDE")}' : REGSHORT[r.c[2]])
+      + ' \u00b7 ' + cx[0].toUpperCase() + (lanes>1 ? ' \u00b7 L' + (r.lane+1) : '');
+    s += \`<text x="0" y="\${y+15}" fill="#f2f0e8" font-size="12">\${fitName(r.c[0], metaTxt)}<title>\${r.c[0]}</title></text>\`;
     // INDEX 11 marks the European Union row itself -- the one track in
     // the plan that is an EU-wide obligation rather than a national one.
     // Worth saying on the row: a reader who knows Austria has no national
@@ -2368,7 +2450,7 @@ function buildGantt(sel0, erp, pace){
     // table -- see the block at the euWide flag below. This line was
     // already correct and its comment was not, which is how the wrong one
     // kept looking right.
-    s += \`<text x="\${L-10}" y="\${y+15}" fill="\${r.c[11] ? '#c98a3a' : '#93a3c0'}" font-family="'IBM Plex Mono',monospace" font-size="9" text-anchor="end">\${r.c[11] ? '${tj("chart.euWide","EU-WIDE")}' : REGSHORT[r.c[2]]} &middot; \${cx[0].toUpperCase()}\${lanes>1?\` &middot; L\${r.lane+1}\`:''}</text>\`;
+    s += \`<text x="\${L-10}" y="\${y+15}" fill="\${r.c[11] ? '#c98a3a' : '#93a3c0'}" font-family="'IBM Plex Mono',monospace" font-size="9" text-anchor="end">\${metaTxt.replace(/\u00b7/g, '&middot;')}</text>\`;
     r.segs.forEach(sg => {
       const x1 = x(sg.s.getTime()), x2 = x(sg.e.getTime());
       s += \`<rect x="\${x1+1}" y="\${y+4}" width="\${Math.max(2,x2-x1-2)}" height="\${RH-8}" rx="3" fill="\${sg.c}"><title>\${fill('${tj("chart.segTip","{0} — {1}")}', r.c[0], sg.n)}\\n\${fill('${tj("chart.segWeeks","{0} weeks: {1} to {2}")}', sg.weeks, isoD(sg.s), isoD(sg.e))}</title></rect>\`;
@@ -2488,11 +2570,16 @@ function buildGantt(sel0, erp, pace){
       const pinnedEarly = wanted !== null && !isNaN(wanted) && wanted < discStart;
       let t = (wanted !== null && !isNaN(wanted)) ? Math.max(wanted, discStart) : discStart;
       const isPinned = wanted !== null && !isNaN(wanted);
-      s += \`<text x="0" y="\${y+15}" fill="#8d9bb5" font-size="12">\${shortName(c[0])}<title>\${c[0]}</title></text>\`;
       // An already-in-force jurisdiction is not "start any time" — you are
       // late, and saying otherwise would be the comfortable lie rather than
       // the useful one.
+      //
+      // Computed BEFORE the name is drawn, so the name can be measured
+      // against it. The order used to be the other way round, which is why
+      // this band kept the old fixed 22-character truncation after the
+      // dated rows stopped using it.
       const meta = c[3] === 'i' ? '${tj("chart.inforce","IN FORCE")}' : (isPinned ? (pinnedEarly ? '${tj("chart.clamped","CLAMPED")}' : '${tj("chart.pinned","PINNED")}') : '${tj("chart.anytime","ANY TIME")}');
+      s += \`<text x="0" y="\${y+15}" fill="#8d9bb5" font-size="12">\${fitName(c[0], meta)}<title>\${c[0]}</title></text>\`;
       s += \`<text x="\${L-10}" y="\${y+15}" fill="\${c[3]==='i' ? '#c98a3a' : (isPinned ? '#7fd0a8' : '#6b7a95')}" font-family="'IBM Plex Mono',monospace" font-size="9" text-anchor="end">\${meta}</text>\`;
       phases.forEach(pz => {
         const st = new Date(t), en = addW(st, pz.weeks);
@@ -2667,6 +2754,7 @@ function showResults(scroll){
   markOverridden();
   if(adj && wasOpen) adj.open = true;
   document.getElementById('results').classList.remove('hidden');
+  document.getElementById('stale').classList.add('hidden');
   document.getElementById('print').classList.remove('hidden');
   if(scroll) document.getElementById('results').scrollIntoView({behavior:'smooth'});
 }
@@ -3188,6 +3276,21 @@ function build(){
   // 1. Integrations of zero against a selection that includes a mandated
   //    country. This is what nine countries scoring 'none' looked like in
   //    August: a business case that quietly halved its own cost.
+  // 0. NOTHING SELECTED AT ALL.
+  //
+  // The volume-driven savings do not depend on jurisdictions, so an empty
+  // selection still produced a confident $377,969 against a $0
+  // investment. Guard 1 below does not catch it -- it asks whether
+  // MANDATED countries were costed at zero integrations, and with none
+  // selected there are no mandated countries to ask about.
+  //
+  // A reader who clears the list to start again, or who un-ticks their way
+  // to nothing, gets a business case for no programme. Reported first,
+  // because every figure under it is answering a question nobody asked.
+  if(!sel.length){
+    warn.push('${tj("guard.noCountries","<strong>No jurisdictions are selected.</strong> The savings below are driven by your invoice volumes alone, so they still show a figure &mdash; but there is no compliance programme here to cost, no deadline to plan against, and nothing to take to a board. Select the countries you operate in.")}');
+  }
+
   const mandated = sel.filter(c => c[4] > 0);
   if(mandated.length && (intSimple + intComplex) === 0){
     warn.push(fill(plur(mandated.length, PLURALS.guardZeroInt), mandated.length));
@@ -3196,7 +3299,13 @@ function build(){
   // 2. A payback so fast it is not credible. Nothing in this field pays
   //    back in under a month; if it does, an input is wrong by an order
   //    of magnitude.
-  if(paybackMonths !== null && paybackMonths > 0 && paybackMonths < 1){
+  // Greater-than-or-equal to zero, not greater-than. The old test
+  // excluded a payback of exactly zero, which is what a zero one-off
+  // cost produces -- so the single most
+  // implausible output the model can make, a free programme returning
+  // money immediately, was the one case the implausibility guard skipped.
+  // Reachable in two clicks: clear the country list and press Calculate.
+  if(paybackMonths !== null && paybackMonths >= 0 && paybackMonths < 1){
     warn.push('${tj("guard.payback","<strong>Payback under one month.</strong> No e-invoicing programme pays back that fast. Check the volumes and the per-invoice costs &mdash; one of them is out by an order of magnitude, and the rest of this page inherits it.")}');
   }
 
@@ -3425,7 +3534,21 @@ function build(){
           + '<th class="num">${tj("pdf.th.start","Latest responsible start")}</th>'
           + '<th class="num">${tj("pdf.th.elapsed","Elapsed")}</th></tr></thead><tbody>'
           + WAVES.map(wv => {
-              const who = ganttRows.filter(r => r.waveKey === wv.dl).map(r => r.c[0]);
+              // (ganttRows || []) -- buildGantt returns NULL when there is
+              // nothing dated to plan, which is what an empty country
+              // selection produces. The guard three hundred lines up
+              // already writes it that way; this one did not, so opening
+              // the table view and then clearing the selection threw
+              // "Cannot read properties of null" and the table silently
+              // stopped rendering.
+              //
+              // Live since the table view was added, and never seen
+              // because reaching it needs two actions in one order: open
+              // the table, THEN empty the selection. Found by a new
+              // regression check for a different defect walking that path
+              // by accident -- which is the argument for tests that drive
+              // states rather than assert on the default one.
+              const who = (ganttRows || []).filter(r => r.waveKey === wv.dl).map(r => r.c[0]);
               const flag = wv.risk === 'critical' ? ' &#9888;' : '';
               return '<tr><td><strong>' + wv.dl + '</strong>' + flag + '</td><td>'
                 + (who.length > 6 ? who.slice(0, 6).join(', ') + ' +' + (who.length - 6) : who.join(', '))
