@@ -1640,6 +1640,37 @@ const cleared = await page.evaluate(() => {
 t.check(`and every field's own mark retires with it (${cleared} of 6)`,
   cleared === 6, cleared);
 
+// ---- 38. what you ticked is not what the plan schedules ----
+// Dan, 16 Aug 2026: selecting Germany alone showed "2 countries with a
+// dated deadline ahead". The COUNT was right -- Germany carries its own
+// 2027 mandate and ViDA in 2030, and the planner schedules both -- but
+// the footprint card read "Across 1 jurisdictions you have 1 complex and
+// 1 simple regime", which is one not equalling one plus one.
+//
+// The card counted the ticked set and the mix counted the scheduled set.
+// This check is the reconciliation, on the smallest selection that can
+// expose it: a single EU member state.
+await page.evaluate(() => {
+  document.getElementById("useSubs").checked = false;
+  document.querySelectorAll("#countryList input[type=checkbox][data-i]")
+    .forEach((bx) => { bx.checked = COUNTRIES[+bx.dataset.i][0] === "Germany"; });
+});
+await page.click("#run"); await page.waitForTimeout(900);
+const solo = await page.evaluate(() => ({
+  ticked: document.querySelectorAll("#countryList input:checked").length,
+  card: document.querySelector("#summary .card").innerText.replace(/\s+/g, " "),
+  stat: [...document.querySelectorAll("#summary .stat")].pop().innerText.replace(/\s+/g, " "),
+}));
+t.check(`one tick, and the card counts what is scheduled (${solo.ticked} ticked)`,
+  solo.ticked === 1 && /Across 2 jurisdictions/.test(solo.card), solo.card.slice(0, 120));
+const mix = solo.card.match(/(\d+) complex[\s\S]*?(\d+) simple/);
+t.check(`and the mix reconciles to that count (${mix ? mix[1] + "+" + mix[2] : "?"})`,
+  !!mix && Number(mix[1]) + Number(mix[2]) === 2, solo.card.slice(0, 160));
+t.check("the injected EU row is named, not left to be inferred",
+  /EU-wide obligation/.test(solo.card), solo.card.slice(0, 200));
+t.check("and the stat is not labelled with a noun that is false of it",
+  !/countr/i.test(solo.stat) && /2/.test(solo.stat), solo.stat);
+
 // ---- 37. the compliance-only share shows its working ----
 // Migration 561. The page credited compliance with 43% of the AP
 // reduction and said nowhere what 43% was — the least explained number

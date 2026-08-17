@@ -2399,6 +2399,30 @@ function build(){
   const l1 = saving + savingAR + errSave;
 
   // --- complexity / waves
+  // WHAT THE READER TICKED vs WHAT THE PLAN SCHEDULES.
+  //
+  // Dan, 16 Aug 2026: "When I select one country - lets say Germany. The
+  // calculator shows 2 countries with a dated deadline ahead... because
+  // the European Union is being classified as a second country."
+  //
+  // The COUNT is right and the framing was wrong. Selecting Germany gives
+  // you two dated obligations to hit -- the German mandate in 2027 and
+  // ViDA in 2030 -- and the planner schedules, costs and back-plans both.
+  // The EU row is injected rather than selectable precisely so a real
+  // obligation cannot be omitted by forgetting to tick it.
+  //
+  // But sel is what the reader ticked and tracks is what the plan
+  // contains, and the summary was reading from BOTH. The footprint card
+  // printed "Across 1 jurisdictions you have 1 complex and 1 simple
+  // regime" -- 1 that does not equal 1 + 1, on a page whose whole
+  // proposition is that its arithmetic reconciles. Dan found the label;
+  // the contradiction underneath it had been there since 534.
+  //
+  // Everything the reader is told about scope now counts tracks, and
+  // the EU row is NAMED when it is present, so a 2 that follows one tick
+  // explains itself instead of looking like a miscount.
+  const planned = tracks.length;
+  const euInjected = tracks.length - sel.length;
   const complex = tracks.filter(c=>c[4]===2), simple = tracks.filter(c=>c[4]===1);
   const watch = tracks.filter(c=>c[4]===0);
   const dated = tracks.filter(c=>c[5]).sort((a,b)=>a[5]<b[5]?-1:1);
@@ -2598,17 +2622,17 @@ function build(){
       <div class="stat"><div class="n" style="color:#e0907f">\${fmt(oneOff)}</div><div class="l">${tj("res.oneOff","One-off investment")} <span class="statwhat">${tj("res.oneOff2","implementation")}</span><span class="statrun">${tj("res.running","plus each year:")} \${fmt(cPlat)} ${tj("res.running2","platform")}${hlp('cPlat',t("tip.covers","What this covers"))} + \${fmt(cRun)} ${tj("res.running3","internal")}${hlp('cRun',t("tip.covers","What this covers"))}</span></div></div>
       <div class="stat"><div class="n" style="color:\${netAnnual>=0?'#7fd0a8':'#e0907f'}">\${fmt(netAnnual)}</div><div class="l">${tj("res.netAnnual","Net annual saving")}</div></div>
       <div class="stat"><div class="n" style="color:\${paybackMonths&&paybackMonths<=24?'#7fd0a8':'#e2b978'}">\${paybackMonths===null?'n/a':paybackMonths<1?'&lt;1mo':Math.round(paybackMonths)+'mo'}</div><div class="l">${tj("res.payback","Payback on one-off")}</div></div>
-      <div class="stat"><div class="n" style="color:\${dated.length?'#e08b7a':'#8d9bb5'}">\${dated.length}</div><div class="l">${tj("res.dated","Countries with a dated deadline ahead")}</div></div>
+      <div class="stat"><div class="n" style="color:\${dated.length?'#e08b7a':'#8d9bb5'}">\${dated.length}</div><div class="l">${tj("res.dated","Jurisdictions with a dated deadline ahead")}</div></div>
     </div>
     <div class="note" style="margin-top:14px">\${banked
       ? \`<strong>${tj("sum.scopeBoth","Scope: compliance + AP process automation.")}</strong> ${tj("sum.scopeBoth2","Every direct row counts, and the timeline carries a process-change phase per country. The larger, less common programme.")}\`
       : \`<strong>${tj("sum.scopeOnly","Scope: compliance only.")}</strong> \${fmt(l1Banked + l2)} ${tj("sum.scopeOnly2","is saved from the integration itself; the remaining")} \${fmt(l1Unbanked)} ${tj("sum.scopeOnly3","needs a change programme you are not running.")}\`} ${tj("sum.bridge6","Net annual saving is the annual saving less the two running costs above; section 4 shows what makes up the annual saving, row by row.")} \${notesLink()}</div>
     <div id="guards"></div>
     <div class="card"><p style="margin:0">\${fill('${tj("card.mix","Across {0} jurisdictions you have {1} (CTC or 5-corner) and {2} (4-corner exchange){3}.")}',
-        '<strong>' + sel.length + '</strong>',
+        '<strong>' + planned + '</strong>',
         '<strong>' + complex.length + ' ${tj("word.complex","complex")}</strong>',
         '<strong>' + simple.length + ' ' + plur(simple.length, '${tj("word.regime","simple regime")}', '${tj("word.regimes","simple regimes")}') + '</strong>',
-        watch.length ? fill('${tj("card.plusNoMandate",", plus {0} with no mandate{1}")}', watch.length, '${hlp('nomandate',t("tip.nomandate","Why these are still in the plan"))}') : '')}
+        watch.length ? fill('${tj("card.plusNoMandate",", plus {0} with no mandate{1}")}', watch.length, '${hlp('nomandate',t("tip.nomandate","Why these are still in the plan"))}') : '')}\${euInjected ? ' ' + fill('${tj("card.euRow","One of these is the <strong>EU-wide obligation</strong>, added automatically because you selected a member state{0} &mdash; ViDA binds it whether or not it legislates its own mandate.")}', '${hlp('vida',t("tip.vida","Where this comes from"))}') : ''}
       \${fill('${tj("card.integrations","With {0} that is roughly {1}{2} to deliver.")}',
         erp + ' ' + plur(erp, '${tj("word.erp","ERP/billing system")}', '${tj("word.erps","ERP/billing systems")}'),
         '<strong>' + integrations + ' ' + plur(integrations, '${tj("word.integration","country-system integration")}', '${tj("word.integrations","country-system integrations")}') + '</strong>',
@@ -2918,7 +2942,7 @@ function build(){
       '<section class="pg">'
       + '<div class="mast"><h1>${tj("pdf.title","E-Invoicing ROI<br>&amp; Wave Plan")}</h1>'
       + '<div class="who">${tj("pdf.masthead","The E-Invoicing Compliance Corner")}<br>'
-      + sel.length + ' ${tj("pdf.jur","jurisdictions")} &middot; ' + volAP.toLocaleString() + ' AP / '
+      + planned + ' ${tj("pdf.jur","jurisdictions")} &middot; ' + volAP.toLocaleString() + ' AP / '
       + volAR.toLocaleString() + ' AR<br>' + (banked ? '${tj("pdf.scopeBoth","Compliance + AP automation")}' : '${tj("pdf.scopeOnly","Compliance only")}')
       + ' &middot; ' + when + '</div></div>'
 
@@ -2946,7 +2970,7 @@ function build(){
           + money(cPlat) + ' ${tj("res.running2","platform")} + ' + money(cRun) + ' ${tj("res.running3","internal")}')
       + kpi(money(netAnnual), '${tj("res.netAnnual","Net annual saving")}', netAnnual >= 0 ? 'good' : 'cost')
       + kpi(paybackMonths === null ? 'n/a' : paybackMonths < 1 ? '&lt;1 mo' : Math.round(paybackMonths) + ' mo', '${tj("res.payback","Payback on one-off")}', paybackMonths !== null && paybackMonths <= 24 ? 'good' : 'warn')
-      + kpi(dated.length, '${tj("res.dated","Countries with a dated deadline ahead")}', dated.length ? 'warn' : '')
+      + kpi(dated.length, '${tj("res.dated","Jurisdictions with a dated deadline ahead")}', dated.length ? 'warn' : '')
       + '</div>'
 
       // Dan asked for the footprint card on page 1 too. It is the sentence
@@ -2961,10 +2985,11 @@ function build(){
       // rewriting them for print would be a third copy of a sentence this
       // migration exists to stop duplicating.
       + '<div class="note">' + fill('${tj("card.mix","Across {0} jurisdictions you have {1} (CTC or 5-corner) and {2} (4-corner exchange){3}.")}',
-          '<strong>' + sel.length + '</strong>',
+          '<strong>' + planned + '</strong>',
           '<strong>' + complex.length + ' ${tj("word.complex","complex")}</strong>',
           '<strong>' + simple.length + ' ' + plur(simple.length, '${tj("word.regime","simple regime")}', '${tj("word.regimes","simple regimes")}') + '</strong>',
           watch.length ? fill('${tj("card.plusNoMandate",", plus {0} with no mandate{1}")}', watch.length, '') : '')
+        + (euInjected ? ' ' + fill('${tj("card.euRow","One of these is the <strong>EU-wide obligation</strong>, added automatically because you selected a member state{0} &mdash; ViDA binds it whether or not it legislates its own mandate.")}', '') : '')
         + ' ' + fill('${tj("card.integrations","With {0} that is roughly {1}{2} to deliver.")}',
           erp + ' ' + plur(erp, '${tj("word.erp","ERP/billing system")}', '${tj("word.erps","ERP/billing systems")}'),
           '<strong>' + integrations + ' ' + plur(integrations, '${tj("word.integration","country-system integration")}', '${tj("word.integrations","country-system integrations")}') + '</strong>', '')

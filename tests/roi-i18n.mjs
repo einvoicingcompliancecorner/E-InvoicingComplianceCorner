@@ -113,7 +113,7 @@ try {
     ["a savings group label", "Named, not priced"],
     ["a savings column heading", "Saved on this scope"],
     ["a row tag, newly translatable", "not saved"],
-    ["a runtime stat label", "Countries with a dated deadline ahead"],
+    ["a runtime stat label", "Jurisdictions with a dated deadline ahead"],
     ["a notes-panel card", "The same saving, counted in people"],
     ["an evidence card", "credible body, unattributed"],
     ["the footer", "not tax, legal or investment advice"],
