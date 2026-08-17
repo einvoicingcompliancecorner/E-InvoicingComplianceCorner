@@ -13309,3 +13309,87 @@ doing precisely the job it was added for.
 including a new reconciliation test on the smallest selection that can
 expose this — a single EU member state. Replay OK across 568 files —
 **309 assertions, 75 standing invariants**.
+
+---
+
+## 17 August 2026 — the harness stops measuring a document nobody receives
+
+*No migration. Test harness and repository only.*
+
+Dan: *"please make these changes to design review and vendoring the three
+fonts"*, closing recommendation 2 on the design review — the one
+recommendation on that page prompted by discovering that the document's
+own evidence was unsound.
+
+### The gap
+
+`members-worker`'s shell loads Big Shoulders Display, IBM Plex Sans and
+IBM Plex Mono from Google Fonts. `tests/lib/build-page.mjs` never did,
+and said so in a comment: *"fallback fonts do not change computed
+font-size, which is what the contrast thresholds turn on."* True when it
+was written, and true of the contrast audit today. **False of every
+width, wrap, overflow and min-height check added since** — the 860px
+overflow probes, the 37px label min-height, the three-column widths, the
+finding that a select truncated. All of them measured system fallbacks
+and were reported as verified.
+
+The sandbox that runs the suite cannot reach `fonts.googleapis.com` at
+all, which is why the gap survived: the one environment that would have
+exposed it is the one that cannot load the fonts.
+
+### What changed
+
+Ten `woff2` files in `vendor/fonts/` — 196KB, exactly the weights the
+shell requests, both families under the SIL Open Font License 1.1, with
+licence texts and a README beside them. `build-page.mjs` emits
+`@font-face` rules pointing at them over `file://`, always on, no
+network. Mocks additionally keep the production `<link>`, because a mock
+is opened on Dan's machine where the local paths resolve to nothing.
+
+A missing file **throws, naming the file**. A silent fallback would put
+the harness straight back where it was, and the symptom — slightly
+different measurements — is one nobody would question.
+
+### Two new regression checks, and why they are measured rather than asserted
+
+`document.fonts` reporting "loaded" only means the file parsed. The
+question worth asking is whether text is actually *set* in it. The checks
+measure a probe string: Big Shoulders sets **555px against 867px** for
+the fallback at the same size, so the threshold is 15% narrower — far
+below the real 36% gap and far above hinting noise.
+
+This exists because the failure mode has no symptom. If the rules stop
+resolving, nothing errors and nothing looks wrong; the suite just quietly
+returns to measuring a different document.
+
+### The result nobody predicted: nothing broke
+
+The design review expected real faces to fail layout assertions that had
+been passing against substitute metrics. **They did not.** 212 regression
+checks, both contrast audits, and a fresh overflow probe at 1280px and
+420px all pass unchanged — despite the display face setting 36% narrower
+than what it replaced.
+
+The honest reading is not "the gap did not matter" but **"we did not
+know, and now the measurement is the one worth quoting."** Recorded
+because *we found nothing* is the outcome this kind of work most often
+has and the one least often written down.
+
+### Design review
+
+Revised to migration 568. The harness card drops from critical to medium
+— the font half is closed, the shape is not, since the print-mode ribbon
+check was the same defect in a different dimension the same week.
+Recommendation 2 is marked done with its wrong prediction stated.
+Migration 568's finding is added as its own card, **"two sets, one
+sentence"**, deliberately not filed under *one fact, two homes*: nothing
+disagreed with anything, and no invariant can catch it, because both
+stored values were right and only the noun describing them was wrong. A
+new §04 convention: **the harness loads what production loads.**
+
+### Verified
+
+`npm test`: 9 suites, all passing. ROI regression **212 checks** (was
+210). Replay OK across 568 files — **311 assertions, 78 standing
+invariants**. Missing-font guard confirmed by removing a weight and
+checking the throw names it.
