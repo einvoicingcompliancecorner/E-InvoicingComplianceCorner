@@ -13138,3 +13138,99 @@ in code that is served.
 
 `npm test`: 9 suites, all passing. ROI regression **199 checks**. Replay OK
 across 566 files — **298 assertions, 72 standing invariants**.
+
+
+## 16 August 2026 (cont'd) — The PDF catches up with the page (migration 567)
+
+Dan: *"can you look at the pdf print, and ensure that all of the relevant
+information is captured. We have revised the financial information heading
+and other sections, including prose, which may need to be updated."* Then,
+on review: five boxes not four, the footprint sentence, the dated-deadline
+wording, and ribbons that point.
+
+### Page 2 was already right, and that is the clue
+
+Its reasoning cards and evidence panel read the **same D1 rows the screen
+reads**, so migration 566's rewrite reached the PDF the moment it applied,
+with nobody touching PDF code.
+
+Everything wrong was somewhere the PDF held **its own copy**: its KPI
+labels, its figures table, its closing prose. Shared rows stayed correct;
+duplicated ones rotted. Fourth instance of "one model, two renderings"
+after the jurisdiction count, the gantt label, and 546's missing undated
+jurisdictions.
+
+### What had drifted
+
+**The headline had the wrong name for six days.** Migration 543 renamed the
+summary stats because "banked" does not translate — "Annual saving", "Net
+annual saving". The PDF printed the same two numbers as "Annual benefit"
+and "Net annual".
+
+**Two inputs never reached the figures table.** 557's e-invoice share and
+558's resolution time — among the largest levers in the model — were
+absent. A reader could see "Errors eliminated 80%" with no minutes to
+apply it to. The decomposed manual cost of $14.23 is added beside them,
+because it appeared nowhere in a table whose only AP cost was Ardent's
+blended $9.84, and without it the AP row cannot be reconstructed.
+
+**The reduction's source predated its own corroboration.** Still HMRC
+alone, when 560 established the ATO independently implies 67–70% — the
+weakest version of the evidence, on the artefact most likely to be
+challenged in a room.
+
+**And the closing prose was the register 566 removed.** "D our assumption,
+nothing claimed… argued with rather than believed", hours after that
+sentence left the page. Its own copy, so it survived.
+
+### The fix that was the wrong shape
+
+The first attempt updated `pdf.kpi1` / `pdf.kpi3` to match the screen and
+added a standing invariant joining the two rows to keep them equal. It
+would have worked. **An invariant saying two strings must always be
+identical is an admission that one of them should not exist.**
+
+The PDF now reads `res.banked`, `res.oneOff`, `res.netAnnual`,
+`res.payback` and `res.dated` — the same rows the executive summary
+renders — and the four `pdf.kpi*` rows are deleted. One string per label;
+no check needed.
+
+**That paid off within the hour.** Dan's relabel to "Countries with a dated
+deadline ahead" was one row and landed on both surfaces at once — the
+first change in this sequence to need no second edit. The footprint card
+does the same, reusing `card.mix`, `card.integrations` and `card.nearest`
+with the tooltip slots filled empty rather than becoming a third copy.
+
+### Ribbons that point
+
+Dan: *"green, indicating positive saving, or net benefit, and red ribbon to
+indicate a cost. I can see that the one-off investment is green, but this
+is an overhead."*
+
+Worse than uninformative: **every box carried the same green**, so the one
+figure a reader most needs to read as money going out was coloured as money
+coming in. Rules mirror the screen's own stat colours, darkened for print.
+Payback and the deadline count take amber and grey — neither is a saving or
+a cost, and diluting green and red would defeat the request.
+
+The one-off box also carries its breakdown now, as the screen does:
+*implementation · plus each year: $60,000 platform + $30,000 internal*. A
+one-off figure printed alone reads as the whole cost of the programme, and
+the running cost is the part that never stops.
+
+### A check that would have passed against nothing
+
+The first ribbon test read computed colours in **screen** mode, and
+`#pdfdoc`'s rules live inside `@media print`. Every ribbon came back the
+same off-white and the check would have gone green against a colour no
+reader ever sees. It emulates print now and restores screen afterwards.
+
+**Worth generalising: the print stylesheet is invisible to any test that
+does not ask for it**, so every future PDF check must emulate print or it
+is testing the wrong document.
+
+### Verified
+
+`npm test`: 9 suites, all passing. ROI regression **206 checks** (was 199).
+Replay OK across 567 files — **303 assertions, 73 standing invariants**.
+PDF still exactly two pages.

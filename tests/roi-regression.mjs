@@ -846,10 +846,71 @@ const pdf = await page.evaluate(() => {
   return { pages: pgs.length, p1: pgs[0] ? pgs[0].innerText : "", p2: pgs[1] ? pgs[1].innerText : "" };
 });
 t.check(`the PDF document is exactly two pages (${pdf.pages})`, pdf.pages === 2, pdf.pages);
+// 567: five KPI boxes, not four, and page 1 carries the footprint
+// sentence. Both asked for by Dan; both checked against the SCREEN's own
+// content rather than literals, because the whole point of that
+// migration was that the PDF stopped holding its own copies.
+const strip = await page.evaluate(() => ({
+  pdfBoxes: document.querySelectorAll("#pdfdoc .kpi").length,
+  screenStats: document.querySelectorAll("#summary .grid .stat").length,
+}));
+t.check(`the PDF strip has as many boxes as the screen (${strip.pdfBoxes} vs ${strip.screenStats})`,
+  strip.pdfBoxes === strip.screenStats && strip.pdfBoxes === 5, JSON.stringify(strip));
+t.check("and page 1 states the footprint before it states the money",
+  /Across \d+ jurisdictions/.test(pdf.p1) && /country-system integration/.test(pdf.p1),
+  pdf.p1.slice(0, 200));
+// The ribbon on each box says which way the number points. Dan: "green,
+// indicating positive saving, or net benefit, and red ribbon to indicate
+// a cost. I can see that the one-off investment is green, but this is an
+// overhead." Every box carried the same green before 567, so the one
+// figure a reader most needs to read as money going OUT was coloured as
+// money coming in.
+// #pdfdoc's rules live inside @media print, so computed styles are the
+// SCREEN values unless print is emulated. Read that way, every ribbon
+// came back the same off-white and the check would have "passed" against
+// a colour the reader never sees. Restored to screen afterwards, because
+// every later check in this suite reads the on-screen page.
+await page.emulateMedia({ media: "print" });
+await page.waitForTimeout(200);
+const ribbons = await page.evaluate(() => {
+  const out = {};
+  document.querySelectorAll("#pdfdoc .kpi").forEach((k) => {
+    const label = k.querySelector(".l").innerText.trim();
+    out[label] = getComputedStyle(k).borderLeftColor;
+  });
+  return out;
+});
+const GREEN = "rgb(47, 125, 85)", RED = "rgb(181, 67, 47)";
+t.check(`the saving is green (${ribbons["Annual saving"]})`,
+  ribbons["Annual saving"] === GREEN, JSON.stringify(ribbons));
+t.check(`the one-off investment is red, not green (${ribbons["One-off investment"]})`,
+  ribbons["One-off investment"] === RED, JSON.stringify(ribbons));
+t.check(`a positive net annual is green (${ribbons["Net annual saving"]})`,
+  ribbons["Net annual saving"] === GREEN, JSON.stringify(ribbons));
+await page.emulateMedia({ media: "screen" });
+t.check("and the one-off box carries its running-cost breakdown",
+  /plus each year/.test(pdf.p1) && /platform/.test(pdf.p1), pdf.p1.slice(0, 220));
+
+t.check("naming the nearest binding date, or saying there is none",
+  /nearest binding date is|no future dated deadline|has a future dated deadline/i.test(pdf.p1),
+  pdf.p1.slice(0, 240));
 // "Banked annually" sat over l1Banked + l2 — a figure including the
 // modelled indirect row, which is not banked in this page's sense of the
 // word. 536 relabelled it rather than changing the arithmetic, per Dan.
-t.check("page 1 carries the headline findings", /Annual benefit/.test(pdf.p1) && /Payback/.test(pdf.p1));
+//
+// 567: the PDF now uses the SAME words as the screen. 543 renamed the
+// summary stats and the PDF kept its own copies for six days, so one
+// figure had two names depending on where you read it. Asserted against
+// the screen's label rather than a literal, so the two cannot drift
+// apart again without this failing.
+// Case-insensitive: the screen label is uppercased by CSS and innerText
+// reports the rendered case, while the PDF prints it as stored. The
+// WORDS are the thing that must match, not the styling.
+const screenLabel = (await page.locator("#summary .stat .l").first().innerText())
+  .split("(")[0].trim().toLowerCase();
+t.check(`page 1 uses the screen's own headline label (${screenLabel})`,
+  pdf.p1.toLowerCase().includes(screenLabel) && /Payback/.test(pdf.p1),
+  `${screenLabel} :: ${pdf.p1.slice(0, 140)}`);
 t.check("page 1 carries the wave plan", /Latest responsible start/i.test(pdf.p1));
 t.check("page 2 carries the assumptions and their grades",
   /Assumptions/i.test(pdf.p2) && /Grade A measured/i.test(pdf.p2));
