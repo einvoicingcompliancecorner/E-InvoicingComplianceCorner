@@ -1,0 +1,84 @@
+-- ================================================================
+-- The working folds away on a phone, and only on a phone.
+--
+-- Dan, after seeing the mobile page at ~9,700px: "could you collapse
+-- evidence only in mobile view?"
+--
+-- ---- WHAT WAS TAKING THE SPACE --------------------------------------
+--
+-- The "Calculation:" and "Justification:" lines under each savings row,
+-- and the "Why" paragraph under each wave row. On a 1440px screen they
+-- sit in their own column and cost the reader nothing. On a 390px screen
+-- they ARE the page.
+--
+-- The wave-table half is largely REPEATED: seven jurisdictions, three
+-- distinct regime explanations, the same paragraph printed five times.
+-- Same shape as the five "Named, not priced" cells the usability review
+-- flagged -- a column that says the same thing again at full weight.
+--
+-- Folded, the mobile page is 8,597px against 9,757. Level with where it
+-- started, while now showing the wave plan as a table AND hiding nothing
+-- off the right-hand edge.
+--
+-- ---- ONLY ON A PHONE, AND THAT IS THE LOAD-BEARING PART -------------
+--
+-- Evidence on demand is a reasonable trade on a 390px screen and a bad
+-- one everywhere else: this page's whole proposition is that every figure
+-- shows its derivation without being asked. A change that quietly reached
+-- the desktop would be a far worse defect than the one it fixes, so the
+-- collapser returns before doing anything when the viewport is wide, and
+-- the suite asserts at 1440px that no disclosure exists and the working
+-- is still in the cell.
+--
+-- ---- A POST-RENDER STEP, NOT NINE ROW TEMPLATES ---------------------
+--
+-- Wrapping each cell in the markup would mean editing every row in both
+-- tables and keeping the wrappers in step for ever. One function that
+-- walks the rendered rows is obviously mobile-only and cannot be applied
+-- to half of them by accident.
+--
+-- IT MUST NOT WORK BY POSITION. The total row's first cell spans two
+-- columns, so index 1 there is the ANNUAL VALUE FIGURE -- and the first
+-- version duly folded a headline number into a "show the working"
+-- disclosure and left the card looking like it had lost a figure. A
+-- numeric cell is never working, whatever index it lands on.
+--
+-- The same colspan inverted the card layout in that row: ordered by
+-- nth-child, "saved on this scope" printed above "annual value", and only
+-- there. Ordered by class, the layout stops depending on how many columns
+-- a cell happens to span.
+--
+-- ---- THE MARKER TURNS, THE LABEL DOES NOT ---------------------------
+--
+-- One string, no state in the copy, nothing for a translator to keep in
+-- agreement with a second string they cannot see.
+INSERT OR REPLACE INTO translations (namespace, key, lang, value) VALUES
+  ('roi', 'basis.showWorking', 'en', 'Show the working');
+
+-- ---- AND THE OCTAL TRAP, FOR THE SECOND TIME ------------------------
+--
+-- The disclosure marker went in as content:'\25B8'. A CSS unicode escape
+-- is an OCTAL ESCAPE to the JavaScript parser, and ROI_STYLE is a
+-- template literal, so it is a syntax error -- reported as "Octal escape
+-- sequences are not allowed in template strings", which mentions neither
+-- CSS nor the line you wrote.
+--
+-- render-lint caught it, as a parse failure rather than as itself, and
+-- now catches the shape by name. Third trap in that file to earn a rule:
+-- backticks in comments, t() in single quotes, and this.
+--
+-- ---- what this migration claims it did ------------------------------
+-- ASSERT: SELECT count(*) FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key = 'basis.showWorking' = 1
+--
+-- The disclosure label must never become two strings -- an open state and
+-- a closed one. The marker carries the state; a second row would be a
+-- second thing for a translator to keep in agreement with something they
+-- cannot see on screen at the same time.
+--
+-- The first draft wrote this as a subquery on the right-hand side and the
+-- runner refused it: an assertion compares one value to a LITERAL, by
+-- design, so that what a migration claims can be read without executing
+-- anything. The rule survives the restatement -- no sibling key, so no
+-- second string to keep in agreement.
+--
+-- ASSERT ALWAYS: SELECT count(*) FROM translations WHERE namespace = 'roi' AND key LIKE 'basis.show%' AND key != 'basis.showWorking' = 0

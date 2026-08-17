@@ -676,10 +676,16 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
   #savingsTable td{display:block;border:0;padding:0}
   #savingsTable td:first-child{order:1;flex:1 1 100%;color:var(--text-lo);font-weight:600;line-height:1.35}
   #savingsTable td.num{order:2;flex:1 1 44%;margin-top:9px;text-align:left;font-size:15px}
+  /* The total row's first cell spans two columns, so its figures are at
+     nth-child 2 and 3 rather than 3 and 4 -- which put "saved on this
+     scope" above "annual value" and only in that row. Ordered by class,
+     the layout stops depending on how many columns a cell happens to
+     span. */
+  #savingsTable td.num:nth-child(2){order:2}
   #savingsTable td.num::before{content:attr(data-col);display:block;
     font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.06em;
     text-transform:uppercase;color:var(--muted);margin-bottom:2px;font-weight:400}
-  #savingsTable td:nth-child(2){order:3;flex:1 1 100%;margin-top:11px;padding-top:10px;
+  #savingsTable td:nth-child(2):not(.num){order:3;flex:1 1 100%;margin-top:11px;padding-top:10px;
     border-top:1px solid var(--line);font-size:12.5px}
   /* The band headings ("Priced — counted in the business case") are one
      full-width cell and must not become a card. */
@@ -706,6 +712,19 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
   #waves td:nth-child(4){order:3;margin-top:8px}
   #waves td:nth-child(6){order:4;flex:1 1 100%;margin-top:11px;padding-top:10px;
     border-top:1px solid var(--line)}
+
+  /* The disclosure the collapser builds. Styled as a line of the card
+     rather than as a control, because it is one tap and the reader should
+     not have to aim. The marker turns rather than the label changing, so
+     there is one string to translate and no state in the copy. */
+  details.working > summary{list-style:none;cursor:pointer;color:var(--soon);
+    font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.06em;
+    text-transform:uppercase;padding:3px 0;min-height:30px;display:flex;align-items:center;gap:6px}
+  details.working > summary::-webkit-details-marker{display:none}
+  details.working > summary::before{content:'▸';display:inline-block;
+    transition:transform .12s;font-size:11px}
+  details.working[open] > summary::before{transform:rotate(90deg)}
+  details.working[open] > summary{margin-bottom:6px}
 }
 .grid > div{display:flex;flex-direction:column;min-width:0}
 .grid > div > .hint{margin-top:6px}
@@ -1639,6 +1658,52 @@ const payback = (m) => m === null ? '${tj("res.payback.na","n/a")}'
   : fill('${tj("res.payback.months","{0}mo")}', Math.round(m));
 // Plain counts -- invoice volumes, error counts. Same locale, no currency.
 const num0 = n => nf({ maximumFractionDigits: 0 }).format(n);
+
+// EVIDENCE COLLAPSES ON A PHONE, AND ONLY ON A PHONE.
+//
+// Dan, after seeing the mobile page at ~9,700px: "could you collapse
+// evidence only in mobile view?"
+//
+// The working under each savings row and the "Why" under each wave row
+// are most of that height, and the second is largely repeated -- seven
+// jurisdictions, three distinct regime explanations, the same paragraph
+// printed five times. On a 1440px screen it sits in its own column and
+// costs the reader nothing. On a 390px screen it is the page.
+//
+// A POST-RENDER STEP RATHER THAN NINE ROW TEMPLATES. Wrapping the cell in
+// the markup would mean editing every row in both tables and keeping the
+// wrappers in step for ever; doing it here is one function, obviously
+// mobile-only, and impossible to apply to half the rows by accident.
+//
+// Desktop is untouched: the function returns before it has done anything.
+// That matters more than the line count -- the evidence is this page's
+// whole proposition, and a change that could quietly reach the desktop is
+// a different and much worse change from the one that was asked for.
+const collapseWorking = (hostId, cellIndex) => {
+  if(!window.matchMedia('(max-width:700px)').matches) return;
+  const host = document.getElementById(hostId);
+  if(!host) return;
+  host.querySelectorAll('tbody tr').forEach(tr => {
+    const cell = tr.children[cellIndex];
+    // NOT BY POSITION ALONE. The total row's first cell spans two columns,
+    // so index 1 there is the ANNUAL VALUE FIGURE -- and the first version
+    // of this duly folded a headline number into a "show the working"
+    // disclosure and left the card looking like it had lost a figure.
+    //
+    // A numeric cell is never working, whatever index it lands on.
+    if(!cell || cell.classList.contains('num')) return;
+    // Group headings are a single full-width cell with nothing to fold.
+    if(cell.hasAttribute('colspan') || !cell.textContent.trim()) return;
+    if(cell.querySelector('details')) return;              // already done
+    const d = document.createElement('details');
+    d.className = 'working';
+    const sum = document.createElement('summary');
+    sum.textContent = '${tj("basis.showWorking","Show the working")}';
+    d.appendChild(sum);
+    while(cell.firstChild !== null && cell.firstChild !== d) d.appendChild(cell.firstChild);
+    cell.appendChild(d);
+  });
+};
 
 // ---- evidence grades -------------------------------------------------
 // A = measured, primary, attributable      B = published by a credible body but unattributed within it
@@ -3303,6 +3368,7 @@ function build(){
   const inforceNoDate = sel.filter(c=>c[3]==='i' && !c[5]);
   if(inforceNoDate.length) w += \`<div class="note" style="margin-top:12px">\${fill('${tj("waves.inforce","<strong>Already in force, no further dated step ({0}):</strong> {1}. These are compliance-now, not project-plan items.")}', inforceNoDate.length, inforceNoDate.map(c=>c[0]).join(', '))}</div>\`;
   document.getElementById('waves').innerHTML = w;
+  collapseWorking('waves', 5);
   const gt = document.getElementById('ganttToggle');
   if(gt && !gt.dataset.wired){
     gt.dataset.wired = '1';
@@ -3413,6 +3479,7 @@ function build(){
     <tr class="tierD" data-row="fraud"><td>${t("row.fraud","Fraud detection, working-capital visibility")} <span class="tag intang">${t("tag.intangible","intangible")}</span></td><td><span class="bcalc"><span class="blab">${tj("basis.lab.calc","Calculation:")}</span>${tj("basis.notPriced","Named, not priced.")}</span><span class="bjust"><span class="blab">${tj("basis.lab.just","Justification:")}</span>\${fill('${tj("basis.fraud.just","Strategic benefits with no published benchmark {0}.")}', ev('yours','${tj("ev.yourCall","your call")}'))}</span></td>\${dash}</tr>
     </tbody></table>
     \`;
+  collapseWorking('savingsTable', 1);
 
 
   // ---- savings composition ------------------------------------------

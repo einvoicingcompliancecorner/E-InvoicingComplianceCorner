@@ -77,6 +77,15 @@ if (sStart < 0 || sEnd < 0) {
       bad.push([i + 1, "unescaped backtick in the stylesheet: " + line.trim()]);
     } else if ((inComment || /\/\*/.test(line)) && /(^|[^\\])\$\{/.test(line)) {
       bad.push([i + 1, "unescaped ${ in a stylesheet comment: " + line.trim()]);
+    } else if (/content\s*:\s*['"]\\[0-9a-fA-F]/.test(line)) {
+      // A CSS unicode escape -- content:'\25B8' -- is an OCTAL ESCAPE to
+      // the JavaScript parser, which is a syntax error inside a template
+      // literal. Twice now. The parser's own message is "Octal escape
+      // sequences are not allowed in template strings", which does not
+      // mention CSS, the stylesheet, or the line you actually wrote.
+      // Write the character literally: ▸ rather than \25B8.
+      bad.push([i + 1, "CSS unicode escape in a template literal -- write the "
+        + "character itself, not a backslash escape: " + line.trim()]);
     }
     if (/\/\*/.test(line) && !/\*\//.test(line)) inComment = true;
     else if (/\*\//.test(line)) inComment = false;
