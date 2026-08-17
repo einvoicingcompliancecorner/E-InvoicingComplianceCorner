@@ -1824,6 +1824,95 @@ for (const fig of ["25.7", "42.9", "70.3"]) {
 }
 t.check("and says which end was taken", /lowest is used/i.test(bracket));
 
+// ---- 38c. the four things a usability read found ---------------------
+//
+// None of these was caught by any of the ten suites. Three were found by
+// rendering the page and looking at it, which is worth stating in the
+// file that exists to stop them coming back.
+
+// (a) RESULTS GO STALE, AND SAY SO. Silent staleness is the worst thing
+//     this page can produce: a screenshot of figures that no longer
+//     describe the inputs above them.
+await page.evaluate(() => {
+  document.getElementById("useSubs").checked = false;
+  document.querySelectorAll("#countryList input[type=checkbox][data-i]")
+    .forEach((bx) => { bx.checked = COUNTRIES[+bx.dataset.i][1] === "DE"; });
+});
+await page.click("#run"); await page.waitForTimeout(800);
+const freshAfterRun = await page.evaluate(() =>
+  document.getElementById("stale").classList.contains("hidden"));
+t.check("results are not marked stale immediately after Calculate", freshAfterRun);
+await page.fill("#volAP", "654321"); await page.waitForTimeout(300);
+const staleState = await page.evaluate(() => ({
+  shown: !document.getElementById("stale").classList.contains("hidden"),
+  btn: document.getElementById("run").textContent.trim() }));
+t.check("editing an input after a run marks the results stale",
+  staleState.shown, JSON.stringify(staleState));
+t.check("and the button asks to be pressed again",
+  /recalc/i.test(staleState.btn), staleState.btn);
+// The country list is not one of the ribboned inputs, and it drives more
+// of the model than any single field does.
+await page.click("#run"); await page.waitForTimeout(700);
+await page.evaluate(() => {
+  const bx = [...document.querySelectorAll("#countryList input[data-i]")].find((b) => !b.checked);
+  bx.click();
+});
+await page.waitForTimeout(300);
+t.check("changing the country selection marks them stale too",
+  await page.evaluate(() => !document.getElementById("stale").classList.contains("hidden")));
+
+// (b) AN EMPTY SELECTION IS NOT A BUSINESS CASE. The payback guard used
+//     to exclude a payback of exactly zero, which is what a zero one-off
+//     produces -- so the most implausible output the model can make was
+//     the one case the implausibility guard skipped.
+await page.click("#selNone"); await page.waitForTimeout(200);
+await page.click("#run"); await page.waitForTimeout(900);
+const empty = await guardText();
+t.check("an empty selection is called out", /No jurisdictions are selected/.test(empty),
+  empty.slice(0, 120));
+t.check("and a zero-cost instant payback trips the plausibility guard",
+  /Payback under one month/.test(empty), empty.slice(0, 200));
+
+// (c) THE HINT DOES NOT CLAIM OUR NUMBER IS THEIRS. It read "Your own
+//     figure" on load, on an untouched field holding our default, four
+//     pixels from a tooltip correctly saying "Our default is 50."
+await page.reload(); await page.waitForTimeout(500);
+const hintOnLoad = await page.evaluate(() => ({
+  hint: document.getElementById("h-eShare").textContent.trim(),
+  tip: (document.querySelector('[data-tm="eShare"]') || {}).textContent }));
+t.check("the untouched hint does not claim the reader's ownership",
+  !/^Your/i.test(hintOnLoad.hint), JSON.stringify(hintOnLoad));
+await page.fill("#eShare", "72"); await page.waitForTimeout(300);
+const hintAfter = await page.evaluate(() => document.getElementById("h-eShare").textContent.trim());
+t.check("and does not gain a second copy of the tooltip's state",
+  hintAfter === hintOnLoad.hint && !/Your value/.test(hintAfter), hintAfter);
+
+// (d) NO NAME COLLIDES WITH ITS META LABEL IN THE CHART GUTTER.
+//     "European Union" overlapped by 25px and "United Kingdom" cleared by
+//     7. Two SVG text nodes overlapping do not error and do not fail any
+//     assertion, so this is measured rather than assumed.
+await page.click("#run"); await page.waitForTimeout(800);
+await expandGantt();
+const gutter = await page.evaluate(() => {
+  const svg = document.querySelector("#gantt svg");
+  const names = [...svg.querySelectorAll('text[font-size="12"]')];
+  const metas = [...svg.querySelectorAll('text[text-anchor="end"]')];
+  return names.map((n) => {
+    const m = metas.find((x) => x.getAttribute("y") === n.getAttribute("y"));
+    if (!m) return null;
+    return { name: n.textContent, gap: Math.round(m.getBoundingClientRect().left - n.getBoundingClientRect().right) };
+  }).filter(Boolean);
+});
+const collided = gutter.filter((r) => r.gap < 0);
+t.check(`no chart row name overlaps its meta label (${gutter.length} rows checked)`,
+  gutter.length > 3 && collided.length === 0,
+  collided.map((r) => `${r.name} by ${-r.gap}px`).join(", "));
+// And the fix must not have been "truncate until it fits" -- the names
+// the tool shows most often have to survive intact.
+const truncated = gutter.filter((r) => /\u2026/.test(r.name));
+t.check("and the common names are not truncated to make that true",
+  truncated.length === 0, truncated.map((r) => r.name).join(", "));
+
 // ---- 39. the page renders in a language that is not English ----------
 //
 // Every check above this one runs in English, and so did all nine suites
