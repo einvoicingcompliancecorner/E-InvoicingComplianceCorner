@@ -83,6 +83,40 @@ if (sStart < 0 || sEnd < 0) {
   }
 }
 
+// ---- t() INSIDE A SINGLE-QUOTED STRING ---------------------------------
+//
+// The client script embeds translations two ways: inside backtick
+// templates, where t() is fine, and inside single-quoted JavaScript
+// strings, where it is not -- an apostrophe in the value closes the
+// literal and the whole script fails to parse. tj() escapes it.
+//
+// Migration 571 fixed 109 of these. Two more were reintroduced on 17
+// August, both by someone who had just written the migration, and both
+// caught by the i18n suite's hostile-translation render -- correctly, and
+// three minutes and a full browser launch after the edit. This is the
+// same check for a fraction of the cost, and it names the line.
+// DELIBERATELY NARROW: only an interpolation IMMEDIATELY preceded by an
+// opening single quote. Deciding properly whether a given ${t(...)} sits
+// inside a single-quoted string means tracking quote and backtick state
+// through JavaScript that is itself being generated inside a template
+// literal, and a first attempt at that flagged five savings-table rows
+// that are perfectly correct. A lint that cries wolf gets switched off,
+// so this one only reports the shape it can be sure of.
+//
+// That catches the common case and not the other one -- an interpolation
+// inside an attribute inside a single-quoted string. The i18n suite's
+// hostile-translation render catches both; this is the cheap early
+// warning, not the guarantee.
+const quoted = [];
+for (let i = start + 1; i < end; i++) {
+  const line = src[i];
+  if (/^\s*\/\//.test(line)) continue;
+  if (/'\$\{t\("/.test(line)) quoted.push([i + 1, line.trim().slice(0, 110)]);
+}
+quoted.forEach(([ln, txt]) => bad.push([ln,
+  "t() inside a single-quoted string -- use tj(), which escapes the apostrophe "
+  + "that would otherwise end the literal:\n        " + txt]));
+
 // And the belt-and-braces check: it actually parses. The lint above is a
 // better error message; this is the ground truth.
 let parses = true;
@@ -98,5 +132,6 @@ if (bad.length) {
 console.log(`  PASS  no backticks or \${ in comments inside the client script `
   + `(lines ${start + 2}-${end})`);
 console.log(`  PASS  no backticks in ROI_STYLE (lines ${sStart + 2}-${sEnd})`);
+console.log("  PASS  no t() inside a single-quoted string (use tj there)");
 console.log("  PASS  shared/roi-render.mjs parses");
-console.log(`\nRender lint: 3/3 passed${parses ? "" : ""}`);
+console.log(`\nRender lint: 4/4 passed${parses ? "" : ""}`);

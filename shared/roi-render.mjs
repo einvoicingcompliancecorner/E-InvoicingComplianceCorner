@@ -541,13 +541,43 @@ button:disabled{opacity:.5;cursor:not-allowed}
 /* Below this the fixed columns leave the name 40-odd pixels and the whole
    point is lost, so fall back to the flowing line the list had before. */
 @media (max-width:700px){
-  .crow{display:flex;flex-wrap:wrap;align-items:center;gap:7px}
-  .crow input{margin-top:0}
+  /* 44px rows. They were 13px tall, seventy of them, in a scrolling box
+     on a touch screen -- comfortably the hardest thing on the page to
+     operate and the first task every reader has to perform. The checkbox
+     itself stays its native size; the ROW is what a thumb hits. */
+  .crow{display:flex;flex-wrap:wrap;align-items:center;gap:7px;min-height:44px;padding:2px 0}
+  .crow input{margin-top:0;width:20px;height:20px}
   .cdate{text-align:left}
   .chead{display:none}
   .countries{padding:10px}
+  /* The chart is 820px wide inside a 316px box. It has always been
+     pannable -- the wrapper scrolls -- and nothing said so, so four of
+     seven rows looked like they contained no work at all. A fade is the
+     affordance; the wave table below carries the same plan as text for
+     anyone who would rather not pan at all. */
+  .chartscroll{position:relative}
+  .chartscroll::after{content:'';position:absolute;top:0;right:0;bottom:0;width:34px;
+    pointer-events:none;background:linear-gradient(90deg,rgba(21,34,56,0),var(--ink-2))}
 }
 .stat{background:var(--ink-3);border:1px solid var(--line);border-radius:8px;padding:14px}
+/* Two up on a phone rather than five stacked, which put two and a half
+   screens of scrolling between the reader and any content. The one-off
+   box carries a paragraph of running costs, so it keeps the full width. */
+@media(max-width:700px){
+  #summary .g5{grid-template-columns:1fr 1fr}
+  /* REORDERED, not just wrapped. Left to flow, the full-width one-off box
+     pushes the first tile onto a row by itself and the last tile onto
+     another, leaving two holes. Ordering also puts the two green money
+     figures side by side -- annual saving and net annual saving are the
+     pair a reader is actually comparing, and on the desktop row they sit
+     two tiles apart with the investment between them. */
+  #summary .g5 > .stat:nth-child(1){order:1}
+  #summary .g5 > .stat:nth-child(3){order:1}
+  #summary .g5 > .stat:nth-child(2){order:2;grid-column:1 / -1}
+  #summary .g5 > .stat:nth-child(4){order:3}
+  #summary .g5 > .stat:nth-child(5){order:3}
+  .stat .n{font-size:26px}
+}
 .stat .n{font-family:'Big Shoulders Display',sans-serif;font-size:30px;font-weight:800;line-height:1}
 .stat .l{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.7px;text-transform:uppercase;color:var(--muted);margin-top:4px}
 /* Two sub-lines under a stat label. Dan asked the One-off figure to name
@@ -622,6 +652,61 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
 .steps em{font-style:normal;font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.06em;
   text-transform:uppercase;color:var(--muted);margin-left:6px}
 @media(max-width:700px){.steps span{white-space:normal}.steps em{display:block;margin:1px 0 0}}
+
+/* ---- THE SAVINGS TABLE ON A PHONE ---------------------------------
+   Measured at 390px on 17 August 2026: the four columns needed 471px, so
+   the fourth -- "Saved on this scope" -- ended 81 pixels past the right
+   edge with no scroll affordance. The phone showed $426,900 of ANNUAL
+   VALUE and hid the $182,969 this scope actually saves.
+   That is the wrong number to lose. The whole page exists to be careful
+   about the difference between the two, and the small screen was quietly
+   keeping the flattering one.
+   So below 700px the table stops being a table. Each row becomes a card:
+   the benefit, then both figures side by side each carrying its own
+   heading from data-col (the header row is hidden, so a figure with no
+   label is an anonymous number), then the working underneath.
+   The figures come BEFORE the basis in reading order via flex order,
+   which the desktop column layout gets for free and a naive stack does
+   not: the reader wants the number first and the derivation second. */
+@media(max-width:700px){
+  #savingsTable thead{display:none}
+  #savingsTable table,#savingsTable tbody{display:block;width:100%}
+  #savingsTable tr{display:flex;flex-wrap:wrap;align-items:flex-start;
+    border:1px solid var(--line);border-radius:8px;padding:11px 13px;margin:0 0 9px}
+  #savingsTable td{display:block;border:0;padding:0}
+  #savingsTable td:first-child{order:1;flex:1 1 100%;color:var(--text-lo);font-weight:600;line-height:1.35}
+  #savingsTable td.num{order:2;flex:1 1 44%;margin-top:9px;text-align:left;font-size:15px}
+  #savingsTable td.num::before{content:attr(data-col);display:block;
+    font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.06em;
+    text-transform:uppercase;color:var(--muted);margin-bottom:2px;font-weight:400}
+  #savingsTable td:nth-child(2){order:3;flex:1 1 100%;margin-top:11px;padding-top:10px;
+    border-top:1px solid var(--line);font-size:12.5px}
+  /* The band headings ("Priced — counted in the business case") are one
+     full-width cell and must not become a card. */
+  #savingsTable tr.grp{display:block;border:0;padding:14px 0 4px;margin:0}
+  #savingsTable tr.tot{background:var(--ink-3)}
+
+  /* THE WAVE TABLE STACKS TOO, and it had to: opened by default on a
+     phone it was worse than the chart it was standing in for. Six columns
+     in 390px meant the "Why" cell -- a paragraph explaining the regime --
+     sat off-screen while its height still pushed every row to ~350px, so
+     the table was mostly empty space with the explanation missing. */
+  #waves thead{display:none}
+  #waves table,#waves tbody{display:block;width:100%}
+  #waves tr{display:flex;flex-wrap:wrap;align-items:baseline;gap:0 14px;
+    border:1px solid var(--line);border-radius:8px;padding:11px 13px;margin:0 0 9px}
+  #waves td{display:block;border:0;padding:0}
+  #waves td[data-col]::before{content:attr(data-col);display:block;
+    font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.06em;
+    text-transform:uppercase;color:var(--muted);margin-bottom:2px}
+  #waves td:nth-child(2){order:1;flex:1 1 100%;color:var(--text-lo);font-size:15px;font-weight:600}
+  #waves td:nth-child(1){order:2;margin-top:8px}
+  #waves td:nth-child(5){order:2;margin-top:8px}
+  #waves td:nth-child(3){order:3;margin-top:8px}
+  #waves td:nth-child(4){order:3;margin-top:8px}
+  #waves td:nth-child(6){order:4;flex:1 1 100%;margin-top:11px;padding-top:10px;
+    border-top:1px solid var(--line)}
+}
 .grid > div{display:flex;flex-direction:column;min-width:0}
 .grid > div > .hint{margin-top:6px}
 @media(max-width:759px){.grid label{min-height:0}}
@@ -1331,7 +1416,7 @@ export function renderRoiPage({ countries, benchmarks = [], phases = [], strings
   <p class="lede" id="waveIntro"></p>
   <div class="card" style="padding:14px 16px 6px">
     <div id="ganttHead"></div>
-    <div style="overflow-x:auto"><div id="gantt"></div></div>
+    <div class="chartscroll" style="overflow-x:auto"><div id="gantt"></div></div>
     <div id="ganttLegend"></div>
   </div>
   <details class="card noprint" id="adjust" style="padding:0">
@@ -3208,7 +3293,10 @@ function build(){
     const why = c[11]
       ? \`<strong style="color:#e2b978">${tj("waves.euWide.h","EU-wide obligation.")}</strong> \${fill('${tj("waves.euWide","Council Directive (EU) 2025/516 binds every EU member state from 1 July 2030 regardless of whether it legislates its own domestic mandate. {0}")}', CXNOTE[c[4]])}\`
       : CXNOTE[c[4]];
-    w += \`<tr><td><strong>\${c[5]}</strong>\${c[11]?' <span class="pill p-upcoming">EU</span>':''}</td><td>\${c[0]}</td><td><span class="pill \${st[1]}">\${st[0]}</span></td><td><span class="pill \${cx[1]}">\${cx[0]}</span></td><td class="num">\${ints}</td><td style="font-size:12px;color:var(--muted)">\${why}</td></tr>\`;
+    // data-col on every cell: below 700px the table stacks into cards and
+    // the header row is hidden, so each value has to carry its own
+    // heading or a phone shows six unlabelled fragments.
+    w += \`<tr><td data-col="${tj("th.deadline","Deadline")}"><strong>\${c[5]}</strong>\${c[11]?' <span class="pill p-upcoming">EU</span>':''}</td><td data-col="${tj("adjust.jur","Jurisdiction")}">\${c[0]}</td><td data-col="${tj("th.status","Status")}"><span class="pill \${st[1]}">\${st[0]}</span></td><td data-col="${tj("th.model","Model")}"><span class="pill \${cx[1]}">\${cx[0]}</span></td><td class="num" data-col="${tj("th.integrations","Integrations")}">\${ints}</td><td data-col="${tj("th.why","Why")}" style="font-size:12px;color:var(--muted)">\${why}</td></tr>\`;
   });
   w += dated.length ? '</tbody></table>' : '<div class="note">No selected jurisdiction has a future dated deadline. Those already in force still need remediation work &mdash; see the in-force list below.</div>';
   if(watch.length) w += \`<div class="note" style="margin-top:12px">\${fill('${tj("waves.noMandate","<strong>No mandate, included by your selection ({0}):</strong> {1}. Costed at the simple rate and scheduled as one discretionary wave &mdash; there is no deadline to miss, so this work can start whenever you have capacity.")}', watch.length, watch.map(c=>c[0]).join(', '))}</div>\`;
@@ -3227,12 +3315,45 @@ function build(){
     };
   }
   const tbl = document.getElementById('tblToggle');
-  tbl.onclick = () => {
-    const el = document.getElementById('waves');
-    const shown = !el.classList.contains('hidden');
-    el.classList.toggle('hidden');
-    tbl.textContent = shown ? '${tj("btn.showTable","Show as table")}' : '${tj("btn.hideTable","Hide table")}';
+  // ON A PHONE THE TABLE IS THE PLAN AND THE CHART IS THE OPTION.
+  //
+  // The chart is 820px wide inside a ~316px box, so most of it sits off
+  // to the right and four of seven rows render as EMPTY RUNWAYS -- not
+  // merely inconvenient, actively misleading: those jurisdictions look
+  // like they contain no work. It pans, and now says so with a fade, but
+  // panning a Gantt to read seven dates is not a thing to ask of anyone.
+  //
+  // Opening the table IN ADDITION was the first attempt and made the page
+  // 1,850px taller for a reader who then had both. So the two swap: below
+  // 700px the table is shown and the chart is collapsed behind the same
+  // button that reveals the table on a desktop. Nothing is unavailable;
+  // the default is the one that fits.
+  const narrow = () => window.matchMedia('(max-width:700px)').matches;
+  const chartBox = document.getElementById('gantt').parentElement;
+  const wavesBox = document.getElementById('waves');
+  const setView = (showTable) => {
+    wavesBox.classList.toggle('hidden', !showTable);
+    if(narrow()){
+      chartBox.classList.toggle('hidden', showTable);
+      document.getElementById('ganttToggle').classList.toggle('hidden', showTable);
+      tbl.textContent = showTable
+        ? '${tj("btn.showChart","Show timeline chart")}'
+        : '${tj("btn.showTable","Show as table")}';
+    } else {
+      chartBox.classList.remove('hidden');
+      document.getElementById('ganttToggle').classList.remove('hidden');
+      tbl.textContent = showTable
+        ? '${tj("btn.hideTable","Hide table")}'
+        : '${tj("btn.showTable","Show as table")}';
+    }
   };
+  // Set once, so a reader who switches on a phone is not switched back
+  // under them by the next Calculate.
+  if(!tbl.dataset.init){
+    tbl.dataset.init = '1';
+    if(narrow()) setView(true);
+  }
+  tbl.onclick = () => setView(wavesBox.classList.contains('hidden'));
 
   // ---- one savings table -------------------------------------------
   //
@@ -3257,22 +3378,27 @@ function build(){
   // The total is now the whole section's, which is the figure section 5
   // actually uses. Before this it was the direct table's subtotal and
   // section 5's number appeared nowhere in section 4 at all.
-  const dash = '<td class="num">&mdash;</td><td class="num">&mdash;</td>';
+  // Labelled like every other numeric cell: when the table stacks on a
+  // phone the header row is hidden, so each figure has to carry its own
+  // heading -- including the em-dashes, or an unpriced row reads as two
+  // anonymous dashes.
+  const dash = '<td class="num" data-col="${tj("col.gross","Annual value")}">&mdash;</td>'
+    + '<td class="num" data-col="${tj("col.banks","Saved on this scope")}">&mdash;</td>';
 
   document.getElementById('savingsTable').innerHTML = \`
     <table><thead><tr><th>${t("col.benefit","Benefit")}</th><th>${t("col.basis","Basis")}</th><th class="num">${t("col.gross","Annual value")}</th><th class="num">${t("col.banks","Saved on this scope")}</th></tr></thead><tbody>
 
     <tr class="grp"><td colspan="4">${t("grp.priced","Priced &mdash; counted in the business case")}</td></tr>
 
-    <tr class="tierA" data-row="ap"><td>${t("row.ap","Processing cost reduction (AP)")} <span class="tag tang">${t("tag.tangible","tangible")}</span> <span class="tag \${banked?'bank':'unbank'}">\${banked?'${tj("tag.saved","saved")}':Math.round(TAXM.captureShare*100)+'% ${tj("tag.saved","saved")}'}</span></td><td><span class="bcalc"><span class="blab">${tj("basis.lab.calc","Calculation:")}</span>\${fill('${tj("basis.ap.calc","{0} invoices &times; {1} manual cost &times; {2}% reduction &times; {3}% not yet structured{4}")}', num0(volAP), fmt1(manualCost), Math.round(savePct*100), Math.round((1-eShare)*100), banked ? '' : fill('${tj("basis.ap.calc2"," &times; {0}% compliance share")}', Math.round(TAXM.captureShare*100)))}</span><span class="bjust"><span class="blab">${tj("basis.lab.just","Justification:")}</span>\${fill('${tj("basis.ap.just","Manual cost decomposed from the market average {0}. Reduction range {1}. Structured share is yours {2}.{3}")}', ev('ardent','${tj("ev.ardentAvg","Ardent Partners")}'), ev('hmrc60','${tj("ev.hmrcAto","HMRC, ATO-corroborated")}'), ev('yours','${tj("ev.yourShare","your figure")}'), banked ? '' : fill('${tj("basis.ap.just2"," Compliance is credited with capture and validation only &mdash; 9 of the 21 minutes of AP handling {0} &mdash; because review and approval are business decisions that no invoice format removes.")}', ev('atoCapture','${tj("ev.taskSplit","the task split")}')))}</span></td><td class="num">\${fmt(saving)}</td><td class="num">\${fmt(bankedAP)}</td></tr>
+    <tr class="tierA" data-row="ap"><td>${t("row.ap","Processing cost reduction (AP)")} <span class="tag tang">${t("tag.tangible","tangible")}</span> <span class="tag \${banked?'bank':'unbank'}">\${banked?'${tj("tag.saved","saved")}':Math.round(TAXM.captureShare*100)+'% ${tj("tag.saved","saved")}'}</span></td><td><span class="bcalc"><span class="blab">${tj("basis.lab.calc","Calculation:")}</span>\${fill('${tj("basis.ap.calc","{0} invoices &times; {1} manual cost &times; {2}% reduction &times; {3}% not yet structured{4}")}', num0(volAP), fmt1(manualCost), Math.round(savePct*100), Math.round((1-eShare)*100), banked ? '' : fill('${tj("basis.ap.calc2"," &times; {0}% compliance share")}', Math.round(TAXM.captureShare*100)))}</span><span class="bjust"><span class="blab">${tj("basis.lab.just","Justification:")}</span>\${fill('${tj("basis.ap.just","Manual cost decomposed from the market average {0}. Reduction range {1}. Structured share is yours {2}.{3}")}', ev('ardent','${tj("ev.ardentAvg","Ardent Partners")}'), ev('hmrc60','${tj("ev.hmrcAto","HMRC, ATO-corroborated")}'), ev('yours','${tj("ev.yourShare","your figure")}'), banked ? '' : fill('${tj("basis.ap.just2"," Compliance is credited with capture and validation only &mdash; 9 of the 21 minutes of AP handling {0} &mdash; because review and approval are business decisions that no invoice format removes.")}', ev('atoCapture','${tj("ev.taskSplit","the task split")}')))}</span></td><td class="num" data-col="${t("col.gross","Annual value")}">\${fmt(saving)}</td><td class="num" data-col="${t("col.banks","Saved on this scope")}">\${fmt(bankedAP)}</td></tr>
 
-    <tr class="tierA" data-row="ar"><td>${t("row.ar","Issuing cost reduction (AR)")} <span class="tag tang">${t("tag.tangible","tangible")}</span> <span class="tag bank">${t("tag.saved","saved")}</span></td><td><span class="bcalc"><span class="blab">${tj("basis.lab.calc","Calculation:")}</span>\${fill('${tj("basis.ar.calc","{0} invoices &times; {1} issuing cost &times; {2}% reduction")}', num0(volAR), fmt1(costAR), Math.round(savePct*100))}</span><span class="bjust"><span class="blab">${tj("basis.lab.just","Justification:")}</span>\${fill('${tj("basis.ar.just","Issuing cost from the ATO channel figures on its own 60/40 split {0}. Reduction range {1}.")}', ev('ato','${tj("ev.atoDeloitte","ATO / Deloitte")}'), ev('hmrc60','${tj("ev.hmrcAto","HMRC, ATO-corroborated")}'))}</span></td><td class="num">\${fmt(savingAR)}</td><td class="num">\${fmt(savingAR)}</td></tr>
+    <tr class="tierA" data-row="ar"><td>${t("row.ar","Issuing cost reduction (AR)")} <span class="tag tang">${t("tag.tangible","tangible")}</span> <span class="tag bank">${t("tag.saved","saved")}</span></td><td><span class="bcalc"><span class="blab">${tj("basis.lab.calc","Calculation:")}</span>\${fill('${tj("basis.ar.calc","{0} invoices &times; {1} issuing cost &times; {2}% reduction")}', num0(volAR), fmt1(costAR), Math.round(savePct*100))}</span><span class="bjust"><span class="blab">${tj("basis.lab.just","Justification:")}</span>\${fill('${tj("basis.ar.just","Issuing cost from the ATO channel figures on its own 60/40 split {0}. Reduction range {1}.")}', ev('ato','${tj("ev.atoDeloitte","ATO / Deloitte")}'), ev('hmrc60','${tj("ev.hmrcAto","HMRC, ATO-corroborated")}'))}</span></td><td class="num" data-col="${t("col.gross","Annual value")}">\${fmt(savingAR)}</td><td class="num" data-col="${t("col.banks","Saved on this scope")}">\${fmt(savingAR)}</td></tr>
 
-    <tr class="tierA" data-row="tax"><td>${t("row.tax","Reduced tax reporting &amp; audit-prep effort")} <span class="tag tang">${t("tag.tangible","tangible")}</span> <span class="tag bank">${t("tag.saved","saved")}</span></td><td><span class="bcalc"><span class="blab">${tj("basis.lab.calc","Calculation:")}</span>\${fill('${tj("basis.tax.calc","{0} AP invoices imply {1} AP FTE; {2} put {3}% of that in scope{4} &mdash; {5} FTE &times; {6}")}', num0(volAP), apFteImplied.toFixed(1), ctcCount + ' ' + plur(ctcCount, PLURALS.ctcJur), (shareUsed*100).toFixed(1), taxCapBinds?' <em>${tj("word.capped","(capped)")}</em>':'', taxFteSaved.toFixed(2), fmt(fteCost))}</span><span class="bjust"><span class="blab">${tj("basis.lab.just","Justification:")}</span>\${fill('${tj("basis.tax.just","Mechanism evidenced {0}; invoices per FTE {1}; the share in scope is ours and capped {2}. Saved on either scope &mdash; reporting effort falls with the compliance build, not with a workflow change.")}', ev('oecd','${tj("ev.oecdDctr","OECD DCTR, 2026")}'), ev('apqc','${tj("ev.apqcMedian","APQC median, 12,000 per FTE")}'), ev('yours','${tj("ev.ourAssumption","our assumption")}'))}</span></td><td class="num">\${fmt(l2)}</td><td class="num">\${fmt(l2)}</td></tr>
+    <tr class="tierA" data-row="tax"><td>${t("row.tax","Reduced tax reporting &amp; audit-prep effort")} <span class="tag tang">${t("tag.tangible","tangible")}</span> <span class="tag bank">${t("tag.saved","saved")}</span></td><td><span class="bcalc"><span class="blab">${tj("basis.lab.calc","Calculation:")}</span>\${fill('${tj("basis.tax.calc","{0} AP invoices imply {1} AP FTE; {2} put {3}% of that in scope{4} &mdash; {5} FTE &times; {6}")}', num0(volAP), apFteImplied.toFixed(1), ctcCount + ' ' + plur(ctcCount, PLURALS.ctcJur), (shareUsed*100).toFixed(1), taxCapBinds?' <em>${tj("word.capped","(capped)")}</em>':'', taxFteSaved.toFixed(2), fmt(fteCost))}</span><span class="bjust"><span class="blab">${tj("basis.lab.just","Justification:")}</span>\${fill('${tj("basis.tax.just","Mechanism evidenced {0}; invoices per FTE {1}; the share in scope is ours and capped {2}. Saved on either scope &mdash; reporting effort falls with the compliance build, not with a workflow change.")}', ev('oecd','${tj("ev.oecdDctr","OECD DCTR, 2026")}'), ev('apqc','${tj("ev.apqcMedian","APQC median, 12,000 per FTE")}'), ev('yours','${tj("ev.ourAssumption","our assumption")}'))}</span></td><td class="num" data-col="${t("col.gross","Annual value")}">\${fmt(l2)}</td><td class="num" data-col="${t("col.banks","Saved on this scope")}">\${fmt(l2)}</td></tr>
 
-    <tr class="tierB" data-row="rework"><td>${t("row.rework","Avoided rework on data-entry errors")} <span class="tag tang">${t("tag.tangible","tangible")}</span> <span class="tag \${banked?'bank':'unbank'}">\${banked?'${tj("tag.saved","saved")}':'${tj("tag.notSaved","not saved")}'}</span></td><td><span class="bcalc"><span class="blab">${tj("basis.lab.calc","Calculation:")}</span>\${fill('${tj("basis.rework.calc","{0} {1} at {2}% &times; {3} min &times; {4}/h &times; {5}% eliminated")}', num0(Math.round(errNow)), plur(Math.round(errNow), PLURALS.erroredInvoice), Math.round(errRate*100), errMins, fmt1(entryPerHr), Math.round(errElim*100))}</span><span class="bjust"><span class="blab">${tj("basis.lab.just","Justification:")}</span>\${fill('${tj("basis.rework.just","Error rate {0}; resolution time {1}; data-entry rate {2}; the share eliminated is ours {3}, held under Ardent&rsquo;s exception gap {4}.")}', ev('hmrcErr','${tj("ev.hmrcRate","HMRC consultation")}'), overridden('errMins') ? ev('yours','${tj("ev.yourMins","your resolution time")}') : ev('rework','${tj("ev.atoMins2","ATO exception times")}'), ev('blsEntry','${tj("ev.blsEntry","loaded data-entry rate")}'), ev('errElim','${tj("ev.whyNotAll","why not all of them")}'), ev('ardentExc','${tj("ev.excRate2","18.4% market exception rate")}'))}</span></td><td class="num">\${fmt(errSave)}</td><td class="num">\${bankedErr > 0 ? fmt(bankedErr) : '&mdash;'}</td></tr>
+    <tr class="tierB" data-row="rework"><td>${t("row.rework","Avoided rework on data-entry errors")} <span class="tag tang">${t("tag.tangible","tangible")}</span> <span class="tag \${banked?'bank':'unbank'}">\${banked?'${tj("tag.saved","saved")}':'${tj("tag.notSaved","not saved")}'}</span></td><td><span class="bcalc"><span class="blab">${tj("basis.lab.calc","Calculation:")}</span>\${fill('${tj("basis.rework.calc","{0} {1} at {2}% &times; {3} min &times; {4}/h &times; {5}% eliminated")}', num0(Math.round(errNow)), plur(Math.round(errNow), PLURALS.erroredInvoice), Math.round(errRate*100), errMins, fmt1(entryPerHr), Math.round(errElim*100))}</span><span class="bjust"><span class="blab">${tj("basis.lab.just","Justification:")}</span>\${fill('${tj("basis.rework.just","Error rate {0}; resolution time {1}; data-entry rate {2}; the share eliminated is ours {3}, held under Ardent&rsquo;s exception gap {4}.")}', ev('hmrcErr','${tj("ev.hmrcRate","HMRC consultation")}'), overridden('errMins') ? ev('yours','${tj("ev.yourMins","your resolution time")}') : ev('rework','${tj("ev.atoMins2","ATO exception times")}'), ev('blsEntry','${tj("ev.blsEntry","loaded data-entry rate")}'), ev('errElim','${tj("ev.whyNotAll","why not all of them")}'), ev('ardentExc','${tj("ev.excRate2","18.4% market exception rate")}'))}</span></td><td class="num" data-col="${t("col.gross","Annual value")}">\${fmt(errSave)}</td><td class="num" data-col="${t("col.banks","Saved on this scope")}">\${bankedErr > 0 ? fmt(bankedErr) : '&mdash;'}</td></tr>
 
-    <tr class="tot" data-row="total"><td colspan="2"><strong>${t("row.savingsTotal","Annual benefit")}</strong>\${l1Unbanked > 0 ? \` <span class="hint" style="display:inline">&mdash; ${t("row.directTotal.gap","the difference needs a change programme you are not running")}</span>\` : ''}</td><td class="num"><strong>\${fmt(l1 + l2)}</strong></td><td class="num"><strong style="color:#7fd0a8">\${fmt(l1Banked + l2)}</strong></td></tr>
+    <tr class="tot" data-row="total"><td colspan="2"><strong>${t("row.savingsTotal","Annual benefit")}</strong>\${l1Unbanked > 0 ? \` <span class="hint" style="display:inline">&mdash; ${t("row.directTotal.gap","the difference needs a change programme you are not running")}</span>\` : ''}</td><td class="num" data-col="${t("col.gross","Annual value")}"><strong>\${fmt(l1 + l2)}</strong></td><td class="num" data-col="${t("col.banks","Saved on this scope")}"><strong style="color:#7fd0a8">\${fmt(l1Banked + l2)}</strong></td></tr>
 
     <tr class="grp"><td colspan="4">${t("grp.named","Named, not priced &mdash; real, and this model will not invent a number for them")}</td></tr>
 

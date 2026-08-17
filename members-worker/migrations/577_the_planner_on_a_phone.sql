@@ -1,0 +1,92 @@
+-- ================================================================
+-- The planner works on a phone.
+--
+-- Dan: "please continue with these UI improvements - start with Mobile."
+--
+-- ---- THE ONE THAT MATTERED --------------------------------------------
+--
+-- Measured at 390px: the savings table needed 471px, so its fourth column
+-- -- "Saved on this scope" -- ended 81 PIXELS PAST THE RIGHT EDGE, with
+-- no scroll affordance and no fade.
+--
+-- A phone showed $426,900 of ANNUAL VALUE and hid the $182,969 this scope
+-- actually saves. The whole page exists to be careful about the
+-- difference between those two numbers, and the small screen was quietly
+-- keeping the flattering one. Identical at 360px and 430px, because the
+-- table's width was driven by its content and not by the viewport.
+--
+-- Below 700px the table stops being a table. Each row is a card: the
+-- benefit, then both figures side by side, then the working underneath.
+-- The figures come BEFORE the working in reading order -- the desktop
+-- column layout gets that for free and a naive stack does not.
+--
+-- EVERY FIGURE CARRIES ITS OWN HEADING, from a data-col attribute, because
+-- the header row is hidden when the table stacks and a number with no
+-- label is an anonymous number. That includes the em-dashes on unpriced
+-- rows, which would otherwise read as two blank cells.
+--
+-- ---- THE CHART AND THE TABLE SWAP PLACES ------------------------------
+--
+-- The chart is 820px wide inside a ~316px box. Four of seven rows
+-- rendered as EMPTY RUNWAYS -- not merely inconvenient: those
+-- jurisdictions look like they contain no work at all.
+--
+-- First attempt opened the wave table IN ADDITION, which made the page
+-- 1,850px taller and gave the reader both problems. So below 700px they
+-- swap: the table is the plan, and the chart is behind the same button
+-- that reveals the table on a desktop. Nothing is unavailable; the
+-- default is the one that fits.
+--
+-- The wave table had to be stacked too, and that was not optional --
+-- opened as-is it was WORSE than the chart it replaced: six columns in
+-- 390px put the "Why" paragraph off-screen while its height still pushed
+-- every row to ~350px, so the reader got a mostly-empty table with the
+-- explanation missing.
+--
+-- The chart also gained a fade at its right edge. It has always been
+-- pannable and nothing said so.
+INSERT OR REPLACE INTO translations (namespace, key, lang, value) VALUES
+  ('roi', 'btn.showChart', 'en', 'Show timeline chart');
+
+-- ---- AND THE THINGS A THUMB HAS TO HIT --------------------------------
+--
+-- The country rows were 13 PIXELS TALL. Seventy of them, in a scrolling
+-- box, on a touch screen -- comfortably the hardest thing on the page to
+-- operate, and the first task every reader performs. Now 44, which is the
+-- figure every platform guideline gives.
+--
+-- The five KPI tiles were five full-width cards, about two and a half
+-- screens of scrolling before any content. Now two up, and REORDERED
+-- rather than merely wrapped: left to flow, the full-width one-off tile
+-- pushes the first tile onto a row by itself and the last onto another,
+-- leaving two holes. Ordering also puts annual saving and net annual
+-- saving side by side -- the pair a reader is comparing, which on the
+-- desktop row sit two tiles apart with the investment between them.
+-- 700px of tiles became 350.
+--
+-- ---- WHAT IS NOT FIXED, AND SHOULD BE SAID ----------------------------
+--
+-- The page is still about 9,700px on a phone. Most of it is the working
+-- under each savings row and the "Why" under each wave row, and the
+-- second of those is largely REPEATED: seven jurisdictions, three
+-- distinct regime explanations, the same paragraph printed five times.
+-- That is the same shape as the five "Named, not priced" cells the
+-- usability review flagged, and the same answer would serve -- but
+-- hiding evidence by default on the page whose proposition is evidence is
+-- a decision for Dan, not a tidy-up.
+--
+-- ---- what this migration claims it did ------------------------------
+-- ASSERT: SELECT count(*) FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key = 'btn.showChart' = 1
+--
+-- The three view labels must all exist. The button carries a different
+-- one on a phone than on a desktop, so a missing row renders a key name
+-- on the only control that reaches the other view.
+--
+-- ASSERT ALWAYS: SELECT count(*) FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key IN ('btn.showChart','btn.showTable','btn.hideTable') = 3
+--
+-- Both savings-table column headings must survive, because on a phone
+-- they are no longer a header row -- they are printed against each figure
+-- individually, and losing one leaves an unlabelled number where the
+-- distinction between gross and scope-adjusted is the entire point.
+--
+-- ASSERT ALWAYS: SELECT count(*) FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key IN ('col.gross','col.banks') = 2

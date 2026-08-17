@@ -13808,3 +13808,81 @@ Replay OK across 576 files — **342 assertions, 91 standing invariants**.
 
 Still open from the usability assessment: mobile, the country picker, the
 five KPI boxes, and an evidence scorecard.
+
+---
+
+## 17 August 2026 (night) — migration 577: the planner on a phone
+
+### The one that mattered
+
+At 390px the savings table needed 471px, so its fourth column — **"Saved
+on this scope"** — ended **81 pixels past the right edge**, with no scroll
+affordance. A phone showed **$426,900 of annual value and hid the
+$182,969 this scope actually saves**. Identical at 360px and 430px,
+because the width came from the content and not the viewport.
+
+The whole page exists to be careful about the difference between those two
+numbers, and the small screen was quietly keeping the flattering one.
+
+Below 700px the table stops being a table: each row is a card with both
+figures side by side and the working underneath. **Every figure carries
+its own heading** from a `data-col` attribute, because the header row is
+hidden when it stacks and a number with no label is an anonymous number —
+including the em-dashes on unpriced rows.
+
+### The chart and the table swap places
+
+The chart is 820px inside a ~316px box, so four of seven rows rendered as
+**empty runways** — not inconvenient, misleading: those jurisdictions look
+like they contain no work.
+
+First attempt opened the wave table *in addition*, which made the page
+1,850px taller and gave the reader both problems. So below 700px they
+swap. And the wave table had to be stacked too — opened as-is it was
+**worse than the chart it replaced**: six columns in 390px put the "Why"
+paragraph off-screen while its height still pushed every row to ~350px.
+
+### The things a thumb has to hit
+
+Country rows were **13 pixels tall**, seventy of them, in a scrolling box
+— the hardest thing on the page to operate and the first task anyone
+performs. Now 44.
+
+The five KPI tiles were five full-width cards, ~2.5 screens before any
+content. Now two up and **reordered rather than wrapped**: left to flow,
+the full-width one-off tile leaves two holes. Ordering also puts annual
+saving and net annual saving side by side — the pair a reader compares,
+which on the desktop row sit two tiles apart. 700px became 350.
+
+### Nothing in this suite had ever opened a narrow viewport
+
+Every check ran at 1280 or 1440. That is how a whole column could sit off
+the right edge of a phone and pass 246 checks. There are now **13 checks
+at 390px and 360px**, plus one at 1440 asserting the desktop is unchanged
+— every rule above lives in a media query, and a mistyped breakpoint would
+move the desktop silently.
+
+### The escaping defect, third time
+
+`t()` inside a single-quoted string, twice today by me. The i18n suite
+caught it correctly and three minutes plus a browser launch after the
+edit, so **render-lint now catches it too**. Deliberately narrow: a first
+attempt at proper quote-state tracking flagged five correct savings rows,
+and a lint that cries wolf gets switched off. It reports the shape it can
+be sure of and says in its own comment that the i18n suite remains the
+guarantee.
+
+### Not fixed, and worth stating
+
+The page is still ~9,700px on a phone. Most of that is the working under
+each savings row and the "Why" under each wave row — and the second is
+largely **repeated**: seven jurisdictions, three distinct regime
+explanations, the same paragraph five times. Same shape as the five
+"Named, not priced" cells. The fix is to collapse evidence by default,
+which on the page whose proposition is evidence is Dan's call.
+
+### Verified
+
+`npm test`: 10 suites. ROI regression **261 checks** (was 248). Render
+lint 4. Replay OK across 577 files — **345 assertions, 93 standing
+invariants**.
