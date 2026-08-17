@@ -643,10 +643,26 @@ footer{margin-top:40px;padding-top:16px;border-top:1px solid var(--line);font-si
     text-transform:uppercase;color:#555;text-align:right;line-height:1.5}
   #pdfdoc h2{font-family:'IBM Plex Mono',monospace;font-size:8pt;letter-spacing:1.3px;
     text-transform:uppercase;color:#7a5a20;border:0;margin:13px 0 6px;padding:0}
-  #pdfdoc .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
-  #pdfdoc .kpi{border:1px solid #c9c9c9;border-left:3px solid #399a6c;padding:7px 9px}
+  #pdfdoc .kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:7px}
+  /* The ribbon says which direction the number points. Dan, 16 Aug 2026:
+     "green, indicating positive saving, or net benefit, and red ribbon to
+     indicate a cost. I can see that the one-off investment is green, but
+     this is an overhead."
+     He is right and it was worse than uninformative -- EVERY box carried
+     the same green, so the one figure a reader most needs to recognise as
+     money going out was reassuringly coloured money coming in.
+     The rules mirror the screen's own stat colours rather than inventing
+     a second scheme; only the hues are darkened for print on white.
+     Payback and the deadline count are neither saving nor cost, so they
+     take amber for attention and grey for none -- keeping green and red
+     meaning exactly what Dan said they mean. */
+  #pdfdoc .kpi{border:1px solid #c9c9c9;border-left:3px solid #6b7a95;padding:7px 9px}
+  #pdfdoc .kpi.good{border-left-color:#2f7d55}
+  #pdfdoc .kpi.cost{border-left-color:#b5432f}
+  #pdfdoc .kpi.warn{border-left-color:#a8761f}
   #pdfdoc .kpi .n{font-family:'Big Shoulders Display',sans-serif;font-size:19pt;line-height:1;color:#111}
   #pdfdoc .kpi .l{font-size:7.4pt;color:#555;margin-top:3px}
+  #pdfdoc .kpi .s{font-size:6.8pt;color:#777;margin-top:2px;line-height:1.35}
   /* The screen rule table{color:var(--text-lo)} is near-white and beat the
      colour set on body, so every cell printed at about 8% ink. Set it on
      the table itself rather than relying on inheritance. */
@@ -2582,7 +2598,7 @@ function build(){
       <div class="stat"><div class="n" style="color:#e0907f">\${fmt(oneOff)}</div><div class="l">${tj("res.oneOff","One-off investment")} <span class="statwhat">${tj("res.oneOff2","implementation")}</span><span class="statrun">${tj("res.running","plus each year:")} \${fmt(cPlat)} ${tj("res.running2","platform")}${hlp('cPlat',t("tip.covers","What this covers"))} + \${fmt(cRun)} ${tj("res.running3","internal")}${hlp('cRun',t("tip.covers","What this covers"))}</span></div></div>
       <div class="stat"><div class="n" style="color:\${netAnnual>=0?'#7fd0a8':'#e0907f'}">\${fmt(netAnnual)}</div><div class="l">${tj("res.netAnnual","Net annual saving")}</div></div>
       <div class="stat"><div class="n" style="color:\${paybackMonths&&paybackMonths<=24?'#7fd0a8':'#e2b978'}">\${paybackMonths===null?'n/a':paybackMonths<1?'&lt;1mo':Math.round(paybackMonths)+'mo'}</div><div class="l">${tj("res.payback","Payback on one-off")}</div></div>
-      <div class="stat"><div class="n" style="color:\${dated.length?'#e08b7a':'#8d9bb5'}">\${dated.length}</div><div class="l">${tj("res.dated","With a dated deadline ahead")}</div></div>
+      <div class="stat"><div class="n" style="color:\${dated.length?'#e08b7a':'#8d9bb5'}">\${dated.length}</div><div class="l">${tj("res.dated","Countries with a dated deadline ahead")}</div></div>
     </div>
     <div class="note" style="margin-top:14px">\${banked
       ? \`<strong>${tj("sum.scopeBoth","Scope: compliance + AP process automation.")}</strong> ${tj("sum.scopeBoth2","Every direct row counts, and the timeline carries a process-change phase per country. The larger, less common programme.")}\`
@@ -2889,7 +2905,9 @@ function build(){
   if(pdfEl){
     const gantt = document.querySelector('#gantt svg');
     const pieSvg = document.querySelector('#savings .svpie');
-    const kpi = (n, l) => '<div class="kpi"><div class="n">' + n + '</div><div class="l">' + l + '</div></div>';
+    const kpi = (n, l, tone, sub) => '<div class="kpi ' + (tone || '') + '"><div class="n">' + n
+      + '</div><div class="l">' + l + '</div>'
+      + (sub ? '<div class="s">' + sub + '</div>' : '') + '</div>';
     const money = (v) => fmt(v);
     const rows = SV.segs.map((sg, i) => '<li><i style="background:' + sg.c + '"></i><span>' + sg.n
       + '</span><b>' + money(sg.v) + '</b><em>'
@@ -2905,13 +2923,55 @@ function build(){
       + ' &middot; ' + when + '</div></div>'
 
       + '<div class="kpis">'
-      + kpi(money(l1Banked + l2), '${tj("pdf.kpi1","Annual benefit")}')
-      + kpi(money(oneOff), '${tj("pdf.kpi2","One-off investment")}')
-      + kpi(money(netAnnual), '${tj("pdf.kpi3","Net annual")}')
-      + kpi(paybackMonths === null ? 'n/a' : paybackMonths < 1 ? '&lt;1 mo' : Math.round(paybackMonths) + ' mo', '${tj("pdf.kpi4","Payback")}')
+      // FIVE, and they read the PAGE'S OWN LABELS. Dan asked for the five
+      // headline boxes the executive summary shows rather than four, and
+      // the missing one -- the count of jurisdictions with a dated
+      // deadline ahead -- is the only figure on that strip that is not
+      // money, which is probably why it was dropped when this was built.
+      //
+      // The labels are no longer duplicated. pdf.kpi1 through kpi4
+      // held their own copies and drifted for six days after migration
+      // 543 renamed the stats on screen. An invariant tying the two
+      // together was the first fix and the wrong one: it POLICES a
+      // duplication instead of removing it. Reading the res rows directly
+      // means the PDF cannot disagree with the screen, because there is
+      // only one string.
+      + kpi(money(l1Banked + l2), '${tj("res.banked","Annual saving")}', 'good')
+      // The one-off box carries the same breakdown the screen puts under
+      // it: what the money buys, and what recurs afterwards. A one-off
+      // figure printed alone reads as the whole cost of the programme,
+      // which it is not -- the running cost is the part that never stops.
+      + kpi(money(oneOff), '${tj("res.oneOff","One-off investment")}', 'cost',
+          '${tj("res.oneOff2","implementation")} &middot; ${tj("res.running","plus each year:")} '
+          + money(cPlat) + ' ${tj("res.running2","platform")} + ' + money(cRun) + ' ${tj("res.running3","internal")}')
+      + kpi(money(netAnnual), '${tj("res.netAnnual","Net annual saving")}', netAnnual >= 0 ? 'good' : 'cost')
+      + kpi(paybackMonths === null ? 'n/a' : paybackMonths < 1 ? '&lt;1 mo' : Math.round(paybackMonths) + ' mo', '${tj("res.payback","Payback on one-off")}', paybackMonths !== null && paybackMonths <= 24 ? 'good' : 'warn')
+      + kpi(dated.length, '${tj("res.dated","Countries with a dated deadline ahead")}', dated.length ? 'warn' : '')
       + '</div>'
 
-      + '<h2>${tj("pdf.h.mix","Where the annual benefit comes from")}</h2>'
+      // Dan asked for the footprint card on page 1 too. It is the sentence
+      // that says WHAT YOU SELECTED before the page says what it is worth
+      // -- complexity mix, integration count, nearest binding date -- and
+      // a board pack that opens with four money figures and no statement
+      // of scope invites the first question it cannot answer.
+      //
+      // Built from the SAME D1 rows the screen renders, with the tooltip
+      // and evidence-marker slots filled empty: a hover target is
+      // meaningless on paper, but the words around it are not, and
+      // rewriting them for print would be a third copy of a sentence this
+      // migration exists to stop duplicating.
+      + '<div class="note">' + fill('${tj("card.mix","Across {0} jurisdictions you have {1} (CTC or 5-corner) and {2} (4-corner exchange){3}.")}',
+          '<strong>' + sel.length + '</strong>',
+          '<strong>' + complex.length + ' ${tj("word.complex","complex")}</strong>',
+          '<strong>' + simple.length + ' ' + plur(simple.length, '${tj("word.regime","simple regime")}', '${tj("word.regimes","simple regimes")}') + '</strong>',
+          watch.length ? fill('${tj("card.plusNoMandate",", plus {0} with no mandate{1}")}', watch.length, '') : '')
+        + ' ' + fill('${tj("card.integrations","With {0} that is roughly {1}{2} to deliver.")}',
+          erp + ' ' + plur(erp, '${tj("word.erp","ERP/billing system")}', '${tj("word.erps","ERP/billing systems")}'),
+          '<strong>' + integrations + ' ' + plur(integrations, '${tj("word.integration","country-system integration")}', '${tj("word.integrations","country-system integrations")}') + '</strong>', '')
+        + ' ' + (dated.length ? fill('${tj("card.nearest","The nearest binding date is {0} ({1}).")}', '<strong>' + dated[0][5] + '</strong>', dated[0][0])
+          : '${tj("card.noDated","None of the selected jurisdictions has a future dated deadline on the tracker today.")}')
+        + ' ${tj("ev.siteLabel","Source: live tracker data")}.</div>'
+      + '<h2>${tj("pdf.h.mix","Where the annual saving comes from")}</h2>'
       + '<div class="pielay">' + (pieSvg ? pieSvg.outerHTML.replace(/width="\d+"/, 'width="150"').replace(/height="\d+"/, 'height="150"') : '')
       + '<ul class="pkey">' + rows
       + (l1Unbanked > 0 ? '<li><i style="background:repeating-linear-gradient(45deg,#888 0 2px,transparent 2px 5px);border:1px solid #999"></i><span>${tj("sv.unbanked","Available on a wider scope")}</span><b>' + money(l1Unbanked) + '</b><em>&mdash;</em></li>' : '')
@@ -2989,10 +3049,19 @@ function build(){
       + '</div>'
       + '<h2>${tj("pdf.h.figures","The figures this rests on")}</h2>'
       + '<table><thead><tr><th>${tj("pdf.th.fig","Figure")}</th><th class="num">${tj("pdf.th.val","Value")}</th><th>${tj("pdf.th.src","Source")}</th><th>${tj("pdf.th.grade","Grade")}</th></tr></thead><tbody>'
+      // 557 and 558 added the two biggest levers on the AP and rework rows
+      // and NEITHER reached this table, so a reader auditing the PDF could
+      // not see the share that halves the processing saving or the minutes
+      // the rework row is priced from. The page's second rendering drifting
+      // from its first is this project's signature failure -- 546 fixed the
+      // same shape when the PDF omitted undated jurisdictions entirely.
       + [['${tj("input.costNow","AP cost per invoice")}', fmt1(costNow), 'Ardent Partners 2025', 'A'],
+         ['${tj("input.eShare","E-invoices received today %")}', Math.round(eShare*100) + '%', '${tj("src.yoursAto","Yours &mdash; market average 51% (Ardent)")}', 'B'],
+         ['${tj("pdf.fig.manual","Manual invoice cost, decomposed")}', fmt1(manualCost), '${tj("src.decomposed","Ardent blend split at the 51.4% market share")}', 'B'],
          ['${tj("input.costAR","AR cost per invoice")}', fmt1(costAR), 'ATO / Deloitte Access Economics', 'B'],
-         ['${tj("input.savePct","Cost reduction %")}', Math.round(savePct*100) + '%', '${tj("src.hmrcDbt","HMRC / DBT consultation 2025")}', 'B'],
+         ['${tj("input.savePct","Cost reduction %")}', Math.round(savePct*100) + '%', '${tj("src.hmrcAto","HMRC / DBT 2025; ATO channel data implies 67&ndash;70%")}', 'B'],
          ['${tj("input.errRate","Manual error rate %")}', Math.round(errRate*100) + '%', '${tj("src.hmrcDbt","HMRC / DBT consultation 2025")}', 'B'],
+         ['${tj("input.errMins","Minutes to resolve one error")}', errMins, '${tj("src.atoExceptions","ATO / Deloitte exception times")}', 'B'],
          ['${tj("input.errElim","Errors eliminated %")}', Math.round(errElim*100) + '%', '${tj("src.cappedAssumption","Our assumption, capped by Ardent exception gap")}', 'D'],
          ['${tj("input.fteCost","Loaded cost / tax or finance FTE")}', fmt(fteCost), 'US BLS OEWS + ECEC', 'B'],
          ['${tj("input.fteEntry","Loaded cost / data-entry FTE")}', fmt(fteEntry), 'US BLS OEWS + ECEC', 'B'],
@@ -3004,8 +3073,8 @@ function build(){
          ['${tj("input.cRun","Internal run cost per year")}', fmt(cRun), '${tj("pdf.placeholder","Placeholder &mdash; replace with a vendor quote")}', 'D']]
         .map(r => '<tr><td>' + r[0] + '</td><td class="num">' + r[1] + '</td><td>' + r[2] + '</td><td>' + r[3] + '</td></tr>').join('')
       + '</tbody></table>'
-      + '<div class="note">${tj("pdf.grades","Grade A measured, primary and attributable &middot; B published by a credible body but unattributed within it &middot; C a single anecdote &middot; D our assumption, nothing claimed. Every D figure is exposed in the tool so it can be argued with rather than believed.")}</div>'
-      + '<div class="foot">${tj("footer.pdf","This tool models a business case; it is not tax, legal or investment advice. Figures marked D are assumptions, not benchmarks, and should be replaced with your own before any decision rests on them.")}</div>'
+      + '<div class="note">${tj("pdf.grades","Grade A measured, primary and attributable &middot; B published by a credible body but unattributed within it &middot; C a single anecdote &middot; D our starting estimate. Every D figure can be replaced with your own in the tool.")}</div>'
+      + '<div class="foot">${tj("footer.pdf","This tool models a business case; it is not tax, legal or investment advice. Figures marked D are our starting estimates rather than benchmarks &mdash; replace them with your own before any decision rests on them.")}</div>'
       + '</section>';
   }
 
