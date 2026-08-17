@@ -13234,3 +13234,78 @@ is testing the wrong document.
 `npm test`: 9 suites, all passing. ROI regression **206 checks** (was 199).
 Replay OK across 567 files — **303 assertions, 73 standing invariants**.
 PDF still exactly two pages.
+
+
+## 17 August 2026 — What you ticked is not what the plan schedules (migration 568)
+
+Dan: *"When I select one country - lets say Germany. The calculator shows
+2 countries with a dated deadline ahead. This is because the European
+Union is being classified as a second country, even though only Germany is
+selected in the countries list."*
+
+### The count was right; the label was wrong; and something worse sat under both
+
+Selecting Germany gives **two dated obligations** — the German mandate in
+2027 and ViDA in 2030. The planner schedules, costs and back-plans both,
+and the EU row is injected rather than selectable precisely so a real
+obligation cannot be dropped by forgetting to tick a box (534's reasoning,
+and it stands). Nothing should come out of that number.
+
+The label was wrong, and it was **four hours old**: 567 changed it from the
+fragment "With a dated deadline ahead" to "Countries…" at Dan's request.
+The risk was flagged in the same message and not pressed. It should have
+been.
+
+### The contradiction underneath
+
+Reproducing the case surfaced this:
+
+```
+"Across 1 jurisdictions you have 1 complex (CTC or 5-corner)
+ and 1 simple regime (4-corner exchange)."
+```
+
+**One that does not equal one plus one**, on a page whose entire
+proposition is that its arithmetic reconciles to something visible — plus
+a plural bug in the same clause.
+
+`sel` is what the reader ticked; `tracks` is what the plan contains. The
+card printed the count from `sel` and the complexity mix from `tracks`.
+Every downstream figure — integrations, waves, cost — has always been
+computed from `tracks`, correctly. **Only the sentence describing them read
+the other set.**
+
+Live since migration 534, and invisible until now because it only shows
+when the two sets differ, and the injected EU row is the only thing that
+makes them differ. Dan found the label; the contradiction was underneath
+it.
+
+### What changed
+
+Everything the reader is told about scope counts `tracks` — the footprint
+card, the PDF masthead, the PDF's footprint sentence. When the EU row is
+present it **names itself**: *"One of these is the EU-wide obligation,
+added automatically because you selected a member state — ViDA binds it
+whether or not it legislates its own mandate."* A 2 that follows one tick
+now explains itself rather than looking like a miscount.
+
+The stat is **"Jurisdictions with a dated deadline ahead"**, confirmed by
+Dan. A standing invariant forbids any noun on that row containing
+"countr": the EU entry is the one thing in the planner that is not a
+country, it is injected rather than chosen, and it is in scope for every
+plan touching a member state — so a country-noun is wrong for the most
+common selection this tool sees.
+
+### The check that caught the follow-on
+
+Adding that clause needed a tooltip title, `tip.vida`, that had never
+existed — `help.vida` explains ViDA but nothing had ever opened it. **The
+reverse-direction i18n check added in 562 caught it within a minute**,
+doing precisely the job it was added for.
+
+### Verified
+
+`npm test`: 9 suites, all passing. ROI regression **210 checks** (was 206),
+including a new reconciliation test on the smallest selection that can
+expose this — a single EU member state. Replay OK across 568 files —
+**309 assertions, 75 standing invariants**.

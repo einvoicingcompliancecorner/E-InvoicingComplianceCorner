@@ -1,0 +1,89 @@
+-- ================================================================
+-- What the reader ticked is not what the plan schedules, and the
+-- summary was reading from both.
+--
+-- Dan: "When I select one country - lets say Germany. The calculator
+-- shows 2 countries with a dated deadline ahead. This is because the
+-- European Union is being classified as a second country, even though
+-- only Germany is selected in the countries list."
+--
+-- ---- THE COUNT IS RIGHT. THE FRAMING WAS WRONG ----------------------
+--
+-- Selecting Germany gives you TWO dated obligations: the German mandate
+-- in 2027 and ViDA in 2030. The planner schedules both, costs both and
+-- back-plans both, and the EU row is injected rather than selectable
+-- precisely so that a real obligation cannot be omitted by forgetting to
+-- tick a box -- migration 534's reasoning, and it stands.
+--
+-- So nothing should be REMOVED from the count. What was wrong is that
+-- the number was labelled "Countries", and the European Union is not
+-- one. That label is four hours old: migration 567 changed it from the
+-- fragment "With a dated deadline ahead" at Dan's request, and the risk
+-- was flagged at the time and not pressed. It should have been.
+--
+-- ---- AND UNDERNEATH IT, AN ARITHMETIC CONTRADICTION -----------------
+--
+-- Reproducing Dan's case surfaced something worse than the label. The
+-- footprint card read:
+--
+--     "Across 1 jurisdictions you have 1 complex (CTC or 5-corner)
+--      and 1 simple regime (4-corner exchange)."
+--
+-- ONE THAT DOES NOT EQUAL ONE PLUS ONE, on a page whose entire
+-- proposition is that its arithmetic reconciles to something visible.
+-- Plus a plural bug in the same clause.
+--
+-- The cause is that `sel` is what the reader ticked and `tracks` is what
+-- the plan contains, and the card printed the count from `sel` and the
+-- complexity mix from `tracks`. Every downstream figure -- integrations,
+-- waves, cost -- has always been computed from `tracks`, correctly. Only
+-- the sentence describing them read the other set.
+--
+-- This had been live since 534 and nobody saw it, because it only shows
+-- when the two sets differ and the EU row is the only thing that makes
+-- them differ. Dan found the label; the contradiction was underneath.
+--
+-- ---- WHAT CHANGES ---------------------------------------------------
+--
+--   * everything the reader is told about scope counts `tracks`: the
+--     footprint card, the PDF masthead and the PDF's footprint sentence
+--   * when the EU row is present it is NAMED, so a 2 that follows one
+--     tick explains itself instead of looking like a miscount
+--   * the stat becomes "Jurisdictions with a dated deadline ahead"
+--
+-- The noun matters more than it looks. The card now says "Across 2
+-- jurisdictions"; a stat beside it saying "2 countries" for the same set
+-- would be a fresh instance of the defect this file exists to close.
+-- ================================================================
+
+UPDATE translations SET value = 'Jurisdictions with a dated deadline ahead'
+ WHERE namespace = 'roi' AND lang = 'en' AND key = 'res.dated';
+
+INSERT OR IGNORE INTO translations (namespace, key, lang, value) VALUES
+  ('roi', 'tip.vida', 'en', 'Where this comes from'),
+  ('roi', 'card.euRow', 'en', 'One of these is the <strong>EU-wide obligation</strong>, added automatically because you selected a member state{0} &mdash; ViDA binds it whether or not it legislates its own mandate.');
+
+-- ---- what this migration claims it did (see apply_migrations.py) ----
+-- ASSERT: SELECT count(*) FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key = 'res.dated' AND value = 'Jurisdictions with a dated deadline ahead' = 1
+-- ASSERT: SELECT count(*) FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key = 'card.euRow' AND value LIKE '%EU-wide obligation%' = 1
+-- ASSERT: SELECT count(*) FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key = 'tip.vida' = 1
+--
+-- `tip.vida` is the tooltip TITLE on the new clause. `help.vida` already
+-- existed and explains ViDA; nothing had ever needed a title for it,
+-- because until now no call site opened that tooltip. Caught by the
+-- i18n suite within a minute -- the reverse-direction check added in
+-- 562 doing exactly the job it was added for.
+--
+-- The stat must never again be labelled with a noun that is false of the
+-- European Union row. It is the one entry in the planner that is not a
+-- country, it is injected rather than chosen, and it is in scope for
+-- every plan touching a member state -- so any label naming countries is
+-- wrong for the most common selection this tool sees.
+--
+-- ASSERT ALWAYS: SELECT count(*) FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key = 'res.dated' AND value LIKE '%ountr%' = 0
+--
+-- And the EU row must keep explaining itself. Without that sentence the
+-- reader is left to reconcile a count they did not choose, which is how
+-- this was reported in the first place.
+--
+-- ASSERT ALWAYS: SELECT count(*) FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key = 'card.euRow' AND value LIKE '%member state%' = 1
