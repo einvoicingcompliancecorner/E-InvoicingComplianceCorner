@@ -408,6 +408,20 @@ input:focus,select:focus{outline:2px solid var(--soon);outline-offset:1px}
    The rows had drifted into nine different shapes -- the AP row ran two
    full sentences together with no separator, the AR row was five words.
    Same information, one form. */
+/* One grouped warning block instead of a stack. The summary line is the
+   alarm -- it states the count and stays visible -- and the detail opens
+   in place. Deliberately NOT inside the caveats panel: these are
+   conditional statements about the reader's scenario, and that panel is
+   collapsed by default. */
+.guardbox{margin:14px 0 0;padding:10px 13px}
+.guardbox > summary{cursor:pointer;font-weight:700;color:#e8b9ae;list-style:none;display:flex;align-items:center;gap:7px}
+.guardbox > summary::-webkit-details-marker{display:none}
+/* Literal character, not a \\25B8 escape: this stylesheet lives inside a
+   template literal, where a backslash-two is an OCTAL escape and a syntax
+   error. Same family as the backticks-in-CSS-comments trap. */
+.guardbox > summary::before{content:'▸';display:inline-block;transition:transform .12s;font-size:11px}
+.guardbox[open] > summary::before{transform:rotate(90deg)}
+.guarditem{margin-top:10px;padding-top:10px;border-top:1px solid rgba(181,67,47,.35)}
 .bcalc,.bjust{display:block;margin:0}
 .bjust{margin-top:4px}
 .blab{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin-right:5px}
@@ -1135,7 +1149,7 @@ export function renderRoiPage({ countries, benchmarks = [], phases = [], strings
     <summary style="cursor:pointer;padding:14px 18px;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:12px">
       <span>
         <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:var(--soon)">${t("sec.evidence", "Assumptions, sources and caveats")}</span>
-        <span class="hint" style="display:block;margin:4px 0 0">${t("sec.evidence.hint", "Every figure above, where it came from, and what it deliberately does not claim.")}</span>
+        <span class="hint" style="display:block;margin:4px 0 0">${t("sec.evidence.hint", "Where each figure comes from, how far it can be trusted, and which benefits are named without a number.")}</span>
       </span>
       <span id="notesChevron" style="font-family:'IBM Plex Mono',monospace;color:var(--muted);font-size:12px;white-space:nowrap">${t("assumptions.show", "show &#9662;")}</span>
     </summary>
@@ -2573,7 +2587,6 @@ function build(){
     <div class="note" style="margin-top:14px">\${banked
       ? \`<strong>${tj("sum.scopeBoth","Scope: compliance + AP process automation.")}</strong> ${tj("sum.scopeBoth2","Every direct row counts, and the timeline carries a process-change phase per country. The larger, less common programme.")}\`
       : \`<strong>${tj("sum.scopeOnly","Scope: compliance only.")}</strong> \${fmt(l1Banked + l2)} ${tj("sum.scopeOnly2","is saved from the integration itself; the remaining")} \${fmt(l1Unbanked)} ${tj("sum.scopeOnly3","needs a change programme you are not running.")}\`} ${tj("sum.bridge6","Net annual saving is the annual saving less the two running costs above; section 4 shows what makes up the annual saving, row by row.")} \${notesLink()}</div>
-    \${placeholders.length ? \`<div class="note warn" style="margin:14px 0 0"><strong>\${placeholders.length} ${tj("res.placeholders2b","fields still hold our numbers rather than yours.")}</strong> ${tj("res.placeholders2","Please replace them with vendor budgetary estimates in the assumptions panel, and treat the ROI as illustrative until actuals can be provided.")}</div>\` : ''}
     <div id="guards"></div>
     <div class="card"><p style="margin:0">\${fill('${tj("card.mix","Across {0} jurisdictions you have {1} (CTC or 5-corner) and {2} (4-corner exchange){3}.")}',
         '<strong>' + sel.length + '</strong>',
@@ -2710,20 +2723,19 @@ function build(){
   document.getElementById('evidence').innerHTML = \`
     <p style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:var(--soon);margin:0 0 8px">${tj("notes.h.reasoning","The reasoning")}</p>
     <div class="grid g2" style="margin-bottom:16px">
-      <div class="card"><h3>${tj("notes.banks.h","What compliance alone saves")}</h3><p class="hint">${tj("notes.banks","Capture and issuing arrive with the integration: once invoices come in structured and go out cleared, nobody keys or posts them. Review and approval are workflow and need a separate change programme. The split is the ATO / Deloitte task times &mdash; receipt 7 and validation 2 minutes against review 7 and approval 5 &mdash; not our judgement. Tax reporting and audit-prep effort is saved in full on either scope: you file structured data to the tax authority whether or not you ever touch AP workflow, so there is no equivalent split to make.")}</p></div>
-      <div class="card"><h3>${tj("notes.bracket.h","How conservative is the compliance-only figure?")}</h3><p class="hint">${tj("notes.bracket","Three defensible methods give three answers for what a compliance-only programme saves, as a share of the manual AP cost: <strong>25.7%</strong> by the route this page takes, <strong>42.9%</strong> if you credit capture with its full share of handling time, and <strong>70.3%</strong> if you read the ATO&rsquo;s paper-to-eInvoice gap as capture and exception work throughout. The page takes the lowest. The spread is roughly threefold, so if this business case is marginal on the compliance scope, the honest conclusion is that it may be understated rather than that it fails.")}</p></div>
-      <div class="card"><h3>${tj("notes.rework.h","Why rework is held back")}</h3><p class="hint">${tj("notes.rework","It rests on HMRC&rsquo;s unsourced 10% error rate, a cost you set yourself, and our assumption about how many errors actually go away. Least evidenced row here and the largest beneficiary of any change, so it is not counted as saved, even on a compliance scope. Ardent gives the mechanism but no quantified reduction; their Best-in-Class exception gap of 9.8 points is used as a ceiling on what this model may claim.")}</p></div>
-      <div class="card"><h3>${tj("notes.headcount.h","Headcount restates, it does not add")}</h3><p class="hint">${tj("notes.headcount","The capture-FTE figure prices the processing-cost row in people. It is the same money &mdash; the per-invoice benchmark is labour-dominated, so counting both would count it twice.")}\${saving > 0 ? ' ' + fill('${tj("notes.headcountSplit","{0} of {1}, or {2}%; the rest is review, technology and overhead.")}', fmt(captureValue), fmt(saving), Math.round(captureValue/saving*100)) : ''} \${fill('${tj("notes.headcountFte","In people: {0} FTE keying invoices today, of which {1} are released.")}', captureFte.toFixed(1), captureSaved.toFixed(1))} ${tj("notes.headcount2","Released capacity is only cash if the post goes or is not backfilled.")} \${ev('apqc','APQC')} &middot; \${ev('atoCapture','ATO / Deloitte')}</p></div>
-      <div class="card"><h3>${tj("notes.unmonetised.h","What carries no value on purpose")}</h3><p class="hint">${tj("notes.unmonetised","Paper and postage, because your own spend is the only honest input. Cycle time and supplier queries, because nobody has measured how much of that gap e-invoicing causes &mdash; Ardent&rsquo;s own")} \${ev('ardentCycle','${tj("ev.cycleGap","2.9 vs 13.5 days")}')} ${tj("notes.unmonetised2","is circular by construction, and the")} \${ev('nhs','${tj("ev.nhsQuery","15% query reduction")}')} ${tj("notes.unmonetised3","is a single anecdote. VAT leakage, penalty exposure and fraud, because the mechanisms are real and the magnitudes are not evidenced. They belong in the qualitative case beside this number, not inside it.")}</p></div>
+      <div class="card"><h3>${tj("notes.banks.h","What compliance alone saves")}</h3><p class="hint">${tj("notes.banks","Structured invoices arrive ready to post and leave already cleared, so the capture and issuing work goes with the integration itself. Review and approval are workflow decisions, and changing those is a separate programme. The ATO&rsquo;s task times set the split: receipt 7 minutes and validation 2, against review 7 and approval 5. Tax reporting is saved on either scope, because you file structured data to the authority whether or not AP workflow ever changes.")}</p></div>
+      <div class="card"><h3>${tj("notes.bracket.h","How conservative is the compliance-only figure?")}</h3><p class="hint">${tj("notes.bracket","Three methods give three answers for what a compliance-only programme saves, as a share of the manual AP cost: <strong>25.7%</strong> by the route used here, <strong>42.9%</strong> if capture is credited with its full share of handling time, and <strong>70.3%</strong> if the ATO&rsquo;s paper-to-eInvoice gap is read as capture and exception work throughout. The lowest is used. The spread is roughly threefold, so a compliance-only case that looks marginal here may be understated.")}</p></div>
+      <div class="card"><h3>${tj("notes.rework.h","Rework sits outside the total")}</h3><p class="hint">${tj("notes.rework","This row rests on the three figures we are least sure of: HMRC&rsquo;s 10% error rate, published without a source; the time you tell us one fix takes; and our estimate of how many errors structured data removes. So it is shown in full and left out of the total. Ardent evidences the mechanism without quantifying it, and their 9.8-point gap between best-in-class and average exception rates sets the ceiling used here.")}</p></div>
+      <div class="card"><h3>${tj("notes.headcount.h","The same saving, counted in people")}</h3><p class="hint">${tj("notes.headcount","The capture-FTE figure shows the processing-cost saving as people instead of money. It is one saving in two units &mdash; the per-invoice benchmark is mostly labour, so adding both would count it twice.")}\${saving > 0 ? ' ' + fill('${tj("notes.headcountSplit","{0} of {1}, or {2}%; the rest is review, technology and overhead.")}', fmt(captureValue), fmt(saving), Math.round(captureValue/saving*100)) : ''} \${fill('${tj("notes.headcountFte","In people: {0} FTE keying invoices today, of which {1} are released.")}', captureFte.toFixed(1), captureSaved.toFixed(1))} ${tj("notes.headcount2","Released time becomes cash only if the role goes, or is not backfilled.")} \${ev('apqc','APQC')} &middot; \${ev('atoCapture','ATO / Deloitte')}</p></div>
+      <div class="card"><h3>${tj("notes.unmonetised.h","Named, but not priced")}</h3><p class="hint">${tj("notes.unmonetised","Paper and postage, because your own spend beats any average. Cycle time and supplier queries, because no study separates the part e-invoicing causes &mdash; Ardent&rsquo;s own")} \${ev('ardentCycle','${tj("ev.cycleGap","2.9 vs 13.5 days")}')} ${tj("notes.unmonetised2","compares the most automated quartile with everyone else, and the")} \${ev('nhs','${tj("ev.nhsQuery","15% query reduction")}')} ${tj("notes.unmonetised3","comes from one unnamed organisation. VAT leakage, penalty exposure and fraud have real mechanisms and no measured magnitudes. They belong in the qualitative case alongside this number.")}</p></div>
     </div>
     <p style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:var(--soon);margin:0 0 8px">${tj("notes.h.grades","Evidence grades")}</p>
     <div class="grid g2">
       <div class="card tierA"><h3>${tj("ev.gradeA","Grade A")} <span class="tag tA">${tj("ev.gradeA.tag","measured &amp; primary")}</span></h3><p class="hint">${tj("ev.gradeA.body","Ardent Partners 2025 (cost, cycle time, exception and supplier-inquiry rates) &middot; ATO / Deloitte Access Economics (paper vs PDF vs e-invoice, 2016 vintage, stated) &middot; OECD DCTR 2026 (mechanism) &middot; this site&rsquo;s own tracker data.")}</p></div>
-      <div class="card tierB"><h3>${tj("ev.gradeB","Grade B")} <span class="tag tB">${tj("ev.gradeB.tag","credible body, unattributed")}</span></h3><p class="hint">${tj("ev.gradeB.body","HMRC/DBT 60&ndash;80% cost reduction and ~10% manual error rate. Both appear in a UK government consultation; neither carries a source within it. Real enough to use, not strong enough to lead with.")}</p></div>
-      <div class="card tierC"><h3>${tj("ev.gradeC","Grade C")} <span class="tag tC">${tj("ev.gradeC.tag","anecdote, not benchmark")}</span></h3><p class="hint">${tj("ev.gradeC.body","The NHS trust figures (24h vs 10 days, 2&times; payment speed, 15% fewer queries) &mdash; one unnamed, undated organisation. The VAT-gap figures, which are European Commission/CASE rather than OECD, and whose own country analyses credit economic recovery rather than digital reporting.")}</p></div>
-      <div class="card tierD"><h3>${tj("ev.gradeD","Grade D")} <span class="tag tD">${tj("ev.gradeD.tag","your assumption")}</span></h3><p class="hint">${tj("ev.gradeD.body","Rework cost per errored invoice, loaded FTE cost, tax-effort saving. Nothing is claimed for these; they are exposed so the model can be argued with rather than believed.")}</p></div>
-    </div>
-    <div class="note" style="margin-top:14px">${tj("notes.corrections","<strong>Corrections applied during verification.</strong> The VAT-gap figures were re-attributed from OECD to the European Commission; Hungary&rsquo;s start figure corrected 9.8%&rarr;10.4% and Poland&rsquo;s 12.7%&rarr;12.5%; and the &ldquo;reduced penalty exposure&rdquo; claim was removed from the HMRC attribution, because the word &ldquo;penalty&rdquo; does not appear in that consultation.")}</div>\`;
+      <div class="card tierB"><h3>${tj("ev.gradeB","Grade B")} <span class="tag tB">${tj("ev.gradeB.tag","credible body, unattributed")}</span></h3><p class="hint">${tj("ev.gradeB.body","HMRC/DBT 60&ndash;80% cost reduction and ~10% manual error rate. Both appear in a UK government consultation, neither with a source inside it. Used here, with that gap on the record.")}</p></div>
+      <div class="card tierC"><h3>${tj("ev.gradeC","Grade C")} <span class="tag tC">${tj("ev.gradeC.tag","anecdote, not benchmark")}</span></h3><p class="hint">${tj("ev.gradeC.body","The NHS trust figures (24h vs 10 days, 2&times; payment speed, 15% fewer queries) come from one unnamed, undated organisation. The VAT-gap figures are European Commission and CASE rather than OECD, and their own country analyses attribute the change to economic recovery rather than to digital reporting.")}</p></div>
+      <div class="card tierD"><h3>${tj("ev.gradeD","Grade D")} <span class="tag tD">${tj("ev.gradeD.tag","your assumption")}</span></h3><p class="hint">${tj("ev.gradeD.body","Resolution time per errored invoice, the loaded FTE costs, the tax-effort share. These are our starting estimates, shown so you can replace them with your own.")}</p></div>
+    </div>\`;
 
   // ---- sanity guards on what we just rendered ----------------------
   // Design review, "add sanity assertions to rendered output": the page
@@ -2817,8 +2829,54 @@ function build(){
     warn.push(\`<strong>This model removes more exceptions than separate the best quartile of AP from everyone else.</strong> Your error rate and elimination assumption together take \${claimedPp.toFixed(1)} points of invoices out of exception; Ardent measures the whole gap between Best-in-Class and all others at \${TAXM.excGapPp} points \${ev('excGap','${tj("ev.excSplit","11.1% against 20.9%")}')}, across every cause and with e-invoicing only one contributor. Lower the error rate or the elimination percentage &mdash; as it stands the rework row is claiming more than the market's best performers achieve.\`);
   }
 
+  // The placeholder warning joins the list rather than sitting above it.
+  // It is the same KIND of thing as the guards -- a conditional statement
+  // about this reader's scenario, not about our method -- and until now
+  // it was the same kind of thing rendered by a different mechanism in a
+  // different place, which is how two notes end up disagreeing.
+  if(placeholders.length){
+    warn.unshift(fill('${tj("guard.placeholders","<strong>{0} fields still hold our numbers rather than yours.</strong> Replace them with vendor budgetary estimates in the assumptions panel, and treat the ROI as illustrative until actuals can be provided.")}', placeholders.length));
+  }
+
+  // ONE BLOCK, NOT A STACK. Dan, 16 Aug 2026, asked whether every
+  // notification on the page should collect at the end of the caveats
+  // panel.
+  //
+  // (Worded carefully: this comment ships to the browser inside the
+  // client script, and the i18n suite searches the whole render for
+  // English that survives stubbing. Quoting the panel's own heading here
+  // failed that check -- a comment is not a rendered string, but the
+  // detector cannot tell, and the cheap fix is not to quote page copy in
+  // code that is served.)
+  //
+  // No -- and the reason is that they are two different kinds of thing.
+  // These are CONDITIONAL and about the reader's own scenario: they fire
+  // on their inputs, change run to run, and each says "this answer has a
+  // problem you can act on". The corrections note at the end of the
+  // caveats panel is STATIC and about our method. Moving these there
+  // would put "your plan schedules three countries after their real
+  // deadline" behind a panel that is collapsed by default -- the defect
+  // migration 513 fixed by pulling the fixed-rate warning out of a
+  // tooltip, and 540 fixed again by moving a caveat above its numbers.
+  //
+  // What was actually wrong is that three of them stacked into a wall of
+  // red before the reader reached a sentence of explanation. So they are
+  // grouped under one heading that states the count.
+  //
+  // OPEN BY DEFAULT, and that was not the first draft. Collapsing it read
+  // better and the regression suite refused: there is a check asserting
+  // the guards are inline, whose comment says hiding a warning behind a
+  // click inverts its whole purpose. That is the same rule migrations 513
+  // and 540 both exist to enforce, written down by an earlier version of
+  // this work and pointed straight back at it.
+  //
+  // The grouping is what fixes the wall of red -- one bordered block with
+  // one heading and thin rules between items, instead of three full-bleed
+  // boxes. The folding was never the part that helped, and it was the
+  // part that cost something. The reader can still collapse it.
   document.getElementById('guards').innerHTML = warn.length
-    ? warn.map(w => \`<div class="note warn" style="margin:0 0 12px">\${w}</div>\`).join('')
+    ? \`<details class="note warn guardbox" open><summary>\${fill('${tj("guard.heading","{0} {1} to check before you use these figures")}', warn.length, plur(warn.length, '${tj("word.thing","thing")}', '${tj("word.things","things")}'))}</summary>\`
+      + warn.map(w => \`<div class="guarditem">\${w}</div>\`).join('') + '</details>'
     : '';
 
   // ---- the two-page PDF ---------------------------------------------

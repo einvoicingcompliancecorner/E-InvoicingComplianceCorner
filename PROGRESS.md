@@ -13005,3 +13005,136 @@ across 564 files — **286 assertions, 67 standing invariants**.
 
 **Deploy note: 552's comments were edited, so the runner needs
 `--refresh-checksums`.** No executable change; replay is byte-identical.
+
+
+## 16 August 2026 (cont'd) — Notifications get a rule, and the reasoning panel stops arguing (migrations 565-566)
+
+### 565 — one block, and the rule behind it
+
+Dan, on the "Corrections applied during verification" note at the end of
+the caveats panel: *"Does it make sense for all notifications to appear at
+the end of Assumptions, sources and caveats section?"*
+
+**No, because they are two different kinds of thing.**
+
+*Conditional, about the reader's scenario* — N fields still hold our
+numbers; N jurisdictions have obligations earlier than this plan
+schedules; the tax-effort cap is binding; N pinned starts finish after the
+deadline; N waves back-plan to a date already past. These fire on the
+reader's inputs, change run to run, and each says *this answer has a
+problem you can act on*.
+
+*Static, about our method* — the corrections note. It never changes.
+
+The second was already in the right place. **The first group cannot go
+there, because that panel is collapsed by default.** "Your plan schedules
+three countries after their real deadline" behind a click nobody makes is
+the defect migration 513 fixed by pulling the fixed-rate warning out of a
+tooltip, and 540 fixed again by moving the placeholder caveat above its
+numbers. Twice is enough.
+
+What was actually wrong: **five notifications, three locations, no stated
+rule**, and three of them stacking into a wall of red before the reader
+reached a sentence of explanation. One of the three was rendered by a
+different mechanism in a different place from the other two, which is how
+two notes end up disagreeing.
+
+So the placeholder warning joins the guard list, and the group renders as
+one bordered block headed with the count. The rule is now written down: **a
+warning about your scenario appears beside what it affects; a note about
+our method lives in the caveats panel.** The wave-chart warning stays on
+the chart for exactly that reason.
+
+**Built collapsed first, and the suite refused it.** There is a check
+asserting the guards stay inline whose comment reads "hiding a warning
+behind a click would invert their whole purpose" — the same rule 513 and
+540 exist to enforce, written down by earlier work in this session and
+pointed straight back at it. Open by default. The grouping is what fixes
+the wall of red; the folding was never the part that helped.
+
+**And the corrections note is removed entirely**, at Dan's request. It was
+a changelog entry rather than a caveat: it described work done to the page
+rather than anything about the reader's case, and all three corrections it
+named were already reflected in the figures above it. The provenance lives
+in the migrations and here, which cannot go stale the way a standing page
+note can.
+
+### 566 — the reasoning panel explains instead of defending
+
+Dan: *"could you read through the reasoning section and check the language
+used is appropriate for a visitor first time reading. Maybe I'm biased,
+but it reads like a defence statement, rather than an informative
+message."*
+
+He is right, and it is measurable. Four tells, all present across the 31
+strings:
+
+```
+negation-led            7/7   "Nothing is claimed for these", "not our
+                              judgement", "it does not add", "carries no
+                              value on purpose"
+argues with an opponent 6/6   "argued with rather than believed", "three
+                              defensible methods", "what this model may
+                              claim", "circular by construction"
+courtroom vocabulary    4/5   claimed, credited, ceiling, held back, exposed
+self-referential        3/3   "this page", "this model", "the route this
+                              page takes"
+```
+
+**Why it happened is the useful part.** Every one of those strings was
+written *during an argument* — the rework note because Dan asked where the
+number came from, the unmonetised note because an evidence audit found the
+NHS figure was one anecdote, the bracket note because a proposal to triple
+the compliance share was rejected. Each was a correct answer to a real
+challenge at the moment it was written. Kept, they became the transcript of
+a defence, and a reader arriving with no challenge in mind meets a page
+bracing for one.
+
+**Same failure as 556's caveat sprawl and 564's nine-shaped basis column**:
+written one at a time, in context, never read cold by someone who was not
+in the conversation. Third instance of that pattern in two days.
+
+Register changed, content did not. Every source, grade and admission
+survives, and three are now standing invariants — the error rate has no
+source, the NHS figure is one organisation, the compliance share is the
+lowest of three readings. A future tidy may make this friendlier; it may
+not make it quieter.
+
+```
+"Nothing is claimed for these; they are exposed so the model can be
+ argued with rather than believed."
+      -> "These are our starting estimates, shown so you can replace
+          them with your own."
+```
+
+Headings moved furthest, because three of four were answering an
+accusation: *Why rework is held back* → *Rework sits outside the total*;
+*Headcount restates, it does not add* → *The same saving, counted in
+people*; *What carries no value on purpose* → *Named, but not priced*.
+
+3,589 characters → 3,418. Not the point, but the defensive version was
+also the longer one.
+
+### A stale line the read-through caught
+
+The grade-D card listed *"Rework cost per errored invoice"*. Migration 558
+had replaced that input with a **resolution time in minutes** eight hours
+earlier, so the card named a field that no longer exists. Prose outliving
+its model again — found only by reading the panel end to end for an
+unrelated reason, which remains the only detector this class has.
+
+### Two traps worth recording
+
+An octal escape: `content:'\25B8'` in the stylesheet, which lives inside a
+template literal where `\2` is an octal escape and a syntax error. Same
+family as the backticks-in-CSS-comments trap. Use the literal character.
+
+And a comment quoting page copy verbatim **failed the i18n detector** — a
+comment is not a rendered string, but it ships to the browser inside the
+client script and the check scans the whole render. Do not quote page copy
+in code that is served.
+
+### Verified
+
+`npm test`: 9 suites, all passing. ROI regression **199 checks**. Replay OK
+across 566 files — **298 assertions, 72 standing invariants**.

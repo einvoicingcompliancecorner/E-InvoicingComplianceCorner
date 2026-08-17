@@ -43,6 +43,22 @@ const selectEU = () => page.evaluate(() => {
   document.querySelectorAll("#countryList input[type=checkbox][data-i]")
     .forEach((b) => { b.checked = COUNTRIES[+b.dataset.i][2] === "Eu"; });
 });
+// Migration 565 grouped the scenario warnings into one <details> headed
+// with a count, so a reader is not met by a wall of red. The block is
+// CLOSED by default, which means innerText on it returns the heading and
+// nothing else — so every check that reads a guard has to open it first.
+//
+// Deliberately a helper rather than a global "open everything" in setup:
+// the closed state is the shipped state, and a suite that silently
+// expands it would stop being able to tell whether the detail is
+// reachable at all.
+const guardText = async () => {
+  await page.evaluate(() => {
+    const d = document.querySelector("#guards details");
+    if (d) d.open = true;
+  });
+  return page.locator("#guards").innerText();
+};
 const selectMandate = () => page.evaluate(() => {
   document.getElementById("useSubs").checked = false;
   document.querySelectorAll("#countryList input[type=checkbox][data-i]")
@@ -185,7 +201,7 @@ await page.evaluate(() => {
   });
 });
 await page.click("#run"); await page.waitForTimeout(500);
-const guards = await page.locator("#guards").innerText();
+const guards = await guardText();
 t.check("the mistimed-obligation guard fires", /earlier than the date this plan plans for/.test(guards),
   guards.slice(0, 120));
 t.check("it names the countries and both dates",
@@ -220,7 +236,7 @@ await page.fill(`[data-ovr-start="${who}"]`, "2031-06-01");
 await page.dispatchEvent(`[data-ovr-start="${who}"]`, "change");
 await page.waitForTimeout(600);
 t.check("a pinned start past the deadline is called out",
-  /pinned start date finishes after the deadline/i.test(await page.locator("#guards").innerText()));
+  /pinned start date finishes after the deadline/i.test(await guardText()));
 
 // ---- 10. countries with no fixed deadline are adjustable too ----
 // Left out of the first version on the reasoning that there is no wave to
@@ -419,7 +435,7 @@ t.check("and the row shows the APQC-implied headcount it scaled from",
 // difference is that it now says so. An invisible ceiling is
 // indistinguishable from a model that has stopped working.
 t.check("the binding cap is called out",
-  /cap is binding/.test(await page.locator("#guards").innerText()));
+  /cap is binding/.test(await guardText()));
 
 await page.click("#selNone");
 await page.evaluate(() => {
@@ -429,7 +445,7 @@ await page.evaluate(() => {
 });
 await page.click("#run"); await page.waitForTimeout(700);
 t.check("and stays quiet when the cap is not binding",
-  !/cap is binding/.test(await page.locator("#guards").innerText()));
+  !/cap is binding/.test(await guardText()));
 
 // ---- 15. two FTE rates, and the decomposition that must not double count ----
 // One field used to price both a tax professional reconciling clearance
@@ -470,8 +486,12 @@ t.check("the panel states the capture FTE it derived",
   /3\.6 FTE keying invoices today/.test(notesText), notesText.slice(0, 200));
 t.check("and the FTE it releases",
   /2\.1 are released/.test(notesText), notesText.slice(0, 260));
-t.check("and still says it is a restatement, not an addition",
-  /counting both would count it twice/i.test(notesText), notesText.slice(0, 300));
+// Migration 566 rewrote this panel out of a defensive register into an
+// explanatory one. The CLAIM is unchanged and still has to be made — one
+// saving in two units — so the check follows the meaning rather than the
+// old wording.
+t.check("and still says it is one saving in two units, not two savings",
+  /adding both would count it twice/i.test(notesText), notesText.slice(0, 300));
 t.check("and still reconciles it against the row it decomposes",
   notesText.includes(String(directTotal.toLocaleString("en-US"))), notesText.slice(0, 300));
 
@@ -482,7 +502,7 @@ await page.fill("#fteEntry", "900000");
 await page.click("#run"); await page.waitForTimeout(700);
 t.check("a data-entry rate that outruns the whole saving is called out",
   /capture headcount is worth more than the whole processing saving/i
-    .test(await page.locator("#guards").innerText()));
+    .test(await guardText()));
 await page.click("#resetDefaults"); await page.waitForTimeout(400);
 t.check("and reset restores both rates",
   (await page.inputValue("#fteEntry")) === "54000"
@@ -631,14 +651,14 @@ t.check("the 80% is a real input now, not a literal",
   (await page.inputValue("#errElim")) === "80", await page.inputValue("#errElim"));
 t.check("and the default sits inside the observed gap (10% x 80% = 8.0 < 9.8)",
   !/removes more exceptions than separate the best quartile/i
-    .test(await page.locator("#guards").innerText()));
+    .test(await guardText()));
 
 await page.fill("#errRate", "20");
 await page.click("#run"); await page.waitForTimeout(700);
 t.check("claiming more than the best quartile achieves is called out",
   /removes more exceptions than separate the best quartile/i
-    .test(await page.locator("#guards").innerText()),
-  (await page.locator("#guards").innerText()).slice(0, 160));
+    .test(await guardText()),
+  (await guardText()).slice(0, 160));
 
 await page.click("#resetDefaults"); await page.waitForTimeout(400);
 await page.click("#run"); await page.waitForTimeout(700);
@@ -746,9 +766,13 @@ await page.waitForTimeout(600);
 t.check("a 'why' link opens it", await page.locator("#notes").evaluate((e) => e.open));
 
 const notes = await page.locator("#notes").innerText();
-["What compliance alone saves", "Why rework is held back",
- "Headcount restates", "carries no value on purpose",
- "Grade A", "Grade D", "Corrections applied"].forEach((phrase) =>
+// "Corrections applied" was removed in 565 at Dan's request: it was a
+// changelog entry rather than a caveat, describing work done to the page
+// rather than anything about the reader's case, and all three fixes it
+// named were already reflected in the figures it sat beneath.
+["What compliance alone saves", "Rework sits outside the total",
+ "The same saving, counted in people", "Named, but not priced",
+ "Grade A", "Grade D"].forEach((phrase) =>
   t.check(`the panel carries: ${phrase}`, notes.includes(phrase)));
 
 // ---- 20. fields line up ----
@@ -1589,7 +1613,7 @@ const bracket = await page.locator("#notes").innerText();
 for (const fig of ["25.7", "42.9", "70.3"]) {
   t.check(`the bracket names the ${fig}% reading`, bracket.includes(fig + "%"), fig);
 }
-t.check("and says which end the page took", /takes the lowest/i.test(bracket));
+t.check("and says which end was taken", /lowest is used/i.test(bracket));
 
 await browser.close();
 process.exit(t.report() ? 0 : 1);

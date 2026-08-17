@@ -114,7 +114,7 @@ try {
     ["a savings column heading", "Saved on this scope"],
     ["a row tag, newly translatable", "not saved"],
     ["a runtime stat label", "With a dated deadline ahead"],
-    ["a notes-panel card", "Headcount restates, it does not add"],
+    ["a notes-panel card", "The same saving, counted in people"],
     ["an evidence card", "credible body, unattributed"],
     ["the footer", "not tax, legal or investment advice"],
   ];
