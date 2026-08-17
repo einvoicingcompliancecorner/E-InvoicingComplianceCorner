@@ -1348,7 +1348,7 @@ export function renderRoiPage({ countries, benchmarks = [], phases = [], strings
     </div>
   </details>
 
-  <p class="noprint" style="margin:-4px 0 14px"><button id="ganttToggle" style="padding:5px 11px;font-size:12.5px">${t("btn.expand", "Show every jurisdiction")}</button> <button id="tblToggle" style="padding:5px 11px;font-size:12.5px">${t("btn.table", "Show as table")}</button></p>
+  <p class="noprint" style="margin:-4px 0 14px"><button id="ganttToggle" style="padding:5px 11px;font-size:12.5px">${t("btn.group", "Group by wave")}</button> <button id="tblToggle" style="padding:5px 11px;font-size:12.5px">${t("btn.table", "Show as table")}</button></p>
   <div id="waves" class="hidden"></div>
   <h2>4 &middot; ${t("sec.savings", "Savings")}</h2>
   <p class="lede">${t("sec.savings.lede5", "Priced savings first, the ones this scope actually saves at the top; what this model will not put a number on is named below the total. Every priced row says what it saves on your chosen scope, and that total is what section 2 works from.")}</p>
@@ -1618,7 +1618,17 @@ document.getElementById('notes').addEventListener('toggle', function(){
 // the savings, and on a compliance scope it is larger than all three
 // combined, so as a slice it would dominate a chart about savings with
 // money the scope does not realise.
-let SV = null, WAVES = [], UNDATED = [], ganttExpanded = false;
+// THE RUNWAY VIEW IS THE DEFAULT, since 17 August 2026.
+//
+// Grouped-by-wave was the default because 46 per-jurisdiction rows were
+// unreadable -- density, not extent, and that reasoning was right about
+// the chart it was describing. It is not right about this one: grouping
+// answers "which countries share a deadline", and the question a reader
+// arrives with is "when must I start and how much room do I have", which
+// is per jurisdiction and is what the runway draws.
+//
+// Grouping is still one button away and unchanged.
+let SV = null, WAVES = [], UNDATED = [], ganttExpanded = true, GANTT_SOLID = false;
 function renderSavings(){
   const el = document.getElementById('savings');
   if(!el || !SV || !SV.segs.length) return;
@@ -2351,7 +2361,10 @@ function buildGantt(sel0, erp, pace){
   // Grouped mode draws one row per wave and no wave headers; expanded
   // draws a header plus a row per jurisdiction. Getting this wrong leaves
   // either a tall band of empty space or a chart clipped at the bottom.
-  const bodyRows = ganttExpanded ? rows.length + groups.length : groups.length;
+  // The runway view draws no wave band headers, so it no longer reserves a
+  // row for each. Left as it was, the canvas kept ~250px of blank space
+  // below the last track -- height computed for a layout that had gone.
+  const bodyRows = ganttExpanded ? rows.length : groups.length;
   const undatedRows = undated.length ? (ganttExpanded ? undated.length + 1 : 1) : 0;
   const H = HEAD + (RH+GAP)*(bodyRows + 2 + undatedRows) + 16;
   const x = t => L + ((t - X0)/(X1 - X0))*(W - L - R);
@@ -2426,8 +2439,31 @@ function buildGantt(sel0, erp, pace){
   }
 
   let lastWave = null;
-  if(ganttExpanded) rows.forEach(r => {
-    if(r.waveKey !== lastWave){
+  // RUNWAY VIEW. Rows sorted by how much room is left, not by wave.
+  //
+  // The chart used to draw each track against a four-year axis, so a
+  // 5-7 week programme came out two pixels wide -- measured, median 2px
+  // across 38 bars -- and the six-colour phase legend described marks
+  // nobody could see. The expanded view was already printing "7w effort -
+  // 7w elapsed" as TEXT in each band header, which is a chart captioning
+  // its own values because the graphic cannot.
+  //
+  // The fix is not a bigger bar. It is that the EMPTY SPACE WAS THE
+  // ANSWER ALL ALONG: the distance between today and the deadline is the
+  // slack, which is the one thing a reader is actually here to find out.
+  // Drawing a track from today to the deadline turns 90% waste into the
+  // message, and the work block keeps its true position and width at the
+  // end of it.
+  //
+  // Sorted by slack ascending, so the row you must act on is the first
+  // one. Wave bands are gone from this view -- the wave is a grouping of
+  // deadlines and this view is ordered by urgency, so the two disagree by
+  // construction. "Group by wave" is still one button away and unchanged.
+  GANTT_SOLID = false;
+  const runwayRows = [...rows].sort((a, b) => a.slipDays - b.slipDays
+    || String(a.c[0]).localeCompare(String(b.c[0])));
+  if(ganttExpanded) runwayRows.forEach(r => {
+    if(false){
       lastWave = r.waveKey;
       const wm = waveMeta.find(w => w.dl === lastWave);
       s += \`<text x="0" y="\${y+15}" font-family="'IBM Plex Mono',monospace" font-size="9.5" letter-spacing="1"><tspan fill="#e2b978">\${fill('${tj("chart.waveBand","WAVE {0}")}', wm.dl)}</tspan><tspan fill="#93a3c0" letter-spacing="0"> &middot; \${fill('${tj("chart.waveBandMeta","{0} &middot; {1}w effort &middot; {2}w elapsed{3}")}', wm.n + ' ' + plur(wm.n, PLURALS.jur), wm.effort, wm.elapsed, lanes>1&&wm.n>1 ? fill('${tj("chart.acrossLanes"," across {0} lanes")}', Math.min(lanes,wm.n)) : '')}</tspan></text>\`;
@@ -2451,10 +2487,36 @@ function buildGantt(sel0, erp, pace){
     // already correct and its comment was not, which is how the wrong one
     // kept looking right.
     s += \`<text x="\${L-10}" y="\${y+15}" fill="\${r.c[11] ? '#c98a3a' : '#93a3c0'}" font-family="'IBM Plex Mono',monospace" font-size="9" text-anchor="end">\${metaTxt.replace(/\u00b7/g, '&middot;')}</text>\`;
-    r.segs.forEach(sg => {
-      const x1 = x(sg.s.getTime()), x2 = x(sg.e.getTime());
-      s += \`<rect x="\${x1+1}" y="\${y+4}" width="\${Math.max(2,x2-x1-2)}" height="\${RH-8}" rx="3" fill="\${sg.c}"><title>\${fill('${tj("chart.segTip","{0} — {1}")}', r.c[0], sg.n)}\\n\${fill('${tj("chart.segWeeks","{0} weeks: {1} to {2}")}', sg.weeks, isoD(sg.s), isoD(sg.e))}</title></rect>\`;
-    });
+    // THE RUNWAY. From today to this jurisdiction's deadline, drawn behind
+    // the work so the gap between the two reads as the slack it is.
+    const rwA = Math.max(x(NOW.getTime()), L), rwB = x(r.golive.getTime());
+    if(rwB > rwA){
+      s += \`<line x1="\${rwA}" y1="\${y+RH/2}" x2="\${rwB}" y2="\${y+RH/2}" stroke="#2b3c5a" stroke-width="2"/>\`;
+    }
+    // PHASES ONLY WHEN THEY CAN BE READ. The whole block is often narrower
+    // than the six colours it would be divided into; below the threshold
+    // it draws as one block and the breakdown stays on hover, where it is
+    // legible. Drawing six 2px stripes and a legend naming them was the
+    // defect, not the scale -- a key to marks nobody can distinguish is
+    // worse than no key.
+    const blockA = x(r.segs[0].s.getTime()), blockB = x(r.segs[r.segs.length-1].e.getTime());
+    const detail = (blockB - blockA) >= 44;
+    // The legend names six phase colours. When the blocks are too narrow
+    // to be divided into them, naming them is a key to marks nobody can
+    // see -- which is the defect this whole view exists to fix, and it
+    // would have survived it. Recorded so the legend can say what the
+    // chart is actually drawing.
+    if(!detail) GANTT_SOLID = true;
+    const late = r.slipDays < 0;
+    if(detail){
+      r.segs.forEach(sg => {
+        const x1 = x(sg.s.getTime()), x2 = x(sg.e.getTime());
+        s += \`<rect x="\${x1+1}" y="\${y+4}" width="\${Math.max(2,x2-x1-2)}" height="\${RH-8}" rx="3" fill="\${sg.c}"><title>\${fill('${tj("chart.segTip","{0} — {1}")}', r.c[0], sg.n)}\\n\${fill('${tj("chart.segWeeks","{0} weeks: {1} to {2}")}', sg.weeks, isoD(sg.s), isoD(sg.e))}</title></rect>\`;
+      });
+    } else {
+      const tip = r.segs.map(sg => fill('${tj("chart.segWeeksShort","{0}: {1}w")}', sg.n, sg.weeks)).join(', ');
+      s += \`<rect x="\${blockA}" y="\${y+4}" width="\${Math.max(6, blockB-blockA)}" height="\${RH-8}" rx="3" fill="\${late ? '#b5432f' : '#3987e5'}"><title>\${fill('${tj("chart.blockTip","{0} — {1} weeks of work, {2} to {3}")}', r.c[0], r.segs.reduce((a,sg)=>a+sg.weeks,0), isoD(r.segs[0].s), isoD(r.segs[r.segs.length-1].e))}\\n\${tip}</title></rect>\`;
+    }
     // Go-live milestone. Only drawn on rows whose track actually ENDS at the
     // deadline — in a multi-country wave the earlier countries finish before
     // it, and putting a diamond on every row left them floating detached from
@@ -2466,7 +2528,12 @@ function buildGantt(sel0, erp, pace){
     } else {
       s += \`<line x1="\${gx}" y1="\${y+4}" x2="\${gx}" y2="\${y+RH-4}" stroke="#efe9db" stroke-width="1" stroke-dasharray="2 2" opacity="0.5"><title>\${fill('${tj("chart.aheadTip","{0} completes ahead of the {1} wave deadline")}', r.c[0], r.c[5])}</title></line>\`;
     }
-    if(r.seq === 0 && r.lane === 0){
+    // ONE PER ROW IN THE RUNWAY VIEW, not one per wave. The old condition
+    // drew the status only on a wave's first row, which was right when
+    // rows were grouped under a shared band and wrong the moment they are
+    // sorted by urgency and stand alone: Germany and Poland share a
+    // deadline, so Germany rendered with no slack figure at all.
+    if(ganttExpanded || (r.seq === 0 && r.lane === 0)){
       const ICON = {critical:'▲', warning:'●', good:'✓'};
       const COL  = {critical:'#e0907f', warning:'#e2b978', good:'#7fd0a8'};
       // The day counts on the right of each row. "d" is a unit and "late"
@@ -2622,6 +2689,7 @@ function buildGantt(sel0, erp, pace){
     \`<div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;padding:8px 0 10px;font-size:11.5px;color:#93a3c0">
       <span style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:1px;text-transform:uppercase">${tj("chart.phase","Phase")}</span>
       \${PROG().concat(PH()).map(p=>\`<span style="display:inline-flex;align-items:center;gap:5px"><span style="width:11px;height:11px;border-radius:2px;background:\${p.c};display:inline-block"></span>\${p.n}</span>\`).join('')}
+      \${GANTT_SOLID ? \`<span style="display:inline-flex;align-items:center;gap:5px"><span style="width:11px;height:11px;border-radius:2px;background:#3987e5;display:inline-block"></span>${tj("chart.key.work","country work &mdash; hover for phases")}</span>\` : ''}
       <span style="display:inline-flex;align-items:center;gap:5px"><span style="display:inline-block;width:0;height:0;border:6px solid transparent;border-left-color:#efe9db;transform:rotate(45deg)"></span>${tj("chart.golive","Go-live")}</span>
       <span style="display:inline-flex;align-items:center;gap:5px;color:#e0907f">${tj("chart.key.late","▲ already late")}</span>
       <span style="display:inline-flex;align-items:center;gap:5px;color:#e2b978">${tj("chart.key.soon","● start &lt;90d")}</span>

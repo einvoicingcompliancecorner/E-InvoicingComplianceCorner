@@ -110,12 +110,22 @@ t.check("and the two Plex faces are distinct from it and from each other",
 // made it unreadable). Checks that inspect per-jurisdiction scheduling
 // have to open it first, and must be able to do so more than once
 // without toggling it shut again.
-const expandGantt = async () => {
-  if (/Show every/.test(await page.locator("#ganttToggle").innerText())) {
-    await page.click("#ganttToggle");
-    await page.waitForTimeout(600);
+// TWO EXPLICIT HELPERS, not one that infers the current view from the
+// button's label. The label flipped when the default did on 17 August,
+// and a helper that reads "Show every jurisdiction" to decide silently
+// became a no-op in one direction -- which is a test moving to a state it
+// did not intend and asserting there anyway.
+const toRunway = async () => {
+  if (/Show every/i.test(await page.locator("#ganttToggle").innerText())) {
+    await page.click("#ganttToggle"); await page.waitForTimeout(600);
   }
 };
+const toGrouped = async () => {
+  if (/Group by wave/i.test(await page.locator("#ganttToggle").innerText())) {
+    await page.click("#ganttToggle"); await page.waitForTimeout(600);
+  }
+};
+const expandGantt = toRunway;
 
 // ---- 1. it calculates at all ----
 // ---- 1a. the opening selection is the eight countries it means ----
@@ -204,6 +214,11 @@ t.check("change row hidden on compliance-only",
 
 // ---- 6. lanes cut elapsed time without inventing or destroying effort ----
 const sumOf = (svg, re) => [...svg.matchAll(re)].map((m) => +m[1]).reduce((a, c) => a + c, 0);
+// The "Nw elapsed" text lives in the WAVE BAND HEADERS, which only the
+// grouped view draws -- and grouping stopped being the default on 17
+// August. The measurement is unchanged; it just has to be taken in the
+// view that renders it.
+await toGrouped();
 await page.fill("#lanes", "1"); await page.click("#run"); await page.waitForTimeout(400);
 const one = await page.locator("#gantt svg").innerHTML();
 await page.fill("#lanes", "5"); await page.click("#run"); await page.waitForTimeout(400);
@@ -285,11 +300,22 @@ t.check("it names the countries and both dates",
   guards.slice(0, 200));
 
 // ---- 9. the adjust panel actually rearranges the plan ----
+// READS THE WAVE DATES, not the "Nw elapsed" caption.
+//
+// That caption lived in the EXPANDED view's band headers, and the runway
+// view has no bands -- so after 17 August this returned an empty array
+// and the check compared [] with [] and passed. A check whose two sides
+// are both empty is not a weaker check, it is no check, and it would have
+// gone on reporting PASS for as long as anyone left it alone.
+//
+// The wave dates are what actually has to change when a country is moved
+// between waves, and the grouped view draws them.
 const waveText = () => page.evaluate(() =>
-  [...document.querySelectorAll("#gantt svg text")].map((n) => n.textContent).filter((x) => /w elapsed/.test(x)));
+  [...document.querySelectorAll("#gantt svg text")].map((n) => n.textContent)
+    .filter((x) => /\d{4}-\d{2}-\d{2}/.test(x)));
 await selectMandate(); await page.waitForTimeout(150);
 await page.click("#run"); await page.waitForTimeout(600);
-await expandGantt();
+await toGrouped();
 const before = await waveText();
 await page.evaluate(() => { document.getElementById("adjust").open = true; });
 await page.waitForTimeout(200);
@@ -344,6 +370,7 @@ const bandLabels = () => page.evaluate(() =>
 // A nearer date is a test of where the programme bar happens to land,
 // which depends on lanes, scope and the earliest deadline selected —
 // three things earlier sections of this file have already changed.
+await toRunway();
 await page.fill('[data-ovr-start="Australia"]', "2035-01-01");
 await page.dispatchEvent('[data-ovr-start="Australia"]', "change");
 await page.waitForTimeout(600);
@@ -400,6 +427,10 @@ t.check("reset clears discretionary pins too",
 // ---- back to the dated case for the final reset check ----
 await selectMandate(); await page.waitForTimeout(150);
 await page.click("#run"); await page.waitForTimeout(600);
+// `before` was captured in the grouped view; the intervening checks moved
+// to the runway view, and comparing wave labels across two different
+// renderings compares two different things.
+await toGrouped();
 t.check("reset restores the computed plan exactly",
   JSON.stringify(await waveText()) === JSON.stringify(before));
 
@@ -1066,11 +1097,67 @@ await page.goto(`file://${file}`);
 await selectEU(); await page.waitForTimeout(200);
 await page.click("#run"); await page.waitForTimeout(900);
 
+// THE DEFAULT REVERSED ON 17 AUGUST 2026. Grouping was the default
+// because 46 per-jurisdiction rows were unreadable, and that was right
+// about the chart it described: a four-year axis with a median bar two
+// pixels wide. The runway view draws each row from today to its own
+// deadline, so the empty space becomes the slack and the rows are worth
+// having one each. Grouping is still a click away.
 const chartH = () => page.evaluate(() =>
   +document.querySelector("#gantt svg").getAttribute("viewBox").split(" ")[3]);
+const runway = await chartH();
+t.check(`runway view by default, one row per jurisdiction (${runway}px)`,
+  await page.evaluate(() => {
+    const l = [...document.querySelectorAll("#gantt svg text")]
+      .map((n) => (n.firstChild && n.firstChild.textContent) || "");
+    return l.includes("Germany") && l.includes("European Union");
+  }), runway);
+
+// EVERY ROW CARRIES A RUNWAY LINE. Without it the view is the old chart
+// with the bands removed: the gap between today and the deadline has to
+// be drawn or it reads as absence rather than as slack.
+const runwayLines = await page.evaluate(() =>
+  [...document.querySelectorAll("#gantt svg line")]
+    .filter((n) => n.getAttribute("stroke") === "#2b3c5a"
+      && n.getAttribute("stroke-width") === "2").length);
+t.check(`each dated row is drawn on a runway (${runwayLines} tracks)`,
+  runwayLines >= 5, runwayLines);
+
+// SORTED BY URGENCY. The row you must act on is the first one, which is
+// the entire reason for abandoning the wave ordering here.
+const order = await page.evaluate(() => {
+  const svg = document.querySelector("#gantt svg");
+  const names = [...svg.querySelectorAll('text[font-size="12"]')]
+    .map((n) => (n.firstChild && n.firstChild.textContent) || "");
+  return names.filter((n) => n && n !== "Select & contract");
+});
+t.check("and the most urgent jurisdiction is drawn first",
+  order[0] === "France", order.slice(0, 4).join(" > "));
+
+// EVERY ROW GETS ITS OWN STATUS. The old condition drew one per WAVE, so
+// two countries sharing a deadline left the second with no slack figure.
+// Measured on the pair that exposed it: Germany and Poland share
+// 2027-01-01, so under the old one-per-wave condition the second of them
+// rendered with no slack figure at all.
+const sharedPair = await page.evaluate(() => {
+  const svg = document.querySelector("#gantt svg");
+  const rows = [...svg.querySelectorAll('text[font-size="12"]')]
+    .filter((n) => ["Germany", "Poland"].includes((n.firstChild && n.firstChild.textContent) || ""));
+  return rows.map((n) => {
+    const y = n.getAttribute("y");
+    const status = [...svg.querySelectorAll("text")]
+      .find((m) => m.getAttribute("y") === y && /\d+d/.test(m.textContent));
+    return { name: n.firstChild.textContent, status: status ? status.textContent.trim() : null };
+  });
+});
+t.check("two jurisdictions sharing a deadline each get their own slack figure",
+  sharedPair.length === 2 && sharedPair.every((r) => r.status),
+  JSON.stringify(sharedPair));
+
+await page.click("#ganttToggle"); await page.waitForTimeout(700);
 const grouped = await chartH();
-t.check(`grouped by default, and it fits on a screen (${grouped}px, was 1674)`,
-  grouped < 600, grouped);
+t.check(`grouping folds it down (${runway} -> ${grouped}px)`,
+  grouped < runway, `${runway} -> ${grouped}`);
 // The EU wave covers every member state selected, so counting tracks
 // would print "1 JURISDICTION" over an obligation binding twenty-seven.
 t.check("the EU wave is labelled by member states, not by track count",
@@ -1080,19 +1167,8 @@ t.check("the EU wave is labelled by member states, not by track count",
 t.check("no per-jurisdiction row is drawn while grouped",
   await page.evaluate(() => ![...document.querySelectorAll("#gantt svg text")]
     .some((n) => /^Germany/.test((n.firstChild && n.firstChild.textContent) || ""))));
-
 await page.click("#ganttToggle"); await page.waitForTimeout(700);
-const expanded = await chartH();
-t.check(`expanding restores every jurisdiction (${grouped} -> ${expanded}px)`,
-  expanded > grouped * 2, `${grouped} -> ${expanded}`);
-t.check("and every jurisdiction is named once expanded",
-  await page.evaluate(() => {
-    const l = [...document.querySelectorAll("#gantt svg text")]
-      .map((n) => (n.firstChild && n.firstChild.textContent) || "");
-    return l.includes("Germany") && l.includes("European Union");
-  }));
-await page.click("#ganttToggle"); await page.waitForTimeout(700);
-t.check("and it folds back", (await chartH()) === grouped);
+t.check("and it unfolds back", (await chartH()) === runway);
 
 
 // ---- 25. the steps strip is navigation, not decoration ----

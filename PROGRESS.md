@@ -13741,3 +13741,70 @@ the stale signal, both new guards, the hint on load and after typing, and
 a measured no-collision check on every chart row that also fails if the
 fix becomes "truncate until it fits". Replay OK across 575 files —
 **339 assertions, 89 standing invariants**.
+
+---
+
+## 17 August 2026 (late) — migration 576: the chart shows the runway
+
+Dan, choosing from three mockups built on real data: *"I like the wave
+chart options — I probably prefer option A."*
+
+### What was wrong, measured
+
+**38 bars. Median width two pixels.** A country's programme is 5–7 weeks;
+the axis spans four and a half years because one selected member state
+drags the far edge to the 2030 ViDA obligation. Seven weeks on a four-year
+axis is two pixels, subdivided into six phase colours, under a legend
+naming all seven.
+
+The chart had already admitted this: the expanded view printed
+*"7w effort · 7w elapsed"* as **text** in every band header. A chart that
+captions its own values is not working.
+
+### The empty space was the answer all along
+
+90% of the plot area was blank, and every previous attempt treated that as
+waste to compress. **The distance between today and a deadline is the
+slack** — the one thing a reader opens this section to find. Draw a track
+across it and the waste becomes the message, while the work block keeps
+its true position and width at the end of the run.
+
+**Nothing in the model changed.** `buildGantt` computes exactly what it
+computed before; only the drawing is different. The dates were always
+right and were being rendered in a way that could not show them.
+
+Four consequences, each deliberate: rows sorted by slack rather than by
+wave, so the first row is the one to act on; the runway view becomes the
+default, with grouping one button away and unchanged; **phases draw only
+above 44px** and otherwise move to hover, because a legend for marks
+nobody can distinguish asserts a precision the picture does not have; and
+every row gets its own slack figure, where the old condition drew one per
+wave and left Germany blank because it shares a deadline with Poland.
+
+The canvas also stopped reserving ~250px for band headers it no longer
+draws — a layout holding space for a deleted thing, the same shape as the
+dead CSS in migration 572.
+
+### A test that had quietly become no test
+
+`waveText()` collected SVG text matching `/w elapsed/` — which only ever
+existed in the expanded view's band headers. With the bands gone it
+returned an empty array, so *"moving a country between waves redraws the
+chart"* compared `[]` with `[]` and **passed**. Not a weakened check: no
+check, reporting PASS indefinitely. It now reads the wave dates, which are
+what actually has to change.
+
+Two more of the same family: `expandGantt()` decided which view it was in
+by reading the toggle's label, so when the label flipped it silently
+became a no-op in one direction — a test moving to a state it did not
+intend and asserting there anyway. Replaced with two explicit helpers.
+
+### Verified
+
+`npm test`: 10 suites. ROI regression **248 checks** (was 246), including
+the runway lines, the urgency sort, and the shared-deadline pair that
+exposed the missing slack figure. Stress-tested at 33 jurisdictions.
+Replay OK across 576 files — **342 assertions, 91 standing invariants**.
+
+Still open from the usability assessment: mobile, the country picker, the
+five KPI boxes, and an evidence scorecard.
