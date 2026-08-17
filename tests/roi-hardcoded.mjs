@@ -76,6 +76,65 @@ await page.evaluate(() => {
 });
 await page.waitForTimeout(500);
 
+// ---- THE ITINERARY, WHICH IS THE PART THAT WAS WRONG -------------------
+//
+// Until 17 August 2026 the walk stopped above this line: render,
+// calculate, open three panels, read. Correct logic, and it reported ZERO
+// hardcoded strings while nineteen sat in the renderer, because every one
+// of them is CONDITIONAL and this file never drove a condition.
+//
+// What it could not see:
+//   * the fixed-rate FX note, which is empty under USD by design;
+//   * the whole expanded wave chart -- PROGRAMME, WAVE 2027-01-01,
+//     EU-WIDE, NO FIXED DEADLINE and every bar tooltip -- which exists
+//     only after #ganttToggle;
+//   * six scenario guards, each of which needs a broken scenario.
+//
+// A check that walks 60% of its subject reports PASS in the same words as
+// one that walks all of it. So the route is now explicit, and each step
+// says which strings it exists to reach. Adding a conditional string
+// without adding a step here is the failure this is built to make loud.
+
+// 1. Currency. The FX note renders nothing under USD.
+await page.selectOption("#cur", "EUR");
+await page.waitForTimeout(400);
+
+// 2. The expanded chart, and the table view beside it.
+for (const id of ["ganttToggle", "tblToggle"]) {
+  await page.evaluate((i) => { const b = document.getElementById(i); if (b) b.click(); }, id);
+  await page.waitForTimeout(300);
+}
+
+// 3. Two guard conditions, driven rather than waited for.
+//
+//    Zero integrations against a real mandate: set the ERP count to zero
+//    with countries selected. Payback under a month: a trivial one-off
+//    cost against a full-size saving.
+//
+//    Deliberately NOT all six. Three of the remaining four need a
+//    contradiction between two benchmarks to hold at once, and a test
+//    that constructs those becomes a second model of the model. Two is
+//    enough to prove the route exists and to catch the common case; the
+//    others are covered by the D1 side -- every guard.% row is asserted
+//    to exist and to keep its slots in migrations 550 and 574.
+await page.fill("#erp", "0");
+await page.click("#run");
+await page.waitForTimeout(900);
+await page.fill("#erp", "1");
+await page.fill("#cImplS", "1");
+await page.fill("#cImplC", "1");
+await page.fill("#cPlat", "0");
+await page.fill("#cRun", "0");
+await page.click("#run");
+await page.waitForTimeout(900);
+
+// 4. And back to a normal scenario, with everything still open, so the
+//    walk below sees the ordinary page as well as the broken one.
+await page.fill("#cImplS", "60000");
+await page.fill("#cImplC", "180000");
+await page.click("#run");
+await page.waitForTimeout(900);
+
 const chunks = await page.evaluate(() => {
   const out = [];
   const walk = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
@@ -108,7 +167,24 @@ for (const raw of chunks) {
   for (const p of PROPER) probe = probe.split(p).join("");
   probe = probe.replace(/«[a-zA-Z0-9._]+»/g, "")
     .replace(/[\d\s.,%$£€+\-–—×/()·|:;\[\]]+/g, " ").trim();
-  if (probe.length < 3 || !/[a-z]{3}/.test(probe)) continue;
+  // TWO LETTERS, NOT THREE, since 17 August 2026.
+  //
+  // The old threshold required three consecutive lowercase letters, which
+  // is the right instinct -- the page is full of two-letter country
+  // codes, single-letter evidence grades and currency symbols, and
+  // reporting those as untranslated copy would bury every real finding.
+  //
+  // It also hid "mo". The payback figure printed "6mo" and "<1mo" on both
+  // the page and the PDF, in English, for as long as the figure has
+  // existed, and this line skipped it -- not for want of walking there,
+  // but because the thing it found was too short to look like a word.
+  // German writes Mon. and French mois; the abbreviation is copy.
+  //
+  // So: two letters, and the false positives that lets through are
+  // handled by NAME in SAFE and PROPER above rather than by a length
+  // rule. A threshold that silently exempts a class of string is a
+  // shorter itinerary wearing a different hat.
+  if (probe.length < 2 || !/[a-z]{2}/.test(probe)) continue;
   found.add(norm(raw));
 }
 

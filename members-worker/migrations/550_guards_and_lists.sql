@@ -59,4 +59,19 @@ INSERT OR IGNORE INTO translations (namespace, key, lang, value) VALUES
 -- name; a lost slot means the guard names no jurisdictions, which is the
 -- entire content of the warning.
 --
--- ASSERT ALWAYS: SELECT count(*) FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key IN ('guard.mistimed.one','guard.mistimed.many') AND value LIKE '%{0}%' AND value LIKE '%{1}%' = 2
+-- RETIRED IN PLACE BY MIGRATION 573, 17 August 2026, and only the NAME
+-- changed. `guard.mistimed.many` became `guard.mistimed.other`, because
+-- `many` is a real CLDR plural category in Polish and Russian and is not
+-- the plural -- using it as a synonym for "the English plural" would
+-- collide with the actual category the first time a Polish row is added,
+-- silently, in the wrong form, for counts ending in 5 through 9.
+--
+-- The rule itself is exactly as written below and still worth stating:
+-- both variants must exist, and both must keep their slots. A missing
+-- variant renders the key name; a lost slot means the guard names no
+-- jurisdictions, which is the entire content of the warning.
+--
+-- Restated in 573 rather than here, for the same reason as the
+-- res.running invariant in 545: at this position in the chain the key is
+-- still called guard.mistimed.many, so an ASSERT ALWAYS naming the new
+-- one fails on its way past.
