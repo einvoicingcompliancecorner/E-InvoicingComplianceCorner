@@ -680,8 +680,17 @@ const cell = async (row, n) => Number((await page.locator(`#savingsTable tr[data
 // x 42.86% capture share = $182,969 banked.
 t.check("compliance-only banks the capture share of AP, not all of it",
   (await cell("ap", 3)) === 182969, await cell("ap", 3));
-t.check("and banks AR in full, because the mandate compels structured issuing",
-  (await cell("ar", 3)) === 195000 && (await cell("ar", 2)) === 195000);
+// Migration 580: NO LONGER IN FULL. The AR row carried no already-
+// structured discount at all while the AP row above it carried one, so
+// the page enforced "a saving can only be taken once" on the half it
+// receives and waived it on the half it sends. Dan: "I'm not sure it
+// makes sense for us to claim 100% of the AR invoice cost as savings."
+// 50,000 x $6.50 x 60% x (1 - 64% already issued structured) = $70,200.
+// Both columns still agree: what the mandate compels, it banks in full --
+// that part of the old check was right and is deliberately kept.
+t.check("banks the AR saving in full, on the share not already structured",
+  (await cell("ar", 3)) === 70200 && (await cell("ar", 2)) === 70200,
+  [await cell("ar", 2), await cell("ar", 3)].join(" / "));
 t.check("and banks none of the rework",
   /^\s*(—|&mdash;)\s*$/.test(await page.locator('#savingsTable tr[data-row="rework"] td').nth(3).innerText()),
   await page.locator('#savingsTable tr[data-row="rework"] td').nth(3).innerText());
@@ -1720,6 +1729,72 @@ t.check("the halfway point is half the full saving, so the lever is linear",
   Math.abs(at50 * 2 - at0) <= 2, `${at50} x 2 vs ${at0}`);
 await apAt(50);
 
+// ---- 36b. and the SENDING side is a live lever too (migration 580) ----
+// Dan: "I'm not sure it makes sense for us to claim 100% of the AR invoice
+// cost as savings." Until 580 this lever did not exist and the AR row took
+// the lot. Exercised at three points rather than read once, because the
+// defect this file keeps finding is a check whose logic is right and whose
+// itinerary is short -- a check that only ever reads the default would
+// have passed against the old code, where the input was not wired to
+// anything at all.
+const arAt = async (pct) => {
+  await page.fill("#arShare", String(pct));
+  await page.click("#run"); await page.waitForTimeout(800);
+  return Number((await page.locator('#savingsTable tr[data-row="ar"] td').nth(2).innerText())
+    .replace(/[^\d]/g, ""));
+};
+const ar0 = await arAt(0), ar64 = await arAt(64), ar100 = await arAt(100);
+t.check(`0% already issued structured gives the whole AR saving (${ar0.toLocaleString()})`,
+  ar0 === 195000, ar0);
+t.check(`the 64% default takes 64% of it off (${ar64.toLocaleString()})`,
+  ar64 === 70200, `${ar64} vs 70200`);
+t.check("and 100% leaves nothing, because the mandate would change no channel",
+  ar100 === 0, ar100);
+// The two shares are INDEPENDENT facts about a business -- migration 557
+// declined to reuse eShare here for exactly this reason. If one input were
+// ever wired to both rows this would catch it, and nothing else would:
+// both rows would still move, both would still look plausible, and the
+// page would be asserting that issuing and receiving adoption are the same
+// number.
+await arAt(0);
+const apWhileArZero = Number((await page.locator('#savingsTable tr[data-row="ap"] td').nth(2)
+  .innerText()).replace(/[^\d]/g, ""));
+t.check("moving the issuing share leaves the receiving row alone",
+  apWhileArZero === 426900, apWhileArZero);
+await arAt(64);
+
+// ---- 36c. no input overstates its own evidence grade (migration 580) ----
+// "AR cost per invoice" rendered a green A for as long as the ribbons have
+// existed, while D1 has held ar_cost_per_invoice at B since migration 505
+// -- and migration 527's citation, which this page displays three fields
+// away, grades both FTE rates B on the strength of it.
+//
+// Ten suites checked that a grade tag RENDERS. None had reason to ask
+// whether it rendered the RIGHT LETTER, which is why one field spent
+// twenty-three migrations claiming better evidence than the database
+// behind it. The grades are derived from D1 now; this asserts the letters
+// a reader actually sees, so a future hardcoded tag cannot creep back.
+const grades = await page.evaluate(() => {
+  const out = {};
+  document.querySelectorAll("label[for]").forEach((l) => {
+    const tag = l.querySelector("span.tag[class*='t']");
+    const m = tag && tag.className.match(/\bt([ABCD])\b/);
+    if (m) out[l.getAttribute("for")] = m[1];
+  });
+  return out;
+});
+const EXPECTED_GRADES = {
+  costNow: "A", costAR: "B", savePct: "B", errRate: "B", fteCost: "B",
+  fteEntry: "B", errElim: "D", eShare: "B", arShare: "B",
+};
+const wrongGrade = Object.entries(EXPECTED_GRADES)
+  .filter(([id, g]) => grades[id] !== g)
+  .map(([id, g]) => `${id}: want ${g}, got ${grades[id]}`);
+t.check(`every input grade matches D1 (${Object.keys(EXPECTED_GRADES).length} fields)`,
+  wrongGrade.length === 0, wrongGrade.join("; "));
+t.check("and AR cost per invoice is B, which is what the database has always said",
+  grades.costAR === "B", grades.costAR);
+
 // Dan, same message: "ensure that the user is guided to those fields that
 // we need them to update to make the business case real." Six fields are
 // ours rather than theirs, and the line counts down as they are set --
@@ -1755,8 +1830,12 @@ const marked = await page.evaluate(() => {
     panel: q("#assump .ribbon"), panelInputs: q("#assump input, #assump select"),
   };
 });
+// 6 -> 7 with the AR structured-issuing share added by migration 580.
+// The literal is the half of this check that has to be edited on purpose;
+// foot === footInputs is the half that catches a field shipped without a
+// ribbon, and it passed through this change unaided.
 t.check(`every footprint field is marked (${marked.foot}/${marked.footInputs})`,
-  marked.foot === marked.footInputs && marked.foot === 6, JSON.stringify(marked));
+  marked.foot === marked.footInputs && marked.foot === 7, JSON.stringify(marked));
 t.check(`and every assumptions field too (${marked.panel}/${marked.panelInputs})`,
   marked.panel === marked.panelInputs && marked.panel === 20, JSON.stringify(marked));
 // Migration 562 removed the counting sentence at Dan's request. The

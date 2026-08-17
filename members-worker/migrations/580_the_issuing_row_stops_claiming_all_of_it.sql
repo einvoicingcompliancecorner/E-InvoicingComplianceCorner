@@ -1,0 +1,279 @@
+-- ================================================================
+-- The AR row stops claiming 100% of the issuing saving.
+--
+-- Dan, 17 August 2026: "the invoice cost reduction AR, is completely
+-- saved in the report. However, most companies are sending invoices
+-- today, from their billing system, via email, or electronic... With the
+-- introduction of clearance, I'd like to challenge the 100% saving. The
+-- billing system still digitises and either emails, or electronically
+-- transmits in most cases. What we do, it ensure a tax authority is
+-- notified as part of the last mile. In summary, I'm not sure it makes
+-- sense for us to claim 100% of the AR invoice cost as savings."
+--
+-- ---- HE WAS RIGHT, AND THE CODE SAID SO IN TWO ADJACENT LINES -------
+--
+--   const saving   = baseline * savePct * (1 - eShare);   <- AP
+--   const savingAR = volAR * costAR * savePct;            <- AR
+--
+-- A saving can only be taken once on either side of an invoice. Since
+-- migration 557 the page has enforced that rule on the half it RECEIVES
+-- and waived it entirely on the half it SENDS.
+--
+-- Migration 557 knew. It said so in terms, and then filed it:
+--
+--   "Left alone rather than adjusted by the same share: issuing and
+--    receiving adoption are different facts about a business, and one
+--    input standing in for both would be a guess wearing a number.
+--    Flagged rather than fixed, because fixing it needs its own
+--    evidence."
+--
+-- That reasoning was right and the follow-up did not happen -- the same
+-- shape migration 575 named when it found the doubled hint that 572 had
+-- identified, called "genuinely worth removing", and left alone. A known
+-- defect does not stay live by being missed. It stays live by being
+-- filed. This is the second one this fortnight, and both were found by
+-- re-reading our own migration prose rather than the code.
+--
+-- ================================================================
+-- WHY THE OBVIOUS FIX -- REUSE eShare -- WOULD HAVE BEEN WRONG
+-- ================================================================
+--
+-- Dan proposed the symmetry himself, and it is a good argument:
+--
+--   "Arguably if Ardent estimates 50% of invoices received being
+--    electronic, you could argue that 50% of invoices sent are already
+--    electronic."
+--
+-- AT MARKET LEVEL THAT IS AN ACCOUNTING IDENTITY, not an estimate. Every
+-- invoice is sent by someone and received by someone, so the electronic
+-- share of all invoices sent and of all invoices received are the same
+-- number. The reasoning is sound.
+--
+-- IT FAILS ON THE STEP FROM "MARKET" TO "ARDENT". Ardent surveyed 204 AP
+-- and finance leaders; 54% at companies over $1bn revenue, 58% North
+-- American. Its 51.4% is the electronic share of invoices arriving in
+-- LARGE ENTERPRISE INBOXES.
+--
+-- That is the one sub-population where the share is highest, and it is
+-- high for a reason that runs the wrong way for the transfer: large
+-- buyers are precisely the parties who impose supplier portals, EDI and
+-- mandatory formats on the suppliers billing them. A supplier sending
+-- structured invoices to its three largest customers and PDFs to
+-- everyone else counts as electronic to Ardent's respondents and as
+-- mostly-PDF to the market. The identity holds across the whole
+-- population; Ardent samples the top of it.
+--
+-- So the sending side was measured directly instead.
+--
+-- ================================================================
+-- WHAT THE SENDER-SIDE EVIDENCE SAYS
+-- ================================================================
+--
+-- BILLENTIS counts transmitted volume rather than surveying inboxes.
+-- The 2026 report ("Riding the Tornado"): of roughly 300bn B2B invoices
+-- globally, about 87-88bn are electronic -- around 29%. By region, Latin
+-- America about 78% and Europe about 64%.
+--
+-- 29%, not 51%. The two figures are probably not in conflict, and the
+-- official statistics show why. Eurostat splits invoice SENDING three
+-- ways, and Ireland's 2023 return prices the gap exactly:
+--
+--   29%  of enterprises send e-invoices SUITABLE FOR AUTOMATED PROCESSING
+--   60%  send electronic invoices NOT suitable for automated processing
+--   44%  send paper
+--
+-- If Ardent's respondents count emailed PDFs -- and nothing in the report
+-- says they do not -- then 51.4% and 29% are the two sides of the same
+-- line, measured from opposite ends. Which is the argument migration 557
+-- already made for having a reader's own input at all, now with a number
+-- attached to it.
+--
+-- ---- AND ONE MEASUREMENT OF THE THING DAN ACTUALLY ASKED ABOUT ------
+--
+-- Eurostat's Italian series is a before-and-after on a clearance mandate.
+-- Share of enterprises sending structured e-invoices:
+--
+--   2018   41.6%      (obligation effective 1 January 2019)
+--   2020   94.9%
+--   2023   97.5%
+--
+-- Roughly 42 points were already there and roughly 55 came from the
+-- mandate. That is the closest published measurement of the quantity
+-- under dispute, and it supports keeping MOST of the AR saving while
+-- refusing the rest -- which is where Dan landed by intuition.
+--
+-- CAVEAT THAT MUST TRAVEL WITH IT, because it will be quoted: Eurostat
+-- counts ENTERPRISES THAT SEND ANY structured e-invoice, not share of
+-- VOLUME. A company sending one structured invoice to a public body
+-- counts. So 41.6% overstates the pre-mandate volume share, probably
+-- substantially. The two are not in the same units and must not be
+-- blended. It is recorded here because it cuts AGAINST the change this
+-- file makes, and the argument against is the half worth writing down.
+--
+-- ================================================================
+-- THE DEFAULT IS DELIBERATELY THE HIGHEST OF THE THREE
+-- ================================================================
+--
+-- Dan, choosing: "I'd rather be conservative on the savings and overstate
+-- the current digital issuance percentage."
+--
+--   29%    Billentis, global B2B volume      the best evidence
+--   51.4%  Ardent, by the symmetry argument  the weakest
+--   64%    Billentis, Europe                 CHOSEN
+--
+-- 64% is above the global measurement and above the symmetry figure, and
+-- it is knowingly generous in the direction that costs us. Europe's 64%
+-- is inflated by the jurisdictions that have ALREADY cleared -- Italy at
+-- ~97%, and it got there by mandate -- so it is arguably too high a
+-- baseline for a country whose mandate has NOT landed, which is exactly
+-- the case this page exists to cost.
+--
+-- THAT IS THE POINT RATHER THAN AN OVERSIGHT, and the citation says so.
+-- Erring against your own claim is defensible in a way erring for it
+-- never is. A number chosen to shrink our own headline needs its reason
+-- on the page, or the next reader "corrects" it to the evidenced 29% and
+-- silently adds $68,000 to the business case.
+--
+-- ---- WHAT MOVES ------------------------------------------------------
+--
+-- At the defaults -- 50,000 AR invoices, $6.50, 60% reduction:
+--
+--   AR row       $195,000  ->  $70,200
+--   Layer 1      $673,820  ->  $549,020      -18.5%
+--
+-- THE HEADLINE GOES DOWN, for the second time in this page's history and
+-- for the same reason as the first (migration 557, which took the AP
+-- saving down 28%). Worth stating plainly again: a model whose numbers
+-- only ever improve when its authors revisit it is a model nobody should
+-- trust.
+-- ================================================================
+
+INSERT OR IGNORE INTO roi_benchmarks (key, default_value, unit, evidence_grade, source_url, source_year, is_cost, sort_order) VALUES
+  ('ar_einvoice_share_now', 64, '%', 'B',
+   'https://www.billentis.com/en/', '2026 report', 0, 11);
+
+INSERT OR IGNORE INTO roi_benchmark_translations (benchmark_id, lang, label, hint, citation)
+SELECT id, 'en', 'Invoices already issued as structured e-invoices',
+  'Billentis puts Europe at 64% and the world at 29% — we default to the higher',
+  'The share of the invoices you ISSUE that already go out as structured e-invoices. Not PDFs and not email: a billing system that emails a PDF has digitised the document and not the transaction, and the ATO puts a PDF at AUD 27.67 against AUD 30.87 for paper and AUD 9.18 for a true e-invoice.<br><br><strong>Billentis, <em>Riding the Tornado</em> (2026)</strong>, is the only source that measures ISSUANCE rather than receipt — it counts transmitted volume instead of surveying inboxes. Of roughly 300bn B2B invoices globally about 87&ndash;88bn are electronic: <strong>29% worldwide, about 64% in Europe, about 78% in Latin America</strong>.<br><br><strong>Defaulted to 64%, which is deliberately the highest figure available to us.</strong> The global measurement is 29% and Ardent&rsquo;s receiving-side share implies 51%. Europe&rsquo;s 64% is inflated by the countries that have already cleared — Italy sits near 97% and got there by mandate — so it is arguably too high for a jurisdiction whose mandate has not yet landed, which is the case this planner costs. We use it anyway, because a business case should err against itself. <strong>Lower it if you know your own position</strong>, and every point you take off increases the saving shown.<br><br>Graded B: Billentis is a credible body measuring the right thing, but the figures reach us through the report&rsquo;s published summaries rather than from our own reading of the primary, and the denominator is not independently reproducible.'
+  FROM roi_benchmarks WHERE key = 'ar_einvoice_share_now';
+
+-- ---- the strings, generated from the renderer's own fallbacks --------
+INSERT OR REPLACE INTO translations (namespace, key, lang, value) VALUES
+  ('roi', 'input.arShare', 'en', 'E-invoices issued today %'),
+  ('roi', 'basis.arShare.calc', 'en', '{0} invoices &times; {1} issuing cost &times; {2}% reduction &times; {3}% not yet structured'),
+  ('roi', 'basis.arShare.just', 'en', 'Issuing cost from the ATO channel figures on its own 60/40 split {0}. Reduction range {1}. Structured-issuing share is yours, and our default is deliberately the highest measurement available {2}.'),
+  ('roi', 'ev.billentis', 'en', 'Billentis issuance data'),
+  ('roi', 'src.yoursBillentis', 'en', 'Yours &mdash; Billentis puts Europe at 64%, the world at 29%');
+
+-- The tooltip. `help.eShare` was added by migration 562 after 557 shipped
+-- the input without one; this input gets its help row in the same file as
+-- the input, which is the lesson 562 recorded.
+--
+-- Written twice. The first draft ran to 434 characters against migration
+-- 562's 320-character budget, and used "already banked it" -- the idiom
+-- migration 544 banned across every roi string precisely because it is
+-- the natural word for anyone who has read this codebase. Both invariants
+-- fired on the replay before anything was applied, which is what they are
+-- for, and both were right: the long version was an essay in a tooltip
+-- and the short one says the same thing.
+INSERT OR REPLACE INTO translations (namespace, key, lang, value) VALUES
+  ('roi', 'help.arShare', 'en', 'The share of the invoices you ISSUE that already leave as structured e-invoices — not PDFs by email, which the receiver still has to read and key. A saving can only be taken once, so whatever already goes out structured has already taken it. Defaulted to 64%: Billentis puts Europe there and the world at 29%.');
+
+-- ---- two keys this orphans -------------------------------------------
+-- Both gained a slot, so both are RENAMED rather than edited. A
+-- translator who had already delivered `basis.ar.calc` would otherwise
+-- receive a four-slot English sentence against their three-slot
+-- translation and the fill() would drop the new factor silently -- the
+-- row would read as though nothing had been discounted, which is the
+-- exact claim this migration exists to remove.
+DELETE FROM translations WHERE namespace = 'roi' AND key IN ('basis.ar.calc', 'basis.ar.just');
+
+-- ================================================================
+-- AND TWO THINGS FOUND WHILE IN THE CODE
+-- ================================================================
+--
+-- ---- 1. THE PAGE WAS OVERSTATING ITS OWN EVIDENCE GRADE -------------
+--
+-- "AR cost per invoice" rendered a green <span class="tag tA">A</span>.
+-- D1 has held `ar_cost_per_invoice` at B since migration 505.
+--
+-- The grade tags beside the inputs were LITERALS TYPED INTO THE MARKUP,
+-- while the authoritative grade sat in roi_benchmarks.evidence_grade, was
+-- already loaded by the renderer's query, and was already being rendered
+-- from D1 by ev() four inches further down the same page. One fact, two
+-- homes -- the shape this project keeps finding -- and the copy a reader
+-- meets FIRST was the one nobody could see was wrong.
+--
+-- IT IS WORSE THAN A STALE LITERAL. Migration 527 grades both FTE rates
+-- at B on the strength of this row, and its citation -- which this page
+-- displays, three fields away -- reads "the same basis on which the AR
+-- cost per invoice is graded B". The page was contradicting a sentence it
+-- was itself printing.
+--
+-- On a page whose lede promises a CFO can see "exactly which numbers are
+-- independently evidenced", a single overstated character is the worst
+-- one available. All nine input grades are now derived from D1: change
+-- the grade in the database and the ribbon follows. The two remaining
+-- hardcoded tags are SECTION headers, which describe a group rather than
+-- a benchmark and have no row to read.
+--
+-- No D1 change. Recorded because the defect was invisible to all ten
+-- suites -- every one of them checks that a grade tag RENDERS, and none
+-- had any reason to ask whether it renders the right letter.
+--
+-- ---- 2. $6.50 STILL CANNOT BE REPRODUCED, AND STAYS ANYWAY ----------
+--
+-- `ar_cost_per_invoice` = 6.50 cites the ATO. Working forward from the
+-- ATO's own figures at its own published 40% AR share:
+--
+--   paper      AUD 30.87  x 0.40 = 12.35   -> roughly USD 8-9
+--   PDF        AUD 27.67  x 0.40 = 11.07   -> roughly USD 7.2-8.2
+--   eInvoice   AUD  9.18  x 0.40 =  3.67   -> roughly USD 2.4-2.7
+--
+-- at any plausible 2016 or current FX. $6.50 is none of them, and its
+-- derivation appears in none of the 579 migrations before this one.
+--
+-- THE VALUE IS NOT CHANGED, AND THAT IS THE FINDING. $6.50 sits BELOW
+-- every reconstructible manual figure. Whatever produced it, it errs in
+-- the direction that shrinks our own claim -- and "correcting" it to the
+-- ATO-derived $7.20 or $8 would raise the AR row by 11-23% on the
+-- strength of a reconstruction that is itself ours.
+--
+-- Recorded rather than fixed, deliberately and with the reason stated, so
+-- that this is not the third thing filed and forgotten. If it is ever
+-- revisited, the question to answer first is which CHANNEL it is meant to
+-- price, because the discount added above assumes it is the manual one.
+-- If $6.50 is in fact a blend, this row is now conservative twice, which
+-- is a defensible place to be but should be a decision rather than an
+-- accident.
+
+-- ---- what this migration claims it did ------------------------------
+-- ASSERT: SELECT default_value FROM roi_benchmarks WHERE key = 'ar_einvoice_share_now' = 64
+-- ASSERT: SELECT evidence_grade FROM roi_benchmarks WHERE key = 'ar_einvoice_share_now' = 'B'
+-- ASSERT: SELECT count(*) FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key IN ('input.arShare','basis.arShare.calc','basis.arShare.just','ev.billentis','src.yoursBillentis','help.arShare') = 6
+-- ASSERT: SELECT count(*) FROM translations WHERE namespace = 'roi' AND key IN ('basis.ar.calc','basis.ar.just') = 0
+--
+-- The AR row's calculation sentence must keep FOUR slots. Losing the
+-- fourth is not a cosmetic regression: the sentence would then read as a
+-- full-volume saving while the figure beside it was discounted, which is
+-- the page asserting the thing this migration removed. Same reasoning as
+-- the four-slot invariant migration 576 put on chart.blockTip.
+--
+-- ASSERT ALWAYS: SELECT count(*) FROM translations WHERE namespace = 'roi' AND key = 'basis.arShare.calc' AND value LIKE '%{0}%{1}%{2}%{3}%' = 1
+--
+-- Both share inputs must exist and stay active. They are the two levers
+-- that stop a saving being taken twice, one per side of the invoice.
+-- Lose either and its row silently reverts to claiming the lot -- and
+-- the page would look entirely normal, which is how the AR side stayed
+-- wrong for twenty-three migrations.
+--
+-- ASSERT ALWAYS: SELECT count(*) FROM roi_benchmarks WHERE active = 1 AND key IN ('einvoice_share_now','ar_einvoice_share_now') = 2
+--
+-- And the AR citation must keep saying that the default is deliberately
+-- high. Without that sentence 64% reads as a measurement, and the next
+-- reader to check it against Billentis will find 29%, conclude the page
+-- is wrong, and raise the headline by $68,000 while believing they are
+-- correcting an error.
+--
+-- ASSERT ALWAYS: SELECT count(*) FROM roi_benchmark_translations t JOIN roi_benchmarks b ON b.id = t.benchmark_id WHERE b.key = 'ar_einvoice_share_now' AND t.lang = 'en' AND t.citation LIKE '%err against itself%' = 1

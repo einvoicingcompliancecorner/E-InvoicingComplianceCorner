@@ -945,6 +945,16 @@ export function renderRoiPage({ countries, benchmarks = [], phases = [], strings
     // row, because a saving can only be taken once and whatever already
     // arrives structured has already taken it.
     eShare:  { v: val("einvoice_share_now", 50),    h: hintOf("einvoice_share_now") },
+    // AND THE SAME QUESTION ASKED OF THE SENDING SIDE (Dan, 17 Aug 2026).
+    //
+    // Migration 557 built the receiving lever and said in terms why it did
+    // not build this one: "issuing and receiving adoption are different
+    // facts about a business, and one input standing in for both would be
+    // a guess wearing a number. Flagged rather than fixed, because fixing
+    // it needs its own evidence." That evidence now exists — Billentis
+    // measures issuance directly — so the flag is discharged rather than
+    // inherited.
+    arShare: { v: val("ar_einvoice_share_now", 64), h: hintOf("ar_einvoice_share_now") },
     errRate: { v: val("manual_error_rate", 10),     h: hintOf("manual_error_rate") },
     errMins: { v: val("rework_minutes", 15),        h: hintOf("rework_minutes") },
     // THE ONLY MULTIPLIER ON THIS PAGE YOU COULD NOT TOUCH, until Dan
@@ -1211,10 +1221,40 @@ export function renderRoiPage({ countries, benchmarks = [], phases = [], strings
     const link = b.source_url ? ` <a href="${b.source_url}" style="color:#241d10">${t("ev.sourceLink","source")}</a>` : "";
     return { t: b.evidence_grade, s: `${b.citation || ""}${yr}${link}` };
   };
+
+  // THE GRADE BESIDE AN INPUT NOW COMES FROM D1, like every other grade on
+  // this page.
+  //
+  // It used to be a literal typed into the markup — `<span class="tag
+  // tA">A</span>` — while the authoritative grade sat in
+  // roi_benchmarks.evidence_grade, was already loaded by the query above,
+  // and was already being rendered from D1 by ev() four inches down the
+  // page. One fact, two homes, and the copy that a reader meets first was
+  // the one nobody could see was wrong.
+  //
+  // IT HAD DRIFTED, in the flattering direction. "AR cost per invoice"
+  // showed a green A. D1 has held it at B since migration 505, and
+  // migration 527 grades BOTH FTE rates at B on the strength of it —
+  // its citation, which this page displays, reads "the same basis on
+  // which the AR cost per invoice is graded B". So the page contradicted
+  // a sentence it was itself printing, three fields away.
+  //
+  // On a page whose entire proposition is that a CFO can see which
+  // numbers are evidenced, overstating our own evidence grade is the
+  // worst single character we could get wrong. Derived, so it cannot
+  // drift again: change the grade in D1 and the ribbon follows.
+  const gr = (k) => {
+    const g = byKey[k] && byKey[k].evidence_grade;
+    return g ? ` <span class="tag t${g}">${g}</span>` : "";
+  };
   const evidence = {
     ardent: cite("ap_cost_per_invoice"), hmrc60: cite("cost_reduction_pct"),
     hmrcErr: cite("manual_error_rate"),  nhs: cite("nhs_query_reduction"),
     ato: cite("ar_cost_per_invoice"),    vatgap: cite("vat_gap_context"),
+    // The sending side, measured rather than inferred from the receiving
+    // side. Migration 557 declined to reuse eShare here and said why;
+    // this is the evidence it was waiting for.
+    billentis: cite("ar_einvoice_share_now"),
     oecd: cite("dctr_mechanism"),
     // Three Ardent figures that were held in D1 and rendered nowhere. The
     // Grade A card has claimed "cost, cycle time, exceptions" since the
@@ -1312,8 +1352,9 @@ export function renderRoiPage({ countries, benchmarks = [], phases = [], strings
       <label for="erp">${t("input.erp", "ERP / billing integrations")}${hlp("erp",t("tip.drives","What this drives"))}</label>
       <input type="number" id="erp" value="1" min="1" max="60">
     </div>
-    <div class="ribbon"><label for="eShare">${t("input.eShare", "E-invoices received today %")} <span class="tag tB">B</span>${hlp("eShare",t("tip.drives","What this drives"))}</label><input type="number" id="eShare" value="${dv('eShare')}" min="0" max="100" step="1"><p class="hint" id="h-eShare"></p></div>
-    <div class="ribbon"><label for="errMins">${t("input.errMins", "Minutes to resolve one error")} <span class="tag tB">B</span>${hlp("errMins",t("tip.drives","What this drives"))}</label><input type="number" id="errMins" value="${dv('errMins')}" min="0" step="1"><p class="hint" id="h-errMins"></p></div>
+    <div class="ribbon"><label for="eShare">${t("input.eShare", "E-invoices received today %")}${gr("einvoice_share_now")}${hlp("eShare",t("tip.drives","What this drives"))}</label><input type="number" id="eShare" value="${dv('eShare')}" min="0" max="100" step="1"><p class="hint" id="h-eShare"></p></div>
+    <div class="ribbon"><label for="arShare">${t("input.arShare", "E-invoices issued today %")}${gr("ar_einvoice_share_now")}${hlp("arShare",t("tip.drives","What this drives"))}</label><input type="number" id="arShare" value="${dv('arShare')}" min="0" max="100" step="1"><p class="hint" id="h-arShare"></p></div>
+    <div class="ribbon"><label for="errMins">${t("input.errMins", "Minutes to resolve one error")}${gr("rework_minutes")}${hlp("errMins",t("tip.drives","What this drives"))}</label><input type="number" id="errMins" value="${dv('errMins')}" min="0" step="1"><p class="hint" id="h-errMins"></p></div>
     <div class="ribbon">
       <label for="cur">${t("input.currency", "Currency")}${hlp("cur",t("tip.curChanges","What this changes, and where the rate comes from"))}</label>
       <select id="cur"><option value="GBP">GBP &pound;</option><option value="EUR">EUR &euro;</option><option value="USD" selected>USD $</option></select>
@@ -1396,13 +1437,13 @@ export function renderRoiPage({ countries, benchmarks = [], phases = [], strings
 
     <div class="acol">
       <p style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:var(--soon);margin:0 0 10px">${t("assumptions.h.cost", "Cost &amp; benefit")}</p>
-      <div class="ribbon"><label for="costNow">${t("input.costNow", "AP cost per invoice")} <span class="tag tA">A</span>${hlp("costNow",t("tip.drives","What this drives"))}</label><input type="number" id="costNow" value="${dv('costNow')}" min="0" step="0.01"></div>
-      <div class="ribbon"><label for="costAR">${t("input.costAR", "AR cost per invoice")} <span class="tag tA">A</span>${hlp("costAR",t("tip.drives","What this drives"))}</label><input type="number" id="costAR" value="${dv('costAR')}" min="0" step="0.01"></div>
-      <div class="ribbon"><label for="savePct">${t("input.savePct", "Cost reduction %")} <span class="tag tB">B</span>${hlp("savePct",t("tip.drives","What this drives"))}</label><input type="number" id="savePct" value="${dv('savePct')}" min="0" max="95"></div>
-      <div class="ribbon"><label for="errRate">${t("input.errRate", "Manual error rate %")} <span class="tag tB">B</span>${hlp("errRate",t("tip.drives","What this drives"))}</label><input type="number" id="errRate" value="${dv('errRate')}" min="0" max="100" step="0.5"></div>
-      <div class="ribbon"><label for="fteCost" style="font-size:11px">${t("input.fteCost", "Loaded cost / tax or finance FTE")} <span class="tag tB">B</span>${hlp("fteCost",t("tip.drives","What this drives"))}</label><input type="number" id="fteCost" value="${dv('fteCost')}" min="0" step="1000"></div>
-      <div class="ribbon"><label for="fteEntry" style="font-size:11px">${t("input.fteEntry", "Loaded cost / data-entry FTE")} <span class="tag tB">B</span>${hlp("fteEntry",t("tip.drives","What this drives"))}</label><input type="number" id="fteEntry" value="${dv('fteEntry')}" min="0" step="1000"></div>
-      <div class="ribbon"><label for="errElim">${t("input.errElim", "Errors eliminated %")} <span class="tag tD">D</span>${hlp("errElim",t("tip.drives","What this drives"))}</label><input type="number" id="errElim" value="${dv('errElim')}" min="0" max="100" step="1"></div>
+      <div class="ribbon"><label for="costNow">${t("input.costNow", "AP cost per invoice")}${gr("ap_cost_per_invoice")}${hlp("costNow",t("tip.drives","What this drives"))}</label><input type="number" id="costNow" value="${dv('costNow')}" min="0" step="0.01"></div>
+      <div class="ribbon"><label for="costAR">${t("input.costAR", "AR cost per invoice")}${gr("ar_cost_per_invoice")}${hlp("costAR",t("tip.drives","What this drives"))}</label><input type="number" id="costAR" value="${dv('costAR')}" min="0" step="0.01"></div>
+      <div class="ribbon"><label for="savePct">${t("input.savePct", "Cost reduction %")}${gr("cost_reduction_pct")}${hlp("savePct",t("tip.drives","What this drives"))}</label><input type="number" id="savePct" value="${dv('savePct')}" min="0" max="95"></div>
+      <div class="ribbon"><label for="errRate">${t("input.errRate", "Manual error rate %")}${gr("manual_error_rate")}${hlp("errRate",t("tip.drives","What this drives"))}</label><input type="number" id="errRate" value="${dv('errRate')}" min="0" max="100" step="0.5"></div>
+      <div class="ribbon"><label for="fteCost" style="font-size:11px">${t("input.fteCost", "Loaded cost / tax or finance FTE")}${gr("loaded_fte_cost")}${hlp("fteCost",t("tip.drives","What this drives"))}</label><input type="number" id="fteCost" value="${dv('fteCost')}" min="0" step="1000"></div>
+      <div class="ribbon"><label for="fteEntry" style="font-size:11px">${t("input.fteEntry", "Loaded cost / data-entry FTE")}${gr("loaded_fte_cost_entry")}${hlp("fteEntry",t("tip.drives","What this drives"))}</label><input type="number" id="fteEntry" value="${dv('fteEntry')}" min="0" step="1000"></div>
+      <div class="ribbon"><label for="errElim">${t("input.errElim", "Errors eliminated %")}${gr("error_elimination_pct")}${hlp("errElim",t("tip.drives","What this drives"))}</label><input type="number" id="errElim" value="${dv('errElim')}" min="0" max="100" step="1"></div>
     </div>
 
     <div class="acol">
@@ -1869,7 +1910,7 @@ Object.entries(DEFAULTS).forEach(([id,d]) => {
 // vendor placeholders, one is a cost only they know, and one is a fact
 // about their own operation that no published source defines (see
 // migration 557 on Ardent's undefined "electronically").
-const NEEDS_YOU = ['cImplS','cImplC','cPlat','cRun','errMins','eShare'];
+const NEEDS_YOU = ['cImplS','cImplC','cPlat','cRun','errMins','eShare','arShare'];
 // Dan, 16 Aug 2026: "all input fields in the 'your footprint' section can
 // have an amber ribbon, until updated and turn green."
 // Every field in section 1 is a fact about the reader, so every one of
@@ -1878,7 +1919,7 @@ const NEEDS_YOU = ['cImplS','cImplC','cPlat','cRun','errMins','eShare'];
 // so they need their own baseline, snapshotted at load. Reading it from
 // the DOM rather than restating the numbers here means the two cannot
 // disagree, which is this project's most repeated defect.
-const FOOT_FIELDS = ['volAP','volAR','erp','eShare','errMins','cur'];
+const FOOT_FIELDS = ['volAP','volAR','erp','eShare','arShare','errMins','cur'];
 // Every input that carries a ribbon. NEEDS_YOU stays a separate, smaller
 // list on purpose: it is the six figures the executive summary counts as
 // "still our numbers", and letting it become "everything with a ribbon"
@@ -3169,7 +3210,55 @@ function build(){
   const manualCost = Math.round(costNow / ((1 - mkt) + mkt * (1 - savePct)) * 100) / 100;
   const baseline = volAP * manualCost;
   const saving   = baseline * savePct * (1 - eShare);
-  const savingAR = volAR * costAR * savePct;
+  // THE ISSUING ROW STOPS CLAIMING ALL OF IT (Dan, 17 Aug 2026).
+  //
+  // Dan: "most companies are sending invoices today, from their billing
+  // system, via email, or electronic... What we do, it ensure a tax
+  // authority is notified as part of the last mile. I'm not sure it makes
+  // sense for us to claim 100% of the AR invoice cost as savings."
+  //
+  // He was right about the asymmetry, and the two lines above showed it
+  // plainly: the AP row carries (1 - eShare) and this one carried nothing.
+  // A saving can only be taken once on either side of an invoice, and the
+  // page enforced that rule on the half it receives and waived it on the
+  // half it sends.
+  //
+  // ---- WHAT THE SENDER-SIDE EVIDENCE ACTUALLY SAYS -------------------
+  //
+  // Dan's first instinct was symmetry: if Ardent puts 51.4% of invoices
+  // RECEIVED electronically, then 51.4% are SENT electronically. At market
+  // level that is an accounting identity rather than an estimate -- every
+  // invoice is sent by someone and received by someone.
+  //
+  // It fails on the step from market to Ardent. Ardent surveyed 204 AP and
+  // finance leaders, 54% at companies over $1bn, 58% North American. That
+  // is the electronic share of invoices arriving in LARGE ENTERPRISE
+  // INBOXES -- the one sub-population where the share is highest, and high
+  // for a reason that runs the wrong way for the transfer: large buyers are
+  // the ones who impose portals and EDI on the suppliers billing them.
+  //
+  // So the sending side was measured directly instead. Billentis counts
+  // transmitted volume rather than surveying inboxes: of roughly 300bn B2B
+  // invoices globally in 2026 about 87-88bn are electronic, which is 29%.
+  // Europe about 64%, Latin America about 78%.
+  //
+  // ---- AND THE DEFAULT IS DELIBERATELY THE HIGHEST OF THE THREE -------
+  //
+  // Dan: "I'd rather be conservative on the savings and overstate the
+  // current digital issuance percentage."
+  //
+  // 64% is above the global measurement (29%) and above the symmetry
+  // figure (51.4%), and it is knowingly generous in the direction that
+  // costs us: Europe's 64% is inflated by the jurisdictions that have
+  // ALREADY cleared -- Italy sits near 97% and got there via a mandate --
+  // so it is arguably too high a baseline for a country whose mandate has
+  // not landed, which is precisely the case this page exists to cost.
+  //
+  // That is the point rather than an oversight. Erring against your own
+  // claim is defensible in a way erring for it never is, and the citation
+  // says so instead of presenting 64% as a neutral finding.
+  const arShare  = Math.min(1, Math.max(0, (+document.getElementById('arShare').value || 0)/100));
+  const savingAR = volAR * costAR * savePct * (1 - arShare);
   const errNow   = volAP * errRate;
   const errSave  = errNow * errCost * errElim;    // duration x rate x share
   const l1 = saving + savingAR + errSave;
@@ -3546,7 +3635,7 @@ function build(){
 
     <tr class="tierA" data-row="ap"><td>${t("row.ap","Processing cost reduction (AP)")} <span class="tag tang">${t("tag.tangible","tangible")}</span> <span class="tag \${banked?'bank':'unbank'}">\${banked?'${tj("tag.saved","saved")}':Math.round(TAXM.captureShare*100)+'% ${tj("tag.saved","saved")}'}</span></td><td><span class="bcalc"><span class="blab">${tj("basis.lab.calc","Calculation:")}</span>\${fill('${tj("basis.ap.calc","{0} invoices &times; {1} manual cost &times; {2}% reduction &times; {3}% not yet structured{4}")}', num0(volAP), fmt1(manualCost), Math.round(savePct*100), Math.round((1-eShare)*100), banked ? '' : fill('${tj("basis.ap.calc2"," &times; {0}% compliance share")}', Math.round(TAXM.captureShare*100)))}</span><span class="bjust"><span class="blab">${tj("basis.lab.just","Justification:")}</span>\${fill('${tj("basis.ap.just","Manual cost decomposed from the market average {0}. Reduction range {1}. Structured share is yours {2}.{3}")}', ev('ardent','${tj("ev.ardentAvg","Ardent Partners")}'), ev('hmrc60','${tj("ev.hmrcAto","HMRC, ATO-corroborated")}'), ev('yours','${tj("ev.yourShare","your figure")}'), banked ? '' : fill('${tj("basis.ap.just2"," Compliance is credited with capture and validation only &mdash; 9 of the 21 minutes of AP handling {0} &mdash; because review and approval are business decisions that no invoice format removes.")}', ev('atoCapture','${tj("ev.taskSplit","the task split")}')))}</span></td><td class="num" data-col="${t("col.gross","Annual value")}">\${fmt(saving)}</td><td class="num" data-col="${t("col.banks","Saved on this scope")}">\${fmt(bankedAP)}</td></tr>
 
-    <tr class="tierA" data-row="ar"><td>${t("row.ar","Issuing cost reduction (AR)")} <span class="tag tang">${t("tag.tangible","tangible")}</span> <span class="tag bank">${t("tag.saved","saved")}</span></td><td><span class="bcalc"><span class="blab">${tj("basis.lab.calc","Calculation:")}</span>\${fill('${tj("basis.ar.calc","{0} invoices &times; {1} issuing cost &times; {2}% reduction")}', num0(volAR), fmt1(costAR), Math.round(savePct*100))}</span><span class="bjust"><span class="blab">${tj("basis.lab.just","Justification:")}</span>\${fill('${tj("basis.ar.just","Issuing cost from the ATO channel figures on its own 60/40 split {0}. Reduction range {1}.")}', ev('ato','${tj("ev.atoDeloitte","ATO / Deloitte")}'), ev('hmrc60','${tj("ev.hmrcAto","HMRC, ATO-corroborated")}'))}</span></td><td class="num" data-col="${t("col.gross","Annual value")}">\${fmt(savingAR)}</td><td class="num" data-col="${t("col.banks","Saved on this scope")}">\${fmt(savingAR)}</td></tr>
+    <tr class="tierA" data-row="ar"><td>${t("row.ar","Issuing cost reduction (AR)")} <span class="tag tang">${t("tag.tangible","tangible")}</span> <span class="tag bank">${t("tag.saved","saved")}</span></td><td><span class="bcalc"><span class="blab">${tj("basis.lab.calc","Calculation:")}</span>\${fill('${tj("basis.arShare.calc","{0} invoices &times; {1} issuing cost &times; {2}% reduction &times; {3}% not yet structured")}', num0(volAR), fmt1(costAR), Math.round(savePct*100), Math.round((1-arShare)*100))}</span><span class="bjust"><span class="blab">${tj("basis.lab.just","Justification:")}</span>\${fill('${tj("basis.arShare.just","Issuing cost from the ATO channel figures on its own 60/40 split {0}. Reduction range {1}. Structured-issuing share is yours, and our default is deliberately the highest measurement available {2}.")}', ev('ato','${tj("ev.atoDeloitte","ATO / Deloitte")}'), ev('hmrc60','${tj("ev.hmrcAto","HMRC, ATO-corroborated")}'), ev('billentis','${tj("ev.billentis","Billentis issuance data")}'))}</span></td><td class="num" data-col="${t("col.gross","Annual value")}">\${fmt(savingAR)}</td><td class="num" data-col="${t("col.banks","Saved on this scope")}">\${fmt(savingAR)}</td></tr>
 
     <tr class="tierA" data-row="tax"><td>${t("row.tax","Reduced tax reporting &amp; audit-prep effort")} <span class="tag tang">${t("tag.tangible","tangible")}</span> <span class="tag bank">${t("tag.saved","saved")}</span></td><td><span class="bcalc"><span class="blab">${tj("basis.lab.calc","Calculation:")}</span>\${fill('${tj("basis.tax.calc","{0} AP invoices imply {1} AP FTE; {2} put {3}% of that in scope{4} &mdash; {5} FTE &times; {6}")}', num0(volAP), apFteImplied.toFixed(1), ctcCount + ' ' + plur(ctcCount, PLURALS.ctcJur), (shareUsed*100).toFixed(1), taxCapBinds?' <em>${tj("word.capped","(capped)")}</em>':'', taxFteSaved.toFixed(2), fmt(fteCost))}</span><span class="bjust"><span class="blab">${tj("basis.lab.just","Justification:")}</span>\${fill('${tj("basis.tax.just","Mechanism evidenced {0}; invoices per FTE {1}; the share in scope is ours and capped {2}. Saved on either scope &mdash; reporting effort falls with the compliance build, not with a workflow change.")}', ev('oecd','${tj("ev.oecdDctr","OECD DCTR, 2026")}'), ev('apqc','${tj("ev.apqcMedian","APQC median, 12,000 per FTE")}'), ev('yours','${tj("ev.ourAssumption","our assumption")}'))}</span></td><td class="num" data-col="${t("col.gross","Annual value")}">\${fmt(l2)}</td><td class="num" data-col="${t("col.banks","Saved on this scope")}">\${fmt(l2)}</td></tr>
 
@@ -3967,6 +4056,7 @@ function build(){
          ['${tj("input.eShare","E-invoices received today %")}', Math.round(eShare*100) + '%', '${tj("src.yoursAto","Yours &mdash; market average 51% (Ardent)")}', 'B'],
          ['${tj("pdf.fig.manual","Manual invoice cost, decomposed")}', fmt1(manualCost), '${tj("src.decomposed","Ardent blend split at the 51.4% market share")}', 'B'],
          ['${tj("input.costAR","AR cost per invoice")}', fmt1(costAR), 'ATO / Deloitte Access Economics', 'B'],
+         ['${tj("input.arShare","E-invoices issued today %")}', Math.round(arShare*100) + '%', '${tj("src.yoursBillentis","Yours &mdash; Billentis puts Europe at 64%, the world at 29%")}', 'B'],
          ['${tj("input.savePct","Cost reduction %")}', Math.round(savePct*100) + '%', '${tj("src.hmrcAto","HMRC / DBT 2025; ATO channel data implies 67&ndash;70%")}', 'B'],
          ['${tj("input.errRate","Manual error rate %")}', Math.round(errRate*100) + '%', '${tj("src.hmrcDbt","HMRC / DBT consultation 2025")}', 'B'],
          ['${tj("input.errMins","Minutes to resolve one error")}', errMins, '${tj("src.atoExceptions","ATO / Deloitte exception times")}', 'B'],
