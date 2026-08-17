@@ -66,6 +66,46 @@ const selectMandate = () => page.evaluate(() => {
 });
 await page.goto(`file://${file}`);
 
+// ---- 0. the page is rendering in the typefaces a reader gets ----
+//
+// Until 17 August 2026 it was not. members-worker's shell loads three
+// families from Google Fonts and this harness loaded none of them, so
+// every width, wrap, overflow and min-height check below was measured in
+// system fallbacks and reported as verified. The fonts are now vendored
+// and served from disk (see build-page.mjs).
+//
+// This check exists because the failure mode has no symptom. If the
+// @font-face rules stop resolving -- a renamed file, a moved vendor
+// directory, a browser that declines file:// subresources -- nothing
+// errors and nothing looks wrong. The suite just quietly goes back to
+// measuring a different document, which is the exact defect this closed.
+//
+// Measured rather than asserted on document.fonts, because "loaded"
+// there only means the file parsed. The question worth asking is whether
+// TEXT IS ACTUALLY SET IN IT. Big Shoulders Display is condensed: the
+// same string sets about 36% narrower than the sans fallback. A 15%
+// threshold is far below that and far above any hinting noise.
+const fontsReal = await page.evaluate(async () => {
+  await document.fonts.ready;
+  const probe = document.createElement("span");
+  probe.style.cssText = "position:absolute;left:-9999px;font-size:100px;font-weight:800";
+  probe.textContent = "HAMBURGEFONS";
+  document.body.appendChild(probe);
+  const width = (fam) => { probe.style.fontFamily = fam; return probe.getBoundingClientRect().width; };
+  const out = {
+    display: width("'Big Shoulders Display'"), displayFallback: width("sans-serif"),
+    sans: width("'IBM Plex Sans'"), mono: width("'IBM Plex Mono'"),
+  };
+  probe.remove();
+  return out;
+});
+t.check("the display face is really loaded, not substituted",
+  fontsReal.display < fontsReal.displayFallback * 0.85,
+  `${Math.round(fontsReal.display)}px vs ${Math.round(fontsReal.displayFallback)}px fallback`);
+t.check("and the two Plex faces are distinct from it and from each other",
+  fontsReal.sans !== fontsReal.display && fontsReal.mono !== fontsReal.sans,
+  `display ${Math.round(fontsReal.display)}, sans ${Math.round(fontsReal.sans)}, mono ${Math.round(fontsReal.mono)}`);
+
 // The chart groups by wave by default (Dan, 15 Aug: 27 rows in one band
 // made it unreadable). Checks that inspect per-jurisdiction scheduling
 // have to open it first, and must be able to do so more than once

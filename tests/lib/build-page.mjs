@@ -16,11 +16,17 @@
 // the replayed migration chain. Everything here is the real thing except
 // the transport.
 //
-// Known, deliberate omissions: the Google Fonts <link> (no network in
-// CI, and fallback fonts do not change computed font-size, which is what
-// the contrast thresholds turn on) and renderLangBanner()'s strip, which
-// sits above the tool and shares no styles with it.
-import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
+// The three webfonts are NOT an omission any more. They were until 17
+// August 2026, on the reasoning that "fallback fonts do not change
+// computed font-size, which is what the contrast thresholds turn on" --
+// true of the contrast checks, and false of every width, wrap, overflow
+// and min-height check added since. They are now served from
+// vendor/fonts over file://, so the harness measures the real faces
+// without touching the network. See the block by FACES below.
+//
+// Known, deliberate omission: renderLangBanner()'s strip, which sits
+// above the tool and shares no styles with it.
+import { readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { openReplayDb, REPO } from "./replay-db.mjs";
 
@@ -98,28 +104,58 @@ export async function buildRoiPage(opts = {}) {
 
     // pageShell()'s order, verbatim: BASE_STYLE first, page style second.
     //
-    // WEBFONTS ARE OFF BY DEFAULT AND THAT IS A DELIBERATE TRADE, not an
-    // oversight -- but it was an unexamined one until Dan asked on 16 Aug
-    // 2026 why the headings had "strayed away from the former narrow
-    // format". They had not: members-worker's shell loads Big Shoulders
-    // Display, IBM Plex Sans and IBM Plex Mono from Google Fonts, and
-    // this harness never did. Production was always right; every page
-    // built here has rendered in system fallbacks.
+    // Local @font-face for the three families the page shell loads from
+    // Google. ALWAYS ON, and offline: the files are in vendor/fonts and
+    // the harness reads them from disk, so a page built here renders in
+    // the same typefaces a reader gets.
     //
-    // Tests keep it that way, because they are meant to run with no
-    // network and a build that reaches the internet is a build that fails
-    // on a train. The cost is that any width, wrap or overflow measured
-    // by this harness is measured in SUBSTITUTE METRICS -- close for the
-    // Plex faces, not close at all for a condensed display face.
+    // Before 17 August 2026 this emitted nothing. Every page the harness
+    // built rendered in system fallbacks, so every width, wrap and
+    // overflow it measured was measured in SUBSTITUTE METRICS -- the
+    // 860px overflow checks, the 37px label min-height, the three-column
+    // widths, the finding that a select truncated -- and every one was
+    // reported as verified. That is worse than a weak check: it is a
+    // check that quietly tests a different document from the one that
+    // ships, while reading as evidence.
     //
-    // Mocks pass webfonts:true, because a mock is opened in a browser
-    // that does have a network, and showing someone a layout in the wrong
-    // typeface and asking them to approve it is worse than not showing
-    // them at all.
-    const FONTS = opts.webfonts ? `<link rel="preconnect" href="https://fonts.googleapis.com">
+    // Fetching from Google here was the obvious alternative and is the
+    // wrong one. A build that reaches the internet fails on a train, and
+    // this sandbox cannot reach fonts.googleapis.com at all -- which is
+    // exactly why the gap survived: the one environment that would have
+    // shown it up is the one that cannot load the fonts.
+    const FONT_DIR = join(REPO, "vendor", "fonts");
+    const FACES = [
+      ["Big Shoulders Display", 600, "big-shoulders-display-latin-600-normal.woff2"],
+      ["Big Shoulders Display", 700, "big-shoulders-display-latin-700-normal.woff2"],
+      ["Big Shoulders Display", 800, "big-shoulders-display-latin-800-normal.woff2"],
+      ["IBM Plex Sans", 400, "ibm-plex-sans-latin-400-normal.woff2"],
+      ["IBM Plex Sans", 500, "ibm-plex-sans-latin-500-normal.woff2"],
+      ["IBM Plex Sans", 600, "ibm-plex-sans-latin-600-normal.woff2"],
+      ["IBM Plex Sans", 700, "ibm-plex-sans-latin-700-normal.woff2"],
+      ["IBM Plex Mono", 400, "ibm-plex-mono-latin-400-normal.woff2"],
+      ["IBM Plex Mono", 500, "ibm-plex-mono-latin-500-normal.woff2"],
+      ["IBM Plex Mono", 600, "ibm-plex-mono-latin-600-normal.woff2"],
+    ];
+    // Fail loudly on a missing file. A silent fallback here would put the
+    // harness straight back where it was, and the symptom -- slightly
+    // different measurements -- is one nobody would question.
+    const missingFaces = FACES.filter(([, , f]) => !existsSync(join(FONT_DIR, f)));
+    if (missingFaces.length) {
+      throw new Error(`vendor/fonts is missing ${missingFaces.length} file(s): `
+        + missingFaces.map(([, , f]) => f).join(", ")
+        + "\n  The page shell requests these weights; see vendor/fonts/README.md.");
+    }
+    const LOCAL_FONTS = "<style>" + FACES.map(([fam, wt, f]) =>
+      `@font-face{font-family:'${fam}';font-style:normal;font-weight:${wt};font-display:block;`
+      + `src:url('file://${join(FONT_DIR, f)}') format('woff2')}`).join("") + "</style>\n";
+
+    // Mocks ALSO carry the production <link>. A mock is opened on someone
+    // else's machine, where the file:// paths above resolve to nothing --
+    // the network copy is what makes it render correctly there.
+    const FONTS = LOCAL_FONTS + (opts.webfonts ? `<link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-` : "";
+` : "");
     const html = `<!DOCTYPE html>
 <html lang="${lang}">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
