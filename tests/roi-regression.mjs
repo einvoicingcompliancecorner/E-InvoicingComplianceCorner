@@ -2076,5 +2076,78 @@ for (const [lang, sep] of [["de", "."], ["fr", "\u202f"]]) {
   await p2.close();
 }
 
+// ---- 40. the page works at 390px ------------------------------------
+//
+// NOTHING IN THIS SUITE HAD EVER OPENED A NARROW VIEWPORT. Every check
+// above runs at 1280 or 1440, which is why a whole column of the savings
+// table could sit 81 pixels off the right edge of a phone -- showing the
+// gross figure and hiding the scope-adjusted one -- and pass 246 checks.
+//
+// 390px is the iPhone 12-15 logical width and the narrowest common
+// screen; 360 covers most Android.
+for (const width of [390, 360]) {
+  const m = await browser.newPage({ viewport: { width, height: 844 } });
+  t.watch(m);
+  await m.goto(`file://${file}`);
+  await m.click("#run"); await m.waitForTimeout(900);
+
+  // (a) NOTHING OFF THE RIGHT EDGE. A horizontal scrollbar on a phone
+  //     means something is unreachable, and the reader has no way to know
+  //     what.
+  const doc = await m.evaluate(() => ({
+    scrollW: document.documentElement.scrollWidth, vp: window.innerWidth }));
+  t.check(`${width}px: the page does not scroll sideways (${doc.scrollW} vs ${doc.vp})`,
+    doc.scrollW <= doc.vp + 1, JSON.stringify(doc));
+
+  // (b) THE SCOPE-ADJUSTED FIGURE IS ON SCREEN. This is the one that was
+  //     wrong: the phone kept "annual value" and lost "saved on this
+  //     scope", which is the number the whole page exists to be careful
+  //     about.
+  const scoped = await m.evaluate(() => {
+    const cells = [...document.querySelectorAll('#savingsTable td[data-col]')];
+    const banks = cells.filter((c) => /scope/i.test(c.getAttribute("data-col")));
+    return { count: banks.length,
+             offscreen: banks.filter((c) => c.getBoundingClientRect().right > window.innerWidth + 1).length,
+             labelled: banks.every((c) => (c.getAttribute("data-col") || "").length > 3) };
+  });
+  t.check(`${width}px: every scope figure is on screen (${scoped.count} cells)`,
+    scoped.count >= 4 && scoped.offscreen === 0, JSON.stringify(scoped));
+  t.check(`${width}px: and carries its own heading, since the header row is hidden`,
+    scoped.labelled);
+
+  // (c) THE PLAN IS THE TABLE, NOT A CHART THAT IS 60% OFF SCREEN. Four
+  //     of seven rows rendered as empty runways at this width.
+  const view = await m.evaluate(() => ({
+    table: !document.getElementById("waves").classList.contains("hidden"),
+    chart: !document.getElementById("gantt").parentElement.classList.contains("hidden") }));
+  t.check(`${width}px: the wave table is the default view of the plan`,
+    view.table && !view.chart, JSON.stringify(view));
+
+  // And the chart is still reachable, because hiding it would be a
+  // different defect from showing it broken.
+  await m.click("#tblToggle"); await m.waitForTimeout(500);
+  t.check(`${width}px: and the chart is one tap away`,
+    await m.evaluate(() => !document.getElementById("gantt").parentElement.classList.contains("hidden")));
+
+  // (d) TAP TARGETS. Seventy country rows at 13px was the hardest thing
+  //     on the page to operate and the first task anyone performs.
+  const small = await m.evaluate(() =>
+    [...document.querySelectorAll("#countryList label")]
+      .filter((e) => e.getBoundingClientRect().height < 44).length);
+  t.check(`${width}px: no country row is below the 44px tap target`, small === 0, small);
+  await m.close();
+}
+
+// Desktop is unchanged by any of it -- the chart is the default view and
+// the table is not. Worth asserting, because every rule above is inside a
+// media query and a mistyped breakpoint would move the desktop silently.
+const wide = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+await wide.goto(`file://${file}`);
+await wide.click("#run"); await wide.waitForTimeout(800);
+t.check("1440px: the chart is still the default and the table is not",
+  await wide.evaluate(() => !document.getElementById("gantt").parentElement.classList.contains("hidden")
+    && document.getElementById("waves").classList.contains("hidden")));
+await wide.close();
+
 await browser.close();
 process.exit(t.report() ? 0 : 1);
