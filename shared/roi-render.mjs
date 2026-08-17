@@ -34,7 +34,31 @@
 // exists. Deliberately mirrors computeCountryMapStatus()'s own logic in
 // shared/map-data.mjs rather than reimplementing it differently — if the
 // map says a country is "upcoming", this must agree.
-export async function getRoiCountries(db, todayISO) {
+// COUNTRY NAMES ARE TRANSLATED, and were not until 17 August 2026.
+//
+// `country_translations` has carried de/es/fr display names for every
+// jurisdiction since long before this page existed, and the country
+// picker, the story list and the newsletter archive all join it. The ROI
+// planner selected `c.name_en` and took no `lang` at all, so a French
+// reader got "Germany", "Netherlands" and "Czech Republic" in the picker,
+// on every gantt row, in every wave tooltip, in the guard messages and in
+// both PDF tables -- the one surface on the site that did not use data it
+// already had.
+//
+// ORDERED IN JAVASCRIPT, NOT IN SQL, and that is not a style preference.
+// Sorting a French list by English names puts Allemagne between Georgia
+// and Ghana, so the order has to follow the translated name -- but
+// SQLite has no locale-aware collation, and its BINARY ordering puts
+// every accented initial after Z. "Republique tcheque" landed after
+// "Roumanie" with an ORDER BY on the translated column, which is the
+// wrong answer arrived at by a different route. Intl.Collator knows what
+// the language does with its own accents; seventy rows is nothing to
+// sort in memory.
+//
+// This also means the tuple index a checkbox carries differs by language,
+// which is correct, and was already assumed everywhere except the opening
+// country selection -- see the client script.
+export async function getRoiCountries(db, todayISO, lang = "en") {
   const today = todayISO || new Date().toISOString().slice(0, 10);
   // The European Union row is fetched deliberately and filtered out at the
   // end. It is not a jurisdiction anyone implements in, but it carries the
@@ -42,11 +66,14 @@ export async function getRoiCountries(db, todayISO) {
   // per-country ViDA 2030 entries off the board, the surviving EU entry is
   // the ONLY on-tracker record of an obligation that binds 27 countries.
   const { results: countries } = await db.prepare(`
-    SELECT c.id, c.name_en, c.code, c.region, c.slug, c.roi_complexity, c.eu_member,
+    SELECT c.id, COALESCE(ct.display_name, cte.display_name, c.name_en) AS name_en,
+           c.name_en AS name_en_raw,
+           c.code, c.region, c.roi_complexity, c.eu_member,
            (SELECT COUNT(*) FROM deep_dive_penalty_rows p WHERE p.country_id = c.id) AS penalty_rows
       FROM countries c
-     ORDER BY c.name_en
-  `).all();
+      LEFT JOIN country_translations ct  ON ct.country_id = c.id AND ct.lang = ?1
+      LEFT JOIN country_translations cte ON cte.country_id = c.id AND cte.lang = 'en'
+  `).bind(lang).all();
   const { results: ms } = await db.prepare(
     `SELECT country_id, date, mandate_scope, confidence FROM milestones WHERE on_tracker = 1`
   ).all();
@@ -201,7 +228,29 @@ export async function getRoiCountries(db, todayISO) {
     // needs `eu_member`. Deriving it from the tuple would sweep in Norway
     // and the United Kingdom, which sit in the Europe region and are not
     // bound by ViDA at all. That mistake was made and caught on the way in.
-    return [c.name_en, c.code, REG[c.region] || "Eu", status, cxEff, future[0] || "", c.penalty_rows || 0, c.slug, euMember,
+    // INDEX 0 IS THE DISPLAY NAME AND INDEX 7 IS THE ENGLISH ONE, and
+    // the page needs both the moment names are translated.
+    //
+    // Index 7 held `c.slug` from the day this function was written. A
+    // sweep on 17 August 2026 found ZERO reads of it anywhere -- not in
+    // the renderer, not in the client script, not in any test -- so it
+    // was fetched, placed in seventy tuples and serialised into every
+    // page load to be ignored. That is what made the slot available.
+    //
+    // The English name has to travel because SUBSCRIBER PREFERENCES ARE
+    // STORED IN ENGLISH. loadCountryPicker() saves `englishName`, and the
+    // planner's "use my subscribed countries" box matches the saved list
+    // against the tuple. Translating index 0 without carrying the English
+    // name would have made that box select NOTHING in French or German --
+    // silently, since selecting nothing is a legal state -- for exactly
+    // the readers a translation is for.
+    //
+    // NOT a repurposed index in the sense that burned this page at index
+    // 8. That one had four live readers who went on reading the old
+    // meaning. This one had none, which was verified before the change
+    // rather than assumed after it, and the standing invariant below
+    // fails if a slug ever comes back.
+    return [c.name_en, c.code, REG[c.region] || "Eu", status, cxEff, future[0] || "", c.penalty_rows || 0, c.name_en_raw, euMember,
             hiddenDate && (!future.length || hiddenDate < future[0]) ? hiddenDate : ""];
   });
 
@@ -217,9 +266,27 @@ export async function getRoiCountries(db, todayISO) {
   // authority receives invoice-level data, which is complex work on the
   // rule Dan set on 12 August.
   if (euRow && euWide.length) {
+    // NAMED IN ENGLISH HERE AND TRANSLATED AT RENDER, not translated here.
+    //
+    // It is the one row name that is not in `countries`, so it cannot come
+    // from country_translations -- it is a page string. The first attempt
+    // read it with its own query in this function, which worked and was
+    // wrong in a way the i18n suite caught within a minute: a string
+    // fetched outside `strings` is invisible to the check that asks
+    // whether every D1 row is actually rendered, so it reported
+    // country.eu as unused.
+    //
+    // That check was right. A second string channel is a second thing to
+    // remember, and this page has one on purpose. Index 0 is replaced in
+    // renderRoiPage from the same `strings` map as every other label.
     out.push(["European Union", "EU", "Eu", "u", 2, euWide.map((m) => m.date).sort()[0],
-              0, null, 0, ""]);
+              0, "European Union", 0, ""]);
   }
+  // Sorted here rather than in SQL: see the note on the function. The EU
+  // row sorts with the rest by name, as it always has -- it is a row in
+  // the list, not a header above it.
+  const collator = new Intl.Collator(lang, { sensitivity: "base" });
+  out.sort((a, b) => collator.compare(a[0], b[0]));
   return out;
 }
 
@@ -232,8 +299,8 @@ export async function getRoiCountries(db, todayISO) {
 // language degrades gracefully instead of rendering blanks.
 export async function getRoiBenchmarks(db, lang = "en") {
   const { results } = await db.prepare(`
-    SELECT b.key, b.default_value, b.unit, b.evidence_grade, b.source_url, b.source_year, b.is_cost, b.sort_order,
-           COALESCE(t.label, te.label) AS label,
+    SELECT b.key, b.default_value, b.unit, b.evidence_grade, b.source_url, b.source_year, b.sort_order,
+           b.base_currency,
            COALESCE(t.hint, te.hint) AS hint,
            COALESCE(t.citation, te.citation) AS citation
       FROM roi_benchmarks b
@@ -267,7 +334,9 @@ export async function getRoiFxRates(db) {
     `SELECT currency, usd_per_unit, as_of, source_url FROM roi_fx_rates`
   ).all();
   const out = {};
-  for (const r of results) out[r.currency] = { r: r.usd_per_unit, asOf: r.as_of, src: r.source_url };
+  // `source_url` is fetched for the audit trail on the row and is not
+  // read by the renderer, so it is not carried into the client payload.
+  for (const r of results) out[r.currency] = { r: r.usd_per_unit, asOf: r.as_of };
   if (!out.USD) out.USD = { r: 1, asOf: "", src: null };
   return out;
 }
@@ -338,17 +407,24 @@ table{color:var(--text-lo)}
 .wrap{color:var(--text-lo)}
 footer{color:var(--muted)}
 .grid{display:grid;gap:14px}
-/* Inputs sit at the BOTTOM of their cell, so a label that wraps to two
-   lines cannot push its field below its neighbours'. Migration 531 fixed
-   one instance of that by shortening a label; 557 reintroduced it at
-   860px with "Invoices already received as e-invoices %". Shortening
-   again would only defer it -- every future label is a chance to break
-   the row. Reserving two lines of label height in every such cell is the
-   general fix. Bottom-aligning the inputs was tried first and was worse:
-   several cells carry a hint paragraph BELOW the input, so pushing the
-   input to the bottom of the cell misaligned the ones that do not. */
-.grid > div:has(> input, > select) > label{min-height:37px}
-@media(min-width:760px){.g2{grid-template-columns:1fr 1fr}.g3{grid-template-columns:repeat(3,1fr)}.g4{grid-template-columns:repeat(4,1fr)}.g5{grid-template-columns:repeat(3,1fr)}}
+/* THE LABEL-HEIGHT GUARD IS GONE, and it had already stopped working.
+   It reserved two lines of label height in every .grid cell holding an
+   input, so a label wrapping to two lines could not push its field below
+   its neighbours'. Migrations 562 and 563 then rebuilt section 1 as
+   .foot2/.footcol and the assumptions panel as .acols/.acol, and no
+   .grid contains a <label> any more -- measured on the rendered page:
+   the selector .grid label matches ZERO elements.
+   The guard does not need re-pointing at the new selectors. It existed
+   because cells sat SIDE BY SIDE in a grid row, so one label wrapping
+   misaligned its neighbours. .footcol and .acol are independent vertical
+   stacks; fields in different columns are not row-aligned to each other
+   and there is nothing left to misalign. Verified in the real typefaces
+   at 1280px and 420px -- see vendor/fonts. */
+/* .g3 and .g4 went with the layouts they described -- the four-column
+   footprint and the three-column assumption grid, both replaced by flex
+   stacks in migrations 562 and 563. Nothing has carried either class
+   since. */
+@media(min-width:760px){.g2{grid-template-columns:1fr 1fr}.g5{grid-template-columns:repeat(3,1fr)}}
 @media(min-width:1000px){.g5{grid-template-columns:repeat(5,1fr)}}
 label{display:block;font-size:12px;font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin:0 0 5px}
 input[type=number],input[type=text],select{width:100%;background:var(--ink);border:1px solid var(--line);color:var(--text-lo);border-radius:6px;padding:9px 11px;font:inherit;font-size:15px}
@@ -546,13 +622,7 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
 .steps em{font-style:normal;font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.06em;
   text-transform:uppercase;color:var(--muted);margin-left:6px}
 @media(max-width:700px){.steps span{white-space:normal}.steps em{display:block;margin:1px 0 0}}
-/* A section subhead inside the merged Savings section. Not an h3: the two
-   halves are peers under one heading, and an h3 would imply the second is
-   subordinate to the first. */
-.subhead{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1.4px;text-transform:uppercase;
-  color:var(--soon);margin:0 0 6px;padding-top:2px}
 .grid > div{display:flex;flex-direction:column;min-width:0}
-.grid label{line-height:1.35;min-height:38px}
 .grid > div > .hint{margin-top:6px}
 @media(max-width:759px){.grid label{min-height:0}}
 .hlp:hover .tip,.hlp:focus .tip{display:block}
@@ -584,7 +654,11 @@ tr.tot td{border-top:2px solid var(--line);border-bottom:none}
    every slot over 3:1 on both surfaces.
    The fourth band is deliberately NOT a fourth category — it is money the
    model does not count, so it carries no hue, only a 45-degree hatch. */
-.sv1{fill:#399a6c}.sv2{fill:#c07d1c}.sv3{fill:#6b86d8}
+/* The pie paints with an inline fill= taken from the segment's own c,
+   not with a class. The .sv1/.sv2/.sv3 rules that used to do it were
+   dead, and the giveaway was the fourth segment: SV.segs carries an sv4
+   key with no rule behind it, which is what a hook looks like after it
+   stops being read. The k properties go with them below. */
 .svwrap{display:flex;gap:22px;align-items:center;flex-wrap:wrap;margin:14px 0 0}
 .svpie{flex:none}
 .svpie text{font-family:'IBM Plex Mono',monospace}
@@ -604,7 +678,12 @@ tr.tot td{border-top:2px solid var(--line);border-bottom:none}
    popout". The reasoning is not deleted, it is moved one click away and
    linked from the number it belongs to. */
 a.nlink{color:var(--soon);border-bottom:1px dotted var(--soon);text-decoration:none;white-space:nowrap;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.4px}
-a.nlink:hover,a.nlink:focus{color:var(--text);border-bottom-color:var(--text)}
+/* --text-lo, not --text. This rule named a variable that is declared
+   nowhere -- not here, not in BASE_STYLE -- so both declarations were
+   invalid at computed-value time and dropped, and the link has had no
+   hover state since it was written. Silent by nature: an invalid custom
+   property does not warn, it just does nothing. */
+a.nlink:hover,a.nlink:focus{color:var(--text-lo);border-bottom-color:var(--text-lo)}
 .gate{background:linear-gradient(180deg,rgba(21,34,56,0) 0%,var(--ink-2) 42%);border:1px solid var(--soon);border-radius:var(--radius);padding:26px 22px;text-align:center;margin:18px 0}
 .note{background:var(--ink-3);border-left:3px solid var(--soon);border-radius:0 6px 6px 0;padding:11px 14px;font-size:13px;color:var(--muted);margin:0 0 14px}
 .warn{border-left-color:var(--stamp)}
@@ -703,6 +782,7 @@ footer{margin-top:40px;padding-top:16px;border-top:1px solid var(--line);font-si
 // session; `subscribed` is the signed-in reader's own saved countries
 // (empty for anonymous visitors, which disables that control).
 export function renderRoiPage({ countries, benchmarks = [], phases = [], strings = {}, fx = {},
+                                lang = "en",
                                 locked = true, subscribed = [], unlockUrl = "", signedInAs = "" }) {
   // Benchmarks, phases and citations are injected from D1 rather than
   // hardcoded here. This is what makes the tool translation-ready without
@@ -860,13 +940,54 @@ export function renderRoiPage({ countries, benchmarks = [], phases = [], strings
     const v = strings[k];
     return v === undefined || v === null || v === "" ? fb : v;
   };
-  // Same value, escaped for embedding inside the client script's template
-  // literals. A backtick or a ${ in a translation would otherwise end the
-  // literal and take the whole page with it.
+  // Same value, escaped for embedding inside the client script.
+  //
+  // THE APOSTROPHE IS THE ONE THAT MATTERED, and it was missing until 17
+  // August 2026. Backtick and ${ were escaped because a translation
+  // containing them would end a template literal; the single quote was
+  // not, because English copy on this page had never contained one --
+  // the convention is &rsquo;, unwritten and unenforced.
+  //
+  // 89 of the call sites embed this INSIDE A SINGLE-QUOTED JAVASCRIPT
+  // STRING, not inside a template literal. One apostrophe closes the
+  // literal and the client script fails to parse -- no calculator, no
+  // chart, no PDF, no guards, on a page that otherwise renders perfectly.
+  // Verified by rendering with a plausible French value:
+  //
+  //   "Le fisc est partie a l'operation"  ->  SyntaxError: Unexpected
+  //                                           identifier 'operation'
+  //
+  // Which is to say: the page could not survive its first French string.
+  // French, Italian and Dutch cannot write a paragraph without one, and
+  // loading a language is the next thing this project intends to do.
+  //
+  // Worse than a crash, it is a CONDITIONAL crash -- whether a given
+  // translation kills the page depends on which of two embedding contexts
+  // its key happens to be used in, so it would have shipped, then
+  // reappeared later on a different key.
+  //
+  // Escaped rather than switched to JSON.stringify because the call sites
+  // supply their own quotes and several concatenate the result. Escaping
+  // is the change that fits the 89 existing sites; a quoting helper would
+  // be the better shape and is a larger edit than this defect justifies.
   const tj = (k, fb) => String(t(k, fb))
-    .replace(/\\/g, "\\\\").replace(/`/g, "\\`").replace(/\$\{/g, "\\${");
+    .replace(/\\/g, "\\\\").replace(/`/g, "\\`").replace(/\$\{/g, "\\${")
+    .replace(/'/g, "\\'");
 
-  const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  // HTML-escapes for attribute and text contexts. The double quote is here
+  // for the same reason the apostrophe is above: hlp() interpolates this
+  // into aria-label="...", and a German or French help row quoting a term
+  // inline terminates the attribute early --
+  //
+  //   aria-label="What this drives: Der "Sollwert" wird hier gesetzt.">
+  //
+  // -- after which the remainder of the sentence is parsed as stray
+  // attributes. Silent: nothing changes on screen, and the assistive
+  // reading of the field is quietly truncated. The single quote is
+  // escaped too, so the function is safe in single-quoted attributes
+  // whether or not this file currently writes any.
+  const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   // Dan, 16 Aug 2026: "the text under each field in Assumptions and
   // benchmarks can be removed, and should be a feature of the tooltip
   // help."
@@ -974,7 +1095,7 @@ export function renderRoiPage({ countries, benchmarks = [], phases = [], strings
      until Calculate runs, so there are no dates to move yet. But the
      instinct was right: Calculate is the middle of this flow and Download
      is the end, and the strip stopped one step short of saying so. -->
-<ol class="steps noprint" aria-label="${t("steps.aria","How to use this planner")}">
+<ol class="steps noprint" aria-label="${esc(t("steps.aria","How to use this planner"))}">
   <li><a href="#s-footprint"><span>${t("steps.1","Enter your footprint")}</span></a></li>
   <li><a href="#s-countries"><span>${t("steps.2","Select your countries")}</span></a></li>
   <li><a href="#assump"><span>${t("steps.3","Adjust assumptions")}<em>${t("steps.optional","optional")}</em></span></a></li>
@@ -1010,7 +1131,7 @@ export function renderRoiPage({ countries, benchmarks = [], phases = [], strings
     <div class="ribbon"><label for="eShare">${t("input.eShare", "E-invoices received today %")} <span class="tag tB">B</span>${hlp("eShare",t("tip.drives","What this drives"))}</label><input type="number" id="eShare" value="${dv('eShare')}" min="0" max="100" step="1"><p class="hint" id="h-eShare"></p></div>
     <div class="ribbon"><label for="errMins">${t("input.errMins", "Minutes to resolve one error")} <span class="tag tB">B</span>${hlp("errMins",t("tip.drives","What this drives"))}</label><input type="number" id="errMins" value="${dv('errMins')}" min="0" step="1"><p class="hint" id="h-errMins"></p></div>
     <div class="ribbon">
-      <label for="cur">${t("input.currency", "Currency")}${hlp("cur",t("tip.changes","What this changes"))}${hlp("fx",t("tip.rate","Where the rate comes from"))}</label>
+      <label for="cur">${t("input.currency", "Currency")}${hlp("cur",t("tip.curChanges","What this changes, and where the rate comes from"))}</label>
       <select id="cur"><option value="GBP">GBP &pound;</option><option value="EUR">EUR &euro;</option><option value="USD" selected>USD $</option></select>
       <p class="hint" id="fxNote"></p>
     </div>
@@ -1187,13 +1308,13 @@ export function renderRoiPage({ countries, benchmarks = [], phases = [], strings
   const script = `
 const COUNTRIES = __ROI_COUNTRIES__;
 let unlocked = __ROI_UNLOCKED__;
-const REGION = {Eu:'${t("region.eu","Europe")}', Mi:'${t("region.mea","Middle East / Africa")}', As:'${t("region.apac","Asia-Pacific")}', Am:'${t("region.am","Americas")}'};
+const REGION = {Eu:'${tj("region.eu","Europe")}', Mi:'${tj("region.mea","Middle East / Africa")}', As:'${tj("region.apac","Asia-Pacific")}', Am:'${tj("region.am","Americas")}'};
 // The five status labels, the three complexity labels and the four
 // region headings are what a reader sees on every country row, and all
 // twelve were English literals until 547. They are the page's taxonomy:
 // if they do not translate, nothing below them reads as translated
 // either, however carefully the prose around them is handled.
-const STATUS = {i:['${t("status.inforce","In force")}','p-inforce'], u:['${t("status.upcoming","Upcoming")}','p-upcoming'], b:['${t("status.b2g","B2G only")}','p-b2gonly'], n:['${t("status.nomandate","No mandate")}','p-nomandate'], t:['${t("status.tracked","Tracked")}','p-nomandate']};
+const STATUS = {i:['${tj("status.inforce","In force")}','p-inforce'], u:['${tj("status.upcoming","Upcoming")}','p-upcoming'], b:['${tj("status.b2g","B2G only")}','p-b2gonly'], n:['${tj("status.nomandate","No mandate")}','p-nomandate'], t:['${tj("status.tracked","Tracked")}','p-nomandate']};
 // Three values, not four (Dan, 12 Aug 2026). The dividing line is whether
 // the tax authority is a party to the transaction, which is also what
 // actually drives integration effort. The old four-point scale carried a
@@ -1201,7 +1322,7 @@ const STATUS = {i:['${t("status.inforce","In force")}','p-inforce'], u:['${t("st
 // exchange with no authority involvement" — which is exactly where
 // Belgium, Norway, the UK and Slovenia live, and where the European
 // direction of travel is heading.
-const CXNAME = {2:['${t("cx.complex","Complex")}','cx3'], 1:['${t("cx.simple","Simple")}','cx2'], 0:['${t("status.nomandate","No mandate")}','cx0']};
+const CXNAME = {2:['${tj("cx.complex","Complex")}','cx3'], 1:['${tj("cx.simple","Simple")}','cx2'], 0:['${tj("status.nomandate","No mandate")}','cx0']};
 const CXNOTE = {2:'${tj("cx.complex.note","CTC or 5-corner: the tax authority is a party to the transaction &mdash; clearance, pre-validation, or invoice-level reporting. Certification, response handling and status reconciliation on top of the exchange.")}',
   1:'${tj("cx.simple.note","Decentralised 4-corner exchange only. Structured invoices move between accredited access points; the tax authority is not in the loop.")}',
   0:'${tj("cx.none.note","No mandate to build for. Included only because you selected it &mdash; there is no deadline, so this work can start whenever you have capacity.")}'};
@@ -1259,14 +1380,58 @@ const fill = (tpl, ...a) => String(tpl).replace(/\\{(\\d+)\\}/g,
 // the slot is filled with whichever row the count selects. Languages
 // with more than two plural forms need more rows, not different code.
 const plur = (n, one, many) => (n === 1 ? one : many);
-const fmt = n => SYM[cur] + Math.round(n).toLocaleString('en-US');
+
+// ---- money and number formatting, in the reader's language -----------
+//
+// LANG is the page language, threaded from the request rather than
+// assumed. Everything below used the literal 'en-US', which decided three
+// things a locale is supposed to decide: the thousands separator, the
+// decimal separator, and where the currency symbol goes.
+//
+// The symbol is the one that read worst. SYM[cur] + number PREFIXES it
+// unconditionally, so a euro figure printed as EUR1,234,567 in a
+// convention no euro-using locale follows -- German writes 1.234.567 EUR,
+// French 1 234 567 EUR with a non-breaking space. Intl.NumberFormat in
+// currency style decides placement, separator and spacing together,
+// because they are one decision per locale and not three.
+//
+// The page was ALSO formatting numbers two different ways at once. These
+// used 'en-US'; seven other sites called toLocaleString() with NO
+// argument, which means the BROWSER's locale. On a German browser reading
+// the English page, the savings table already printed "100.000 invoices"
+// in one cell and "$100,000" two cells right. Live today, in English,
+// visible to anyone outside an en-US browser -- and invisible to a test
+// suite whose headless Chromium is en-US.
+//
+// Constructed once and reused: Intl.NumberFormat is expensive to build
+// and these run inside table loops.
+const LANG = ${JSON.stringify(lang)};
+const NF = {};
+const nf = (opts) => {
+  const k = cur + JSON.stringify(opts);
+  if (!NF[k]) {
+    try { NF[k] = new Intl.NumberFormat(LANG, opts); }
+    // A locale Intl does not know must not take the page down with it.
+    // Falling back to the browser default is a cosmetic degradation; an
+    // exception here is thrown inside the render path.
+    catch (e) { NF[k] = new Intl.NumberFormat(undefined, opts); }
+  }
+  return NF[k];
+};
+// Named MONEY_OPTS rather than money: the PDF builder declares a local
+// money() of its own, and a top-level binding of the same name would
+// shadow-and-be-shadowed depending on where you were reading.
+const MONEY_OPTS = { style: 'currency', currency: 'USD', maximumFractionDigits: 0, minimumFractionDigits: 0 };
+const fmt = n => nf({ ...MONEY_OPTS, currency: cur }).format(Math.round(n));
 // Two decimals, not one. This formats per-invoice costs and nothing else,
 // and at one decimal the AP baseline printed as "$9.8" while the row was
 // computed from 9.84 — so a reader multiplying out the basis on screen
 // got $588,000 against the $590,400 beside it and had no way to see why.
 // A $2,400 gap in the one row a finance reader is most likely to check
 // by hand. Dan found it by doing exactly that.
-const fmt1 = n => SYM[cur] + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const fmt1 = n => nf({ ...MONEY_OPTS, currency: cur, minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
+// Plain counts -- invoice volumes, error counts. Same locale, no currency.
+const num0 = n => nf({ maximumFractionDigits: 0 }).format(n);
 
 // ---- evidence grades -------------------------------------------------
 // A = measured, primary, attributable      B = published by a credible body but unattributed within it
@@ -1507,7 +1672,7 @@ function markOverridden(){
   });
 }
 document.getElementById('assump').addEventListener('toggle', e => {
-  document.getElementById('assumpChevron').innerHTML = e.target.open ? '${t("assumptions.hide","hide &#9652;")}' : '${t("assumptions.show","show &#9662;")}';
+  document.getElementById('assumpChevron').innerHTML = e.target.open ? '${tj("assumptions.hide","hide &#9652;")}' : '${tj("assumptions.show","show &#9662;")}';
 });
 document.getElementById('resetDefaults').onclick = () => {
   Object.entries(DEFAULTS).forEach(([id,d]) => { const el = document.getElementById(id); if(el) el.value = d.v; });
@@ -1596,9 +1761,34 @@ function applyCurrency(next){
     // of a tooltip and into the open -- a converted business case that
     // does not say what rate it used is the defect Dan reported on 12
     // August, one layer down.
+    //
+    // THIS SENTENCE WAS THE LAST HARDCODED ENGLISH ON THE PAGE, and the
+    // hardcoded-strings suite reported zero the whole time it was here.
+    // Not a hole in the detector's logic -- a hole in its itinerary. It
+    // renders the page, presses Calculate, opens the three panels and
+    // walks the visible text. It never changes the currency, and this
+    // note is EMPTY under USD by design, so there was nothing to find at
+    // the only moment anyone looked.
+    //
+    // Conditional text is invisible to a detector that does not drive the
+    // condition. Six scenario guards and the expanded chart are in the
+    // same position and are dealt with separately; this one is here
+    // because it is the note migration 513 exists to make prominent, and
+    // a prominent warning that cannot be translated is a warning that
+    // disappears for every reader who is not English.
+    //
+    // TWO WHOLE SENTENCES rather than one with an optional fragment. The
+    // dated and undated forms differ by a clause in the middle, and a
+    // translator handed ", spot {0}" as its own row cannot place it --
+    // German and Polish will not put it where English does. Two complete
+    // strings cost one extra row and buy a translator who can move the
+    // clause anywhere the sentence needs it.
+    const rateNote = f && f.asOf
+      ? fill('${tj("fx.convertedDated","Converted at a <strong>fixed rate</strong> of 1 {0} = {1} USD, spot {2} &mdash; not updated daily.")}', next, f.r, f.asOf)
+      : fill('${tj("fx.converted","Converted at a <strong>fixed rate</strong> of 1 {0} = {1} USD &mdash; not updated daily.")}', next, f && f.r);
     note.innerHTML = next === 'USD' || !f
       ? ''
-      : \`Converted at a <strong>fixed rate</strong> of 1 \${next} = \${f.r} USD\${f.asOf ? ', spot ' + f.asOf : ''} &mdash; not updated daily. \${ev('yours','Use your own treasury rate for anything you will sign')}\`;
+      : rateNote + ' ' + ev('yours','${tj("ev.treasury","Use your own treasury rate for anything you will sign")}');
   }
   // recalcPlat() rather than markOverridden() directly: the platform fee's
   // hint quotes the per-invoice rate, so it has to be rebuilt in the new
@@ -1646,7 +1836,7 @@ function recalcPlat(){
   DEFAULTS.cPlat.v = roundCur(usdDefault.cPlat / r);
   DEFAULTS.cPlat.derived = true;   // its hint is computed, not a citation
   DEFAULTS.cPlat.h = PLAT.tpl
-    .replace('{vol}', vol.toLocaleString('en-US'))
+    .replace('{vol}', num0(vol))
     .replace('{fee}', SYM[cur] + (PLAT.fee / r).toFixed(2));
   if(!dirtyCur.has('cPlat')){
     usdCurrent.cPlat = usdDefault.cPlat;
@@ -1706,7 +1896,7 @@ function setSubsAvailable(on){
   subsRow.style.opacity = on ? '1' : '.55';
   document.getElementById('subsCount').textContent = on
     ? fill('${tj("subs.fromSaved","({0}) — from your saved preferences")}', MOCK_SUBSCRIBED.length)
-    : '— ${t("subs.locked","sign in to use your saved countries")}';
+    : '— ${tj("subs.locked","sign in to use your saved countries")}';
 }
 // Initialise from the unlock state, NOT unconditionally false. On the
 // members page the reader is already signed in and the sign-in handler
@@ -1717,7 +1907,13 @@ function setSubsAvailable(on){
 setSubsAvailable(unlocked && MOCK_SUBSCRIBED.length > 0);
 subsBox.onchange = () => {
   if(subsBox.checked){
-    boxes().forEach(b => { b.checked = MOCK_SUBSCRIBED.includes(COUNTRIES[+b.dataset.i][0]); });
+    // MATCHED ON INDEX 7, THE ENGLISH NAME, not on index 0, the displayed
+    // one. Saved preferences are stored in English by
+    // loadCountryPicker(); matching them against a translated label would
+    // select nothing at all in French or German, and selecting nothing is
+    // a legal state, so it would have failed silently for precisely the
+    // readers a translation exists for.
+    boxes().forEach(b => { b.checked = MOCK_SUBSCRIBED.includes(COUNTRIES[+b.dataset.i][7]); });
   } else {
     boxes().forEach(b => b.checked = false);
   }
@@ -1728,7 +1924,42 @@ list.addEventListener('change', e => { if(e.target !== subsBox) subsBox.checked 
 
 const chosen = () => boxes().filter(b=>b.checked).map(b=>COUNTRIES[+b.dataset.i]);
 document.getElementById('selNone').onclick = () => { subsBox.checked = false; boxes().forEach(b=>b.checked=false); };
-['GB','FR','DE','IT','ES','PL','NL','BE'].forEach(code=>{const i=COUNTRIES.findIndex(c=>c[1]===code); if(i>=0) boxes()[i].checked=true;});
+// THE OPENING SELECTION. Eight large European economies, so a reader who
+// presses Calculate before touching anything sees a plausible programme
+// rather than an empty one.
+//
+// INDEXED BY data-i, NOT BY POSITION, and that is the whole fix. This
+// line used to read:
+//
+//     const i = COUNTRIES.findIndex(c => c[1] === code); boxes()[i].checked = true;
+//
+// That i indexes COUNTRIES, which getRoiCountries orders BY name_en --
+// alphabetically, Argentina first. boxes() returns DOM order, which is
+// grouped by region: all of Europe, then MEA, then APAC, then the
+// Americas. The two orderings coincide only if every European
+// jurisdiction sorts before every non-European one, and Australia,
+// Brazil and Canada see to it that they do not.
+//
+// So the eight ticks landed on whatever happened to occupy those eight
+// DOM positions. Measured on the shipped page: Czech Republic, Poland,
+// Portugal, United Kingdom, Australia, New Zealand, Canada and Ecuador.
+// Two of the eight intended, by coincidence. Every reader who pressed
+// Calculate without changing the selection got a business case for a
+// footprint nobody chose -- and the headline figure, the wave plan and
+// the PDF all followed it.
+//
+// Silent by construction: eight boxes are ticked, the count is right, the
+// countries are wrong, and nothing on the page claims which eight it
+// meant to tick. It survived because no test asserted the opening
+// selection by name -- only that some countries were selected. One now
+// does.
+//
+// data-i is the country's index into COUNTRIES, written onto the box
+// when the list was built, and it is the only correspondence between the
+// two orderings that is actually maintained. Every other consumer on this
+// page already uses it; this line was the exception.
+const DEFAULT_TICKS = ['GB','FR','DE','IT','ES','PL','NL','BE'];
+boxes().forEach(b => { if(DEFAULT_TICKS.includes(COUNTRIES[+b.dataset.i][1])) b.checked = true; });
 
 
 // ---- Gantt: back-planned delivery waves --------------------------------
@@ -1775,7 +2006,6 @@ const OVR = {};                       // name -> {dl?: 'YYYY-MM-DD', start?: 'YY
 // Without this you have to re-click the field after every single edit.
 let ovrRefocus = null;
 const ovrOf = n => OVR[n] || {};
-const anyOvr = () => Object.values(OVR).some(o => o.dl || o.start);
 
 function buildGantt(sel0, erp, pace){
   const host = document.getElementById('gantt');
@@ -2007,10 +2237,17 @@ function buildGantt(sel0, erp, pace){
     }
     const cx = CXNAME[r.c[4]];
     s += \`<text x="0" y="\${y+15}" fill="#f2f0e8" font-size="12">\${shortName(r.c[0])}<title>\${r.c[0]}</title></text>\`;
-    // c[8] marks a deadline that comes from EU law rather than the
-    // country's own legislature. Worth saying on the row: a reader who
-    // knows Austria has no national mandate needs to see why it is in a
-    // 2030 wave, or they will assume the plan is wrong.
+    // INDEX 11 marks the European Union row itself -- the one track in
+    // the plan that is an EU-wide obligation rather than a national one.
+    // Worth saying on the row: a reader who knows Austria has no national
+    // mandate needs to see why a 2030 wave exists at all, or they will
+    // assume the plan is wrong.
+    //
+    // NOT index 8, which is plain EU MEMBERSHIP. The two were confused at
+    // four other sites on this page and the confusion inverted the wave
+    // table -- see the block at the euWide flag below. This line was
+    // already correct and its comment was not, which is how the wrong one
+    // kept looking right.
     s += \`<text x="\${L-10}" y="\${y+15}" fill="\${r.c[11] ? '#c98a3a' : '#93a3c0'}" font-family="'IBM Plex Mono',monospace" font-size="9" text-anchor="end">\${r.c[11] ? 'EU-WIDE' : REGSHORT[r.c[2]]} &middot; \${cx[0].toUpperCase()}\${lanes>1?\` &middot; L\${r.lane+1}\`:''}</text>\`;
     r.segs.forEach(sg => {
       const x1 = x(sg.s.getTime()), x2 = x(sg.e.getTime());
@@ -2150,7 +2387,6 @@ function buildGantt(sel0, erp, pace){
   host.innerHTML = s;
 
   const late = waveMeta.filter(w=>w.risk==='critical').length, soon = waveMeta.filter(w=>w.risk==='warning').length;
-  const typicalTrack = waveMeta.length ? Math.round(waveMeta.reduce((a,w)=>a+w.elapsed,0)/waveMeta.length) : 0;
   // With no dated waves there is no risk verdict to give and no critical
   // path to name, so the head note written above stands rather than being
   // overwritten with a reassurance about zero waves.
@@ -2224,7 +2460,7 @@ function renderAdjust(sel){
         // and for an EU member with no national B2B date the date is not
         // the country's own at all — it is the ViDA 2030 row, which is
         // exactly the distinction a reader adjusting a plan needs.
-        const src = c[8] ? '${tj("adjust.eudeadline", "EU-wide deadline")}'
+        const src = c[11] ? '${tj("adjust.eudeadline", "EU-wide deadline")}'
                          : '${tj("adjust.owndeadline", "own deadline")}';
         const opts = waves.map(w => \`<option value="\${w}"\${w===cur?' selected':''}>\${w}\${w===c[5]?' \\u00b7 '+src:''}</option>\`).join('');
         return \`
@@ -2283,6 +2519,24 @@ function showResults(scroll){
   const adj = document.getElementById('adjust');
   const wasOpen = adj && adj.open;
   build();
+  // build() re-renders the executive summary, and the summary carries two
+  // hlp() tooltips -- the platform fee and the running cost -- whose meta
+  // line ("Our default is X") is written by markOverridden() into an empty
+  // span rather than server-side, because the value has to survive a
+  // currency switch.
+  //
+  // markOverridden() ran on input, on change, on reset and on the currency
+  // recalc, and NOT here. So the two summary tooltips opened blank after
+  // Calculate and stayed blank until the reader's next keystroke anywhere
+  // on the page. Measured: 2 of the 24 meta spans empty after Calculate, 0
+  // after one keystroke.
+  //
+  // The duplicate-id hazard of reusing hlp() twice for one key was
+  // anticipated and solved with a data attribute. The ORDERING half -- the
+  // filler has to run after every render that emits the slots, not only
+  // after the events that change their values -- was not, and the symptom
+  // is an empty tooltip, which looks like a tooltip with nothing to say.
+  markOverridden();
   if(adj && wasOpen) adj.open = true;
   document.getElementById('results').classList.remove('hidden');
   document.getElementById('print').classList.remove('hidden');
@@ -2297,7 +2551,7 @@ document.getElementById('signin').onclick = () => {
   unlocked = true;
   setSubsAvailable(true);
   document.getElementById('gate').classList.add('hidden');
-  document.getElementById('run').textContent = '${t("btn.recalculate", "Recalculate")}';
+  document.getElementById('run').textContent = '${tj("btn.recalculate", "Recalculate")}';
   showResults(true);
 };
 document.getElementById('print').onclick = () => window.print();
@@ -2426,7 +2680,6 @@ function build(){
   const complex = tracks.filter(c=>c[4]===2), simple = tracks.filter(c=>c[4]===1);
   const watch = tracks.filter(c=>c[4]===0);
   const dated = tracks.filter(c=>c[5]).sort((a,b)=>a[5]<b[5]?-1:1);
-  const secondWaves = tracks.filter(c=>c[11] !== 1).length;
   // Every country you build for counts once per ERP system. The old model
   // counted clearance countries at full rate and "reporting" countries at
   // HALF — a fudge that stood in for "reporting is a bit easier" without
@@ -2642,16 +2895,36 @@ function build(){
 
   const pace = +document.getElementById('pace').value || 1;
   const ganttRows = buildGantt(tracks, erp, pace);
-  const euDrivenCount = sel.filter(c=>c[8]).length;
-  document.getElementById('waveIntro').innerHTML = \`${tj("waves.intro","Back-planned from each jurisdiction&rsquo;s published deadline")} \${ev('site','${tj("ev.trackerDates","tracker dates")}')} ${tj("waves.intro2","through phase durations you control")} \${ev('durations','${tj("ev.durations","practitioner estimates")}')}. ${tj("waves.intro3","Procurement is modelled once, not per country.")}\${euDrivenCount?\` <strong>\${euDrivenCount}</strong> ${tj("waves.intro4","are here on an EU-wide obligation, not a national mandate")}${hlp('vida',t("tip.deadlines","Where these deadlines come from"))}.\`:''}\`;
+  // TWO SETS AGAIN, AND THIS TIME THE SENTENCE COUNTED THE WRONG ONE.
+  //
+  // This read sel.filter(c => c[8]) -- every SELECTED EU MEMBER STATE --
+  // and printed the total under the words "are here on an EU-wide
+  // obligation, not a national mandate". Select Germany alone and the
+  // page said "1 are here on an EU-wide obligation", meaning Germany,
+  // whose 2027 deadline is as national as a deadline gets.
+  //
+  // The set that sentence describes has exactly one member or none: the
+  // injected European Union row, flagged at index 11. So the count is
+  // gone and the clause is a statement, with the member-state total moved
+  // into a slot where it says something true -- how much of your
+  // selection that single row covers.
+  //
+  // Same family as migration 568, one panel lower. 568 fixed the footprint
+  // card's count and did not look at the wave plan underneath it, because
+  // the card was what Dan reported. The lesson is not about EU rows: when
+  // a count is derived from a set that is not the set the reader ticked,
+  // EVERY sentence built on it has to be re-read, not just the one that
+  // was noticed.
+  const euRowPresent = tracks.some(c => c[11]);
+  document.getElementById('waveIntro').innerHTML = \`${tj("waves.intro","Back-planned from each jurisdiction&rsquo;s published deadline")} \${ev('site','${tj("ev.trackerDates","tracker dates")}')} ${tj("waves.intro2","through phase durations you control")} \${ev('durations','${tj("ev.durations","practitioner estimates")}')}. ${tj("waves.intro3","Procurement is modelled once, not per country.")}\${euRowPresent?\` \${fill('${tj("waves.intro4","One of these waves is the EU-wide obligation rather than a national mandate, covering the {0} you selected.")}', '<strong>' + euMembers + '</strong> ' + plur(euMembers, '${tj("word.member","EU member state")}', '${tj("word.members","EU member states")}'))}${hlp('vida',t("tip.deadlines","Where these deadlines come from"))}\`:''}\`;
   let w = dated.length ? \`<table><thead><tr><th>${tj("th.deadline","Deadline")}</th><th>${tj("adjust.jur","Jurisdiction")}</th><th>${tj("th.status","Status")}</th><th>${tj("th.model","Model")}${hlp('complexity',t("tip.complexity","How complexity is assigned"))}</th><th class="num">${tj("th.integrations","Integrations")}${hlp('integrations',t("tip.derived","How this is derived"))}</th><th>${tj("th.why","Why")}</th></tr></thead><tbody>\` : '';
   dated.forEach(c=>{
     const st=STATUS[c[3]], cx=CXNAME[c[4]];
     const ints = erp;   // every country you build for, once per ERP system
-    const why = c[8]
-      ? \`<strong style="color:#e2b978">${tj("waves.euWide.h","EU-wide obligation.")}</strong> \${fill('${tj("waves.euWide","Council Directive (EU) 2025/516 binds this member state from 1 July 2030 regardless of whether it legislates a domestic mandate. {0}")}', CXNOTE[c[4]])}\`
+    const why = c[11]
+      ? \`<strong style="color:#e2b978">${tj("waves.euWide.h","EU-wide obligation.")}</strong> \${fill('${tj("waves.euWide","Council Directive (EU) 2025/516 binds every EU member state from 1 July 2030 regardless of whether it legislates its own domestic mandate. {0}")}', CXNOTE[c[4]])}\`
       : CXNOTE[c[4]];
-    w += \`<tr><td><strong>\${c[5]}</strong>\${c[8]?' <span class="pill p-upcoming">EU</span>':''}</td><td>\${c[0]}</td><td><span class="pill \${st[1]}">\${st[0]}</span></td><td><span class="pill \${cx[1]}">\${cx[0]}</span></td><td class="num">\${ints}</td><td style="font-size:12px;color:var(--muted)">\${why}</td></tr>\`;
+    w += \`<tr><td><strong>\${c[5]}</strong>\${c[11]?' <span class="pill p-upcoming">EU</span>':''}</td><td>\${c[0]}</td><td><span class="pill \${st[1]}">\${st[0]}</span></td><td><span class="pill \${cx[1]}">\${cx[0]}</span></td><td class="num">\${ints}</td><td style="font-size:12px;color:var(--muted)">\${why}</td></tr>\`;
   });
   w += dated.length ? '</tbody></table>' : '<div class="note">No selected jurisdiction has a future dated deadline. Those already in force still need remediation work &mdash; see the in-force list below.</div>';
   if(watch.length) w += \`<div class="note" style="margin-top:12px">\${fill('${tj("waves.noMandate","<strong>No mandate, included by your selection ({0}):</strong> {1}. Costed at the simple rate and scheduled as one discretionary wave &mdash; there is no deadline to miss, so this work can start whenever you have capacity.")}', watch.length, watch.map(c=>c[0]).join(', '))}</div>\`;
@@ -2664,8 +2937,8 @@ function build(){
     gt.onclick = () => {
       ganttExpanded = !ganttExpanded;
       gt.textContent = ganttExpanded
-        ? '${t("btn.group", "Group by wave")}'
-        : '${t("btn.expand", "Show every jurisdiction")}';
+        ? '${tj("btn.group", "Group by wave")}'
+        : '${tj("btn.expand", "Show every jurisdiction")}';
       showResults();
     };
   }
@@ -2707,13 +2980,13 @@ function build(){
 
     <tr class="grp"><td colspan="4">${t("grp.priced","Priced &mdash; counted in the business case")}</td></tr>
 
-    <tr class="tierA" data-row="ap"><td>${t("row.ap","Processing cost reduction (AP)")} <span class="tag tang">${t("tag.tangible","tangible")}</span> <span class="tag \${banked?'bank':'unbank'}">\${banked?'${t("tag.saved","saved")}':Math.round(TAXM.captureShare*100)+'% ${t("tag.saved","saved")}'}</span></td><td><span class="bcalc"><span class="blab">${tj("basis.lab.calc","Calculation:")}</span>\${fill('${tj("basis.ap.calc","{0} invoices &times; {1} manual cost &times; {2}% reduction &times; {3}% not yet structured{4}")}', volAP.toLocaleString(), fmt1(manualCost), Math.round(savePct*100), Math.round((1-eShare)*100), banked ? '' : fill('${tj("basis.ap.calc2"," &times; {0}% compliance share")}', Math.round(TAXM.captureShare*100)))}</span><span class="bjust"><span class="blab">${tj("basis.lab.just","Justification:")}</span>\${fill('${tj("basis.ap.just","Manual cost decomposed from the market average {0}. Reduction range {1}. Structured share is yours {2}.{3}")}', ev('ardent','${tj("ev.ardentAvg","Ardent Partners")}'), ev('hmrc60','${tj("ev.hmrcAto","HMRC, ATO-corroborated")}'), ev('yours','${tj("ev.yourShare","your figure")}'), banked ? '' : fill('${tj("basis.ap.just2"," Compliance is credited with capture and validation only &mdash; 9 of the 21 minutes of AP handling {0} &mdash; because review and approval are business decisions that no invoice format removes.")}', ev('atoCapture','${tj("ev.taskSplit","the task split")}')))}</span></td><td class="num">\${fmt(saving)}</td><td class="num">\${fmt(bankedAP)}</td></tr>
+    <tr class="tierA" data-row="ap"><td>${t("row.ap","Processing cost reduction (AP)")} <span class="tag tang">${t("tag.tangible","tangible")}</span> <span class="tag \${banked?'bank':'unbank'}">\${banked?'${tj("tag.saved","saved")}':Math.round(TAXM.captureShare*100)+'% ${tj("tag.saved","saved")}'}</span></td><td><span class="bcalc"><span class="blab">${tj("basis.lab.calc","Calculation:")}</span>\${fill('${tj("basis.ap.calc","{0} invoices &times; {1} manual cost &times; {2}% reduction &times; {3}% not yet structured{4}")}', num0(volAP), fmt1(manualCost), Math.round(savePct*100), Math.round((1-eShare)*100), banked ? '' : fill('${tj("basis.ap.calc2"," &times; {0}% compliance share")}', Math.round(TAXM.captureShare*100)))}</span><span class="bjust"><span class="blab">${tj("basis.lab.just","Justification:")}</span>\${fill('${tj("basis.ap.just","Manual cost decomposed from the market average {0}. Reduction range {1}. Structured share is yours {2}.{3}")}', ev('ardent','${tj("ev.ardentAvg","Ardent Partners")}'), ev('hmrc60','${tj("ev.hmrcAto","HMRC, ATO-corroborated")}'), ev('yours','${tj("ev.yourShare","your figure")}'), banked ? '' : fill('${tj("basis.ap.just2"," Compliance is credited with capture and validation only &mdash; 9 of the 21 minutes of AP handling {0} &mdash; because review and approval are business decisions that no invoice format removes.")}', ev('atoCapture','${tj("ev.taskSplit","the task split")}')))}</span></td><td class="num">\${fmt(saving)}</td><td class="num">\${fmt(bankedAP)}</td></tr>
 
-    <tr class="tierA" data-row="ar"><td>${t("row.ar","Issuing cost reduction (AR)")} <span class="tag tang">${t("tag.tangible","tangible")}</span> <span class="tag bank">${t("tag.saved","saved")}</span></td><td><span class="bcalc"><span class="blab">${tj("basis.lab.calc","Calculation:")}</span>\${fill('${tj("basis.ar.calc","{0} invoices &times; {1} issuing cost &times; {2}% reduction")}', volAR.toLocaleString(), fmt1(costAR), Math.round(savePct*100))}</span><span class="bjust"><span class="blab">${tj("basis.lab.just","Justification:")}</span>\${fill('${tj("basis.ar.just","Issuing cost from the ATO channel figures on its own 60/40 split {0}. Reduction range {1}.")}', ev('ato','${tj("ev.atoDeloitte","ATO / Deloitte")}'), ev('hmrc60','${tj("ev.hmrcAto","HMRC, ATO-corroborated")}'))}</span></td><td class="num">\${fmt(savingAR)}</td><td class="num">\${fmt(savingAR)}</td></tr>
+    <tr class="tierA" data-row="ar"><td>${t("row.ar","Issuing cost reduction (AR)")} <span class="tag tang">${t("tag.tangible","tangible")}</span> <span class="tag bank">${t("tag.saved","saved")}</span></td><td><span class="bcalc"><span class="blab">${tj("basis.lab.calc","Calculation:")}</span>\${fill('${tj("basis.ar.calc","{0} invoices &times; {1} issuing cost &times; {2}% reduction")}', num0(volAR), fmt1(costAR), Math.round(savePct*100))}</span><span class="bjust"><span class="blab">${tj("basis.lab.just","Justification:")}</span>\${fill('${tj("basis.ar.just","Issuing cost from the ATO channel figures on its own 60/40 split {0}. Reduction range {1}.")}', ev('ato','${tj("ev.atoDeloitte","ATO / Deloitte")}'), ev('hmrc60','${tj("ev.hmrcAto","HMRC, ATO-corroborated")}'))}</span></td><td class="num">\${fmt(savingAR)}</td><td class="num">\${fmt(savingAR)}</td></tr>
 
-    <tr class="tierA" data-row="tax"><td>${t("row.tax","Reduced tax reporting &amp; audit-prep effort")} <span class="tag tang">${t("tag.tangible","tangible")}</span> <span class="tag bank">${t("tag.saved","saved")}</span></td><td><span class="bcalc"><span class="blab">${tj("basis.lab.calc","Calculation:")}</span>\${fill('${tj("basis.tax.calc","{0} AP invoices imply {1} AP FTE; {2} put {3}% of that in scope{4} &mdash; {5} FTE &times; {6}")}', volAP.toLocaleString(), apFteImplied.toFixed(1), ctcCount + ' ' + plur(ctcCount, '${tj("word.ctcJur","clearance or reporting jurisdiction")}', '${tj("word.ctcJurs","clearance or reporting jurisdictions")}'), (shareUsed*100).toFixed(1), taxCapBinds?' <em>${tj("word.capped","(capped)")}</em>':'', taxFteSaved.toFixed(2), fmt(fteCost))}</span><span class="bjust"><span class="blab">${tj("basis.lab.just","Justification:")}</span>\${fill('${tj("basis.tax.just","Mechanism evidenced {0}; invoices per FTE {1}; the share in scope is ours and capped {2}. Saved on either scope &mdash; reporting effort falls with the compliance build, not with a workflow change.")}', ev('oecd','${tj("ev.oecdDctr","OECD DCTR, 2026")}'), ev('apqc','${tj("ev.apqcMedian","APQC median, 12,000 per FTE")}'), ev('yours','${tj("ev.ourAssumption","our assumption")}'))}</span></td><td class="num">\${fmt(l2)}</td><td class="num">\${fmt(l2)}</td></tr>
+    <tr class="tierA" data-row="tax"><td>${t("row.tax","Reduced tax reporting &amp; audit-prep effort")} <span class="tag tang">${t("tag.tangible","tangible")}</span> <span class="tag bank">${t("tag.saved","saved")}</span></td><td><span class="bcalc"><span class="blab">${tj("basis.lab.calc","Calculation:")}</span>\${fill('${tj("basis.tax.calc","{0} AP invoices imply {1} AP FTE; {2} put {3}% of that in scope{4} &mdash; {5} FTE &times; {6}")}', num0(volAP), apFteImplied.toFixed(1), ctcCount + ' ' + plur(ctcCount, '${tj("word.ctcJur","clearance or reporting jurisdiction")}', '${tj("word.ctcJurs","clearance or reporting jurisdictions")}'), (shareUsed*100).toFixed(1), taxCapBinds?' <em>${tj("word.capped","(capped)")}</em>':'', taxFteSaved.toFixed(2), fmt(fteCost))}</span><span class="bjust"><span class="blab">${tj("basis.lab.just","Justification:")}</span>\${fill('${tj("basis.tax.just","Mechanism evidenced {0}; invoices per FTE {1}; the share in scope is ours and capped {2}. Saved on either scope &mdash; reporting effort falls with the compliance build, not with a workflow change.")}', ev('oecd','${tj("ev.oecdDctr","OECD DCTR, 2026")}'), ev('apqc','${tj("ev.apqcMedian","APQC median, 12,000 per FTE")}'), ev('yours','${tj("ev.ourAssumption","our assumption")}'))}</span></td><td class="num">\${fmt(l2)}</td><td class="num">\${fmt(l2)}</td></tr>
 
-    <tr class="tierB" data-row="rework"><td>${t("row.rework","Avoided rework on data-entry errors")} <span class="tag tang">${t("tag.tangible","tangible")}</span> <span class="tag \${banked?'bank':'unbank'}">\${banked?'${t("tag.saved","saved")}':'${t("tag.notSaved","not saved")}'}</span></td><td><span class="bcalc"><span class="blab">${tj("basis.lab.calc","Calculation:")}</span>\${fill('${tj("basis.rework.calc","{0} {1} at {2}% &times; {3} min &times; {4}/h &times; {5}% eliminated")}', Math.round(errNow).toLocaleString(), plur(Math.round(errNow), '${tj("word.erroredInvoice","errored invoice")}', '${tj("word.erroredInvoices","errored invoices")}'), Math.round(errRate*100), errMins, fmt1(entryPerHr), Math.round(errElim*100))}</span><span class="bjust"><span class="blab">${tj("basis.lab.just","Justification:")}</span>\${fill('${tj("basis.rework.just","Error rate {0}; resolution time {1}; data-entry rate {2}; the share eliminated is ours {3}, held under Ardent&rsquo;s exception gap {4}.")}', ev('hmrcErr','${tj("ev.hmrcRate","HMRC consultation")}'), overridden('errMins') ? ev('yours','${tj("ev.yourMins","your resolution time")}') : ev('rework','${tj("ev.atoMins2","ATO exception times")}'), ev('blsEntry','${tj("ev.blsEntry","loaded data-entry rate")}'), ev('errElim','${tj("ev.whyNotAll","why not all of them")}'), ev('ardentExc','${tj("ev.excRate2","18.4% market exception rate")}'))}</span></td><td class="num">\${fmt(errSave)}</td><td class="num">\${bankedErr > 0 ? fmt(bankedErr) : '&mdash;'}</td></tr>
+    <tr class="tierB" data-row="rework"><td>${t("row.rework","Avoided rework on data-entry errors")} <span class="tag tang">${t("tag.tangible","tangible")}</span> <span class="tag \${banked?'bank':'unbank'}">\${banked?'${tj("tag.saved","saved")}':'${tj("tag.notSaved","not saved")}'}</span></td><td><span class="bcalc"><span class="blab">${tj("basis.lab.calc","Calculation:")}</span>\${fill('${tj("basis.rework.calc","{0} {1} at {2}% &times; {3} min &times; {4}/h &times; {5}% eliminated")}', num0(Math.round(errNow)), plur(Math.round(errNow), '${tj("word.erroredInvoice","errored invoice")}', '${tj("word.erroredInvoices","errored invoices")}'), Math.round(errRate*100), errMins, fmt1(entryPerHr), Math.round(errElim*100))}</span><span class="bjust"><span class="blab">${tj("basis.lab.just","Justification:")}</span>\${fill('${tj("basis.rework.just","Error rate {0}; resolution time {1}; data-entry rate {2}; the share eliminated is ours {3}, held under Ardent&rsquo;s exception gap {4}.")}', ev('hmrcErr','${tj("ev.hmrcRate","HMRC consultation")}'), overridden('errMins') ? ev('yours','${tj("ev.yourMins","your resolution time")}') : ev('rework','${tj("ev.atoMins2","ATO exception times")}'), ev('blsEntry','${tj("ev.blsEntry","loaded data-entry rate")}'), ev('errElim','${tj("ev.whyNotAll","why not all of them")}'), ev('ardentExc','${tj("ev.excRate2","18.4% market exception rate")}'))}</span></td><td class="num">\${fmt(errSave)}</td><td class="num">\${bankedErr > 0 ? fmt(bankedErr) : '&mdash;'}</td></tr>
 
     <tr class="tot" data-row="total"><td colspan="2"><strong>${t("row.savingsTotal","Annual benefit")}</strong>\${l1Unbanked > 0 ? \` <span class="hint" style="display:inline">&mdash; ${t("row.directTotal.gap","the difference needs a change programme you are not running")}</span>\` : ''}</td><td class="num"><strong>\${fmt(l1 + l2)}</strong></td><td class="num"><strong style="color:#7fd0a8">\${fmt(l1Banked + l2)}</strong></td></tr>
 
@@ -2753,10 +3026,10 @@ function build(){
   // The three hues are stepped for this surface and validated against it
   // AND white paper, because the same bar goes into the PDF.
   SV = { segs: [
-    { k: 'sv1', c: '#399a6c', n: '${tj("sv.capture","Invoice capture and keying")}', v: bankedAP },
-    { k: 'sv2', c: '#c07d1c', n: '${tj("sv.issue","Invoice issuing (AR)")}',        v: savingAR },
-    { k: 'sv3', c: '#6b86d8', n: '${tj("sv.tax","Tax reporting and audit prep")}',  v: l2 },
-  ].concat(banked ? [{ k: 'sv4', c: '#b5432f', n: '${tj("sv.rework","Rework avoided")}', v: bankedErr }] : [])
+    { c: '#399a6c', n: '${tj("sv.capture","Invoice capture and keying")}', v: bankedAP },
+    { c: '#c07d1c', n: '${tj("sv.issue","Invoice issuing (AR)")}',        v: savingAR },
+    { c: '#6b86d8', n: '${tj("sv.tax","Tax reporting and audit prep")}',  v: l2 },
+  ].concat(banked ? [{ c: '#b5432f', n: '${tj("sv.rework","Rework avoided")}', v: bankedErr }] : [])
    .filter(x => x.v > 0), unbanked: Math.max(0, l1Unbanked) };
   renderSavings();
 
@@ -2927,7 +3200,6 @@ function build(){
   // and a finance analyst turns over.
   const pdfEl = document.getElementById('pdfdoc');
   if(pdfEl){
-    const gantt = document.querySelector('#gantt svg');
     const pieSvg = document.querySelector('#savings .svpie');
     const kpi = (n, l, tone, sub) => '<div class="kpi ' + (tone || '') + '"><div class="n">' + n
       + '</div><div class="l">' + l + '</div>'
@@ -2942,8 +3214,8 @@ function build(){
       '<section class="pg">'
       + '<div class="mast"><h1>${tj("pdf.title","E-Invoicing ROI<br>&amp; Wave Plan")}</h1>'
       + '<div class="who">${tj("pdf.masthead","The E-Invoicing Compliance Corner")}<br>'
-      + planned + ' ${tj("pdf.jur","jurisdictions")} &middot; ' + volAP.toLocaleString() + ' AP / '
-      + volAR.toLocaleString() + ' AR<br>' + (banked ? '${tj("pdf.scopeBoth","Compliance + AP automation")}' : '${tj("pdf.scopeOnly","Compliance only")}')
+      + planned + ' ${tj("pdf.jur","jurisdictions")} &middot; ' + num0(volAP) + ' AP / '
+      + num0(volAR) + ' AR<br>' + (banked ? '${tj("pdf.scopeBoth","Compliance + AP automation")}' : '${tj("pdf.scopeOnly","Compliance only")}')
       + ' &middot; ' + when + '</div></div>'
 
       + '<div class="kpis">'
@@ -3090,7 +3362,7 @@ function build(){
          ['${tj("input.errElim","Errors eliminated %")}', Math.round(errElim*100) + '%', '${tj("src.cappedAssumption","Our assumption, capped by Ardent exception gap")}', 'D'],
          ['${tj("input.fteCost","Loaded cost / tax or finance FTE")}', fmt(fteCost), 'US BLS OEWS + ECEC', 'B'],
          ['${tj("input.fteEntry","Loaded cost / data-entry FTE")}', fmt(fteEntry), 'US BLS OEWS + ECEC', 'B'],
-         ['${tj("pdf.fig.apfte","Invoices per AP FTE / year")}', TAXM.invPerFte.toLocaleString(), 'APQC Open Standards Benchmarking', 'A'],
+         ['${tj("pdf.fig.apfte","Invoices per AP FTE / year")}', num0(TAXM.invPerFte), 'APQC Open Standards Benchmarking', 'A'],
          ['${tj("pdf.fig.capture","Capture share of AP effort")}', Math.round(TAXM.captureShare*100) + '%', '${tj("src.atoTaskTimes","ATO / Deloitte task times")}', 'A'],
          ['${tj("input.cImplS","Cost per SIMPLE integration")}', fmt(cImplS), '${tj("pdf.placeholder","Placeholder &mdash; replace with a vendor quote")}', 'D'],
          ['${tj("input.cImplC","Cost per COMPLEX integration")}', fmt(cImplC), '${tj("pdf.placeholder","Placeholder &mdash; replace with a vendor quote")}', 'D'],
@@ -3107,7 +3379,12 @@ function build(){
 
 }
 `
-    .replace("__ROI_COUNTRIES__", JSON.stringify(countries))
+    // The European Union row is built in getRoiCountries as English and
+    // named here, through the same t() the rest of the page uses. Index 7
+    // keeps the English name, because that is the identity the subscriber
+    // preferences are stored under.
+    .replace("__ROI_COUNTRIES__", JSON.stringify(countries.map((c) =>
+      (c[1] === "EU" ? [t("country.eu", "European Union"), ...c.slice(1)] : c))))
     .replace("__ROI_SUBSCRIBED__", JSON.stringify(subscribed))
     .replace("__ROI_UNLOCKED__", locked ? "false" : "true")
     .replace("__ROI_DEFAULTS__", JSON.stringify(defaults))

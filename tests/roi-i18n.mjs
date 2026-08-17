@@ -186,6 +186,49 @@ try {
   t.check("no help row contains an HTML entity, which would render literally",
     entity.length === 0,
     entity.map((k) => `${k}: ${(String(d1.get(k)).match(/&[a-z]+;/gi) || []).join(" ")}`).join(", "));
+
+  // 8. THE PAGE SURVIVES A TRANSLATION WITH QUOTES IN IT.
+  //
+  // Every check above this line is about English. On 17 August 2026 this
+  // renderer could not have survived its first French string, and all
+  // seven passed throughout:
+  //
+  //   tj() escaped the backtick and ${ -- which would end a template
+  //   literal -- and not the apostrophe. 89 call sites embed its result
+  //   inside a SINGLE-QUOTED JavaScript string, so one apostrophe closed
+  //   the literal and the client script failed to parse. No calculator,
+  //   no chart, no PDF, no guards, on a page that still rendered.
+  //
+  //   esc() escaped & < > and not the double quote, and hlp() writes its
+  //   result into aria-label="...". A German help row quoting a term
+  //   inline terminated the attribute and turned the rest of the sentence
+  //   into stray attributes -- silently, with nothing visible on screen.
+  //
+  // English never tripped either. The convention is &rsquo;, unwritten and
+  // unenforced, and English copy rarely quotes inline. Both defects were
+  // therefore invisible until the moment they would have been
+  // catastrophic, which is the shape worth testing rather than the two
+  // characters.
+  //
+  // So: replace EVERY string with a value carrying both quote characters
+  // in the shapes the target languages actually produce, render, and ask
+  // whether the client script still parses and the attributes still close.
+  const HOSTILE = "l'operation d'un \"Sollwert\" n'est-ce pas 'x' \"y\"";
+  const hostileStrings = Object.fromEntries([...sites.keys()].map((k) => [k, HOSTILE]));
+  const hostileRender = roi.renderRoiPage({ countries, benchmarks, phases,
+    strings: hostileStrings, fx, locked: false, subscribed: [], signedInAs: "t@example.com" });
+  let parsed = "ok";
+  try { new Function(hostileRender.script); } catch (err) { parsed = err.message; }
+  t.check("a translation containing apostrophes does not break the client script",
+    parsed === "ok", parsed);
+
+  // The attribute half. A raw double quote inside aria-label ends the
+  // attribute, so the damage is visible as the hostile text appearing
+  // OUTSIDE any quoted value -- i.e. between the closing quote and the >.
+  const brokenAttr = /aria-label="[^"]*"[^>]*Sollwert/.test(hostileRender.body);
+  t.check("and does not break out of an HTML attribute",
+    !brokenAttr,
+    brokenAttr ? "aria-label terminated early by a quote in the translated value" : "");
 } finally {
   db.close();
 }

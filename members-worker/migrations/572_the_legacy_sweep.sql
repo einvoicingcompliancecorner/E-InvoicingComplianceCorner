@@ -1,0 +1,130 @@
+-- ================================================================
+-- The legacy sweep. No D1 change; this file is the record.
+--
+-- Dan, 17 August 2026: "please can you do a thorough run through the code
+-- in the roi-calculator and check for legacy code that needs removing."
+--
+-- Migration 570 is what the sweep found that was not legacy at all.
+-- This is the subtraction, and it is deliberately the smaller half.
+--
+-- ---- METHOD, BECAUSE THE METHOD IS THE PART WORTH REUSING -----------
+--
+-- Every class and id declared in ROI_STYLE, grepped as a bare substring
+-- across the renderer and both Workers -- so a class emitted inside a
+-- template literal, concatenated, or set by className still counts as a
+-- hit. Then every binding in the client script and the server half,
+-- counted by whole-word occurrence, with everything at one occurrence
+-- read by hand. Then every selector confirmed against the RENDERED page
+-- with results shown, panels open and the chart expanded, because a
+-- static count cannot tell a dead rule from one that only matches after
+-- a click.
+--
+-- THE RENDERED CHECK IS WHAT MADE IT SAFE. Three rules that looked live
+-- to grep matched zero elements on the page, and several that looked dead
+-- are reached through a map -- .cx3, .p-inforce, the seven phase input
+-- ids -- and would have been deleted by a name search. That blind spot
+-- has now cost this project four times; it did not cost it a fifth
+-- because the sweep did not trust names.
+--
+-- ---- WHAT WENT --------------------------------------------------------
+--
+-- CSS, all confirmed at zero matched elements on the rendered page:
+--   .subhead        the merged Savings section's peer heading, gone with it
+--   .g3 .g4         the old four-column footprint and three-column panel
+--   .sv1 .sv2 .sv3  pie class hooks; the pie paints with an inline fill
+--   .grid label     a layout guard that had stopped guarding -- below
+--
+-- JavaScript, each with exactly one occurrence in the file, which was
+-- its own declaration:
+--   secondWaves     residue of migration 532's per-country ViDA waves,
+--                   which 534 replaced with the single European Union row
+--   typicalTrack    fed a critical-path note Dan asked to remove on 15
+--                   Aug; the note went and its input stayed
+--   anyOvr          a helper beside ovrOf(), which is used six times
+--   the PDF's #gantt svg lookup, left behind when the PDF stopped
+--                   embedding the chart and started printing a wave table
+--
+-- D1 columns fetched on every request and never read:
+--   roi_benchmarks.is_cost, roi_benchmarks.label (superseded by the roi
+--   namespace and never removed), countries.slug, roi_fx_rates.source_url
+--   in the client payload. The slug was in seventy tuples and serialised
+--   into every page load; its slot now carries the English country name,
+--   which is what made translating the visible one safe.
+--
+-- ---- THE LAYOUT GUARD, WHICH IS THE INTERESTING ONE -----------------
+--
+-- .grid label reserved two lines of label height so a wrapping label
+-- could not push its field below its neighbours'. Migration 531 fixed one
+-- instance of that by shortening a label and 557 reintroduced it at
+-- 860px, which is why the general rule exists at all.
+--
+-- Migrations 562 and 563 then rebuilt section 1 and the assumptions panel
+-- as flex stacks, and no .grid has contained a label since. The rule
+-- matched ZERO elements while its comment described a defect it was no
+-- longer preventing -- prose that outlives its model, which has its own
+-- card in the design review.
+--
+-- Deleted rather than re-pointed at the new selectors, and the reasoning
+-- matters: the guard existed because cells sat SIDE BY SIDE in a grid
+-- row, so one label wrapping misaligned its neighbours. .footcol and
+-- .acol are independent vertical stacks. There is nothing left to
+-- misalign. Verified in the real typefaces at 1280px and 420px -- which
+-- is only possible at all because the fonts were vendored the same day.
+--
+-- ---- AND ONE RULE THAT WAS NOT DEAD, ONLY INERT ---------------------
+--
+--   a.nlink:hover{color:var(--text)}
+--
+-- --text is declared nowhere -- not in ROI_STYLE, not in BASE_STYLE. The
+-- variable is --text-lo. Both declarations were invalid at computed-value
+-- time and dropped, so the link has had no hover state since it was
+-- written. An invalid custom property does not warn; it does nothing.
+-- Fixed rather than deleted, because the rule was wanted.
+--
+-- ---- WHAT WAS LEFT ALONE, AND WHY -----------------------------------
+--
+--   unlockUrl   site-worker builds a sign-in link on every public request
+--               and hands it to a function that has never read it. That
+--               is not dead code, it is a GATE THAT WAS NEVER WIRED --
+--               the anonymous page flips a client-side flag instead of
+--               sending anyone to sign in. Deleting the parameter would
+--               tidy away the evidence of a missing feature. It is a
+--               decision for Dan, not a sweep.
+--   the track weight at index 10, always 1 since 534 removed the
+--               half-weight ViDA wave. The multiplication is a no-op
+--               today and the lever is real; removing it removes the
+--               ability to model a lighter track.
+--   the defensive FX fallback, unreachable through either live path.
+--   the duplicate hint mechanism at h-eShare / h-errMins, which renders
+--               the same message the tooltip already shows and does it in
+--               hardcoded English. Genuinely worth removing; it changes
+--               what two fields display, so it is a change with a visible
+--               effect and does not belong in a subtraction-only file.
+--
+-- ---- AND A CHECK THAT HAD THE SAME SHAPE AS ITS SUBJECT -------------
+--
+-- render-lint.mjs exists because a backtick in a comment inside the
+-- client script template ends the literal and produces a syntax error
+-- pointing at a comment. It has caught that twice.
+--
+-- It only ever looked at ONE of the file's two template literals.
+-- ROI_STYLE is the other, with its own comments in CSS /* */ form, which
+-- the line filter did not even consider. Three of the four times the trap
+-- fired while writing THIS sweep, it fired in the stylesheet, and the
+-- lint that exists for exactly this had nothing to say.
+--
+-- The same shape as the i18n suite covering one direction and not the
+-- other, and as the hardcoded detector opening three panels and never
+-- switching the currency: the check is right and its ITINERARY is short.
+-- Extending it cost four lines. Noticing there was a second region was
+-- the work, and it is the third time this month that has been the work.
+--
+-- ---- what this migration claims it did ------------------------------
+--
+-- Nothing in D1. The assertion below is the one durable claim the sweep
+-- makes about data: the benchmark label column it stopped selecting must
+-- stay unused, or a future reader will wire up a translation channel that
+-- the roi namespace already replaced.
+--
+-- ASSERT: SELECT count(*) FROM roi_benchmarks WHERE active = 1 = 26
+-- ASSERT ALWAYS: SELECT count(*) FROM roi_benchmark_translations WHERE label IS NOT NULL AND label != '' AND lang != 'en' = 0

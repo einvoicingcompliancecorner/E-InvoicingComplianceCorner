@@ -65,7 +65,7 @@ export async function buildRoiPage(opts = {}) {
     // exported functions. A hand-written copy of this SQL would be one
     // more thing that can be wrong on its own.
     const [countries, benchmarks, phases, strings, fx] = await Promise.all([
-      roi.getRoiCountries(db.d1, opts.today),
+      roi.getRoiCountries(db.d1, opts.today, lang),
       roi.getRoiBenchmarks(db.d1, lang),
       roi.getRoiPhases(db.d1, lang),
       roi.getRoiStrings(db.d1, lang),
@@ -98,7 +98,7 @@ export async function buildRoiPage(opts = {}) {
 
     const { body, script } = roi.renderRoiPage({
       countries, benchmarks: usedBenchmarks, phases: usedPhases,
-      strings: used, fx,
+      strings: used, fx, lang,
       locked: false, subscribed, signedInAs: "tests@example.com",
     });
 

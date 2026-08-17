@@ -118,6 +118,25 @@ const expandGantt = async () => {
 };
 
 // ---- 1. it calculates at all ----
+// ---- 1a. the opening selection is the eight countries it means ----
+//
+// Checked BY NAME, and that is the whole point. Until 17 August 2026 the
+// opening tick looked each code up in COUNTRIES (ordered by name) and
+// ticked that POSITION in the list (ordered by region), so the eight
+// boxes landed on Czech Republic, Poland, Portugal, United Kingdom,
+// Australia, New Zealand, Canada and Ecuador. Two of the eight intended,
+// by coincidence.
+//
+// It survived because the only thing ever asserted about the opening
+// state was that SOME countries were selected -- and eight were, with the
+// right count and the wrong names. A count is not a selection.
+const opening = await page.evaluate(() =>
+  [...document.querySelectorAll("#countryList input[type=checkbox][data-i]")]
+    .filter((b) => b.checked).map((b) => COUNTRIES[+b.dataset.i][1]).sort());
+const WANT = ["BE", "DE", "ES", "FR", "GB", "IT", "NL", "PL"];
+t.check("the opening selection is the eight intended countries",
+  opening.join(",") === WANT.join(","), opening.join(","));
+
 await page.click("#run");
 await page.waitForTimeout(500);
 t.check("results panel shown",
@@ -125,6 +144,23 @@ t.check("results panel shown",
 t.check("gantt drawn", (await page.locator("#gantt svg").count()) === 1);
 const headline = await page.locator("#summary .stat .n").first().textContent();
 t.check("summary carries a money figure", /[\d,]+/.test(headline), headline);
+
+// ---- 1b. the summary's tooltips are filled by the render that emits them ----
+//
+// The platform-fee and running-cost tooltips carry a meta line written by
+// markOverridden() into an empty span, because the figure has to survive a
+// currency switch. That function ran on input, change, reset and the
+// currency recalc -- and not after build(). So both opened blank after
+// Calculate and filled on the reader's next keystroke anywhere.
+//
+// Asserted on the SUMMARY specifically: the panel's own 22 slots were
+// always filled, so a whole-page count of empty spans read 2-of-24 and
+// looked like rounding.
+const summaryMeta = await page.evaluate(() =>
+  [...document.querySelectorAll("#summary [data-tm]")].map((s) => s.textContent.trim()));
+t.check("summary tooltips are filled by Calculate, not by the next keystroke",
+  summaryMeta.length >= 2 && summaryMeta.every((x) => x.length > 0),
+  `${summaryMeta.filter((x) => !x).length} of ${summaryMeta.length} empty`);
 
 // ---- 2. presets actually select ----
 await selectEU(); await page.waitForTimeout(100);
@@ -1711,6 +1747,47 @@ t.check("the injected EU row is named, not left to be inferred",
 t.check("and the stat is not labelled with a noun that is false of it",
   !/countr/i.test(solo.stat) && /2/.test(solo.stat), solo.stat);
 
+// ---- 38b. and the wave table explains the right row ----
+//
+// 568 fixed the card and stopped there. Underneath it the wave table was
+// exactly inverted: Germany's own 2027 national deadline carried the EU
+// badge and the ViDA explanation, and the European Union row -- the one
+// track that IS the EU-wide obligation -- carried neither.
+//
+// Index 8 was repurposed from "deadline derived from EU law" to plain
+// membership when the EU became a row. Two consumers were updated and
+// four were not, so the flag meaning "is an EU member" was read as "is
+// the EU obligation" on every member state, and never on the EU.
+//
+// Checked by ROW, not by page text: the words "EU-wide obligation" appear
+// somewhere on the page in both the right and the wrong arrangement, and
+// a substring check would have passed against the inverted version. What
+// distinguishes them is WHICH row carries them.
+const waveRows = await page.evaluate(() =>
+  [...document.querySelectorAll("#waves tbody tr")].map((tr) => ({
+    jur: tr.children[1].innerText.trim(),
+    badged: /\bEU\b/.test(tr.children[0].innerText),
+    why: tr.children[5].innerText.replace(/\s+/g, " ").slice(0, 60),
+  })));
+const euRow = waveRows.find((r) => /European Union/.test(r.jur));
+const natRow = waveRows.find((r) => !/European Union/.test(r.jur));
+t.check("the EU row is the one badged EU and explained as EU-wide",
+  !!euRow && euRow.badged && /EU-wide obligation/.test(euRow.why),
+  euRow && `${euRow.jur} badged=${euRow.badged} ${euRow.why}`);
+t.check("and the member state's own national deadline is not",
+  !!natRow && !natRow.badged && !/EU-wide obligation/.test(natRow.why),
+  natRow && `${natRow.jur} badged=${natRow.badged} ${natRow.why}`);
+t.check("the ViDA sentence does not say 'this member state' on the EU row",
+  !!euRow && !/this member state/.test(euRow.why), euRow && euRow.why);
+
+// The introduction described the same wrong set: it counted ticked member
+// states and printed the total under "are here on an EU-wide obligation",
+// so one ticked country produced "1 are here on an EU-wide obligation".
+const intro = (await page.locator("#waveIntro").innerText()).replace(/\s+/g, " ");
+t.check("the wave introduction states one EU row rather than counting countries",
+  /One of these waves is the EU-wide obligation/.test(intro)
+  && !/\b1 are\b/.test(intro), intro.slice(-130));
+
 // ---- 37. the compliance-only share shows its working ----
 // Migration 561. The page credited compliance with 43% of the AP
 // reduction and said nowhere what 43% was — the least explained number
@@ -1746,6 +1823,62 @@ for (const fig of ["25.7", "42.9", "70.3"]) {
   t.check(`the bracket names the ${fig}% reading`, bracket.includes(fig + "%"), fig);
 }
 t.check("and says which end was taken", /lowest is used/i.test(bracket));
+
+// ---- 39. the page renders in a language that is not English ----------
+//
+// Every check above this one runs in English, and so did all nine suites
+// until 17 August 2026 -- build-page.mjs has accepted opts.lang since it
+// was written and nothing ever passed it. The consequence was not a weak
+// test but an absent one: the page could not have survived its first
+// French string and every suite was green.
+//
+// German and French are chosen because they are the two already carrying
+// full country_translations coverage, and because they differ from
+// English in the two ways that matter here: number formatting, and names.
+// The roi namespace itself is still English-only, so the STRINGS on these
+// pages are English by design -- what is under test is everything around
+// them.
+for (const [lang, sep] of [["de", "."], ["fr", "\u202f"]]) {
+  const { file: f } = await buildRoiPage({ lang });
+  const p2 = await browser.newPage({ viewport: { width: 1280, height: 1000 } });
+  t.watch(p2);
+  await p2.goto(`file://${f}`);
+
+  // Country names come from country_translations, which the picker, the
+  // story list and the archive have all joined for months. The planner
+  // was the one surface that did not.
+  const names = await p2.evaluate(() =>
+    COUNTRIES.filter((c) => ["DE", "NL"].includes(c[1])).map((c) => c[0]).sort());
+  const expected = lang === "de" ? ["Deutschland", "Niederlande"] : ["Allemagne", "Pays-Bas"];
+  t.check(`${lang}: country names are translated`,
+    names.join(",") === expected.join(","), names.join(","));
+
+  // Sorted on the TRANSLATED name. A French list ordered on English names
+  // puts Allemagne between Georgia and Ghana.
+  const sorted = await p2.evaluate(() => {
+    const n = COUNTRIES.filter((c) => c[1] !== "EU").map((c) => c[0]);
+    return n.every((v, i) => i === 0 || n[i - 1].localeCompare(v, undefined, { sensitivity: "base" }) <= 0);
+  });
+  t.check(`${lang}: and the list is sorted in that language`, sorted);
+
+  // THE ONE THAT NEARLY SHIPPED BROKEN. Preferences are stored in
+  // English; the box matched on the displayed name. Translating the label
+  // alone would have selected nothing here -- silently, because selecting
+  // nothing is a legal state.
+  await p2.check("#useSubs"); await p2.waitForTimeout(200);
+  const subsN = await p2.locator("#countryList input:checked").count();
+  t.check(`${lang}: the subscribed-countries box still matches (${subsN})`, subsN === 11, subsN);
+
+  // Money in the reader's locale: separator and symbol placement are one
+  // decision per locale, not three, so Intl makes them together.
+  await p2.click("#run"); await p2.waitForTimeout(700);
+  const fig = (await p2.locator("#summary .stat .n").first().textContent()).trim();
+  t.check(`${lang}: money uses the local thousands separator (${fig})`,
+    fig.includes(sep), fig);
+  t.check(`${lang}: and does not prefix the symbol the way en-US does`,
+    !/^[$£€]/.test(fig), fig);
+  await p2.close();
+}
 
 await browser.close();
 process.exit(t.report() ? 0 : 1);

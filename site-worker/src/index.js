@@ -761,7 +761,7 @@ async function renderRoiCalculatorPage(request, env) {
   }
 
   const [countries, benchmarks, phases, strings, fx] = await Promise.all([
-    getRoiCountries(env.eicc_content),
+    getRoiCountries(env.eicc_content, null, lang),
     getRoiBenchmarks(env.eicc_content, lang),
     getRoiPhases(env.eicc_content, lang),
     getRoiStrings(env.eicc_content, lang),
@@ -774,6 +774,7 @@ async function renderRoiCalculatorPage(request, env) {
     phases,
     strings,
     fx,
+    lang,
     locked: true,          // anonymous: results behind the gate
     subscribed: [],        // no saved preferences without a session
     unlockUrl: `https://members.e-invoicingcompliancecorner.com/members/roi-calculator${lang !== "en" ? `?lang=${lang}` : ""}`,
