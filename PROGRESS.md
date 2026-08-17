@@ -13393,3 +13393,132 @@ new §04 convention: **the harness loads what production loads.**
 210). Replay OK across 568 files — **311 assertions, 78 standing
 invariants**. Missing-font guard confirmed by removing a weight and
 checking the throw names it.
+
+---
+
+## 17 August 2026 (later) — migrations 569-572: a sweep that found four live defects and a page that could not be translated
+
+Dan asked for three things: fix the double help icon on the currency label,
+sweep the ROI calculator for legacy code, and make the page ready for
+internationalisation. The first was thirty minutes. The other two turned
+up more than they were supposed to.
+
+### 569 — one help icon per field
+
+The currency label carried two `hlp()` icons, four pixels apart, reading
+as a rendering fault. They were also **the same fact twice**: one ended
+"the rate is fixed and dated, not a live feed" and the other said "fixed
+on purpose: a business case you can reproduce months later". Merged
+rather than one deleted — each carried something the other did not, the
+conversion SCOPE and the treasury-rate caveat.
+
+The first draft renamed the shared title key `tip.changes` in place. **It
+also titles the scope selector**, where "What the currency control
+changes" is nonsense. The i18n suite's duplicate-key check caught it
+inside a minute, which is exactly the job it was added for.
+
+### 570 — four things that were wrong on the page
+
+Not legacy. Live, user-visible, and passed by all nine suites.
+
+**The opening country selection ticked eight wrong countries.** Intended:
+GB, FR, DE, IT, ES, PL, NL, BE. Measured: Czech Republic, Poland,
+Portugal, United Kingdom, Australia, New Zealand, Canada, Ecuador. The
+line looked each code up in `COUNTRIES` (ordered by name) and ticked that
+POSITION in the DOM list (ordered by region). Two orderings assumed to be
+one; two of eight landed by coincidence. **Original to the file's first
+commit.** Every reader who pressed Calculate on the default got a business
+case for a footprint nobody chose. Silent because eight boxes ticked, the
+count was right, and nothing states which eight it meant.
+
+**The wave table explained every EU member state backwards.** Select
+Germany alone and its own national 2027 deadline was badged EU and
+explained by a 2030 directive, while the European Union row — the one
+track that IS the ViDA obligation — got neither. Index 8 was repurposed
+from "deadline derived from EU law" to plain membership when the EU became
+a row; two consumers were updated, four were not. The correct flag,
+index 11, was already used by the chart — **under a comment still
+describing index 8**. The right line carried the wrong explanation, which
+is how the wrong ones kept looking right.
+
+The wave introduction was the same defect as migration 568, one panel
+lower: it counted ticked member states, so one country produced "1 are
+here on an EU-wide obligation". 568 fixed the card and did not re-read
+what sat underneath it.
+
+**Two summary tooltips opened blank** until the reader's next keystroke.
+`markOverridden()` fills them and did not run after `build()`. 563
+anticipated the duplicate-id half of reusing a help key and not the
+ordering half.
+
+**The fixed-rate FX note was hardcoded English** — and the
+hardcoded-strings suite has reported zero the whole time. Not a hole in
+its logic, a hole in its **itinerary**: it renders, calculates, opens
+three panels, and never switches the currency, and the note is empty under
+USD by design.
+
+### 571 — ready for a second language
+
+**The page could not have survived its first French string.** `tj()`
+escaped the backtick and `${` and not the apostrophe, and 89 call sites
+embed its result inside single-quoted JavaScript. Rendered with
+`"partie a l'operation"`: *SyntaxError*. No calculator, no chart, no PDF,
+no guards, on a page that still renders. A **second, independent copy**
+sat beside it — 20 sites using `t()` rather than `tj()` in the same
+context, so fixing `tj()` alone would have left it broken.
+
+`esc()` escaped `& < >` and not the double quote, and `hlp()` writes into
+`aria-label="..."`. A German help row quoting a term inline terminates the
+attribute, silently.
+
+Also fixed: money formatting hardcoded `en-US` with the symbol always
+prefixed (`€1,234,567`, a convention no euro locale uses), while seven
+other sites used the BROWSER's locale — so the page has been printing
+"100.000 invoices" beside "$100,000" on any non-US browser, today, in
+English. Everything now goes through `Intl.NumberFormat` on the page
+language. Country names now join `country_translations`, data that has
+existed for months and that every other surface already used.
+
+**And that nearly shipped broken.** Preferences are stored in English;
+the subscribed-countries box matched on the displayed name. Translating
+the label alone would have selected nothing in French or German —
+silently. The English name now travels in the tuple slot the unused
+`slug` was occupying.
+
+Sorting moved from SQL to `Intl.Collator`: SQLite has no locale-aware
+collation and put "République tchèque" after "Roumanie".
+
+Deadline dates stay ISO, deliberately — they are compared down a column
+and quoted into board packs, and 01/02/2027 means two different days.
+
+### 572 — the legacy sweep
+
+Dead CSS (`.subhead`, `.g3`, `.g4`, `.sv1-3`, the `.grid label` height
+guard), four unreferenced locals, four D1 columns fetched on every request
+and never read. Every selector confirmed against the RENDERED page with
+panels open — a static count cannot tell a dead rule from one that only
+matches after a click, and several that look dead to grep are reached
+through a map.
+
+`a.nlink:hover` named `var(--text)`, which is declared nowhere. Both
+declarations were invalid and dropped; the link has never had a hover
+state. Fixed rather than removed.
+
+Left alone with reasons: `unlockUrl` (a gate never wired, not dead code),
+the track weight lever, and the duplicate hint mechanism.
+
+**`render-lint.mjs` had the same shape as its subject.** It exists to
+catch backticks in comments inside the client-script template, and it
+only ever looked at one of the file's two template literals. Three of the
+four times the trap fired while writing this sweep, it fired in
+`ROI_STYLE`. Extended to both; noticing there was a second region was the
+work, and that is the third time this month.
+
+### Verified
+
+`npm test`: 9 suites. ROI regression **228 checks** (was 212) including
+the opening selection by name, the wave table by row, and a full
+render in German and French. ROI i18n **12** (was 10) including a render
+of every string with apostrophes and double quotes in it. Render lint
+**3** (was 2). Replay OK across 572 files — **324 assertions, 82 standing
+invariants**.

@@ -1,0 +1,152 @@
+-- ================================================================
+-- The planner becomes safe to translate.
+--
+-- Dan, 17 August 2026: "ensure that the page is ready for
+-- internationalisation. soon I would like to add translations."
+--
+-- It was not ready. Not "rough in places" -- THE PAGE COULD NOT HAVE
+-- SURVIVED ITS FIRST FRENCH STRING, and nine suites reported green
+-- throughout, because every one of them tests English.
+--
+-- ---- BLOCKER 1: THE APOSTROPHE ---------------------------------------
+--
+-- tj() escaped the backtick and ${ -- the two characters that end a
+-- template literal -- and not the single quote. 89 of its call sites
+-- embed the result inside a SINGLE-QUOTED JavaScript string. Rendered
+-- with a plausible French value:
+--
+--   "Le fisc est partie a l'operation"
+--     -> SyntaxError: Unexpected identifier 'operation'
+--
+-- A client script that does not parse means no calculator, no chart, no
+-- PDF and no guards, on a page that otherwise renders perfectly. French,
+-- Italian and Dutch cannot write a paragraph without an apostrophe.
+--
+-- Worse than a crash: a CONDITIONAL crash. Whether a given translation
+-- killed the page depended on which of two embedding contexts its key
+-- happened to be used in, so it would have shipped, been fixed by
+-- rewording, and returned on a different key.
+--
+-- A SECOND, INDEPENDENT COPY of the same defect sat beside it: 20 call
+-- sites used t() rather than tj() inside single-quoted strings, bypassing
+-- the escaping entirely. Fixing tj() alone would have left the page
+-- broken and the test passing on the first three keys anyone translated.
+--
+-- ---- BLOCKER 2: THE DOUBLE QUOTE -------------------------------------
+--
+-- esc() escaped & < > and not the double quote, and hlp() writes its
+-- result into aria-label="...". A German help row quoting a term inline:
+--
+--   aria-label="What this drives: Der "Sollwert" wird hier gesetzt.">
+--
+-- The attribute ends at the inner quote and the rest of the sentence
+-- becomes stray attributes. SILENT: nothing changes on screen, and the
+-- assistive reading of the field is quietly truncated.
+--
+-- English tripped neither. The convention is &rsquo;, unwritten and
+-- unenforced, and English copy rarely quotes inline -- so both defects
+-- were invisible until the moment they would have been catastrophic.
+-- Migration 569 states the data-side invariant; the renderer now escapes
+-- both characters, and the i18n suite renders the whole page with a
+-- value carrying both in the shapes the target languages produce.
+--
+-- ---- FORMATTING: THE PAGE ALREADY DISAGREED WITH ITSELF --------------
+--
+-- Money used toLocaleString('en-US') with the symbol PREFIXED
+-- unconditionally, so a euro figure printed as EUR1,234,567 -- a
+-- convention no euro-using locale follows. German writes 1.234.567 EUR,
+-- French 1 234 567 EUR.
+--
+-- And seven other sites called toLocaleString() with NO argument, which
+-- means the BROWSER's locale. So on a German browser the savings table
+-- has been printing "100.000 invoices" in one cell and "$100,000" two
+-- cells to the right -- live, today, in English, for anyone outside an
+-- en-US browser, and invisible to a suite whose headless Chromium is
+-- en-US. Everything now goes through Intl.NumberFormat on the page
+-- language, which decides separator, symbol placement and spacing
+-- together, because they are one decision per locale rather than three.
+--
+-- PERCENTAGES WERE ALREADY FINE and are left alone. The "%" lives inside
+-- the translated sentence rather than in the code, so a French
+-- translator can write the non-breaking space the language requires. Good
+-- by accident, but good.
+--
+-- DEADLINE DATES STAY ISO, and that is a decision rather than an
+-- omission. They are compared down a column, sorted, and quoted into a
+-- board pack; 01/02/2027 means two different days on two sides of the
+-- Atlantic and ISO means one day everywhere. Article dates elsewhere on
+-- the site are localised because they are prose. These are data.
+--
+-- ---- COUNTRY NAMES: THE DATA WAS ALREADY THERE -----------------------
+--
+-- `country_translations` has carried de/es/fr display names for every
+-- jurisdiction since long before this page existed. The country picker,
+-- the story list and the newsletter archive all join it. The planner
+-- selected c.name_en and took no lang at all -- the one surface on the
+-- site not using data it already had. It now joins, and orders by the
+-- translated name, since a French list sorted on English names puts
+-- Allemagne between Georgia and Ghana.
+--
+-- AND THAT NEARLY BROKE THE SUBSCRIBED-COUNTRIES BOX. Preferences are
+-- stored in ENGLISH by loadCountryPicker(), and the planner matched the
+-- saved list against the displayed name. Translating the label alone
+-- would have made "use my subscribed countries" select NOTHING in French
+-- or German -- silently, since selecting nothing is a legal state -- for
+-- exactly the readers a translation is for. The English name now travels
+-- in the tuple slot the unused `slug` was occupying, and the box is
+-- checked in three languages by the suite.
+
+-- The European Union row is built in code, not read from `countries`, so
+-- it is the one row name that cannot come from country_translations. It
+-- is a page string like any other -- and the first attempt made it a page
+-- string of its own, fetched by a private query inside getRoiCountries.
+--
+-- The i18n suite failed it inside a minute: a string read outside the
+-- `strings` map is invisible to the check that asks whether every D1 row
+-- is rendered, so it reported country.eu as unused. The check was right.
+-- A second string channel is a second thing to remember, and this page
+-- has one on purpose. The row is named in English by the query and
+-- translated at render, through the same t() as every other label.
+INSERT OR REPLACE INTO translations (namespace, key, lang, value) VALUES
+  ('roi', 'country.eu', 'en', 'European Union');
+
+-- ---- WHAT IS STILL NOT READY, STATED PLAINLY -------------------------
+--
+-- Loading French today would produce a page that WORKS and reads
+-- partly-native. Four things remain, and none is fixed here:
+--
+--   1. PLURALS. plur() has two forms. Polish needs three -- 1 kraj,
+--      2 kraje, 5 krajow -- and French treats zero as singular. Two rows
+--      per noun is the current shape; CLDR categories need more rows and
+--      a selector, not different call sites.
+--   2. SIX SCENARIO GUARDS AND THE EXPANDED CHART are hardcoded English.
+--      They are conditional, and the hardcoded-strings detector does not
+--      drive the conditions -- the same blind spot that hid the
+--      fixed-rate note fixed in migration 570. The detector's itinerary
+--      is the thing to fix, not the six strings.
+--   3. THIRTY-ONE CONTINUATION KEYS -- chart.late2, waves.intro3,
+--      sum.scopeOnly2 -- split one sentence across rows. A translator
+--      cannot reorder clauses across keys, and German puts the verb last.
+--   4. SUPPORTED_LANGS is en/es/de/fr in two files. Italian, Polish and
+--      Dutch are rejected before they reach this page. Which languages to
+--      sell is not a decision this migration should make.
+--
+-- The roi namespace is 394 English rows and zero anything else, while
+-- every other namespace on the site sits at four-language parity. That
+-- gap is the work; this migration makes it safe to start.
+--
+-- ---- what this migration claims it did ------------------------------
+-- ASSERT: SELECT count(*) FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key = 'country.eu' = 1
+--
+-- Every language this page is offered in must be able to name the row.
+-- Stated against the languages actually present rather than a list, so
+-- adding one does not have to remember to come back here.
+--
+-- ASSERT ALWAYS: SELECT count(*) FROM (SELECT DISTINCT lang FROM translations WHERE namespace = 'roi') l WHERE NOT EXISTS (SELECT 1 FROM translations x WHERE x.namespace = 'roi' AND x.key = 'country.eu' AND x.lang = l.lang) = 0
+--
+-- No roi value may carry a raw double quote. 569 states this for help
+-- rows, which reach an aria-label; this widens it to the namespace,
+-- because tj() output reaches attributes in the client script too and
+-- the next person adding a language will not be reading either file.
+--
+-- ASSERT ALWAYS: SELECT count(*) FROM translations WHERE namespace = 'roi' AND value LIKE '%"%' AND key NOT LIKE 'assumptions.grades' = 0

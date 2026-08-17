@@ -1,0 +1,171 @@
+-- ================================================================
+-- Four defects found by reading the planner end to end, all live, none
+-- reported by any of the nine suites.
+--
+-- Dan, 17 August 2026: "please can you do a thorough run through the code
+-- in the roi-calculator and check for legacy code that needs removing."
+-- The legacy sweep is migration 572. This file is what the sweep found
+-- that was not legacy at all -- code doing the wrong thing today.
+--
+-- ================================================================
+-- 1. THE OPENING COUNTRY SELECTION TICKED EIGHT WRONG COUNTRIES
+-- ================================================================
+--
+-- Intended: GB, FR, DE, IT, ES, PL, NL, BE -- eight large European
+-- economies, so a reader who presses Calculate before touching anything
+-- sees a plausible programme.
+--
+-- Measured on the shipped page: Czech Republic, Poland, Portugal, United
+-- Kingdom, Australia, New Zealand, Canada, Ecuador.
+--
+-- The line looked up each code in COUNTRIES (ordered BY name_en) and then
+-- ticked that POSITION in the DOM list (ordered by region: Europe, MEA,
+-- APAC, Americas). Two orderings, silently assumed to be one. Two of the
+-- eight landed, by coincidence.
+--
+-- Every reader who pressed Calculate on the default selection got a
+-- business case for a footprint nobody chose, and the headline saving,
+-- the wave plan, the integration count and the PDF all followed it.
+-- Original to the file's first commit; live for the whole of its life.
+--
+-- SILENT BY CONSTRUCTION: eight boxes tick, the count is right, and
+-- nothing on the page states which eight it meant. No test asserted the
+-- opening selection by name -- only that some countries were selected.
+-- One does now.
+--
+-- No D1 change. Renderer only; recorded here because a migration is where
+-- this project writes down what it learned, and "two orderings assumed to
+-- be one" is a shape that will recur.
+--
+-- ================================================================
+-- 2. THE WAVE TABLE EXPLAINED EVERY EU MEMBER STATE BACKWARDS
+-- ================================================================
+--
+-- Select Germany alone and the plan read:
+--
+--   2027-01-01 [EU]  Germany         ...  EU-wide obligation. Council
+--                                         Directive (EU) 2025/516 binds
+--                                         this member state from 1 July
+--                                         2030 ...
+--   2030-07-01       European Union  ...  CTC or 5-corner: the tax
+--                                         authority is a party ...
+--
+-- Germany's own national 2027 deadline was badged EU and explained by a
+-- 2030 directive. The actual European Union row -- the one thing in the
+-- plan that IS the ViDA obligation -- got no badge and the generic
+-- complexity note. Totally inverted, on the most common selection this
+-- tool sees.
+--
+-- Index 8 used to mean "this country's deadline came from EU law". When
+-- the EU became a row of its own it was repurposed to plain MEMBERSHIP,
+-- and getRoiCountries says so in a comment. Two consumers were updated.
+-- Four were not, and went on reading membership as EU-derivation:
+-- the wave table's explanation, its badge, the adjust panel's source
+-- label, and the wave introduction's count.
+--
+-- The correct flag is index 11, which the chart already used -- with a
+-- comment above it still describing index 8. The right line carried the
+-- wrong explanation, which is how the wrong lines kept looking right.
+--
+-- THE INTRODUCTION IS THE SAME DEFECT AS MIGRATION 568, ONE PANEL LOWER.
+-- It counted selected member states and printed the total under "are here
+-- on an EU-wide obligation, not a national mandate" -- so one ticked
+-- country produced "1 are here on an EU-wide obligation", meaning
+-- Germany. 568 fixed the footprint card's count and did not re-read the
+-- wave plan beneath it, because the card was what was reported.
+--
+-- The generalisation, which is now a card in the design review: when a
+-- count is derived from a set that is not the set the reader ticked,
+-- every sentence built on it has to be re-read -- not only the one that
+-- was noticed.
+
+-- The count is gone. The set this sentence describes has one member or
+-- none, so it is a statement, and the member-state total moves into a
+-- slot where it says something true: how much of your selection that one
+-- row covers. Also ends the "1 are" disagreement, which was an English
+-- grammar bug sitting inside the counting bug.
+INSERT OR REPLACE INTO translations (namespace, key, lang, value) VALUES
+  ('roi', 'waves.intro4', 'en', 'One of these waves is the EU-wide obligation rather than a national mandate, covering the {0} you selected.'),
+  ('roi', 'word.member', 'en', 'EU member state'),
+  ('roi', 'word.members', 'en', 'EU member states');
+
+-- "binds this member state" was written when this sentence appeared on a
+-- member state's row. It now appears on the European Union row, which
+-- covers all of them, and a sentence that says "this member state" on a
+-- row named "European Union" has no referent.
+UPDATE translations SET value =
+  'Council Directive (EU) 2025/516 binds every EU member state from 1 July 2030 regardless of whether it legislates its own domestic mandate. {0}'
+ WHERE namespace = 'roi' AND lang = 'en' AND key = 'waves.euWide';
+
+-- ================================================================
+-- 3. TWO SUMMARY TOOLTIPS OPENED BLANK UNTIL THE READER TYPED
+-- ================================================================
+--
+-- The executive summary's platform-fee and running-cost tooltips carry a
+-- meta line -- "Our default is 60,000" -- written into an empty span by
+-- markOverridden() rather than server-side, because the figure has to
+-- survive a currency switch.
+--
+-- markOverridden() ran on input, on change, on reset and on the currency
+-- recalc, and NOT after build(). So the two summary tooltips rendered
+-- blank after Calculate and stayed blank until the next keystroke
+-- anywhere on the page. Measured: 2 of 24 meta spans empty after
+-- Calculate, 0 after one keystroke.
+--
+-- Migration 563 anticipated the DUPLICATE-ID half of reusing one help key
+-- at two sites and solved it with a data attribute. The ORDERING half --
+-- that the filler must run after every render emitting the slots, not
+-- only after the events that change their values -- was not considered.
+-- The symptom is an empty tooltip, which reads as a tooltip with nothing
+-- to say. Renderer only.
+--
+-- ================================================================
+-- 4. THE FIXED-RATE NOTE WAS THE LAST HARDCODED ENGLISH ON THE PAGE
+-- ================================================================
+--
+-- "Converted at a fixed rate of 1 GBP = 1.3511 USD, spot 2026-08-05 --
+-- not updated daily. Use your own treasury rate for anything you will
+-- sign."
+--
+-- Entirely English, in the renderer, since migration 513. The
+-- hardcoded-strings suite has reported ZERO the whole time.
+--
+-- Not a hole in the detector's logic -- a hole in its ITINERARY. It
+-- renders, presses Calculate, opens the three panels and walks the
+-- visible text. It never changes the currency, and this note is empty
+-- under USD by design. There was nothing to find at the only moment
+-- anybody looked.
+--
+-- CONDITIONAL TEXT IS INVISIBLE TO A DETECTOR THAT DOES NOT DRIVE THE
+-- CONDITION. Six scenario guards and the expanded chart are in the same
+-- position; they are named in the design review and are not fixed here.
+-- This one is, because it is the note migration 513 exists to make
+-- prominent, and a prominent warning that cannot be translated is a
+-- warning that disappears for every reader who is not English.
+--
+-- TWO WHOLE SENTENCES, not one with an optional fragment. The dated and
+-- undated forms differ by a clause in the middle; a translator handed
+-- ", spot {0}" as its own row cannot place it, because German and Polish
+-- will not put it where English does. One extra row buys a translator who
+-- can move the clause wherever the sentence needs it.
+INSERT OR REPLACE INTO translations (namespace, key, lang, value) VALUES
+  ('roi', 'fx.convertedDated', 'en', 'Converted at a <strong>fixed rate</strong> of 1 {0} = {1} USD, spot {2} &mdash; not updated daily.'),
+  ('roi', 'fx.converted', 'en', 'Converted at a <strong>fixed rate</strong> of 1 {0} = {1} USD &mdash; not updated daily.'),
+  ('roi', 'ev.treasury', 'en', 'Use your own treasury rate for anything you will sign');
+
+-- ---- what this migration claims it did ------------------------------
+-- ASSERT: SELECT count(*) FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key IN ('fx.convertedDated','fx.converted','ev.treasury','word.member','word.members') = 5
+-- ASSERT: SELECT count(*) FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key = 'waves.intro4' AND value LIKE 'One of these waves%' = 1
+-- ASSERT: SELECT count(*) FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key = 'waves.euWide' AND value LIKE '%every EU member state%' = 1
+--
+-- The wave introduction must not go back to counting. It named the wrong
+-- set for as long as the EU row has existed, and the wording that fixed
+-- it is a statement about one row -- so a future edit that reintroduces a
+-- number in front of it is the same defect returning.
+--
+-- ASSERT ALWAYS: SELECT count(*) FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key = 'waves.intro4' AND value LIKE '%{0}%' AND value NOT LIKE '{0}%' = 1
+--
+-- The ViDA explanation must never again say "this member state". It is
+-- rendered on the European Union row, where that phrase has no referent.
+--
+-- ASSERT ALWAYS: SELECT count(*) FROM translations WHERE namespace = 'roi' AND key = 'waves.euWide' AND value LIKE '%this member state%' = 0

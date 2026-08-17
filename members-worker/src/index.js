@@ -1878,7 +1878,7 @@ async function handleRoiCalculator(request, env, lang) {
   }
 
   const [countries, benchmarks, phases, strings, fx] = await Promise.all([
-    sharedGetRoiCountries(env.eicc_content),
+    sharedGetRoiCountries(env.eicc_content, null, lang),
     sharedGetRoiBenchmarks(env.eicc_content, lang),
     sharedGetRoiPhases(env.eicc_content, lang),
     sharedGetRoiStrings(env.eicc_content, lang),
@@ -1886,7 +1886,7 @@ async function handleRoiCalculator(request, env, lang) {
   ]);
 
   const { body, script } = sharedRenderRoiPage({
-    countries, benchmarks, phases, strings, fx,
+    countries, benchmarks, phases, strings, fx, lang,
     locked: false,
     subscribed,
     signedInAs: email,
