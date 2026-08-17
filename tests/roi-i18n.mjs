@@ -36,6 +36,39 @@ function callSites() {
   const pat = /\bt(j?)\("([a-zA-Z0-9._]+)",\s*"/g;
   const out = new Map();
   let m;
+
+  // plurSet() CALLS t() WITH VARIABLES, so its keys are invisible to the
+  // regex above. That matters: when migration 573 moved the nine noun
+  // pairs and the mistimed guard onto CLDR plural categories, twenty keys
+  // would have quietly dropped out of "every key exists in D1" and "D1 is
+  // character-identical to the fallback" while both checks went on
+  // reporting PASS on a smaller set.
+  //
+  // The same shape as everything else caught this week: the check is
+  // right and its itinerary silently shortened. A refactor is exactly
+  // when that happens, because nothing about it looks like a test change.
+  //
+  // Both forms are literal at the call site, so both are extractable:
+  //   plurSet("word.jur", "jurisdiction", "word.jurs", "jurisdictions")
+  //   plurSetBase("guard.mistimed", "<strong>{0} ...", "<strong>{0} ...")
+  const str = String.raw`"((?:[^"\\]|\\.)*)"`;
+  const pairPat = new RegExp(String.raw`\bplurSet\(\s*${str},\s*${str},\s*${str},\s*${str}\s*\)`, "g");
+  const basePat = new RegExp(String.raw`\bplurSetBase\(\s*${str},\s*${str},\s*${str}\s*\)`, "g");
+  const unesc = (v) => v.replace(/\\"/g, '"').replace(/\\\\/g, "\\");
+  let pm;
+  while ((pm = pairPat.exec(src))) {
+    out.set(pm[1], unesc(pm[2]));
+    out.set(pm[3], unesc(pm[4]));
+  }
+  while ((pm = basePat.exec(src))) {
+    out.set(`${pm[1]}.one`, unesc(pm[2]));
+    out.set(`${pm[1]}.other`, unesc(pm[3]));
+  }
+  if (out.size < 18) {
+    throw new Error(`plurSet extraction found only ${out.size} keys. Nine noun pairs `
+      + "plus one sentence pair is 20. If plurSet was renamed or reshaped, this "
+      + "extractor is now silently checking fewer keys than it reports.");
+  }
   while ((m = pat.exec(src))) {
     let i = pat.lastIndex, buf = "";
     while (i < src.length) {

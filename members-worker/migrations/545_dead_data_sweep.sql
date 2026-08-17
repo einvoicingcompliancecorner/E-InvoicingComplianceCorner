@@ -138,7 +138,24 @@ DELETE FROM translations WHERE namespace = 'roi' AND key IN (
 --   annual saving -- and all three of those must be on the page, or the
 --   reader is back to the gap Dan found in section 4.
 --
--- ASSERT ALWAYS: SELECT count(*) FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key IN ('res.running','res.running2','res.running3') = 3
+-- RETIRED IN PLACE BY MIGRATION 573, 17 August 2026. The three keys
+-- became one: res.running now carries the whole sentence with the two
+-- figures in slots, because a translator handed "plus each year:",
+-- "platform" and "internal" as three rows cannot decide where the money
+-- goes and German and Polish do not put it where English does.
+--
+-- THE RULE THIS PROTECTED IS UNCHANGED and still worth protecting: annual
+-- saving, less platform fees, less internal run cost, is net annual
+-- saving, and all three parts must be visible or the reader is back to
+-- the gap Dan found in section 4. It is now expressed against the single
+-- row, checking that both figures still have somewhere to go.
+--
+-- The replacement invariant is NOT written here. An ASSERT ALWAYS is
+-- checked at its own position in the chain as well as at the end, and at
+-- this point in the chain res.running is still three keys without slots,
+-- so stating it here would fail on the way past. It is inherited by 573,
+-- the first file where it is true -- which is the same rule this file
+-- used when it inherited the original from an earlier migration.
 --
 -- And the reason this sweep should not need running twice.
 -- tests/roi-i18n.mjs reported unused keys and never failed on them --

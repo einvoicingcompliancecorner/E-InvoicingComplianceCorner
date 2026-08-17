@@ -13522,3 +13522,123 @@ render in German and French. ROI i18n **12** (was 10) including a render
 of every string with apostrophes and double quotes in it. Render lint
 **3** (was 2). Replay OK across 572 files — **324 assertions, 82 standing
 invariants**.
+
+---
+
+## 17 August 2026 (later still) — migrations 573-574: fully ready for translation
+
+Dan: *"Please can you look at the translator split sentences, and ensure
+we are fully ready for translation."*
+
+### First, a correction I should have caught before quoting it
+
+**The design review said thirty-one split-sentence keys. It is seventeen,
+and only eleven were genuinely unreorderable.** The 31 came from a
+pattern count of every key ending in a digit and I repeated it forward
+without re-deriving it. Wrong by fourteen, in the direction that made the
+job look bigger. Exactly the failure this project keeps finding from the
+other side.
+
+### What a fragment actually is
+
+Not "a key ending in 2". A row the translator cannot **place**:
+
+    chart.late  = "of"
+    chart.late2 = "waves back-plan to a start date that has already passed."
+
+rendered as `{count}` + "of" + `{total}` + the rest. Two numbers threaded
+through two rows, one of which is a bare preposition.
+
+Against that, `basis.ap.calc2 = " × {0}% compliance share"` is **fine and
+stays** — a whole optional clause in a named slot, which the translator
+can put anywhere their language needs. Optional-clause-in-a-slot is the
+pattern; fragment-between-two-numbers is the defect. They look identical
+in a key listing and are opposites in a translator's hands.
+
+Six sentences merged, nine orphan rows deleted.
+
+### Plurals became categories
+
+`plur()` was `n === 1 ? one : many`, sitting under a comment reading
+*"languages with more than two plural forms need more rows, not different
+code"* — true, and describing work nobody had done. **Prose that
+describes a mechanism nobody built, inside the fix for a previous
+instance of the same thing.**
+
+What two forms gets wrong in languages this site already sells: **French
+treats zero as singular**, so `plur(0, …)` has been returning the plural,
+live, today. Polish needs three forms chosen on the last two digits.
+
+Now `Intl.PluralRules` on the page language, with one D1 entry per noun
+keyed by CLDR category. English keeps its existing two rows and its call
+sites; a language needing more supplies extra rows named after the
+singular key. Adding Polish is INSERTs — which is what migration 505
+promised three months ago and could not deliver.
+
+**My own catch hid my own bug for an afternoon.** `PR` was declared above
+`LANG`, so `new Intl.PluralRules(LANG)` threw a ReferenceError from the
+temporal dead zone, the catch-all swallowed it, and every language
+silently got English plural rules. The page worked, the tests passed, and
+the only symptom was French printing "0 jurisdictions" — the exact defect
+the change was written to fix. Both catches now take `RangeError` only.
+
+### The conditional English, and the itinerary that was the real fix
+
+Nineteen strings in the renderer, all English, on a page whose
+hardcoded-strings suite has reported **zero** for three days. Six
+scenario guards and the whole expanded wave chart. The detector's logic
+was right; its route stopped short — it never expanded the chart and
+never drove a guard condition.
+
+The route now switches currency, expands the chart, drives two guard
+conditions and returns to a normal scenario. **On its first run it found
+two more strings the manual sweep had missed** — the per-row go-live
+tooltip and the three risk chips — which is the argument for fixing the
+route rather than the strings, made by the route itself.
+
+Then a German render turned up **"6mo"**, hardcoded on both surfaces
+since the figure existed. The detector had walked past it: its noise
+filter skips anything under three lowercase letters. Necessary — the page
+is full of country codes and grade letters — and a hiding place for
+abbreviations, which are copy. Threshold lowered to two, false positives
+now handled by name.
+
+The 300-character body-prose budget fired the moment the guards entered
+D1. **Widened to exempt `guard.%` as a decision with reasoning attached,
+not a number quietly raised**: that budget exists to stop always-on prose
+accumulating, and a guard is conditional and has to say enough to act on.
+Guards get their own 600-character budget.
+
+### And a coverage report, so a half-finished language is visible
+
+Nothing computed "French is 78% done". That is a correctness gap, not a
+reporting one: `getRoiStrings` COALESCEs per key and the benchmark and
+phase tables per column, so a partially-loaded language renders a working
+page that mixes languages inside one field group with nothing to say so.
+
+`tests/roi-coverage.mjs` reports all three ROI tables per language and
+fails on a language stranded past 20% and under 100%, on a stale
+in-progress exemption, and on the three tables disagreeing about which
+languages exist. Verified by loading 200 synthetic French rows and
+watching it fail correctly.
+
+### What is left, and it is one decision rather than any code
+
+`SUPPORTED_LANGS` is `en/es/de/fr` in two files. Italian, Polish and
+Dutch are rejected before they reach this page. **Which languages to sell
+is Dan's call, not a technical one** — the page itself is ready for any
+of them.
+
+### Verified
+
+`npm test`: **10 suites** (was 9). ROI regression **236** including a
+full render in German and French and the French zero-is-singular case.
+ROI i18n **12**, with its extractor taught to read `plurSet()` so twenty
+keys did not silently drop out of coverage during the refactor. Render
+lint **3**. All four supported languages render with zero page errors and
+no overflow. Replay OK across 574 files — **334 assertions, 86 standing
+invariants**.
+
+**Note for deploying:** migrations 530, 545 and 550 had comments edited
+(two standing invariants retired in place, one budget widened), so
+`apply_migrations.py` will need `--refresh-checksums`.

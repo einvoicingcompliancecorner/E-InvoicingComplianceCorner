@@ -143,4 +143,30 @@ DELETE FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key IN
 -- run past 300 characters. The panel keys are exempt by name — they are
 -- BEHIND the click, which is where long reasoning belongs.
 --
--- ASSERT ALWAYS: SELECT count(*) FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key NOT LIKE 'help.%' AND key NOT LIKE 'notes.%' AND key NOT IN ('page.lede','footer.text','assumptions.grades','assumptions.placeholders','adjust.note','subs.locked','ev.gradeA.body','ev.gradeB.body','ev.gradeC.body','ev.gradeD.body','gate.body','input.countries.hint') AND length(value) > 300 = 0
+-- WIDENED ON 17 AUGUST 2026 TO EXEMPT guard.%, and the reason is the
+-- point of the rule rather than an exception to it.
+--
+-- This budget exists to stop ALWAYS-ON prose accumulating: 1,539 words of
+-- caveats stood between a reader and their first number, and every
+-- sentence of it was defensible. A guard is the opposite kind of thing.
+-- It is conditional, it appears only when this reader's scenario is
+-- broken or implausible, and it has to say enough to fix it -- which
+-- jurisdictions, which figure, what to check. Three of them run past 300;
+-- the longest, at 508, is the one that has to cite Ardent's measured
+-- exception gap and explain why the reader's assumption exceeds it.
+--
+-- They were not exempt before because they were not in D1 at all: six of
+-- the seven were template literals in the renderer, so the budget could
+-- not see them and neither could anything else. Migration 574 moved them,
+-- and the first thing that happened was this invariant firing -- which is
+-- the invariant working. The exemption is a decision, taken here, with
+-- the reasoning attached, rather than a number quietly raised to 510.
+--
+-- ASSERT ALWAYS: SELECT count(*) FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key NOT LIKE 'help.%' AND key NOT LIKE 'notes.%' AND key NOT LIKE 'guard.%' AND key NOT IN ('page.lede','footer.text','assumptions.grades','assumptions.placeholders','adjust.note','subs.locked','ev.gradeA.body','ev.gradeB.body','ev.gradeC.body','ev.gradeD.body','gate.body','input.countries.hint') AND length(value) > 300 = 0
+--
+-- The guards get a budget of their own rather than none. 600 is roughly
+-- twice the body limit and comfortably above the longest; a guard that
+-- needs more than that is an essay, and an essay is not something a
+-- reader acts on while looking at a broken number.
+--
+-- ASSERT ALWAYS: SELECT count(*) FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key LIKE 'guard.%' AND length(value) > 600 = 0

@@ -986,6 +986,76 @@ export function renderRoiPage({ countries, benchmarks = [], phases = [], strings
   // reading of the field is quietly truncated. The single quote is
   // escaped too, so the function is safe in single-quoted attributes
   // whether or not this file currently writes any.
+  // ---- plural forms, as categories rather than as two ----------------
+  //
+  // plur() was `n === 1 ? one : many`, with the honest comment that
+  // "languages with more than two plural forms need more rows, not
+  // different code". The rows were never added and neither was the code.
+  //
+  // English needs two forms. Polish needs three -- 1 kraj, 2 kraje,
+  // 5 krajow -- and picks between them on the last two digits, not on
+  // whether the number is one. French treats ZERO as singular, so
+  // `plur(0, ...)` has been returning the plural form for a language this
+  // site already claims to support. Russian and Arabic need more still.
+  //
+  // The English pair stays exactly where it is: the `one` and `other`
+  // keys keep their t() call sites, so the i18n suite can still check
+  // that every rendered key exists and matches its fallback. A language
+  // needing more supplies EXTRA rows named after the singular key --
+  // word.jur.few, word.jur.many -- which are language-specific and
+  // therefore invisible to the English checks by construction.
+  //
+  // Intl.PluralRules picks the category. Nothing here decides what
+  // Polish does with 22; CLDR does, and it is right about Welsh too.
+  const PLURAL_EXTRA = ["zero", "two", "few", "many"];
+  const plurSet = (oneKey, oneFb, otherKey, otherFb) => {
+    const set = { one: t(oneKey, oneFb), other: t(otherKey, otherFb) };
+    for (const c of PLURAL_EXTRA) {
+      const v = strings[`${oneKey}.${c}`];
+      if (v) set[c] = v;
+    }
+    return set;
+  };
+  // Same thing for a set whose keys are already a family: base.one,
+  // base.other, base.few. Used where the plural changes more of the
+  // sentence than the noun.
+  const plurSetBase = (base, oneFb, otherFb) =>
+    plurSet(`${base}.one`, oneFb, `${base}.other`, otherFb);
+  const PLURALS = {
+    jur: plurSet("word.jur", "jurisdiction", "word.jurs", "jurisdictions"),
+    wave: plurSet("word.wave", "wave", "word.waves", "waves"),
+    regime: plurSet("word.regime", "simple regime", "word.regimes", "simple regimes"),
+    erp: plurSet("word.erp", "ERP/billing system", "word.erps", "ERP/billing systems"),
+    integration: plurSet("word.integration", "country-system integration",
+                         "word.integrations", "country-system integrations"),
+    member: plurSet("word.member", "EU member state", "word.members", "EU member states"),
+    ctcJur: plurSet("word.ctcJur", "clearance or reporting jurisdiction",
+                    "word.ctcJurs", "clearance or reporting jurisdictions"),
+    erroredInvoice: plurSet("word.erroredInvoice", "errored invoice",
+                            "word.erroredInvoices", "errored invoices"),
+    thing: plurSet("word.thing", "thing", "word.things", "things"),
+    // A WHOLE SENTENCE, not a noun. The mistimed-obligation guard changes
+    // three clauses between its singular and plural forms -- "has"/"have",
+    // "it"/"them", "runway it has"/"runway they have" -- which is why it
+    // was already written as two complete strings rather than a noun in a
+    // slot. That was the right call and it generalises: any sentence whose
+    // agreement reaches beyond the noun belongs here as whole forms.
+    //
+    // Keyed .one/.other rather than .one/.many, because `many` is a real
+    // CLDR category in Polish and Russian and using it as a synonym for
+    // "the English plural" would collide with it the day someone adds a
+    // Polish row. Migration 573 renames the row.
+    guardZeroInt: plurSetBase("guard.zeroInt",
+      "<strong>{0} selected jurisdiction has a mandate, but the model has costed zero integrations.</strong> That is not a cheap programme, it is a broken calculation &mdash; treat every figure below as unsafe until it is explained.",
+      "<strong>{0} selected jurisdictions have a mandate, but the model has costed zero integrations.</strong> That is not a cheap programme, it is a broken calculation &mdash; treat every figure below as unsafe until it is explained."),
+    guardLate: plurSetBase("guard.late",
+      "<strong>{0} pinned start date finishes after the deadline.</strong> {1}. That may be deliberate &mdash; an accepted late position is a decision a board can take &mdash; but the plan below no longer meets that date.",
+      "<strong>{0} pinned start dates finish after the deadline.</strong> {1}. That may be deliberate &mdash; an accepted late position is a decision a board can take &mdash; but the plan below no longer meets those dates."),
+    mistimed: plurSetBase("guard.mistimed",
+      "<strong>{0} selected jurisdiction has an obligation earlier than the date this plan plans for.</strong> {1}. These are dated, live obligations that the arrivals board does not display, so the wave plan does not schedule it. The runway shown for it is longer than the runway it actually has.",
+      "<strong>{0} selected jurisdictions have obligations earlier than the date this plan plans for.</strong> {1}. These are dated, live obligations that the arrivals board does not display, so the wave plan does not schedule them. The runway shown for them is longer than the runway they actually have."),
+  };
+
   const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   // Dan, 16 Aug 2026: "the text under each field in Assumptions and
@@ -1374,12 +1444,43 @@ const usdDefault = {}, usdCurrent = {};
 const fill = (tpl, ...a) => String(tpl).replace(/\\{(\\d+)\\}/g,
   (m, i) => a[i] === undefined ? m : a[i]);
 // English pluralises by adding an s, which is why this codebase did it
-// with a ternary on n===1 in nine places. No other language works that way,
-// and half of them inflect the surrounding words too. Two rows per noun
-// is the smallest honest fix: the sentence template holds a slot, and
-// the slot is filled with whichever row the count selects. Languages
-// with more than two plural forms need more rows, not different code.
-const plur = (n, one, many) => (n === 1 ? one : many);
+// with a ternary on n===1 in nine places. The comment that replaced those
+// ternaries said "languages with more than two plural forms need more
+// rows, not different code" -- true, and it described work that had not
+// been done. The rows were never added and the two-form ternary stayed.
+//
+// Now it is categories. PLURALS carries one entry per noun, keyed by CLDR
+// plural category, built server-side from D1; Intl.PluralRules picks the
+// category for the page language. English supplies one and other; a
+// language needing few/many supplies extra rows named after the singular
+// key. See plurSet() in the server half.
+// THE PAGE LANGUAGE, declared before anything that reads it. It is used
+// by the plural selector, the number formatters and the collator, which
+// are declared in three different places; putting it at the top of the
+// script is the only arrangement where none of them can be reading it
+// from the temporal dead zone.
+const LANG = ${JSON.stringify(lang)};
+const PLURALS = __ROI_PLURALS__;
+// A locale Intl does not recognise must not take the page down; English
+// rules are a cosmetic degradation, an exception here is not.
+// CATCHES RangeError ONLY, and that is not fussiness. The first version
+// caught everything, and the first thing it caught was its own bug: PR
+// was declared above LANG, so the Intl.PluralRules(LANG) call threw a
+// ReferenceError from the temporal dead zone, the catch swallowed it, and
+// every language silently got English plural rules. The page worked. The
+// tests passed. The only visible symptom was French printing
+// "0 jurisdictions" where French requires the singular -- which is the
+// exact defect the whole change was written to fix.
+//
+// A bad locale tag throws RangeError and deserves a cosmetic fallback.
+// Everything else is a programming error and must be allowed to surface.
+const PR = (() => {
+  try { return new Intl.PluralRules(LANG); }
+  catch (e) { if (!(e instanceof RangeError)) throw e; return new Intl.PluralRules('en'); }
+})();
+// The other category is the last resort rather than one, because every
+// language has an other and not every language has a one.
+const plur = (n, set) => set[PR.select(n)] || set.other || set.one;
 
 // ---- money and number formatting, in the reader's language -----------
 //
@@ -1405,16 +1506,14 @@ const plur = (n, one, many) => (n === 1 ? one : many);
 //
 // Constructed once and reused: Intl.NumberFormat is expensive to build
 // and these run inside table loops.
-const LANG = ${JSON.stringify(lang)};
 const NF = {};
 const nf = (opts) => {
   const k = cur + JSON.stringify(opts);
   if (!NF[k]) {
+    // RangeError only -- see the note on PR above, where a catch-all hid a
+    // temporal-dead-zone bug for the length of an afternoon.
     try { NF[k] = new Intl.NumberFormat(LANG, opts); }
-    // A locale Intl does not know must not take the page down with it.
-    // Falling back to the browser default is a cosmetic degradation; an
-    // exception here is thrown inside the render path.
-    catch (e) { NF[k] = new Intl.NumberFormat(undefined, opts); }
+    catch (e) { if (!(e instanceof RangeError)) throw e; NF[k] = new Intl.NumberFormat(undefined, opts); }
   }
   return NF[k];
 };
@@ -1430,6 +1529,28 @@ const fmt = n => nf({ ...MONEY_OPTS, currency: cur }).format(Math.round(n));
 // A $2,400 gap in the one row a finance reader is most likely to check
 // by hand. Dan found it by doing exactly that.
 const fmt1 = n => nf({ ...MONEY_OPTS, currency: cur, minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
+// THE PAYBACK FIGURE, and it was the last hardcoded English on the page.
+//
+// Both surfaces printed it, both hardcoded "mo" and "n/a", and the
+// hardcoded-strings detector skipped both -- not because it could not
+// reach them, but because its noise filter ignores anything under three
+// lowercase letters. A necessary filter, since the page is full of
+// two-letter country codes and single-letter grades, and a hiding place
+// for exactly the kind of string that is easiest to forget: an
+// abbreviation.
+//
+// "mo" is not universal -- German writes "Mon.", French "mois". "n/a" is
+// English shorthand for a concept every language has its own shorthand
+// for. Both are rows now, and both surfaces read the same three.
+// Takes the figure rather than closing over it: paybackMonths is a const
+// inside build(), and a top-level arrow reaching for it would have been
+// the same temporal-dead-zone mistake the plural selector made an hour
+// earlier -- except this one throws at call time rather than falling back
+// silently, which is the better of the two failures and still not one to
+// ship.
+const payback = (m) => m === null ? '${tj("res.payback.na","n/a")}'
+  : m < 1 ? '${tj("res.payback.under","&lt;1mo")}'
+  : fill('${tj("res.payback.months","{0}mo")}', Math.round(m));
 // Plain counts -- invoice volumes, error counts. Same locale, no currency.
 const num0 = n => nf({ maximumFractionDigits: 0 }).format(n);
 
@@ -1540,8 +1661,7 @@ function renderSavings(){
     + '<div class="svside"><p class="svtitle">${tj("sv.title","Where the annual benefit comes from")}</p>'
     + '<ul class="svkey">' + key + '</ul>'
     + '<p class="svtot">${tj("sv.total","Annual benefit")} <strong>' + fmt(total) + '</strong>'
-    + (SV.unbanked > 0 ? '<span>${tj("sv.unbankedNote","plus")} ' + fmt(SV.unbanked)
-        + ' ${tj("sv.unbankedTail","available on a wider scope")}</span>' : '') + '</p>'
+    + (SV.unbanked > 0 ? '<span>' + fill('${tj("sv.unbankedNote","plus {0} available on a wider scope")}', fmt(SV.unbanked)) + '</span>' : '') + '</p>'
     + '<p class="hint" style="margin:8px 0 0">${tj("sv.note","Faster cycle time, fewer supplier queries and avoided penalty exposure carry no slice, because this model does not price them.")} ' + notesLink() + '</p>'
     + '</div></div>';
 }
@@ -2171,7 +2291,7 @@ function buildGantt(sel0, erp, pace){
   }
   let y = HEAD;
   // programme-level bar
-  s += \`<text x="0" y="\${y+15}" fill="#e2b978" font-family="'IBM Plex Mono',monospace" font-size="9.5" letter-spacing="1">PROGRAMME</text>\`;
+  s += \`<text x="0" y="\${y+15}" fill="#e2b978" font-family="'IBM Plex Mono',monospace" font-size="9.5" letter-spacing="1">${tj("chart.programme","PROGRAMME")}</text>\`;
   y += RH + GAP;
   let pt = progBegin.getTime();
   s += \`<text x="0" y="\${y+15}" fill="#f2f0e8" font-size="12">${tj("chart.procureBar","Select &amp; contract")}</text>\`;
@@ -2217,7 +2337,7 @@ function buildGantt(sel0, erp, pace){
         ? members[0].c[12] + ' ${tj("wave.members","MEMBER STATES")} &middot; ' + wm.elapsed + 'W'
         : wm.n + ' ' + (wm.n===1?'${tj("wave.jur","JURISDICTION")}':'${tj("wave.jurs","JURISDICTIONS")}') + ' &middot; ' + wm.elapsed + 'W';
       s += \`<text x="88" y="\${y+15}" fill="#93a3c0" font-family="'IBM Plex Mono',monospace" font-size="9">\${metaTxt}</text>\`;
-      s += \`<rect x="\${x1+1}" y="\${y+4}" width="\${Math.max(2,x2-x1-2)}" height="\${RH-8}" rx="3" fill="#3d5a86"><title>\${fill('${tj("chart.waveTip","Wave {0} — {1}, {2}w effort, {3}w elapsed{4}")}', wm.dl, wm.n + ' ' + plur(wm.n, '${tj("word.jur","jurisdiction")}', '${tj("word.jurs","jurisdictions")}'), wm.effort, wm.elapsed, lanes>1&&wm.n>1 ? fill('${tj("chart.acrossLanes"," across {0} lanes")}', Math.min(lanes,wm.n)) : '')}\n\${names.join(', ')}</title></rect>\`;
+      s += \`<rect x="\${x1+1}" y="\${y+4}" width="\${Math.max(2,x2-x1-2)}" height="\${RH-8}" rx="3" fill="#3d5a86"><title>\${fill('${tj("chart.waveTip","Wave {0} — {1}, {2}w effort, {3}w elapsed{4}")}', wm.dl, wm.n + ' ' + plur(wm.n, PLURALS.jur), wm.effort, wm.elapsed, lanes>1&&wm.n>1 ? fill('${tj("chart.acrossLanes"," across {0} lanes")}', Math.min(lanes,wm.n)) : '')}\n\${names.join(', ')}</title></rect>\`;
       const gx = x(wm.golive.getTime());
       s += \`<polygon points="\${gx},\${y+3} \${gx+7},\${y+RH/2} \${gx},\${y+RH-3} \${gx-7},\${y+RH/2}" fill="#efe9db" stroke="#0f1a2b" stroke-width="2"><title>\${fill('${tj("chart.goliveTip","Wave go-live — mandate deadline {0}")}', wm.dl)}</title></polygon>\`;
       const ICON = {critical:'\u25b2', warning:'\u25cf', good:'\u2713'};
@@ -2232,7 +2352,7 @@ function buildGantt(sel0, erp, pace){
     if(r.waveKey !== lastWave){
       lastWave = r.waveKey;
       const wm = waveMeta.find(w => w.dl === lastWave);
-      s += \`<text x="0" y="\${y+15}" font-family="'IBM Plex Mono',monospace" font-size="9.5" letter-spacing="1"><tspan fill="#e2b978">WAVE \${wm.dl}</tspan><tspan fill="#93a3c0" letter-spacing="0"> &middot; \${wm.n} countr\${wm.n===1?'y':'ies'} &middot; \${wm.effort}w effort &middot; \${wm.elapsed}w elapsed\${lanes>1&&wm.n>1?\` across \${Math.min(lanes,wm.n)} lanes\`:''}</tspan></text>\`;
+      s += \`<text x="0" y="\${y+15}" font-family="'IBM Plex Mono',monospace" font-size="9.5" letter-spacing="1"><tspan fill="#e2b978">\${fill('${tj("chart.waveBand","WAVE {0}")}', wm.dl)}</tspan><tspan fill="#93a3c0" letter-spacing="0"> &middot; \${fill('${tj("chart.waveBandMeta","{0} &middot; {1}w effort &middot; {2}w elapsed{3}")}', wm.n + ' ' + plur(wm.n, PLURALS.jur), wm.effort, wm.elapsed, lanes>1&&wm.n>1 ? fill('${tj("chart.acrossLanes"," across {0} lanes")}', Math.min(lanes,wm.n)) : '')}</tspan></text>\`;
       y += RH + GAP;
     }
     const cx = CXNAME[r.c[4]];
@@ -2248,10 +2368,10 @@ function buildGantt(sel0, erp, pace){
     // table -- see the block at the euWide flag below. This line was
     // already correct and its comment was not, which is how the wrong one
     // kept looking right.
-    s += \`<text x="\${L-10}" y="\${y+15}" fill="\${r.c[11] ? '#c98a3a' : '#93a3c0'}" font-family="'IBM Plex Mono',monospace" font-size="9" text-anchor="end">\${r.c[11] ? 'EU-WIDE' : REGSHORT[r.c[2]]} &middot; \${cx[0].toUpperCase()}\${lanes>1?\` &middot; L\${r.lane+1}\`:''}</text>\`;
+    s += \`<text x="\${L-10}" y="\${y+15}" fill="\${r.c[11] ? '#c98a3a' : '#93a3c0'}" font-family="'IBM Plex Mono',monospace" font-size="9" text-anchor="end">\${r.c[11] ? '${tj("chart.euWide","EU-WIDE")}' : REGSHORT[r.c[2]]} &middot; \${cx[0].toUpperCase()}\${lanes>1?\` &middot; L\${r.lane+1}\`:''}</text>\`;
     r.segs.forEach(sg => {
       const x1 = x(sg.s.getTime()), x2 = x(sg.e.getTime());
-      s += \`<rect x="\${x1+1}" y="\${y+4}" width="\${Math.max(2,x2-x1-2)}" height="\${RH-8}" rx="3" fill="\${sg.c}"><title>\${r.c[0]} — \${sg.n}\\n\${sg.weeks} weeks: \${isoD(sg.s)} to \${isoD(sg.e)}</title></rect>\`;
+      s += \`<rect x="\${x1+1}" y="\${y+4}" width="\${Math.max(2,x2-x1-2)}" height="\${RH-8}" rx="3" fill="\${sg.c}"><title>\${fill('${tj("chart.segTip","{0} — {1}")}', r.c[0], sg.n)}\\n\${fill('${tj("chart.segWeeks","{0} weeks: {1} to {2}")}', sg.weeks, isoD(sg.s), isoD(sg.e))}</title></rect>\`;
     });
     // Go-live milestone. Only drawn on rows whose track actually ENDS at the
     // deadline — in a multi-country wave the earlier countries finish before
@@ -2260,14 +2380,22 @@ function buildGantt(sel0, erp, pace){
     const gx = x(r.golive.getTime());
     const endsAtGoLive = Math.abs(r.segs[r.segs.length-1].e - r.golive) < 86400000;
     if(endsAtGoLive){
-      s += \`<polygon points="\${gx},\${y+3} \${gx+7},\${y+RH/2} \${gx},\${y+RH-3} \${gx-7},\${y+RH/2}" fill="#efe9db" stroke="#0f1a2b" stroke-width="2"><title>\${r.c[0]} go-live — mandate deadline \${r.c[5]}</title></polygon>\`;
+      s += \`<polygon points="\${gx},\${y+3} \${gx+7},\${y+RH/2} \${gx},\${y+RH-3} \${gx-7},\${y+RH/2}" fill="#efe9db" stroke="#0f1a2b" stroke-width="2"><title>\${fill('${tj("chart.goliveRowTip","{0} go-live &mdash; mandate deadline {1}")}', r.c[0], r.c[5])}</title></polygon>\`;
     } else {
-      s += \`<line x1="\${gx}" y1="\${y+4}" x2="\${gx}" y2="\${y+RH-4}" stroke="#efe9db" stroke-width="1" stroke-dasharray="2 2" opacity="0.5"><title>\${r.c[0]} completes ahead of the \${r.c[5]} wave deadline</title></line>\`;
+      s += \`<line x1="\${gx}" y1="\${y+4}" x2="\${gx}" y2="\${y+RH-4}" stroke="#efe9db" stroke-width="1" stroke-dasharray="2 2" opacity="0.5"><title>\${fill('${tj("chart.aheadTip","{0} completes ahead of the {1} wave deadline")}', r.c[0], r.c[5])}</title></line>\`;
     }
     if(r.seq === 0 && r.lane === 0){
       const ICON = {critical:'▲', warning:'●', good:'✓'};
       const COL  = {critical:'#e0907f', warning:'#e2b978', good:'#7fd0a8'};
-      const LBL  = {critical:\`late \${Math.abs(r.slipDays)}d\`, warning:\`start \${r.slipDays}d\`, good:\`\${r.slipDays}d\`};
+      // The day counts on the right of each row. "d" is a unit and "late"
+      // is a word; both were literals here until the detector was taught
+      // to expand the chart. Slotted so a translator can put the unit
+      // where the language puts it -- and so the abbreviation itself can
+      // change, since "d" for days is not universal.
+      const LBL  = {
+        critical: fill('${tj("chart.risk.lateDays","late {0}d")}', Math.abs(r.slipDays)),
+        warning:  fill('${tj("chart.risk.startDays","start {0}d")}', r.slipDays),
+        good:     fill('${tj("chart.risk.days","{0}d")}', r.slipDays)};
       s += \`<text x="\${W-R+16}" y="\${y+15}" fill="\${COL[r.risk]}" font-family="'IBM Plex Mono',monospace" font-size="10">\${ICON[r.risk]} \${LBL[r.risk]}</text>\`;
     }
     y += RH + GAP;
@@ -2303,10 +2431,10 @@ function buildGantt(sel0, erp, pace){
       // COULD start and roughly how long the longest of them runs.
       const longest = Math.max(...undated.map(c => durOf(c).total));
       const bx1 = x(discStart0), bx2 = x(addW(new Date(discStart0), longest).getTime());
-      s += \`<rect x="\${bx1+1}" y="\${y+4}" width="\${Math.max(2,bx2-bx1-2)}" height="\${RH-8}" rx="3" fill="#4a5670" opacity="0.55"><title>\${fill('${tj("chart.discTip","{0} with no fixed deadline{1}. Indicative placement only — nothing can start before contracting completes, and there is no date to work back from.")}', undated.length + ' ' + plur(undated.length, '${tj("word.jur","jurisdiction")}', '${tj("word.jurs","jurisdictions")}'), anyOverdue ? '${tj("chart.someInForce",", some already in force")}' : '')}\n\${undated.map(c=>c[0]).join(', ')}</title></rect>\`;
+      s += \`<rect x="\${bx1+1}" y="\${y+4}" width="\${Math.max(2,bx2-bx1-2)}" height="\${RH-8}" rx="3" fill="#4a5670" opacity="0.55"><title>\${fill('${tj("chart.discTip","{0} with no fixed deadline{1}. Indicative placement only — nothing can start before contracting completes, and there is no date to work back from.")}', undated.length + ' ' + plur(undated.length, PLURALS.jur), anyOverdue ? '${tj("chart.someInForce",", some already in force")}' : '')}\n\${undated.map(c=>c[0]).join(', ')}</title></rect>\`;
       y += RH + GAP;
     } else {
-      s += \`<text x="0" y="\${y+15}" font-family="'IBM Plex Mono',monospace" font-size="9.5" letter-spacing="1"><tspan fill="#8d9bb5">NO FIXED DEADLINE</tspan><tspan fill="#93a3c0" letter-spacing="0"> &middot; \${undated.length} jurisdiction\${undated.length===1?'':'s'} &middot; \${anyOverdue ? 'already in force, or startable any time' : 'start any time'} once contracting completes</tspan></text>\`;
+      s += \`<text x="0" y="\${y+15}" font-family="'IBM Plex Mono',monospace" font-size="9.5" letter-spacing="1"><tspan fill="#8d9bb5">${tj("chart.noDeadlineBand","NO FIXED DEADLINE")}</tspan><tspan fill="#93a3c0" letter-spacing="0"> &middot; \${fill('${tj("chart.noDeadlineMeta","{0} &middot; {1} once contracting completes")}', undated.length + ' ' + plur(undated.length, PLURALS.jur), anyOverdue ? '${tj("chart.startInForce","already in force, or startable any time")}' : '${tj("chart.startAny","start any time")}')}</tspan></text>\`;
       y += RH + GAP;
     }
     // NO COUNTRY TRACK MAY BEGIN BEFORE PROCUREMENT COMPLETES.
@@ -2399,8 +2527,8 @@ function buildGantt(sel0, erp, pace){
   // the first country start, in front of every wave, which is the same
   // statement made in a way the reader cannot skim past.
   document.getElementById('ganttHead').innerHTML = (late
-    ? \`<div class="note warn"><strong>\${late} ${tj("chart.late","of")} \${waveMeta.length} ${tj("chart.late2","waves back-plan to a start date that has already passed.")}</strong> ${tj("chart.late3","Compressed delivery, an interim filing approach, or an accepted late position &mdash; but the latest responsible start is behind you.")} \${notesLink()}</div>\`
-    : soon ? \`<div class="note">\${fill('${tj("guard.soon","<strong>{0} must start within 90 days</strong> to hit the published deadline on your current phase assumptions.")}', soon + ' ' + plur(soon, '${tj("word.wave","wave")}', '${tj("word.waves","waves")}'))}</div>\`
+    ? \`<div class="note warn"><strong>\${fill('${tj("chart.late","{0} of {1} waves back-plan to a start date that has already passed.")}', late, waveMeta.length)}</strong> ${tj("chart.late3","Compressed delivery, an interim filing approach, or an accepted late position &mdash; but the latest responsible start is behind you.")} \${notesLink()}</div>\`
+    : soon ? \`<div class="note">\${fill('${tj("guard.soon","<strong>{0} must start within 90 days</strong> to hit the published deadline on your current phase assumptions.")}', soon + ' ' + plur(soon, PLURALS.wave))}</div>\`
     : \`<div class="note"><strong>Runway is comfortable across all \${waveMeta.length} waves</strong> on your current assumptions.</div>\`);
 
   document.getElementById('ganttLegend').innerHTML =
@@ -2871,24 +2999,24 @@ function build(){
   // plan. What changes is that the headline gets to be the headline.
   document.getElementById('summary').innerHTML = \`
     <div class="grid g5">
-      <div class="stat"><div class="n" style="color:#7fd0a8">\${fmt(l1Banked + l2)}</div><div class="l">${tj("res.banked","Annual saving")}\${l1Unbanked > 0 ? \` (+\${fmt(l1Unbanked)} ${tj("res.unbanked","available on a wider scope")})\` : ''}</div></div>
-      <div class="stat"><div class="n" style="color:#e0907f">\${fmt(oneOff)}</div><div class="l">${tj("res.oneOff","One-off investment")} <span class="statwhat">${tj("res.oneOff2","implementation")}</span><span class="statrun">${tj("res.running","plus each year:")} \${fmt(cPlat)} ${tj("res.running2","platform")}${hlp('cPlat',t("tip.covers","What this covers"))} + \${fmt(cRun)} ${tj("res.running3","internal")}${hlp('cRun',t("tip.covers","What this covers"))}</span></div></div>
+      <div class="stat"><div class="n" style="color:#7fd0a8">\${fmt(l1Banked + l2)}</div><div class="l">${tj("res.banked","Annual saving")}\${l1Unbanked > 0 ? ' ' + fill('${tj("res.unbanked","(+{0} available on a wider scope)")}', fmt(l1Unbanked)) : ''}</div></div>
+      <div class="stat"><div class="n" style="color:#e0907f">\${fmt(oneOff)}</div><div class="l">${tj("res.oneOff","One-off investment")} <span class="statwhat">${tj("res.oneOff2","implementation")}</span><span class="statrun">\${fill('${tj("res.running","plus each year: {0} platform{1} + {2} internal{3}")}', fmt(cPlat), '${hlp('cPlat',t("tip.covers","What this covers"))}', fmt(cRun), '${hlp('cRun',t("tip.covers","What this covers"))}')}</span></div></div>
       <div class="stat"><div class="n" style="color:\${netAnnual>=0?'#7fd0a8':'#e0907f'}">\${fmt(netAnnual)}</div><div class="l">${tj("res.netAnnual","Net annual saving")}</div></div>
-      <div class="stat"><div class="n" style="color:\${paybackMonths&&paybackMonths<=24?'#7fd0a8':'#e2b978'}">\${paybackMonths===null?'n/a':paybackMonths<1?'&lt;1mo':Math.round(paybackMonths)+'mo'}</div><div class="l">${tj("res.payback","Payback on one-off")}</div></div>
+      <div class="stat"><div class="n" style="color:\${paybackMonths&&paybackMonths<=24?'#7fd0a8':'#e2b978'}">\${payback(paybackMonths)}</div><div class="l">${tj("res.payback","Payback on one-off")}</div></div>
       <div class="stat"><div class="n" style="color:\${dated.length?'#e08b7a':'#8d9bb5'}">\${dated.length}</div><div class="l">${tj("res.dated","Jurisdictions with a dated deadline ahead")}</div></div>
     </div>
     <div class="note" style="margin-top:14px">\${banked
       ? \`<strong>${tj("sum.scopeBoth","Scope: compliance + AP process automation.")}</strong> ${tj("sum.scopeBoth2","Every direct row counts, and the timeline carries a process-change phase per country. The larger, less common programme.")}\`
-      : \`<strong>${tj("sum.scopeOnly","Scope: compliance only.")}</strong> \${fmt(l1Banked + l2)} ${tj("sum.scopeOnly2","is saved from the integration itself; the remaining")} \${fmt(l1Unbanked)} ${tj("sum.scopeOnly3","needs a change programme you are not running.")}\`} ${tj("sum.bridge6","Net annual saving is the annual saving less the two running costs above; section 4 shows what makes up the annual saving, row by row.")} \${notesLink()}</div>
+      : \`<strong>${tj("sum.scopeOnly","Scope: compliance only.")}</strong> \${fill('${tj("sum.scopeOnly2","{0} is saved from the integration itself; the remaining {1} needs a change programme you are not running.")}', fmt(l1Banked + l2), fmt(l1Unbanked))}\`} ${tj("sum.bridge6","Net annual saving is the annual saving less the two running costs above; section 4 shows what makes up the annual saving, row by row.")} \${notesLink()}</div>
     <div id="guards"></div>
     <div class="card"><p style="margin:0">\${fill('${tj("card.mix","Across {0} jurisdictions you have {1} (CTC or 5-corner) and {2} (4-corner exchange){3}.")}',
         '<strong>' + planned + '</strong>',
         '<strong>' + complex.length + ' ${tj("word.complex","complex")}</strong>',
-        '<strong>' + simple.length + ' ' + plur(simple.length, '${tj("word.regime","simple regime")}', '${tj("word.regimes","simple regimes")}') + '</strong>',
+        '<strong>' + simple.length + ' ' + plur(simple.length, PLURALS.regime) + '</strong>',
         watch.length ? fill('${tj("card.plusNoMandate",", plus {0} with no mandate{1}")}', watch.length, '${hlp('nomandate',t("tip.nomandate","Why these are still in the plan"))}') : '')}\${euInjected ? ' ' + fill('${tj("card.euRow","One of these is the <strong>EU-wide obligation</strong>, added automatically because you selected a member state{0} &mdash; ViDA binds it whether or not it legislates its own mandate.")}', '${hlp('vida',t("tip.vida","Where this comes from"))}') : ''}
       \${fill('${tj("card.integrations","With {0} that is roughly {1}{2} to deliver.")}',
-        erp + ' ' + plur(erp, '${tj("word.erp","ERP/billing system")}', '${tj("word.erps","ERP/billing systems")}'),
-        '<strong>' + integrations + ' ' + plur(integrations, '${tj("word.integration","country-system integration")}', '${tj("word.integrations","country-system integrations")}') + '</strong>',
+        erp + ' ' + plur(erp, PLURALS.erp),
+        '<strong>' + integrations + ' ' + plur(integrations, PLURALS.integration) + '</strong>',
         '${hlp('integrations',t("tip.derived","How this is derived"))}')}
       \${dated.length ? fill('${tj("card.nearest","The nearest binding date is {0} ({1}).")}', '<strong>' + dated[0][5] + '</strong>', dated[0][0])
         : '${tj("card.noDated","None of the selected jurisdictions has a future dated deadline on the tracker today.")}'} \${ev('site','${tj("ev.siteLabel","Source: live tracker data")}')}</p></div>\`;
@@ -2916,7 +3044,7 @@ function build(){
   // EVERY sentence built on it has to be re-read, not just the one that
   // was noticed.
   const euRowPresent = tracks.some(c => c[11]);
-  document.getElementById('waveIntro').innerHTML = \`${tj("waves.intro","Back-planned from each jurisdiction&rsquo;s published deadline")} \${ev('site','${tj("ev.trackerDates","tracker dates")}')} ${tj("waves.intro2","through phase durations you control")} \${ev('durations','${tj("ev.durations","practitioner estimates")}')}. ${tj("waves.intro3","Procurement is modelled once, not per country.")}\${euRowPresent?\` \${fill('${tj("waves.intro4","One of these waves is the EU-wide obligation rather than a national mandate, covering the {0} you selected.")}', '<strong>' + euMembers + '</strong> ' + plur(euMembers, '${tj("word.member","EU member state")}', '${tj("word.members","EU member states")}'))}${hlp('vida',t("tip.deadlines","Where these deadlines come from"))}\`:''}\`;
+  document.getElementById('waveIntro').innerHTML = \`\${fill('${tj("waves.intro","Back-planned from each jurisdiction&rsquo;s published deadline {0} through phase durations you control {1}.")}', ev('site','${tj("ev.trackerDates","tracker dates")}'), ev('durations','${tj("ev.durations","practitioner estimates")}'))} ${tj("waves.intro3","Procurement is modelled once, not per country.")}\${euRowPresent?\` \${fill('${tj("waves.intro4","One of these waves is the EU-wide obligation rather than a national mandate, covering the {0} you selected.")}', '<strong>' + euMembers + '</strong> ' + plur(euMembers, PLURALS.member))}${hlp('vida',t("tip.deadlines","Where these deadlines come from"))}\`:''}\`;
   let w = dated.length ? \`<table><thead><tr><th>${tj("th.deadline","Deadline")}</th><th>${tj("adjust.jur","Jurisdiction")}</th><th>${tj("th.status","Status")}</th><th>${tj("th.model","Model")}${hlp('complexity',t("tip.complexity","How complexity is assigned"))}</th><th class="num">${tj("th.integrations","Integrations")}${hlp('integrations',t("tip.derived","How this is derived"))}</th><th>${tj("th.why","Why")}</th></tr></thead><tbody>\` : '';
   dated.forEach(c=>{
     const st=STATUS[c[3]], cx=CXNAME[c[4]];
@@ -2984,9 +3112,9 @@ function build(){
 
     <tr class="tierA" data-row="ar"><td>${t("row.ar","Issuing cost reduction (AR)")} <span class="tag tang">${t("tag.tangible","tangible")}</span> <span class="tag bank">${t("tag.saved","saved")}</span></td><td><span class="bcalc"><span class="blab">${tj("basis.lab.calc","Calculation:")}</span>\${fill('${tj("basis.ar.calc","{0} invoices &times; {1} issuing cost &times; {2}% reduction")}', num0(volAR), fmt1(costAR), Math.round(savePct*100))}</span><span class="bjust"><span class="blab">${tj("basis.lab.just","Justification:")}</span>\${fill('${tj("basis.ar.just","Issuing cost from the ATO channel figures on its own 60/40 split {0}. Reduction range {1}.")}', ev('ato','${tj("ev.atoDeloitte","ATO / Deloitte")}'), ev('hmrc60','${tj("ev.hmrcAto","HMRC, ATO-corroborated")}'))}</span></td><td class="num">\${fmt(savingAR)}</td><td class="num">\${fmt(savingAR)}</td></tr>
 
-    <tr class="tierA" data-row="tax"><td>${t("row.tax","Reduced tax reporting &amp; audit-prep effort")} <span class="tag tang">${t("tag.tangible","tangible")}</span> <span class="tag bank">${t("tag.saved","saved")}</span></td><td><span class="bcalc"><span class="blab">${tj("basis.lab.calc","Calculation:")}</span>\${fill('${tj("basis.tax.calc","{0} AP invoices imply {1} AP FTE; {2} put {3}% of that in scope{4} &mdash; {5} FTE &times; {6}")}', num0(volAP), apFteImplied.toFixed(1), ctcCount + ' ' + plur(ctcCount, '${tj("word.ctcJur","clearance or reporting jurisdiction")}', '${tj("word.ctcJurs","clearance or reporting jurisdictions")}'), (shareUsed*100).toFixed(1), taxCapBinds?' <em>${tj("word.capped","(capped)")}</em>':'', taxFteSaved.toFixed(2), fmt(fteCost))}</span><span class="bjust"><span class="blab">${tj("basis.lab.just","Justification:")}</span>\${fill('${tj("basis.tax.just","Mechanism evidenced {0}; invoices per FTE {1}; the share in scope is ours and capped {2}. Saved on either scope &mdash; reporting effort falls with the compliance build, not with a workflow change.")}', ev('oecd','${tj("ev.oecdDctr","OECD DCTR, 2026")}'), ev('apqc','${tj("ev.apqcMedian","APQC median, 12,000 per FTE")}'), ev('yours','${tj("ev.ourAssumption","our assumption")}'))}</span></td><td class="num">\${fmt(l2)}</td><td class="num">\${fmt(l2)}</td></tr>
+    <tr class="tierA" data-row="tax"><td>${t("row.tax","Reduced tax reporting &amp; audit-prep effort")} <span class="tag tang">${t("tag.tangible","tangible")}</span> <span class="tag bank">${t("tag.saved","saved")}</span></td><td><span class="bcalc"><span class="blab">${tj("basis.lab.calc","Calculation:")}</span>\${fill('${tj("basis.tax.calc","{0} AP invoices imply {1} AP FTE; {2} put {3}% of that in scope{4} &mdash; {5} FTE &times; {6}")}', num0(volAP), apFteImplied.toFixed(1), ctcCount + ' ' + plur(ctcCount, PLURALS.ctcJur), (shareUsed*100).toFixed(1), taxCapBinds?' <em>${tj("word.capped","(capped)")}</em>':'', taxFteSaved.toFixed(2), fmt(fteCost))}</span><span class="bjust"><span class="blab">${tj("basis.lab.just","Justification:")}</span>\${fill('${tj("basis.tax.just","Mechanism evidenced {0}; invoices per FTE {1}; the share in scope is ours and capped {2}. Saved on either scope &mdash; reporting effort falls with the compliance build, not with a workflow change.")}', ev('oecd','${tj("ev.oecdDctr","OECD DCTR, 2026")}'), ev('apqc','${tj("ev.apqcMedian","APQC median, 12,000 per FTE")}'), ev('yours','${tj("ev.ourAssumption","our assumption")}'))}</span></td><td class="num">\${fmt(l2)}</td><td class="num">\${fmt(l2)}</td></tr>
 
-    <tr class="tierB" data-row="rework"><td>${t("row.rework","Avoided rework on data-entry errors")} <span class="tag tang">${t("tag.tangible","tangible")}</span> <span class="tag \${banked?'bank':'unbank'}">\${banked?'${tj("tag.saved","saved")}':'${tj("tag.notSaved","not saved")}'}</span></td><td><span class="bcalc"><span class="blab">${tj("basis.lab.calc","Calculation:")}</span>\${fill('${tj("basis.rework.calc","{0} {1} at {2}% &times; {3} min &times; {4}/h &times; {5}% eliminated")}', num0(Math.round(errNow)), plur(Math.round(errNow), '${tj("word.erroredInvoice","errored invoice")}', '${tj("word.erroredInvoices","errored invoices")}'), Math.round(errRate*100), errMins, fmt1(entryPerHr), Math.round(errElim*100))}</span><span class="bjust"><span class="blab">${tj("basis.lab.just","Justification:")}</span>\${fill('${tj("basis.rework.just","Error rate {0}; resolution time {1}; data-entry rate {2}; the share eliminated is ours {3}, held under Ardent&rsquo;s exception gap {4}.")}', ev('hmrcErr','${tj("ev.hmrcRate","HMRC consultation")}'), overridden('errMins') ? ev('yours','${tj("ev.yourMins","your resolution time")}') : ev('rework','${tj("ev.atoMins2","ATO exception times")}'), ev('blsEntry','${tj("ev.blsEntry","loaded data-entry rate")}'), ev('errElim','${tj("ev.whyNotAll","why not all of them")}'), ev('ardentExc','${tj("ev.excRate2","18.4% market exception rate")}'))}</span></td><td class="num">\${fmt(errSave)}</td><td class="num">\${bankedErr > 0 ? fmt(bankedErr) : '&mdash;'}</td></tr>
+    <tr class="tierB" data-row="rework"><td>${t("row.rework","Avoided rework on data-entry errors")} <span class="tag tang">${t("tag.tangible","tangible")}</span> <span class="tag \${banked?'bank':'unbank'}">\${banked?'${tj("tag.saved","saved")}':'${tj("tag.notSaved","not saved")}'}</span></td><td><span class="bcalc"><span class="blab">${tj("basis.lab.calc","Calculation:")}</span>\${fill('${tj("basis.rework.calc","{0} {1} at {2}% &times; {3} min &times; {4}/h &times; {5}% eliminated")}', num0(Math.round(errNow)), plur(Math.round(errNow), PLURALS.erroredInvoice), Math.round(errRate*100), errMins, fmt1(entryPerHr), Math.round(errElim*100))}</span><span class="bjust"><span class="blab">${tj("basis.lab.just","Justification:")}</span>\${fill('${tj("basis.rework.just","Error rate {0}; resolution time {1}; data-entry rate {2}; the share eliminated is ours {3}, held under Ardent&rsquo;s exception gap {4}.")}', ev('hmrcErr','${tj("ev.hmrcRate","HMRC consultation")}'), overridden('errMins') ? ev('yours','${tj("ev.yourMins","your resolution time")}') : ev('rework','${tj("ev.atoMins2","ATO exception times")}'), ev('blsEntry','${tj("ev.blsEntry","loaded data-entry rate")}'), ev('errElim','${tj("ev.whyNotAll","why not all of them")}'), ev('ardentExc','${tj("ev.excRate2","18.4% market exception rate")}'))}</span></td><td class="num">\${fmt(errSave)}</td><td class="num">\${bankedErr > 0 ? fmt(bankedErr) : '&mdash;'}</td></tr>
 
     <tr class="tot" data-row="total"><td colspan="2"><strong>${t("row.savingsTotal","Annual benefit")}</strong>\${l1Unbanked > 0 ? \` <span class="hint" style="display:inline">&mdash; ${t("row.directTotal.gap","the difference needs a change programme you are not running")}</span>\` : ''}</td><td class="num"><strong>\${fmt(l1 + l2)}</strong></td><td class="num"><strong style="color:#7fd0a8">\${fmt(l1Banked + l2)}</strong></td></tr>
 
@@ -3040,7 +3168,7 @@ function build(){
       <div class="card"><h3>${tj("notes.bracket.h","How conservative is the compliance-only figure?")}</h3><p class="hint">${tj("notes.bracket","Three methods give three answers for what a compliance-only programme saves, as a share of the manual AP cost: <strong>25.7%</strong> by the route used here, <strong>42.9%</strong> if capture is credited with its full share of handling time, and <strong>70.3%</strong> if the ATO&rsquo;s paper-to-eInvoice gap is read as capture and exception work throughout. The lowest is used. The spread is roughly threefold, so a compliance-only case that looks marginal here may be understated.")}</p></div>
       <div class="card"><h3>${tj("notes.rework.h","Rework sits outside the total")}</h3><p class="hint">${tj("notes.rework","This row rests on the three figures we are least sure of: HMRC&rsquo;s 10% error rate, published without a source; the time you tell us one fix takes; and our estimate of how many errors structured data removes. So it is shown in full and left out of the total. Ardent evidences the mechanism without quantifying it, and their 9.8-point gap between best-in-class and average exception rates sets the ceiling used here.")}</p></div>
       <div class="card"><h3>${tj("notes.headcount.h","The same saving, counted in people")}</h3><p class="hint">${tj("notes.headcount","The capture-FTE figure shows the processing-cost saving as people instead of money. It is one saving in two units &mdash; the per-invoice benchmark is mostly labour, so adding both would count it twice.")}\${saving > 0 ? ' ' + fill('${tj("notes.headcountSplit","{0} of {1}, or {2}%; the rest is review, technology and overhead.")}', fmt(captureValue), fmt(saving), Math.round(captureValue/saving*100)) : ''} \${fill('${tj("notes.headcountFte","In people: {0} FTE keying invoices today, of which {1} are released.")}', captureFte.toFixed(1), captureSaved.toFixed(1))} ${tj("notes.headcount2","Released time becomes cash only if the role goes, or is not backfilled.")} \${ev('apqc','APQC')} &middot; \${ev('atoCapture','ATO / Deloitte')}</p></div>
-      <div class="card"><h3>${tj("notes.unmonetised.h","Named, but not priced")}</h3><p class="hint">${tj("notes.unmonetised","Paper and postage, because your own spend beats any average. Cycle time and supplier queries, because no study separates the part e-invoicing causes &mdash; Ardent&rsquo;s own")} \${ev('ardentCycle','${tj("ev.cycleGap","2.9 vs 13.5 days")}')} ${tj("notes.unmonetised2","compares the most automated quartile with everyone else, and the")} \${ev('nhs','${tj("ev.nhsQuery","15% query reduction")}')} ${tj("notes.unmonetised3","comes from one unnamed organisation. VAT leakage, penalty exposure and fraud have real mechanisms and no measured magnitudes. They belong in the qualitative case alongside this number.")}</p></div>
+      <div class="card"><h3>${tj("notes.unmonetised.h","Named, but not priced")}</h3><p class="hint">\${fill('${tj("notes.unmonetised","Paper and postage, because your own spend beats any average. Cycle time and supplier queries, because no study separates the part e-invoicing causes &mdash; Ardent&rsquo;s own {0} compares the most automated quartile with everyone else, and the {1} comes from one unnamed organisation. VAT leakage, penalty exposure and fraud have real mechanisms and no measured magnitudes. They belong in the qualitative case alongside this number.")}', ev('ardentCycle','${tj("ev.cycleGap","2.9 vs 13.5 days")}'), ev('nhs','${tj("ev.nhsQuery","15% query reduction")}'))}</p></div>
     </div>
     <p style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:var(--soon);margin:0 0 8px">${tj("notes.h.grades","Evidence grades")}</p>
     <div class="grid g2">
@@ -3062,14 +3190,14 @@ function build(){
   //    August: a business case that quietly halved its own cost.
   const mandated = sel.filter(c => c[4] > 0);
   if(mandated.length && (intSimple + intComplex) === 0){
-    warn.push(\`<strong>\${mandated.length} selected \${mandated.length===1?'jurisdiction has':'jurisdictions have'} a mandate, but the model has costed zero integrations.</strong> That is not a cheap programme, it is a broken calculation — treat every figure below as unsafe until it is explained.\`);
+    warn.push(fill(plur(mandated.length, PLURALS.guardZeroInt), mandated.length));
   }
 
   // 2. A payback so fast it is not credible. Nothing in this field pays
   //    back in under a month; if it does, an input is wrong by an order
   //    of magnitude.
   if(paybackMonths !== null && paybackMonths > 0 && paybackMonths < 1){
-    warn.push(\`<strong>Payback under one month.</strong> No e-invoicing programme pays back that fast. Check the volumes and the per-invoice costs — one of them is out by an order of magnitude, and the rest of this page inherits it.\`);
+    warn.push('${tj("guard.payback","<strong>Payback under one month.</strong> No e-invoicing programme pays back that fast. Check the volumes and the per-invoice costs &mdash; one of them is out by an order of magnitude, and the rest of this page inherits it.")}');
   }
 
   // 3. THE ONE THAT NEEDED MIGRATION 520. A selected country whose
@@ -3081,9 +3209,7 @@ function build(){
   //    with a straight face.
   const mistimed = sel.filter(c => c[9] && (!c[5] || c[9] < c[5]));
   if(mistimed.length){
-    warn.push(fill(plur(mistimed.length,
-        '${tj("guard.mistimed.one","<strong>{0} selected jurisdiction has an obligation earlier than the date this plan plans for.</strong> {1}. These are dated, live obligations that the arrivals board does not display, so the wave plan does not schedule it. The runway shown for it is longer than the runway it actually has.")}',
-        '${tj("guard.mistimed.many","<strong>{0} selected jurisdictions have obligations earlier than the date this plan plans for.</strong> {1}. These are dated, live obligations that the arrivals board does not display, so the wave plan does not schedule them. The runway shown for them is longer than the runway they actually have.")}'),
+    warn.push(fill(plur(mistimed.length, PLURALS.mistimed),
       mistimed.length,
       mistimed.map(c => fill(c[5] ? '${tj("guard.mistimed.planned","{0} &mdash; {1} (planned for {2})")}'
                                   : '${tj("guard.mistimed.disc","{0} &mdash; {1} (planned as discretionary)")}',
@@ -3095,7 +3221,7 @@ function build(){
   //    be silent.
   const late = (ganttRows || []).filter(r => r.pinned && r.segs[r.segs.length-1].e > r.golive);
   if(late.length){
-    warn.push(\`<strong>\${late.length} pinned \${late.length===1?'start date finishes':'start dates finish'} after the deadline.</strong> \${late.map(r=>r.c[0]).join(', ')}. That may be deliberate — an accepted late position is a decision a board can take — but the plan below no longer meets \${late.length===1?'that date':'those dates'}.\`);
+    warn.push(fill(plur(late.length, PLURALS.guardLate), late.length, late.map(r=>r.c[0]).join(', ')));
   }
 
   // 5. The tax-effort cap is binding. It used to be an absolute 3 FTE and
@@ -3106,7 +3232,8 @@ function build(){
   //    responding. A ceiling nobody is told about is indistinguishable
   //    from a model that does not work.
   if(taxCapBinds){
-    warn.push(\`<strong>The tax-effort saving is capped and the cap is binding.</strong> \${ctcCount} clearance or reporting jurisdictions would imply \${(shareRaw*100).toFixed(0)}% of your AP effort; the model will not credit more than \${(TAXM.cap*100).toFixed(0)}%, because the magnitude is our assumption rather than a benchmark and an uncapped one would run away. Adding further jurisdictions will not move the indirect figure &mdash; though it will keep adding cost, which is the honest asymmetry.\`);
+    warn.push(fill('${tj("guard.taxCap","<strong>The tax-effort saving is capped and the cap is binding.</strong> {0} would imply {1}% of your AP effort; the model will not credit more than {2}%, because the magnitude is our assumption rather than a benchmark and an uncapped one would run away. Adding further jurisdictions will not move the indirect figure &mdash; though it will keep adding cost, which is the honest asymmetry.")}',
+      ctcCount + ' ' + plur(ctcCount, PLURALS.ctcJur), (shareRaw*100).toFixed(0), (TAXM.cap*100).toFixed(0)));
   }
 
   // 6. The capture labour, priced from headcount, exceeds the whole
@@ -3117,7 +3244,8 @@ function build(){
   //    possible — a top-down and a bottom-up estimate of the same money
   //    that disagree in the wrong direction mean one input is wrong.
   if(saving > 0 && captureValue > saving){
-    warn.push(\`<strong>The capture headcount is worth more than the whole processing saving.</strong> \${fmt(captureValue)} of released data-entry cost against \${fmt(saving)} of total AP processing reduction. These are two routes to the same money, so the first cannot exceed the second — check the data-entry rate and the AP cost per invoice, because one of them is out.\`);
+    warn.push(fill('${tj("guard.capture","<strong>The capture headcount is worth more than the whole processing saving.</strong> {0} of released data-entry cost against {1} of total AP processing reduction. These are two routes to the same money, so the first cannot exceed the second &mdash; check the data-entry rate and the AP cost per invoice, because one of them is out.")}',
+      fmt(captureValue), fmt(saving)));
   }
 
   // 7. The rework row claims to remove more exceptions than separate the
@@ -3139,7 +3267,8 @@ function build(){
   //    which is not a big number, it is a wrong one.
   const claimedPp = errRate * errElim * 100;
   if(TAXM.excGapPp > 0 && claimedPp > TAXM.excGapPp){
-    warn.push(\`<strong>This model removes more exceptions than separate the best quartile of AP from everyone else.</strong> Your error rate and elimination assumption together take \${claimedPp.toFixed(1)} points of invoices out of exception; Ardent measures the whole gap between Best-in-Class and all others at \${TAXM.excGapPp} points \${ev('excGap','${tj("ev.excSplit","11.1% against 20.9%")}')}, across every cause and with e-invoicing only one contributor. Lower the error rate or the elimination percentage &mdash; as it stands the rework row is claiming more than the market's best performers achieve.\`);
+    warn.push(fill('${tj("guard.excGap","<strong>This model removes more exceptions than separate the best quartile of AP from everyone else.</strong> Your error rate and elimination assumption together take {0} points of invoices out of exception; Ardent measures the whole gap between Best-in-Class and all others at {1} points {2}, across every cause and with e-invoicing only one contributor. Lower the error rate or the elimination percentage &mdash; as it stands the rework row is claiming more than the market&rsquo;s best performers achieve.")}',
+      claimedPp.toFixed(1), TAXM.excGapPp, ev('excGap','${tj("ev.excSplit","11.1% against 20.9%")}')));
   }
 
   // The placeholder warning joins the list rather than sitting above it.
@@ -3188,7 +3317,7 @@ function build(){
   // boxes. The folding was never the part that helped, and it was the
   // part that cost something. The reader can still collapse it.
   document.getElementById('guards').innerHTML = warn.length
-    ? \`<details class="note warn guardbox" open><summary>\${fill('${tj("guard.heading","{0} {1} to check before you use these figures")}', warn.length, plur(warn.length, '${tj("word.thing","thing")}', '${tj("word.things","things")}'))}</summary>\`
+    ? \`<details class="note warn guardbox" open><summary>\${fill('${tj("guard.heading","{0} {1} to check before you use these figures")}', warn.length, plur(warn.length, PLURALS.thing))}</summary>\`
       + warn.map(w => \`<div class="guarditem">\${w}</div>\`).join('') + '</details>'
     : '';
 
@@ -3238,10 +3367,20 @@ function build(){
       // figure printed alone reads as the whole cost of the programme,
       // which it is not -- the running cost is the part that never stops.
       + kpi(money(oneOff), '${tj("res.oneOff","One-off investment")}', 'cost',
-          '${tj("res.oneOff2","implementation")} &middot; ${tj("res.running","plus each year:")} '
-          + money(cPlat) + ' ${tj("res.running2","platform")} + ' + money(cRun) + ' ${tj("res.running3","internal")}')
+          // ONE KEY, ONE ENGLISH. The page and the PDF print the same
+          // sentence and used to build it from the same four fragments in
+          // two places; merging the page's copy without this one would
+          // have left res.running with two different Englishes, which the
+          // i18n suite treats as a failure and is right to.
+          //
+          // The PDF has no help icons, so slots 1 and 3 take an empty
+          // string. A slot a surface does not need is cheaper than a
+          // second row that says almost the same thing.
+          '${tj("res.oneOff2","implementation")} &middot; '
+          + fill('${tj("res.running","plus each year: {0} platform{1} + {2} internal{3}")}',
+                 money(cPlat), '', money(cRun), ''))
       + kpi(money(netAnnual), '${tj("res.netAnnual","Net annual saving")}', netAnnual >= 0 ? 'good' : 'cost')
-      + kpi(paybackMonths === null ? 'n/a' : paybackMonths < 1 ? '&lt;1 mo' : Math.round(paybackMonths) + ' mo', '${tj("res.payback","Payback on one-off")}', paybackMonths !== null && paybackMonths <= 24 ? 'good' : 'warn')
+      + kpi(payback(paybackMonths), '${tj("res.payback","Payback on one-off")}', paybackMonths !== null && paybackMonths <= 24 ? 'good' : 'warn')
       + kpi(dated.length, '${tj("res.dated","Jurisdictions with a dated deadline ahead")}', dated.length ? 'warn' : '')
       + '</div>'
 
@@ -3259,12 +3398,12 @@ function build(){
       + '<div class="note">' + fill('${tj("card.mix","Across {0} jurisdictions you have {1} (CTC or 5-corner) and {2} (4-corner exchange){3}.")}',
           '<strong>' + planned + '</strong>',
           '<strong>' + complex.length + ' ${tj("word.complex","complex")}</strong>',
-          '<strong>' + simple.length + ' ' + plur(simple.length, '${tj("word.regime","simple regime")}', '${tj("word.regimes","simple regimes")}') + '</strong>',
+          '<strong>' + simple.length + ' ' + plur(simple.length, PLURALS.regime) + '</strong>',
           watch.length ? fill('${tj("card.plusNoMandate",", plus {0} with no mandate{1}")}', watch.length, '') : '')
         + (euInjected ? ' ' + fill('${tj("card.euRow","One of these is the <strong>EU-wide obligation</strong>, added automatically because you selected a member state{0} &mdash; ViDA binds it whether or not it legislates its own mandate.")}', '') : '')
         + ' ' + fill('${tj("card.integrations","With {0} that is roughly {1}{2} to deliver.")}',
-          erp + ' ' + plur(erp, '${tj("word.erp","ERP/billing system")}', '${tj("word.erps","ERP/billing systems")}'),
-          '<strong>' + integrations + ' ' + plur(integrations, '${tj("word.integration","country-system integration")}', '${tj("word.integrations","country-system integrations")}') + '</strong>', '')
+          erp + ' ' + plur(erp, PLURALS.erp),
+          '<strong>' + integrations + ' ' + plur(integrations, PLURALS.integration) + '</strong>', '')
         + ' ' + (dated.length ? fill('${tj("card.nearest","The nearest binding date is {0} ({1}).")}', '<strong>' + dated[0][5] + '</strong>', dated[0][0])
           : '${tj("card.noDated","None of the selected jurisdictions has a future dated deadline on the tracker today.")}')
         + ' ${tj("ev.siteLabel","Source: live tracker data")}.</div>'
@@ -3389,6 +3528,10 @@ function build(){
     .replace("__ROI_UNLOCKED__", locked ? "false" : "true")
     .replace("__ROI_DEFAULTS__", JSON.stringify(defaults))
     .replace("__ROI_EVIDENCE__", JSON.stringify(evidence))
+    // Replaced rather than interpolated, like every other payload here:
+    // JSON.stringify output can legally contain a backtick or ${, and the
+    // replacement happens after the template literal has been evaluated.
+    .replace("__ROI_PLURALS__", JSON.stringify(PLURALS))
     .replace("__ROI_PHASES__", JSON.stringify(chartPhases))
     // The indirect layer's three model constants. invPerFte is APQC's
     // published median and grade A; the other two are ours and grade D,

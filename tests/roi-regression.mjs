@@ -1838,6 +1838,10 @@ t.check("and says which end was taken", /lowest is used/i.test(bracket));
 // The roi namespace itself is still English-only, so the STRINGS on these
 // pages are English by design -- what is under test is everything around
 // them.
+// The roi namespace is English-only, so the noun itself renders in
+// English in every language -- what is being checked is which FORM the
+// category selector picks, not what it says.
+const PLURAL_SINGULAR = "jurisdiction";
 for (const [lang, sep] of [["de", "."], ["fr", "\u202f"]]) {
   const { file: f } = await buildRoiPage({ lang });
   const p2 = await browser.newPage({ viewport: { width: 1280, height: 1000 } });
@@ -1877,6 +1881,33 @@ for (const [lang, sep] of [["de", "."], ["fr", "\u202f"]]) {
     fig.includes(sep), fig);
   t.check(`${lang}: and does not prefix the symbol the way en-US does`,
     !/^[$£€]/.test(fig), fig);
+
+  // Plurals pick a CLDR CATEGORY, not `n === 1`. The page shipped a
+  // two-form ternary under a comment saying languages with more forms
+  // "need more rows, not different code" -- the rows were never added
+  // and neither was the code.
+  //
+  // FRENCH TREATS ZERO AS SINGULAR. That is the check that would have
+  // failed before migration 573 and passes now, and it needs no French
+  // rows to be meaningful: the category machinery is what is under test,
+  // and French is a language this site already sells.
+  const plurals = await p2.evaluate(() => ({
+    zero: plur(0, PLURALS.jur),
+    one: plur(1, PLURALS.jur),
+    two: plur(2, PLURALS.jur),
+    // Polish selects `few` for 22 and `many` for 25. With no Polish rows
+    // loaded both fall back to `other`, which is correct behaviour and
+    // proves the selector is running rather than a ternary.
+    cats: [0, 1, 2, 5, 22, 25].map((n) => new Intl.PluralRules(document.documentElement.lang).select(n)),
+    keys: Object.keys(PLURALS).length,
+  }));
+  t.check(`${lang}: plural sets reach the page (${plurals.keys} nouns)`, plurals.keys >= 10, plurals.keys);
+  t.check(`${lang}: 1 is singular`, plurals.one === PLURAL_SINGULAR, plurals.one);
+  t.check(`${lang}: 2 is plural`, plurals.two !== PLURAL_SINGULAR, plurals.two);
+  t.check(`${lang}: zero is ${lang === "fr" ? "singular, as French requires" : "plural, as German requires"}`,
+    lang === "fr" ? plurals.zero === PLURAL_SINGULAR : plurals.zero !== PLURAL_SINGULAR,
+    `${lang} zero -> ${plurals.zero} (categories seen: ${plurals.cats.join(",")})`);
+
   await p2.close();
 }
 
