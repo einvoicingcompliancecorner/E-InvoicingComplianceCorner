@@ -1,0 +1,95 @@
+-- ================================================================
+-- The wave chart becomes readable: runway bars.
+--
+-- Dan, 17 August 2026, choosing from three mockups: "I like the wave
+-- chart options - I probably prefer option A."
+--
+-- ---- WHAT WAS WRONG, MEASURED --------------------------------------
+--
+-- 38 bars. Median width TWO PIXELS. Widest 22. On a 1000-pixel canvas.
+--
+-- A country's programme is five to seven weeks and the axis spans four
+-- and a half years, because one selected member state drags the far edge
+-- out to the 2030 ViDA obligation. Seven weeks on a four-year axis is two
+-- pixels, subdivided into up to six phase colours, under a legend naming
+-- all seven of them.
+--
+-- The chart was already admitting this. The expanded view printed
+-- "7w effort - 7w elapsed" as TEXT in every band header, because the
+-- graphic could not convey it. A chart that has to caption its own values
+-- is not working.
+--
+-- ---- WHY BIGGER BARS WAS NOT THE ANSWER -----------------------------
+--
+-- Three options were mocked on real data rather than one being proposed:
+-- runway bars, a start-date table, and a broken axis. Dan picked the
+-- first, and it is the one whose reasoning generalises.
+--
+-- THE EMPTY SPACE WAS THE ANSWER ALL ALONG. 90% of the plot area was
+-- blank, and every previous attempt treated that as waste to be
+-- compressed. The distance between today and a jurisdiction's deadline is
+-- its SLACK -- which is the single thing a reader opens this section to
+-- find out. Draw a track across it and the waste becomes the message,
+-- while the work block keeps its true position and its true width at the
+-- end of the run.
+--
+-- Nothing in the model changed. buildGantt computes exactly what it
+-- computed before; only the drawing is different. The dates were always
+-- right and were being rendered in a way that could not show them.
+--
+-- ---- FOUR CONSEQUENCES, EACH DELIBERATE -----------------------------
+--
+-- 1. SORTED BY SLACK, NOT BY WAVE. The first row is the one to act on.
+--    Wave bands are gone from this view: a wave is a grouping of
+--    deadlines and this view is ordered by urgency, so the two disagree
+--    by construction. "Group by wave" is one button away and unchanged.
+--
+-- 2. THE RUNWAY VIEW IS NOW THE DEFAULT. Grouping was the default because
+--    46 per-jurisdiction rows were unreadable -- right about the chart it
+--    described, wrong about this one. Grouping answers "who shares a
+--    deadline"; the reader arrives asking "when must I start", which is
+--    per jurisdiction.
+--
+-- 3. PHASES DRAW ONLY WHEN THEY CAN BE SEEN. Below 44 pixels the block is
+--    one colour and the breakdown moves to hover, where it is legible.
+--    Six 2px stripes and a key naming them was the defect, not the scale:
+--    a legend for marks nobody can distinguish is worse than no legend,
+--    because it asserts a precision the picture does not have. The legend
+--    now says which it is drawing.
+--
+-- 4. EVERY ROW GETS ITS OWN SLACK FIGURE. The old condition drew one per
+--    WAVE -- correct while rows sat under a shared band, wrong the moment
+--    they stand alone. Germany and Poland share 2027-01-01, so Germany
+--    rendered with no figure at all.
+--
+-- ---- AND THE CANVAS STOPPED RESERVING ROOM FOR WHAT IT NO LONGER DREW
+--
+-- Height was computed as rows plus band headers. With the bands gone that
+-- left about 250px of empty canvas under the last track -- a layout
+-- reserving space for a thing that had been deleted, which is the same
+-- shape as the CSS in migration 572 that had stopped matching any
+-- element. Found by looking at the render.
+
+INSERT OR REPLACE INTO translations (namespace, key, lang, value) VALUES
+  -- The tooltip on a block too narrow to divide. It carries the phase
+  -- breakdown the bar can no longer show, so nothing is lost -- it moves.
+  ('roi', 'chart.blockTip', 'en', '{0} — {1} weeks of work, {2} to {3}'),
+  ('roi', 'chart.segWeeksShort', 'en', '{0}: {1}w'),
+  -- Shown only when at least one block drew solid, so the legend
+  -- describes what is on screen rather than what the renderer can do.
+  ('roi', 'chart.key.work', 'en', 'country work &mdash; hover for phases');
+
+-- ---- what this migration claims it did ------------------------------
+-- ASSERT: SELECT count(*) FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key IN ('chart.blockTip','chart.segWeeksShort','chart.key.work') = 3
+--
+-- Both view labels must exist, because the button now starts on the other
+-- one. A missing btn.group renders the key name on the control that gets
+-- a reader back to the grouped plan.
+--
+-- ASSERT ALWAYS: SELECT count(*) FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key IN ('btn.group','btn.expand') = 2
+--
+-- The narrow-block tooltip must keep every slot. It is the only place the
+-- phase breakdown survives at this zoom, and losing a slot in translation
+-- would silently take a fact off the page that the bar no longer carries.
+--
+-- ASSERT ALWAYS: SELECT count(*) FROM translations WHERE namespace = 'roi' AND key = 'chart.blockTip' AND value LIKE '%{0}%{1}%{2}%{3}%' = 1
