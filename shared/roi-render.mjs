@@ -427,8 +427,18 @@ footer{color:var(--muted)}
 @media(min-width:760px){.g2{grid-template-columns:1fr 1fr}.g5{grid-template-columns:repeat(3,1fr)}}
 @media(min-width:1000px){.g5{grid-template-columns:repeat(5,1fr)}}
 label{display:block;font-size:12px;font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin:0 0 5px}
-input[type=number],input[type=text],select{width:100%;background:var(--ink);border:1px solid var(--line);color:var(--text-lo);border-radius:6px;padding:9px 11px;font:inherit;font-size:15px}
+/* type=search included, and it was not: the country search rendered as a
+   white box on a navy page, because the rule listed the types that
+   existed when it was written. A style rule that enumerates types is a
+   list that goes out of date silently -- nothing errors, the control just
+   stops belonging to the page. */
+input[type=number],input[type=text],input[type=search],select{width:100%;background:var(--ink);border:1px solid var(--line);color:var(--text-lo);border-radius:6px;padding:9px 11px;font:inherit;font-size:15px}
 input:focus,select:focus{outline:2px solid var(--soon);outline-offset:1px}
+/* The native clear button is drawn dark-on-dark by the UA on this
+   surface, so it is invisible until hovered. The Clear button above does
+   the same job with a label. */
+input[type=search]::-webkit-search-cancel-button{filter:invert(1);opacity:.5}
+input[type=search]::placeholder{color:var(--muted);opacity:1}
 .hint{font-size:11.5px;color:var(--muted);margin:5px 0 0}
 /* AMBER while the value is still ours, GREEN once the reader has touched
    it. Dan, 16 Aug 2026: "change all input fields in assumptions and
@@ -1314,11 +1324,14 @@ export function renderRoiPage({ countries, benchmarks = [], phases = [], strings
   <div class="footcol" id="s-countries">
     <div class="cwrap">
       <label>${t("input.countries", "Countries in scope")}${hlp("countries",t("tip.data","Where this data comes from"))}</label>
-      <p class="hint" style="margin-bottom:8px">${t("input.countries.hint", "Live mandate data for all 70 tracked jurisdictions.")} <button id="selNone" style="padding:3px 9px;font-size:12px">${t("btn.selNone", "Clear")}</button></p>
-      <label class="cbox" id="subsRow" style="align-items:center;gap:8px;padding:9px 12px;margin:0 0 10px;background:var(--ink-3);border:1px solid var(--line);border-radius:6px;font-size:13.5px">
+      <p class="hint" style="margin-bottom:8px"><span id="selCount"></span> <button id="selNone" style="padding:3px 9px;font-size:12px">${t("btn.selNone", "Clear")}</button></p>
+      <label class="cbox" id="subsRow" style="align-items:center;gap:8px;padding:9px 12px;margin:0 0 8px;background:var(--ink-3);border:1px solid var(--line);border-radius:6px;font-size:13.5px">
         <input type="checkbox" id="useSubs">
         <span>${t("subs.label", "Use <strong>my subscribed countries</strong>")} <span id="subsCount" class="hint" style="display:inline"></span></span>
       </label>
+      <p class="hint" id="subsWhat" style="margin:-4px 0 10px">${t("subs.what", "Those are the countries you follow for alerts. Adjust the list if your invoicing footprint is different.")}</p>
+      <input type="search" id="cSearch" autocomplete="off" placeholder="${t("input.countrySearch", "Search 70 jurisdictions")}" style="margin:0 0 8px">
+      <p class="hint hidden" id="cNoMatch" style="margin:0 0 8px">${t("input.countryNoMatch", "Nothing matches that. Clear the search to see every jurisdiction.")}</p>
       <div class="countries" id="countryList"></div>
     </div>
   </div>
@@ -2239,49 +2252,124 @@ subsBox.onchange = () => {
   } else {
     boxes().forEach(b => b.checked = false);
   }
+  paintCount();
   if(typeof unlocked !== 'undefined' && unlocked) showResults();
 };
 // Any manual change means the selection is no longer "my subscribed countries".
-list.addEventListener('change', e => { if(e.target !== subsBox) subsBox.checked = false; markStale(); });
+list.addEventListener('change', e => { if(e.target !== subsBox) subsBox.checked = false; paintCount(); markStale(); });
 
 const chosen = () => boxes().filter(b=>b.checked).map(b=>COUNTRIES[+b.dataset.i]);
-document.getElementById('selNone').onclick = () => { subsBox.checked = false; boxes().forEach(b=>b.checked=false); };
-// THE OPENING SELECTION. Eight large European economies, so a reader who
-// presses Calculate before touching anything sees a plausible programme
-// rather than an empty one.
+
+// ---- how many are selected, said out loud ------------------------------
 //
-// INDEXED BY data-i, NOT BY POSITION, and that is the whole fix. This
-// line used to read:
+// The picker is seventy rows in a scrolling box. The selection drives the
+// integration count, the one-off cost, every wave and the whole plan --
+// and the only way to find out what it was, was to scroll seventy rows
+// and count. The header said "Live mandate data for all 70 tracked
+// jurisdictions", which is a fact about US.
 //
-//     const i = COUNTRIES.findIndex(c => c[1] === code); boxes()[i].checked = true;
+// It names the countries while there are few enough to name. A reader
+// with three selected wants to see which three; a reader with thirty
+// wants the number. Nine is where the line sits because the footprint
+// card above already summarises anything larger.
+const NAME_LIMIT = 9;
+const paintCount = () => {
+  const sel = chosen();
+  const el = document.getElementById('selCount');
+  if(!el) return;
+  el.innerHTML = !sel.length
+    ? '${tj("countries.none","<strong>No jurisdictions selected.</strong> Pick the countries you invoice in, or use your saved list above.")}'
+    : sel.length <= NAME_LIMIT
+      ? fill('${tj("countries.named","<strong>{0}</strong> in scope: {1}.")}', sel.length, sel.map(c=>c[0]).join(', '))
+      : fill('${tj("countries.count","<strong>{0}</strong> jurisdictions in scope.")}', sel.length);
+};
+
+// ---- search, because seventy rows is not a list, it is a haystack ------
 //
-// That i indexes COUNTRIES, which getRoiCountries orders BY name_en --
-// alphabetically, Argentina first. boxes() returns DOM order, which is
-// grouped by region: all of Europe, then MEA, then APAC, then the
-// Americas. The two orderings coincide only if every European
-// jurisdiction sorts before every non-European one, and Australia,
-// Brazil and Canada see to it that they do not.
+// Region headings hide with their rows, or a search for "Germany" leaves
+// four empty region labels behind it. Matching is accent-insensitive so
+// that a French reader typing "republique" finds "Republique tcheque",
+// and it matches the COUNTRY CODE too -- "DE" is how half this audience
+// refers to Germany.
+const norm = (t) => String(t).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+const cSearch = document.getElementById('cSearch');
+const applySearch = () => {
+  const q = norm(cSearch.value.trim());
+  let shown = 0;
+  list.querySelectorAll('.crow').forEach(row => {
+    const i = row.querySelector('input[data-i]');
+    if(!i) return;
+    const c = COUNTRIES[+i.dataset.i];
+    const hit = !q || norm(c[0]).indexOf(q) >= 0 || norm(c[1]).indexOf(q) === 0;
+    row.classList.toggle('hidden', !hit);
+    if(hit) shown++;
+  });
+  list.querySelectorAll('.creg').forEach(reg => {
+    let any = false;
+    for(let n = reg.nextElementSibling; n && !n.classList.contains('creg'); n = n.nextElementSibling){
+      if(n.classList.contains('crow') && !n.classList.contains('hidden')){ any = true; break; }
+    }
+    reg.classList.toggle('hidden', !any);
+  });
+  document.getElementById('cNoMatch').classList.toggle('hidden', shown > 0);
+};
+cSearch.addEventListener('input', applySearch);
+
+// Painted once at load, or the line that tells a reader nothing is
+// selected is itself missing at the only moment it is certainly true.
+paintCount();
+
+document.getElementById('selNone').onclick = () => {
+  subsBox.checked = false;
+  boxes().forEach(b=>b.checked=false);
+  paintCount();
+  markStale();
+};
+// THE OPENING SELECTION IS THE READER'S OWN, OR NOTHING.
 //
-// So the eight ticks landed on whatever happened to occupy those eight
-// DOM positions. Measured on the shipped page: Czech Republic, Poland,
-// Portugal, United Kingdom, Australia, New Zealand, Canada and Ecuador.
-// Two of the eight intended, by coincidence. Every reader who pressed
-// Calculate without changing the selection got a business case for a
-// footprint nobody chose -- and the headline figure, the wave plan and
-// the PDF all followed it.
+// It used to be eight large European economies, on the reasoning that a
+// reader who presses Calculate before touching anything should see a
+// plausible programme rather than an empty one. Two things were wrong
+// with that, and only one of them was the bug fixed in migration 570.
 //
-// Silent by construction: eight boxes are ticked, the count is right, the
-// countries are wrong, and nothing on the page claims which eight it
-// meant to tick. It survived because no test asserted the opening
-// selection by name -- only that some countries were selected. One now
-// does.
+// The bug: it indexed COUNTRIES (ordered by name) and ticked that
+// POSITION in the DOM list (ordered by region), so the eight boxes landed
+// on Czech Republic, Poland, Portugal, the UK, Australia, New Zealand,
+// Canada and Ecuador. That is fixed.
 //
-// data-i is the country's index into COUNTRIES, written onto the box
-// when the list was built, and it is the only correspondence between the
-// two orderings that is actually maintained. Every other consumer on this
-// page already uses it; this line was the exception.
-const DEFAULT_TICKS = ['GB','FR','DE','IT','ES','PL','NL','BE'];
-boxes().forEach(b => { if(DEFAULT_TICKS.includes(COUNTRIES[+b.dataset.i][1])) b.checked = true; });
+// The principle: a plausible programme for a footprint nobody chose is
+// exactly the artefact this page must not produce. Every other default on
+// the page is a BENCHMARK -- a published figure with a grade, which a
+// reader can reasonably accept. The country list is not a benchmark. It
+// is a fact about the reader's own business that we cannot know, and
+// inventing one produces a confident business case for a company that
+// does not exist.
+//
+// Dan, settling it: "perhaps default no countries, then the user can
+// check the subscribed countries check box if they would like to default
+// those values."
+//
+// NOTHING IS TICKED. The first draft of this change defaulted to the
+// reader's saved list, which is much the best guess available -- and a
+// guess is still what it would have been.
+//
+// THE SAVED LIST IS AN ALERTS LIST, NOT A FOOTPRINT. The subscribe card
+// asks "Which countries do you want alerts for?", so someone may follow
+// Poland because it is newsworthy rather than because they invoice there,
+// and someone with an entity in a country they do not follow would be
+// missed entirely. Defaulting to it would have replaced our wrong
+// assumption with a better-sourced wrong assumption, and left the page
+// asserting a footprint on the reader's behalf either way.
+//
+// Empty, the checkbox becomes what it should always have been: a one-tap
+// shortcut the reader chooses, rather than a silent premise. And the
+// empty-selection guard from migration 575 catches anyone who presses
+// Calculate first and says what to do about it -- which is a better
+// first experience than a confident number about nobody.
+//
+// Nothing to do here. The line that used to tick eight countries is gone,
+// and this comment is what replaces it: the reasoning has to outlive the
+// code, or the next person to want a friendlier empty state puts it back.
 
 
 // ---- Gantt: back-planned delivery waves --------------------------------
@@ -2353,7 +2441,7 @@ function buildGantt(sel0, erp, pace){
     document.getElementById('ganttHead').innerHTML = '<div class="note">None of your selected jurisdictions has a future dated deadline, so there is no back-planned wave to draw. What follows is discretionary work you can schedule whenever you have capacity.</div>';
   }
   if(!dated.length && !undated.length){
-    document.getElementById('ganttHead').innerHTML = '<div class="note">No selected jurisdiction has both a future dated deadline and a mandate to build for, so there is no delivery timeline to plot. Jurisdictions already in force still need remediation — see the table below.</div>';
+    document.getElementById('ganttHead').innerHTML = '<div class="note">${tj("waves.emptyChart","No selected jurisdiction has both a future dated deadline and a mandate to build for, so there is no delivery timeline to plot. Jurisdictions already in force still need remediation &mdash; see the table below.")}</div>';
     host.innerHTML = ''; document.getElementById('ganttLegend').innerHTML = ''; return null;
   }
   // Guarded: a selection of nothing but no-mandate jurisdictions is a
@@ -2876,7 +2964,7 @@ function renderAdjust(sel){
                      .sort((a,b) => a[0].localeCompare(b[0]));
   const waves = [...new Set(sel.map(c => ovrOf(c[0]).dl || c[5]).filter(Boolean))].sort();
   if(!dated.length && !undated.length){
-    host.innerHTML = '<p class="hint">Nothing is selected, so there is nothing to rearrange.</p>';
+    host.innerHTML = '<p class="hint">${tj("adjust.empty","Nothing is selected, so there is nothing to rearrange.")}</p>';
     return;
   }
   host.innerHTML = \`
@@ -3363,7 +3451,7 @@ function build(){
     // heading or a phone shows six unlabelled fragments.
     w += \`<tr><td data-col="${tj("th.deadline","Deadline")}"><strong>\${c[5]}</strong>\${c[11]?' <span class="pill p-upcoming">EU</span>':''}</td><td data-col="${tj("adjust.jur","Jurisdiction")}">\${c[0]}</td><td data-col="${tj("th.status","Status")}"><span class="pill \${st[1]}">\${st[0]}</span></td><td data-col="${tj("th.model","Model")}"><span class="pill \${cx[1]}">\${cx[0]}</span></td><td class="num" data-col="${tj("th.integrations","Integrations")}">\${ints}</td><td data-col="${tj("th.why","Why")}" style="font-size:12px;color:var(--muted)">\${why}</td></tr>\`;
   });
-  w += dated.length ? '</tbody></table>' : '<div class="note">No selected jurisdiction has a future dated deadline. Those already in force still need remediation work &mdash; see the in-force list below.</div>';
+  w += dated.length ? '</tbody></table>' : '<div class="note">${tj("waves.emptyTable","No selected jurisdiction has a future dated deadline. Those already in force still need remediation work &mdash; see the in-force list below.")}</div>';
   if(watch.length) w += \`<div class="note" style="margin-top:12px">\${fill('${tj("waves.noMandate","<strong>No mandate, included by your selection ({0}):</strong> {1}. Costed at the simple rate and scheduled as one discretionary wave &mdash; there is no deadline to miss, so this work can start whenever you have capacity.")}', watch.length, watch.map(c=>c[0]).join(', '))}</div>\`;
   const inforceNoDate = sel.filter(c=>c[3]==='i' && !c[5]);
   if(inforceNoDate.length) w += \`<div class="note" style="margin-top:12px">\${fill('${tj("waves.inforce","<strong>Already in force, no further dated step ({0}):</strong> {1}. These are compliance-now, not project-plan items.")}', inforceNoDate.length, inforceNoDate.map(c=>c[0]).join(', '))}</div>\`;

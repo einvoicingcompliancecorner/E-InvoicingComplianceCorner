@@ -128,25 +128,55 @@ const toGrouped = async () => {
 const expandGantt = toRunway;
 
 // ---- 1. it calculates at all ----
-// ---- 1a. the opening selection is the eight countries it means ----
+// ---- 1a. the page assumes no footprint ----
 //
-// Checked BY NAME, and that is the whole point. Until 17 August 2026 the
-// opening tick looked each code up in COUNTRIES (ordered by name) and
-// ticked that POSITION in the list (ordered by region), so the eight
-// boxes landed on Czech Republic, Poland, Portugal, United Kingdom,
-// Australia, New Zealand, Canada and Ecuador. Two of the eight intended,
-// by coincidence.
+// It used to open with eight large European economies. Migration 570
+// fixed the BUG in that -- it indexed a name-ordered list and ticked
+// positions in a region-ordered one, so the eight landed on Czech
+// Republic, Poland, Portugal, the UK, Australia, New Zealand, Canada and
+// Ecuador. Migration 579 fixed the PRINCIPLE: every other default on this
+// page is a published benchmark a reader can accept, and the country list
+// is a fact about their business that we cannot know.
 //
-// It survived because the only thing ever asserted about the opening
-// state was that SOME countries were selected -- and eight were, with the
-// right count and the wrong names. A count is not a selection.
+// The check that used to live here asserted the eight by name, which was
+// right at the time and is exactly the check that would have caught the
+// positional bug had it existed. It is kept in spirit: assert the opening
+// state precisely, whatever it is, because "some countries are selected"
+// is what let eight wrong ones through.
 const opening = await page.evaluate(() =>
   [...document.querySelectorAll("#countryList input[type=checkbox][data-i]")]
-    .filter((b) => b.checked).map((b) => COUNTRIES[+b.dataset.i][1]).sort());
-const WANT = ["BE", "DE", "ES", "FR", "GB", "IT", "NL", "PL"];
-t.check("the opening selection is the eight intended countries",
-  opening.join(",") === WANT.join(","), opening.join(","));
+    .filter((b) => b.checked).map((b) => COUNTRIES[+b.dataset.i][1]));
+t.check("nothing is selected on load, so no footprint is assumed",
+  opening.length === 0, opening.join(","));
+t.check("and the picker says so rather than looking broken",
+  await page.evaluate(() => /No jurisdictions selected/i.test(
+    document.getElementById("selCount").innerText)));
 
+// The subscribed list is a one-tap shortcut the reader chooses, not a
+// silent premise -- and it is an ALERTS list, so the page says what it is.
+await page.check("#useSubs"); await page.waitForTimeout(250);
+t.check("the saved-countries box is a working shortcut",
+  await page.evaluate(() => document.querySelectorAll("#countryList input:checked").length) === 11);
+t.check("and the page says the saved list is an alerts list, not a footprint",
+  await page.evaluate(() => /alerts/i.test(document.getElementById("subsWhat").innerText)));
+
+// SEARCH. Seventy rows in a scrolling box is a haystack; it matches the
+// country code too, because half this audience says DE for Germany.
+await page.fill("#cSearch", "german"); await page.waitForTimeout(250);
+const byName = await page.evaluate(() =>
+  [...document.querySelectorAll("#countryList .crow")].filter((r) => !r.classList.contains("hidden")).length);
+t.check(`search by name narrows the list (${byName} rows)`, byName === 1, byName);
+t.check("and empty region headings go with their rows",
+  await page.evaluate(() =>
+    [...document.querySelectorAll("#countryList .creg")].filter((r) => !r.classList.contains("hidden")).length === 1));
+await page.fill("#cSearch", "zzzz"); await page.waitForTimeout(250);
+t.check("and a search with no hits says so",
+  await page.evaluate(() => !document.getElementById("cNoMatch").classList.contains("hidden")));
+await page.fill("#cSearch", ""); await page.waitForTimeout(250);
+
+// Back to a real selection for everything below, which was written when
+// eight countries were selected on load.
+await selectEU(); await page.waitForTimeout(200);
 await page.click("#run");
 await page.waitForTimeout(500);
 t.check("results panel shown",
@@ -1967,6 +1997,12 @@ t.check("and does not gain a second copy of the tooltip's state",
 //     "European Union" overlapped by 25px and "United Kingdom" cleared by
 //     7. Two SVG text nodes overlapping do not error and do not fail any
 //     assertion, so this is measured rather than assumed.
+//
+//     The reload above resets the page, and since migration 579 that
+//     means NOTHING IS SELECTED -- so a bare Calculate draws no chart and
+//     this measured nothing. It has to choose a footprint first, which is
+//     now true of every check that wants a plan.
+await selectEU(); await page.waitForTimeout(200);
 await page.click("#run"); await page.waitForTimeout(800);
 await expandGantt();
 const gutter = await page.evaluate(() => {
@@ -2089,6 +2125,15 @@ for (const width of [390, 360]) {
   const m = await browser.newPage({ viewport: { width, height: 844 } });
   t.watch(m);
   await m.goto(`file://${file}`);
+  // A FOOTPRINT FIRST. Since migration 579 nothing is selected on load,
+  // so a bare Calculate produces no wave plan -- and the wave-table half
+  // of the fold check measured zero rows and said so. The check was
+  // right; the scenario was empty.
+  await m.evaluate(() => {
+    document.getElementById("useSubs").checked = false;
+    document.querySelectorAll("#countryList input[type=checkbox][data-i]")
+      .forEach((b) => { b.checked = COUNTRIES[+b.dataset.i][2] === "Eu"; });
+  });
   await m.click("#run"); await m.waitForTimeout(900);
 
   // (a) NOTHING OFF THE RIGHT EDGE. A horizontal scrollbar on a phone

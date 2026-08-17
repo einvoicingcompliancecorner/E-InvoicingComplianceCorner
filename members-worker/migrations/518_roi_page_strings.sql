@@ -139,4 +139,16 @@ INSERT OR IGNORE INTO translations (namespace, key, lang, value) VALUES
 -- joins the standing invariant that keeps every stated count honest.
 -- Written relatively, like the rest of 517's.
 --
--- ASSERT ALWAYS: SELECT count(*) FROM translations WHERE namespace = 'roi' AND key IN ('page.lede','input.countries.hint') AND value LIKE '%' || (SELECT count(*) FROM countries WHERE in_picker = 1) || '%' = 2
+-- RETIRED IN PLACE BY MIGRATION 579, 17 August 2026, and the rule is
+-- unchanged: every stated jurisdiction count on this page must agree with
+-- the picker, written relatively so it cannot drift.
+--
+-- `input.countries.hint` -- "Live mandate data for all 70 tracked
+-- jurisdictions" -- was replaced by a line that says how many the READER
+-- has selected, which is the fact they need in that spot. The count moved
+-- to the search placeholder, "Search 70 jurisdictions", so the invariant
+-- follows it there.
+--
+-- Restated in 579 rather than edited here, because at this position in
+-- the chain `input.countrySearch` does not exist yet and an ASSERT ALWAYS
+-- is checked at its own position as well as at the end.

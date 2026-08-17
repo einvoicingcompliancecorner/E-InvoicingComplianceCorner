@@ -13936,3 +13936,72 @@ backticks in comments, `t()` in single quotes, and this.
 
 `npm test`: 10 suites. ROI regression **268 checks** (was 261). Replay OK
 across 578 files — **347 assertions, 94 standing invariants**.
+
+---
+
+## 17 August 2026 — migration 579: the country picker assumes nothing
+
+Dan: *"perhaps default no countries, then the user can check the
+subscribed countries check box if they would like to default those
+values."*
+
+### Nothing is ticked, and the second instinct was the better one
+
+The picker opened with eight large European economies. Migration 570
+fixed the **bug** in that — it indexed a name-ordered list and ticked
+positions in a region-ordered one. It did not fix the **principle**:
+every other default on this page is a published benchmark with a grade,
+which a reader can reasonably accept. The country list is a fact about
+their business that we cannot know, and inventing one produces a
+confident business case for a company that does not exist.
+
+Dan's first idea — default to the reader's saved list — was my first
+draft too, and it is wrong for a reason worth recording. **The saved list
+is an alerts list, not a footprint.** The subscribe card asks *"Which
+countries do you want alerts for?"* So a reader may follow Poland because
+it is newsworthy rather than because they invoice there, and a reader with
+an entity in a country they do not follow would be missed. It is the best
+guess available — and a guess asserted on their behalf either way.
+
+Empty, the checkbox becomes what it should always have been: a shortcut
+the reader chooses. It now carries a line saying what the saved list
+actually is.
+
+### The picker says what is selected, and can be searched
+
+Seventy rows in a scrolling box, and the only way to learn what was
+selected was to scroll seventy rows and count. The header said "Live
+mandate data for all 70 tracked jurisdictions" — a fact about **us**, in
+the one place a reader needs a fact about **them**. It now names the
+countries up to nine and counts beyond that.
+
+Search matches the name **or the country code**, because half this
+audience says "DE" for Germany, and is accent-insensitive so a French
+reader typing "republique" finds "République tchèque". Region headings
+hide with their rows.
+
+### Changing the default made three strings reachable
+
+The detector rendered the empty state for the first time and immediately
+found three untranslated English strings: the chart's *"nothing to plot"*,
+the adjust panel's *"nothing to rearrange"*, and the wave table's *"no
+future dated deadline"*. Eight countries had always been selected, so no
+render had ever reached them. **A state nobody could reach was a state
+nobody checked** — the itinerary problem from migration 574, from the
+other side.
+
+Three regression checks broke for the same reason and were right to: they
+had assumed a selection existed.
+
+### The jurisdiction-count invariant followed its string
+
+518 required `page.lede` and `input.countries.hint` to state the picker's
+own count. The hint is gone, so the invariant moves to the search
+placeholder — "Search 70 jurisdictions" — where the count now lives. Same
+rule; this is the one that exists because "62 jurisdictions" sat on the
+live site for two days.
+
+### Verified
+
+`npm test`: 10 suites. ROI regression **274 checks** (was 268). Replay OK
+across 579 files — **351 assertions, 96 standing invariants**.
