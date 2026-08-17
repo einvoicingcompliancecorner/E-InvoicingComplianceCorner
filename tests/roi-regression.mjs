@@ -2129,6 +2129,36 @@ for (const width of [390, 360]) {
   t.check(`${width}px: and the chart is one tap away`,
     await m.evaluate(() => !document.getElementById("gantt").parentElement.classList.contains("hidden")));
 
+  // (c2) EVIDENCE COLLAPSES ON A PHONE, AND ONLY ON A PHONE. The working
+  //      under each savings row and the "Why" under each wave row were
+  //      most of a ~9,700px page. Desktop is asserted separately below,
+  //      because collapsing evidence on the page whose proposition is
+  //      evidence would be a far worse defect than the one it fixes.
+  await m.click("#tblToggle"); await m.waitForTimeout(400);   // back to the table
+  const fold = await m.evaluate(() => {
+    const tot = document.querySelector("#savingsTable tr.tot");
+    return {
+      savings: document.querySelectorAll("#savingsTable details.working").length,
+      waves: document.querySelectorAll("#waves details.working").length,
+      open: [...document.querySelectorAll("details.working")].filter((d) => d.open).length,
+      // The total row's first cell spans two columns, so a collapser
+      // working by position folds a headline FIGURE into a disclosure.
+      totalFolded: !!(tot && tot.querySelector("details")),
+      totalOrder: tot ? [...tot.children].map((c) => c.getAttribute("data-col") || "title") : [],
+    };
+  });
+  t.check(`${width}px: the working is folded away (${fold.savings} savings, ${fold.waves} wave rows)`,
+    fold.savings >= 8 && fold.waves >= 5 && fold.open === 0, JSON.stringify(fold));
+  t.check(`${width}px: and no figure was folded with it`,
+    !fold.totalFolded && fold.totalOrder.join(",") === "title,Annual value,Saved on this scope",
+    JSON.stringify(fold.totalOrder));
+  // It has to open, or this is not a fold, it is a deletion.
+  await m.evaluate(() => document.querySelector("#savingsTable details.working").open = true);
+  await m.waitForTimeout(150);
+  t.check(`${width}px: and opens to the full working`,
+    await m.evaluate(() => /Calculation/i.test(
+      document.querySelector("#savingsTable details.working").textContent)));
+
   // (d) TAP TARGETS. Seventy country rows at 13px was the hardest thing
   //     on the page to operate and the first task anyone performs.
   const small = await m.evaluate(() =>
@@ -2147,6 +2177,13 @@ await wide.click("#run"); await wide.waitForTimeout(800);
 t.check("1440px: the chart is still the default and the table is not",
   await wide.evaluate(() => !document.getElementById("gantt").parentElement.classList.contains("hidden")
     && document.getElementById("waves").classList.contains("hidden")));
+// THE EVIDENCE IS NOT FOLDED ON A DESKTOP. This is the check that matters
+// most in this block: the fold was asked for on mobile only, and a change
+// that quietly reached the wide layout would remove the thing the page is
+// for. Asserted on the rendered DOM rather than on the media query.
+t.check("1440px: and no evidence is collapsed",
+  await wide.evaluate(() => document.querySelectorAll("details.working").length === 0
+    && /Calculation/i.test(document.querySelector("#savingsTable tbody tr td:nth-child(2)").textContent)));
 await wide.close();
 
 await browser.close();

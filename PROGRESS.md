@@ -13886,3 +13886,53 @@ which on the page whose proposition is evidence is Dan's call.
 `npm test`: 10 suites. ROI regression **261 checks** (was 248). Render
 lint 4. Replay OK across 577 files — **345 assertions, 93 standing
 invariants**.
+
+---
+
+## 17 August 2026 — migration 578: the working folds away on a phone
+
+Dan: *"could you collapse evidence only in mobile view?"*
+
+The "Calculation:" and "Justification:" lines under each savings row, and
+the "Why" under each wave row. On a 1440px screen they sit in their own
+column and cost nothing; on a 390px screen they **are** the page. The
+wave-table half is largely repeated — seven jurisdictions, three distinct
+regime explanations, the same paragraph five times.
+
+Folded: **8,597px against 9,757** — level with where the mobile page
+started, while now showing the wave plan as a table and hiding nothing off
+the right-hand edge.
+
+**Only on a phone, and that is the load-bearing part.** Evidence on demand
+is a reasonable trade at 390px and a bad one everywhere else, because this
+page's proposition is that every figure shows its derivation without being
+asked. The collapser returns before doing anything on a wide viewport, and
+the suite asserts at 1440px that no disclosure exists *and* the working is
+still in the cell.
+
+### Two defects from working by position
+
+A post-render step rather than nine row templates — but the total row's
+first cell spans two columns, so index 1 there is the **annual value
+figure**. The first version folded a headline number into a "show the
+working" disclosure and left the card looking like it had lost a figure. A
+numeric cell is never working, whatever index it lands on.
+
+The same colspan inverted the card layout in that row: ordered by
+`nth-child`, "saved on this scope" printed above "annual value", and only
+there. Ordered by class, the layout stops depending on how many columns a
+cell spans.
+
+### The octal trap, second time
+
+The disclosure marker went in as `content:'\25B8'`. A CSS unicode escape
+is an octal escape to the JavaScript parser, and `ROI_STYLE` is a template
+literal — reported as *"Octal escape sequences are not allowed in template
+strings"*, which mentions neither CSS nor the line. **render-lint now
+catches the shape by name.** Third trap in that file to earn a rule:
+backticks in comments, `t()` in single quotes, and this.
+
+### Verified
+
+`npm test`: 10 suites. ROI regression **268 checks** (was 261). Replay OK
+across 578 files — **347 assertions, 94 standing invariants**.
