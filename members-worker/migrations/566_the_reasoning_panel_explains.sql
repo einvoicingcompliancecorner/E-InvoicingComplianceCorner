@@ -140,6 +140,26 @@ UPDATE translations SET value = 'Where each figure comes from, how far it can be
 -- of three defensible readings. A future tidy that made this prose
 -- friendlier still must not make it quieter.
 --
--- ASSERT ALWAYS: SELECT count(*) FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key = 'notes.rework' AND value LIKE '%without a source%' = 1
+-- RETIRED 18 Aug 2026 by migration 582, which removed "The reasoning"
+-- block. This guarded the card's admission that the rework row rests on
+-- figures published without a source.
+--
+-- THE RULE SURVIVES WHERE IT MATTERS MORE. Dan, on being shown what the
+-- card carried: "Avoided rework on data-entry errors also appears on the
+-- savings section, with a tooltip that clarifies." He is right, and that
+-- row's justification names each of the three figures and its grade
+-- beside the number it produces, rather than two sections below it.
+--
+--   was: ASSERT ALWAYS: SELECT count(*) FROM translations WHERE
+--        namespace = 'roi' AND lang = 'en' AND key = 'notes.rework'
+--        AND value LIKE '%without a source%' = 1
 -- ASSERT ALWAYS: SELECT count(*) FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key = 'ev.gradeC.body' AND value LIKE '%one unnamed%' = 1
--- ASSERT ALWAYS: SELECT count(*) FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key = 'notes.bracket' AND value LIKE '%lowest is used%' = 1
+-- RETIRED 18 Aug 2026 by migration 582, with the same block. Its sibling
+-- in migration 561 carries the full reasoning for what was lost here; in
+-- short, three readings of the page's conservatism and a statement that
+-- the lowest was taken, removed as a deliberate decision after the cost
+-- was put to Dan.
+--
+--   was: ASSERT ALWAYS: SELECT count(*) FROM translations WHERE
+--        namespace = 'roi' AND lang = 'en' AND key = 'notes.bracket'
+--        AND value LIKE '%lowest is used%' = 1

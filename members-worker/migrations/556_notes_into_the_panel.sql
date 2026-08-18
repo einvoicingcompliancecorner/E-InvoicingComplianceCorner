@@ -93,4 +93,21 @@ DELETE FROM translations WHERE namespace = 'roi' AND key IN (
 -- panel card for two weeks; putting them back in one paragraph is the
 -- point of this file.
 --
--- ASSERT ALWAYS: SELECT count(*) FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key IN ('notes.headcount','notes.headcountFte','notes.headcountSplit') = 3
+-- RETIRED 18 Aug 2026 by migration 582, which removed "The reasoning"
+-- block at Dan's request and this card with it.
+--
+-- It is the removal in that file with nothing behind it: nothing else on
+-- the page states the saving in headcount. Dan was shown that and
+-- answered: "Ignore the two reasoning cards that you think are not
+-- carried." So this is retired as a decision taken with the cost known,
+-- not as one taken by accident -- which is the only kind of retirement
+-- this mechanism should permit.
+--
+-- The FIGURES are not lost. captureFte and captureValue are still
+-- computed and still drive guard 6, which refuses a bottom-up labour
+-- figure that exceeds the top-down saving it decomposes. What went is the
+-- reader-facing view of them.
+--
+--   was: ASSERT ALWAYS: SELECT count(*) FROM translations WHERE
+--        namespace = 'roi' AND lang = 'en' AND key IN
+--        ('notes.headcount','notes.headcountFte','notes.headcountSplit') = 3
