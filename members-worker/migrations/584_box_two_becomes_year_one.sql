@@ -1,0 +1,155 @@
+-- ================================================================
+-- The investment tile becomes year one cost, and the row learns to
+-- reconcile.
+--
+-- Dan, 18 August 2026: "Sorry, as I thought the One-off investment was
+-- actually year one cost (implementation + software fees. My mistake. I
+-- would rather it showed year one costs I think."
+--
+-- ---- THE MISTAKE IS THE FINDING ------------------------------------
+--
+-- It was not a mistake worth apologising for. The tile read
+--
+--     $310,000
+--     ONE-OFF INVESTMENT IMPLEMENTATION
+--     plus each year: $60,000 platform + $30,000 internal
+--
+-- and the person who commissioned this page read it as year one. If he
+-- reads it that way, a CFO reads it that way -- and the difference is
+-- $90,000 on a $310,000 figure, which is not a rounding error in a board
+-- pack. The label was accurate and the tile was not legible, which is a
+-- distinction this project keeps having to relearn.
+--
+-- ================================================================
+-- WHY THIS COULD NOT BE A ONE-LINE CHANGE
+-- ================================================================
+--
+-- Payback is computed as ONE-OFF divided by NET annual saving. The net
+-- has already had the recurring costs taken out of it, so the recurring
+-- costs must not also appear in the numerator:
+--
+--     310,000 / 320,849 x 12  =  11.6 months     correct
+--     400,000 / 320,849 x 12  =  15.0 months     double-counts $90,000
+--
+-- 11.6 is right, and an independent check agrees: cumulative cash
+-- (410,849 gross less 400,000 of year one cost) turns positive at 11.7
+-- months.
+--
+-- BUT PUT $400,000 BESIDE $320,849 AND A READER DOES THE OBVIOUS SUM and
+-- gets 15 against a tile saying 12. Nothing on the row would explain the
+-- gap, and whoever spots it has no way to tell which number is wrong --
+-- on a page whose entire proposition is that its arithmetic reconciles.
+--
+-- So the fix is not to the payback figure. It is to put YEAR ONE NET on
+-- the row: $410,849 - $400,000 = $10,849, which makes twelve months
+-- self-evident. Three arrangements were mocked on the real figures and
+-- Dan chose this one.
+--
+-- ---- WHAT EACH TILE NOW SAYS ---------------------------------------
+--
+--   1  Gross annual saving              $410,849
+--   2  Year one cost                    $400,000
+--        Implementation ($310,000) + software fees ($60,000)
+--        + internal running cost ($30,000)
+--   3  Net annual saving, year two onward   $320,849
+--        Gross annual saving minus each year software fees ($60,000)
+--        minus internal running cost ($30,000). Year one nets $10,849
+--        after implementation.
+--   4  Payback on implementation        12mo
+--
+-- Every figure on the row is now derivable from the others. Tile 3 keeps
+-- the STEADY-STATE net rather than becoming year one net, because
+-- $320,849 a year from year two is the number that carries a multi-year
+-- case and the summary is the only place it appears.
+--
+-- Tile 4 is renamed because "Payback on one-off" named a figure that is
+-- no longer the headline of any tile. It still divides the one-off, which
+-- is now in tile 2's breakdown, and the label now says so.
+--
+-- ---- AND THE BRIDGE THAT CAME BACK ---------------------------------
+--
+-- Migration 582 removed a sentence under the grid that read "Net annual
+-- saving is the annual saving less the two running costs above", at Dan's
+-- request to stop cluttering the screen. That was right -- and it left
+-- the relationship between three tiles stated nowhere, which I flagged
+-- when he challenged my reading of these boxes.
+--
+-- It returns INSIDE the tile it explains rather than as a sentence under
+-- the grid, so it costs no vertical space on the page and cannot be read
+-- as a caveat. Same fact, better home, and it now carries the year one
+-- figure that makes the payback tile hold up.
+
+INSERT OR REPLACE INTO translations (namespace, key, lang, value) VALUES
+  ('roi', 'res.banked2', 'en', 'Gross annual saving'),
+  ('roi', 'res.yearOne', 'en', 'Year one cost'),
+  ('roi', 'res.yearOne2', 'en', 'Implementation ({0}) + software fees ({1}){2} + internal running cost ({3}){4}'),
+  ('roi', 'res.netAnnual2', 'en', 'Net annual saving, year two onward'),
+  ('roi', 'res.bridge', 'en', 'Gross annual saving minus each year software fees ({0}) minus internal running cost ({1}). Year one nets {2} after implementation.'),
+  ('roi', 'res.payback2', 'en', 'Payback on implementation');
+
+-- ================================================================
+-- ONE NAME FOR THE SOFTWARE COST
+-- ================================================================
+--
+-- Dan: "Instead of 'platform / network fees', please use 'software fees
+-- p/a'."
+--
+-- This answers a question raised against the first mockup and the answer
+-- matters more than the words. The summary tile was going to say
+-- "Software-as-a-Service" while the input four sections above said
+-- "Platform / network fees per year" -- two names for one number, which
+-- is exactly the defect Dan caught on the A/B/C/D grade labels two days
+-- ago and which migration 582 fixed by deleting the second vocabulary
+-- rather than editing it into agreement.
+--
+-- SO IT IS "SOFTWARE FEES" IN BOTH PLACES, not SaaS in one and software
+-- fees in the other. The tiles drop the "p/a" because the sentences they
+-- sit in already say "each year"; the input label keeps it because a
+-- field label has no sentence around it.
+--
+-- The TOOLTIP is left alone deliberately. It opens "Annual fees to your
+-- e-invoicing platform, network or access-point provider" -- that is not
+-- a competing label, it is the explanation of what the label covers, and
+-- a reader who wants to know whether their Peppol access point counts
+-- needs those words. A label and its definition are allowed to use
+-- different vocabulary; two labels are not.
+INSERT OR REPLACE INTO translations (namespace, key, lang, value) VALUES
+  ('roi', 'input.cPlat2', 'en', 'Software fees p/a');
+
+-- ---- what this replaces ---------------------------------------------
+-- Renamed rather than edited in every case: res.yearOne2 and res.bridge
+-- take slot counts the old strings never had, and the label keys changed
+-- meaning rather than wording -- "One-off investment" and "Year one cost"
+-- are different claims about the same tile, so a translator must see a
+-- new key rather than a changed value.
+DELETE FROM translations WHERE namespace = 'roi' AND key IN (
+  'res.oneOff', 'res.oneOff2', 'res.running',
+  'res.banked', 'res.netAnnual', 'res.payback', 'input.cPlat');
+
+-- ---- what this migration claims it did ------------------------------
+-- ASSERT: SELECT count(*) FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key IN ('res.banked2','res.yearOne','res.yearOne2','res.netAnnual2','res.bridge','res.payback2','input.cPlat2') = 7
+-- ASSERT: SELECT count(*) FROM translations WHERE namespace = 'roi' AND key IN ('res.oneOff','res.oneOff2','res.running','res.banked','res.netAnnual','res.payback','input.cPlat') = 0
+--
+-- THE BRIDGE MUST KEEP ALL THREE SLOTS, and this is the invariant that
+-- matters most in the file. Its third slot is the year one net, and that
+-- figure is the only thing on the row reconciling a $400,000 cost tile
+-- with a twelve-month payback. Lose it in translation and the summary
+-- goes back to inviting a reader to compute fifteen months and find no
+-- explanation -- worse than before this migration, because the cost tile
+-- is now the larger number.
+--
+-- ASSERT ALWAYS: SELECT count(*) FROM translations WHERE namespace = 'roi' AND key = 'res.bridge' AND value LIKE '%{0}%{1}%{2}%' = 1
+--
+-- And the year one breakdown must keep its five. It is the only place the
+-- implementation figure appears once the tile headline became the year
+-- one total, so a dropped slot takes the one-off off the page entirely
+-- while the payback tile continues to divide by it.
+--
+-- ASSERT ALWAYS: SELECT count(*) FROM translations WHERE namespace = 'roi' AND key = 'res.yearOne2' AND value LIKE '%{0}%{1}%{2}%{3}%{4}%' = 1
+--
+-- One name for the software cost, on both surfaces that label it. Stated
+-- as a pair rather than on either alone, because the failure is not that
+-- one is wrong -- it is that they disagree, and either one read on its
+-- own looks perfectly reasonable.
+--
+-- ASSERT ALWAYS: SELECT count(*) FROM translations WHERE namespace = 'roi' AND lang = 'en' AND ((key = 'input.cPlat2' AND value LIKE '%oftware fees%') OR (key = 'res.yearOne2' AND value LIKE '%software fees%')) = 2

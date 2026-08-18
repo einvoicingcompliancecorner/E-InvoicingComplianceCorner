@@ -604,6 +604,10 @@ button:disabled{opacity:.5;cursor:not-allowed}
    shell this module does not own. */
 .stat .l .statwhat{color:var(--text-lo);opacity:.75}
 .stat .l .statrun{display:block;margin-top:5px;color:#e2b978;text-transform:none;letter-spacing:.2px;font-size:10.5px;line-height:1.5}
+/* The bridge under the net figure. Muted rather than amber: statrun is a
+   COST breakdown and this is an explanation of an arithmetic, and giving
+   them one colour would say they are the same kind of line. */
+.stat .l .statbridge{display:block;margin-top:5px;color:var(--muted);text-transform:none;letter-spacing:.2px;font-size:10.5px;line-height:1.5}
 table{width:100%;border-collapse:collapse;font-size:13.5px}
 th,td{text-align:left;padding:8px 9px;border-bottom:1px solid var(--line);vertical-align:top}
 th{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.7px;text-transform:uppercase;color:var(--muted);font-weight:500}
@@ -1517,7 +1521,7 @@ export function renderRoiPage({ countries, benchmarks = [], phases = [], strings
       <p class="hint" style="margin:-4px 0 4px;color:#e0907f">${t("assumptions.placeholders", "These figures are <strong>placeholders only</strong>. Please replace with vendor budgetary estimates and treat the ROI as illustrative, until actuals can be provided.")}</p>
       <div class="ribbon"><label for="cImplS" style="font-size:11px">${t("input.cImplS", "Cost per SIMPLE integration")}${hlp("cImplS",t("tip.drives","What this drives"))}</label><input type="number" id="cImplS" value="${dv('cImplS')}" min="0" step="1000"></div>
       <div class="ribbon"><label for="cImplC" style="font-size:11px">${t("input.cImplC", "Cost per COMPLEX integration")}${hlp("cImplC",t("tip.drives","What this drives"))}</label><input type="number" id="cImplC" value="${dv('cImplC')}" min="0" step="1000"></div>
-      <div class="ribbon"><label for="cPlat" style="font-size:11px">${t("input.cPlat", "Platform / network fees per year")}${hlp("cPlat",t("tip.drives","What this drives"))}</label><input type="number" id="cPlat" value="${dv('cPlat')}" min="0" step="1000"></div>
+      <div class="ribbon"><label for="cPlat" style="font-size:11px">${t("input.cPlat2", "Software fees p/a")}${hlp("cPlat",t("tip.drives","What this drives"))}</label><input type="number" id="cPlat" value="${dv('cPlat')}" min="0" step="1000"></div>
       <div class="ribbon"><label for="cRun" style="font-size:11px">${t("input.cRun", "Internal run cost per year")}${hlp("cRun",t("tip.drives","What this drives"))}</label><input type="number" id="cRun" value="${dv('cRun')}" min="0" step="1000"></div>
     </div>
 
@@ -3595,6 +3599,29 @@ function build(){
   const annualCost = cPlat + cRun;
   const annualBenefit = l1Banked + l2;
   const netAnnual = annualBenefit - annualCost;
+  // YEAR ONE COST, and the reason it is a separate name.
+  //
+  // Dan, 18 August 2026: "as I thought the One-off investment was actually
+  // year one cost (implementation + software fees. My mistake. I would
+  // rather it showed year one costs I think."
+  //
+  // The mistake is the finding. If the person who commissioned the page
+  // reads that tile as year one, so does a CFO -- and the tile was
+  // implementation only, with the recurring costs in a sub-line beneath.
+  const yearOne = oneOff + annualCost;
+  // Year one after the gross saving. It exists so the row closes: see the
+  // note on the payback tile below.
+  const yearOneNet = annualBenefit - yearOne;
+  // PAYBACK IS UNCHANGED, AND THAT IS DELIBERATE. It divides the ONE-OFF
+  // by the net annual saving, and the net has already had the recurring
+  // costs taken out of it -- so putting yearOne in the numerator here
+  // would deduct platform and internal run cost twice and push 11.6
+  // months to 15.
+  //
+  // Which is exactly the sum a reader does when $400,000 sits beside
+  // $320,849, so the row now carries yearOneNet as well. $10,849 makes
+  // twelve months self-evident; without it the tile and the tiles beside
+  // it disagree with no way to tell which is wrong.
   const paybackMonths = netAnnual > 0 ? (oneOff / netAnnual) * 12 : null;
   const placeholders = stillDefault();
 
@@ -3615,10 +3642,10 @@ function build(){
   // plan. What changes is that the headline gets to be the headline.
   document.getElementById('summary').innerHTML = \`
     <div class="grid g5">
-      <div class="stat"><div class="n" style="color:#7fd0a8">\${fmt(l1Banked + l2)}</div><div class="l">${tj("res.banked","Annual saving")}\${l1Unbanked > 0 ? ' ' + fill('${tj("res.unbanked","(+{0} available on a wider scope)")}', fmt(l1Unbanked)) : ''}</div></div>
-      <div class="stat"><div class="n" style="color:#e0907f">\${fmt(oneOff)}</div><div class="l">${tj("res.oneOff","One-off investment")} <span class="statwhat">${tj("res.oneOff2","implementation")}</span><span class="statrun">\${fill('${tj("res.running","plus each year: {0} platform{1} + {2} internal{3}")}', fmt(cPlat), '${hlp('cPlat',t("tip.covers","What this covers"))}', fmt(cRun), '${hlp('cRun',t("tip.covers","What this covers"))}')}</span></div></div>
-      <div class="stat"><div class="n" style="color:\${netAnnual>=0?'#7fd0a8':'#e0907f'}">\${fmt(netAnnual)}</div><div class="l">${tj("res.netAnnual","Net annual saving")}</div></div>
-      <div class="stat"><div class="n" style="color:\${paybackMonths&&paybackMonths<=24?'#7fd0a8':'#e2b978'}">\${payback(paybackMonths)}</div><div class="l">${tj("res.payback","Payback on one-off")}</div></div>
+      <div class="stat"><div class="n" style="color:#7fd0a8">\${fmt(l1Banked + l2)}</div><div class="l">${tj("res.banked2","Gross annual saving")}\${l1Unbanked > 0 ? ' ' + fill('${tj("res.unbanked","(+{0} available on a wider scope)")}', fmt(l1Unbanked)) : ''}</div></div>
+      <div class="stat"><div class="n" style="color:#e0907f">\${fmt(yearOne)}</div><div class="l">${tj("res.yearOne","Year one cost")}<span class="statrun">\${fill('${tj("res.yearOne2","Implementation ({0}) + software fees ({1}){2} + internal running cost ({3}){4}")}', fmt(oneOff), fmt(cPlat), '${hlp('cPlat',t("tip.covers","What this covers"))}', fmt(cRun), '${hlp('cRun',t("tip.covers","What this covers"))}')}</span></div></div>
+      <div class="stat"><div class="n" style="color:\${netAnnual>=0?'#7fd0a8':'#e0907f'}">\${fmt(netAnnual)}</div><div class="l">${tj("res.netAnnual2","Net annual saving, year two onward")}<span class="statbridge">\${fill('${tj("res.bridge","Gross annual saving minus each year software fees ({0}) minus internal running cost ({1}). Year one nets {2} after implementation.")}', fmt(cPlat), fmt(cRun), fmt(yearOneNet))}</span></div></div>
+      <div class="stat"><div class="n" style="color:\${paybackMonths&&paybackMonths<=24?'#7fd0a8':'#e2b978'}">\${payback(paybackMonths)}</div><div class="l">${tj("res.payback2","Payback on implementation")}</div></div>
       <div class="stat"><div class="n" style="color:\${dated.length?'#e08b7a':'#8d9bb5'}">\${dated.length}</div><div class="l">${tj("res.dated","Jurisdictions with a dated deadline ahead")}</div></div>
     </div>
     <div id="guards"></div>
@@ -4077,26 +4104,31 @@ function build(){
       // duplication instead of removing it. Reading the res rows directly
       // means the PDF cannot disagree with the screen, because there is
       // only one string.
-      + kpi(money(l1Banked + l2), '${tj("res.banked","Annual saving")}', 'good')
+      + kpi(money(l1Banked + l2), '${tj("res.banked2","Gross annual saving")}', 'good')
       // The one-off box carries the same breakdown the screen puts under
       // it: what the money buys, and what recurs afterwards. A one-off
       // figure printed alone reads as the whole cost of the programme,
       // which it is not -- the running cost is the part that never stops.
-      + kpi(money(oneOff), '${tj("res.oneOff","One-off investment")}', 'cost',
+      + kpi(money(yearOne), '${tj("res.yearOne","Year one cost")}', 'cost',
           // ONE KEY, ONE ENGLISH. The page and the PDF print the same
           // sentence and used to build it from the same four fragments in
           // two places; merging the page's copy without this one would
-          // have left res.running with two different Englishes, which the
-          // i18n suite treats as a failure and is right to.
+          // have left the breakdown with two different Englishes, which
+          // the i18n suite treats as a failure and is right to.
           //
-          // The PDF has no help icons, so slots 1 and 3 take an empty
+          // The PDF has no help icons, so slots 2 and 4 take an empty
           // string. A slot a surface does not need is cheaper than a
           // second row that says almost the same thing.
-          '${tj("res.oneOff2","implementation")} &middot; '
-          + fill('${tj("res.running","plus each year: {0} platform{1} + {2} internal{3}")}',
-                 money(cPlat), '', money(cRun), ''))
-      + kpi(money(netAnnual), '${tj("res.netAnnual","Net annual saving")}', netAnnual >= 0 ? 'good' : 'cost')
-      + kpi(payback(paybackMonths), '${tj("res.payback","Payback on one-off")}', paybackMonths !== null && paybackMonths <= 24 ? 'good' : 'warn')
+          fill('${tj("res.yearOne2","Implementation ({0}) + software fees ({1}){2} + internal running cost ({3}){4}")}',
+               money(oneOff), money(cPlat), '', money(cRun), ''))
+      + kpi(money(netAnnual), '${tj("res.netAnnual2","Net annual saving, year two onward")}', netAnnual >= 0 ? 'good' : 'cost',
+          // THE BRIDGE TRAVELS TO THE PDF TOO. It is the line that makes
+          // the payback figure reconcile with the two tiles beside it, and
+          // the PDF is the surface most likely to be read without anyone
+          // to ask -- so it is the one that can least afford the gap.
+          fill('${tj("res.bridge","Gross annual saving minus each year software fees ({0}) minus internal running cost ({1}). Year one nets {2} after implementation.")}',
+               money(cPlat), money(cRun), money(yearOneNet)))
+      + kpi(payback(paybackMonths), '${tj("res.payback2","Payback on implementation")}', paybackMonths !== null && paybackMonths <= 24 ? 'good' : 'warn')
       + kpi(dated.length, '${tj("res.dated","Jurisdictions with a dated deadline ahead")}', dated.length ? 'warn' : '')
       + '</div>'
 
@@ -4236,7 +4268,7 @@ function build(){
          ['${tj("pdf.fig.capture","Capture share of AP effort")}', Math.round(TAXM.captureShare*100) + '%', '${tj("src.atoTaskTimes","ATO / Deloitte task times")}', 'A'],
          ['${tj("input.cImplS","Cost per SIMPLE integration")}', fmt(cImplS), '${tj("pdf.placeholder","Placeholder &mdash; replace with a vendor quote")}', 'D'],
          ['${tj("input.cImplC","Cost per COMPLEX integration")}', fmt(cImplC), '${tj("pdf.placeholder","Placeholder &mdash; replace with a vendor quote")}', 'D'],
-         ['${tj("input.cPlat","Platform / network fees per year")}', fmt(cPlat), '${tj("pdf.derivedfee","Derived from your volumes &times; per-invoice fee")}', 'D'],
+         ['${tj("input.cPlat2","Software fees p/a")}', fmt(cPlat), '${tj("pdf.derivedfee","Derived from your volumes &times; per-invoice fee")}', 'D'],
          ['${tj("input.cRun","Internal run cost per year")}', fmt(cRun), '${tj("pdf.placeholder","Placeholder &mdash; replace with a vendor quote")}', 'D']]
         .map(r => '<tr><td>' + r[0] + '</td><td class="num">' + r[1] + '</td><td>' + r[2] + '</td><td>' + r[3] + '</td></tr>').join('')
       + '</tbody></table>'

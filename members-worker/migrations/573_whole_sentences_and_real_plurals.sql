@@ -192,7 +192,22 @@ DELETE FROM translations WHERE namespace = 'roi' AND key = 'guard.mistimed.many'
 --        'sv.unbankedNote','res.unbanked','waves.intro',
 --        'notes.unmonetised') AND value LIKE '%{0}%' = 7
 --
--- ASSERT ALWAYS: SELECT count(*) FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key IN ('chart.late','res.running','sv.unbankedNote','res.unbanked','waves.intro') AND value LIKE '%{0}%' = 5
+-- NARROWED AGAIN 18 Aug 2026 by migration 584, from five keys to four.
+-- `res.running` is superseded there: the tile it belonged to now shows
+-- year one cost rather than the one-off, and its breakdown sentence took
+-- a fifth slot, so it is `res.yearOne2` and is guarded by its own
+-- invariant in that file.
+--
+-- The rule is untouched and the remaining four still carry it: a sentence
+-- built from a slot must keep its slot, or a translator returns prose
+-- with the number missing. `res.unbanked` and `sv.unbankedNote` remain
+-- the two places that quantify what a compliance-only scope leaves on the
+-- table, which is why this line still matters.
+--
+--   was: ... key IN ('chart.late','res.running','sv.unbankedNote',
+--        'res.unbanked','waves.intro') AND value LIKE '%{0}%' = 5
+--
+-- ASSERT ALWAYS: SELECT count(*) FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key IN ('chart.late','sv.unbankedNote','res.unbanked','waves.intro') AND value LIKE '%{0}%' = 4
 --
 -- TWENTY-FOUR keys still end in a digit, and the first draft of this
 -- migration asserted there would be nine. That was the same mistake as
@@ -231,5 +246,17 @@ DELETE FROM translations WHERE namespace = 'roi' AND key = 'guard.mistimed.many'
 -- these are not yet true. Same rule 545 itself used when it inherited an
 -- invariant from an earlier file.
 --
--- ASSERT ALWAYS: SELECT count(*) FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key = 'res.running' AND value LIKE '%{0}%' AND value LIKE '%{2}%' = 1
+-- RETIRED 18 Aug 2026 by migration 584. `res.running` was the "plus each
+-- year: {0} platform + {2} internal" sub-line, and it required both money
+-- slots to survive translation.
+--
+-- THE RULE IS INHERITED RATHER THAN LOST, which is the only honest way to
+-- retire this one -- the sentence did not go away, it grew. 584 replaces
+-- it with `res.yearOne2`, which carries the implementation figure as well
+-- and is guarded on all five of its slots in that file. A stricter
+-- version of the same requirement, on the string that replaced it.
+--
+--   was: ASSERT ALWAYS: SELECT count(*) FROM translations WHERE
+--        namespace = 'roi' AND lang = 'en' AND key = 'res.running'
+--        AND value LIKE '%{0}%' AND value LIKE '%{2}%' = 1
 -- ASSERT ALWAYS: SELECT count(*) FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key IN ('guard.mistimed.one','guard.mistimed.other') AND value LIKE '%{0}%' AND value LIKE '%{1}%' = 2
