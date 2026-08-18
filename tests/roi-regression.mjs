@@ -1866,6 +1866,25 @@ t.check("a zero-count grade is absent from the bar and present in the key",
   !card.segs.some((s) => s.n === 0) && keysHasAll(card.keys),
   `bar ${card.segs.map((s) => s.g + s.n).join(",")} / key ${card.keys.join(",")}`);
 function keysHasAll(k){ return ["A","B","C","D"].every((g) => k.includes(g)); }
+// NO "WHY" LINK INSIDE THE PANEL THAT EVERY "WHY" OPENS. Dan, 18 August
+// 2026: "Why is a circular reference of its own section. Please remove
+// the why link." Correct until 582 moved the block, a loop the moment it
+// landed -- and invisible to every suite, because a link that goes
+// nowhere useful still renders, still resolves and still passes.
+t.check("the scorecard carries no why-link back to its own panel",
+  (await page.locator("#evidence a.nlink").count()) === 0,
+  await page.locator("#evidence").innerText().then((x) => x.slice(-120)));
+// AND IT DIRECTS BY NAME, NOT BY POSITION. "Marked below" was true where
+// the block used to sit and false the moment it moved; "section 3" was
+// wrong before that, because phase durations are edited in the
+// assumptions panel in section 1, not in the adjust panel. Both read
+// perfectly while being wrong, which is why Dan found them and no check
+// did. Asserted on the direction words rather than on the sentences.
+const scoreText = await page.locator("#evidence").innerText();
+t.check("and points at section 1, where the fields it names actually are",
+  /section 1/i.test(scoreText) && !/\bbelow\b|\bsection 3\b/i.test(scoreText),
+  scoreText.slice(0, 400).replace(/\s+/g, " "));
+
 // The sharpest finding of the independent review, promoted from a caption
 // under the chart to a line of the summary.
 t.check("the scorecard states that the wave plan rests on a grade D",
