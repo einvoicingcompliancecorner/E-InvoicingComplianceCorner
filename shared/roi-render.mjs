@@ -300,7 +300,7 @@ export async function getRoiCountries(db, todayISO, lang = "en") {
 export async function getRoiBenchmarks(db, lang = "en") {
   const { results } = await db.prepare(`
     SELECT b.key, b.default_value, b.unit, b.evidence_grade, b.source_url, b.source_year, b.sort_order,
-           b.base_currency,
+           b.base_currency, b.is_cost,
            COALESCE(t.hint, te.hint) AS hint,
            COALESCE(t.citation, te.citation) AS citation
       FROM roi_benchmarks b
@@ -745,6 +745,41 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
 .tag{font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.5px;text-transform:uppercase;padding:1px 6px;border-radius:3px;border:1px solid currentColor;margin-left:6px}
 .tA{color:#7fd0a8}.tB{color:#e2b978}.tC{color:#e0907f}.tD{color:#9fb2d4}
 .tang{color:#7fd0a8;border-color:#3f7d5c}.intang{color:#9fb2d4;border-color:#3a4864}
+/* The evidence scorecard. A stacked bar whose segments are flex-weighted
+   by the counts, so the picture IS the proportion rather than a drawing
+   of it -- there is no width to keep in step with a number. A zero-count
+   grade contributes flex:0 and disappears, which is why grade C is absent
+   on the current data rather than rendering as a hairline nobody can read
+   with a label nobody can see. */
+.scorebar{display:flex;height:24px;border-radius:4px;overflow:hidden;border:1px solid var(--line);margin:2px 0 8px}
+.scoreseg{display:flex;align-items:center;justify-content:center;min-width:0;
+  font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1px;color:#0f1a2b;font-weight:600}
+.sgA{background:#7fd0a8}.sgB{background:#e2b978}.sgC{background:#e0907f}.sgD{background:#9fb2d4}
+/* The ribbon legend. The first draft inlined the two colours into the
+   translated sentence, and two standing invariants refused it on the
+   replay -- migration 551 bans style= in a roi string and 571 bans the
+   double quote an attribute needs. Both were right: a translator should
+   receive a sentence with two slots, not markup to preserve.
+
+   SWATCHES RATHER THAN COLOURED WORDS, and the contrast audit is why. The
+   second draft coloured the words themselves and --live on the card came
+   out at 2.86:1 against a 4.5 requirement -- a colour that works as a 3px
+   mark and not as 13px type. Colouring the WORD also drifts from the
+   thing it describes the moment either colour is tuned.
+
+   A swatch is the mark itself, at its real value, with the word left in
+   readable body text. The border is not decoration: it gives the swatch a
+   defined edge independent of how its fill contrasts with whatever card
+   it sits on, which is the standard fix for a small colour indicator and
+   the reason this does not simply move the same problem into a graphic. */
+.lgc{white-space:nowrap}
+.lgsw{display:inline-block;width:9px;height:12px;border-radius:2px;vertical-align:-1px;
+  margin-right:5px;border:1px solid var(--line)}
+.lgA{background:var(--soon)}.lgG{background:var(--live)}
+.scoreh{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:1px;
+  text-transform:uppercase;color:var(--soon);margin:0 0 8px}
+.scorekey{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:var(--muted);margin:0}
+.scorekey b{color:var(--text-lo);font-weight:600;font-family:'IBM Plex Mono',monospace}
 /* Whether a row banks on compliance alone. Dan, 14 Aug 2026: every
    customer he has spoken to in 2-3 years meets mandates on their own and
    never combines them with AP automation, so the question "does this
@@ -915,8 +950,30 @@ export function renderRoiPage({ countries, benchmarks = [], phases = [], strings
   // ever converts in one direction and there is exactly one place where
   // a currency assumption lives.
   const FX_RATES = { USD: 1, ...Object.fromEntries(Object.entries(fx).map(([k, v]) => [k, v.r])) };
+  // WHICH BENCHMARKS THE PAGE ACTUALLY COMPUTES WITH, recorded by asking.
+  //
+  // The scorecard has to score something, and the obvious something --
+  // "every active benchmark" -- is the wrong set and the flattering one.
+  // 27 rows are active and 7 of them are grade A, but seven of the 27 are
+  // held only so a claim somewhere can CITE them: the cycle-time figure,
+  // the VAT gap, the OECD mechanism. Scoring those alongside the numbers
+  // the arithmetic runs on reports 7 of 27 grade A, which is true and
+  // answers a question nobody asked.
+  //
+  // The set that matters is the one val() is asked for, because calling
+  // val() is what it MEANS to compute with a benchmark. So the set is
+  // collected here rather than written down. A hand-maintained list would
+  // be a literal that drifts out of agreement with the code beside it --
+  // which is precisely the defect migration 580 found in the grade tags,
+  // and repeating it one migration later to describe the grades would be
+  // hard to explain.
+  //
+  // Scored on those, the picture is 3 A, 10 B, 0 C, 7 D. Less flattering,
+  // and the one a CFO is asking for.
+  const computedWith = new Set();
   const val = (k, fb) => {
     const b = byKey[k];
+    computedWith.add(k);
     if (!b || b.default_value == null) return fb;
     if (b.unit !== "currency") return b.default_value;
     const rate = FX_RATES[b.base_currency || "USD"] || 1;
@@ -1158,6 +1215,7 @@ export function renderRoiPage({ countries, benchmarks = [], phases = [], strings
     erroredInvoice: plurSet("word.erroredInvoice", "errored invoice",
                             "word.erroredInvoices", "errored invoices"),
     thing: plurSet("word.thing", "thing", "word.things", "things"),
+    field: plurSet("word.field", "field", "word.fields", "fields"),
     // A WHOLE SENTENCE, not a noun. The mistimed-obligation guard changes
     // three clauses between its singular and plural forms -- "has"/"have",
     // "it"/"them", "runway it has"/"runway they have" -- which is why it
@@ -1180,6 +1238,11 @@ export function renderRoiPage({ countries, benchmarks = [], phases = [], strings
       "<strong>{0} selected jurisdictions have obligations earlier than the date this plan plans for.</strong> {1}. These are dated, live obligations that the arrivals board does not display, so the wave plan does not schedule them. The runway shown for them is longer than the runway they actually have."),
   };
 
+  // The client script has its own fill(); this is the server-side twin, for
+  // the handful of body strings that take a slot before the page is live.
+  // Same contract deliberately -- {0}, {1} -- so a translator meets one
+  // convention across the whole file rather than one per rendering side.
+  const sfill = (tpl, ...a) => String(tpl).replace(/\{(\d+)\}/g, (m, i) => (a[+i] === undefined ? m : a[+i]));
   const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   // Dan, 16 Aug 2026: "the text under each field in Assumptions and
@@ -1282,7 +1345,7 @@ export function renderRoiPage({ countries, benchmarks = [], phases = [], strings
     excGap: cite("exception_reduction_pp"),
     durations: { t: "D", s: t("ev.durations.body", "Phase durations are practitioner estimates for a country rollout once a platform is in place, held in D1 and editable above. No analyst firm publishes credible per-country e-invoicing implementation durations &mdash; this was checked.") },
     yours: { t: "D", s: t("ev.yours.body", "Your assumption. Nothing is claimed for this figure &mdash; it is exposed so the model can be argued with rather than believed.") },
-    site: { t: "A", s: t("ev.site.body", "Live mandate data from this site&rsquo;s own tracker: status, model and dated deadlines per jurisdiction, each traceable to the cited legal instrument on that country&rsquo;s deep dive.") },
+    site: { t: "A", s: t("ev.site.body", "Mandate data from this site&rsquo;s own tracker: status, model and dated deadlines per jurisdiction, each traceable to the cited legal instrument on that country&rsquo;s deep dive &mdash; which is the guarantee, rather than any claim about how recently it was checked.") },
   };
   const chartPhases = phases.map((p) => ({ k: p.key, n: p.name, w: p.default_weeks, c: p.colour,
                                            prog: !!p.is_programme, scope: p.scope }));
@@ -1329,6 +1392,29 @@ export function renderRoiPage({ countries, benchmarks = [], phases = [], strings
 </ol>
 
 <h2 class="noprint" id="s-footprint">1 &middot; ${t("sec.footprint", "Your footprint")}</h2>
+<!-- THE RIBBONS FINALLY SAY WHAT THEY MEAN.
+     Item 7 of the usability assessment: every one of the 27 inputs on this
+     page carries an amber left bar until it is edited, then turns green,
+     and there was no legend for it anywhere. A form marked entirely amber
+     signals nothing -- amber conventionally means ATTENTION, and marking
+     every field with it says only that the page has fields.
+     Dan chose the legend alone over a "keep" affordance. The assessment
+     argued for a way to accept a default deliberately, so that agreeing
+     with a grade-A benchmark stops looking identical to ignoring it. That
+     is a real gap and it stays open: a single acknowledgement could not
+     tell the field a reader studied from the one they scrolled past, and
+     per-field ticks are 27 new pieces of state that have to survive a
+     currency switch. Better an honest legend than a green tick asserting
+     more than the click behind it establishes. -->
+<!-- A HINT, NOT A .note. The first render made it a .note and the page's
+     .note is a boxed panel with an amber left rule -- so the legend
+     explaining the amber marks became the first amber-ruled box a reader
+     meets, one line above the form. Item 13 of the assessment counts
+     those. An explanation of an affordance is not a qualification, and
+     should not be dressed as one. -->
+<p class="hint noprint" style="margin:-4px 0 12px;font-size:12.5px;max-width:78ch">${sfill(t("ribbon.legend", "The bar down the left of every input says whose number it is: {0} is ours, {1} is yours. Ours are defaults you can argue with, not blanks you must fill."),
+       `<span class="lgc"><i class="lgsw lgA"></i>${t("word.amber", "amber")}</span>`,
+       `<span class="lgc"><i class="lgsw lgG"></i>${t("word.green", "green")}</span>`)}</p>
 <!-- Dan, 16 Aug 2026: "I would like the fields in section 1 to run
      vertically - i.e. stacked one on top of each other. I would then like
      the countries check list box to be moved to the right of the stacked
@@ -1524,7 +1610,7 @@ export function renderRoiPage({ countries, benchmarks = [], phases = [], strings
 </div>
 
 <footer>
-  <p>${t("footer.text", "<strong>The E-Invoicing Compliance Corner</strong> &mdash; ROI &amp; wave planner. Country mandate data is live as of 11 August 2026 and traceable to the per-country deep dives. Benchmark figures carry the evidence grade shown against each. This tool models a business case; it is not tax, legal or investment advice.")}</p>
+  <p>${t("footer.text", "<strong>The E-Invoicing Compliance Corner</strong> &mdash; ROI &amp; wave planner. Every mandate date here is traceable to the cited legal instrument on that country&rsquo;s deep dive, which is where to check it. Benchmark figures carry the evidence grade shown against each. This tool models a business case; it is not tax, legal or investment advice.")}</p>
 </footer>
 </div>
 
@@ -1792,6 +1878,35 @@ const ev = (key, txt) => \`<span class="ev" tabindex="0">\${txt}<span class="tip
 // Scrolling IS wanted here, unlike everywhere else on this page — the
 // reader has asked to go and read something.
 const notesLink = () => \`<a href="#notes" class="nlink">${tj("notes.link","why &rsaquo;")}</a>\`;
+
+// ---- the evidence scorecard --------------------------------------------
+//
+// Item 12 of the 17 Aug usability assessment: "Nothing summarises the
+// evidence, which is the product." The grades were on every benchmark and
+// nowhere in aggregate, so a CFO asking how much of this is evidenced had
+// to hover chips across four sections and total them.
+//
+// THE SEGMENTS ARE FLEX-WEIGHTED BY THE COUNTS, so the picture IS the
+// proportion rather than a drawing of one. There is no width to keep in
+// step with a number, and a grade with no rows contributes flex:0 and
+// vanishes -- which is why grade C is absent rather than rendering as a
+// hairline with a label nobody can read. Same reasoning as migration 576:
+// a mark nobody can distinguish is worse than no mark, because it asserts
+// a precision the picture does not have.
+const SCORE_GRADES = [
+  ['A', '${tj("score.kA","measured and primary")}'],
+  ['B', '${tj("score.kB","credible body, unattributed")}'],
+  ['C', '${tj("score.kC","weak or anecdotal")}'],
+  ['D', '${tj("score.kD","our estimate")}'],
+];
+const scoreBar = () => SCORE_GRADES.filter(g => SCORE[g[0]] > 0)
+  .map(g => \`<span class="scoreseg sg\${g[0]}" style="flex:\${SCORE[g[0]]}">\${SCORE[g[0]]}</span>\`).join('');
+// The key lists EVERY grade including the empty ones. The bar answers
+// "what is the shape"; the key answers "what are the four buckets", and a
+// zero is informative there -- nothing on this page that computes a
+// number rests on grade C, which is worth saying rather than hiding.
+const scoreKey = () => SCORE_GRADES
+  .map(g => \`<span><b>\${SCORE[g[0]]}</b> <span class="tag t\${g[0]}">\${g[0]}</span> \${g[1]}</span>\`).join('');
 document.addEventListener('click', (e) => {
   const a = e.target.closest && e.target.closest('a.nlink');
   if(!a) return;
@@ -2202,6 +2317,10 @@ document.getElementById('cur').addEventListener('change', (e) => {
 // saying why, reads as a bug.
 const TAXM = __ROI_TAXMODEL__;
 const PLAT = __ROI_PLATFEE__;
+// Counts, not sentences. Every figure in the scorecard is derived from D1
+// server-side and arrives here as four integers, so no count on this page
+// can disagree with the grades the page itself renders.
+const SCORE = __ROI_SCORE__;
 function recalcPlat(){
   const el = document.getElementById('cPlat');
   if(!el || !DEFAULTS.cPlat) return;
@@ -3488,7 +3607,7 @@ function build(){
       <div class="stat"><div class="n" style="color:\${paybackMonths&&paybackMonths<=24?'#7fd0a8':'#e2b978'}">\${payback(paybackMonths)}</div><div class="l">${tj("res.payback","Payback on one-off")}</div></div>
       <div class="stat"><div class="n" style="color:\${dated.length?'#e08b7a':'#8d9bb5'}">\${dated.length}</div><div class="l">${tj("res.dated","Jurisdictions with a dated deadline ahead")}</div></div>
     </div>
-    <div class="note" style="margin-top:14px">\${banked
+    <div class="note" id="scopeNote" style="margin-top:14px">\${banked
       ? \`<strong>${tj("sum.scopeBoth","Scope: compliance + AP process automation.")}</strong> ${tj("sum.scopeBoth2","Every direct row counts, and the timeline carries a process-change phase per country. The larger, less common programme.")}\`
       : \`<strong>${tj("sum.scopeOnly","Scope: compliance only.")}</strong> \${fill('${tj("sum.scopeOnly2","{0} is saved from the integration itself; the remaining {1} needs a change programme you are not running.")}', fmt(l1Banked + l2), fmt(l1Unbanked))}\`} ${tj("sum.bridge6","Net annual saving is the annual saving less the two running costs above; section 4 shows what makes up the annual saving, row by row.")} \${notesLink()}</div>
     <div id="guards"></div>
@@ -3502,7 +3621,17 @@ function build(){
         '<strong>' + integrations + ' ' + plur(integrations, PLURALS.integration) + '</strong>',
         '${hlp('integrations',t("tip.derived","How this is derived"))}')}
       \${dated.length ? fill('${tj("card.nearest","The nearest binding date is {0} ({1}).")}', '<strong>' + dated[0][5] + '</strong>', dated[0][0])
-        : '${tj("card.noDated","None of the selected jurisdictions has a future dated deadline on the tracker today.")}'} \${ev('site','${tj("ev.siteLabel","Source: live tracker data")}')}</p></div>\`;
+        : '${tj("card.noDated","None of the selected jurisdictions has a future dated deadline on the tracker today.")}'} \${ev('site','${tj("ev.siteLabel","Source: tracker data")}')}</p></div>
+    <div class="card">
+      <p class="scoreh">${tj("score.h","How much of this is evidenced")}</p>
+      <div class="scorebar">\${scoreBar()}</div>
+      <p class="scorekey">\${scoreKey()}</p>
+      <p style="margin:10px 0 0">\${fill('${tj("score.lead","Of the {0} benchmarks this page computes with, <strong>{1} are measured primary sources</strong>, {2} come from a credible body but are unattributed or carry arithmetic of ours, and {3} are our own estimate. A further {4} are held only so a claim elsewhere can cite them, and are not scored here.")}', SCORE.total, SCORE.A, SCORE.B, SCORE.D, SCORE.held)}</p>
+      <p class="note" style="margin:10px 0 0">\${fill('${tj("score.dcost","{0} of the {1} grade-D figures are the cost placeholders the investment side is built from &mdash; yours to replace, and marked below.")}', SCORE.Dcost, SCORE.D)} \${placeholders.length
+        ? fill('${tj("score.yours","<strong>{0} {1} still hold our numbers rather than yours.</strong>")}', placeholders.length, plur(placeholders.length, PLURALS.field))
+        : '${tj("score.yoursDone","<strong>Every field that needs your own number has one.</strong>")}'}</p>
+      <p class="note" style="margin:10px 0 0">\${fill('${tj("score.durations","<strong>And every date in the wave plan rests on a grade D.</strong> Phase durations are {0}, because no analyst firm publishes credible per-country implementation durations &mdash; this was checked. They are yours to change in section 3.")}', ev('durations','${tj("ev.durationsShort","practitioner estimates")}'))} \${notesLink()}</p>
+    </div>\`;
 
   const pace = +document.getElementById('pace').value || 1;
   const ganttRows = buildGantt(tracks, erp, pace);
@@ -3818,14 +3947,22 @@ function build(){
       claimedPp.toFixed(1), TAXM.excGapPp, ev('excGap','${tj("ev.excSplit","11.1% against 20.9%")}')));
   }
 
-  // The placeholder warning joins the list rather than sitting above it.
-  // It is the same KIND of thing as the guards -- a conditional statement
-  // about this reader's scenario, not about our method -- and until now
-  // it was the same kind of thing rendered by a different mechanism in a
-  // different place, which is how two notes end up disagreeing.
-  if(placeholders.length){
-    warn.unshift(fill('${tj("guard.placeholders","<strong>{0} fields still hold our numbers rather than yours.</strong> Replace them with vendor budgetary estimates in the assumptions panel, and treat the ROI as illustrative until actuals can be provided.")}', placeholders.length));
-  }
+  // THE PLACEHOLDER WARNING IS GONE FROM HERE, absorbed by the scorecard.
+  //
+  // It was filed as a guard on the reasoning quoted in the comment it
+  // replaces: "the same KIND of thing as the guards -- a conditional
+  // statement about this reader's scenario, not about our method". That
+  // was wrong on its own terms. How many fields still hold OUR defaults is
+  // a statement about our method wearing a conditional; every other guard
+  // in this list fires on something the reader's own inputs make true.
+  //
+  // It also carried the second copy of "treat the ROI as illustrative",
+  // the first being the static line above the four cost inputs it names.
+  // Item 13 of the assessment counted seven hedges between the headline
+  // and the first graphic; this was two of them, saying one thing.
+  //
+  // The count now lives in the scorecard beside the grades it qualifies,
+  // where it reads as part of an answer rather than as a third apology.
 
   // ONE BLOCK, NOT A STACK. Dan, 16 Aug 2026, asked whether every
   // notification on the page should collect at the end of the caveats
@@ -3953,7 +4090,7 @@ function build(){
           '<strong>' + integrations + ' ' + plur(integrations, PLURALS.integration) + '</strong>', '')
         + ' ' + (dated.length ? fill('${tj("card.nearest","The nearest binding date is {0} ({1}).")}', '<strong>' + dated[0][5] + '</strong>', dated[0][0])
           : '${tj("card.noDated","None of the selected jurisdictions has a future dated deadline on the tracker today.")}')
-        + ' ${tj("ev.siteLabel","Source: live tracker data")}.</div>'
+        + ' ${tj("ev.siteLabel","Source: tracker data")}.</div>'
       + '<h2>${tj("pdf.h.mix","Where the annual saving comes from")}</h2>'
       + '<div class="pielay">' + (pieSvg ? pieSvg.outerHTML.replace(/width="\d+"/, 'width="150"').replace(/height="\d+"/, 'height="150"') : '')
       + '<ul class="pkey">' + rows
@@ -4028,7 +4165,7 @@ function build(){
                             const head = (i >= 0 && j > i) ? w.slice(i + 8, j) : w;
                             return head.replace(/<[^>]+>/g, ''); }).join(' ')
           + ' ${tj("pdf.flagsMore","Reasoning overleaf.")}</div>' : '')
-      + '<div class="foot">${tj("pdf.foot1","Mandate data is live from this site&rsquo;s tracker and traceable to each country&rsquo;s deep dive. Assumptions, sources and evidence grades are on page 2.")}</div>'
+      + '<div class="foot">${tj("pdf.foot1","Mandate data comes from this site&rsquo;s tracker and every date is traceable to each country&rsquo;s deep dive. Assumptions, sources and evidence grades are on page 2.")}</div>'
       + '</section>'
 
       + '<section class="pg">'
@@ -4130,5 +4267,37 @@ function build(){
         "Approximate: {vol} invoices &times; {fee} each. This is a rough per-invoice multiplier for the technology &mdash; your vendor&rsquo;s actual price will differ, and should be entered here."),
     }))
     .replace("__ROI_FX__", JSON.stringify(fx && Object.keys(fx).length ? fx : { USD: { r: 1, asOf: "", src: null } }));
-  return { body, script };
+
+  // ---- the evidence scorecard, and why it is computed HERE -------------
+  //
+  // LAST, DELIBERATELY. `computedWith` fills as val() is called, and the
+  // final val() calls are the taxmodel and platform-fee payloads a few
+  // lines above. Counting any earlier reports a smaller set and a
+  // different, better-looking answer -- the scorecard would silently omit
+  // the two grade-D ratios behind the whole indirect layer.
+  //
+  // So this is the last statement before the return, and it throws rather
+  // than shipping a wrong count. A scorecard is the one thing on this page
+  // that must not be quietly incomplete: a reader who cannot trust the
+  // summary of the evidence has no reason to trust the evidence.
+  const scored = [...computedWith].map((k) => byKey[k]).filter((b) => b && b.active !== 0);
+  const score = { A: 0, B: 0, C: 0, D: 0, total: scored.length,
+                  held: benchmarks.filter((b) => !computedWith.has(b.key)).length,
+                  // How much of the grade-D concentration is the reader's to
+                  // fix. Derived from is_cost rather than counted by hand --
+                  // the first draft of this sentence said "six of the seven"
+                  // from reading the list, and it is four. A sentence about
+                  // how carefully the page counts things, miscounted.
+                  Dcost: 0 };
+  for (const b of scored) {
+    if (b.evidence_grade in score) score[b.evidence_grade]++;
+    if (b.evidence_grade === "D" && b.is_cost) score.Dcost++;
+  }
+  if (score.total < 10) throw new Error(
+    `ROI scorecard counted only ${score.total} computed benchmarks. This is `
+    + "almost certainly the score being taken before the payloads at the end "
+    + "of this function have called val(). Move it back to the last statement "
+    + "rather than lowering this number.");
+
+  return { body, script: script.replace("__ROI_SCORE__", JSON.stringify(score)) };
 }
