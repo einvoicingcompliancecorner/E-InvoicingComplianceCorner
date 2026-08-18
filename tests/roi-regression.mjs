@@ -282,17 +282,18 @@ t.check("the cycle-time row carries Ardent's supplier-inquiry split",
 t.check("and no longer says the only figure is an anecdote",
   !/only figures available are one NHS anecdote/i.test(direct));
 
-// The citation lives in the notes panel now, not in the table cell — the
-// row was condensed, and dropping a grade-A citation instead of moving it
-// is the orphaning this project has already found three times.
-await page.evaluate(() => { document.getElementById("notes").open = true; });
-await page.waitForTimeout(200);
+// AND IT MOVED BACK TO THE ROW. The citation lived in the notes panel's
+// "Named, but not priced" card, which went with "The reasoning" block in
+// 582 -- leaving a grade-A citation rendered nowhere, which is the
+// orphaning this project has already found three times and would have
+// made four. It is now in the justification of the cycle-time row, which
+// is the row it describes, alongside the NHS query figure that lost its
+// home in the same edit.
 const cycTip = await page.evaluate(() => {
-  const el = [...document.querySelectorAll("#notes .ev")]
+  const el = [...document.querySelectorAll('#savingsTable tr[data-row="cycle"] .ev')]
     .find((e) => e.firstChild && /2\.9 vs 13\.5 days/.test(e.firstChild.textContent || ""));
   return el ? el.querySelector(".tip").textContent : "";
 });
-await page.evaluate(() => { document.getElementById("notes").open = false; });
 // The figure is quoted; the reason it proves nothing has to be quoted
 // with it, or citing it is worse than omitting it.
 t.check("the cycle-time citation explains that the gap is definitional",
@@ -616,21 +617,35 @@ const directTotal = Number((await page.locator('#savingsTable tr[data-row="ap"]'
 t.check("the headcount note is off the main page",
   (await page.locator("#savingsTable .note").count()) === 0,
   await page.locator("#savingsTable").innerText().then((x) => x.slice(-160)));
-await page.evaluate(() => { document.getElementById("notes").open = true; });
-await page.waitForTimeout(200);
-const notesText = await page.locator("#notes").innerText();
-t.check("the panel states the capture FTE it derived",
-  /3\.6 FTE keying invoices today/.test(notesText), notesText.slice(0, 200));
-t.check("and the FTE it releases",
-  /2\.1 are released/.test(notesText), notesText.slice(0, 260));
-// Migration 566 rewrote this panel out of a defensive register into an
-// explanatory one. The CLAIM is unchanged and still has to be made — one
-// saving in two units — so the check follows the meaning rather than the
-// old wording.
-t.check("and still says it is one saving in two units, not two savings",
-  /adding both would count it twice/i.test(notesText), notesText.slice(0, 300));
-t.check("and still reconciles it against the row it decomposes",
-  notesText.includes(String(directTotal.toLocaleString("en-US"))), notesText.slice(0, 300));
+// THE HEADCOUNT CARD WENT WITH "THE REASONING" IN 582, and it is the one
+// removal with nothing behind it.
+//
+// Dan mapped three of the four cards onto what already carries them, each
+// unprompted and each correct: "compliance alone is referenced in the
+// gross savings headline... 'Annual saving (+$295,851 available on a
+// wider scope)'", and "Avoided rework on data-entry errors also appears
+// on the savings section, with a tooltip that clarifies". "Named, but not
+// priced" is the savings table's own group heading.
+//
+// THIS ONE HAS NO SUCH HOME. It expressed the processing saving in people
+// -- 3.6 FTE keying invoices today, 2.1 released -- said in terms that
+// "adding both would count it twice", and reconciled the headcount back
+// to the AP row it decomposes. Nothing else on the page states the saving
+// in headcount at all.
+//
+// captureFte and captureValue are still COMPUTED, and still drive guard 6
+// (the bottom-up labour cannot exceed the top-down saving), so this is not
+// dead data -- it is a reader-facing view that was removed. Retired here
+// rather than deleted so it is one edit to restore, and flagged to Dan
+// rather than absorbed quietly.
+//
+//   was: /3\.6 FTE keying invoices today/
+//        /2\.1 are released/
+//        /adding both would count it twice/i
+//        notesText.includes(String(directTotal.toLocaleString("en-US")))
+//
+// directTotal is read above and still used by the guard-6 checks below.
+void directTotal;
 
 // Guard 6: the bottom-up labour cannot exceed the top-down saving it is a
 // component of. Forced by pushing the data-entry rate far past market.
@@ -916,10 +931,34 @@ const notes = await page.locator("#notes").innerText();
 // changelog entry rather than a caveat, describing work done to the page
 // rather than anything about the reader's case, and all three fixes it
 // named were already reflected in the figures it sat beneath.
-["What compliance alone saves", "Rework sits outside the total",
- "The same saving, counted in people", "Named, but not priced",
- "Grade A", "Grade D"].forEach((phrase) =>
+//
+// AND THE FOUR REASONING CARDS WENT IN 582. Dan, 18 August 2026: "Remove
+// 'The reasoning' part of the 'Assumptions, sources and caveats', and
+// replace it with the 'How much of this is evidenced' bar."
+//
+// Retired here rather than deleted, with what each carried, because three
+// of the four were duplicates and two facts were not -- see the note in
+// migration 582. A check that stops existing leaves no record that the
+// thing it defended ever mattered.
+//
+//   "What compliance alone saves"       -> the SAVED / NOT SAVED badges
+//                                          and the AP row's justification
+//   "Rework sits outside the total"     -> the rework row's own basis
+//                                          column and the grade D card
+//   "Named, but not priced"             -> the savings table's own
+//                                          "Named, not priced" group
+//   "The same saving, counted in people"-> NOWHERE. Flagged to Dan.
+["Grade A", "Grade D"].forEach((phrase) =>
   t.check(`the panel carries: ${phrase}`, notes.includes(phrase)));
+// The scorecard replaced them, so the panel must open ON the scorecard
+// rather than on a gap. This is the check that would fail if the swap had
+// removed a section and put nothing in its place.
+// Matched case-insensitively: .scoreh is text-transform:uppercase and
+// innerText honours the computed style, so the rendered string is
+// "HOW MUCH OF THIS IS EVIDENCED". The first version of this check
+// compared against the source casing and failed on a correct page.
+t.check("the panel now opens on the evidence scorecard",
+  /how much of this is evidenced/i.test(notes), notes.slice(0, 120));
 
 // ---- 20. fields line up ----
 // Dan: "section 1 the field headings wrap sometimes causing the fields to
@@ -1535,10 +1574,22 @@ t.check("and the banked total is the figure section 4 now shows, not one only se
 // looking at the crippled figure. 528 fixed the model; the label outlived
 // it by thirteen migrations.
 //
-// Dropping it is only safe while the bold "Scope:" note beneath the grid
-// carries the fact, so that is what this asserts — plus the consistency
-// problem the parenthetical had: three stats move with scope and only one
-// was ever labelled.
+// THE SCOPE NOTE ITSELF IS NOW GONE TOO. Dan, 18 August 2026: "Remove the
+// message altogether... We keep adding new messages that clutter the
+// screen." Item 13 of the usability assessment, applied by him rather
+// than by me.
+//
+// WHICH MAKES THIS CHECK MORE IMPORTANT, NOT LESS, and it is why it is
+// rewritten rather than deleted. The parenthetical was dropped in the
+// first place ON THE CONDITION that the note carried the fact. Delete the
+// note as well and that trade quietly becomes a subtraction: the reader
+// would be left with no statement anywhere that a compliance-only figure
+// leaves money on the table.
+//
+// It survives in two places, both of which existed before the note went
+// and neither of which was checked for this. The check now asserts the
+// FACT rather than the element that used to carry it -- so the next
+// person to tidy one of these away finds out here.
 for (const scope of ["compliance", "both"]) {
   await page.selectOption("#scope", scope);
   await page.click("#run"); await page.waitForTimeout(800);
@@ -1546,24 +1597,36 @@ for (const scope of ["compliance", "both"]) {
     .map((e) => e.querySelector(".l").textContent.replace(/\s+/g, " ").trim()));
   t.check(`${scope}: no stat carries a scope parenthetical`,
     labels.every((l) => !/\(compliance scope\)/i.test(l)), labels.join(" | "));
-  // #scopeNote, not "#summary .note:not(.warn)". The scorecard added by
-  // migration 581 put two more notes inside this block and the old
-  // selector matched three elements, so the check died on strict mode
-  // rather than reporting anything. Anchored on the element's identity
-  // instead of on it being the only one of its kind -- the same lesson as
-  // the country ticks and the colspan in the total row.
-  const note = await page.locator("#scopeNote").innerText();
-  t.check(`${scope}: the note states which scope the figures are on`,
-    /^\s*Scope:/i.test(note), note.slice(0, 70));
 }
-// And the thing the parenthetical was half-doing: the reader can still
-// see that these figures move with scope, because the note quantifies
-// what compliance-only leaves on the table.
+t.check("the removed scope note left no empty shell behind",
+  (await page.locator("#scopeNote").count()) === 0);
+// On the wider scope there is nothing left on the table, so neither
+// carrier should claim there is -- an "available on a wider scope" line
+// under a figure that already includes it would be worse than silence.
+await page.selectOption("#scope", "both");
+await page.click("#run"); await page.waitForTimeout(800);
+const bothCarriers = await page.evaluate(() => ({
+  kpi: document.querySelector("#summary .stat .l").innerText,
+  pie: (document.querySelector("#savings .svtot") || {}).innerText || "",
+}));
+t.check("on the wider scope neither carrier offers a wider scope",
+  !/wider scope/i.test(bothCarriers.kpi + bothCarriers.pie),
+  `${bothCarriers.kpi} / ${bothCarriers.pie}`.replace(/\s+/g, " ").slice(0, 100));
+// And on compliance scope BOTH still quantify it. Asserted on both rather
+// than on either, because "one of them says it" would pass while the page
+// was in the state where only the one nobody scrolls to does.
 await page.selectOption("#scope", "compliance");
 await page.click("#run"); await page.waitForTimeout(800);
-t.check("and on compliance scope it quantifies what is excluded",
-  /needs a change programme you are not running/.test(
-    await page.locator("#scopeNote").innerText()));
+const onlyCarriers = await page.evaluate(() => ({
+  kpi: document.querySelector("#summary .stat .l").innerText,
+  pie: (document.querySelector("#savings .svtot") || {}).innerText || "",
+}));
+t.check("the headline label still quantifies what a compliance scope excludes",
+  /available on a wider scope/i.test(onlyCarriers.kpi),
+  onlyCarriers.kpi.replace(/\s+/g, " "));
+t.check("and so does the composition chart's total",
+  /available on a wider scope/i.test(onlyCarriers.pie),
+  onlyCarriers.pie.replace(/\s+/g, " "));
 
 
 // ---- 33. the SaaS cost is named, not buried in a sum ----
@@ -1742,14 +1805,49 @@ await apAt(50);
 // the database rather than against a literal in the test -- a literal here
 // would pass just as happily if the renderer stopped counting.
 await page.click("#run"); await page.waitForTimeout(900);
+// IT LIVES INSIDE THE COLLAPSED CAVEATS PANEL. Dan, 18 August 2026:
+// "Remove 'The reasoning' part of the 'Assumptions, sources and caveats',
+// and replace it with the 'How much of this is evidenced' bar... This is
+// hidden until expanded by a user who would like to understand how the
+// results are evidenced."
+//
+// So the panel has to be OPENED before any of this is measurable, and
+// that is the point of the first check rather than a setup step: a
+// scorecard nobody can reach is the same as no scorecard, and every check
+// below would pass just as happily against an empty selector -- the shape
+// that made waveText() a no-check in migration 576.
+await page.evaluate(() => { document.getElementById("notes").open = true; });
+await page.waitForTimeout(400);
 const card = await page.evaluate(() => {
-  const segs = [...document.querySelectorAll("#summary .scoreseg")]
+  const host = document.getElementById("evidence");
+  if (!host) return { segs: [], keys: [], text: "", visible: false };
+  const bar = host.querySelector(".scorebar");
+  const segs = [...host.querySelectorAll(".scoreseg")]
     .map((e) => ({ g: (e.className.match(/sg([ABCD])/) || [])[1], n: Number(e.textContent) }));
-  const keys = [...document.querySelectorAll("#summary .scorekey .tag")]
+  const keys = [...host.querySelectorAll(".scorekey .tag")]
     .map((e) => (e.className.match(/\bt([ABCD])\b/) || [])[1]);
-  const p = [...document.querySelectorAll("#summary .card p")].map((e) => e.innerText);
-  return { segs, keys, text: p.join(" ") };
+  return { segs, keys, visible: !!bar && bar.getBoundingClientRect().width > 0,
+           text: [...host.querySelectorAll("p")].map((e) => e.innerText).join(" ") };
 });
+t.check("the scorecard renders, and only once the panel is open",
+  card.visible && card.segs.length > 0 && card.keys.length === 4,
+  `visible ${card.visible}, ${card.segs.length} segments, ${card.keys.length} key entries`);
+// It heads the panel: the bar says HOW MANY sit at each grade, the four
+// cards below say WHICH sources those are. Order asserted rather than
+// assumed, because the duplication Dan rejected was exactly these two
+// things saying the same thing in two places.
+const scoreOrder = await page.evaluate(() => {
+  const host = document.getElementById("evidence");
+  const bar = host.querySelector(".scorebar");
+  const gradeCard = host.querySelector(".card.tierA");
+  const top = (e) => (e ? e.getBoundingClientRect().top + window.scrollY : NaN);
+  return { bar: top(bar), gradeCard: top(gradeCard) };
+});
+t.check("and it heads the panel, above the four grade cards",
+  scoreOrder.bar < scoreOrder.gradeCard, JSON.stringify(scoreOrder));
+// "The reasoning" block it replaced is gone rather than pushed below.
+t.check("the reasoning block it replaced is not still there",
+  !/The reasoning/i.test(await page.locator("#evidence").innerText()));
 const segTotal = card.segs.reduce((a, s) => a + s.n, 0);
 t.check(`the scorecard totals the benchmarks it scores (${segTotal})`,
   segTotal > 0 && new RegExp(`Of the ${segTotal} benchmarks`).test(card.text),
@@ -2045,19 +2143,26 @@ t.check("the wider scope does not claim a share it is not taking",
 await page.selectOption("#scope", "compliance");
 await page.click("#run"); await page.waitForTimeout(900);
 
-// The bracket has to carry all three readings. One of them is an
-// argument for tripling the figure, which is exactly why it must sit
-// beside the other two rather than alone.
-// The notes panel is a collapsed <details>, so innerText on body cannot
-// see it — open it first. Worth stating: a check that read textContent
-// instead would pass whether or not the card was ever reachable.
+// THE BRACKET CARD IS GONE, and this is the loss worth being loudest
+// about. It carried three readings of how conservative the compliance-only
+// figure is -- 25.7% by the route used here, 42.9% if capture is credited
+// with its full share of handling time, 70.3% on the ATO's paper-to-
+// eInvoice gap -- and said the lowest is used.
+//
+// It was an ARGUMENT FOR THE PAGE'S NUMBERS, not a caveat: it says a
+// compliance-only case that looks marginal here may be understated by up
+// to threefold. Nothing else on the page says it, and it went out with
+// "The reasoning" block Dan asked to remove.
+//
+// Retired in place rather than deleted so that this is recoverable in one
+// edit if he wants it back, and so the next person to read this file
+// learns the figures existed. See migration 582.
+//
+//   was: for (const fig of ["25.7", "42.9", "70.3"])
+//          t.check(`the bracket names the ${fig}% reading`, ...)
+//        t.check("and says which end was taken", /lowest is used/i...)
 await page.evaluate(() => { document.getElementById("notes").open = true; });
 await page.waitForTimeout(250);
-const bracket = await page.locator("#notes").innerText();
-for (const fig of ["25.7", "42.9", "70.3"]) {
-  t.check(`the bracket names the ${fig}% reading`, bracket.includes(fig + "%"), fig);
-}
-t.check("and says which end was taken", /lowest is used/i.test(bracket));
 
 // ---- 38c. the four things a usability read found ---------------------
 //

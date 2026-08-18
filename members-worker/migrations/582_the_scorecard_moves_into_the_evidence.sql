@@ -1,0 +1,206 @@
+-- ================================================================
+-- The scorecard moves into the evidence panel, and takes the place of
+-- the block it duplicated.
+--
+-- Dan, 18 August 2026, three messages in order:
+--
+--   "The section entitled 'How much of this is evidenced' needs to be
+--    below the pie chart findings."
+--   "In fact - should the section ... not go above the savings tables.
+--    That is specifically what is being referred to I think"
+--   "Remove 'The reasoning' part of the 'Assumptions, sources and
+--    caveats', and replace it with the 'How much of this is evidenced'
+--    bar we have recently added. This is hidden until expanded by a user
+--    who would like to understand how the results are evidenced."
+--
+-- And, stopping the work mid-flight: "the new evidenced section added at
+-- the top, repeat assumptions, sources and caveats, no".
+--
+-- ---- HE WAS RIGHT, AND I SHOULD HAVE FOUND IT BEFORE BUILDING IT ----
+--
+-- The usability assessment said "nothing summarises the evidence, which
+-- is the product". I took that at face value. The caveats panel has had
+-- FOUR GRADE CARDS since it was built -- Grade A / B / C / D, each with
+-- a tag and a body naming which sources sit there. My scorecard restated
+-- the same four grades, in near-identical words, one section higher.
+--
+-- The assessment's finding was half wrong and I checked none of it. What
+-- was actually missing was the COUNT -- how many figures sit at each
+-- grade -- not a summary of the grades, which already existed. Putting
+-- the count at the top of the page created a duplicate; putting it at the
+-- top of the evidence completes what was already there. The bar says HOW
+-- MANY, the four cards say WHICH.
+--
+-- And it is behind a collapsed panel by design. The reader who wants to
+-- know how much of this is evidenced is the reader who has opened
+-- "Assumptions, sources and caveats". Everyone else gets the answer.
+--
+-- ================================================================
+-- THE LABELS NOW COME FROM THE CARDS' OWN STRINGS
+-- ================================================================
+--
+-- Dan: "please ensure text next to A,B,C,D on the evidence bar match the
+-- same in the evidence grades cards."
+--
+-- They did not. The bar said "our estimate" where the card says "your
+-- assumption", and "weak or anecdotal" where the card says "anecdote, not
+-- benchmark". Two vocabularies for one taxonomy, four inches apart, in
+-- the section whose entire job is to define the taxonomy.
+--
+-- FIXED BY DELETING THE PARALLEL STRINGS, not by editing them to agree.
+-- score.kA..kD were four new rows that would have to be kept in step with
+-- four existing ones by hand -- the same literal-beside-the-truth shape as
+-- the hardcoded grade tags migration 580 removed, and it had already
+-- drifted before shipping once. The bar reads ev.gradeA.tag and its three
+-- siblings now, so the two cannot disagree.
+DELETE FROM translations WHERE namespace = 'roi'
+  AND key IN ('score.kA','score.kB','score.kC','score.kD');
+
+-- ================================================================
+-- WHAT "THE REASONING" CARRIED, AND WHERE EACH PART WENT
+-- ================================================================
+--
+-- Five cards. Written out rather than summarised, because a block
+-- deleted without an inventory is a block nobody can restore.
+--
+--   "What compliance alone saves"
+--       -> the headline KPI's own subtext. Dan, checking my working:
+--          "compliance alone is referenced in the gross savings headline.
+--           The subtext in that box references additional savings from a
+--           broader program. I.e. 'Annual saving (+$295,851 available on
+--           a wider scope)'."
+--
+--   "Rework sits outside the total"
+--       -> the rework row itself. Dan again: "Avoided rework on data-entry
+--          errors also appears on the savings section, with a tooltip that
+--          clarifies."
+--
+--   "Named, but not priced"
+--       -> the savings table's own group heading, which says the same
+--          thing above the five rows it describes.
+--
+--   "How conservative is the compliance-only figure?"
+--       -> NOWHERE. Three readings of the same figure -- 25.7% by the
+--          route used here, 42.9% if capture is credited with its full
+--          share of handling time, 70.3% on the ATO's paper-to-eInvoice
+--          gap -- and a statement that the lowest is used. It is an
+--          ARGUMENT FOR the page's numbers rather than a caveat: it says
+--          a compliance-only case that looks marginal may be understated
+--          by up to threefold.
+--
+--   "The same saving, counted in people"
+--       -> NOWHERE. 3.6 FTE keying invoices today, 2.1 released, with
+--          "adding both would count it twice" and a reconciliation back
+--          to the AP row. Nothing else states the saving in headcount.
+--          The figures are still COMPUTED and still drive guard 6, so
+--          this is not dead data -- it is a view that was removed.
+--
+-- The last two are flagged rather than argued. Both are one edit to
+-- restore and the rows are deleted here, so restoring them means minting
+-- new keys -- which is the right cost: bringing back a block should be a
+-- decision with a file behind it, not an undo.
+DELETE FROM translations WHERE namespace = 'roi' AND key IN (
+  'notes.h.reasoning',
+  'notes.banks', 'notes.banks.h',
+  'notes.bracket', 'notes.bracket.h',
+  'notes.rework', 'notes.rework.h',
+  'notes.headcount', 'notes.headcount.h', 'notes.headcount2',
+  'notes.headcountSplit', 'notes.headcountFte',
+  'notes.unmonetised', 'notes.unmonetised.h');
+
+-- ================================================================
+-- AND A GRADE-A CITATION THAT WOULD HAVE BEEN ORPHANED BY THE EDIT
+-- ================================================================
+--
+-- "Named, but not priced" was the only place the page rendered two
+-- citations: Ardent's cycle-time gap (2.9 days against 13.5, grade A) and
+-- the NHS query reduction (grade C). Removing the card left both held in
+-- D1 and displayed nowhere.
+--
+-- That is the orphaning this project has already found three times, and
+-- it would have been the fourth -- caught by a regression check written
+-- in 549 for exactly this, whose comment reads "dropping a grade-A
+-- citation instead of moving it is the orphaning this project has already
+-- found three times". It moved rather than died, which is the whole
+-- reason that check exists.
+--
+-- Both now sit in the justification of the cycle-time row, which is the
+-- row they describe -- a better home than the card was, because the
+-- reader meets the evidence beside the claim it qualifies rather than two
+-- sections away. `basis.cycle.just` is renamed rather than edited: it
+-- gained two slots, and a translator holding the old one-slot string
+-- would silently drop the new citations.
+--
+-- NAMED `basis.cycle2.just`, NOT `basis.cycle.just2`, and the difference
+-- is not cosmetic. Migration 564 holds a standing invariant counting keys
+-- matching `basis.%.just` -- the shape that makes every row's
+-- justification findable by pattern rather than by list. The obvious
+-- rename fell outside it and the replay said so immediately, which is the
+-- convention defending itself rather than me remembering it.
+--
+-- REWRITTEN ONCE, SHORTER, because migration 530's 300-character budget
+-- refused the first version at 411 and was right to: three citations in a
+-- table cell is dense enough without a closing sentence explaining why
+-- the row carries no number, which the row's own "Named, not priced"
+-- calculation line already says.
+INSERT OR REPLACE INTO translations (namespace, key, lang, value) VALUES
+  ('roi', 'basis.cycle2.just', 'en', 'Supplier inquiries take <strong>12.8%</strong> of AP staff time against <strong>24.0%</strong> {0}; cycle time <strong>2.9 days</strong> against <strong>13.5</strong> {1}; <strong>15% fewer queries</strong> at one trust {2}. Associations with high-performing AP, not measured effects.');
+
+DELETE FROM translations WHERE namespace = 'roi' AND key = 'basis.cycle.just';
+
+-- ================================================================
+-- AND THE SCOPE NOTE UNDER THE HEADLINE FIGURES
+-- ================================================================
+--
+-- Dan: "Remove the message altogether... We keep adding new messages that
+-- clutter the screen."
+--
+-- Item 13 of the assessment, applied by him rather than by me, and on the
+-- sentence I had just left in place while removing a different one.
+--
+-- WHAT IT CARRIED AND WHERE THAT SURVIVES. The note stated the selected
+-- scope and quantified what a compliance-only figure leaves on the table.
+-- The second half is the one that matters and it has two other homes,
+-- both older than the note: the headline KPI's subtext and the
+-- composition chart's total, each reading "+{0} available on a wider
+-- scope". Dan named the first himself.
+--
+-- THE CHECK THAT DEFENDED IT IS REWRITTEN, NOT DELETED, and that is the
+-- part worth recording. The "(compliance scope)" parenthetical was
+-- dropped in an earlier migration ON THE CONDITION that this note carried
+-- the fact. Removing the note as well would quietly turn that trade into
+-- a subtraction. The regression suite now asserts the FACT in both
+-- surviving carriers, and asserts that neither offers a wider scope when
+-- the wider scope is already selected -- so the next tidy-up finds out
+-- here rather than in a board room.
+DELETE FROM translations WHERE namespace = 'roi'
+  AND key IN ('sum.scopeOnly', 'sum.scopeOnly2', 'sum.scopeBoth', 'sum.scopeBoth2', 'sum.bridge6');
+
+-- ---- what this migration claims it did ------------------------------
+-- ASSERT: SELECT count(*) FROM translations WHERE namespace = 'roi' AND key LIKE 'score.k%' = 0
+-- ASSERT: SELECT count(*) FROM translations WHERE namespace = 'roi' AND key LIKE 'notes.bracket%' = 0
+-- ASSERT: SELECT count(*) FROM translations WHERE namespace = 'roi' AND key LIKE 'notes.headcount%' = 0
+-- ASSERT: SELECT count(*) FROM translations WHERE namespace = 'roi' AND key IN ('notes.h.reasoning','notes.banks','notes.rework','notes.unmonetised','basis.cycle.just') = 0
+-- ASSERT: SELECT count(*) FROM translations WHERE namespace = 'roi' AND key LIKE 'sum.scope%' = 0
+-- ASSERT: SELECT count(*) FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key = 'basis.cycle2.just' = 1
+--
+-- The four grade tags are now the ONLY names for the four grades, and the
+-- scorecard reads them. If a second set is ever minted the bar and the
+-- cards drift again, silently, in the section that defines the taxonomy
+-- -- and the English reads perfectly either way, which is exactly how the
+-- first pair got through.
+--
+-- ASSERT ALWAYS: SELECT count(*) FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key IN ('ev.gradeA.tag','ev.gradeB.tag','ev.gradeC.tag','ev.gradeD.tag') = 4
+--
+-- The cycle-time row must keep all three citation slots. It is now the
+-- only place two of them render, and a slot lost in translation would put
+-- a grade-A figure back in the state this migration just rescued it from.
+--
+-- ASSERT ALWAYS: SELECT count(*) FROM translations WHERE namespace = 'roi' AND key = 'basis.cycle2.just' AND value LIKE '%{0}%{1}%{2}%' = 1
+--
+-- And the scorecard heading must survive, because it is now the first
+-- thing inside the evidence panel. Losing it leaves the panel opening on
+-- an unlabelled bar, which reads as a rendering fault rather than as a
+-- summary.
+--
+-- ASSERT ALWAYS: SELECT count(*) FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key = 'score.h' = 1

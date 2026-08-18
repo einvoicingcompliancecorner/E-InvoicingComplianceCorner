@@ -1893,11 +1893,25 @@ const notesLink = () => \`<a href="#notes" class="nlink">${tj("notes.link","why 
 // hairline with a label nobody can read. Same reasoning as migration 576:
 // a mark nobody can distinguish is worse than no mark, because it asserts
 // a precision the picture does not have.
+// THE KEY REUSES THE GRADE CARDS' OWN TAGS. Dan, 18 August 2026: "please
+// ensure text next to A,B,C,D on the evidence bar match the same in the
+// evidence grades cards."
+//
+// They did not: the bar said "our estimate" where the card says "your
+// assumption", and "weak or anecdotal" where the card says "anecdote, not
+// benchmark". Two vocabularies for one taxonomy, four inches apart, in the
+// section whose whole job is to define the taxonomy.
+//
+// Fixed by DELETING the parallel strings rather than by editing them to
+// agree. score.kA..kD were four new rows that had to be kept in step with
+// four existing ones by hand, which is the same literal-beside-the-truth
+// shape as the hardcoded grade tags in migration 580 -- and it drifted
+// before it had shipped once.
 const SCORE_GRADES = [
-  ['A', '${tj("score.kA","measured and primary")}'],
-  ['B', '${tj("score.kB","credible body, unattributed")}'],
-  ['C', '${tj("score.kC","weak or anecdotal")}'],
-  ['D', '${tj("score.kD","our estimate")}'],
+  ['A', '${tj("ev.gradeA.tag","measured &amp; primary")}'],
+  ['B', '${tj("ev.gradeB.tag","credible body, unattributed")}'],
+  ['C', '${tj("ev.gradeC.tag","anecdote, not benchmark")}'],
+  ['D', '${tj("ev.gradeD.tag","your assumption")}'],
 ];
 const scoreBar = () => SCORE_GRADES.filter(g => SCORE[g[0]] > 0)
   .map(g => \`<span class="scoreseg sg\${g[0]}" style="flex:\${SCORE[g[0]]}">\${SCORE[g[0]]}</span>\`).join('');
@@ -3607,9 +3621,6 @@ function build(){
       <div class="stat"><div class="n" style="color:\${paybackMonths&&paybackMonths<=24?'#7fd0a8':'#e2b978'}">\${payback(paybackMonths)}</div><div class="l">${tj("res.payback","Payback on one-off")}</div></div>
       <div class="stat"><div class="n" style="color:\${dated.length?'#e08b7a':'#8d9bb5'}">\${dated.length}</div><div class="l">${tj("res.dated","Jurisdictions with a dated deadline ahead")}</div></div>
     </div>
-    <div class="note" id="scopeNote" style="margin-top:14px">\${banked
-      ? \`<strong>${tj("sum.scopeBoth","Scope: compliance + AP process automation.")}</strong> ${tj("sum.scopeBoth2","Every direct row counts, and the timeline carries a process-change phase per country. The larger, less common programme.")}\`
-      : \`<strong>${tj("sum.scopeOnly","Scope: compliance only.")}</strong> \${fill('${tj("sum.scopeOnly2","{0} is saved from the integration itself; the remaining {1} needs a change programme you are not running.")}', fmt(l1Banked + l2), fmt(l1Unbanked))}\`} ${tj("sum.bridge6","Net annual saving is the annual saving less the two running costs above; section 4 shows what makes up the annual saving, row by row.")} \${notesLink()}</div>
     <div id="guards"></div>
     <div class="card"><p style="margin:0">\${fill('${tj("card.mix","Across {0} jurisdictions you have {1} (CTC or 5-corner) and {2} (4-corner exchange){3}.")}',
         '<strong>' + planned + '</strong>',
@@ -3622,16 +3633,8 @@ function build(){
         '${hlp('integrations',t("tip.derived","How this is derived"))}')}
       \${dated.length ? fill('${tj("card.nearest","The nearest binding date is {0} ({1}).")}', '<strong>' + dated[0][5] + '</strong>', dated[0][0])
         : '${tj("card.noDated","None of the selected jurisdictions has a future dated deadline on the tracker today.")}'} \${ev('site','${tj("ev.siteLabel","Source: tracker data")}')}</p></div>
-    <div class="card">
-      <p class="scoreh">${tj("score.h","How much of this is evidenced")}</p>
-      <div class="scorebar">\${scoreBar()}</div>
-      <p class="scorekey">\${scoreKey()}</p>
-      <p style="margin:10px 0 0">\${fill('${tj("score.lead","Of the {0} benchmarks this page computes with, <strong>{1} are measured primary sources</strong>, {2} come from a credible body but are unattributed or carry arithmetic of ours, and {3} are our own estimate. A further {4} are held only so a claim elsewhere can cite them, and are not scored here.")}', SCORE.total, SCORE.A, SCORE.B, SCORE.D, SCORE.held)}</p>
-      <p class="note" style="margin:10px 0 0">\${fill('${tj("score.dcost","{0} of the {1} grade-D figures are the cost placeholders the investment side is built from &mdash; yours to replace, and marked below.")}', SCORE.Dcost, SCORE.D)} \${placeholders.length
-        ? fill('${tj("score.yours","<strong>{0} {1} still hold our numbers rather than yours.</strong>")}', placeholders.length, plur(placeholders.length, PLURALS.field))
-        : '${tj("score.yoursDone","<strong>Every field that needs your own number has one.</strong>")}'}</p>
-      <p class="note" style="margin:10px 0 0">\${fill('${tj("score.durations","<strong>And every date in the wave plan rests on a grade D.</strong> Phase durations are {0}, because no analyst firm publishes credible per-country implementation durations &mdash; this was checked. They are yours to change in section 3.")}', ev('durations','${tj("ev.durationsShort","practitioner estimates")}'))} \${notesLink()}</p>
-    </div>\`;
+\`;
+
 
   const pace = +document.getElementById('pace').value || 1;
   const ganttRows = buildGantt(tracks, erp, pace);
@@ -3774,7 +3777,7 @@ function build(){
 
     <tr class="grp"><td colspan="4">${t("grp.named","Named, not priced &mdash; real, and this model will not invent a number for them")}</td></tr>
 
-    <tr class="tierA" data-row="cycle"><td>${t("row.cycle","Faster cycle time &amp; fewer supplier queries")} <span class="tag intang">${t("tag.intangible","intangible")}</span></td><td><span class="bcalc"><span class="blab">${tj("basis.lab.calc","Calculation:")}</span>${tj("basis.notPriced","Named, not priced.")}</span><span class="bjust"><span class="blab">${tj("basis.lab.just","Justification:")}</span>\${fill('${tj("basis.cycle.just","Top-performing AP spends <strong>12.8%</strong> of staff time on supplier inquiries against <strong>24.0%</strong> {0} &mdash; an association with high-performing AP, not a measured effect of e-invoicing.")}', ev('ardentInq','${tj("ev.ardent2025","Ardent Partners, 2025 data")}'))} \${notesLink()}</span></td>\${dash}</tr>
+    <tr class="tierA" data-row="cycle"><td>${t("row.cycle","Faster cycle time &amp; fewer supplier queries")} <span class="tag intang">${t("tag.intangible","intangible")}</span></td><td><span class="bcalc"><span class="blab">${tj("basis.lab.calc","Calculation:")}</span>${tj("basis.notPriced","Named, not priced.")}</span><span class="bjust"><span class="blab">${tj("basis.lab.just","Justification:")}</span>\${fill('${tj("basis.cycle2.just","Supplier inquiries take <strong>12.8%</strong> of AP staff time against <strong>24.0%</strong> {0}; cycle time <strong>2.9 days</strong> against <strong>13.5</strong> {1}; <strong>15% fewer queries</strong> at one trust {2}. Associations with high-performing AP, not measured effects.")}', ev('ardentInq','${tj("ev.ardent2025","Ardent Partners, 2025 data")}'), ev('ardentCycle','${tj("ev.cycleGap","2.9 vs 13.5 days")}'), ev('nhs','${tj("ev.nhsQuery","15% query reduction")}'))} \${notesLink()}</span></td>\${dash}</tr>
 
     <tr class="tierA" data-row="paper"><td>${t("row.paper","Paper, print, postage, storage")} <span class="tag tang">${t("tag.tangible","tangible")}</span></td><td><span class="bcalc"><span class="blab">${tj("basis.lab.calc","Calculation:")}</span>${tj("basis.notPriced","Named, not priced.")}</span><span class="bjust"><span class="blab">${tj("basis.lab.just","Justification:")}</span>\${fill('${tj("basis.paper.just","Paper AUD 30.87 against AUD 9.18 for an e-invoice {0}; your own print, postage and storage spend is the better input.")}', ev('ato','${tj("ev.atoDeloitte","ATO / Deloitte")}'))}</span></td>\${dash}</tr>
 
@@ -3817,14 +3820,37 @@ function build(){
   renderSavings();
 
   document.getElementById('evidence').innerHTML = \`
-    <p style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:var(--soon);margin:0 0 8px">${tj("notes.h.reasoning","The reasoning")}</p>
-    <div class="grid g2" style="margin-bottom:16px">
-      <div class="card"><h3>${tj("notes.banks.h","What compliance alone saves")}</h3><p class="hint">${tj("notes.banks","Structured invoices arrive ready to post and leave already cleared, so the capture and issuing work goes with the integration itself. Review and approval are workflow decisions, and changing those is a separate programme. The ATO&rsquo;s task times set the split: receipt 7 minutes and validation 2, against review 7 and approval 5. Tax reporting is saved on either scope, because you file structured data to the authority whether or not AP workflow ever changes.")}</p></div>
-      <div class="card"><h3>${tj("notes.bracket.h","How conservative is the compliance-only figure?")}</h3><p class="hint">${tj("notes.bracket","Three methods give three answers for what a compliance-only programme saves, as a share of the manual AP cost: <strong>25.7%</strong> by the route used here, <strong>42.9%</strong> if capture is credited with its full share of handling time, and <strong>70.3%</strong> if the ATO&rsquo;s paper-to-eInvoice gap is read as capture and exception work throughout. The lowest is used. The spread is roughly threefold, so a compliance-only case that looks marginal here may be understated.")}</p></div>
-      <div class="card"><h3>${tj("notes.rework.h","Rework sits outside the total")}</h3><p class="hint">${tj("notes.rework","This row rests on the three figures we are least sure of: HMRC&rsquo;s 10% error rate, published without a source; the time you tell us one fix takes; and our estimate of how many errors structured data removes. So it is shown in full and left out of the total. Ardent evidences the mechanism without quantifying it, and their 9.8-point gap between best-in-class and average exception rates sets the ceiling used here.")}</p></div>
-      <div class="card"><h3>${tj("notes.headcount.h","The same saving, counted in people")}</h3><p class="hint">${tj("notes.headcount","The capture-FTE figure shows the processing-cost saving as people instead of money. It is one saving in two units &mdash; the per-invoice benchmark is mostly labour, so adding both would count it twice.")}\${saving > 0 ? ' ' + fill('${tj("notes.headcountSplit","{0} of {1}, or {2}%; the rest is review, technology and overhead.")}', fmt(captureValue), fmt(saving), Math.round(captureValue/saving*100)) : ''} \${fill('${tj("notes.headcountFte","In people: {0} FTE keying invoices today, of which {1} are released.")}', captureFte.toFixed(1), captureSaved.toFixed(1))} ${tj("notes.headcount2","Released time becomes cash only if the role goes, or is not backfilled.")} \${ev('apqc','APQC')} &middot; \${ev('atoCapture','ATO / Deloitte')}</p></div>
-      <div class="card"><h3>${tj("notes.unmonetised.h","Named, but not priced")}</h3><p class="hint">\${fill('${tj("notes.unmonetised","Paper and postage, because your own spend beats any average. Cycle time and supplier queries, because no study separates the part e-invoicing causes &mdash; Ardent&rsquo;s own {0} compares the most automated quartile with everyone else, and the {1} comes from one unnamed organisation. VAT leakage, penalty exposure and fraud have real mechanisms and no measured magnitudes. They belong in the qualitative case alongside this number.")}', ev('ardentCycle','${tj("ev.cycleGap","2.9 vs 13.5 days")}'), ev('nhs','${tj("ev.nhsQuery","15% query reduction")}'))}</p></div>
-    </div>
+    <!-- THE SCORECARD REPLACES "THE REASONING", inside the panel that is
+         collapsed by default.
+         Dan, 18 August 2026: "Remove 'The reasoning' part of the
+         [the caveats panel], and replace it with the 'How
+         much of this is evidenced' bar we have recently added. This is
+         hidden until expanded by a user who would like to understand how
+         the results are evidenced."
+         (The panel's own heading is deliberately NOT quoted above. This
+         comment ships to the browser inside the client script, and the
+         i18n suite searches the whole render for English that survives
+         stubbing -- so quoting page copy in served code fails a check
+         that is right to fail. Migration 566 recorded that trap and I
+         walked into it anyway, sixteen migrations later.)
+         The scorecard shipped as a card in the executive summary and he
+         was right to reject it there twice over: it duplicated the four
+         grade cards a few inches below it in this same panel, and it was
+         an eighth thing between the headline and the first graphic on a
+         screen he had just asked to have less on. A summary of the
+         evidence belongs at the top of the evidence, not at the top of
+         the answer -- and the reader who wants it is the reader who has
+         already opened this panel. -->
+
+      <p class="scoreh">${tj("score.h","How much of this is evidenced")}</p>
+      <div class="scorebar">\${scoreBar()}</div>
+      <p class="scorekey">\${scoreKey()}</p>
+      <p style="margin:10px 0 0">\${fill('${tj("score.lead","Of the {0} benchmarks this page computes with, <strong>{1} are measured primary sources</strong>, {2} come from a credible body but are unattributed or carry arithmetic of ours, and {3} are our own estimate. A further {4} are held only so a claim elsewhere can cite them, and are not scored here.")}', SCORE.total, SCORE.A, SCORE.B, SCORE.D, SCORE.held)}</p>
+      <p class="note" style="margin:10px 0 0">\${fill('${tj("score.dcost","{0} of the {1} grade-D figures are the cost placeholders the investment side is built from &mdash; yours to replace, and marked below.")}', SCORE.Dcost, SCORE.D)} \${placeholders.length
+        ? fill('${tj("score.yours","<strong>{0} {1} still hold our numbers rather than yours.</strong>")}', placeholders.length, plur(placeholders.length, PLURALS.field))
+        : '${tj("score.yoursDone","<strong>Every field that needs your own number has one.</strong>")}'}</p>
+      <p class="note" style="margin:10px 0 0">\${fill('${tj("score.durations","<strong>And every date in the wave plan rests on a grade D.</strong> Phase durations are {0}, because no analyst firm publishes credible per-country implementation durations &mdash; this was checked. They are yours to change in section 3.")}', ev('durations','${tj("ev.durationsShort","practitioner estimates")}'))} \${notesLink()}</p>
+    <div style="margin-bottom:16px"></div>
     <p style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:var(--soon);margin:0 0 8px">${tj("notes.h.grades","Evidence grades")}</p>
     <div class="grid g2">
       <div class="card tierA"><h3>${tj("ev.gradeA","Grade A")} <span class="tag tA">${tj("ev.gradeA.tag","measured &amp; primary")}</span></h3><p class="hint">${tj("ev.gradeA.body","Ardent Partners 2025 (cost, cycle time, exception and supplier-inquiry rates) &middot; ATO / Deloitte Access Economics (paper vs PDF vs e-invoice, 2016 vintage, stated) &middot; OECD DCTR 2026 (mechanism) &middot; this site&rsquo;s own tracker data.")}</p></div>

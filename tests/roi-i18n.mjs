@@ -147,7 +147,11 @@ try {
     ["a savings column heading", "Saved on this scope"],
     ["a row tag, newly translatable", "not saved"],
     ["a runtime stat label", "Jurisdictions with a dated deadline ahead"],
-    ["a notes-panel card", "The same saving, counted in people"],
+    // Was "The same saving, counted in people" until migration 582
+    // removed "The reasoning" block. Re-pointed at the scorecard that
+    // replaced it rather than dropped, because the sample's job is to
+    // cover every section and the caveats panel is still a section.
+    ["a notes-panel heading", "How much of this is evidenced"],
     ["an evidence card", "credible body, unattributed"],
     ["the footer", "not tax, legal or investment advice"],
   ];

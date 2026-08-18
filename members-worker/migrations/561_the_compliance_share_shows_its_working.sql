@@ -99,7 +99,28 @@ INSERT OR IGNORE INTO translations (namespace, key, lang, value) VALUES
 -- turn a caveat into a sales argument. The value of the note is that a
 -- reader sees the range and can see which end was chosen.
 --
--- ASSERT ALWAYS: SELECT count(*) FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key = 'notes.bracket' AND value LIKE '%25.7%' AND value LIKE '%42.9%' AND value LIKE '%70.3%' = 1
+-- RETIRED 18 Aug 2026 by migration 582, with the same block.
+--
+-- WORTH BEING PRECISE ABOUT WHAT THIS ONE DEFENDED, because it is the
+-- least caveat-like thing in the block it lived in. The three readings
+-- were 25.7% by the route the page uses, 42.9% if capture is credited
+-- with its full share of handling time, and 70.3% on the ATO's
+-- paper-to-eInvoice gap -- a roughly threefold spread, with the lowest
+-- taken. It was an argument that the page UNDERSTATES its own case.
+--
+-- The invariant existed so that nobody could quietly quote one reading
+-- without the other two, which would have been a much worse failure than
+-- deleting all three. Deleting all three is what happened, deliberately:
+-- Dan, shown the cost, said "Ignore the two reasoning cards that you
+-- think are not carried."
+--
+-- The 25.7% route itself is unchanged and still drives every figure on
+-- the page. Only the statement of how conservative it is has gone.
+--
+--   was: ASSERT ALWAYS: SELECT count(*) FROM translations WHERE
+--        namespace = 'roi' AND lang = 'en' AND key = 'notes.bracket'
+--        AND value LIKE '%25.7%' AND value LIKE '%42.9%'
+--        AND value LIKE '%70.3%' = 1
 --
 -- And the page must keep taking the lowest of the three. This is the
 -- one figure on the page with a documented argument for tripling it

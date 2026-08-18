@@ -69,4 +69,24 @@ DELETE FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key = 'res.
 -- grid carries it -- and that line is now the ONLY place on the page,
 -- outside the selector itself, that says which scope the figures are on.
 --
--- ASSERT ALWAYS: SELECT count(*) FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key IN ('sum.scopeOnly','sum.scopeBoth') = 2
+-- RETIRED 18 Aug 2026 by migration 582. Dan: "Remove the message
+-- altogether... We keep adding new messages that clutter the screen."
+--
+-- This invariant guarded the note that replaced the "(compliance scope)"
+-- parenthetical, and it was the right guard for four days: the
+-- parenthetical was only safe to drop while this note carried the fact.
+-- The note is now gone too, so the invariant would hold a deleted
+-- sentence in place rather than protect what it was for.
+--
+-- THE RULE BEHIND IT SURVIVES IN A BETTER FORM, and that is the test of
+-- whether retiring an invariant is honest. What mattered was never that
+-- two particular rows exist, but that a reader is told what a
+-- compliance-only figure leaves on the table. That is now asserted in the
+-- regression suite against BOTH surviving carriers -- the headline KPI's
+-- subtext and the composition chart's total -- plus a check that neither
+-- offers a wider scope when the wider scope is already selected. Three
+-- checks where there was one, on the fact rather than on the wording.
+--
+--   was: ASSERT ALWAYS: SELECT count(*) FROM translations WHERE
+--        namespace = 'roi' AND lang = 'en' AND key IN
+--        ('sum.scopeOnly','sum.scopeBoth') = 2

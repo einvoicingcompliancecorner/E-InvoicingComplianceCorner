@@ -175,7 +175,24 @@ DELETE FROM translations WHERE namespace = 'roi' AND key = 'guard.mistimed.many'
 -- English still reads correctly either way. That is the whole failure
 -- mode: these rows look fine in the language that does not need them.
 --
--- ASSERT ALWAYS: SELECT count(*) FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key IN ('chart.late','sum.scopeOnly2','res.running','sv.unbankedNote','res.unbanked','waves.intro','notes.unmonetised') AND value LIKE '%{0}%' = 7
+-- NARROWED 18 Aug 2026 by migration 582, from seven keys to five.
+-- `sum.scopeOnly2` and `notes.unmonetised` were deleted there -- the
+-- scope note at Dan's request, the card with "The reasoning" block.
+--
+-- Narrowed rather than retired, because the RULE is untouched: a sentence
+-- built from a slot must keep its slot, or a translator returns prose
+-- with the number missing and the page prints a sentence with a hole in
+-- it. Five sentences still take one, and two of the five are now load-
+-- bearing in a way they were not when this was written: `res.unbanked`
+-- and `sv.unbankedNote` are the only two places left that quantify what a
+-- compliance-only scope leaves on the table, since the note that used to
+-- say it went. This line is part of what protects that now.
+--
+--   was: ... key IN ('chart.late','sum.scopeOnly2','res.running',
+--        'sv.unbankedNote','res.unbanked','waves.intro',
+--        'notes.unmonetised') AND value LIKE '%{0}%' = 7
+--
+-- ASSERT ALWAYS: SELECT count(*) FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key IN ('chart.late','res.running','sv.unbankedNote','res.unbanked','waves.intro') AND value LIKE '%{0}%' = 5
 --
 -- TWENTY-FOUR keys still end in a digit, and the first draft of this
 -- migration asserted there would be nine. That was the same mistake as
