@@ -724,10 +724,25 @@ const totGross = Number(totCells[totCells.length - 2].replace(/[^\d]/g, ""));
 const totBanked = Number(totCells[totCells.length - 1].replace(/[^\d]/g, ""));
 t.check(`the total row states the gross and the banked figure side by side (${totGross} / ${totBanked})`,
   totGross > 0 && totBanked > 0 && totGross > totBanked, totCells.join(" | "));
+// Migration 584 turned the tile into YEAR ONE COST, so its sub-line now
+// names three figures rather than two -- implementation, software fees,
+// internal running cost. Parsed by the label beside each number rather
+// than by their order, because the order is the thing most likely to be
+// reworded next and a positional parser would then read the wrong figure
+// while continuing to pass.
 const runParts = async () => {
   const sub = await page.locator("#summary .stat").nth(1).locator(".statrun").innerText();
-  const m = sub.match(/\D?([\d,]+)\s*\S*\s*platform[\s\S]*?\D([\d,]+)\s*\S*\s*internal/i);
-  return m ? [Number(m[1].replace(/,/g, "")), Number(m[2].replace(/,/g, ""))] : null;
+  const num = (label) => {
+    const m = sub.match(new RegExp(label + "\\s*\\(\\D?([\\d,]+)", "i"));
+    return m ? Number(m[1].replace(/,/g, "")) : null;
+  };
+  const plat = num("software fees"), run = num("internal running cost");
+  return plat === null || run === null ? null : [plat, run];
+};
+const implFromTile = async () => {
+  const sub = await page.locator("#summary .stat").nth(1).locator(".statrun").innerText();
+  const m = sub.match(/implementation\s*\(\D?([\d,]+)/i);
+  return m ? Number(m[1].replace(/,/g, "")) : null;
 };
 const runFromNote = async () => {
   const p = await runParts();
@@ -738,9 +753,48 @@ const netStat = async () => Number((await page.locator("#summary .stat").nth(2)
 t.check("and the banked total is what the executive summary works from",
   totBanked === (await netStat()) + (await runFromNote()),
   `${totBanked} vs net ${await netStat()} + run ${await runFromNote()}`);
-t.check("the running costs that bridge saving to net are stated beside the one-off",
+t.check("the running costs that bridge saving to net are stated in the year one tile",
   (await runFromNote()) !== null,
   await page.locator("#summary .stat").nth(1).innerText());
+// AND THE TILE MUST ADD UP TO ITS OWN HEADLINE. Migration 584 made the
+// headline the year one TOTAL and moved the implementation figure into
+// the breakdown beneath it, so the tile is now the only place on the page
+// where a reader can check that sum -- and the only place it can be
+// wrong without any other figure moving.
+const yrOneHead = Number((await page.locator("#summary .stat").nth(1).locator(".n").innerText())
+  .replace(/[^\d]/g, ""));
+const [platY, runY] = (await runParts()) || [];
+t.check(`the year one headline is its own three parts (${yrOneHead.toLocaleString()})`,
+  yrOneHead === (await implFromTile()) + platY + runY,
+  `${yrOneHead} vs ${await implFromTile()} + ${platY} + ${runY}`);
+// AND THE PAYBACK TILE DIVIDES THE IMPLEMENTATION, not the year one total.
+// This is the trap the whole arrangement exists to avoid: year one cost
+// over net annual saving is 15 months where the correct figure is 11.6,
+// because the recurring costs are already out of the denominator. If the
+// numerator ever silently becomes yearOne this check is what says so.
+const payTxt = await page.locator("#summary .stat").nth(3).locator(".n").innerText();
+const payMo = Number(payTxt.replace(/[^\d]/g, ""));
+const netForPay = await netStat();
+t.check(`payback divides the implementation, not the year one cost (${payTxt.trim()})`,
+  Math.abs(payMo - Math.round((await implFromTile()) / netForPay * 12)) <= 1,
+  `${payTxt.trim()} vs impl ${await implFromTile()} / net ${netForPay}`);
+// And the bridge states the year one net, which is the figure that makes
+// the payback tile reconcile with the cost tile beside it.
+const bridgeTxt = await page.locator("#summary .stat").nth(2).locator(".statbridge").innerText();
+// \D* not \D?, because a large footprint makes year one net NEGATIVE and
+// the rendered figure carries both a minus and a currency symbol. The
+// first version matched only one non-digit and read NaN on exactly the
+// case worth checking -- a check that works while the answer is
+// comfortable and gives up when it is not.
+const yrNetM = bridgeTxt.match(/nets\s*([^\d]*)([\d,]+)/i);
+const yrNet = yrNetM
+  ? Number(yrNetM[2].replace(/,/g, "")) * (/[-\u2212(]/.test(yrNetM[1]) ? -1 : 1)
+  : NaN;
+const grossStat = Number((await page.locator("#summary .stat").nth(0).locator(".n").innerText())
+  .replace(/[^\d]/g, ""));
+t.check(`the bridge states year one net, and it reconciles (${yrNet})`,
+  Number.isFinite(yrNet) && yrNet === grossStat - yrOneHead,
+  `${yrNet} vs ${grossStat} - ${yrOneHead}`);
 // DERIVED, not hardcoded. This read `.includes("603,931")` until
 // migration 558, and that literal broke on every legitimate change to
 // any priced row — three times in a fortnight. A baseline you re-type
@@ -1066,15 +1120,21 @@ const ribbons = await page.evaluate(() => {
   return out;
 });
 const GREEN = "rgb(47, 125, 85)", RED = "rgb(181, 67, 47)";
-t.check(`the saving is green (${ribbons["Annual saving"]})`,
-  ribbons["Annual saving"] === GREEN, JSON.stringify(ribbons));
-t.check(`the one-off investment is red, not green (${ribbons["One-off investment"]})`,
-  ribbons["One-off investment"] === RED, JSON.stringify(ribbons));
-t.check(`a positive net annual is green (${ribbons["Net annual saving"]})`,
-  ribbons["Net annual saving"] === GREEN, JSON.stringify(ribbons));
+t.check(`the saving is green (${ribbons["Gross annual saving"]})`,
+  ribbons["Gross annual saving"] === GREEN, JSON.stringify(ribbons));
+t.check(`the year one cost is red, not green (${ribbons["Year one cost"]})`,
+  ribbons["Year one cost"] === RED, JSON.stringify(ribbons));
+t.check(`a positive net annual is green (${ribbons["Net annual saving, year two onward"]})`,
+  ribbons["Net annual saving, year two onward"] === GREEN, JSON.stringify(ribbons));
 await page.emulateMedia({ media: "screen" });
-t.check("and the one-off box carries its running-cost breakdown",
-  /plus each year/.test(pdf.p1) && /platform/.test(pdf.p1), pdf.p1.slice(0, 220));
+t.check("and the year one box carries its three-part breakdown",
+  /Implementation \(/i.test(pdf.p1) && /software fees/i.test(pdf.p1)
+    && /internal running cost/i.test(pdf.p1), pdf.p1.slice(0, 260));
+// The bridge has to reach the PDF too. It is the surface most likely to
+// be read with nobody to ask, so it is the one that can least afford a
+// cost tile and a payback tile that do not reconcile.
+t.check("and the PDF carries the bridge that makes the payback reconcile",
+  /Year one nets/i.test(pdf.p1), pdf.p1.slice(0, 300));
 
 t.check("naming the nearest binding date, or saying there is none",
   /nearest binding date is|no future dated deadline|has a future dated deadline/i.test(pdf.p1),
@@ -1153,8 +1213,13 @@ t.check("a member state with no national mandate is still plannable",
 
 // One complex build plus a simple connection per member state. 27 members
 // on this preset, so the EU row adds 1 complex and 26 simple.
-const oneOff = Number((await page.locator("#summary .stat").nth(1)
-  .locator(".n").innerText()).replace(/[^\d]/g, ""));
+//
+// READ FROM THE TILE'S BREAKDOWN, not its headline. Migration 584 made
+// the headline year one cost -- implementation plus a year of recurring
+// -- so a check on the headline is no longer a check on the one-off it
+// was written to test, and would have silently become a check of
+// implementation + $90,000 instead.
+const oneOff = await implFromTile();
 t.check(`the EU row costs one build plus a connection each (${oneOff})`,
   oneOff === 770000, oneOff);
 
@@ -1553,10 +1618,15 @@ const net538 = await page.evaluate(() => {
   const cells = [...tot.children];
   const stats = [...document.querySelectorAll("#summary .stat")];
   const stat = (i) => n(stats[i].querySelector(".n").textContent);
+  // 584: three labelled figures in the tile, matched by their label
+  // rather than their order. See the note on runParts().
   const sub = stats[1].querySelector(".statrun").textContent;
-  const m = sub.match(/\D?([\d,]+)\s*\S*\s*platform[\s\S]*?\D([\d,]+)\s*\S*\s*internal/i);
+  const grab = (label) => {
+    const m = sub.match(new RegExp(label + "\\s*\\(\\D?([\\d,]+)", "i"));
+    return m ? Number(m[1].replace(/,/g, "")) : NaN;
+  };
   return { banked: n(cells[cells.length - 1].textContent), net: stat(2),
-           run: m ? Number(m[1].replace(/,/g, "")) + Number(m[2].replace(/,/g, "")) : NaN };
+           run: grab("software fees") + grab("internal running cost") };
 });
 t.check(`net annual is the section's banked total minus run cost (${net538.net.toLocaleString()})`,
   Math.abs((net538.banked - net538.run) - net538.net) <= 1,
@@ -1640,7 +1710,7 @@ await page.selectOption("#scope", "compliance");
 await page.click("#run"); await page.waitForTimeout(800);
 const oneOffStat = await page.locator("#summary .stat").nth(1).innerText();
 const parts = await runParts();
-t.check("the one-off stat names platform and internal run cost separately",
+t.check("the year one stat names software fees and internal run cost separately",
   parts !== null, oneOffStat.replace(/\s+/g, " ").slice(0, 150));
 const [plat, run] = parts;
 t.check(`platform fees are stated in their own right (${plat.toLocaleString()})`, plat > 0);
