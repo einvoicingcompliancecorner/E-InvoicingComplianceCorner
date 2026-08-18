@@ -1,0 +1,91 @@
+-- ================================================================
+-- The scorecard's three directions were all wrong, and all wrong the
+-- same way.
+--
+-- Dan, 18 August 2026, reading the moved block:
+--
+--   "1) 'yours to replace, and marked below' is no longer below, because
+--    we moved this section.
+--    2) 'They are yours to change in section 3. why ›' Why is a circular
+--    reference of its own section. Please remove the why link."
+--
+-- Both correct. And checking the first one turned up a third, older than
+-- the move.
+--
+-- ---- 1. "MARKED BELOW" IS NOT BELOW ---------------------------------
+--
+-- The cost placeholders are marked with an amber ribbon in the
+-- assumptions panel, which is in SECTION 1. The scorecard was written
+-- while it sat in the executive summary, where "below" was true of the
+-- savings table it preceded but was already only loosely true of the
+-- ribbons. Migration 582 moved the block into the caveats panel at the
+-- bottom of section 4, and "below" became simply false: everything it
+-- refers to is now above it.
+--
+-- A DIRECTION IS A POSITION USED AS A NAME. This project has now found
+-- that shape in country ticks, wave-band status, a colspan in a total
+-- row, and a regression selector that matched by being the only one of
+-- its kind. "Below" is the same defect in prose -- it survives only while
+-- nothing moves, and it fails silently, because the sentence still reads
+-- perfectly. It now says where the fields actually are.
+--
+-- ---- 2. A "WHY" LINK POINTING AT ITS OWN PANEL ----------------------
+--
+-- Every "why" on this page opens the caveats panel. The durations
+-- paragraph is now INSIDE that panel, so the link invited a reader who
+-- had already arrived to arrive again. Correct until 582, a loop the
+-- moment it landed. Removed rather than repointed: there is nowhere
+-- better for it to go, because the reader is already at the destination.
+--
+-- ---- 3. AND "SECTION 3" WAS WRONG BEFORE EITHER OF THOSE ------------
+--
+-- Found while fixing the first two, and it is mine from migration 581.
+--
+-- The durations line said phase durations are "yours to change in section
+-- 3". They are not. wMob, wDes and their siblings are inputs in the
+-- ASSUMPTIONS PANEL under "Implementation - weeks", in section 1.
+-- Section 3's "Adjust the plan" moves a country to a different wave and
+-- pins start dates; it does not touch a single duration.
+--
+-- So a reader following that sentence would have opened the right-looking
+-- panel, found nothing that changed a duration, and concluded the page
+-- was lying about how editable its own grade-D figures are -- on the one
+-- line whose whole purpose is to say they are editable.
+--
+-- All three now point at the same place, which is also the true one: the
+-- assumptions panel in section 1.
+--
+-- ---- WHY THESE ARE REPLACED IN PLACE RATHER THAN RENAMED ------------
+--
+-- Both keep their slot counts and their meanings; only the direction
+-- changes. The rename convention exists so a translator holding an old
+-- string cannot silently drop a factual slot -- that risk is not present
+-- here, and minting `score.dcost2` would orphan a row a day old for no
+-- gain. English is still the only language in D1 for these keys.
+
+INSERT OR REPLACE INTO translations (namespace, key, lang, value) VALUES
+  ('roi', 'score.dcost', 'en', '{0} of the {1} grade-D figures are the cost placeholders the investment side is built from. They are yours to replace, in the assumptions panel in section 1.'),
+  ('roi', 'score.durations', 'en', '<strong>And every date in the wave plan rests on a grade D.</strong> Phase durations are {0}, because no analyst firm publishes credible per-country implementation durations &mdash; this was checked. They are yours to change, in that same panel.');
+
+-- ---- what this migration claims it did ------------------------------
+-- ASSERT: SELECT count(*) FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key = 'score.dcost' AND value LIKE '%section 1%' = 1
+-- ASSERT: SELECT count(*) FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key = 'score.durations' AND value LIKE '%same panel%' = 1
+--
+-- No scorecard line may direct a reader by position again. "Below",
+-- "above" and "opposite" are true only until something moves, and both
+-- of the sentences this file fixes read perfectly while being wrong --
+-- which is why no test caught either and Dan did, from the rendered page.
+--
+-- Stated as a pattern rather than on the two keys that had it, so that
+-- the next line to acquire a direction is caught rather than the two that
+-- already have been fixed.
+--
+-- ASSERT ALWAYS: SELECT count(*) FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key LIKE 'score.%' AND (value LIKE '% below.%' OR value LIKE '% below %' OR value LIKE '% above.%' OR value LIKE '% above %') = 0
+--
+-- And the section number the scorecard cites must be the section the
+-- fields are actually in. Held as a literal because there is exactly one
+-- right answer and it is not derivable from D1: the assumptions panel is
+-- section 1 by the page's own numbering, and if that numbering ever
+-- changes this line should refuse to replay until someone checks.
+--
+-- ASSERT ALWAYS: SELECT count(*) FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key = 'score.dcost' AND value LIKE '%section 1%' = 1

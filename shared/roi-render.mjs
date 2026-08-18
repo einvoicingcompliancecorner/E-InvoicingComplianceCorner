@@ -3846,10 +3846,16 @@ function build(){
       <div class="scorebar">\${scoreBar()}</div>
       <p class="scorekey">\${scoreKey()}</p>
       <p style="margin:10px 0 0">\${fill('${tj("score.lead","Of the {0} benchmarks this page computes with, <strong>{1} are measured primary sources</strong>, {2} come from a credible body but are unattributed or carry arithmetic of ours, and {3} are our own estimate. A further {4} are held only so a claim elsewhere can cite them, and are not scored here.")}', SCORE.total, SCORE.A, SCORE.B, SCORE.D, SCORE.held)}</p>
-      <p class="note" style="margin:10px 0 0">\${fill('${tj("score.dcost","{0} of the {1} grade-D figures are the cost placeholders the investment side is built from &mdash; yours to replace, and marked below.")}', SCORE.Dcost, SCORE.D)} \${placeholders.length
+      <p class="note" style="margin:10px 0 0">\${fill('${tj("score.dcost","{0} of the {1} grade-D figures are the cost placeholders the investment side is built from. They are yours to replace, in the assumptions panel in section 1.")}', SCORE.Dcost, SCORE.D)} \${placeholders.length
         ? fill('${tj("score.yours","<strong>{0} {1} still hold our numbers rather than yours.</strong>")}', placeholders.length, plur(placeholders.length, PLURALS.field))
         : '${tj("score.yoursDone","<strong>Every field that needs your own number has one.</strong>")}'}</p>
-      <p class="note" style="margin:10px 0 0">\${fill('${tj("score.durations","<strong>And every date in the wave plan rests on a grade D.</strong> Phase durations are {0}, because no analyst firm publishes credible per-country implementation durations &mdash; this was checked. They are yours to change in section 3.")}', ev('durations','${tj("ev.durationsShort","practitioner estimates")}'))} \${notesLink()}</p>
+      <!-- NO notesLink() ON THIS LINE. Dan, 18 August 2026: "Why is a
+           circular reference of its own section. Please remove the why
+           link." It is: every other "why" on the page opens this panel,
+           and this paragraph is now inside it, so the link asked a reader
+           who had already arrived to arrive again. It was correct until
+           582 moved the block and became a loop the moment it landed. -->
+      <p class="note" style="margin:10px 0 0">\${fill('${tj("score.durations","<strong>And every date in the wave plan rests on a grade D.</strong> Phase durations are {0}, because no analyst firm publishes credible per-country implementation durations &mdash; this was checked. They are yours to change, in that same panel.")}', ev('durations','${tj("ev.durationsShort","practitioner estimates")}'))}</p>
     <div style="margin-bottom:16px"></div>
     <p style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:var(--soon);margin:0 0 8px">${tj("notes.h.grades","Evidence grades")}</p>
     <div class="grid g2">
