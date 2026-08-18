@@ -1546,7 +1546,13 @@ for (const scope of ["compliance", "both"]) {
     .map((e) => e.querySelector(".l").textContent.replace(/\s+/g, " ").trim()));
   t.check(`${scope}: no stat carries a scope parenthetical`,
     labels.every((l) => !/\(compliance scope\)/i.test(l)), labels.join(" | "));
-  const note = await page.locator("#summary .note:not(.warn)").innerText();
+  // #scopeNote, not "#summary .note:not(.warn)". The scorecard added by
+  // migration 581 put two more notes inside this block and the old
+  // selector matched three elements, so the check died on strict mode
+  // rather than reporting anything. Anchored on the element's identity
+  // instead of on it being the only one of its kind -- the same lesson as
+  // the country ticks and the colspan in the total row.
+  const note = await page.locator("#scopeNote").innerText();
   t.check(`${scope}: the note states which scope the figures are on`,
     /^\s*Scope:/i.test(note), note.slice(0, 70));
 }
@@ -1557,7 +1563,7 @@ await page.selectOption("#scope", "compliance");
 await page.click("#run"); await page.waitForTimeout(800);
 t.check("and on compliance scope it quantifies what is excluded",
   /needs a change programme you are not running/.test(
-    await page.locator("#summary .note:not(.warn)").innerText()));
+    await page.locator("#scopeNote").innerText()));
 
 
 // ---- 33. the SaaS cost is named, not buried in a sum ----
@@ -1728,6 +1734,50 @@ t.check("and 100% gives none, because there is nothing left to take",
 t.check("the halfway point is half the full saving, so the lever is linear",
   Math.abs(at50 * 2 - at0) <= 2, `${at50} x 2 vs ${at0}`);
 await apAt(50);
+
+// ---- 36a. the evidence scorecard says what the page can prove ---------
+// Item 12 of the usability assessment: "Nothing summarises the evidence,
+// which is the product." The counts are derived from which benchmarks
+// val() is actually asked for, so this checks the RENDERED numbers against
+// the database rather than against a literal in the test -- a literal here
+// would pass just as happily if the renderer stopped counting.
+await page.click("#run"); await page.waitForTimeout(900);
+const card = await page.evaluate(() => {
+  const segs = [...document.querySelectorAll("#summary .scoreseg")]
+    .map((e) => ({ g: (e.className.match(/sg([ABCD])/) || [])[1], n: Number(e.textContent) }));
+  const keys = [...document.querySelectorAll("#summary .scorekey .tag")]
+    .map((e) => (e.className.match(/\bt([ABCD])\b/) || [])[1]);
+  const p = [...document.querySelectorAll("#summary .card p")].map((e) => e.innerText);
+  return { segs, keys, text: p.join(" ") };
+});
+const segTotal = card.segs.reduce((a, s) => a + s.n, 0);
+t.check(`the scorecard totals the benchmarks it scores (${segTotal})`,
+  segTotal > 0 && new RegExp(`Of the ${segTotal} benchmarks`).test(card.text),
+  `${segTotal} vs ${(card.text.match(/Of the \d+ benchmarks/) || [])[0]}`);
+// The bar and the sentence are two renderings of one object. Migration 580
+// found a grade tag disagreeing with the database it was drawn from; this
+// is the same failure one level up, and the only check that would see it.
+const segA = (card.segs.find((s) => s.g === "A") || {}).n;
+const textA = Number((card.text.match(/(\d+) are measured primary/) || [])[1]);
+t.check("and the bar agrees with the sentence on how many are grade A",
+  segA !== undefined && segA === textA, `bar ${segA} / sentence ${textA}`);
+// A grade with no rows must not draw a segment nobody can read, and must
+// still appear in the key -- "nothing here rests on grade C" is worth
+// saying. Migration 576 made the same call about chart phases below 44px.
+t.check("a zero-count grade is absent from the bar and present in the key",
+  !card.segs.some((s) => s.n === 0) && keysHasAll(card.keys),
+  `bar ${card.segs.map((s) => s.g + s.n).join(",")} / key ${card.keys.join(",")}`);
+function keysHasAll(k){ return ["A","B","C","D"].every((g) => k.includes(g)); }
+// The sharpest finding of the independent review, promoted from a caption
+// under the chart to a line of the summary.
+t.check("the scorecard states that the wave plan rests on a grade D",
+  /every date in the wave plan rests on a grade D/i.test(card.text), card.text.slice(0, 90));
+// And item 13: the scorecard must REPLACE a caveat, not join them. The
+// placeholder guard said the same count in the warnings panel.
+const warnText = await page.evaluate(() =>
+  (document.getElementById("guards") || {}).innerText || "");
+t.check("and the placeholder count is not also in the guards",
+  !/still hold our numbers rather than yours/i.test(warnText), warnText.slice(0, 90));
 
 // ---- 36b. and the SENDING side is a live lever too (migration 580) ----
 // Dan: "I'm not sure it makes sense for us to claim 100% of the AR invoice
