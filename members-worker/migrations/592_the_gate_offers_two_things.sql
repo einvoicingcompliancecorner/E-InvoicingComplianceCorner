@@ -1,0 +1,124 @@
+-- ================================================================
+-- The gate names two offers, so it makes two of them.
+--
+-- Dan, 19 August 2026: "On subscribing via the new functionality, no
+-- email is sent to my account."
+--
+-- ================================================================
+-- WHAT WENT WRONG, AND IT WAS MINE FROM YESTERDAY
+-- ================================================================
+--
+-- Migration 591 turned the gate's CTA into a real link. The button reads
+-- "Sign in / subscribe free" and I pointed all of it at ONE destination:
+-- the members login at /members.
+--
+-- That page emails a magic link only to addresses that are already
+-- ACTIVE subscribers. For any other address it sends nothing at all and
+-- shows the same "check your email" confirmation. From handleLoginRequest:
+--
+--     const active = await isCurrentlyActive(env, email);
+--     // Always show the same confirmation regardless of whether the
+--     // email is an active subscriber -- this avoids revealing which
+--     // emails are/aren't customers.
+--     if (active) { ...send the magic link... }
+--     return htmlResponse(renderCheckEmailPage(lang));
+--
+-- That is correct behaviour for a login page, and deliberately so: a
+-- login that behaves differently for known and unknown addresses is an
+-- account-enumeration oracle. Nothing about it should change.
+--
+-- What was wrong is what I pointed at it. A reader who has never signed
+-- up -- which is most of the audience for an unindexed Beta page whose
+-- whole job is collecting first impressions -- clicked a button offering
+-- to subscribe them, and got a confirmation page and silence. The single
+-- worst outcome available: it looks like it worked.
+--
+-- A CONTROL THAT NAMES TWO THINGS AND DOES ONE. This page keeps being
+-- caught by that exact shape. The step chip said "Calculate" while the
+-- button said "Recalculate" (587). The assumptions column headed
+-- "Implementation -- weeks" contained parallel workstreams and delivery
+-- pace (587). The legend described a Keep control that had been removed
+-- (588). Same defect, in a control I built yesterday while writing about
+-- the other three.
+--
+-- ================================================================
+-- SO THE OFFER SPLITS
+-- ================================================================
+--
+--   Subscribe free   ->  /subscribe.html   the real sign-up form, which
+--                                          creates the account and sends
+--                                          both the welcome email and a
+--                                          magic link
+--   Already subscribed? Sign in  ->  members /members, unchanged, still
+--                                          carrying the reader's figures
+--                                          through ?next=
+--
+-- SUBSCRIBING IS THE PRIMARY ACTION and keeps the button; signing in
+-- becomes a quiet line underneath. That ordering is a claim about who is
+-- reading: this page is reachable from a public menu, marked Beta, and
+-- not in any search index. Someone arriving at the gate is far more
+-- likely to have no account than to have one and be signed out.
+--
+-- WHAT THE SUBSCRIBE ROUTE DOES NOT DO, recorded rather than discovered
+-- later: it does not carry the reader's volumes and country picks. The
+-- sign-in route does, because ?next= lands them back on the planner. The
+-- sign-up flow ends at a welcome email whose links go to the archive and
+-- preferences, so there is nowhere to hand the figures TO without
+-- rebuilding that flow. A first-time signup is creating an account
+-- rather than resuming work, which makes the loss tolerable -- but it is
+-- a loss, and if the conversion path matters more later this is the
+-- thing to fix.
+
+-- ---- AND THE SENTENCE ABOVE THE BUTTON ------------------------------
+--
+-- Caught by looking at the rendered gate rather than by any check, which
+-- is becoming the pattern. With the button relabelled, the lede still
+-- opened "Sign in free to see the full wave plan..." -- so the paragraph
+-- told the reader to sign in and the primary control under it offered to
+-- subscribe them. Two vocabularies for one action, four inches apart, in
+-- the same panel this migration exists to stop doing that.
+--
+-- Renamed rather than edited: "Sign in free" and "Subscribing is free"
+-- are different instructions, not different wordings, and a translator
+-- holding the old string would be telling readers to do the thing the
+-- button no longer does.
+INSERT OR REPLACE INTO translations (namespace, key, lang, value) VALUES
+  ('roi', 'gate.cta2', 'en', 'Subscribe free'),
+  ('roi', 'gate.signin', 'en', 'Already subscribed? {0}.'),
+  ('roi', 'gate.signin.link', 'en', 'Sign in'),
+  ('roi', 'gate.body2', 'en', 'Subscribing is free. It unlocks the full wave plan, the two-layer ROI model and the evidence panel, pulls in the countries you already follow, and lets you download the PDF for your board pack.');
+
+-- RENAMED, NOT EDITED. "Sign in / subscribe free" described one control
+-- doing two jobs. There is no wording of that string that is correct for
+-- the button that replaced it, and a translator holding the old value
+-- would be labelling a button that now only subscribes.
+DELETE FROM translations WHERE namespace = 'roi' AND key IN ('gate.cta', 'gate.body');
+
+-- ---- what this migration claims it did ------------------------------
+-- ASSERT: SELECT count(*) FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key IN ('gate.cta2','gate.signin','gate.signin.link','gate.body2') = 4
+-- ASSERT: SELECT count(*) FROM translations WHERE namespace = 'roi' AND key IN ('gate.cta','gate.body') = 0
+--
+-- INHERITED FROM 591, which had to retire it in place when the key was
+-- renamed. Same rule, same reason: the sentence must keep naming the PDF,
+-- because the PDF is one of the things the members page genuinely does
+-- and the public page genuinely does not. A gate whose promise drifts
+-- away from what is behind it is a mock with better wording, which is the
+-- state 591 found this panel in.
+--
+-- ASSERT ALWAYS: SELECT count(*) FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key = 'gate.body2' AND value LIKE '%PDF%' = 1
+--
+-- THE SIGN-IN SENTENCE KEEPS ITS SLOT, which is the link itself. Lose it
+-- and the line becomes the words "Already subscribed?" with no way to do
+-- anything about it -- an existing subscriber staring at a Subscribe
+-- button that will tell them they have already signed up.
+--
+-- ASSERT ALWAYS: SELECT count(*) FROM translations WHERE namespace = 'roi' AND key = 'gate.signin' AND value LIKE '%{0}%' = 1
+--
+-- AND NO SINGLE CONTROL MAY OFFER BOTH AGAIN. This is the invariant that
+-- would have caught yesterday's defect: the button label must not name
+-- signing in, because a button that says "sign in" has to be able to
+-- sign someone in, and this one goes to a sign-up form. Stated against
+-- the label rather than the destination, because the label is the part a
+-- reader acts on and the part a translator can quietly break.
+--
+-- ASSERT ALWAYS: SELECT count(*) FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key = 'gate.cta2' AND (lower(value) LIKE '%sign in%' OR lower(value) LIKE '%log in%') = 0

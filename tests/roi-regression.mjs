@@ -3038,6 +3038,32 @@ const cta = await gated.evaluate(() => {
 });
 t.check("the gate's CTA is a link, not a button with an onclick",
   !!cta && cta.tag === "A", JSON.stringify(cta && cta.tag));
+
+// TWO ROUTES, BECAUSE THE BUTTON NAMED TWO THINGS (migration 592). It
+// read "Sign in / subscribe free" and went only to the members LOGIN,
+// which emails a magic link exclusively to addresses that already have
+// an active account and silently sends nothing to anyone else. A new
+// reader got a "check your email" page and no email — Dan hit this
+// within a day of the gate going live.
+const routes = await gated.evaluate(() => {
+  const sub = document.getElementById("subscribe");
+  const sin = document.getElementById("signin");
+  return {
+    subHref: sub && sub.getAttribute("href"),
+    subText: sub && sub.textContent.trim(),
+    subTop: sub && sub.getAttribute("target"),
+    sinHref: sin && sin.getAttribute("href"),
+    sinTop: sin && sin.getAttribute("target"),
+  };
+});
+t.check("the gate offers a way to SUBSCRIBE, not only to sign in",
+  /subscribe\.html$/.test(routes.subHref || ""), JSON.stringify(routes.subHref));
+t.check("and the subscribe button does not also claim to sign you in",
+  !/sign\s*in|log\s*in/i.test(routes.subText || ""), routes.subText);
+t.check("signing in is still offered, separately, to people who have an account",
+  /\/members$/.test(routes.sinHref || ""), routes.sinHref);
+t.check("and both escape the tracker's frame rather than loading inside it",
+  routes.subTop === "_top" && routes.sinTop === "_top", JSON.stringify(routes));
 t.check("and opens at the top level, so it cannot load inside the tracker's frame",
   !!cta && cta.target === "_top", cta && cta.target);
 // THE HAND-OFF CARRIES THE READER'S WORK. Not decoration: arriving at a

@@ -124,6 +124,13 @@ DELETE FROM translations WHERE namespace = 'roi' AND key = 'guard.noCountries';
 --
 -- ---- NO NEW STRINGS FOR ANY OF THIS ---------------------------------
 --
+-- SUPERSEDED THE NEXT DAY by migration 592: gate.body and gate.cta both
+-- changed after all. The reasoning below was sound and its premise was
+-- wrong -- it assumed one control could keep offering both signing in and
+-- subscribing, which is the defect 592 exists to fix. Left in place
+-- rather than rewritten, because a migration recording what was believed
+-- at the time is worth more than one edited to look correct afterwards.
+--
 -- gate.eyebrow, gate.title, gate.body and gate.cta are unchanged, and
 -- that is deliberate rather than lazy. "Sign in free to see the full wave
 -- plan... and to download the PDF for your board pack" was written as a
@@ -150,4 +157,13 @@ DELETE FROM translations WHERE namespace = 'roi' AND key = 'guard.noCountries';
 -- edit adds something to this sentence that the members page does not
 -- do, the button goes back to being a mock with better wording.
 --
--- ASSERT ALWAYS: SELECT count(*) FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key = 'gate.body' AND value LIKE '%PDF%' = 1
+-- SUCCEEDED 19 Aug 2026 by migration 592, which renamed the key when the
+-- sentence stopped telling the reader to sign in and started telling them
+-- to subscribe. The rule is not weakened -- 592 carries it forward
+-- against gate.body2, unchanged in substance: the sentence must keep
+-- naming the PDF, because the PDF is one of the things the members page
+-- genuinely does and the public page genuinely does not.
+--
+--   was: ASSERT ALWAYS: SELECT count(*) FROM translations WHERE
+--        namespace = 'roi' AND lang = 'en' AND key = 'gate.body'
+--        AND value LIKE '%PDF%' = 1
