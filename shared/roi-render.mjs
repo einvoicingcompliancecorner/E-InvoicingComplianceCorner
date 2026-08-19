@@ -1761,7 +1761,7 @@ ${langAsked && langAsked !== lang ? `<p class="note noprint" style="margin:0 0 1
 <div id="gate" class="gate noprint hidden">
   <p class="eyebrow" style="color:var(--soon)">${t("gate.eyebrow", "Subscriber content")}</p>
   <h3 style="font-family:'Big Shoulders Display';font-size:22px;text-transform:uppercase;letter-spacing:.5px">${t("gate.title", "Your results are ready")}</h3>
-  <p class="lede" style="margin:0 auto 14px;max-width:52ch">${t("gate.body", "Sign in free to see the full wave plan, the two-layer ROI model and the evidence panel, to pull in the countries you already follow, and to download the PDF for your board pack.")}</p>
+  <p class="lede" style="margin:0 auto 14px;max-width:52ch">${t("gate.body2", "Subscribing is free. It unlocks the full wave plan, the two-layer ROI model and the evidence panel, pulls in the countries you already follow, and lets you download the PDF for your board pack.")}</p>
   <!-- A REAL LINK TO A REAL SIGN-IN, since 19 August 2026. Dan: "upon
        clicking sign-in / subscribe free it just gives me the results,
        without signing in, or subscribing. So effectively not gated."
@@ -1780,8 +1780,26 @@ ${langAsked && langAsked !== lang ? `<p class="note noprint" style="margin:0 0 1
        target=_top because this page is framed inside the tracker's
        Resources panel: without it, the members login would open inside
        a panel with no chrome and a height reporter that never fires.
-       Harmless when unframed, where _top is this window. -->
-  <a class="primary" id="signin" target="_top" rel="noopener" href="${esc(membersUrl)}/members">${t("gate.cta", "Sign in / subscribe free")}</a>
+       Harmless when unframed, where _top is this window.
+
+       TWO ROUTES, NOT ONE, corrected 19 August 2026 after Dan reported
+       "no email is sent to my account".
+
+       One button reading "Sign in / subscribe free" pointed at
+       /members, which is the LOGIN. That page emails a magic link only
+       to addresses that are already active subscribers; for everyone
+       else it deliberately sends nothing and shows the same "check your
+       email" confirmation, so it cannot be used to discover who has an
+       account. Correct behaviour for a login, and a dead end for a new
+       reader — who is most of the audience for a public Beta page.
+
+       So the offer is split, because it was always two offers. Signing
+       up is the primary action and goes to the real form; signing in is
+       secondary and goes to the login. A button naming two things and
+       doing one is the shape this page keeps being caught by. -->
+  <a class="primary" id="subscribe" target="_top" rel="noopener" href="/subscribe.html">${t("gate.cta2", "Subscribe free")}</a>
+  <p class="hint" style="margin:12px 0 0">${sfill(t("gate.signin", "Already subscribed? {0}."),
+      `<a id="signin" target="_top" rel="noopener" href="${esc(membersUrl)}/members">${t("gate.signin.link", "Sign in")}</a>`)}</p>
 </div>
 
 <div id="results" class="hidden">

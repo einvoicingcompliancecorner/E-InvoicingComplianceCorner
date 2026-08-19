@@ -920,8 +920,24 @@ async function renderRoiCalculatorPage(request, env) {
 <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>${ROI_STYLE}${framed ? FRAMED_ROI_STYLE : ""}</style></head><body${framed ? ' data-framed="1"' : ""}>${body}<script>${script}</script>${framed ? `<script>${ROI_FRAME_REPORTER}</script>` : ""}</body></html>`;
 
+  // SIXTY SECONDS, NOT FIVE MINUTES, while this is Beta.
+  //
+  // The five-minute cache has now been implicated in two confusing bug
+  // reports. On 3 August Dan reported Middle East countries missing from
+  // the tracker sidebar after a deploy; it was a stale page and resolved
+  // on refresh. On 19 August he reported a change to this page as not
+  // having taken effect at all.
+  //
+  // A cache that makes a fresh deploy look like a failed one costs more
+  // than it saves on a page nobody has bookmarked yet: it is unindexed,
+  // marked Beta, and its whole reason for being in the menu is to collect
+  // feedback from people looking at whatever shipped this morning. Sixty
+  // seconds still absorbs a reader clicking between the tracker and the
+  // planner; it does not survive a deploy-and-check.
+  //
+  // Worth raising again when this leaves Beta and stops changing daily.
   return new Response(html, {
-    headers: { "content-type": "text/html; charset=utf-8", "cache-control": "public, max-age=300" },
+    headers: { "content-type": "text/html; charset=utf-8", "cache-control": "public, max-age=60" },
   });
 }
 
