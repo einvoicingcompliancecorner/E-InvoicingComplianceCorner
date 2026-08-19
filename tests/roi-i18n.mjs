@@ -137,7 +137,10 @@ try {
     ["page lede", "board-ready business case"],
     ["an input label", "Invoices received / year (AP)"],
     ["a scope option", "meet the mandates (what most programmes do)"],
-    ["an assumptions heading", "Implementation &mdash; weeks"],
+    // Migration 587 widened this heading: the column contains parallel
+    // workstreams and delivery pace as well as week counts, so "weeks"
+    // named only part of what sat under it.
+    ["an assumptions heading", "Implementation &mdash; durations"],
     ["the placeholder warning", "placeholders only"],
     ["the paywall gate", "Your results are ready"],
     ["a results heading", "Assumptions, sources and caveats"],

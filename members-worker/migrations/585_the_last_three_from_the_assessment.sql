@@ -156,7 +156,23 @@ DELETE FROM translations WHERE namespace = 'roi' AND key = 'ribbon.legend';
 -- a deadline -- which is worse than saying nothing, on the tile that now
 -- leads the compliance half of the summary.
 --
--- ASSERT ALWAYS: SELECT count(*) FROM translations WHERE namespace = 'roi' AND key LIKE 'res.nearest2.%' AND value LIKE '%{0}%' = 2
+-- SUCCEEDED 19 Aug 2026 by migration 587, which renamed these to
+-- res.nearest3 and gave them a second slot.
+--
+-- The reason is a defect in the sentence this invariant was guarding, and
+-- it is mine from this file: it read "of your SELECTED jurisdictions"
+-- while counting TRACKS, which include the injected EU-wide row nobody
+-- ticked. The slot rule was right and the noun beside it was wrong, so
+-- guarding the slot alone protected a sentence that was already false.
+--
+-- The rule is inherited and made stricter in 587: both slots, in both
+-- plural forms, because the tile now states a numerator AND the
+-- denominator the footprint card uses -- and the pair only means anything
+-- together.
+--
+--   was: ASSERT ALWAYS: SELECT count(*) FROM translations WHERE
+--        namespace = 'roi' AND key LIKE 'res.nearest2.%'
+--        AND value LIKE '%{0}%' = 2
 --
 -- The date tile must also keep a no-deadline label. Without it a reader
 -- with nothing dated selected meets a tile reading "None" under a label
