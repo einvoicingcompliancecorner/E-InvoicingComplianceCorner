@@ -133,4 +133,34 @@ for (const [, setName] of gates) {
     missed.length ? `${missed.join(", ")} would full-navigate instead of opening in-page` : "");
 }
 
+// ---- the two halves of the frame protocol agree ----------------------
+//
+// The framed planner talks to the tracker over postMessage, and the
+// message names are string literals typed into two different files that
+// nothing forces to match. That is the shape this project keeps getting
+// caught by — the A/B/C/D grade labels, platform-versus-software fees,
+// the pie's row names, and the section name in the ribbon legend, which
+// is now a slot for exactly this reason.
+//
+// Here it cannot be a slot: one side is a Worker string and the other is
+// a static HTML file, with no shared module between them. So it is a
+// check instead. A rename on either side is silent otherwise — the
+// planner posts, the tracker ignores, and the frame simply stops growing
+// or stops scrolling with nothing in any console.
+const posted = new Set([...WORKER.matchAll(/postMessage\(\s*\{\s*type:\s*'([^']+)'/g)]
+  .map((m) => m[1]));
+const handled = new Set([...TRACKER.matchAll(/e\.data\.type\s*===\s*'([^']+)'/g)]
+  .map((m) => m[1]));
+
+t.check(`the framed planner posts ${posted.size} message type(s)`, posted.size > 0);
+const unhandled = [...posted].filter((m) => !handled.has(m));
+t.check("every message the frame posts is handled by the tracker",
+  unhandled.length === 0,
+  unhandled.length ? `${unhandled.join(", ")} — posted and ignored` : "");
+const unposted = [...handled].filter((m) => m.startsWith("eicc:roi-") && !posted.has(m));
+t.check("and the tracker handles no message the frame never sends",
+  unposted.length === 0,
+  unposted.length ? `${unposted.join(", ")} — handled but never posted, so it is dead code `
+    + "or the sender was renamed" : "");
+
 process.exit(t.report() ? 0 : 1);
