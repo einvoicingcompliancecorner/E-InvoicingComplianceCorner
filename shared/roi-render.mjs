@@ -415,6 +415,29 @@ h1{font-family:'Big Shoulders Display',sans-serif;font-weight:800;font-size:clam
 h2{font-family:'Big Shoulders Display',sans-serif;font-weight:700;font-size:24px;text-transform:uppercase;letter-spacing:.6px;margin:34px 0 12px;border-bottom:1px solid var(--line);padding-bottom:8px}
 h3{font-size:15px;margin:0 0 6px}
 p{margin:0 0 12px}
+/* THIS PAGE STYLES ITS OWN LINKS, and the reason is the mirror image of
+   the warning below about .card.
+
+   members-worker's pageShell() prepends BASE_STYLE, which carries
+   a{color:inherit}. The PUBLIC route at e-invoicingcompliancecorner.com
+   /roi-calculator prepends nothing -- it is this stylesheet and nothing
+   else. So a bare anchor in this page's prose renders in the browser's
+   default link blue on dark navy, at about 2:1, and only on the half of
+   the traffic that is not signed in.
+
+   Nobody had hit it because until migration 590 there was no bare anchor
+   in the prose: every link on the page was .steps, .ev or a chip, all
+   individually styled. The legend's link to the assumptions panel was
+   the first, and it rendered blue-on-navy on the public page while
+   passing every check -- because the contrast audit builds the MEMBERS
+   shell, where BASE_STYLE hides the gap. Found by looking at the public
+   render, which is the only way it could have been.
+
+   Amber at 6.0:1 on the page background and 4.8:1 on the darkest card
+   this sheet paints. Underlined as well as coloured, so it does not rely
+   on colour alone. */
+a{color:var(--soon);text-decoration:underline;text-underline-offset:2px}
+a:hover,a:focus{color:var(--text-lo)}
 .lede{color:var(--muted);max-width:70ch}
 .card{background:var(--ink-2);color:var(--text-lo);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px;margin:0 0 14px}
 /* COLOUR MUST BE SET EXPLICITLY ON EVERY SURFACE HERE, not left to
@@ -1024,9 +1047,25 @@ footer{margin-top:40px;padding-top:16px;border-top:1px solid var(--line);font-si
 // The page. `locked` controls whether results are reachable without a
 // session; `subscribed` is the signed-in reader's own saved countries
 // (empty for anonymous visitors, which disables that control).
+//
+// TWO PARAMETERS CAME OUT HERE, 19 August 2026, and how they survived is
+// the more useful half. `unlockUrl` and `signedInAs` were both accepted,
+// defaulted, and read by nothing in this file -- the site-worker built a
+// members URL on every request and handed it into a void, and four test
+// call sites passed an email address that was never printed.
+//
+// Migration 589's sweep looked for unreferenced functions, unused
+// variables and CSS ids nothing emits, and found none. It could not find
+// these because a destructured parameter with a default LOOKS like a
+// declaration in use: it is named, it is assigned, and every caller
+// mentions it. The thing to grep for is a parameter named exactly once,
+// which is the shape of a hook nobody ever hung anything on.
+//
+// If the planner should say who is signed in, that is a feature to build,
+// not a parameter to keep warm against the day someone builds it.
 export function renderRoiPage({ countries, benchmarks = [], phases = [], strings = {}, fx = {},
                                 lang = "en", langAsked = "",
-                                locked = true, subscribed = [], unlockUrl = "", signedInAs = "" }) {
+                                locked = true, subscribed = [] }) {
   // Benchmarks, phases and citations are injected from D1 rather than
   // hardcoded here. This is what makes the tool translation-ready without
   // a code change: a Spanish reader gets Spanish labels, hints and
@@ -1556,9 +1595,14 @@ ${langAsked && langAsked !== lang ? `<p class="note noprint" style="margin:0 0 1
      meets, one line above the form. Item 13 of the assessment counts
      those. An explanation of an affordance is not a qualification, and
      should not be dressed as one. -->
-<p class="hint noprint" style="margin:-4px 0 12px;font-size:12.5px;max-width:78ch">${sfill(t("ribbon.legend3", "The bar down the left of every input says whose number it is: {0} is ours, {1} is yours. Ours are defaults to argue with, not blanks to fill."),
+<p class="hint noprint" style="margin:-4px 0 12px;font-size:12.5px;max-width:78ch">${sfill(t("ribbon.legend4", "The bar down the left of every input says whose number it is: {0} is ours, {1} is shown when you update with your own data. For a more accurate return on investment calculation, please review and update the additional input fields within the {2} section of this page."),
        `<span class="lgc"><i class="lgsw lgA"></i>${t("word.amber", "amber")}</span>`,
-       `<span class="lgc"><i class="lgsw lgG"></i>${t("word.green", "green")}</span>`)}</p>
+       `<span class="lgc"><i class="lgsw lgG"></i>${t("word.green", "green")}</span>`,
+       // The third slot names the panel with the panel's OWN heading
+       // string rather than a copy of it, so the two cannot drift. See
+       // migration 590 -- four separate defects this week were a literal
+       // sitting beside the truth it had to agree with.
+       `<a href="#assump">${t("assumptions.title", "Assumptions &amp; benchmarks")}</a>`)}</p>
 <!-- Dan, 16 Aug 2026: "I would like the fields in section 1 to run
      vertically - i.e. stacked one on top of each other. I would then like
      the countries check list box to be moved to the right of the stacked
@@ -2420,6 +2464,31 @@ const noteTouch = (e) => {
 };
 document.addEventListener('input', noteTouch);
 document.addEventListener('change', noteTouch);
+
+// A LINK TO A COLLAPSED PANEL OPENS IT. Two things point at #assump -- the
+// step chip above the form, and now the ribbon legend, which since
+// migration 590 ends "please review and update the additional input
+// fields within the Assumptions & benchmarks section of this page".
+//
+// Without this the browser scrolls to a closed <details> and the reader
+// arrives at a one-line summary, having been told to review the fields
+// inside it. The step chip has had that defect since 518 and nobody
+// reported it, which is what a link that half works looks like: it moves
+// the page, so it appears to have done something.
+//
+// Delegated from document and matched on the href, not bound to the two
+// anchors. Both reasons are the same one -- the listener at 2385 above
+// broke when the markup it assumed moved, and a third link to this panel
+// should not have to know this code exists.
+document.addEventListener('click', (e) => {
+  const a = e.target.closest && e.target.closest('a[href="#assump"]');
+  if(!a) return;
+  const panel = document.getElementById('assump');
+  if(panel) panel.open = true;
+  // The default jump is left to happen. Opening first means the browser
+  // scrolls to a panel that is already its full height, rather than to
+  // an offset that stops being right the moment it expands.
+});
 
 // ---- currency: convert the values, not just the symbol ------------------
 // Seed the canon from the server's USD-normalised defaults. DEFAULTS[id].v

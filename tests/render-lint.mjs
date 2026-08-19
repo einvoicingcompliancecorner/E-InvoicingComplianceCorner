@@ -126,6 +126,36 @@ quoted.forEach(([ln, txt]) => bad.push([ln,
   "t() inside a single-quoted string -- use tj(), which escapes the apostrophe "
   + "that would otherwise end the literal:\n        " + txt]));
 
+// ---- ROI_STYLE HAS TO STAND ALONE, and links are where it stopped ----
+//
+// This stylesheet is served two ways. members-worker's pageShell()
+// prepends BASE_STYLE; the public site-worker route prepends nothing. So
+// anything ROI_STYLE leaves undeclared falls back to BASE_STYLE on the
+// members page and to the BROWSER DEFAULT on the public one — and only
+// the public one, which is the render nothing here has a harness for.
+//
+// It has now gone wrong in both directions. Once, .card inherited
+// near-black text FROM BASE_STYLE and was invisible on the members page;
+// ROI_STYLE's own comment records that one. Then on 19 August 2026 the
+// reverse: BASE_STYLE carries a{color:inherit}, this sheet carried no
+// anchor rule at all, and the first bare link put into the prose rendered
+// in the browser's default blue on dark navy at roughly 2:1 — while
+// passing the contrast audit, which builds the members shell.
+//
+// A static lint rather than another browser suite, because the rule is
+// about what the stylesheet DECLARES rather than what one render happens
+// to look like: ROI_STYLE must set a colour for bare anchors, so the page
+// is legible whatever is or is not concatenated in front of it.
+const styleCss = src.slice(sStart + 1, sEnd).join("\n");
+if (!/(^|\n)\s*a\s*(,[^{\n]*)?\{[^}]*\bcolor\s*:/.test(styleCss)) {
+  bad.push([sStart + 1,
+    "ROI_STYLE declares no colour for bare <a>. On the public /roi-calculator "
+    + "route nothing is concatenated in front of this sheet, so every unclassed "
+    + "link renders in the browser's default blue on dark navy. Add an a{color:...} "
+    + "rule — do not rely on BASE_STYLE's a{color:inherit}, which only the members "
+    + "shell supplies."]);
+}
+
 // And the belt-and-braces check: it actually parses. The lint above is a
 // better error message; this is the ground truth.
 let parses = true;
@@ -142,5 +172,6 @@ console.log(`  PASS  no backticks or \${ in comments inside the client script `
   + `(lines ${start + 2}-${end})`);
 console.log(`  PASS  no backticks in ROI_STYLE (lines ${sStart + 2}-${sEnd})`);
 console.log("  PASS  no t() inside a single-quoted string (use tj there)");
+console.log("  PASS  ROI_STYLE styles bare links itself, so the public route needs no shell");
 console.log("  PASS  shared/roi-render.mjs parses");
-console.log(`\nRender lint: 4/4 passed${parses ? "" : ""}`);
+console.log(`\nRender lint: 5/5 passed${parses ? "" : ""}`);

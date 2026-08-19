@@ -25,6 +25,10 @@ const SUITES = [
   // at a comment, which is the least legible message this repo produces.
   { name: "render lint", cmd: "node", args: [join(HERE, "render-lint.mjs")], cwd: REPO },
   { name: "jurisdiction count", cmd: "node", args: [join(HERE, "jurisdiction-count.mjs")], cwd: REPO },
+  // Static files only, no browser. Placed with the fast ones so a missing
+  // translation key is reported in a second rather than after the four
+  // browser suites have spent two minutes not looking for it.
+  { name: "tracker i18n", cmd: "node", args: [join(HERE, "tracker-i18n.mjs")], cwd: REPO },
   { name: "ROI regression", cmd: "node", args: [join(HERE, "roi-regression.mjs")], cwd: REPO },
   { name: "ROI i18n", cmd: "node", args: [join(HERE, "roi-i18n.mjs")], cwd: REPO },
   { name: "ROI hardcoded strings", cmd: "node", args: [join(HERE, "roi-hardcoded.mjs")], cwd: REPO },

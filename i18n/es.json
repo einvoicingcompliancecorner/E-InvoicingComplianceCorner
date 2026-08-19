@@ -17,6 +17,11 @@
     "authorP4": "The E-Invoicing Compliance Corner existe para reunir esas fuentes dispersas de información en un solo lugar — ofreciendo información clara y práctica, orientación y próximos pasos para ayudar a las empresas a mantenerse informadas y lograr el cumplimiento.",
     "authorConnect": "No dude en conectar conmigo — <a href=\"https://www.linkedin.com/in/danielyoung76/\" target=\"_blank\" rel=\"noopener\" style=\"color:var(--stamp); text-decoration:underline;\">encuéntreme en LinkedIn</a>."
   },
+  "archive": {
+    "loading": "Cargando…",
+    "officialSource": "Fuente oficial"
+  },
+  "backLink": "← Volver al panel global",
   "brand": {
     "description": "Un seguimiento actualizado de los mandatos de facturación electrónica y reporte digital en 70 países — normas de ViDA a nivel de la UE, sistemas nacionales de CTC, y todo lo demás. Cada entrada muestra la fecha límite, lo que debe hacer al respecto, y un enlace directo al portal oficial del gobierno, para que pueda pasar de \"¿esto nos afecta?\" a \"esto es lo que hay que hacer\" en una sola página.",
     "eyebrow": "Panel de cumplimiento normativo",
@@ -83,6 +88,7 @@
     "sources": "Fuentes de seguimiento",
     "map": "El Mapa",
     "insights": "Análisis e informes técnicos",
+    "roi": "Planificador de ROI y oleadas",
     "deepDives": "Análisis por país",
     "eduCertifiedProviders": "Proveedores certificados por el gobierno",
     "eduImpact": "Impacto del mandato",
@@ -118,6 +124,9 @@
     "item2": "Acceso completo al archivo del boletín, no solo al número de este mes",
     "item3": "Acceso prioritario a los nuevos análisis por país en cuanto se publican",
     "item4": "Resúmenes en lenguaje sencillo sobre \"qué significa esto para su equipo\", no solo texto legal"
+  },
+  "roiPanel": {
+    "newTab": "Abrir en su propia pestaña ›"
   },
   "stats": {
     "alreadyInEffect": "Ya en vigor",

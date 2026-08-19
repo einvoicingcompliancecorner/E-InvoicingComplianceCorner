@@ -50,6 +50,7 @@ import {
   getRoiBenchmarks,
   getRoiPhases,
   getRoiStrings,
+  resolveRoiLang,
   getRoiFxRates,
   renderRoiPage,
   ROI_STYLE,
@@ -749,9 +750,57 @@ function mapPageBodyHtml() {
 
 const ROI_PATHS = new Set(["/roi-calculator", "/roi-calculator.html", "/roi", "/roi.html"]);
 
+// ---- the planner, framed inside the tracker -----------------------------
+//
+// Dan, 19 August 2026: wire the planner into the site "under the Resources
+// menu option and have it open 'in-frame' like other pages".
+//
+// `?frame=1` is a plain query parameter rather than a Referer check, so a
+// bookmarked framed URL behaves exactly like one reached from the menu.
+// A page that renders differently depending on how you arrived is a page
+// nobody can reproduce a bug in.
+//
+// Two things change and nothing else does. The page loses its own outer
+// padding, because the tracker's panel supplies it and doubling them puts
+// a wasted inch down each side of a phone. And it reports its height,
+// because nothing on the other side can measure a cross-document frame --
+// the planner grows by thousands of pixels when results render and again
+// when a wave table opens, so a fixed height would either clip it or
+// leave a screen of empty navy underneath.
+const FRAMED_ROI_STYLE = `
+body[data-framed]{padding:0}
+body[data-framed] .wrap{padding-left:5vw;padding-right:5vw;max-width:none}
+`;
+
+// ResizeObserver on the body rather than a load-time measurement: almost
+// every height change here happens long after load, when a reader presses
+// Calculate. rAF-coalesced because the observer fires per frame during a
+// chart redraw and posting a message per frame is how a smooth page
+// becomes a janky one.
+const ROI_FRAME_REPORTER = `
+(function(){
+  if(window.parent === window) return;
+  var last = 0, queued = false;
+  function send(){
+    queued = false;
+    var h = Math.max(document.body.scrollHeight, document.documentElement.scrollHeight);
+    if(Math.abs(h - last) < 8) return;
+    last = h;
+    try { window.parent.postMessage({ type: 'eicc:roi-height', height: h }, window.location.origin); }
+    catch(e){ /* a parent on another origin simply does not get resized */ }
+  }
+  function queue(){ if(queued) return; queued = true; requestAnimationFrame(send); }
+  if(window.ResizeObserver) new ResizeObserver(queue).observe(document.body);
+  window.addEventListener('load', queue);
+  document.addEventListener('click', function(){ setTimeout(queue, 60); }, true);
+  queue();
+})();
+`;
+
 async function renderRoiCalculatorPage(request, env) {
   if (!env.eicc_content) return new Response("Missing D1 binding", { status: 500 });
   const url = new URL(request.url);
+  const framed = url.searchParams.get("frame") === "1";
   let lang = url.searchParams.get("lang");
   const { value: cookieLang } = getCookie(request, LANG_COOKIE);
   if (!(lang && SUPPORTED_LANGS.includes(lang))) {
@@ -760,11 +809,24 @@ async function renderRoiCalculatorPage(request, env) {
       : (pickBestSupportedLanguage(request.headers.get("Accept-Language")) || "en");
   }
 
+  // COMPLETE OR ENGLISH, and this route was missed when the rule was
+  // written. Migration 589 built resolveRoiLang() and wired it into the
+  // members-worker; the public page kept passing the raw language to all
+  // four getters, which is the exact defect 589 exists to prevent -- a
+  // country picker reading BELGIEN and DEUTSCHLAND with every sentence
+  // around it in English. It went unnoticed because the members page is
+  // the one anybody signed in was looking at.
+  //
+  // It matters more now than it did this morning: the tracker's menu item
+  // passes the reader's chosen language straight into the frame, so this
+  // is the route three of the four site languages will arrive by.
+  const roiLang = await resolveRoiLang(env.eicc_content, lang);
+
   const [countries, benchmarks, phases, strings, fx] = await Promise.all([
-    getRoiCountries(env.eicc_content, null, lang),
-    getRoiBenchmarks(env.eicc_content, lang),
-    getRoiPhases(env.eicc_content, lang),
-    getRoiStrings(env.eicc_content, lang),
+    getRoiCountries(env.eicc_content, null, roiLang.lang),
+    getRoiBenchmarks(env.eicc_content, roiLang.lang),
+    getRoiPhases(env.eicc_content, roiLang.lang),
+    getRoiStrings(env.eicc_content, roiLang.lang),
     getRoiFxRates(env.eicc_content),
   ]);
 
@@ -774,13 +836,16 @@ async function renderRoiCalculatorPage(request, env) {
     phases,
     strings,
     fx,
-    lang,
+    lang: roiLang.lang,
+    langAsked: roiLang.asked,
     locked: true,          // anonymous: results behind the gate
     subscribed: [],        // no saved preferences without a session
-    unlockUrl: `https://members.e-invoicingcompliancecorner.com/members/roi-calculator${lang !== "en" ? `?lang=${lang}` : ""}`,
   });
 
-  const html = `<!DOCTYPE html><html lang="${lang}"><head>
+  // roiLang.lang, not lang: the document must declare the language it is
+  // actually written in. Declaring de on an English page is what tells a
+  // screen reader to read English prose with German phonemes.
+  const html = `<!DOCTYPE html><html lang="${roiLang.lang}"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>E-Invoicing ROI &amp; Wave Planner — The E-Invoicing Compliance Corner</title>
 <meta name="description" content="Build an e-invoicing business case from your own invoice volumes and country footprint. Delivery waves back-planned from real published mandate deadlines, with an evidence grade against every benchmark used.">
@@ -788,7 +853,7 @@ async function renderRoiCalculatorPage(request, env) {
 <meta name="robots" content="${env.ROI_INDEXABLE === "true" ? "index,follow" : "noindex,nofollow"}">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>${ROI_STYLE}</style></head><body>${body}<script>${script}</script></body></html>`;
+<style>${ROI_STYLE}${framed ? FRAMED_ROI_STYLE : ""}</style></head><body${framed ? ' data-framed="1"' : ""}>${body}<script>${script}</script>${framed ? `<script>${ROI_FRAME_REPORTER}</script>` : ""}</body></html>`;
 
   return new Response(html, {
     headers: { "content-type": "text/html; charset=utf-8", "cache-control": "public, max-age=300" },

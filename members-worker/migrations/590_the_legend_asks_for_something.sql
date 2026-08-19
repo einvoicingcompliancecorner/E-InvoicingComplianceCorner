@@ -1,0 +1,108 @@
+-- ================================================================
+-- The ribbon legend stops explaining a colour and starts asking for
+-- something.
+--
+-- Dan, 19 August 2026:
+--   "Please can you remove this text from the header of the
+--    roi-calculator 'Ours are defaults to argue with, not blanks to
+--    fill.'"
+--   "Please can you update the existing text to read - 'The bar down the
+--    left of every input says whose number it is: amber is ours, green
+--    is shown when you update with your own data. For a more accurate
+--    return on investment calculation, please review an update the
+--    additional input fields within the "Assumptions & benchmarks"
+--    section of this page.'"
+--
+-- ================================================================
+-- WHAT THE SENTENCE WAS DOING, AND WHY THE SECOND HALF HAD TO GO
+-- ================================================================
+--
+-- "Ours are defaults to argue with, not blanks to fill" was written for
+-- item 6 of the usability assessment, where a hint claimed the reader's
+-- ownership of a number we had supplied. It has been on the page in one
+-- form or another since 575 and it says something true.
+--
+-- It is also the answer to a question nobody asked. A reader who has just
+-- been told which colour means what does not then need to be told how to
+-- feel about the defaults; they need to be told what to DO. The clause
+-- reads as reassurance, and reassurance in the position where an
+-- instruction belongs is how a page ends up polite and unread.
+--
+-- The replacement is an instruction, and it is aimed: the six inputs
+-- above this line are the ones nobody can skip, and the twenty-odd that
+-- actually move the answer are in a collapsed panel further down that a
+-- reader has no reason to suspect is load-bearing. This sentence is now
+-- the only thing on the page that sends them there before they press
+-- Calculate.
+--
+-- ---- THE SECTION NAMES ITSELF -------------------------------------
+--
+-- Dan's wording quotes the panel as 'Assumptions & benchmarks'. Typed
+-- into this string that would be a literal sitting beside the truth it
+-- has to agree with -- the same shape as the A/B/C/D labels that drifted
+-- from the grade cards, the platform-versus-software fees that named one
+-- cost twice, and the pie whose row names disagreed with the table's.
+-- Four times in one week, and every one of them was two strings that had
+-- to match and no mechanism making them.
+--
+-- So it is a THIRD SLOT, filled server-side from assumptions.title -- the
+-- same string the panel's own heading renders. The name cannot disagree
+-- with itself because there is only one of it, and a translator who
+-- renames the panel renames every reference to it in the same stroke.
+--
+-- The slot is filled with a LINK rather than the bare words, and the
+-- click opens the panel as well as scrolling to it. A sentence that says
+-- "please review the fields in that section" and lands the reader on a
+-- collapsed summary has not done what it said. (The step chip above has
+-- pointed at #assump since 518 and has always had this defect; it is
+-- fixed for both by one delegated listener.)
+--
+-- ---- AND THE TYPO ---------------------------------------------------
+--
+-- "please review an update" is "please review and update". Corrected
+-- rather than reproduced, and recorded here rather than silently, because
+-- the next person to compare this string against the request will
+-- otherwise find a difference and have to work out whether it was
+-- deliberate.
+
+INSERT OR REPLACE INTO translations (namespace, key, lang, value) VALUES
+  ('roi', 'ribbon.legend4', 'en', 'The bar down the left of every input says whose number it is: {0} is ours, {1} is shown when you update with your own data. For a more accurate return on investment calculation, please review and update the additional input fields within the {2} section of this page.');
+
+-- RENAMED, NOT EDITED, and the slot count is the reason rather than the
+-- wording. legend3 took two slots; this takes three. A translator holding
+-- the old string and given the new value would produce a sentence with a
+-- {2} in it or, worse, drop it -- and the invariant below would then hold
+-- against a key nobody was translating. A changed slot count is the
+-- clearest case there is for a new key.
+DELETE FROM translations WHERE namespace = 'roi' AND key = 'ribbon.legend3';
+
+-- ---- what this migration claims it did ------------------------------
+-- ASSERT: SELECT count(*) FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key = 'ribbon.legend4' = 1
+-- ASSERT: SELECT count(*) FROM translations WHERE namespace = 'roi' AND key = 'ribbon.legend3' = 0
+--
+-- The clause Dan asked to remove must stay removed, on every legend this
+-- page ever carries. Stated as a pattern across ribbon.legend% rather
+-- than against this one key, because the way it would come back is a
+-- future rename copying the old value forward -- which is exactly how it
+-- travelled from 581 to 585 to 588 in the first place.
+--
+-- ASSERT ALWAYS: SELECT count(*) FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key LIKE 'ribbon.legend%' AND (value LIKE '%blanks to fill%' OR value LIKE '%blanks you must fill%') = 0
+--
+-- THE THREE SLOTS, inherited from 581 through 585 and 588 and made
+-- stricter here. The first two are the colour swatches: a translation
+-- that drops one prints a sentence describing colours it does not show.
+-- The third is the panel's own name, and losing it is worse than losing a
+-- colour -- the sentence would send a reader to a section it declines to
+-- identify, in the one place on the page that tells them where the
+-- numbers that matter actually are.
+--
+-- ASSERT ALWAYS: SELECT count(*) FROM translations WHERE namespace = 'roi' AND key = 'ribbon.legend4' AND value LIKE '%{0}%{1}%{2}%' = 1
+--
+-- And the legend must keep pointing at the panel by NAME rather than by
+-- position. "the section below" survives a rename and stops being true
+-- the first time anything moves; a slot filled from assumptions.title
+-- cannot. This asserts the mechanism is still a slot, which the rule
+-- above already does -- what it adds is that assumptions.title, the
+-- string the slot is filled from, still exists to fill it with.
+--
+-- ASSERT ALWAYS: SELECT count(*) FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key = 'assumptions.title' = 1

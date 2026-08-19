@@ -1925,6 +1925,60 @@ t.check("and the legend describes the two states that actually exist",
     return !!p && !/keep/i.test(p.innerText);
   }));
 
+// ---- 35d0. the legend stops reassuring and starts asking (590) --------
+// Dan, 19 August 2026: remove "Ours are defaults to argue with, not blanks
+// to fill", and point the reader at the assumptions panel instead.
+//
+// THREE CHECKS, and the third is the one worth having. Whether the clause
+// is gone and whether the new sentence renders are both restatements of
+// the migration; that the panel's name in the sentence MATCHES the panel's
+// own heading is the thing no migration can assert, because D1 cannot know
+// that the renderer fills the slot from assumptions.title rather than from
+// a typed copy. Four defects this week were a literal beside the truth it
+// had to agree with. This is the check that shape has never had.
+await page.evaluate(() => { document.getElementById("assump").open = false; });
+const legend = await page.evaluate(() => {
+  const p = [...document.querySelectorAll(".hint")].find((e) => e.querySelector(".lgsw"));
+  if (!p) return null;
+  const link = p.querySelector('a[href="#assump"]');
+  const head = document.querySelector("#assump summary span span");
+  return {
+    text: p.innerText.replace(/\s+/g, " "),
+    swatches: p.querySelectorAll(".lgsw").length,
+    linkText: link ? link.innerText.trim() : "",
+    headText: head ? head.innerText.trim() : "",
+  };
+});
+t.check("the reassurance clause Dan asked to remove is gone",
+  !!legend && !/blanks to fill/i.test(legend.text), legend && legend.text);
+t.check("and the legend now asks the reader to go and review the rest",
+  !!legend && /review and update/i.test(legend.text)
+    && /more accurate return on investment/i.test(legend.text));
+t.check("both colour swatches still render beside their words",
+  !!legend && legend.swatches === 2, legend && legend.swatches);
+t.check("the section the legend names is the name the section carries",
+  !!legend && legend.linkText.length > 0
+    && legend.linkText.toLowerCase() === legend.headText.toLowerCase(),
+  legend && `legend "${legend.linkText}" vs heading "${legend.headText}"`);
+
+// AND THE LINK OPENS THE PANEL rather than scrolling to a closed one. The
+// sentence tells the reader to review the fields inside a <details> that
+// is collapsed by default; a link that lands them on its one-line summary
+// has not done what the sentence said. The step chip has pointed here
+// since 518 with the same defect and nobody reported it — which is what a
+// half-working link looks like, because it moves the page and therefore
+// appears to have worked.
+await page.click('.hint a[href="#assump"]');
+await page.waitForTimeout(250);
+t.check("following the legend's link opens the assumptions panel",
+  await page.evaluate(() => document.getElementById("assump").open));
+await page.evaluate(() => { document.getElementById("assump").open = false; });
+await page.click('.steps a[href="#assump"]');
+await page.waitForTimeout(250);
+t.check("and the step chip, which has had the same defect since 518, is fixed with it",
+  await page.evaluate(() => document.getElementById("assump").open));
+await page.evaluate(() => { document.getElementById("assump").open = true; });
+
 // ---- 35d2. four things an independent read found ----------------------
 // Screenshots only, no source. Two of its findings were wrong and are
 // recorded in migration 586; these four were right and one of them was a

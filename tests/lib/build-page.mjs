@@ -109,7 +109,7 @@ export async function buildRoiPage(opts = {}) {
     const { body, script } = roi.renderRoiPage({
       countries, benchmarks: usedBenchmarks, phases: usedPhases,
       strings: used, fx, lang, langAsked: resolved.asked,
-      locked: false, subscribed, signedInAs: "tests@example.com",
+      locked: false, subscribed,
     });
 
     // pageShell()'s order, verbatim: BASE_STYLE first, page style second.
