@@ -613,6 +613,15 @@ button{font:inherit;cursor:pointer;border-radius:6px;border:1px solid var(--line
 button.primary{background:var(--soon);border-color:var(--soon);color:#231a09;font-weight:700}
 button.primary:hover{filter:brightness(1.08)}
 button:disabled{opacity:.5;cursor:not-allowed}
+/* THE GATE'S CTA IS A LINK, NOT A BUTTON, so it needs the button's own
+   look without inheriting the anchor rule above. It navigates to another
+   origin, and a control that navigates should be an <a>: middle-click,
+   copy-link, the status bar preview and keyboard activation all come
+   free, and none of them work on a button with an onclick. It was a
+   button while the "gate" only flipped a variable. */
+a.primary{display:inline-block;font:inherit;font-weight:700;cursor:pointer;border-radius:6px;
+  border:1px solid var(--soon);background:var(--soon);color:#231a09;padding:10px 16px;text-decoration:none}
+a.primary:hover,a.primary:focus{filter:brightness(1.08);color:#231a09}
 .pill{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.6px;text-transform:uppercase;padding:2px 7px;border-radius:99px;border:1px solid currentColor}
 .p-inforce{color:#7fd0a8}.p-upcoming{color:#e2b978}.p-b2gonly{color:#9fb2d4}.p-nomandate{color:#b9a9a4}
 /* THREE COMPLEXITY COLOURS, NOT FOUR. CXNAME maps 2->cx3, 1->cx2, 0->cx0
@@ -1065,7 +1074,7 @@ footer{margin-top:40px;padding-top:16px;border-top:1px solid var(--line);font-si
 // not a parameter to keep warm against the day someone builds it.
 export function renderRoiPage({ countries, benchmarks = [], phases = [], strings = {}, fx = {},
                                 lang = "en", langAsked = "",
-                                locked = true, subscribed = [] }) {
+                                locked = true, subscribed = [], membersUrl = "" }) {
   // Benchmarks, phases and citations are injected from D1 rather than
   // hardcoded here. This is what makes the tool translation-ready without
   // a code change: a Spanish reader gets Spanish labels, hints and
@@ -1738,13 +1747,41 @@ ${langAsked && langAsked !== lang ? `<p class="note noprint" style="margin:0 0 1
 </details>
 
 <p class="noprint" style="margin:16px 0 0"><button class="primary" id="run">${t("btn.calculate", "Calculate business case")}</button> <button id="print" class="hidden">${t("btn.pdf", "Download PDF")}</button></p>
+<!-- Dan, 19 Aug 2026: "add a check when the Create business case button is
+     pressed, or Recalculate, to check that at least one country has been
+     selected".
+
+     It sits HERE, under the button, because that is where the reader is
+     looking at the moment they press it. The picker three inches to the
+     right already says "No jurisdictions selected" as a passive empty
+     state; this is the answer to an action, and the two do different
+     jobs. -->
+<p id="needCountries" class="note warn hidden noprint" style="margin:12px 0 0"></p>
 
 <div id="gate" class="gate noprint hidden">
   <p class="eyebrow" style="color:var(--soon)">${t("gate.eyebrow", "Subscriber content")}</p>
   <h3 style="font-family:'Big Shoulders Display';font-size:22px;text-transform:uppercase;letter-spacing:.5px">${t("gate.title", "Your results are ready")}</h3>
   <p class="lede" style="margin:0 auto 14px;max-width:52ch">${t("gate.body", "Sign in free to see the full wave plan, the two-layer ROI model and the evidence panel, to pull in the countries you already follow, and to download the PDF for your board pack.")}</p>
-  <button class="primary" id="signin">${t("gate.cta", "Sign in / subscribe free")}</button>
-  
+  <!-- A REAL LINK TO A REAL SIGN-IN, since 19 August 2026. Dan: "upon
+       clicking sign-in / subscribe free it just gives me the results,
+       without signing in, or subscribing. So effectively not gated."
+
+       He was right, and it was worse than it looked: this page computes
+       everything client-side, so the locked render already ships every
+       benchmark, the whole model and the unlocked flag itself, set to
+       false, in view-source. The button set it true. Nothing was
+       ever withheld, and nothing can be while the maths runs here.
+
+       The only place results can genuinely be withheld is the members
+       page, which is server-gated behind requireSession(). So the CTA
+       goes there, carrying the reader's own figures (see carryParams)
+       so signing in continues their work instead of restarting it.
+
+       target=_top because this page is framed inside the tracker's
+       Resources panel: without it, the members login would open inside
+       a panel with no chrome and a height reporter that never fires.
+       Harmless when unframed, where _top is this window. -->
+  <a class="primary" id="signin" target="_top" rel="noopener" href="${esc(membersUrl)}/members">${t("gate.cta", "Sign in / subscribe free")}</a>
 </div>
 
 <div id="results" class="hidden">
@@ -1811,6 +1848,10 @@ ${langAsked && langAsked !== lang ? `<p class="note noprint" style="margin:0 0 1
   const script = `
 const COUNTRIES = __ROI_COUNTRIES__;
 let unlocked = __ROI_UNLOCKED__;
+// The members origin, injected rather than hardcoded: this module is
+// shared by both Workers and only the public one has a gate to point
+// anywhere. Empty on the members page, where the gate never renders.
+const MEMBERS_URL = __ROI_MEMBERS_URL__;
 const REGION = {Eu:'${tj("region.eu","Europe")}', Mi:'${tj("region.mea","Middle East / Africa")}', As:'${tj("region.apac","Asia-Pacific")}', Am:'${tj("region.am","Americas")}'};
 // The five status labels, the three complexity labels and the four
 // region headings are what a reader sees on every country row, and all
@@ -3506,7 +3547,53 @@ document.getElementById('adjust').addEventListener('toggle', function(){
 // while reading — a currency switch, a scope change, a pinned date — and
 // yanking the viewport back to the top of the results on every keystroke
 // makes the adjust panel unusable. Dan found this within minutes.
+// ---- you cannot cost a programme in no countries -----------------------
+//
+// Dan, 19 August 2026, asked for a check "when the Create business case
+// button is pressed, or Recalculate".
+//
+// IT LIVES IN showResults(), NOT ON THE BUTTON, and that is the whole
+// reason this is more than three lines. Several other things call
+// showResults(): the currency switch, the scope dropdown, the
+// subscribed-countries toggle and every input handler once the reader is
+// unlocked. Guard the button alone and a reader who clears the list and
+// then changes the scope dropdown still gets a full business case for no
+// programme -- the same defect, reached through a different door. One
+// choke point, and every caller is covered by construction.
+//
+// WHAT THIS REPLACES. Migration 575 added guard.noCountries, which said
+// much the same thing INSIDE the results, underneath a complete set of
+// figures. Right instinct, wrong place: an empty selection is not a
+// questionable input, it is a missing precondition. The other guards
+// warn about implausible OUTPUTS, and here there is no output to have an
+// opinion about. Migration 591 deletes that string, because with this in
+// place nothing can ever render it.
+function noCountries(){
+  const box = document.getElementById('needCountries');
+  if(box){
+    box.innerHTML = '${tj("guard.selectFirst","<strong>Select at least one jurisdiction first.</strong> The wave plan, the integration count and the whole investment side are built from the countries you invoice in &mdash; with none chosen there is no programme to cost.")}';
+    box.classList.remove('hidden');
+  }
+  // Results, gate and the PDF button all go away. Stale figures left on
+  // screen beside a message saying they cannot be produced is worse than
+  // either alone -- and the gate in particular must not show, or the
+  // reader is asked to sign in to be shown nothing.
+  document.getElementById('results').classList.add('hidden');
+  document.getElementById('gate').classList.add('hidden');
+  document.getElementById('print').classList.add('hidden');
+  // AND NOTHING SCROLLS. The first version pulled the country list into
+  // view, on the reasoning that the picker is where the reader has to
+  // act. Rendered, it was obviously wrong: it scrolls the page AWAY from
+  // the message the reader has just triggered, so they are moved
+  // somewhere without being shown why. The message sits directly under
+  // the button they pressed, and on this layout the picker is already on
+  // screen beside it. Found by looking at it, not by any check.
+}
+
 function showResults(scroll){
+  if(!chosen().length){ noCountries(); return; }
+  const need = document.getElementById('needCountries');
+  if(need) need.classList.add('hidden');
   // The panel's own controls call this, and build() re-renders the panel
   // from scratch — so remember whether it was open, or changing a wave
   // would slam the drawer shut on the person using it.
@@ -3539,20 +3626,113 @@ function showResults(scroll){
 }
 document.getElementById('run').onclick = () => {
   if(unlocked){ showResults(true); return; }
-  document.getElementById('gate').classList.remove('hidden');
-  document.getElementById('gate').scrollIntoView({behavior:'smooth', block:'center'});
-};
-document.getElementById('signin').onclick = () => {
-  unlocked = true;
-  setSubsAvailable(true);
-  document.getElementById('gate').classList.add('hidden');
-  document.getElementById('run').textContent = '${tj("btn.recalculate", "Recalculate")}';
-  showResults(true);
+  // The locked path never reaches showResults(), so the precondition is
+  // checked here too. Asking someone to sign in to be shown nothing is
+  // the worst of the three outcomes available.
+  if(!chosen().length){ noCountries(); return; }
+  const gate = document.getElementById('gate');
+  const cta = document.getElementById('signin');
+  if(cta && MEMBERS_URL) cta.setAttribute('href', gateHref());
+  gate.classList.remove('hidden');
+  gate.scrollIntoView({behavior:'smooth', block:'center'});
 };
 document.getElementById('print').onclick = () => window.print();
 const syncScope = () => { document.getElementById('chgRow').style.display = scopeVal()==='both' ? '' : 'none'; };
 document.getElementById('scope').onchange = () => { syncScope(); if(unlocked) showResults(); };
 syncScope();
+
+// ---- carrying the reader's work across the sign-in hop -----------------
+//
+// Signing in means leaving this origin for the members subdomain, and a
+// reader who has just entered their volumes, picked eleven countries and
+// overridden four benchmarks should not arrive at a blank form. Dan chose
+// to carry the inputs rather than accept the loss.
+//
+// THE URL IS BUILT AT CLICK TIME, not at render time. It has to be: it
+// describes what the reader has typed, and at render time they have typed
+// nothing. This is why the old unlockUrl parameter -- a complete URL
+// composed server-side, which nothing ever read -- could not have served
+// this even if it had been wired up.
+//
+// ONLY WHAT DIFFERS FROM OUR DEFAULT TRAVELS. A benchmark the reader left
+// alone is already the default on the other side, so sending it would add
+// length and say nothing. The three footprint fields and the two dropdowns
+// always travel: they are the reader's own data, which is why they are
+// deliberately absent from the DEFAULTS registry in the first place.
+const CARRY_IDS = ['volAP','volAR','erp','cur','scope'].concat(RIBBONED);
+function carryParams(){
+  const p = new URLSearchParams();
+  CARRY_IDS.forEach(id => {
+    const el = document.getElementById(id);
+    if(!el) return;
+    const d = DEFAULTS[id];
+    if(d && String(el.value) === String(d.v)) return;
+    p.set(id, el.value);
+  });
+  // The ISO code, not the index. An index is a position in an array that
+  // changes every time a country is added -- a link shared on Monday would
+  // silently describe a different footprint on Friday. This project has
+  // been bitten by position-as-identity enough times to write it down.
+  const codes = chosen().map(c => c[1]).filter(Boolean);
+  if(codes.length) p.set('co', codes.join(','));
+  return p;
+}
+function gateHref(){
+  const next = '/members/roi-calculator?' + carryParams().toString();
+  return MEMBERS_URL + '/members?next=' + encodeURIComponent(next);
+}
+
+// AND THE OTHER END. Every value is validated rather than trusted: a
+// query parameter is reader-supplied input whatever route it arrived by,
+// and "we generated this link ourselves" is not a property the receiving
+// page can check. Numbers must parse and be non-negative, a select's
+// value must be one it actually offers, and a country code must match a
+// real row. Anything that fails is ignored rather than defaulted, so a
+// mangled link degrades to the normal page instead of a wrong one.
+function applyCarried(){
+  const q = new URLSearchParams(window.location.search);
+  let applied = 0;
+  CARRY_IDS.forEach(id => {
+    if(!q.has(id)) return;
+    const el = document.getElementById(id);
+    if(!el) return;
+    const raw = q.get(id);
+    if(el.tagName === 'SELECT'){
+      let ok = false;
+      for(let i = 0; i < el.options.length; i++) if(el.options[i].value === raw) ok = true;
+      if(!ok) return;
+      el.value = raw;
+    } else {
+      const n = Number(raw);
+      if(!Number.isFinite(n) || n < 0) return;
+      el.value = String(n);
+    }
+    // Marked as the reader's own, because it is -- they typed it on the
+    // other side of the sign-in. A ribbon that went back to amber would
+    // be telling them we had discarded their number.
+    if(RIBBONED.indexOf(id) !== -1) touched.add(id);
+    applied++;
+  });
+  const co = q.get('co');
+  if(co){
+    const want = {};
+    co.split(',').forEach(c => { const k = String(c).trim().toUpperCase(); if(k) want[k] = 1; });
+    boxes().forEach(b => {
+      const row = COUNTRIES[+b.dataset.i];
+      b.checked = !!(row && want[String(row[1]).toUpperCase()]);
+    });
+    if(subsBox) subsBox.checked = false;
+    paintCount();
+    applied++;
+  }
+  if(applied){ markOverridden(); syncScope(); }
+}
+// Called here, after syncScope() exists. Declared as a function so
+// hoisting is not the question -- the question is the const above it,
+// and a call placed earlier would hit the temporal dead zone and be
+// swallowed by whatever catch happened to be nearest. That is not
+// hypothetical in this file.
+applyCarried();
 
 function build(){
   cur = document.getElementById('cur').value;
@@ -4212,20 +4392,24 @@ function build(){
   // 1. Integrations of zero against a selection that includes a mandated
   //    country. This is what nine countries scoring 'none' looked like in
   //    August: a business case that quietly halved its own cost.
-  // 0. NOTHING SELECTED AT ALL.
+  // 0. NOTHING SELECTED AT ALL -- REMOVED 19 August 2026, migration 591.
   //
-  // The volume-driven savings do not depend on jurisdictions, so an empty
-  // selection still produced a confident $377,969 against a $0
-  // investment. Guard 1 below does not catch it -- it asks whether
-  // MANDATED countries were costed at zero integrations, and with none
-  // selected there are no mandated countries to ask about.
+  // It read: "No jurisdictions are selected. The savings below are driven
+  // by your invoice volumes alone, so they still show a figure -- but
+  // there is no compliance programme here to cost." Migration 575 added
+  // it, and it was true.
   //
-  // A reader who clears the list to start again, or who un-ticks their way
-  // to nothing, gets a business case for no programme. Reported first,
-  // because every figure under it is answering a question nobody asked.
-  if(!sel.length){
-    warn.push('${tj("guard.noCountries","<strong>No jurisdictions are selected.</strong> The savings below are driven by your invoice volumes alone, so they still show a figure &mdash; but there is no compliance programme here to cost, no deadline to plan against, and nothing to take to a board. Select the countries you operate in.")}');
-  }
+  // It cannot fire any more, because showResults() now refuses to render
+  // at all with an empty selection -- see noCountries() above. A warning
+  // that introduces a set of figures which no longer exist is worse than
+  // no warning: the next person to read this block would reasonably
+  // conclude the empty case still produces results.
+  //
+  // The reasoning it carried is not lost, it moved: an empty selection is
+  // a missing precondition rather than a questionable input, and the
+  // remaining guards in this block are all about implausible OUTPUTS.
+  // That distinction is why this one did not belong here in the first
+  // place.
 
   const mandated = sel.filter(c => c[4] > 0);
   if(mandated.length && (intSimple + intComplex) === 0){
@@ -4624,6 +4808,7 @@ function build(){
       (c[1] === "EU" ? [t("country.eu", "European Union"), ...c.slice(1)] : c))))
     .replace("__ROI_SUBSCRIBED__", JSON.stringify(subscribed))
     .replace("__ROI_UNLOCKED__", locked ? "false" : "true")
+    .replace("__ROI_MEMBERS_URL__", JSON.stringify(String(membersUrl || "")))
     .replace("__ROI_DEFAULTS__", JSON.stringify(defaults))
     .replace("__ROI_EVIDENCE__", JSON.stringify(evidence))
     // Replaced rather than interpolated, like every other payload here:

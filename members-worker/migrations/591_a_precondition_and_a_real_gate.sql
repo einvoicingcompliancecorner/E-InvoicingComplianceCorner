@@ -1,0 +1,153 @@
+-- ================================================================
+-- A precondition stops being a warning, and the gate stops pretending.
+--
+-- Dan, 19 August 2026, two items:
+--
+--   1. "I wondered if we could add a check when the Create business case
+--      button is pressed, or Recalculate, to check that at least one
+--      country has been selected in the list of countries?"
+--
+--   2. "When I do click 'Calculate business case' I get a subscriber
+--      content window, but upon clicking sign-in / subscribe free it
+--      just gives me the results, without signing in, or subscribing.
+--      So effectively not gated."
+--
+-- ================================================================
+-- 1. AN EMPTY SELECTION IS A MISSING PRECONDITION, NOT A BAD INPUT
+-- ================================================================
+--
+-- Migration 575 already handled this, and handled it in the wrong place.
+-- It added guard.noCountries, which appeared INSIDE the results,
+-- underneath a complete business case, explaining that the complete
+-- business case above it was for no programme at all.
+--
+-- The distinction that migration missed is the one this one is built on.
+-- Every other guard in that block reports an implausible OUTPUT -- a
+-- payback under a month, mandated countries costed at zero integrations,
+-- a rework claim beyond the market's best quartile. Each of those needs
+-- the figures to exist in order to have an opinion about them.
+--
+-- An empty country list is not an implausible output. There is no output.
+-- The wave plan, the integration count, the one-off cost and every
+-- deadline come from the selection; with none chosen the page is being
+-- asked to cost a programme that has not been described. So it declines,
+-- and says which thing is missing.
+--
+-- ---- WHERE THE CHECK LIVES, WHICH IS THE ONLY HARD PART -------------
+--
+-- Dan asked for it on the button. It is in showResults() instead, and
+-- also on the button's locked path.
+--
+-- The button is one of several callers. The currency switch, the scope
+-- dropdown, the subscribed-countries toggle and every input handler all
+-- call showResults() directly once the reader is unlocked. Guard only the
+-- button and a reader who clears the list and then changes the scope
+-- dropdown gets the whole defect back through a different door -- which
+-- is precisely how migration 559's needs-you counter broke when two
+-- fields moved out of the panel its listener was bound to.
+--
+-- One choke point. Every caller covered by construction rather than by
+-- inventory.
+--
+-- The locked path needs its own check because it never reaches
+-- showResults() -- it shows the gate and stops. Without it, a reader with
+-- nothing selected is invited to sign in and then shown nothing, which is
+-- the worst of the three available outcomes.
+
+INSERT OR REPLACE INTO translations (namespace, key, lang, value) VALUES
+  ('roi', 'guard.selectFirst', 'en', '<strong>Select at least one jurisdiction first.</strong> The wave plan, the integration count and the whole investment side are built from the countries you invoice in &mdash; with none chosen there is no programme to cost.');
+
+-- DELETED, NOT LEFT. With the refusal in place nothing can render this
+-- string, and a translated warning that introduces a set of figures which
+-- no longer exists is worse than no warning: the next person to read it
+-- would reasonably conclude the empty case still produces results.
+--
+-- Same rule as migration 585 applied to the nearest-date sentence: move a
+-- fact and delete the original, or the page ends up with two statements
+-- that can disagree.
+DELETE FROM translations WHERE namespace = 'roi' AND key = 'guard.noCountries';
+
+-- ================================================================
+-- 2. THE GATE WAS NOT A GATE
+-- ================================================================
+--
+-- Dan is right, and it is worse than his description.
+--
+-- The button ran this:
+--
+--     document.getElementById('signin').onclick = () => {
+--       unlocked = true; ... showResults(true);
+--     };
+--
+-- It set a variable. But the deeper problem is that there was nothing for
+-- it to unlock: this page computes everything client-side, so the LOCKED
+-- render already ships every benchmark value, the whole model, all the
+-- result labels and the unlocked flag itself. 295KB of page, and the
+-- gate's entire contribution was declining to run a function over data
+-- the reader already had. View-source defeated it. So did devtools. So
+-- did reading the numbers off the benchmark payload.
+--
+-- IT CANNOT BE FIXED IN PLACE, and that is the finding worth recording.
+-- No amount of work on this page makes it a gate, because the arithmetic
+-- happens in the reader's browser. The only surface that can genuinely
+-- withhold results is the members page, which is server-gated behind
+-- requireSession() and renders nothing without one.
+--
+-- So the CTA now goes there. It is a real link to the real sign-in, with
+-- ?next= returning to the members planner afterwards -- which required
+-- adding /members/roi-calculator to isSafeVerifyNextPath()'s allowlist,
+-- since that guard exists to refuse arbitrary redirect targets and had
+-- never been told about this page.
+--
+-- ---- THE READER'S WORK TRAVELS WITH THEM ----------------------------
+--
+-- Dan chose to carry the inputs rather than accept the loss. Signing in
+-- means leaving this origin, and arriving at a blank form having just
+-- entered volumes, picked eleven countries and overridden four benchmarks
+-- is a good way to lose someone at the exact moment they were converting.
+--
+-- Only what differs from our default travels; a benchmark left alone is
+-- already the default on the other side. Countries travel as ISO codes
+-- rather than picker indices -- an index is a position in an array that
+-- changes every time a country is added, so a link shared on Monday would
+-- describe a different footprint on Friday. Position used as a proxy for
+-- identity is a named recurring defect in this project and it is not
+-- being invited back in through a query string.
+--
+-- Every value is validated on arrival rather than trusted. A query
+-- parameter is reader-supplied input whatever route it took, and "we
+-- generated this link ourselves" is not a property the receiving page can
+-- verify. Numbers must parse and be non-negative, a select's value must
+-- be one it actually offers, and a country code must match a real row.
+-- Anything failing is ignored rather than defaulted, so a mangled link
+-- degrades to the ordinary page instead of a subtly wrong one.
+--
+-- ---- NO NEW STRINGS FOR ANY OF THIS ---------------------------------
+--
+-- gate.eyebrow, gate.title, gate.body and gate.cta are unchanged, and
+-- that is deliberate rather than lazy. "Sign in free to see the full wave
+-- plan... and to download the PDF for your board pack" was written as a
+-- description of what signing in gets you. It was false while the button
+-- was a mock. It is true now. The copy did not need fixing; the button
+-- did.
+
+-- ---- what this migration claims it did ------------------------------
+-- ASSERT: SELECT count(*) FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key = 'guard.selectFirst' = 1
+-- ASSERT: SELECT count(*) FROM translations WHERE namespace = 'roi' AND key = 'guard.noCountries' = 0
+--
+-- THE REFUSAL MUST NAME THE THING THE READER HAS TO DO. A message that
+-- says the case cannot be produced without saying that a jurisdiction is
+-- what is missing sends someone back to re-read six numeric fields that
+-- are all perfectly valid. The word is asserted rather than the sentence,
+-- because the sentence should be free to change.
+--
+-- ASSERT ALWAYS: SELECT count(*) FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key = 'guard.selectFirst' AND value LIKE '%jurisdiction%' = 1
+--
+-- And the gate's body must keep promising only what signing in actually
+-- delivers. It names the wave plan, the ROI model, the evidence panel,
+-- the saved countries and the PDF -- and every one of those is a real
+-- difference between the public page and the members page. If a future
+-- edit adds something to this sentence that the members page does not
+-- do, the button goes back to being a mock with better wording.
+--
+-- ASSERT ALWAYS: SELECT count(*) FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key = 'gate.body' AND value LIKE '%PDF%' = 1

@@ -59,9 +59,23 @@ const CONVENIENCE_LINK_TTL_SECONDS = 60 * 60 * 24 * 7;
 // an exact match or a single-"/"-prefixed startsWith below) -- so
 // individual story pages (/members/archive/<slug>) are allowed via
 // prefix, not just the two exact index pages.
+// /members/roi-calculator joins the list 19 Aug 2026, because the public
+// planner's gate became a real sign-in that returns here (migration 591).
+// Matched with a "?" prefix as well as exactly, because the hand-off
+// carries the reader's volumes, country codes and any overridden
+// benchmarks as a query string — so the path arrives with "?..." on it.
+//
+// Still safe for the reason given above: an allowlist of literal
+// "/members/..." prefixes cannot be made to leave this origin. The value
+// must START with those characters, so none of the usual escapes reach
+// it — "//evil.com" fails, "https://evil.com" fails, and so does
+// "/\evil.com", which some browsers normalise into a protocol-relative
+// URL. That last one is why this is an allowlist rather than a
+// "does it begin with a slash" test.
 function isSafeVerifyNextPath(next) {
   return next === "/members/archive" || next === "/members/preferences" || next.startsWith("/members/archive/")
-    || next.startsWith("/members/insights/");
+    || next.startsWith("/members/insights/")
+    || next === "/members/roi-calculator" || next.startsWith("/members/roi-calculator?");
 }
 
 // Country data (regions, translated display names, deep-dive slugs,
