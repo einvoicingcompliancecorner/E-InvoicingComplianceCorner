@@ -17,6 +17,11 @@
     "authorP4": "The E-Invoicing Compliance Corner existiert, um diese verstreuten Informationsquellen an einem Ort zusammenzuführen — mit klaren, praxisnahen Informationen, Orientierung und konkreten nächsten Schritten, damit Unternehmen informiert bleiben und die Compliance erreichen.",
     "authorConnect": "Vernetzen Sie sich gerne mit mir — <a href=\"https://www.linkedin.com/in/danielyoung76/\" target=\"_blank\" rel=\"noopener\" style=\"color:var(--stamp); text-decoration:underline;\">auf LinkedIn</a>."
   },
+  "archive": {
+    "loading": "Wird geladen…",
+    "officialSource": "Offizielle Quelle"
+  },
+  "backLink": "← Zurück zur globalen Übersicht",
   "brand": {
     "description": "Ein laufend aktualisierter Überblick über E-Invoicing- und digitale Meldepflichten in 70 Ländern — EU-weite ViDA-Regeln, nationale CTC-Systeme und alles dazwischen. Jeder Eintrag zeigt die Frist, was konkret zu tun ist, und einen direkten Link zum offiziellen Regierungsportal — damit Sie in einem einzigen Blick von \"betrifft uns das?\" zu \"das müssen wir tun\" kommen.",
     "eyebrow": "Compliance-Übersicht",
@@ -83,6 +88,7 @@
     "sources": "Überwachte Quellen",
     "map": "Die Karte",
     "insights": "Analysen & Whitepapers",
+    "roi": "ROI- und Wellenplaner",
     "deepDives": "Länderanalysen",
     "eduCertifiedProviders": "Staatlich zertifizierte Anbieter",
     "eduImpact": "Auswirkungen der Vorgabe",
@@ -118,6 +124,9 @@
     "item2": "Vollen Zugriff auf das Newsletter-Archiv, nicht nur die aktuelle Ausgabe",
     "item3": "Bevorzugten Zugang zu neuen Länder-Deep-Dives, sobald sie veröffentlicht werden",
     "item4": "Verständliche Zusammenfassungen, was das für Ihr Team bedeutet — nicht nur Gesetzestext"
+  },
+  "roiPanel": {
+    "newTab": "In eigenem Tab öffnen ›"
   },
   "stats": {
     "alreadyInEffect": "Bereits in Kraft",

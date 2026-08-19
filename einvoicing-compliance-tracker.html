@@ -606,6 +606,49 @@
   }
   .doc-card .modal-close:hover{color:var(--soon);}
   .doc-card iframe{flex:1; width:100%; border:none; display:block; background:var(--ink);}
+
+  /* ===== ROI & Wave Planner panel (19 Aug 2026, per Dan's request) =====
+     A full-width in-page panel like The Map, but hosting an iframe of
+     /roi-calculator rather than a shadow root. The planner is a 4,000-line
+     interactive application whose script queries `document` ~100 times;
+     a shadow tree returns null for all of them, and scoping its
+     stylesheet by hand would leak the first selector anyone missed.
+     An iframe costs a second font load and gives complete isolation --
+     the trade the whitepaper pop-out already makes for framed documents.
+     Height is driven by the frame's own postMessage rather than a guess:
+     see the eicc:roi-height listener below openRoiPage(), and the
+     reporter the site-worker injects into the framed page. */
+  #roiView{background:var(--ink); min-height:70vh;}
+  #roiView .roi-frame-wrap{position:relative; width:100%; background:var(--ink);}
+  #roiView iframe{width:100%; border:none; display:block; background:var(--ink); min-height:80vh;}
+  /* The bar above the frame. It carries the back link every other panel
+     gets from inside its own fetched markup -- an iframe cannot supply
+     one to its parent, so this side has to. Styled as the panels' own
+     .back-link is (mono, muted, amber on hover) rather than as something
+     new, because it is the same control in a place that had to build it
+     itself. */
+  #roiView .roi-frame-note{
+    display:flex; align-items:center; gap:14px; flex-wrap:wrap;
+    justify-content:space-between;
+    padding:9px 5vw; background:var(--ink-2); border-bottom:1px solid var(--line);
+    font-family:'IBM Plex Mono',monospace; font-size:12.5px;
+  }
+  #roiView .roi-frame-note a{color:var(--muted); text-decoration:none;}
+  #roiView .roi-frame-note a:hover{color:var(--soon);}
+  /* The (Beta) marker on the menu item itself. Muted rather than
+     coloured: it qualifies the link, it is not a warning about it.
+     .dd-label keeps the label and the marker in ONE flex item, so the
+     marker sits at the end of the words rather than at the end of the
+     row -- see the markup comment on the menu item for why that matters
+     and why the marker cannot live inside the translated span. */
+  .dropdown-item .dd-label{display:inline;}
+  /* NOT var(--muted). The muted blue is tuned for the dark board and
+     lands at 2.1:1 on this cream dropdown -- an AA failure, and one the
+     contrast audit would not have caught, because that suite audits the
+     planner and not the tracker's menus. Measured against BOTH dropdown
+     states: 5.1:1 at rest and 4.5:1 on .dropdown-item:hover, which is
+     the darker of the two and the one a colour picked by eye misses. */
+  .dd-beta{color:#6a6049; font-size:11px; letter-spacing:.3px; white-space:nowrap;}
 </style>
 <!-- i18n loader — see i18n/i18n.js for how this works and how to add a language -->
 <script src="i18n/i18n.js"></script>
@@ -746,6 +789,26 @@
                show a teaser here and link to members.* for the full
                body; see shared/resources-render.mjs and migration 338. -->
           <a class="dropdown-item" href="/insights"><span class="dd-icon">📚</span><span data-i18n="menu.insights">Insights & Whitepapers</span></a>
+          <!-- The ROI & Wave Planner. Unlike the four items above it, this
+               one opens in an IFRAME rather than a shadow root -- see
+               openRoiPage() for why, in one line: the planner's client
+               script makes 95 document.getElementById calls and a shadow
+               tree returns null for every one of them. The whitepaper
+               pop-out already frames a full document this way.
+               The href is the real, plain route so a crawler and a
+               no-JS visitor both get the standalone page.
+
+               TWO SPANS INSIDE ONE .dd-label, and both reasons are easy
+               to trip over. .dropdown-item is a flex row, so a bare
+               (Beta) sibling becomes a third flex item and is pushed to
+               the far right of the row -- a column, not the end of the
+               link Dan asked for. And it cannot simply be nested INSIDE
+               the data-i18n span either: applyToDom() assigns
+               el.innerHTML = translation, so anything in there is
+               destroyed the moment a language loads. One wrapper solves
+               both -- the label translates, the marker survives, and the
+               two flow as one line that wraps together. -->
+          <a class="dropdown-item" href="/roi-calculator"><span class="dd-icon">🧮</span><span class="dd-label"><span data-i18n="menu.roi">ROI &amp; Wave Planner</span> <span class="dd-beta">(Beta)</span></span></a>
         </div>
       </div>
       <div class="actions-menu" id="educationMenu">
@@ -882,6 +945,7 @@
 <div id="subscribeView" style="display:none;"></div>
 <div id="mapView" style="display:none;"></div>
 <div id="insightsView" style="display:none;"></div>
+<div id="roiView" style="display:none;"></div>
 
 <footer>
   <p data-i18n="filters.disclaimer">This tracker reflects publicly available guidance as of July 2026 and is provided for general awareness, not legal or tax advice. E-invoicing thresholds, wave numbers and go-live dates change frequently — confirm your obligations directly on the official government portal linked in each entry, or with your tax advisor, before making compliance decisions.</p>
@@ -3257,6 +3321,140 @@ async function openMapPage(opts){
   });
 }
 
+// ---------- in-page ROI & Wave Planner panel ----------
+//
+// Dan, 19 August 2026: "wire this page into the main site... under the
+// Resources menu option and have it open 'in-frame' like other pages".
+//
+// SAME EXPERIENCE AS THE OTHER PANELS, DIFFERENT TECHNIQUE, and the
+// difference is forced rather than chosen. /map, /sources and /insights
+// are fetched, stripped to their .wrap and mounted in a shadow root.
+// The planner cannot be: its client script makes 95 document.getElementById
+// calls plus delegated listeners on `document`, and inside a shadow tree
+// every one of those returns null. Rewriting them against a root
+// reference is a change through a 4,000-line file that currently works.
+//
+// So it is framed, which this site already does for full documents in
+// the whitepaper pop-out. The trade is a second font load and a height
+// to manage, against complete style and script isolation and no change
+// at all to the planner.
+let roiPageOpen = false;
+async function openRoiPage(opts){
+  opts = opts || {};
+  const boardView = document.getElementById('boardView');
+  const panel = document.getElementById('roiView');
+  const topbarBrand = document.querySelector('.topbar-brand');
+  const brandRow = document.querySelector('.brand-row');
+  roiPageOpen = true;
+  if(currentDeepDiveSlug) closeDeepDive({ skipHistory: true });
+  if(archiveOpen) closeArchive({ skipHistory: true });
+  if(currentEducationPage) closeEducationPage({ skipHistory: true });
+  if(feedbackPageOpen) closeFeedbackPage({ skipHistory: true });
+  if(subscribePageOpen) closeSubscribePage({ skipHistory: true });
+  if(sourcesPageOpen) closeSourcesPage({ skipHistory: true });
+  if(mapPageOpen) closeMapPage({ skipHistory: true });
+  if(insightsPageOpen) closeInsightsPage({ skipHistory: true });
+
+  boardView.style.display = 'none';
+  if(topbarBrand) topbarBrand.style.display = 'none';
+  if(brandRow) brandRow.style.display = 'none';
+  panel.style.display = '';
+  window.scrollTo(0, 0);
+
+  const lang = (window.EICC_I18N && window.EICC_I18N.currentLang) || 'en';
+  // `frame=1` tells the planner it is framed, so it drops its own outer
+  // padding and reports its height. It is a plain query parameter rather
+  // than a referrer check because a bookmarked /roi-calculator?frame=1
+  // should behave the same as one reached from here -- a page that
+  // renders differently depending on how you arrived is a page nobody
+  // can reproduce a bug in.
+  const src = `/roi-calculator?frame=1&lang=${encodeURIComponent(lang)}`;
+
+  // t(), NOT data-i18n. Every other panel does the same and the reason is
+  // easy to miss: applyToDom() runs once, at init, over the document as it
+  // stood then. Markup injected afterwards carries a data-i18n attribute
+  // that nothing will ever come back to read, so the English fallback is
+  // what a Spanish reader gets. The first version of this panel had that
+  // defect in all three of its strings.
+  const i18n = window.EICC_I18N;
+  const backLabel = (i18n && i18n.t('backLink')) || '← Back to global tracker';
+  const tabLabel = (i18n && i18n.t('roiPanel.newTab')) || 'Open in its own tab ›';
+
+  // THE BAR CARRIES THE WAY OUT, and that is the whole reason it exists.
+  // Every other panel on this site closes from a back link inside the
+  // fetched page's own markup; an iframe is opaque, so the planner cannot
+  // supply one and this side has to. Without it the only exits are the
+  // browser's back button and the menu the reader has already left.
+  //
+  // WHAT IS DELIBERATELY NOT ON IT. The first version put a "Beta" chip
+  // here and a sentence reading "the numbers behind it are still being
+  // reviewed". Both came out. The chip repeats the marker on the menu
+  // item two inches away, and the sentence is a vaguer claim than the
+  // page it sits above already makes about itself -- that page grades
+  // every benchmark it uses, names the ones that are its own estimate and
+  // prints how many sit at each grade. A blanket hedge over the top of
+  // that reads as a retraction of it.
+  //
+  // The new-tab link stays because it does something nothing else here
+  // does: it gives the reader a URL to send on, and a copy of the planner
+  // outside the frame to print from.
+  panel.innerHTML = ''
+    + '<div class="roi-frame-note">'
+    +   `<a class="roi-back" id="roiCloseLink" href="/einvoicing-compliance-tracker.html">${backLabel}</a>`
+    +   `<a class="roi-newtab" href="/roi-calculator?lang=${encodeURIComponent(lang)}" target="_blank" rel="noopener">${tabLabel}</a>`
+    + '</div>'
+    + '<div class="roi-frame-wrap">'
+    +   `<iframe id="roiFrame" title="E-Invoicing ROI &amp; Wave Planner" src="${src}" loading="lazy"></iframe>`
+    + '</div>';
+
+  document.getElementById('roiCloseLink').addEventListener('click', (e)=>{
+    e.preventDefault();
+    closeRoiPage();
+  });
+
+  if(!opts.skipHistory){
+    history.pushState({ roi: true }, '', '/roi-calculator');
+  }
+}
+
+function closeRoiPage(opts){
+  opts = opts || {};
+  roiPageOpen = false;
+  document.getElementById('boardView').style.display = '';
+  const topbarBrand = document.querySelector('.topbar-brand');
+  const brandRow = document.querySelector('.brand-row');
+  if(topbarBrand) topbarBrand.style.display = '';
+  if(brandRow) brandRow.style.display = '';
+  const panel = document.getElementById('roiView');
+  panel.style.display = 'none';
+  // Emptied, not just hidden. A hidden iframe keeps its document alive,
+  // its timers running and its fonts held -- and the planner is the
+  // heaviest page on this site.
+  panel.innerHTML = '';
+  if(!opts.skipHistory){
+    history.pushState({ roi: null }, '', '/einvoicing-compliance-tracker.html');
+  }
+}
+
+// THE FRAME REPORTS ITS OWN HEIGHT, because nothing on this side can
+// know it: the planner grows by thousands of pixels when results render
+// and again when a wave table opens. A fixed height would either clip it
+// or leave a screen of empty navy under it, and an iframe cannot be
+// measured cross-document.
+//
+// Origin-checked rather than trusted. Same-origin here today, but a
+// message handler that accepts any sender is the kind of thing that is
+// still there when the origin changes.
+window.addEventListener('message', (e)=>{
+  if(e.origin !== window.location.origin) return;
+  if(!e.data || e.data.type !== 'eicc:roi-height') return;
+  const frame = document.getElementById('roiFrame');
+  if(!frame) return;
+  const h = Number(e.data.height);
+  if(!Number.isFinite(h) || h < 200) return;
+  frame.style.height = Math.ceil(h) + 'px';
+});
+
 function closeMapPage(opts){
   opts = opts || {};
   mapPageOpen = false;
@@ -4290,6 +4488,19 @@ function wireDeepDiveInPagePanel(){
       return;
     }
 
+    // The Resources > ROI & Wave Planner link. Framed rather than
+    // shadowed -- see openRoiPage() for the reason. Every alias the
+    // site-worker route answers to is intercepted, because a link
+    // written /roi in a newsletter should behave the same as this one.
+    if(href === '/roi-calculator' || href === '/roi-calculator.html'
+       || href === '/roi' || href === '/roi.html'){
+      e.preventDefault();
+      document.getElementById('sidebar')?.classList.remove('open');
+      document.getElementById('sidebarOverlay')?.classList.remove('open');
+      openRoiPage();
+      return;
+    }
+
     // The Resources > Newsletter archive link -- opens the archive
     // list in the main frame instead of navigating away, same
     // treatment as a country Deep Dive link.
@@ -4350,6 +4561,8 @@ function wireDeepDiveInPagePanel(){
     const isSourcesUrl = window.location.pathname === '/sources' || window.location.pathname === '/sources.html';
     const isMapUrl = window.location.pathname === '/map' || window.location.pathname === '/map.html';
     const isInsightsUrl = window.location.pathname === '/insights' || window.location.pathname === '/insights.html';
+    const isRoiUrl = ['/roi-calculator', '/roi-calculator.html', '/roi', '/roi.html']
+      .includes(window.location.pathname);
     if(isArchiveUrl){
       openArchive({ skipHistory: true });
     } else if(slug){
@@ -4366,6 +4579,8 @@ function wireDeepDiveInPagePanel(){
       openMapPage({ skipHistory: true });
     } else if(isInsightsUrl){
       openInsightsPage({ skipHistory: true });
+    } else if(isRoiUrl){
+      openRoiPage({ skipHistory: true });
     } else if(currentDeepDiveSlug){
       closeDeepDive({ skipHistory: true });
     } else if(archiveOpen){
@@ -4382,6 +4597,8 @@ function wireDeepDiveInPagePanel(){
       closeMapPage({ skipHistory: true });
     } else if(insightsPageOpen){
       closeInsightsPage({ skipHistory: true });
+    } else if(roiPageOpen){
+      closeRoiPage({ skipHistory: true });
     }
   });
 
@@ -4397,6 +4614,10 @@ function wireDeepDiveInPagePanel(){
     else if(sourcesPageOpen) openSourcesPage({ skipHistory: true });
     else if(mapPageOpen) openMapPage({ skipHistory: true });
     else if(insightsPageOpen) openInsightsPage({ skipHistory: true });
+    // The planner reads its language from the query parameter on the
+    // frame src, so re-opening is what switches it -- there is nothing
+    // to re-fetch on this side.
+    else if(roiPageOpen) openRoiPage({ skipHistory: true });
   });
 
   // The subscribe panel's sample-issue modal needs a global Escape

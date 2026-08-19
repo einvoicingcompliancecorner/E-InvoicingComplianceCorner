@@ -17,6 +17,11 @@
     "authorP4": "The E-Invoicing Compliance Corner exists to bring those disparate sources of information together in one place — providing clear, practical information, guidance and next steps to help businesses stay informed and become compliant.",
     "authorConnect": "Feel free to connect — <a href=\"https://www.linkedin.com/in/danielyoung76/\" target=\"_blank\" rel=\"noopener\" style=\"color:var(--stamp); text-decoration:underline;\">find me on LinkedIn</a>."
   },
+  "archive": {
+    "loading": "Loading…",
+    "officialSource": "Official source"
+  },
+  "backLink": "← Back to global tracker",
   "brand": {
     "description": "A living tracker of e-invoicing and digital reporting mandates across 70 countries — EU-wide ViDA rules, national CTC systems, and everything in between. Each entry shows the deadline, what you need to do about it, and a direct link to the official government portal, so you can go from \"is this relevant to us?\" to \"here's what to action\" in one page.",
     "eyebrow": "Compliance tracker board",
@@ -83,6 +88,7 @@
     "sources": "Tracking sources",
     "map": "The Map",
     "insights": "Insights & Whitepapers",
+    "roi": "ROI & Wave Planner",
     "deepDives": "Deep Dives",
     "eduCertifiedProviders": "Government Certified Providers",
     "eduImpact": "Impact of Mandate",
@@ -118,6 +124,9 @@
     "item2": "Full access to the newsletter archive, not just this month's issue",
     "item3": "Priority access to new country deep dives as they're published",
     "item4": "Plain-language \"what this means for your team\" write-ups, not just legal text"
+  },
+  "roiPanel": {
+    "newTab": "Open in its own tab ›"
   },
   "stats": {
     "alreadyInEffect": "Already in effect",

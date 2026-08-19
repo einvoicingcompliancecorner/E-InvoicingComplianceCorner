@@ -17,6 +17,11 @@
     "authorP4": "The E-Invoicing Compliance Corner existe pour rassembler ces sources d'information dispersées en un seul endroit — en offrant des informations claires et pratiques, des conseils et des prochaines étapes pour aider les entreprises à rester informées et à se mettre en conformité.",
     "authorConnect": "N'hésitez pas à me contacter — <a href=\"https://www.linkedin.com/in/danielyoung76/\" target=\"_blank\" rel=\"noopener\" style=\"color:var(--stamp); text-decoration:underline;\">retrouvez-moi sur LinkedIn</a>."
   },
+  "archive": {
+    "loading": "Chargement…",
+    "officialSource": "Source officielle"
+  },
+  "backLink": "← Retour au tableau global",
   "brand": {
     "description": "Un suivi actualisé en continu des obligations de facturation électronique et de télédéclaration dans 70 pays — règles ViDA à l'échelle de l'UE, systèmes nationaux de CTC, et tout ce qui se trouve entre les deux. Chaque entrée indique l'échéance, ce qu'il faut faire, et un lien direct vers le portail officiel du gouvernement, pour passer de \"est-ce que cela nous concerne ?\" à \"voici ce qu'il faut faire\" en une seule page.",
     "eyebrow": "Tableau de suivi de conformité",
@@ -83,6 +88,7 @@
     "sources": "Sources suivies",
     "map": "La Carte",
     "insights": "Analyses et livres blancs",
+    "roi": "Planificateur de ROI et de vagues",
     "deepDives": "Analyses par pays",
     "eduCertifiedProviders": "Prestataires certifiés par l'État",
     "eduImpact": "Impact de l'obligation",
@@ -118,6 +124,9 @@
     "item2": "L'accès complet aux archives de la newsletter, pas seulement au numéro du mois",
     "item3": "Un accès prioritaire aux nouvelles analyses par pays dès leur publication",
     "item4": "Des synthèses en langage clair sur \"ce que cela signifie pour votre équipe\", pas seulement du texte juridique"
+  },
+  "roiPanel": {
+    "newTab": "Ouvrir dans son propre onglet ›"
   },
   "stats": {
     "alreadyInEffect": "Déjà en vigueur",

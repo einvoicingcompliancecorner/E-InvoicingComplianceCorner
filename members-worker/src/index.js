@@ -1908,7 +1908,6 @@ async function handleRoiCalculator(request, env, lang) {
     lang: roiLang.lang, langAsked: roiLang.asked,
     locked: false,
     subscribed,
-    signedInAs: email,
   });
 
   const page = `

@@ -144,7 +144,18 @@ DELETE FROM translations WHERE namespace = 'roi'
 -- here. Same rule each time: the two colours are slots rather than markup,
 -- so a translation that drops one describes colours it does not show.
 --
--- ASSERT ALWAYS: SELECT count(*) FROM translations WHERE namespace = 'roi' AND key = 'ribbon.legend3' AND value LIKE '%{0}%{1}%' = 1
+-- SUCCEEDED 19 Aug 2026 by migration 590, which renamed the key when the
+-- sentence gained a third slot. The rule is not weakened -- it is carried
+-- forward and made stricter, because the new slot is the assumptions
+-- panel's own name and a sentence that drops it sends a reader to a
+-- section it will not identify. Fourth inheritance of the same rule:
+-- 581 to 585 to 588 to 590, unchanged in substance every time, because
+-- the colours have been slots rather than markup on every version of
+-- this sentence.
+--
+--   was: ASSERT ALWAYS: SELECT count(*) FROM translations WHERE
+--        namespace = 'roi' AND key = 'ribbon.legend3'
+--        AND value LIKE '%{0}%{1}%' = 1
 --
 -- And no legend may promise a control that is not there. The 585 wording
 -- named a Keep button; shipping that sentence without the button would be

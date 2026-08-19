@@ -126,7 +126,7 @@ try {
   const sentinel = Object.fromEntries([...sites.keys()].map((k) => [k, `«${k}»`]));
   const render = (strings) => {
     const r = roi.renderRoiPage({ countries, benchmarks, phases, strings, fx,
-      locked: false, subscribed: [], signedInAs: "t@example.com" });
+      locked: false, subscribed: [] });
     return r.body + r.script;
   };
   const real = render(Object.fromEntries(d1));
@@ -284,7 +284,7 @@ try {
   const HOSTILE = "l'operation d'un \"Sollwert\" n'est-ce pas 'x' \"y\"";
   const hostileStrings = Object.fromEntries([...sites.keys()].map((k) => [k, HOSTILE]));
   const hostileRender = roi.renderRoiPage({ countries, benchmarks, phases,
-    strings: hostileStrings, fx, locked: false, subscribed: [], signedInAs: "t@example.com" });
+    strings: hostileStrings, fx, locked: false, subscribed: [] });
   let parsed = "ok";
   try { new Function(hostileRender.script); } catch (err) { parsed = err.message; }
   t.check("a translation containing apostrophes does not break the client script",
