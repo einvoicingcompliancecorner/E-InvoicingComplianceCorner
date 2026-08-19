@@ -2595,9 +2595,80 @@ t.check("and the common names are not truncated to make that true",
 // The roi namespace is English-only, so the noun itself renders in
 // English in every language -- what is being checked is which FORM the
 // category selector picks, not what it says.
+// ---- 41b. complete or English, and never the mix (migration 589) ------
+//
+// Rendered ?lang=de before this, the page came back declaring lang="de",
+// with German country names re-sorted by German collation, and every
+// other string in English. Three of the four languages the members
+// worker offers in its banner did that.
+//
+// The mix is worse than either side of it: English throughout is a tool
+// that has not been translated yet, which a reader understands, while
+// German nouns in English prose reads as a translation that broke.
+{
+  const { db: rdb } = await import("./lib/replay-db.mjs").then((m) => ({ db: m.openReplayDb() }));
+  const d = await rdb;
+  const { resolveRoiLang } = await import("../shared/roi-render.mjs");
+  const de = await resolveRoiLang(d.d1, "de");
+  t.check(`an incomplete language resolves to English (${de.have}/${de.need} rows)`,
+    de.lang === "en" && de.fellBack && de.asked === "de", JSON.stringify(de));
+  const en = await resolveRoiLang(d.d1, "en");
+  t.check("and English never falls back to itself", en.lang === "en" && !en.fellBack, JSON.stringify(en));
+  // THE OTHER HALF, and the one that matters for adding a language: a
+  // COMPLETE language must resolve to itself with no code change. Proved
+  // by loading one rather than by reasoning about it -- copy every
+  // English row under a new tag and ask again.
+  await d.d1.prepare(
+    "INSERT OR REPLACE INTO translations (namespace, key, lang, value) "
+    + "SELECT namespace, key, 'zz', value FROM translations WHERE namespace = 'roi' AND lang = 'en'").run();
+  const zz = await resolveRoiLang(d.d1, "zz");
+  t.check(`a complete language resolves to itself, with no code change (${zz.have}/${zz.need})`,
+    zz.lang === "zz" && !zz.fellBack, JSON.stringify(zz));
+  // And one row short is not complete. This is the check that stops the
+  // gate becoming "has any rows at all", which would ship the mix again
+  // the moment someone translated half a page.
+  await d.d1.prepare("DELETE FROM translations WHERE namespace = 'roi' AND lang = 'zz' AND key = 'page.lede'").run();
+  const zzShort = await resolveRoiLang(d.d1, "zz");
+  t.check(`one row short is not complete (${zzShort.have}/${zzShort.need})`,
+    zzShort.lang === "en" && zzShort.fellBack, JSON.stringify(zzShort));
+  await d.d1.prepare("DELETE FROM translations WHERE namespace = 'roi' AND lang = 'zz'").run();
+}
+// And the reader is told, in their own language's name for itself.
+{
+  const { file: fb } = await buildRoiPage({ lang: "de" });
+  const pf = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+  t.watch(pf);
+  await pf.goto(`file://${fb}`);
+  const notice = await pf.evaluate(() =>
+    ([...document.querySelectorAll(".note")].map((e) => e.innerText.trim()).filter(Boolean)[0] || ""));
+  t.check("the fallback is stated rather than silent",
+    /not yet available/i.test(notice), notice.slice(0, 110));
+  t.check("and names the language the way that language names itself",
+    /Deutsch/.test(notice), notice.slice(0, 110));
+  // Nothing half-translated survived the fallback -- country names are the
+  // ones that used to.
+  const anyGerman = await pf.evaluate(() =>
+    COUNTRIES.some((c) => ["Deutschland", "Niederlande", "Belgien"].includes(c[0])));
+  t.check("and no country name is left in the language we did not serve", !anyGerman);
+  await pf.close();
+}
+
 const PLURAL_SINGULAR = "jurisdiction";
 for (const [lang, sep] of [["de", "."], ["fr", "\u202f"]]) {
-  const { file: f } = await buildRoiPage({ lang });
+  // resolveLang:false BYPASSES THE COMPLETE-OR-ENGLISH GATE migration 589
+  // added, and the bypass is the point of this block rather than a
+  // convenience. What is under test here is the MACHINERY -- collation,
+  // locale money, CLDR plural categories, the subscribed-box matching on
+  // English keys behind translated labels -- given a language. Whether
+  // the worker would serve that language is a separate question, checked
+  // on its own a few lines below.
+  //
+  // Without the bypass every one of these checks would pass by rendering
+  // English and comparing English to English, which is the shape this
+  // file keeps naming: a check whose logic is right and whose itinerary
+  // is short. The bypass keeps them pointed at something real, and the
+  // gate itself is asserted rather than assumed.
+  const { file: f } = await buildRoiPage({ lang, resolveLang: false });
   const p2 = await browser.newPage({ viewport: { width: 1280, height: 1000 } });
   t.watch(p2);
   await p2.goto(`file://${f}`);

@@ -1,0 +1,141 @@
+-- ================================================================
+-- A legacy sweep, and the framework learns to refuse a half-translation.
+--
+-- Dan, 19 August 2026: "please can you run through the code, remove any
+-- superfluous content or legacy code. Also ensure that any attempt to
+-- deploy another language is factored into the framework."
+--
+-- Fourteen migrations in three days is exactly when this accumulates, and
+-- migration 572 did the same job at 571. What is different this time is
+-- that the sweep found almost nothing in the code and something real in
+-- the data -- and the language half found a defect nobody had looked for.
+--
+-- ================================================================
+-- PART 1: WHAT THE SWEEP FOUND
+-- ================================================================
+--
+-- Four dead CSS rules, one orphaned benchmark, and no dead JavaScript at
+-- all -- no unreferenced function, no unused variable, no CSS id that is
+-- never emitted. Worth saying plainly, because the honest result of a
+-- sweep is sometimes "there is not much here".
+--
+--   .cx1              CXNAME maps 2->cx3, 1->cx2, 0->cx0. The numbering
+--                     is the old FOUR-point complexity scale's, kept when
+--                     it collapsed to three because renaming would have
+--                     touched every row. .cx1 has matched nothing since.
+--   .stat .l .statwhat  styled the word "implementation" beside "One-off
+--                     investment". Migration 584 replaced that label with
+--                     "Year one cost" and its breakdown is a statrun line.
+--   .blur             no user anywhere in this module or the worker.
+--   #pdfdoc .gantt svg  the PDF has never contained the chart. It carries
+--                     the pie and nothing else with an SVG in it.
+--
+-- ---- AND AN ACTIVE BENCHMARK THAT NOTHING RENDERED -----------------
+--
+-- `ato_ap_cost_share` has been active since migration 560, which created
+-- it with a stated purpose: "Held as a benchmark so the AR citation can
+-- point at a row instead of restating a number."
+--
+-- Nothing ever pointed at it. Twenty-eight migrations later it was still
+-- an active row with an English translation, a grade and a source URL,
+-- rendered on no surface -- dead data that reads as live, which is the
+-- exact shape migration 524 wrote a standing invariant about.
+--
+-- THE INVARIANT COULD NOT SEE IT, and that is the more useful finding.
+-- 524's comment says "an ACTIVE benchmark row that nothing renders is
+-- dead data"; its SQL checks that every active row has an English
+-- translation. D1 cannot know what the renderer renders, so the rule the
+-- comment states has to live in a test, and for 28 migrations it lived
+-- nowhere. A comment describing a stronger rule than the assertion below
+-- it is worse than no comment: it reads as coverage.
+--
+-- The row is now cited where 560 meant it to be -- in the AR justification,
+-- next to the phrase "on its own 60/40 split" that was restating it in
+-- prose. `basis.arShare.just` is renamed rather than edited because it
+-- gained a slot.
+INSERT OR REPLACE INTO translations (namespace, key, lang, value) VALUES
+  ('roi', 'basis.arShare2.just', 'en', 'Issuing cost from the ATO channel figures {0} on its own 60/40 split {1}. Reduction range {2}. Structured-issuing share is yours, and our default is deliberately the highest measurement available {3}.'),
+  ('roi', 'ev.atoSplit', 'en', '60 AP / 40 AR');
+
+DELETE FROM translations WHERE namespace = 'roi' AND key = 'basis.arShare.just';
+
+-- ================================================================
+-- PART 2: COMPLETE OR ENGLISH, AND NEVER THE MIX
+-- ================================================================
+--
+-- Rendered `?lang=de` today, the planner came back:
+--
+--   <html lang="de">, country picker reading BELGIEN and DEUTSCHLAND,
+--   re-sorted by the German collation -- and every other string on the
+--   page in English.
+--
+-- The members worker offers EN, ES, DE and FR in the language banner on
+-- every page including this one. Only English has roi rows. So three of
+-- those four links produced a half-translated page, and had done since
+-- the day country_translations was joined into the picker.
+--
+-- THE MIX IS WORSE THAN EITHER SIDE OF IT. English throughout is a tool
+-- that has not been translated yet, which a reader understands
+-- immediately. German nouns inside English prose reads as a translation
+-- that broke -- and it is the more damaging reading, because it suggests
+-- the rest of the page might be broken in ways that are harder to see.
+--
+-- ---- THE RULE, AND WHY IT IS THE ONE THE DATA ALREADY LIVES BY ------
+--
+-- COMPLETE OR ENGLISH. `resolveRoiLang()` counts the requested language's
+-- roi rows against the English key set and returns English unless every
+-- key is present.
+--
+-- This is not a new standard, it is the existing one applied one layer
+-- further out: roi-coverage.mjs has refused to let a language sit
+-- stranded part-translated since it was written. The DATA was held to
+-- complete-or-nothing and the RENDER was not, so the two disagreed, and
+-- the render is what a reader meets.
+--
+-- ---- WHAT ADDING A LANGUAGE NOW COSTS -------------------------------
+--
+-- One operation: load its rows. At the moment the last key lands,
+-- resolveRoiLang starts returning that language, every getter downstream
+-- follows, the fallback notice stops rendering, and no code changes
+-- anywhere. Before this, adding a language meant the page had already
+-- been half-serving it for months and nobody could tell when it became
+-- whole.
+--
+-- The resolution happens ONCE, before anything is fetched, and its result
+-- is passed to all four getters. They used to be asked individually --
+-- four calls, four chances to disagree, which is how the country names
+-- came to be translated while the prose was not.
+--
+-- ---- AND THE READER IS TOLD, IN THEIR OWN LANGUAGE'S NAME FOR ITSELF -
+--
+-- "This planner is not yet available in Deutsch." Not "in German": a
+-- reader who clicked DE and got English needs to see that we understood
+-- which language they asked for, and saying "German" to a German reader
+-- is a second small failure on top of the first.
+--
+-- The name comes from Intl.DisplayNames rather than a lookup table,
+-- because a table would be one more list to keep in step with
+-- SUPPORTED_LANGS -- the literal-beside-the-truth shape this page has
+-- found four times this week. Caught narrowly on RangeError, like the two
+-- Intl uses in the client script: a catch-all there once hid a
+-- temporal-dead-zone bug for a day and quietly gave every language
+-- English plural rules.
+INSERT OR REPLACE INTO translations (namespace, key, lang, value) VALUES
+  ('roi', 'page.langFallback', 'en', 'This planner is not yet available in {0}. Everything below is in English &mdash; the rest of the site is not affected.');
+
+-- ---- what this migration claims it did ------------------------------
+-- ASSERT: SELECT count(*) FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key IN ('page.langFallback','basis.arShare2.just','ev.atoSplit') = 3
+-- ASSERT: SELECT count(*) FROM translations WHERE namespace = 'roi' AND key = 'basis.arShare.just' = 0
+--
+-- The fallback notice must keep its slot. Without it the sentence reads
+-- "This planner is not yet available in ." -- a broken string on the one
+-- surface whose entire job is explaining that something is missing, shown
+-- to the reader least equipped to guess what happened.
+--
+-- ASSERT ALWAYS: SELECT count(*) FROM translations WHERE namespace = 'roi' AND key = 'page.langFallback' AND value LIKE '%{0}%' = 1
+--
+-- And the AR justification must keep all four. It is the only place the
+-- ATO's own 60/40 split is now cited rather than restated, which is the
+-- whole reason that benchmark stopped being dead data.
+--
+-- ASSERT ALWAYS: SELECT count(*) FROM translations WHERE namespace = 'roi' AND key = 'basis.arShare2.just' AND value LIKE '%{0}%{1}%{2}%{3}%' = 1

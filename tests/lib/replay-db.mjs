@@ -56,6 +56,19 @@ export async function openReplayDb() {
             const rows = await query(sql, stmt._params);
             return rows[0] || null;
           },
+          // Added for migration 589's language-resolution checks, which
+          // load a synthetic complete language into the replay copy and
+          // ask resolveRoiLang() what it does with it. Proving that a
+          // complete language resolves to itself needs a complete
+          // language to exist, and reasoning about it is not the same
+          // thing as watching it happen.
+          //
+          // The replay database is a throwaway rebuilt from the migration
+          // chain on every run, so writing to it costs nothing and
+          // touches no real data -- but it is still the shared D1 shape,
+          // so this belongs here rather than as a private helper in one
+          // suite, per the note at the top of this file.
+          async run() { await query(sql, stmt._params); return { success: true }; },
         };
         return stmt;
       },

@@ -201,6 +201,29 @@ try {
 
   // 5. and the help layer, which was already wired, still is
   const helpKeys = [...d1.keys()].filter((k) => k.startsWith("help."));
+  // ---- EVERY ACTIVE BENCHMARK REACHES A SURFACE -----------------------
+  //
+  // Migration 524 wrote the rule as a comment -- "an ACTIVE benchmark row
+  // that nothing renders is dead data that reads as live" -- and asserted
+  // something weaker beneath it, that every active row has an English
+  // translation. D1 cannot know what the renderer renders, so the rule
+  // the comment states could only ever live here, and for 28 migrations
+  // it lived nowhere: `ato_ap_cost_share` sat active, graded, sourced and
+  // displayed on no surface, created by 560 for a citation that was never
+  // wired up.
+  //
+  // A row reaches a surface one of two ways: val() computes with it, or
+  // cite() puts it behind an evidence chip. Anything else is a row whose
+  // grade and citation nobody will ever see.
+  const renderSrc = readFileSync(SRC, "utf8");
+  const askedFor = new Set([...renderSrc.matchAll(/(?:val|cite)\("([a-z_]+)"/g)].map((m) => m[1]));
+  const benchRows = (await db.d1.prepare(
+    "SELECT key FROM roi_benchmarks WHERE active = 1").all()).results;
+  const unreached = benchRows.filter((b) => !askedFor.has(b.key)).map((b) => b.key);
+  t.check(`every active benchmark reaches the page (${benchRows.length} rows)`,
+    unreached.length === 0,
+    unreached.length ? unreached.join(", ") + " — computed by nothing and cited by nothing" : "");
+
   t.check(`the help layer still has its rows (${helpKeys.length})`, helpKeys.length >= 20, helpKeys.length);
 
   // 6. THE REVERSE, which nothing asked until 16 Aug 2026. Check (4)
