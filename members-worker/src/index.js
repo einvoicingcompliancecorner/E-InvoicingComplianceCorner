@@ -22,12 +22,14 @@ import {
   getDeepDiveContent as sharedGetDeepDiveContent,
   renderFullDeepDivePage as sharedRenderFullDeepDivePage,
   deriveFlagFromCode,
+  SUPPORTED_LANGS,
 } from "../../shared/deep-dive-render.mjs";
 import {
   getRoiCountries as sharedGetRoiCountries,
   getRoiBenchmarks as sharedGetRoiBenchmarks,
   getRoiPhases as sharedGetRoiPhases,
   getRoiStrings as sharedGetRoiStrings,
+  resolveRoiLang as sharedResolveRoiLang,
   getRoiFxRates as sharedGetRoiFxRates,
   renderRoiPage as sharedRenderRoiPage,
   ROI_STYLE,
@@ -91,7 +93,16 @@ const REGION_ORDER = ["Europe", "Middle East / Africa", "Asia-Pacific", "America
 // long-lived cookie so it persists across pages), falling back to the
 // cookie, falling back to English. English is always the fallback for
 // any individual missing key too.
-const SUPPORTED_LANGS = ["en", "es", "de", "fr"];
+// SUPPORTED_LANGS IS IMPORTED, NOT REDECLARED. It lived here as a second
+// identical copy while this file already imported from the module that
+// exports it, and ADDING-A-LANGUAGE.md had a paragraph telling whoever
+// added a language to remember to edit both -- "or the public site will
+// offer the language and the members site will quietly refuse it".
+//
+// A runbook instruction to keep two lists in step is a defect with
+// documentation attached. Deleting the copy removes the instruction as
+// well as the risk, which is the better of the two outcomes: nobody has
+// to read it, remember it, or be blamed for missing it.
 const LANG_NAMES = { en: "English", es: "Español", de: "Deutsch", fr: "Français" };
 const LANG_COOKIE = "eicc_lang";
 const LANG_COOKIE_TTL_SECONDS = 60 * 60 * 24 * 365; // 1 year
@@ -1877,16 +1888,24 @@ async function handleRoiCalculator(request, env, lang) {
     console.log(`ROI calculator: could not load saved countries for ${email}: ${err && err.message || err}`);
   }
 
+  // COMPLETE OR ENGLISH -- resolved once, before anything is fetched, so
+  // every getter below is asked for the same language. Asking them
+  // individually is how the page came to serve German country names in
+  // English prose: four calls, four chances to disagree. See
+  // resolveRoiLang() in shared/roi-render.mjs.
+  const roiLang = await sharedResolveRoiLang(env.eicc_content, lang);
+
   const [countries, benchmarks, phases, strings, fx] = await Promise.all([
-    sharedGetRoiCountries(env.eicc_content, null, lang),
-    sharedGetRoiBenchmarks(env.eicc_content, lang),
-    sharedGetRoiPhases(env.eicc_content, lang),
-    sharedGetRoiStrings(env.eicc_content, lang),
+    sharedGetRoiCountries(env.eicc_content, null, roiLang.lang),
+    sharedGetRoiBenchmarks(env.eicc_content, roiLang.lang),
+    sharedGetRoiPhases(env.eicc_content, roiLang.lang),
+    sharedGetRoiStrings(env.eicc_content, roiLang.lang),
     sharedGetRoiFxRates(env.eicc_content),
   ]);
 
   const { body, script } = sharedRenderRoiPage({
-    countries, benchmarks, phases, strings, fx, lang,
+    countries, benchmarks, phases, strings, fx,
+    lang: roiLang.lang, langAsked: roiLang.asked,
     locked: false,
     subscribed,
     signedInAs: email,

@@ -55,11 +55,21 @@ const DEFAULT_SUBSCRIBED = ["France", "Germany", "Italy", "Poland", "Spain",
  * Returns { file, body, script, countries, benchmarks, phases, strings, fx }.
  */
 export async function buildRoiPage(opts = {}) {
-  const lang = opts.lang || "en";
+  const askedLang = opts.lang || "en";
   const subscribed = opts.subscribed || DEFAULT_SUBSCRIBED;
   const db = await openReplayDb();
   try {
     const roi = await import(join(REPO, "shared", "roi-render.mjs"));
+    // THE HARNESS RESOLVES THE LANGUAGE THE SAME WAY THE WORKER DOES.
+    // It did not, and that is how a half-translated render passed every
+    // suite: the fixture asked each getter for `de` directly, which is
+    // exactly the call pattern the worker no longer uses. A harness that
+    // takes a shortcut the real page cannot take is a harness testing a
+    // page nobody loads -- the lesson this whole file exists for.
+    const resolved = opts.resolveLang === false
+      ? { lang: askedLang, asked: askedLang, fellBack: false }
+      : await roi.resolveRoiLang(db.d1, askedLang);
+    const lang = resolved.lang;
 
     // The same five queries handleRoiCalculator runs, through the same
     // exported functions. A hand-written copy of this SQL would be one
@@ -98,7 +108,7 @@ export async function buildRoiPage(opts = {}) {
 
     const { body, script } = roi.renderRoiPage({
       countries, benchmarks: usedBenchmarks, phases: usedPhases,
-      strings: used, fx, lang,
+      strings: used, fx, lang, langAsked: resolved.asked,
       locked: false, subscribed, signedInAs: "tests@example.com",
     });
 
@@ -167,7 +177,7 @@ ${body}
 </body></html>`;
 
     mkdirSync(TMP, { recursive: true });
-    const file = join(TMP, `roi-${lang}${opts.stubStrings ? "-stub" : ""}${opts.webfonts ? "-fonts" : ""}.html`);
+    const file = join(TMP, `roi-${askedLang}${opts.stubStrings ? "-stub" : ""}${opts.webfonts ? "-fonts" : ""}.html`);
     writeFileSync(file, html);
     return { file, html, body, script, countries, benchmarks, phases, strings, fx,
              migrations: db.migrations };

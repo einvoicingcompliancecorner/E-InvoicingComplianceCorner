@@ -343,6 +343,48 @@ export async function getRoiFxRates(db) {
 
 // Page chrome from the 'roi' translations namespace, same mechanism as
 // every other page. Returns a plain object keyed by the translation key.
+// ---- WHICH LANGUAGE THIS PAGE CAN ACTUALLY BE SERVED IN ----------------
+//
+// Dan, 19 August 2026: "ensure that any attempt to deploy another language
+// is factored into the framework."
+//
+// Rendered `?lang=de` today, the page came back declaring lang="de", with
+// German country names -- BELGIEN, and re-sorted by the German collation
+// -- and every other string in English. The members worker offers EN, ES,
+// DE and FR in its language banner on every page including this one, and
+// only English has ROI strings, so three of those four links produced a
+// half-translated page.
+//
+// THE MIX IS WORSE THAN EITHER SIDE OF IT. English throughout is a tool
+// that has not been translated yet, which a reader understands. German
+// country names in English prose reads as a translation that broke.
+//
+// COMPLETE OR NOT AT ALL, which is the same rule the coverage suite
+// already enforces on the data -- it refuses to let a language sit
+// stranded part-translated. This makes the RENDER follow the rule the
+// data is held to, rather than the two disagreeing.
+//
+// So adding a language becomes exactly one operation: load its rows. At
+// the moment the last one lands this function starts returning it and
+// every getter downstream follows, with no code change anywhere. Until
+// then it returns English and says so.
+export async function resolveRoiLang(db, lang = "en") {
+  const asked = lang || "en";
+  if (asked === "en") return { lang: "en", asked, fellBack: false, have: 0, need: 0 };
+  const { results } = await db.prepare(`
+    SELECT
+      (SELECT count(*) FROM translations WHERE namespace = 'roi' AND lang = ?1) AS have,
+      (SELECT count(DISTINCT key) FROM translations WHERE namespace = 'roi' AND lang = 'en') AS need
+  `).bind(asked).all();
+  const have = results[0]?.have || 0;
+  const need = results[0]?.need || 0;
+  // need > 0 guards the empty-database case: with no English rows at all
+  // every language is trivially "complete", which would ship a blank page
+  // in whatever was asked for rather than falling back.
+  const complete = need > 0 && have >= need;
+  return { lang: complete ? asked : "en", asked, fellBack: !complete, have, need };
+}
+
 export async function getRoiStrings(db, lang = "en") {
   const { results } = await db.prepare(`
     SELECT key, COALESCE(
@@ -550,7 +592,11 @@ button.primary:hover{filter:brightness(1.08)}
 button:disabled{opacity:.5;cursor:not-allowed}
 .pill{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.6px;text-transform:uppercase;padding:2px 7px;border-radius:99px;border:1px solid currentColor}
 .p-inforce{color:#7fd0a8}.p-upcoming{color:#e2b978}.p-b2gonly{color:#9fb2d4}.p-nomandate{color:#b9a9a4}
-.cx3{color:#e08b7a}.cx2{color:#e2b978}.cx1{color:#9fb2d4}.cx0{color:#8d9bb5}
+/* THREE COMPLEXITY COLOURS, NOT FOUR. CXNAME maps 2->cx3, 1->cx2, 0->cx0
+   -- the numbering is the old FOUR-point scale's, kept when migration
+   ~510 collapsed it to three because renaming the classes would have
+   touched every row for no gain. .cx1 has matched nothing since. */
+.cx3{color:#e08b7a}.cx2{color:#e2b978}.cx0{color:#8d9bb5}
 .countries{max-height:260px;overflow:auto;border:1px solid var(--line);border-radius:8px;padding:0 10px 10px;background:var(--ink)}
 .creg{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:var(--soon);margin:10px 0 5px}
 .cbox{display:flex;align-items:flex-start;gap:7px;padding:2px 0;font-size:13.5px}
@@ -641,8 +687,10 @@ button:disabled{opacity:.5;cursor:not-allowed}
    and the ROI page inherits that stylesheet. The name collided silently:
    the label rendered 38% larger than the one above it and carried a 22px
    bottom margin nobody asked for. Prefixed names cannot collide with a
-   shell this module does not own. */
-.stat .l .statwhat{color:var(--text-lo);opacity:.75}
+   shell this module does not own.
+   .statwhat is gone with it: it styled the word "implementation" beside
+   "One-off investment", and migration 584 replaced that label with "Year
+   one cost" whose breakdown is a statrun line. */
 .stat .l .statrun{display:block;margin-top:5px;color:#e2b978;text-transform:none;letter-spacing:.2px;font-size:10.5px;line-height:1.5}
 /* The bridge under the net figure. Muted rather than amber: statrun is a
    COST breakdown and this is an explanation of an arithmetic, and giving
@@ -885,7 +933,6 @@ a.nlink:hover,a.nlink:focus{color:var(--text-lo);border-bottom-color:var(--text-
 .note{background:var(--ink-3);border-left:3px solid var(--soon);border-radius:0 6px 6px 0;padding:11px 14px;font-size:13px;color:var(--muted);margin:0 0 14px}
 .warn{border-left-color:var(--stamp)}
 .hidden{display:none !important}
-.blur{filter:blur(5px);opacity:.55;pointer-events:none;user-select:none}
 footer{margin-top:40px;padding-top:16px;border-top:1px solid var(--line);font-size:12px;color:var(--muted)}
 /* ---- the PDF ------------------------------------------------------
    Dan, 15 Aug 2026: "Rather than printing the page, I would like a
@@ -958,7 +1005,6 @@ footer{margin-top:40px;padding-top:16px;border-top:1px solid var(--line);font-si
      container to protect, and 820px is wider than A4 minus margins, so it
      clipped both edges. Released here, and capped in height so the plan
      and the findings share page one. */
-  #pdfdoc .gantt svg{width:100%;height:auto;min-width:0 !important;max-height:108mm}
   #pdfdoc .note{border-left:2px solid #7a5a20;background:#f6f3ec;padding:6px 9px;margin:8px 0 0;
     font-size:8.4pt;color:#333;break-inside:avoid}
   #pdfdoc .cards{display:grid;grid-template-columns:1fr 1fr;gap:8px}
@@ -979,7 +1025,7 @@ footer{margin-top:40px;padding-top:16px;border-top:1px solid var(--line);font-si
 // session; `subscribed` is the signed-in reader's own saved countries
 // (empty for anonymous visitors, which disables that control).
 export function renderRoiPage({ countries, benchmarks = [], phases = [], strings = {}, fx = {},
-                                lang = "en",
+                                lang = "en", langAsked = "",
                                 locked = true, subscribed = [], unlockUrl = "", signedInAs = "" }) {
   // Benchmarks, phases and citations are injected from D1 rather than
   // hardcoded here. This is what makes the tool translation-ready without
@@ -1379,6 +1425,13 @@ export function renderRoiPage({ countries, benchmarks = [], phases = [], strings
     ardent: cite("ap_cost_per_invoice"), hmrc60: cite("cost_reduction_pct"),
     hmrcErr: cite("manual_error_rate"),  nhs: cite("nhs_query_reduction"),
     ato: cite("ar_cost_per_invoice"),    vatgap: cite("vat_gap_context"),
+    // Migration 560 created `ato_ap_cost_share` "so the AR citation can
+    // point at a row instead of restating a number", and then nothing
+    // pointed at it: an active benchmark rendered nowhere for 28
+    // migrations, which is the dead-data shape 524's invariant was
+    // written about -- and that invariant only checks a row has an
+    // English translation, so it could not see this.
+    atoSplit: cite("ato_ap_cost_share"),
     // The sending side, measured rather than inferred from the receiving
     // side. Migration 557 declined to reuse eShare here and said why;
     // this is the evidence it was waiting for.
@@ -1419,6 +1472,27 @@ export function renderRoiPage({ countries, benchmarks = [], phases = [], strings
 
 <p class="eyebrow">${t("page.eyebrow", "The E-Invoicing Compliance Corner")}</p>
 <h1>${t("page.title", "E-Invoicing ROI &amp;<br>Wave Planner")}</h1>
+${langAsked && langAsked !== lang ? `<p class="note noprint" style="margin:0 0 14px">${
+  // NAMED IN ITS OWN LANGUAGE, not in ours. A reader who clicked DE and
+  // got English needs to see that we understood which language they
+  // asked for -- "not available in German" said to a German reader is a
+  // second small failure on top of the first.
+  //
+  // Intl.DisplayNames rather than a lookup table: a table would be one
+  // more list to keep in step with SUPPORTED_LANGS, which is the
+  // literal-beside-the-truth shape this page keeps finding. Caught
+  // narrowly on RangeError, the same as the two Intl uses in the client
+  // script -- a catch-all here once hid a temporal-dead-zone bug for a
+  // day and gave every language English plural rules.
+  (() => {
+    let name = langAsked;
+    try { name = new Intl.DisplayNames([langAsked], { type: "language" }).of(langAsked) || langAsked; }
+    catch (e) { if (!(e instanceof RangeError)) throw e; }
+    return sfill(t("page.langFallback",
+      "This planner is not yet available in {0}. Everything below is in English &mdash; the rest of the site is not affected."),
+      esc(name));
+  })()
+}</p>` : ""}
 <p class="lede">${t("page.lede", "Build a board-ready business case from your own volumes and footprint &mdash; with a dated, sourced compliance wave plan drawn from the 70 jurisdictions this site tracks. Every benchmark carries a visible evidence grade, so your CFO can see exactly which numbers are independently evidenced and which are your own assumptions.")}</p>
 
 
@@ -3949,7 +4023,7 @@ function build(){
 
     <tr class="tierA" data-row="ap"><td>${t("row.ap","Processing cost reduction (AP)")} <span class="tag tang">${t("tag.tangible","tangible")}</span> <span class="tag \${banked?'bank':'unbank'}">\${banked?'${tj("tag.saved","saved")}':Math.round(TAXM.captureShare*100)+'% ${tj("tag.saved","saved")}'}</span></td><td><span class="bcalc"><span class="blab">${tj("basis.lab.calc","Calculation:")}</span>\${fill('${tj("basis.ap.calc","{0} invoices &times; {1} manual cost &times; {2}% reduction &times; {3}% not yet structured{4}")}', num0(volAP), fmt1(manualCost), Math.round(savePct*100), Math.round((1-eShare)*100), banked ? '' : fill('${tj("basis.ap.calc2"," &times; {0}% compliance share")}', Math.round(TAXM.captureShare*100)))}</span><span class="bjust"><span class="blab">${tj("basis.lab.just","Justification:")}</span>\${fill('${tj("basis.ap.just","Manual cost decomposed from the market average {0}. Reduction range {1}. Structured share is yours {2}.{3}")}', ev('ardent','${tj("ev.ardentAvg","Ardent Partners")}'), ev('hmrc60','${tj("ev.hmrcAto","HMRC, ATO-corroborated")}'), ev('yours','${tj("ev.yourShare","your figure")}'), banked ? '' : fill('${tj("basis.ap.just2"," Compliance is credited with capture and validation only &mdash; 9 of the 21 minutes of AP handling {0} &mdash; because review and approval are business decisions that no invoice format removes.")}', ev('atoCapture','${tj("ev.taskSplit","the task split")}')))}</span></td><td class="num" data-col="${t("col.gross","Annual value")}">\${fmt(saving)}</td><td class="num" data-col="${t("col.banks","Saved on this scope")}">\${fmt(bankedAP)}</td></tr>
 
-    <tr class="tierA" data-row="ar"><td>${t("row.ar","Issuing cost reduction (AR)")} <span class="tag tang">${t("tag.tangible","tangible")}</span> <span class="tag bank">${t("tag.saved","saved")}</span></td><td><span class="bcalc"><span class="blab">${tj("basis.lab.calc","Calculation:")}</span>\${fill('${tj("basis.arShare.calc","{0} invoices &times; {1} issuing cost &times; {2}% reduction &times; {3}% not yet structured")}', num0(volAR), fmt1(costAR), Math.round(savePct*100), Math.round((1-arShare)*100))}</span><span class="bjust"><span class="blab">${tj("basis.lab.just","Justification:")}</span>\${fill('${tj("basis.arShare.just","Issuing cost from the ATO channel figures on its own 60/40 split {0}. Reduction range {1}. Structured-issuing share is yours, and our default is deliberately the highest measurement available {2}.")}', ev('ato','${tj("ev.atoDeloitte","ATO / Deloitte")}'), ev('hmrc60','${tj("ev.hmrcAto","HMRC, ATO-corroborated")}'), ev('billentis','${tj("ev.billentis","Billentis issuance data")}'))}</span></td><td class="num" data-col="${t("col.gross","Annual value")}">\${fmt(savingAR)}</td><td class="num" data-col="${t("col.banks","Saved on this scope")}">\${fmt(savingAR)}</td></tr>
+    <tr class="tierA" data-row="ar"><td>${t("row.ar","Issuing cost reduction (AR)")} <span class="tag tang">${t("tag.tangible","tangible")}</span> <span class="tag bank">${t("tag.saved","saved")}</span></td><td><span class="bcalc"><span class="blab">${tj("basis.lab.calc","Calculation:")}</span>\${fill('${tj("basis.arShare.calc","{0} invoices &times; {1} issuing cost &times; {2}% reduction &times; {3}% not yet structured")}', num0(volAR), fmt1(costAR), Math.round(savePct*100), Math.round((1-arShare)*100))}</span><span class="bjust"><span class="blab">${tj("basis.lab.just","Justification:")}</span>\${fill('${tj("basis.arShare2.just","Issuing cost from the ATO channel figures {0} on its own 60/40 split {1}. Reduction range {2}. Structured-issuing share is yours, and our default is deliberately the highest measurement available {3}.")}', ev('ato','${tj("ev.atoDeloitte","ATO / Deloitte")}'), ev('atoSplit','${tj("ev.atoSplit","60 AP / 40 AR")}'), ev('hmrc60','${tj("ev.hmrcAto","HMRC, ATO-corroborated")}'), ev('billentis','${tj("ev.billentis","Billentis issuance data")}'))}</span></td><td class="num" data-col="${t("col.gross","Annual value")}">\${fmt(savingAR)}</td><td class="num" data-col="${t("col.banks","Saved on this scope")}">\${fmt(savingAR)}</td></tr>
 
     <tr class="tierA" data-row="tax"><td>${t("row.tax","Reduced tax reporting &amp; audit-prep effort")} <span class="tag tang">${t("tag.tangible","tangible")}</span> <span class="tag bank">${t("tag.saved","saved")}</span></td><td><span class="bcalc"><span class="blab">${tj("basis.lab.calc","Calculation:")}</span>\${fill('${tj("basis.tax.calc","{0} AP invoices imply {1} AP FTE; {2} put {3}% of that in scope{4} &mdash; {5} FTE &times; {6}")}', num0(volAP), apFteImplied.toFixed(1), ctcCount + ' ' + plur(ctcCount, PLURALS.ctcJur), (shareUsed*100).toFixed(1), taxCapBinds?' <em>${tj("word.capped","(capped)")}</em>':'', taxFteSaved.toFixed(2), fmt(fteCost))}</span><span class="bjust"><span class="blab">${tj("basis.lab.just","Justification:")}</span>\${fill('${tj("basis.tax.just","Mechanism evidenced {0}; invoices per FTE {1}; the share in scope is ours and capped {2}. Saved on either scope &mdash; reporting effort falls with the compliance build, not with a workflow change.")}', ev('oecd','${tj("ev.oecdDctr","OECD DCTR, 2026")}'), ev('apqc','${tj("ev.apqcMedian","APQC median, 12,000 per FTE")}'), ev('yours','${tj("ev.ourAssumption","our assumption")}'))}</span></td><td class="num" data-col="${t("col.gross","Annual value")}">\${fmt(l2)}</td><td class="num" data-col="${t("col.banks","Saved on this scope")}">\${fmt(l2)}</td></tr>
 
