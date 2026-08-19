@@ -46,6 +46,24 @@ const setCur = async (c) => { await page.selectOption("#cur", c); await page.wai
 const money = async () => (await page.locator("#summary .stat .n").allTextContents())
   .filter((s) => /[£€$]/.test(s)).map((s) => +s.replace(/[^\d.]/g, ""));
 
+// A SELECTION, BECAUSE THE PAGE NOW REQUIRES ONE. Migration 579 opened
+// the picker with nothing ticked; migration 591 made showResults() refuse
+// without a selection. Between those two this suite pressed Calculate on
+// an empty list and read a summary that should never have rendered —
+// which it did, and which is the defect Dan reported. The suite was not
+// wrong about currency; it was measuring a page state that no longer
+// exists.
+//
+// A whole region rather than a fixed count, because this file asserts
+// PROPORTIONS between two currencies: which countries are chosen does not
+// matter, only that the same ones are chosen for both reads.
+await page.evaluate(() => {
+  document.getElementById("useSubs").checked = false;
+  document.querySelectorAll("#countryList input[type=checkbox][data-i]")
+    .forEach((b) => { b.checked = COUNTRIES[+b.dataset.i][2] === "Eu"; });
+});
+await page.waitForTimeout(150);
+
 t.check("page opens in USD", (await page.inputValue("#cur")) === "USD");
 const usd = await read();
 t.check("USD baseline is the published benchmark", usd.costNow === 9.84, usd.costNow);

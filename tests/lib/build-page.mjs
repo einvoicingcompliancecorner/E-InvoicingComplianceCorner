@@ -109,7 +109,14 @@ export async function buildRoiPage(opts = {}) {
     const { body, script } = roi.renderRoiPage({
       countries, benchmarks: usedBenchmarks, phases: usedPhases,
       strings: used, fx, lang, langAsked: resolved.asked,
-      locked: false, subscribed,
+      // Both overridable, because the harness has to be able to render
+      // the PUBLIC variant as well as the members one. It could not until
+      // 19 August 2026, which is part of why the gate went unexamined for
+      // a week: every suite built the members shell, where there is no
+      // gate to look at.
+      locked: opts.locked === true,
+      membersUrl: opts.membersUrl || "",
+      subscribed,
     });
 
     // pageShell()'s order, verbatim: BASE_STYLE first, page style second.

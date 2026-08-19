@@ -49,6 +49,23 @@ const end = src.findIndex((l, i) => i > start && /^\s*\.replace\("__ROI_COUNTRIE
 // so the comment test differs; the backtick rule is identical.
 const sStart = src.findIndex((l) => /^export const ROI_STYLE = `/.test(l));
 const sEnd = src.findIndex((l, i) => i > sStart && /^`;\s*$/.test(l));
+// THE THIRD TEMPLATE, added 19 August 2026 after it bit. This lint has
+// covered the client script since 14 August and ROI_STYLE since the 17th,
+// on the reasoning that those are where comments get written. The page
+// BODY is a template literal too, its comments are HTML comments, and a
+// backtick in one ends the literal exactly as it does in the other two.
+//
+// It happened within the hour of that being true: a gate comment quoting
+// the unlocked flag in backticks ended the body template, and the module
+// failed with "Unexpected strict mode reserved word" pointing at nothing
+// useful — which is precisely the illegible message this file exists to
+// replace with a line number. The lint caught the parse and could not
+// name the line, because the line was in the one region it did not read.
+//
+// Same shape as the ROI_STYLE gap: a check whose logic was right and
+// whose itinerary was short.
+const bStart = src.findIndex((l) => /^\s*const body = `/.test(l));
+const bEnd = src.findIndex((l, i) => i > bStart && /^`;\s*$/.test(l));
 
 const bad = [];
 if (start < 0 || end < 0) {
@@ -89,6 +106,58 @@ if (sStart < 0 || sEnd < 0) {
     }
     if (/\/\*/.test(line) && !/\*\//.test(line)) inComment = true;
     else if (/\*\//.test(line)) inComment = false;
+  }
+}
+
+// The body template. Its comments are HTML comments and may span many
+// lines, so this tracks <!-- ... --> the way the stylesheet check tracks
+// a CSS block comment.
+//
+// COMMENTED SPANS ONLY, and that is the difference from ROI_STYLE. A
+// backtick anywhere in the stylesheet is wrong, so that check can be
+// blunt. The body is not like that: it interpolates, and a nested
+// template inside ${...} is both legitimate and common —
+//
+//     ${langAsked !== lang ? `<p class="note">...</p>` : ""}
+//
+// A first version of this rule flagged all six of those as errors, which
+// is how a lint teaches people to ignore it. So each line is reduced to
+// the parts of it actually inside a comment, and only those are tested.
+// Nothing outside a comment is this rule's business.
+function commentedSpans(line, wasInside) {
+  let out = "", inside = wasInside, i = 0;
+  while (i < line.length) {
+    if (!inside) {
+      const open = line.indexOf("<!--", i);
+      if (open < 0) break;
+      inside = true; i = open + 4;
+    } else {
+      const close = line.indexOf("-->", i);
+      if (close < 0) { out += line.slice(i); i = line.length; }
+      else { out += line.slice(i, close); inside = false; i = close + 3; }
+    }
+  }
+  return { text: out, inside };
+}
+
+if (bStart < 0 || bEnd < 0) {
+  bad.push([0, "could not find the page body template — this lint needs updating, "
+    + "and silently passing would be worse than failing"]);
+} else {
+  let inside = false;
+  for (let i = bStart + 1; i < bEnd; i++) {
+    const line = src[i];
+    const span = commentedSpans(line, inside);
+    inside = span.inside;
+    if (!span.text) continue;
+    if (/(^|[^\\])`/.test(span.text)) {
+      bad.push([i + 1, "unescaped backtick in an HTML comment in the page body — this "
+        + "ends the template literal, and the parse error names neither this line nor "
+        + "this file: " + line.trim().slice(0, 100)]);
+    } else if (/(^|[^\\])\$\{/.test(span.text)) {
+      bad.push([i + 1, "unescaped ${ in an HTML comment in the page body: "
+        + line.trim().slice(0, 100)]);
+    }
   }
 }
 
@@ -171,7 +240,8 @@ if (bad.length) {
 console.log(`  PASS  no backticks or \${ in comments inside the client script `
   + `(lines ${start + 2}-${end})`);
 console.log(`  PASS  no backticks in ROI_STYLE (lines ${sStart + 2}-${sEnd})`);
+console.log(`  PASS  no backticks or \${ in HTML comments in the page body (lines ${bStart + 2}-${bEnd})`);
 console.log("  PASS  no t() inside a single-quoted string (use tj there)");
 console.log("  PASS  ROI_STYLE styles bare links itself, so the public route needs no shell");
 console.log("  PASS  shared/roi-render.mjs parses");
-console.log(`\nRender lint: 5/5 passed${parses ? "" : ""}`);
+console.log(`\nRender lint: 6/6 passed${parses ? "" : ""}`);

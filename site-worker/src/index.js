@@ -750,6 +750,11 @@ function mapPageBodyHtml() {
 
 const ROI_PATHS = new Set(["/roi-calculator", "/roi-calculator.html", "/roi", "/roi.html"]);
 
+// The members subdomain, written once. It appears in four other places
+// in this file as a literal; this is the first that is read by shared
+// code rather than emitted into markup here, so it gets a name.
+const MEMBERS_ORIGIN = "https://members.e-invoicingcompliancecorner.com";
+
 // ---- the planner, framed inside the tracker -----------------------------
 //
 // Dan, 19 August 2026: wire the planner into the site "under the Resources
@@ -893,6 +898,13 @@ async function renderRoiCalculatorPage(request, env) {
     langAsked: roiLang.asked,
     locked: true,          // anonymous: results behind the gate
     subscribed: [],        // no saved preferences without a session
+    // Where the gate's CTA sends people. The ORIGIN only -- the rest of
+    // the URL is assembled in the browser at click time, because it has
+    // to describe what the reader has typed, and at render time they have
+    // typed nothing. This is why the old unlockUrl (a complete URL built
+    // here, which nothing ever read) could not have served this even if
+    // it had been wired up. See migration 591.
+    membersUrl: MEMBERS_ORIGIN,
   });
 
   // roiLang.lang, not lang: the document must declare the language it is

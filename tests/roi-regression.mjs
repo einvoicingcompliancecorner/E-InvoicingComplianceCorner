@@ -2574,17 +2574,57 @@ await page.waitForTimeout(300);
 t.check("changing the country selection marks them stale too",
   await page.evaluate(() => !document.getElementById("stale").classList.contains("hidden")));
 
-// (b) AN EMPTY SELECTION IS NOT A BUSINESS CASE. The payback guard used
-//     to exclude a payback of exactly zero, which is what a zero one-off
-//     produces -- so the most implausible output the model can make was
-//     the one case the implausibility guard skipped.
+// (b) AN EMPTY SELECTION IS NOT A BUSINESS CASE -- AND IS NO LONGER ONE.
+//
+// THIS CHECK USED TO ENCODE THE DEFECT. It cleared the country list,
+// pressed Calculate, and asserted that a full set of figures rendered
+// with a warning above them saying the figures were for no programme.
+// That was migration 575's behaviour and this suite held it in place.
+//
+// Dan, 19 August 2026: "add a check when the Create business case button
+// is pressed, or Recalculate, to check that at least one country has been
+// selected". Migration 591 refuses to render at all, so the assertion
+// inverts: no results, no gate, no PDF button, and a message naming the
+// thing that is missing.
+//
+// The old zero-payback assertion goes with it, and that is not a loss of
+// coverage -- a payback of exactly zero was only reachable BECAUSE an
+// empty selection produced a costless programme. The guard that catches
+// it is still there and still asserted at 35c; what has gone is the only
+// route to reaching it by accident.
 await page.click("#selNone"); await page.waitForTimeout(200);
 await page.click("#run"); await page.waitForTimeout(900);
-const empty = await guardText();
-t.check("an empty selection is called out", /No jurisdictions are selected/.test(empty),
-  empty.slice(0, 120));
-t.check("and a zero-cost instant payback trips the plausibility guard",
-  /Payback under one month/.test(empty), empty.slice(0, 200));
+const refused = await page.evaluate(() => ({
+  msg: (document.getElementById("needCountries") || {}).innerText || "",
+  msgShown: !document.getElementById("needCountries").classList.contains("hidden"),
+  results: !document.getElementById("results").classList.contains("hidden"),
+  gate: !document.getElementById("gate").classList.contains("hidden"),
+  pdf: !document.getElementById("print").classList.contains("hidden"),
+}));
+t.check("an empty selection refuses instead of costing nothing",
+  refused.msgShown && /at least one jurisdiction/i.test(refused.msg),
+  JSON.stringify(refused).slice(0, 160));
+t.check("and renders no figures to argue with",
+  !refused.results && !refused.pdf, JSON.stringify(refused));
+t.check("and does not ask anyone to sign in to be shown nothing",
+  !refused.gate, JSON.stringify(refused));
+
+// THE OTHER DOOR. Guarding the button alone would leave every other
+// caller of showResults() able to produce the same empty case -- the
+// scope dropdown is the cheapest to drive, and it was the reason the
+// check went into showResults() rather than onto the click handler.
+await page.selectOption("#scope", "both"); await page.waitForTimeout(500);
+t.check("and the scope dropdown cannot sneak past it either",
+  await page.evaluate(() => document.getElementById("results").classList.contains("hidden")));
+await page.selectOption("#scope", "compliance"); await page.waitForTimeout(300);
+// AND PUT THE SELECTION BACK. Every check below this point needs results
+// on screen, and until migration 591 they got them for free: clearing the
+// list still left a full business case rendered, so the page state after
+// this block was indistinguishable from the state before it. That is no
+// longer true, and four checks downstream failed on the first run for
+// exactly that reason — the refusal working, reported as a broken test.
+await selectMandate();
+await page.click("#run"); await page.waitForTimeout(900);
 
 // (c) THE HINT DOES NOT CLAIM OUR NUMBER IS THEIRS. It read "Your own
 //     figure" on load, on an untouched field holding our default, four
@@ -2910,6 +2950,14 @@ for (const width of [390, 360]) {
 // media query and a mistyped breakpoint would move the desktop silently.
 const wide = await browser.newPage({ viewport: { width: 1440, height: 900 } });
 await wide.goto(`file://${file}`);
+// A fresh page opens with nothing ticked (579), and since 591 Calculate
+// refuses without a selection — so this needs one before it can measure
+// anything. It got results for free until today.
+await wide.evaluate(() => {
+  document.getElementById("useSubs").checked = false;
+  document.querySelectorAll("#countryList input[type=checkbox][data-i]")
+    .forEach((b) => { const st = COUNTRIES[+b.dataset.i][3]; b.checked = st === "i" || st === "u"; });
+});
 await wide.click("#run"); await wide.waitForTimeout(800);
 t.check("1440px: the chart is still the default and the table is not",
   await wide.evaluate(() => !document.getElementById("gantt").parentElement.classList.contains("hidden")
@@ -2957,6 +3005,85 @@ t.check("1440px: and no figure was folded with it",
   await wide.evaluate(() => ![...document.querySelectorAll("#savingsTable td.num")]
     .some((td) => td.querySelector("details.working"))));
 await wide.close();
+
+// ---- 42. the gate hands off instead of pretending (migration 591) -----
+//
+// Dan: "upon clicking sign-in / subscribe free it just gives me the
+// results, without signing in, or subscribing. So effectively not gated."
+//
+// The CTA is now a real link to the members sign-in, carrying the
+// reader's own figures so signing in continues their work. Four things
+// are worth holding in place, and the last two are the security ones.
+// The PUBLIC render, not the members one — the only build in this suite
+// that asks for it. Every other check here builds the members shell,
+// which is exactly why the gate went a week without being looked at.
+const { file: publicFile } = await buildRoiPage({
+  locked: true, membersUrl: "https://members.e-invoicingcompliancecorner.com" });
+const gated = await browser.newPage({ viewport: { width: 1300, height: 1000 } });
+await gated.goto(`file://${publicFile}`);
+await gated.evaluate(() => {
+  document.getElementById("useSubs").checked = false;
+  document.querySelectorAll("#countryList input[type=checkbox][data-i]")
+    .forEach((b) => { b.checked = COUNTRIES[+b.dataset.i][2] === "Eu"; });
+});
+await gated.fill("#volAP", "250000");
+await gated.waitForTimeout(200);
+const cta = await gated.evaluate(() => {
+  const a = document.getElementById("signin");
+  if (!a) return null;
+  // gateHref() is what the click handler assigns; call it directly rather
+  // than driving the locked flow, which this harness renders unlocked.
+  const href = typeof gateHref === "function" ? gateHref() : a.getAttribute("href");
+  return { tag: a.tagName, target: a.getAttribute("target"), href };
+});
+t.check("the gate's CTA is a link, not a button with an onclick",
+  !!cta && cta.tag === "A", JSON.stringify(cta && cta.tag));
+t.check("and opens at the top level, so it cannot load inside the tracker's frame",
+  !!cta && cta.target === "_top", cta && cta.target);
+// THE HAND-OFF CARRIES THE READER'S WORK. Not decoration: arriving at a
+// blank form after signing in is how you lose someone at the exact moment
+// they were converting.
+t.check("the sign-in link carries the reader's own figures",
+  !!cta && /volAP=250000/.test(decodeURIComponent(cta.href)), cta && cta.href.slice(0, 160));
+t.check("and carries the countries as ISO codes, never picker indices",
+  !!cta && /[?&]co=[A-Z]{2}(,[A-Z]{2})*/.test(decodeURIComponent(cta.href)),
+  cta && decodeURIComponent(cta.href).slice(0, 200));
+// AND IT GOES TO THE MEMBERS ORIGIN, through ?next= rather than straight
+// at the planner — the planner is what requires the session, so landing
+// on it unauthenticated would just bounce.
+t.check("it points at the members sign-in with a next back to the planner",
+  !!cta && /^https:\/\/members\./.test(cta.href)
+    && /next=/.test(cta.href)
+    && /%2Fmembers%2Froi-calculator/.test(cta.href), cta && cta.href.slice(0, 120));
+
+// ---- 42b. and what comes back is validated, not trusted ---------------
+//
+// A query parameter is reader-supplied input whatever route it arrived
+// by. "We generated this link ourselves" is not a property the receiving
+// page can check, so applyCarried() validates every value and ignores
+// what fails rather than defaulting it — a mangled link has to degrade to
+// the ordinary page, not a subtly wrong one.
+const hostile = await browser.newPage({ viewport: { width: 1300, height: 1000 } });
+await hostile.goto(`file://${publicFile}?volAP=-5&erp=notanumber&cur=ZZZ&co=XX,ZZ,,FR`);
+await hostile.waitForTimeout(400);
+const survived = await hostile.evaluate(() => ({
+  volAP: document.getElementById("volAP").value,
+  erp: document.getElementById("erp").value,
+  cur: document.getElementById("cur").value,
+  checked: [...document.querySelectorAll("#countryList input:checked")]
+    .map((b) => COUNTRIES[+b.dataset.i][1]),
+}));
+t.check("a negative number is ignored rather than applied",
+  Number(survived.volAP) >= 0, survived.volAP);
+t.check("a non-numeric value is ignored rather than becoming NaN",
+  Number.isFinite(Number(survived.erp)) && survived.erp !== "", survived.erp);
+t.check("a currency the page does not offer is refused",
+  survived.cur !== "ZZZ", survived.cur);
+t.check("and only country codes that exist are ticked",
+  survived.checked.length === 1 && survived.checked[0] === "FR",
+  JSON.stringify(survived.checked));
+await hostile.close();
+await gated.close();
 
 await browser.close();
 process.exit(t.report() ? 0 : 1);
