@@ -141,14 +141,32 @@ DELETE FROM translations WHERE namespace = 'roi' AND key = 'ribbon.legend';
 -- explains is undiscoverable -- a button with no legend is the defect
 -- item 7 opened with, reintroduced one layer down.
 --
--- ASSERT ALWAYS: SELECT count(*) FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key = 'ribbon.legend2' AND value LIKE '%changed it%' AND value LIKE '%Keep%' = 1
+-- RETIRED 19 Aug 2026 by migration 588. Dan: "I dont like the keep
+-- button." The control is gone, so an invariant requiring the legend to
+-- name it would hold a sentence in place describing something that is not
+-- on the page -- which is the exact failure this line was written to
+-- prevent, pointing the other way.
+--
+-- The rule inverts rather than disappears, and 588 carries it: no legend
+-- may mention Keep, because the wording without the button is worse than
+-- either state alone.
+--
+--   was: ASSERT ALWAYS: ... key = 'ribbon.legend2' AND value LIKE
+--        '%changed it%' AND value LIKE '%Keep%' = 1
 --
 -- And the slot rule inherited from 581, which could not be redeclared
 -- there: the legend takes its two colour swatches as slots rather than as
 -- markup, so a translation that drops one prints a sentence describing
 -- colours it does not show.
 --
--- ASSERT ALWAYS: SELECT count(*) FROM translations WHERE namespace = 'roi' AND key = 'ribbon.legend2' AND value LIKE '%{0}%{1}%' = 1
+-- SUCCEEDED 19 Aug 2026 by migration 588, which renamed the key when the
+-- legend went back to describing two states. The slot rule itself is
+-- untouched and has now been inherited three times -- 581 to 585 to 588 --
+-- because the two colours are slots rather than markup on every version
+-- of this sentence.
+--
+--   was: ASSERT ALWAYS: ... key = 'ribbon.legend2'
+--        AND value LIKE '%{0}%{1}%' = 1
 --
 -- And the nearest-date tile must keep its slot in both plural forms. The
 -- slot is the COUNT, and a form that loses it leaves a reader with a

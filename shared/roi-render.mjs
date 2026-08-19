@@ -540,11 +540,6 @@ input[type=search]::placeholder{color:var(--muted);opacity:1}
    joins a pattern the label already has: a grade chip and a help icon sit
    there already, so a third small mark reads as part of the same family
    rather than as furniture stuck to the field. */
-.keepbtn{font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.5px;
-  text-transform:uppercase;padding:1px 6px;border-radius:3px;margin-left:6px;
-  border:1px solid var(--soon);background:transparent;color:var(--soon);cursor:pointer;
-  opacity:.85;vertical-align:1px;line-height:1.5}
-.keepbtn:hover,.keepbtn:focus{opacity:1;background:rgba(201,138,58,.16)}
 /* The folded summary is a CONTROL, not a sentence, and is sized like one
    so nine of them down a column do not read as nine assertions. The grade
    chips beside it are the part that differs row to row. */
@@ -610,17 +605,27 @@ button:disabled{opacity:.5;cursor:not-allowed}
    box carries a paragraph of running costs, so it keeps the full width. */
 @media(max-width:700px){
   #summary .g5{grid-template-columns:1fr 1fr}
-  /* REORDERED, not just wrapped. Left to flow, the full-width one-off box
-     pushes the first tile onto a row by itself and the last tile onto
-     another, leaving two holes. Ordering also puts the two green money
-     figures side by side -- annual saving and net annual saving are the
-     pair a reader is actually comparing, and on the desktop row they sit
-     two tiles apart with the investment between them. */
-  #summary .g5 > .stat:nth-child(1){order:1}
-  #summary .g5 > .stat:nth-child(3){order:1}
-  #summary .g5 > .stat:nth-child(2){order:2;grid-column:1 / -1}
-  #summary .g5 > .stat:nth-child(4){order:3}
-  #summary .g5 > .stat:nth-child(5){order:3}
+  /* REORDERED, and then reordered back. Migration 577 pulled the two green
+     money figures alongside each other -- gross and net -- and pushed the
+     year-one cost tile below them, on the reasoning that they are the pair
+     a reader compares. That was right about the tiles it described.
+
+     IT STOPPED BEING RIGHT WHEN THE TILES LEARNED TO EXPLAIN THEMSELVES.
+     Since 584 the net tile ends "Year one nets $10,849 after
+     implementation" and cites software fees and internal running cost --
+     every one of which is printed in the cost tile that this ordering put
+     BELOW it. A phone reader met the explanation before the figures it
+     explains, which an independent read of the page picked up.
+
+     Document order now, because the sentence dependencies run that way:
+     gross, then what it costs, then what is left. The first three go full
+     width -- two of them carry three or four lines of sub-text and pairing
+     those at 390px was never going to read -- and the two short tiles pair
+     at the end. One row taller than 577's arrangement, in exchange for
+     three tiles that no longer forward-reference each other. */
+  #summary .g5 > .stat:nth-child(1),
+  #summary .g5 > .stat:nth-child(2),
+  #summary .g5 > .stat:nth-child(3){grid-column:1 / -1}
   .stat .n{font-size:26px}
 }
 .stat .n{font-family:'Big Shoulders Display',sans-serif;font-size:30px;font-weight:800;line-height:1}
@@ -1477,7 +1482,7 @@ export function renderRoiPage({ countries, benchmarks = [], phases = [], strings
      meets, one line above the form. Item 13 of the assessment counts
      those. An explanation of an affordance is not a qualification, and
      should not be dressed as one. -->
-<p class="hint noprint" style="margin:-4px 0 12px;font-size:12.5px;max-width:78ch">${sfill(t("ribbon.legend2", "The bar down the left of every input says where it stands: {0} is still our number, {1} means you have dealt with it &mdash; either you changed it, or you read it and pressed Keep. Ours are defaults to argue with, not blanks to fill."),
+<p class="hint noprint" style="margin:-4px 0 12px;font-size:12.5px;max-width:78ch">${sfill(t("ribbon.legend3", "The bar down the left of every input says whose number it is: {0} is ours, {1} is yours. Ours are defaults to argue with, not blanks to fill."),
        `<span class="lgc"><i class="lgsw lgA"></i>${t("word.amber", "amber")}</span>`,
        `<span class="lgc"><i class="lgsw lgG"></i>${t("word.green", "green")}</span>`)}</p>
 <!-- Dan, 16 Aug 2026: "I would like the fields in section 1 to run
@@ -2202,29 +2207,12 @@ const RIBBONED = FOOT_FIELDS.concat([
 // reach this. That is load-bearing rather than lucky -- switching to GBP
 // would otherwise green the whole panel.
 const touched = new Set();
-// KEPT is the other way a field becomes handled: the reader read our
-// number and agreed with it. Held separately from touched rather than
-// folded into it because the two answer different questions -- touched
-// still means "the value moved", and applyCurrency() depends on that
-// meaning to know what it may rewrite.
-//
-// In-memory only, like the wave overrides in the adjust panel. It is a
-// statement about this reading of this page, not a preference; persisting
-// it would mean a reader returning in six months finds every benchmark
-// marked reviewed, including the four we have changed since.
-const kept = new Set();
-// One question, asked in one place: has this field had the reader's
-// attention. Everything that paints or counts a ribbon goes through here,
-// so a third way of becoming handled can never be added to one caller and
-// missed by the other -- which is how the ribbons and the placeholder
-// count came to disagree once already.
-const handled = (id) => touched.has(id) || kept.has(id);
 // The executive summary's placeholder warning counts the same thing the
 // ribbons show, so it reads from the same state. Redefining this in
 // terms of touched rather than value-difference is what keeps the two
 // from disagreeing -- which they would have done within a day, one
 // saying "4 fields still hold our numbers" while four ribbons were green.
-const stillDefault = () => NEEDS_YOU.filter(id => !handled(id));
+const stillDefault = () => NEEDS_YOU.filter(id => !touched.has(id));
 // Dan, 16 Aug 2026, on the counting note: "please remove this."
 // The ribbons stay and now carry the whole message on their own -- amber
 // is ours, green is yours, and a reader learns that from two fields
@@ -2241,29 +2229,8 @@ const stillDefault = () => NEEDS_YOU.filter(id => !handled(id));
 // existing.
 function paintNeedsYou(){
   RIBBONED.forEach(id => {
-    const el = document.getElementById(id);
-    const cell = (el || {}).parentElement;
-    if(!cell) return;
-    const done = handled(id);
-    cell.classList.toggle('changed', done);
-    // The control is created and destroyed rather than hidden, so a
-    // handled field has nothing focusable left behind it. A disabled
-    // button a screen reader still announces is worse than no button.
-    let btn = cell.querySelector('.keepbtn');
-    if(done){ if(btn) btn.remove(); return; }
-    if(btn) return;
-    btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'keepbtn';
-    btn.textContent = '${tj("btn.keep","keep")}';
-    btn.setAttribute('aria-label',
-      fill('${tj("btn.keep.aria","Keep our default for {0}")}',
-           (cell.querySelector('label') || {}).textContent || id));
-    btn.addEventListener('click', () => { kept.add(id); paintNeedsYou(); markStale(); });
-    // The label, not the cell: see the note on .keepbtn. Falls back to the
-    // cell if a ribbon ever ships without one, so a missing label costs a
-    // tidy position rather than the whole affordance.
-    (cell.querySelector('label') || cell).appendChild(btn);
+    const cell = (document.getElementById(id) || {}).parentElement;
+    if(cell) cell.classList.toggle('changed', touched.has(id));
   });
 }
 function markOverridden(){
@@ -2317,7 +2284,6 @@ document.getElementById('resetDefaults').onclick = () => {
   Object.entries(DEFAULTS).forEach(([id,d]) => { const el = document.getElementById(id); if(el) el.value = d.v; });
   CUR_INPUTS.forEach(id => { usdCurrent[id] = usdDefault[id]; });   // re-anchor the canon too
   touched.clear();                                  // every ribbon back to amber
-  kept.clear();                                     // including the ones only confirmed
   dirtyCur.clear();
   markOverridden(); syncScope(); if(unlocked) showResults();
 };
@@ -3290,7 +3256,7 @@ function buildGantt(sel0, erp, pace){
     \`<div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;padding:8px 0 10px;font-size:11.5px;color:#93a3c0">
       <span style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:1px;text-transform:uppercase">${tj("chart.phase","Phase")}</span>
       \${GANTT_DETAIL ? PROG().concat(PH()).map(p=>\`<span style="display:inline-flex;align-items:center;gap:5px"><span style="width:11px;height:11px;border-radius:2px;background:\${p.c};display:inline-block"></span>\${p.n}</span>\`).join('') : ''}
-      \${GANTT_SOLID ? \`<span style="display:inline-flex;align-items:center;gap:5px"><span style="width:11px;height:11px;border-radius:2px;background:#7b6bd6;display:inline-block"></span>${tj("chart.key.work","country work &mdash; hover for phases")}</span>\` : ''}
+      \${GANTT_SOLID ? \`<span style="display:inline-flex;align-items:center;gap:5px"><span style="width:11px;height:11px;border-radius:2px;background:#7b6bd6;display:inline-block"></span>\${fill('${tj("chart.key.work2","country work &mdash; {0}, the same shape on every country")}', PH().map(p => fill('${tj("chart.segWeeksShort","{0}: {1}w")}', p.n, p.w)).join(' &middot; '))}</span>\` : ''}
       \${lanes > 1 ? \`<span>${tj("chart.key.lane","L1&ndash;Ln &middot; which parallel workstream a country runs in")}</span>\` : ''}
       <span style="display:inline-flex;align-items:center;gap:5px"><span style="display:inline-block;width:0;height:0;border:6px solid transparent;border-left-color:#efe9db;transform:rotate(45deg)"></span>${tj("chart.golive","Go-live")}</span>
       <span style="display:inline-flex;align-items:center;gap:5px;color:#e0907f">${tj("chart.key.late","▲ already late")}</span>

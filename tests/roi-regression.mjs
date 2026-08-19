@@ -1903,54 +1903,27 @@ t.check("the halfway point is half the full saving, so the lever is linear",
   Math.abs(at50 * 2 - at0) <= 2, `${at50} x 2 vs ${at0}`);
 await apAt(50);
 
-// ---- 35d. keep: accepting a default is a thing you can do -------------
-// Item 7's open half. Until migration 585 the only route from amber to
-// green was changing a value, so the page rewarded typing over the
-// best-evidenced numbers on it. Green now means HANDLED -- changed, or
-// read and kept.
+// ---- 35d. the ribbon legend, and the affordance that is NOT here -------
+// Migration 589 removed the Keep control. It came from item 7 of my own
+// assessment, Dan had already declined it once in favour of the legend
+// alone, and I revived it off a broad "fix the remaining items" without
+// checking whether that reversed the specific choice. It did not.
+//
+// WHAT THE REMOVAL COSTS is worth a check rather than a comment, because
+// it is the thing that will look like an oversight later: green means
+// CHANGED again, so a reader who reads a grade-A benchmark and agrees
+// with it leaves the same amber mark as one who never looked. That was
+// the criticism. Two signals from the person who knows this audience beat
+// one analysis of mine, and the criticism stays open by decision.
 await page.evaluate(() => { document.getElementById("assump").open = true; });
 await page.waitForTimeout(200);
-const keepState = async () => page.evaluate(() => {
-  const r = (document.getElementById("savePct") || {}).parentElement;
-  return { btn: !!r.querySelector(".keepbtn"), green: r.classList.contains("changed") };
-});
-const keepBefore = await keepState();
-const keepValBefore = await page.inputValue("#savePct");
-t.check("an untouched benchmark offers a keep control and is not green",
-  keepBefore.btn && !keepBefore.green, JSON.stringify(keepBefore));
-await page.click("#savePct ~ .keepbtn, .ribbon:has(#savePct) .keepbtn");
-await page.waitForTimeout(200);
-const keepAfter = await keepState();
-t.check("keeping it turns the ribbon green without changing the value",
-  keepAfter.green && (await page.inputValue("#savePct")) === keepValBefore,
-  `${JSON.stringify(keepAfter)} value ${await page.inputValue("#savePct")} was ${keepValBefore}`);
-// The control removes itself rather than sitting there disabled: a button
-// a screen reader still announces, for an action already taken, is worse
-// than no button.
-t.check("and the control removes itself once the field is handled",
-  !keepAfter.btn, JSON.stringify(keepAfter));
-// A kept field must count as handled everywhere, not only in the paint.
-// The scorecard reads the same state, and the two disagreeing is the
-// exact defect migration 557 recorded when a note said "4 fields still
-// hold our numbers" beside four green ribbons.
-const keptCount = await page.evaluate(() => document.querySelectorAll(".keepbtn").length);
-await page.click("#run"); await page.waitForTimeout(900);
-await page.evaluate(() => { document.getElementById("notes").open = true; });
-await page.waitForTimeout(300);
-const scoreYours = await page.locator("#evidence").innerText();
-const stated = Number((scoreYours.match(/(\d+)\s+fields? still hold our numbers/i) || [])[1]);
-const unhandledNeedsYou = await page.evaluate(() =>
-  ["cImplS","cImplC","cPlat","cRun","errMins","eShare","arShare"]
-    .filter((id) => !(document.getElementById(id) || {}).parentElement.classList.contains("changed")).length);
-t.check(`the scorecard counts kept fields as handled (${stated} stated)`,
-  stated === unhandledNeedsYou, `${stated} stated vs ${unhandledNeedsYou} amber`);
-// Reset must clear a keep as well as an edit, or a reader who resets is
-// left with green ribbons on values that are ours again.
-await page.evaluate(() => { document.getElementById("assump").open = true; });
-await page.click("#resetDefaults"); await page.waitForTimeout(400);
-t.check("reset clears keeps too, and the controls come back",
-  (await page.evaluate(() => document.querySelectorAll(".keepbtn").length)) > keptCount,
-  `${await page.evaluate(() => document.querySelectorAll(".keepbtn").length)} vs ${keptCount} before reset`);
+t.check("no keep control survives the removal",
+  (await page.locator(".keepbtn").count()) === 0);
+t.check("and the legend describes the two states that actually exist",
+  await page.evaluate(() => {
+    const p = [...document.querySelectorAll(".hint")].find((e) => e.querySelector(".lgsw"));
+    return !!p && !/keep/i.test(p.innerText);
+  }));
 
 // ---- 35d2. four things an independent read found ----------------------
 // Screenshots only, no source. Two of its findings were wrong and are
@@ -2072,6 +2045,52 @@ t.check("and the footprint paragraph no longer says it too",
   !/nearest binding date/i.test(await page.locator("#summary .card p").first().innerText()),
   (await page.locator("#summary .card p").first().innerText()).slice(-140));
 
+// ---- 35f. the last three (migration 588) ------------------------------
+// (a) NOTHING ON THE PHONE CITES A FIGURE THAT APPEARS BELOW IT. Since 584
+//     the net tile ends by naming software fees, internal running cost and
+//     a year-one net -- all printed in the cost tile that 577's reordering
+//     had pushed underneath it.
+{
+  const m = await browser.newPage({ viewport: { width: 390, height: 844 } });
+  t.watch(m);
+  await m.goto(`file://${file}`); await m.waitForTimeout(700);
+  await m.evaluate(() => { const c = [...document.querySelectorAll(".foot2 input[type=checkbox]")]
+    .filter((x) => x.id && x.id !== "subOnly"); c.slice(0, 4).forEach((x) => { x.checked = true; x.dispatchEvent(new Event("change", { bubbles: true })); }); });
+  await m.click("#run"); await m.waitForTimeout(1200);
+  const order = await m.evaluate(() => [...document.querySelectorAll("#summary .stat")]
+    .map((e) => ({ y: Math.round(e.getBoundingClientRect().top + window.scrollY),
+                   t: e.querySelector(".n").innerText.trim() })));
+  const yOf = (txt) => (order.find((o) => o.t.includes(txt)) || {}).y;
+  const cost = order[1], net = order[2];
+  t.check("390px: the cost tile comes before the tile that cites it",
+    cost.y < net.y, JSON.stringify(order.map((o) => o.t + "@" + o.y)));
+  // And they read in document order, which is the dependency order:
+  // gross, then what it costs, then what is left.
+  t.check("390px: and the money tiles read in document order",
+    order[0].y <= order[1].y && order[1].y <= order[2].y,
+    JSON.stringify(order.map((o) => o.y)));
+  await m.close();
+}
+// (b) THE PHASE BREAKDOWN IS READABLE WITHOUT A MOUSE. Every per-country
+//     phase has scope 'all', so the breakdown is identical on every row --
+//     one sentence was hiding behind twelve tooltips.
+const legendTxt = await page.locator("#ganttLegend").innerText();
+t.check("the phase breakdown is in the legend, not only in a tooltip",
+  /\d+w/.test(legendTxt) && /same shape on every country/i.test(legendTxt),
+  legendTxt.replace(/\s+/g, " ").slice(0, 160));
+t.check("and no legend entry tells a reader to hover",
+  !/hover/i.test(legendTxt), legendTxt.replace(/\s+/g, " ").slice(0, 160));
+// The weeks are read from the durations the reader controls, so the line
+// moves with them. A hardcoded sentence here would be the
+// literal-beside-the-truth defect this project keeps finding.
+await page.evaluate(() => { document.getElementById("assump").open = true; });
+await page.fill("#wBld", "9");
+await page.click("#run"); await page.waitForTimeout(900);
+t.check("and it follows the durations rather than restating them",
+  /9w/.test(await page.locator("#ganttLegend").innerText()),
+  (await page.locator("#ganttLegend").innerText()).replace(/\s+/g, " ").slice(0, 160));
+await page.fill("#wBld", "3");
+await page.click("#run"); await page.waitForTimeout(900);
 // ---- 36a. the evidence scorecard says what the page can prove ---------
 // Item 12 of the usability assessment: "Nothing summarises the evidence,
 // which is the product." The counts are derived from which benchmarks
