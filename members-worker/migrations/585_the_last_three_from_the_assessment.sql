@@ -1,0 +1,165 @@
+-- ================================================================
+-- The last three items from the usability assessment.
+--
+-- Dan, 19 August 2026: "please can you fix these remaining items."
+--
+-- ================================================================
+-- ITEM 9, WHAT WAS LEFT OF IT: THE DATE STOPS BEING A CLAUSE
+-- ================================================================
+--
+-- The assessment's own words: "The genuinely board-relevant fact -- the
+-- nearest binding date is 2026-09-01, fifteen days from now -- is buried
+-- mid-paragraph below."
+--
+-- It was the fifth sentence of the footprint card, after a regime count,
+-- an EU-row explanation and an integration estimate. Meanwhile the tile
+-- beside it spent a full KPI slot on how MANY jurisdictions have a dated
+-- deadline, which is the less useful half of the same fact: a reader
+-- plans against the first date, not against the count.
+--
+-- So the tile leads with the date and keeps the count as its sub-line.
+-- Nothing is lost and the order is reversed.
+--
+-- AND THE SENTENCE IS REMOVED RATHER THAN LEFT, which is the part worth
+-- stating. Moving a fact and leaving the original in place is how a page
+-- ends up with two statements that can disagree -- the shape migration
+-- 580 found in the grade tags and 582 found in the scorecard. One fact,
+-- one home.
+--
+-- The no-deadline case keeps a sentence rather than a dash, because
+-- "None" alone under a date label reads as a rendering failure.
+
+INSERT OR REPLACE INTO translations (namespace, key, lang, value) VALUES
+  ('roi', 'res.nearest', 'en', 'Nearest binding date &mdash; {0}'),
+  ('roi', 'res.nearest.none', 'en', 'None'),
+  ('roi', 'res.nearest.noneLab', 'en', 'Dated deadlines ahead'),
+  -- A WHOLE SENTENCE PER PLURAL CATEGORY, not a verb in a slot. The
+  -- agreement here is has/have, which reaches past the noun -- the rule
+  -- migration 573 wrote down. One verb is the smallest case of it and
+  -- still a case of it: a language with three plural forms cannot be
+  -- served by substituting an English verb into a fixed frame.
+  ('roi', 'res.nearest2.one', 'en', '{0} of your selected jurisdictions has a dated deadline ahead.'),
+  ('roi', 'res.nearest2.other', 'en', '{0} of your selected jurisdictions have a dated deadline ahead.');
+
+DELETE FROM translations WHERE namespace = 'roi' AND key IN ('res.dated', 'card.nearest');
+
+-- ================================================================
+-- ITEM 10: THE WORKING FOLDS ON A DESKTOP TOO
+-- ================================================================
+--
+-- Nine rows, each printing a Calculation line and a Justification line,
+-- at 100-140px a row. Section 4 ran about two screens.
+--
+-- MIGRATION 578 BUILT THE FOLD FOR MOBILE ONLY, and Dan's words then were
+-- "could you collapse evidence only in mobile view?" -- which was scoping
+-- a mobile height problem, not ruling out the desktop one. Item 10 is the
+-- desktop one and he has now asked for it. Recorded because the earlier
+-- instruction reads like a contradiction of this one and is not.
+--
+-- THE TRADE IS REAL AND WORTH NAMING. The visible working IS this page's
+-- differentiator; folding it by default hides the thing that makes the
+-- page unusual. What makes it acceptable is that the fold is per row and
+-- one click deep, the grade chips stay visible on the collapsed row, and
+-- a reader who wants one row's derivation no longer scrolls past eight
+-- others to reach it. Density was hiding it too, just less honestly.
+--
+-- ---- AND FIVE ROWS STOP SAYING THE SAME EIGHT WORDS -----------------
+--
+-- The assessment: "Five of the nine rows are unpriced, and each prints
+-- CALCULATION: Named, not priced. -- the same eight words, five times, at
+-- the same visual weight as the real derivations above."
+--
+-- A calculation line on a row with no calculation is not a caveat, it is
+-- a label for an absence. The rows already sit under a group heading
+-- reading "Named, not priced -- real, and this model will not invent a
+-- number for them", so the fact is stated once, above the five rows it
+-- covers, instead of five times inside them. The Justification line stays
+-- on every one: that is where each row says why it is not priced, and it
+-- differs row to row.
+DELETE FROM translations WHERE namespace = 'roi' AND key = 'basis.notPriced';
+
+-- ================================================================
+-- ITEM 7, THE HALF LEFT OPEN: ACCEPTING A DEFAULT
+-- ================================================================
+--
+-- The assessment: "There is no way to accept a default deliberately. The
+-- 60% cost reduction is a grade-B benchmark corroborated by two tax
+-- authorities. A reader who has looked at it and agrees has no way to say
+-- so -- the only route to green is to change the value. The affordance
+-- punishes agreeing with the best-evidenced numbers on the page, and
+-- rewards typing over them."
+--
+-- Migration 581 shipped the legend and left this open, at Dan's choice
+-- and with two objections recorded: a single acknowledgement cannot tell
+-- the field someone studied from the one they scrolled past, and
+-- per-field ticks are 27 new pieces of state.
+--
+-- ---- WHAT CHANGED MY MIND ON THE SECOND OBJECTION -------------------
+--
+-- The state does not have to be per field. It has to be per field
+-- UNHANDLED, and the answer to "has this field had the reader's
+-- attention" is one question with two ways of becoming true.
+--
+-- GREEN NOW MEANS HANDLED RATHER THAN CHANGED. Two states, not three. A
+-- reader does not need to distinguish "I typed my own" from "I read yours
+-- and kept it" at a glance -- both mean the field has had attention, and
+-- a third colour would ask them to learn a distinction that changes
+-- nothing about what to do next.
+--
+-- The first objection stands and is answered by placement rather than by
+-- argument: the control sits ON the field, not on the panel, so a click
+-- is a statement about one number. It cannot be true of a field the
+-- reader never looked at, because it is not reachable without looking.
+--
+-- THE CONTROL DELETES ITSELF once its field is handled, so the row of
+-- them shrinks as the panel is worked through -- a static marker becomes
+-- furniture and a shrinking one is progress, which is the reasoning
+-- migration 557 used for the needs-you marks. It is created and destroyed
+-- rather than hidden, because a disabled button a screen reader still
+-- announces is worse than no button.
+--
+-- IN MEMORY ONLY, like the wave overrides. It is a statement about this
+-- reading of this page rather than a preference: persisted, a reader
+-- returning in six months would find every benchmark marked reviewed,
+-- including the ones we have changed since.
+INSERT OR REPLACE INTO translations (namespace, key, lang, value) VALUES
+  ('roi', 'btn.keep', 'en', 'keep'),
+  ('roi', 'btn.keep.aria', 'en', 'Keep our default for {0}'),
+  ('roi', 'ribbon.legend2', 'en', 'The bar down the left of every input says where it stands: {0} is still our number, {1} means you have dealt with it &mdash; either you changed it, or you read it and pressed Keep. Ours are defaults to argue with, not blanks to fill.');
+
+-- The legend is REPLACED rather than edited, because green changed
+-- meaning. A translator holding the old string would be describing a
+-- two-state control that no longer exists, and the English reads fine
+-- either way -- which is exactly when a rename earns its cost.
+DELETE FROM translations WHERE namespace = 'roi' AND key = 'ribbon.legend';
+
+-- ---- what this migration claims it did ------------------------------
+-- ASSERT: SELECT count(*) FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key IN ('res.nearest','res.nearest.none','res.nearest.noneLab','res.nearest2.one','res.nearest2.other','btn.keep','btn.keep.aria','ribbon.legend2') = 8
+-- ASSERT: SELECT count(*) FROM translations WHERE namespace = 'roi' AND key IN ('res.dated','card.nearest','basis.notPriced','ribbon.legend') = 0
+--
+-- The legend must describe BOTH routes to green, or the control it
+-- explains is undiscoverable -- a button with no legend is the defect
+-- item 7 opened with, reintroduced one layer down.
+--
+-- ASSERT ALWAYS: SELECT count(*) FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key = 'ribbon.legend2' AND value LIKE '%changed it%' AND value LIKE '%Keep%' = 1
+--
+-- And the slot rule inherited from 581, which could not be redeclared
+-- there: the legend takes its two colour swatches as slots rather than as
+-- markup, so a translation that drops one prints a sentence describing
+-- colours it does not show.
+--
+-- ASSERT ALWAYS: SELECT count(*) FROM translations WHERE namespace = 'roi' AND key = 'ribbon.legend2' AND value LIKE '%{0}%{1}%' = 1
+--
+-- And the nearest-date tile must keep its slot in both plural forms. The
+-- slot is the COUNT, and a form that loses it leaves a reader with a
+-- sentence asserting that some unstated number of their jurisdictions has
+-- a deadline -- which is worse than saying nothing, on the tile that now
+-- leads the compliance half of the summary.
+--
+-- ASSERT ALWAYS: SELECT count(*) FROM translations WHERE namespace = 'roi' AND key LIKE 'res.nearest2.%' AND value LIKE '%{0}%' = 2
+--
+-- The date tile must also keep a no-deadline label. Without it a reader
+-- with nothing dated selected meets a tile reading "None" under a label
+-- naming a date, which reads as a rendering failure rather than an answer.
+--
+-- ASSERT ALWAYS: SELECT count(*) FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key IN ('res.nearest.none','res.nearest.noneLab') = 2

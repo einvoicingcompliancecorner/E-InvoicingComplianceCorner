@@ -1,0 +1,114 @@
+-- ================================================================
+-- Four things an independent read of the rendered page found, and two
+-- it got wrong.
+--
+-- Dan, 19 August 2026: "Once complete please reassess the user
+-- experience, and check if these improvements satisfy the assessment, or
+-- if there are other items raised."
+--
+-- Reviewed from screenshots only, with no access to the source and no
+-- knowledge of what had just changed -- the same method the 17 August
+-- assessment used, and for the same reason: I built all of this.
+--
+-- ================================================================
+-- 1. THE BIGGEST ROW STOPPED RECONCILING FROM WHAT IS ON SCREEN
+-- ================================================================
+--
+-- The reviewer did what a CFO's analyst does. Took the AP cost per
+-- invoice visible in the panel -- $9.84 -- multiplied out 100,000 x 50%
+-- not-yet-structured x 60% reduction, got $295,200, and found the table
+-- saying $426,900.
+--
+-- THE ROW IS RIGHT. It uses $14.23, the manual-invoice cost migration
+-- 557 decomposed out of Ardent's blend, because you cannot take 60% off
+-- a cost that is already half optimised. The AR row survived the same
+-- test only because its inputs all happen to be printed on it.
+--
+-- WHAT WAS WRONG IS THAT $14.23 HAD JUST GONE BEHIND A DISCLOSURE, and
+-- migration 585 -- mine, hours earlier -- put it there. Folding the
+-- working on desktop was item 10 of the assessment and the right call;
+-- folding the ARITHMETIC with the sourcing was not. On a page whose
+-- entire proposition is that every figure is checkable, a number a
+-- reader cannot check reads as a number we invented.
+--
+-- So the fold splits. The CALCULATION -- what anyone would redo on a
+-- napkin -- stays on the row. The JUSTIFICATION -- which source, at what
+-- grade -- folds, with its grades lifted onto the summary. Section 4
+-- goes from about two screens to 751px rather than 483px, and keeps the
+-- property the page is built on.
+--
+-- ================================================================
+-- 2. TWO LEGEND ENTRIES, ONE COLOUR
+-- ================================================================
+--
+-- The reviewer sampled the swatches and found the solid work block and
+-- the mobilise phase both rendering rgb(57,135,229). They are the same
+-- colour: migration 576 chose #3987e5 for the block without checking it
+-- against the six phase colours migration 505 had set, and #3987e5 is
+-- mobilise's own.
+--
+-- 576 IS THE MIGRATION THAT WROTE DOWN THE RULE IT BROKE: "a legend for
+-- marks nobody can distinguish is worse than no legend, because it
+-- asserts a precision the picture does not have. The legend now says
+-- which it is drawing." It then listed all six phases anyway, beside a
+-- seventh entry for the block.
+--
+-- Both halves are fixed. The block takes a violet no phase uses, so they
+-- cannot collide even in a mixed chart. And the phase entries render
+-- only when a phase was actually drawn -- which is what 576 intended and
+-- did not implement.
+--
+-- ================================================================
+-- 3. A CONTROL OFFERED WHEN IT CANNOT ACT
+-- ================================================================
+--
+-- "No jurisdictions selected. Pick the countries you invoice in" with a
+-- live Clear button beside it. Hidden rather than disabled: a disabled
+-- button still occupies the sentence and still gets clicked.
+--
+-- ================================================================
+-- 4. A BADGE THAT BROKE IN HALF ON A PHONE
+-- ================================================================
+--
+-- "43% SAVED" wrapped across two lines in the mobile savings card,
+-- leaving half a pill outline at the end of one line and half at the
+-- start of the next. It reads as two damaged controls, and it is the
+-- first row a phone user sees. A badge is a single token; it no longer
+-- wraps.
+--
+-- ================================================================
+-- AND TWO THE REVIEWER GOT WRONG, RECORDED SO THEY ARE NOT "FIXED" LATER
+-- ================================================================
+--
+-- IT CALLED THE 50/51 SPLIT A ONE-DIGIT MISMATCH. "E-invoices received
+-- today %" is pre-filled 50 with a hint reading "Market average is 51%".
+-- That is not sloppiness, it is the distinction migration 575 exists to
+-- draw: the field holds OUR default and the hint names the MARKET, and
+-- an earlier version which said "your own figure" was removed precisely
+-- because it blurred them. Aligning the two would undo that.
+--
+-- IT READ THE SCORECARD'S "0 GRADE C" AS CONTRADICTING THE GRADE C CHIPS
+-- IN THE SAVINGS TABLE. Both are true and the panel says why one line
+-- above: the scorecard counts the benchmarks the page COMPUTES WITH, and
+-- "a further 7 are held only so a claim elsewhere can cite them, and are
+-- not scored here". The C-graded rows are cited, not computed. The
+-- distinction is the whole point of migration 581 and is worth keeping;
+-- that a careful reader still tripped on it is noted below.
+--
+-- No D1 change. Recorded because a fix that removes a defect and a
+-- correction that would reintroduce one look identical a year later.
+
+-- ---- what this migration claims it did ------------------------------
+-- ASSERT: SELECT count(*) FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key = 'basis.showWorking' = 1
+--
+-- The rule the whole file turns on: no priced row may hide the figures
+-- its own answer is computed from. Held as data rather than only as a
+-- test because the next person to shorten this table will reach for the
+-- same fold, and the calculation line is the half that must not go.
+--
+-- basis.lab.calc is excluded by name: it is the LABEL "Calculation:",
+-- not a calculation, and it takes no slot. Found by the replay refusing
+-- the first version of this line -- which is the pattern working, since
+-- a rule stated one key too wide is a rule someone later deletes rather
+-- than narrows.
+-- ASSERT ALWAYS: SELECT count(*) FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key LIKE 'basis.%.calc' AND key <> 'basis.lab.calc' AND value NOT LIKE '%{0}%' = 0

@@ -231,4 +231,21 @@ INSERT OR REPLACE INTO translations (namespace, key, lang, value) VALUES
 -- Stated on the SLOTS rather than on the words, because the words moved
 -- out of the string in the rewrite above and a check for '%amber%' would
 -- now pass only in English.
--- ASSERT ALWAYS: SELECT count(*) FROM translations WHERE namespace = 'roi' AND key = 'ribbon.legend' AND value LIKE '%{0}%{1}%' = 1
+-- SUCCEEDED 19 Aug 2026 by migration 585, which renamed the key because
+-- green changed meaning: it now marks a field the reader has DEALT WITH,
+-- by changing it or by pressing Keep, rather than one they have changed.
+--
+-- The rule is not retired, it is inherited by the new key and made
+-- stricter there -- the legend must still carry both slots AND must now
+-- name both routes to green, because a control nobody can discover is the
+-- defect item 7 opened with, one layer down.
+--
+-- INHERITED BY 585 RATHER THAN REDECLARED HERE, because an ASSERT ALWAYS
+-- is checked at its own position as well as at the end of the chain, and
+-- at 581 the key it would name does not exist yet. Same rule 573 used
+-- when it inherited two invariants from 545 and 550 -- and the replay
+-- refused the first attempt at this, which is the rule enforcing itself.
+--
+--   was: ASSERT ALWAYS: SELECT count(*) FROM translations WHERE
+--        namespace = 'roi' AND key = 'ribbon.legend'
+--        AND value LIKE '%{0}%{1}%' = 1

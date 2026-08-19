@@ -514,6 +514,41 @@ input[type=search]::placeholder{color:var(--muted);opacity:1}
 .evg{margin-left:4px;padding:0 4px;font-size:9px}
 .ribbon > input,.ribbon > select{box-shadow:inset 3px 0 0 var(--soon)}
 .ribbon.changed > input,.ribbon.changed > select{box-shadow:inset 3px 0 0 var(--live)}
+/* KEEP. Item 7 of the usability assessment, second half: there was no way
+   to accept a default deliberately, so the only route from amber to green
+   was changing a value -- and the page rewarded typing over its own
+   best-evidenced numbers. A reader who has read the 60% reduction, seen
+   that two tax authorities corroborate it, and agreed had no way to say so.
+
+   GREEN NOW MEANS HANDLED rather than changed, which is the whole design.
+   Two states, not three: a reader does not need to distinguish "I typed
+   my own" from "I read yours and kept it" at a glance -- both mean this
+   field has had attention, and a third colour would ask them to learn a
+   distinction that changes nothing about what to do next.
+
+   The control appears only while a field is unhandled and removes itself
+   once it is, so the row of them shrinks as the panel is worked through.
+   A static marker becomes furniture; a shrinking one is progress -- the
+   reasoning migration 557 used for the needs-you marks, which this
+   replaces the manual half of. */
+/* ON THE LABEL, NOT OVER THE FIELD. The first version was absolutely
+   positioned in the ribbon's bottom-right corner and the render showed
+   two faults at once: it sat on top of the value in every text input, and
+   on the delivery-pace SELECT it covered the dropdown arrow -- a control
+   obscuring a control.
+   As a chip on the label it cannot overlap anything, costs no height, and
+   joins a pattern the label already has: a grade chip and a help icon sit
+   there already, so a third small mark reads as part of the same family
+   rather than as furniture stuck to the field. */
+.keepbtn{font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.5px;
+  text-transform:uppercase;padding:1px 6px;border-radius:3px;margin-left:6px;
+  border:1px solid var(--soon);background:transparent;color:var(--soon);cursor:pointer;
+  opacity:.85;vertical-align:1px;line-height:1.5}
+.keepbtn:hover,.keepbtn:focus{opacity:1;background:rgba(201,138,58,.16)}
+/* The folded summary is a CONTROL, not a sentence, and is sized like one
+   so nine of them down a column do not read as nine assertions. The grade
+   chips beside it are the part that differs row to row. */
+details.working > summary .sumg{margin-left:6px;vertical-align:1px}
 button{font:inherit;cursor:pointer;border-radius:6px;border:1px solid var(--line);background:var(--ink-3);color:var(--text-lo);padding:10px 16px}
 button.primary{background:var(--soon);border-color:var(--soon);color:#231a09;font-weight:700}
 button.primary:hover{filter:brightness(1.08)}
@@ -746,7 +781,11 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
 .hlp:hover .tip,.hlp:focus .tip{display:block}
 .hlp .tip b{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px}
 .tierA{border-left:4px solid var(--live)}.tierB{border-left:4px solid var(--soon)}.tierC{border-left:4px solid var(--stamp)}.tierD{border-left:4px solid var(--upcoming)}
-.tag{font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.5px;text-transform:uppercase;padding:1px 6px;border-radius:3px;border:1px solid currentColor;margin-left:6px}
+/* white-space:nowrap because "43% SAVED" broke across two lines in the
+   mobile savings card, leaving half a pill outline at the end of one line
+   and half at the start of the next -- read as two damaged controls, on
+   the first row a phone user sees. A badge is a single token. */
+.tag{font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.5px;text-transform:uppercase;padding:1px 6px;border-radius:3px;border:1px solid currentColor;margin-left:6px;white-space:nowrap;display:inline-block}
 .tA{color:#7fd0a8}.tB{color:#e2b978}.tC{color:#e0907f}.tD{color:#9fb2d4}
 .tang{color:#7fd0a8;border-color:#3f7d5c}.intang{color:#9fb2d4;border-color:#3a4864}
 /* The evidence scorecard. A stacked bar whose segments are flex-weighted
@@ -1220,6 +1259,12 @@ export function renderRoiPage({ countries, benchmarks = [], phases = [], strings
                             "word.erroredInvoices", "errored invoices"),
     thing: plurSet("word.thing", "thing", "word.things", "things"),
     field: plurSet("word.field", "field", "word.fields", "fields"),
+    // A WHOLE SENTENCE, for the reason stated below: the agreement is on
+    // "has"/"have", which reaches past the noun. One verb is the smallest
+    // case of the rule and still the rule.
+    nearestCount: plurSetBase("res.nearest2",
+      "{0} of your selected jurisdictions has a dated deadline ahead.",
+      "{0} of your selected jurisdictions have a dated deadline ahead."),
     // A WHOLE SENTENCE, not a noun. The mistimed-obligation guard changes
     // three clauses between its singular and plural forms -- "has"/"have",
     // "it"/"them", "runway it has"/"runway they have" -- which is why it
@@ -1416,7 +1461,7 @@ export function renderRoiPage({ countries, benchmarks = [], phases = [], strings
      meets, one line above the form. Item 13 of the assessment counts
      those. An explanation of an affordance is not a qualification, and
      should not be dressed as one. -->
-<p class="hint noprint" style="margin:-4px 0 12px;font-size:12.5px;max-width:78ch">${sfill(t("ribbon.legend", "The bar down the left of every input says whose number it is: {0} is ours, {1} is yours. Ours are defaults you can argue with, not blanks you must fill."),
+<p class="hint noprint" style="margin:-4px 0 12px;font-size:12.5px;max-width:78ch">${sfill(t("ribbon.legend2", "The bar down the left of every input says where it stands: {0} is still our number, {1} means you have dealt with it &mdash; either you changed it, or you read it and pressed Keep. Ours are defaults to argue with, not blanks to fill."),
        `<span class="lgc"><i class="lgsw lgA"></i>${t("word.amber", "amber")}</span>`,
        `<span class="lgc"><i class="lgsw lgG"></i>${t("word.green", "green")}</span>`)}</p>
 <!-- Dan, 16 Aug 2026: "I would like the fields in section 1 to run
@@ -1823,8 +1868,22 @@ const num0 = n => nf({ maximumFractionDigits: 0 }).format(n);
 // That matters more than the line count -- the evidence is this page's
 // whole proposition, and a change that could quietly reach the desktop is
 // a different and much worse change from the one that was asked for.
+// THE WORKING FOLDS AT EVERY WIDTH NOW, not only on a phone.
+//
+// Migration 578 built this mobile-only, and Dan's words then were "could
+// you collapse evidence only in mobile view?" -- which was scoping a
+// mobile height problem, not ruling out the desktop one. Item 10 of the
+// usability assessment is the desktop one, and he has now asked for it:
+// nine rows each printing a calculation and a justification, at 100-140px
+// a row, made section 4 about two screens long.
+//
+// The trade is real and worth naming. The visible working IS this page's
+// differentiator, and folding it by default hides the thing that makes
+// the page unusual. What makes it acceptable is that the fold is per row
+// and one click deep, the grade chips stay visible on the collapsed row,
+// and the reader who wants the derivation for ONE row no longer has to
+// scroll past eight others to reach it. Density was hiding it too.
 const collapseWorking = (hostId, cellIndex) => {
-  if(!window.matchMedia('(max-width:700px)').matches) return;
   const host = document.getElementById(hostId);
   if(!host) return;
   host.querySelectorAll('tbody tr').forEach(tr => {
@@ -1844,7 +1903,54 @@ const collapseWorking = (hostId, cellIndex) => {
     const sum = document.createElement('summary');
     sum.textContent = '${tj("basis.showWorking","Show the working")}';
     d.appendChild(sum);
-    while(cell.firstChild !== null && cell.firstChild !== d) d.appendChild(cell.firstChild);
+    // ONLY THE JUSTIFICATION FOLDS. THE ARITHMETIC STAYS ON THE ROW.
+    //
+    // The first desktop version folded both, and an independent reviewer
+    // reading the rendered page did what a CFO's analyst does: took the
+    // visible $9.84 AP cost, multiplied it out, got $295,200, and found
+    // the table saying $426,900. The row is right -- it uses the manual
+    // invoice cost of $14.23 that migration 557 decomposed out of the
+    // blend -- but $14.23 had just gone behind a disclosure, so the only
+    // figure that reconciles the biggest row on the page was invisible.
+    //
+    // That is a regression my own fix for item 10 introduced, and it is
+    // the exact failure this page exists to avoid: a number a reader
+    // cannot check reads as a number we made up. The AR row survived the
+    // same test only because its inputs all happen to be on screen.
+    //
+    // So the CALCULATION -- the arithmetic anyone would redo on a napkin
+    // -- stays visible, and the JUSTIFICATION -- which source, at what
+    // grade -- folds. The height saving is most of what it was, because
+    // the justification is the longer of the two, and the row keeps the
+    // property the whole page is built on.
+    const just = cell.querySelector('.bjust');
+    if(just){ d.appendChild(just); }
+    else { while(cell.firstChild !== null && cell.firstChild !== d) d.appendChild(cell.firstChild); }
+    // THE GRADES COME BACK OUT OF THE FOLD.
+    //
+    // Two things went wrong the first time this ran at desktop width, and
+    // both were visible in one screenshot. The BASIS column became nine
+    // identical "Show the working" links -- the same defect the assessment
+    // complained about in the unpriced rows, reproduced one level up by
+    // the fix for it. And the evidence grades went inside the fold, which
+    // the assessment had explicitly ruled out: "one global toggle, off by
+    // default, WITH THE GRADE CHIPS STILL VISIBLE when collapsed".
+    //
+    // Lifting the distinct grades onto the summary answers both at once.
+    // The column carries information again -- A B on one row, D on another
+    // -- so a reader can see which rows rest on what without opening any
+    // of them, which is more than the expanded version offered at a glance.
+    const seen = [];
+    d.querySelectorAll('.evg').forEach(g => {
+      const L = (g.textContent || '').trim();
+      if(L && seen.indexOf(L) === -1) seen.push(L);
+    });
+    seen.sort().forEach(L => {
+      const chip = document.createElement('span');
+      chip.className = 'tag t' + L + ' sumg';
+      chip.textContent = L;
+      sum.appendChild(chip);
+    });
     cell.appendChild(d);
   });
 };
@@ -1965,7 +2071,7 @@ document.getElementById('notes').addEventListener('toggle', function(){
 // is per jurisdiction and is what the runway draws.
 //
 // Grouping is still one button away and unchanged.
-let SV = null, WAVES = [], UNDATED = [], ganttExpanded = true, GANTT_SOLID = false;
+let SV = null, WAVES = [], UNDATED = [], ganttExpanded = true, GANTT_SOLID = false, GANTT_DETAIL = false;
 function renderSavings(){
   const el = document.getElementById('savings');
   if(!el || !SV || !SV.segs.length) return;
@@ -2080,12 +2186,29 @@ const RIBBONED = FOOT_FIELDS.concat([
 // reach this. That is load-bearing rather than lucky -- switching to GBP
 // would otherwise green the whole panel.
 const touched = new Set();
+// KEPT is the other way a field becomes handled: the reader read our
+// number and agreed with it. Held separately from touched rather than
+// folded into it because the two answer different questions -- touched
+// still means "the value moved", and applyCurrency() depends on that
+// meaning to know what it may rewrite.
+//
+// In-memory only, like the wave overrides in the adjust panel. It is a
+// statement about this reading of this page, not a preference; persisting
+// it would mean a reader returning in six months finds every benchmark
+// marked reviewed, including the four we have changed since.
+const kept = new Set();
+// One question, asked in one place: has this field had the reader's
+// attention. Everything that paints or counts a ribbon goes through here,
+// so a third way of becoming handled can never be added to one caller and
+// missed by the other -- which is how the ribbons and the placeholder
+// count came to disagree once already.
+const handled = (id) => touched.has(id) || kept.has(id);
 // The executive summary's placeholder warning counts the same thing the
 // ribbons show, so it reads from the same state. Redefining this in
 // terms of touched rather than value-difference is what keeps the two
 // from disagreeing -- which they would have done within a day, one
 // saying "4 fields still hold our numbers" while four ribbons were green.
-const stillDefault = () => NEEDS_YOU.filter(id => !touched.has(id));
+const stillDefault = () => NEEDS_YOU.filter(id => !handled(id));
 // Dan, 16 Aug 2026, on the counting note: "please remove this."
 // The ribbons stay and now carry the whole message on their own -- amber
 // is ours, green is yours, and a reader learns that from two fields
@@ -2102,8 +2225,29 @@ const stillDefault = () => NEEDS_YOU.filter(id => !touched.has(id));
 // existing.
 function paintNeedsYou(){
   RIBBONED.forEach(id => {
-    const cell = (document.getElementById(id) || {}).parentElement;
-    if(cell) cell.classList.toggle('changed', touched.has(id));
+    const el = document.getElementById(id);
+    const cell = (el || {}).parentElement;
+    if(!cell) return;
+    const done = handled(id);
+    cell.classList.toggle('changed', done);
+    // The control is created and destroyed rather than hidden, so a
+    // handled field has nothing focusable left behind it. A disabled
+    // button a screen reader still announces is worse than no button.
+    let btn = cell.querySelector('.keepbtn');
+    if(done){ if(btn) btn.remove(); return; }
+    if(btn) return;
+    btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'keepbtn';
+    btn.textContent = '${tj("btn.keep","keep")}';
+    btn.setAttribute('aria-label',
+      fill('${tj("btn.keep.aria","Keep our default for {0}")}',
+           (cell.querySelector('label') || {}).textContent || id));
+    btn.addEventListener('click', () => { kept.add(id); paintNeedsYou(); markStale(); });
+    // The label, not the cell: see the note on .keepbtn. Falls back to the
+    // cell if a ribbon ever ships without one, so a missing label costs a
+    // tidy position rather than the whole affordance.
+    (cell.querySelector('label') || cell).appendChild(btn);
   });
 }
 function markOverridden(){
@@ -2157,6 +2301,7 @@ document.getElementById('resetDefaults').onclick = () => {
   Object.entries(DEFAULTS).forEach(([id,d]) => { const el = document.getElementById(id); if(el) el.value = d.v; });
   CUR_INPUTS.forEach(id => { usdCurrent[id] = usdDefault[id]; });   // re-anchor the canon too
   touched.clear();                                  // every ribbon back to amber
+  kept.clear();                                     // including the ones only confirmed
   dirtyCur.clear();
   markOverridden(); syncScope(); if(unlocked) showResults();
 };
@@ -2455,6 +2600,12 @@ const paintCount = () => {
   const sel = chosen();
   const el = document.getElementById('selCount');
   if(!el) return;
+  // A CONTROL THAT CANNOT DO ANYTHING, next to a message saying so. An
+  // independent reviewer found "Clear" live and clickable beside the
+  // words "No jurisdictions selected". Hidden rather than disabled: a
+  // disabled button still occupies the sentence and still gets clicked.
+  const clr = document.getElementById('selNone');
+  if(clr) clr.classList.toggle('hidden', !sel.length);
   el.innerHTML = !sel.length
     ? '${tj("countries.none","<strong>No jurisdictions selected.</strong> Pick the countries you invoice in, or use your saved list above.")}'
     : sel.length <= NAME_LIMIT
@@ -2875,7 +3026,7 @@ function buildGantt(sel0, erp, pace){
   // one. Wave bands are gone from this view -- the wave is a grouping of
   // deadlines and this view is ordered by urgency, so the two disagree by
   // construction. "Group by wave" is still one button away and unchanged.
-  GANTT_SOLID = false;
+  GANTT_SOLID = false; GANTT_DETAIL = false;
   const runwayRows = [...rows].sort((a, b) => a.slipDays - b.slipDays
     || String(a.c[0]).localeCompare(String(b.c[0])));
   if(ganttExpanded) runwayRows.forEach(r => {
@@ -2922,7 +3073,7 @@ function buildGantt(sel0, erp, pace){
     // see -- which is the defect this whole view exists to fix, and it
     // would have survived it. Recorded so the legend can say what the
     // chart is actually drawing.
-    if(!detail) GANTT_SOLID = true;
+    if(!detail) GANTT_SOLID = true; else GANTT_DETAIL = true;
     const late = r.slipDays < 0;
     if(detail){
       r.segs.forEach(sg => {
@@ -2931,7 +3082,7 @@ function buildGantt(sel0, erp, pace){
       });
     } else {
       const tip = r.segs.map(sg => fill('${tj("chart.segWeeksShort","{0}: {1}w")}', sg.n, sg.weeks)).join(', ');
-      s += \`<rect x="\${blockA}" y="\${y+4}" width="\${Math.max(6, blockB-blockA)}" height="\${RH-8}" rx="3" fill="\${late ? '#b5432f' : '#3987e5'}"><title>\${fill('${tj("chart.blockTip","{0} — {1} weeks of work, {2} to {3}")}', r.c[0], r.segs.reduce((a,sg)=>a+sg.weeks,0), isoD(r.segs[0].s), isoD(r.segs[r.segs.length-1].e))}\\n\${tip}</title></rect>\`;
+      s += \`<rect x="\${blockA}" y="\${y+4}" width="\${Math.max(6, blockB-blockA)}" height="\${RH-8}" rx="3" fill="\${late ? '#b5432f' : '#7b6bd6'}"><title>\${fill('${tj("chart.blockTip","{0} — {1} weeks of work, {2} to {3}")}', r.c[0], r.segs.reduce((a,sg)=>a+sg.weeks,0), isoD(r.segs[0].s), isoD(r.segs[r.segs.length-1].e))}\\n\${tip}</title></rect>\`;
     }
     // Go-live milestone. Only drawn on rows whose track actually ENDS at the
     // deadline — in a multi-country wave the earlier countries finish before
@@ -3101,11 +3252,27 @@ function buildGantt(sel0, erp, pace){
     : soon ? \`<div class="note">\${fill('${tj("guard.soon","<strong>{0} must start within 90 days</strong> to hit the published deadline on your current phase assumptions.")}', soon + ' ' + plur(soon, PLURALS.wave))}</div>\`
     : \`<div class="note"><strong>Runway is comfortable across all \${waveMeta.length} waves</strong> on your current assumptions.</div>\`);
 
+  // THE LEGEND NAMES ONLY WHAT WAS DRAWN.
+  //
+  // Migration 576 said this in terms -- "a legend for marks nobody can
+  // distinguish is worse than no legend, because it asserts a precision
+  // the picture does not have. The legend now says which it is drawing"
+  // -- and then listed all six phase colours anyway, beside a seventh
+  // entry for the solid block. An independent reviewer sampled the
+  // swatches and found two of the seven identical: the solid block was
+  // #3987e5, which is the mobilise phase's own colour from migration 505.
+  // Two legend entries, one colour, in the legend whose whole purpose is
+  // telling colours apart.
+  //
+  // Both halves are fixed. The block is its own violet, so the two cannot
+  // collide even in a mixed chart where some rows draw phases and some do
+  // not. And the phase entries render only when a phase was actually
+  // drawn, which is what 576 intended and did not implement.
   document.getElementById('ganttLegend').innerHTML =
     \`<div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;padding:8px 0 10px;font-size:11.5px;color:#93a3c0">
       <span style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:1px;text-transform:uppercase">${tj("chart.phase","Phase")}</span>
-      \${PROG().concat(PH()).map(p=>\`<span style="display:inline-flex;align-items:center;gap:5px"><span style="width:11px;height:11px;border-radius:2px;background:\${p.c};display:inline-block"></span>\${p.n}</span>\`).join('')}
-      \${GANTT_SOLID ? \`<span style="display:inline-flex;align-items:center;gap:5px"><span style="width:11px;height:11px;border-radius:2px;background:#3987e5;display:inline-block"></span>${tj("chart.key.work","country work &mdash; hover for phases")}</span>\` : ''}
+      \${GANTT_DETAIL ? PROG().concat(PH()).map(p=>\`<span style="display:inline-flex;align-items:center;gap:5px"><span style="width:11px;height:11px;border-radius:2px;background:\${p.c};display:inline-block"></span>\${p.n}</span>\`).join('') : ''}
+      \${GANTT_SOLID ? \`<span style="display:inline-flex;align-items:center;gap:5px"><span style="width:11px;height:11px;border-radius:2px;background:#7b6bd6;display:inline-block"></span>${tj("chart.key.work","country work &mdash; hover for phases")}</span>\` : ''}
       <span style="display:inline-flex;align-items:center;gap:5px"><span style="display:inline-block;width:0;height:0;border:6px solid transparent;border-left-color:#efe9db;transform:rotate(45deg)"></span>${tj("chart.golive","Go-live")}</span>
       <span style="display:inline-flex;align-items:center;gap:5px;color:#e0907f">${tj("chart.key.late","▲ already late")}</span>
       <span style="display:inline-flex;align-items:center;gap:5px;color:#e2b978">${tj("chart.key.soon","● start &lt;90d")}</span>
@@ -3646,7 +3813,10 @@ function build(){
       <div class="stat"><div class="n" style="color:#e0907f">\${fmt(yearOne)}</div><div class="l">${tj("res.yearOne","Year one cost")}<span class="statrun">\${fill('${tj("res.yearOne2","Implementation ({0}) + software fees ({1}){2} + internal running cost ({3}){4}")}', fmt(oneOff), fmt(cPlat), '${hlp('cPlat',t("tip.covers","What this covers"))}', fmt(cRun), '${hlp('cRun',t("tip.covers","What this covers"))}')}</span></div></div>
       <div class="stat"><div class="n" style="color:\${netAnnual>=0?'#7fd0a8':'#e0907f'}">\${fmt(netAnnual)}</div><div class="l">${tj("res.netAnnual2","Net annual saving, year two onward")}<span class="statbridge">\${fill('${tj("res.bridge","Gross annual saving minus each year software fees ({0}) minus internal running cost ({1}). Year one nets {2} after implementation.")}', fmt(cPlat), fmt(cRun), fmt(yearOneNet))}</span></div></div>
       <div class="stat"><div class="n" style="color:\${paybackMonths&&paybackMonths<=24?'#7fd0a8':'#e2b978'}">\${payback(paybackMonths)}</div><div class="l">${tj("res.payback2","Payback on implementation")}</div></div>
-      <div class="stat"><div class="n" style="color:\${dated.length?'#e08b7a':'#8d9bb5'}">\${dated.length}</div><div class="l">${tj("res.dated","Jurisdictions with a dated deadline ahead")}</div></div>
+      <div class="stat"><div class="n" style="color:\${dated.length?'#e08b7a':'#8d9bb5'};font-size:\${dated.length?'25px':'30px'}">\${dated.length ? dated[0][5] : '${tj("res.nearest.none","None")}'}</div><div class="l">\${dated.length
+        ? fill('${tj("res.nearest","Nearest binding date &mdash; {0}")}', dated[0][0])
+          + '<span class="statbridge">' + fill(plur(dated.length, PLURALS.nearestCount), dated.length) + '</span>'
+        : '${tj("res.nearest.noneLab","Dated deadlines ahead")}<span class="statbridge">${tj("card.noDated","None of the selected jurisdictions has a future dated deadline on the tracker today.")}</span>'}</div></div>
     </div>
     <div id="guards"></div>
     <div class="card"><p style="margin:0">\${fill('${tj("card.mix","Across {0} jurisdictions you have {1} (CTC or 5-corner) and {2} (4-corner exchange){3}.")}',
@@ -3658,8 +3828,7 @@ function build(){
         erp + ' ' + plur(erp, PLURALS.erp),
         '<strong>' + integrations + ' ' + plur(integrations, PLURALS.integration) + '</strong>',
         '${hlp('integrations',t("tip.derived","How this is derived"))}')}
-      \${dated.length ? fill('${tj("card.nearest","The nearest binding date is {0} ({1}).")}', '<strong>' + dated[0][5] + '</strong>', dated[0][0])
-        : '${tj("card.noDated","None of the selected jurisdictions has a future dated deadline on the tracker today.")}'} \${ev('site','${tj("ev.siteLabel","Source: tracker data")}')}</p></div>
+      \${ev('site','${tj("ev.siteLabel","Source: tracker data")}')}</p></div>
 \`;
 
 
@@ -3804,15 +3973,15 @@ function build(){
 
     <tr class="grp"><td colspan="4">${t("grp.named","Named, not priced &mdash; real, and this model will not invent a number for them")}</td></tr>
 
-    <tr class="tierA" data-row="cycle"><td>${t("row.cycle","Faster cycle time &amp; fewer supplier queries")} <span class="tag intang">${t("tag.intangible","intangible")}</span></td><td><span class="bcalc"><span class="blab">${tj("basis.lab.calc","Calculation:")}</span>${tj("basis.notPriced","Named, not priced.")}</span><span class="bjust"><span class="blab">${tj("basis.lab.just","Justification:")}</span>\${fill('${tj("basis.cycle2.just","Supplier inquiries take <strong>12.8%</strong> of AP staff time against <strong>24.0%</strong> {0}; cycle time <strong>2.9 days</strong> against <strong>13.5</strong> {1}; <strong>15% fewer queries</strong> at one trust {2}. Associations with high-performing AP, not measured effects.")}', ev('ardentInq','${tj("ev.ardent2025","Ardent Partners, 2025 data")}'), ev('ardentCycle','${tj("ev.cycleGap","2.9 vs 13.5 days")}'), ev('nhs','${tj("ev.nhsQuery","15% query reduction")}'))} \${notesLink()}</span></td>\${dash}</tr>
+    <tr class="tierA" data-row="cycle"><td>${t("row.cycle","Faster cycle time &amp; fewer supplier queries")} <span class="tag intang">${t("tag.intangible","intangible")}</span></td><td><span class="bjust"><span class="blab">${tj("basis.lab.just","Justification:")}</span>\${fill('${tj("basis.cycle2.just","Supplier inquiries take <strong>12.8%</strong> of AP staff time against <strong>24.0%</strong> {0}; cycle time <strong>2.9 days</strong> against <strong>13.5</strong> {1}; <strong>15% fewer queries</strong> at one trust {2}. Associations with high-performing AP, not measured effects.")}', ev('ardentInq','${tj("ev.ardent2025","Ardent Partners, 2025 data")}'), ev('ardentCycle','${tj("ev.cycleGap","2.9 vs 13.5 days")}'), ev('nhs','${tj("ev.nhsQuery","15% query reduction")}'))} \${notesLink()}</span></td>\${dash}</tr>
 
-    <tr class="tierA" data-row="paper"><td>${t("row.paper","Paper, print, postage, storage")} <span class="tag tang">${t("tag.tangible","tangible")}</span></td><td><span class="bcalc"><span class="blab">${tj("basis.lab.calc","Calculation:")}</span>${tj("basis.notPriced","Named, not priced.")}</span><span class="bjust"><span class="blab">${tj("basis.lab.just","Justification:")}</span>\${fill('${tj("basis.paper.just","Paper AUD 30.87 against AUD 9.18 for an e-invoice {0}; your own print, postage and storage spend is the better input.")}', ev('ato','${tj("ev.atoDeloitte","ATO / Deloitte")}'))}</span></td>\${dash}</tr>
+    <tr class="tierA" data-row="paper"><td>${t("row.paper","Paper, print, postage, storage")} <span class="tag tang">${t("tag.tangible","tangible")}</span></td><td><span class="bjust"><span class="blab">${tj("basis.lab.just","Justification:")}</span>\${fill('${tj("basis.paper.just","Paper AUD 30.87 against AUD 9.18 for an e-invoice {0}; your own print, postage and storage spend is the better input.")}', ev('ato','${tj("ev.atoDeloitte","ATO / Deloitte")}'))}</span></td>\${dash}</tr>
 
-    <tr class="tierC" data-row="vat"><td>${t("row.vat","VAT leakage / gap recovery")} <span class="tag intang">${t("tag.intangible","intangible")}</span></td><td><span class="bcalc"><span class="blab">${tj("basis.lab.calc","Calculation:")}</span>${tj("basis.notPriced","Named, not priced.")}</span><span class="bjust"><span class="blab">${tj("basis.lab.just","Justification:")}</span>\${fill('${tj("basis.vat.just","Often quoted and <strong>not defensible</strong> {0} &mdash; excluded from this model entirely.")}', ev('vatgap','${tj("ev.whyNot","why not")}'))}</span></td>\${dash}</tr>
+    <tr class="tierC" data-row="vat"><td>${t("row.vat","VAT leakage / gap recovery")} <span class="tag intang">${t("tag.intangible","intangible")}</span></td><td><span class="bjust"><span class="blab">${tj("basis.lab.just","Justification:")}</span>\${fill('${tj("basis.vat.just","Often quoted and <strong>not defensible</strong> {0} &mdash; excluded from this model entirely.")}', ev('vatgap','${tj("ev.whyNot","why not")}'))}</span></td>\${dash}</tr>
 
-    <tr class="tierD" data-row="penalty"><td>${t("row.penalty","Penalty &amp; remediation exposure avoided")} <span class="tag intang">${t("tag.intangible","intangible")}</span></td><td><span class="bcalc"><span class="blab">${tj("basis.lab.calc","Calculation:")}</span>${tj("basis.notPriced","Named, not priced.")}</span><span class="bjust"><span class="blab">${tj("basis.lab.just","Justification:")}</span>\${fill('${tj("basis.penalty.just","{0} of your jurisdictions publish a quantified penalty schedule {1}. Size it per country; there is no credible aggregate.")}', sel.filter(c=>c[6]>0).length, ev('site','${tj("ev.deepDives","on their deep dives")}'))}</span></td>\${dash}</tr>
+    <tr class="tierD" data-row="penalty"><td>${t("row.penalty","Penalty &amp; remediation exposure avoided")} <span class="tag intang">${t("tag.intangible","intangible")}</span></td><td><span class="bjust"><span class="blab">${tj("basis.lab.just","Justification:")}</span>\${fill('${tj("basis.penalty.just","{0} of your jurisdictions publish a quantified penalty schedule {1}. Size it per country; there is no credible aggregate.")}', sel.filter(c=>c[6]>0).length, ev('site','${tj("ev.deepDives","on their deep dives")}'))}</span></td>\${dash}</tr>
 
-    <tr class="tierD" data-row="fraud"><td>${t("row.fraud","Fraud detection, working-capital visibility")} <span class="tag intang">${t("tag.intangible","intangible")}</span></td><td><span class="bcalc"><span class="blab">${tj("basis.lab.calc","Calculation:")}</span>${tj("basis.notPriced","Named, not priced.")}</span><span class="bjust"><span class="blab">${tj("basis.lab.just","Justification:")}</span>\${fill('${tj("basis.fraud.just","Strategic benefits with no published benchmark {0}.")}', ev('yours','${tj("ev.yourCall","your call")}'))}</span></td>\${dash}</tr>
+    <tr class="tierD" data-row="fraud"><td>${t("row.fraud","Fraud detection, working-capital visibility")} <span class="tag intang">${t("tag.intangible","intangible")}</span></td><td><span class="bjust"><span class="blab">${tj("basis.lab.just","Justification:")}</span>\${fill('${tj("basis.fraud.just","Strategic benefits with no published benchmark {0}.")}', ev('yours','${tj("ev.yourCall","your call")}'))}</span></td>\${dash}</tr>
     </tbody></table>
     \`;
   collapseWorking('savingsTable', 1);
@@ -4129,7 +4298,12 @@ function build(){
           fill('${tj("res.bridge","Gross annual saving minus each year software fees ({0}) minus internal running cost ({1}). Year one nets {2} after implementation.")}',
                money(cPlat), money(cRun), money(yearOneNet)))
       + kpi(payback(paybackMonths), '${tj("res.payback2","Payback on implementation")}', paybackMonths !== null && paybackMonths <= 24 ? 'good' : 'warn')
-      + kpi(dated.length, '${tj("res.dated","Jurisdictions with a dated deadline ahead")}', dated.length ? 'warn' : '')
+      + kpi(dated.length ? dated[0][5] : '${tj("res.nearest.none","None")}',
+            dated.length ? fill('${tj("res.nearest","Nearest binding date &mdash; {0}")}', dated[0][0])
+                         : '${tj("res.nearest.noneLab","Dated deadlines ahead")}',
+            dated.length ? 'warn' : '',
+            dated.length ? fill(plur(dated.length, PLURALS.nearestCount), dated.length)
+                         : '${tj("card.noDated","None of the selected jurisdictions has a future dated deadline on the tracker today.")}')
       + '</div>'
 
       // Dan asked for the footprint card on page 1 too. It is the sentence
@@ -4152,8 +4326,6 @@ function build(){
         + ' ' + fill('${tj("card.integrations","With {0} that is roughly {1}{2} to deliver.")}',
           erp + ' ' + plur(erp, PLURALS.erp),
           '<strong>' + integrations + ' ' + plur(integrations, PLURALS.integration) + '</strong>', '')
-        + ' ' + (dated.length ? fill('${tj("card.nearest","The nearest binding date is {0} ({1}).")}', '<strong>' + dated[0][5] + '</strong>', dated[0][0])
-          : '${tj("card.noDated","None of the selected jurisdictions has a future dated deadline on the tracker today.")}')
         + ' ${tj("ev.siteLabel","Source: tracker data")}.</div>'
       + '<h2>${tj("pdf.h.mix","Where the annual saving comes from")}</h2>'
       + '<div class="pielay">' + (pieSvg ? pieSvg.outerHTML.replace(/width="\d+"/, 'width="150"').replace(/height="\d+"/, 'height="150"') : '')
