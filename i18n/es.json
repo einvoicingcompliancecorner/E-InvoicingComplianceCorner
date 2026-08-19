@@ -126,7 +126,8 @@
     "item4": "Resúmenes en lenguaje sencillo sobre \"qué significa esto para su equipo\", no solo texto legal"
   },
   "roiPanel": {
-    "newTab": "Abrir en su propia pestaña ›"
+    "newTab": "Abrir en su propia pestaña ›",
+    "unavailable": "El planificador no se ha podido cargar en este momento. Vuelva a intentarlo en unos minutos."
   },
   "stats": {
     "alreadyInEffect": "Ya en vigor",

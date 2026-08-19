@@ -55,13 +55,7 @@ database_name = "eicc-content"
 database_id = "d1d10bd0-e90a-44a3-9494-a63689e8d32e"
 
 # ----------------------------------------------------------------
-# ROI & Wave Planner (added 11 Aug 2026).
-#
-# The public teaser at /roi-calculator is OFF while Dan road-tests the
-# output — the route returns 404 unless this is "true". The tool itself
-# remains fully usable, session-gated, at
-# members.e-invoicingcompliancecorner.com/members/roi-calculator, so it
-# can be worked with without being reachable from the public site.
+# ROI & Wave Planner (added 11 Aug 2026; ROI_PUBLIC turned on 19 Aug).
 #
 # Two separate switches on purpose:
 #   ROI_PUBLIC     — is the page reachable at all
@@ -69,8 +63,28 @@ database_id = "d1d10bd0-e90a-44a3-9494-a63689e8d32e"
 # Turning the page on does not silently also invite Google in; a
 # half-tested tool appearing in search results is hard to undo.
 #
-# Remember to add /roi-calculator to sitemap.xml when both go true.
+# ROI_PUBLIC WENT TRUE ON 19 AUGUST, because Dan asked for the planner in
+# the Resources menu marked "(Beta)". Until then the route answered 404
+# by design — his 11 August instruction was to keep it off the public
+# site while he road-tested the output, and it stayed off through
+# fourteen migrations of exactly that.
+#
+# IT WAS NOT TURNED ON WHEN THE MENU ITEM WAS BUILT, which is how the
+# first click produced a bare "Not found" filling the panel. The link and
+# this flag were one change shipped as two. No suite could have caught
+# it: the harness calls renderRoiCalculatorPage() directly and never goes
+# through the router that reads this file, so every check passed against
+# a page the public site was still refusing to serve.
+#
+# ROI_INDEXABLE STAYS FALSE, and "(Beta)" is the whole argument. Being
+# reachable by anyone who opens the Resources menu is a different
+# decision from wanting it in search results while it still carries a
+# beta marker. The page emits noindex,nofollow until this flips.
+#
+# Remember to add /roi-calculator to sitemap.xml when ROI_INDEXABLE goes
+# true as well. It is deliberately NOT there yet: a sitemap entry for a
+# noindex page is an instruction and its own contradiction.
 # ----------------------------------------------------------------
 [vars]
-ROI_PUBLIC = "false"
+ROI_PUBLIC = "true"
 ROI_INDEXABLE = "false"

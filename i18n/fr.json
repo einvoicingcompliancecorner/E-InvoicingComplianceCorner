@@ -126,7 +126,8 @@
     "item4": "Des synthèses en langage clair sur \"ce que cela signifie pour votre équipe\", pas seulement du texte juridique"
   },
   "roiPanel": {
-    "newTab": "Ouvrir dans son propre onglet ›"
+    "newTab": "Ouvrir dans son propre onglet ›",
+    "unavailable": "Le planificateur n'a pas pu être chargé pour le moment. Veuillez réessayer dans quelques instants."
   },
   "stats": {
     "alreadyInEffect": "Déjà en vigueur",
