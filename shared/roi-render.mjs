@@ -1262,9 +1262,20 @@ export function renderRoiPage({ countries, benchmarks = [], phases = [], strings
     // A WHOLE SENTENCE, for the reason stated below: the agreement is on
     // "has"/"have", which reaches past the noun. One verb is the smallest
     // case of the rule and still the rule.
-    nearestCount: plurSetBase("res.nearest2",
-      "{0} of your selected jurisdictions has a dated deadline ahead.",
-      "{0} of your selected jurisdictions have a dated deadline ahead."),
+    // "OF THE {1} IN THE PLAN", not "of your selected jurisdictions" --
+    // and this is my own mislabel from migration 585, found four days
+    // later by reading the tile next to the card that reconciles the two
+    // counts. `dated` filters TRACKS, which include the injected EU-wide
+    // row the reader did not tick. So the sentence counted one thing and
+    // named another, in the same summary where 587 had just gone to the
+    // trouble of distinguishing them.
+    //
+    // Same denominator as the card below it now, so the two can be read
+    // against each other instead of silently disagreeing. It is the
+    // fourth instance this week of a count labelled with the wrong noun.
+    nearestCount: plurSetBase("res.nearest3",
+      "{0} of the {1} in the plan has a dated deadline ahead.",
+      "{0} of the {1} in the plan have a dated deadline ahead."),
     // A WHOLE SENTENCE, not a noun. The mistimed-obligation guard changes
     // three clauses between its singular and plural forms -- "has"/"have",
     // "it"/"them", "runway it has"/"runway they have" -- which is why it
@@ -1283,8 +1294,8 @@ export function renderRoiPage({ countries, benchmarks = [], phases = [], strings
       "<strong>{0} pinned start date finishes after the deadline.</strong> {1}. That may be deliberate &mdash; an accepted late position is a decision a board can take &mdash; but the plan below no longer meets that date.",
       "<strong>{0} pinned start dates finish after the deadline.</strong> {1}. That may be deliberate &mdash; an accepted late position is a decision a board can take &mdash; but the plan below no longer meets those dates."),
     mistimed: plurSetBase("guard.mistimed",
-      "<strong>{0} selected jurisdiction has an obligation earlier than the date this plan plans for.</strong> {1}. These are dated, live obligations that the arrivals board does not display, so the wave plan does not schedule it. The runway shown for it is longer than the runway it actually has.",
-      "<strong>{0} selected jurisdictions have obligations earlier than the date this plan plans for.</strong> {1}. These are dated, live obligations that the arrivals board does not display, so the wave plan does not schedule them. The runway shown for them is longer than the runway they actually have."),
+      "<strong>{0} selected jurisdiction has an obligation earlier than the date this plan plans for.</strong> {1}. These are dated, live obligations that this site&rsquo;s public tracker does not display, so the wave plan does not schedule it. The runway shown for it is longer than the runway it actually has.",
+      "<strong>{0} selected jurisdictions have obligations earlier than the date this plan plans for.</strong> {1}. These are dated, live obligations that this site&rsquo;s public tracker does not display, so the wave plan does not schedule them. The runway shown for them is longer than the runway they actually have."),
   };
 
   // The client script has its own fill(); this is the server-side twin, for
@@ -1435,7 +1446,12 @@ export function renderRoiPage({ countries, benchmarks = [], phases = [], strings
   <li><a href="#s-footprint"><span>${t("steps.1","Enter your footprint")}</span></a></li>
   <li><a href="#s-countries"><span>${t("steps.2","Select your countries")}</span></a></li>
   <li><a href="#assump"><span>${t("steps.3","Adjust assumptions")}<em>${t("steps.optional","optional")}</em></span></a></li>
-  <li><a href="#run"><span>${t("steps.4","Calculate")}</span></a></li>
+  <!-- The chip reads whatever the button reads. It said "Calculate" while
+       the button said "Recalculate" from the moment a member touched an
+       input, which is two names for one action twelve inches apart -- and
+       the chip is a link TO that button. Filled by the same code that
+       relabels it, so they cannot disagree again. -->
+  <li><a href="#run"><span id="stepRun">${t("steps.4","Calculate")}</span></a></li>
   <li><a href="#adjust"><span>${t("steps.5","Move go-live dates")}<em>${t("steps.optional","optional")}</em></span></a></li>
   <li><a href="#print"><span>${t("steps.6","Download PDF")}</span></a></li>
 </ol>
@@ -1582,7 +1598,7 @@ export function renderRoiPage({ countries, benchmarks = [], phases = [], strings
     </div>
 
     <div class="acol">
-      <p style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:var(--soon);margin:0 0 10px">${t("assumptions.h.weeks", "Implementation &mdash; weeks")} <span class="tag tD">D</span></p>
+      <p style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:var(--soon);margin:0 0 10px">${t("assumptions.h.weeks2", "Implementation &mdash; durations and delivery")} <span class="tag tD">D</span></p>
       <div class="ribbon"><label for="wMob" style="font-size:11px">${t("input.wMob", "Mobilisation")}${hlp("wMob",t("tip.phase","What this phase covers"))}</label><input type="number" id="wMob" value="${dv('wMob')}" min="0" step="0.5"></div>
       <div class="ribbon"><label for="wDes" style="font-size:11px">${t("input.wDes", "Design")}${hlp("wDes",t("tip.phase","What this phase covers"))}</label><input type="number" id="wDes" value="${dv('wDes')}" min="0" step="0.5"></div>
       <div class="ribbon"><label for="wBld" style="font-size:11px">${t("input.wBld", "Build")}${hlp("wBld",t("tip.phase","What this phase covers"))}</label><input type="number" id="wBld" value="${dv('wBld')}" min="0" step="0.5"></div>
@@ -2353,6 +2369,8 @@ const markStale = () => {
   // Caught by the i18n suite's hostile-translation render on the first run
   // after the edit, which is exactly the job it was added to do.
   document.getElementById('run').textContent = '${tj("btn.recalculate", "Recalculate")}';
+  const chip = document.getElementById('stepRun');
+  if(chip) chip.textContent = '${tj("btn.recalculate", "Recalculate")}';
 };
 const noteTouch = (e) => {
   const id = e.target && e.target.id;
@@ -3273,6 +3291,7 @@ function buildGantt(sel0, erp, pace){
       <span style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:1px;text-transform:uppercase">${tj("chart.phase","Phase")}</span>
       \${GANTT_DETAIL ? PROG().concat(PH()).map(p=>\`<span style="display:inline-flex;align-items:center;gap:5px"><span style="width:11px;height:11px;border-radius:2px;background:\${p.c};display:inline-block"></span>\${p.n}</span>\`).join('') : ''}
       \${GANTT_SOLID ? \`<span style="display:inline-flex;align-items:center;gap:5px"><span style="width:11px;height:11px;border-radius:2px;background:#7b6bd6;display:inline-block"></span>${tj("chart.key.work","country work &mdash; hover for phases")}</span>\` : ''}
+      \${lanes > 1 ? \`<span>${tj("chart.key.lane","L1&ndash;Ln &middot; which parallel workstream a country runs in")}</span>\` : ''}
       <span style="display:inline-flex;align-items:center;gap:5px"><span style="display:inline-block;width:0;height:0;border:6px solid transparent;border-left-color:#efe9db;transform:rotate(45deg)"></span>${tj("chart.golive","Go-live")}</span>
       <span style="display:inline-flex;align-items:center;gap:5px;color:#e0907f">${tj("chart.key.late","▲ already late")}</span>
       <span style="display:inline-flex;align-items:center;gap:5px;color:#e2b978">${tj("chart.key.soon","● start &lt;90d")}</span>
@@ -3815,16 +3834,17 @@ function build(){
       <div class="stat"><div class="n" style="color:\${paybackMonths&&paybackMonths<=24?'#7fd0a8':'#e2b978'}">\${payback(paybackMonths)}</div><div class="l">${tj("res.payback2","Payback on implementation")}</div></div>
       <div class="stat"><div class="n" style="color:\${dated.length?'#e08b7a':'#8d9bb5'};font-size:\${dated.length?'25px':'30px'}">\${dated.length ? dated[0][5] : '${tj("res.nearest.none","None")}'}</div><div class="l">\${dated.length
         ? fill('${tj("res.nearest","Nearest binding date &mdash; {0}")}', dated[0][0])
-          + '<span class="statbridge">' + fill(plur(dated.length, PLURALS.nearestCount), dated.length) + '</span>'
+          + '<span class="statbridge">' + fill(plur(dated.length, PLURALS.nearestCount), dated.length, planned + ' ' + plur(planned, PLURALS.jur)) + '</span>'
         : '${tj("res.nearest.noneLab","Dated deadlines ahead")}<span class="statbridge">${tj("card.noDated","None of the selected jurisdictions has a future dated deadline on the tracker today.")}</span>'}</div></div>
     </div>
     <div id="guards"></div>
-    <div class="card"><p style="margin:0">\${fill('${tj("card.mix","Across {0} jurisdictions you have {1} (CTC or 5-corner) and {2} (4-corner exchange){3}.")}',
+    <div class="card"><p style="margin:0">\${fill('${tj("card.mix2","You selected {4}. The plan covers {0}: {1} (CTC or 5-corner) and {2} (4-corner exchange){3}.")}',
         '<strong>' + planned + '</strong>',
         '<strong>' + complex.length + ' ${tj("word.complex","complex")}</strong>',
         '<strong>' + simple.length + ' ' + plur(simple.length, PLURALS.regime) + '</strong>',
-        watch.length ? fill('${tj("card.plusNoMandate",", plus {0} with no mandate{1}")}', watch.length, '${hlp('nomandate',t("tip.nomandate","Why these are still in the plan"))}') : '')}\${euInjected ? ' ' + fill('${tj("card.euRow","One of these is the <strong>EU-wide obligation</strong>, added automatically because you selected a member state{0} &mdash; ViDA binds it whether or not it legislates its own mandate.")}', '${hlp('vida',t("tip.vida","Where this comes from"))}') : ''}
-      \${fill('${tj("card.integrations","With {0} that is roughly {1}{2} to deliver.")}',
+        watch.length ? fill('${tj("card.plusNoMandate",", plus {0} with no mandate{1}")}', watch.length, '${hlp('nomandate',t("tip.nomandate","Why these are still in the plan"))}') : '',
+        '<strong>' + sel.length + ' ' + plur(sel.length, PLURALS.jur) + '</strong>')}\${euInjected ? ' ' + fill('${tj("card.euRow","One of these is the <strong>EU-wide obligation</strong>, added automatically because you selected a member state{0} &mdash; ViDA binds it whether or not it legislates its own mandate.")}', '${hlp('vida',t("tip.vida","Where this comes from"))}') : ''}
+      \${fill('${tj("card.integrations2","With {0} that is roughly {1}{2} to deliver &mdash; one per jurisdiction in the plan, and one more per EU member state, because the EU-wide obligation reaches each of them separately.")}',
         erp + ' ' + plur(erp, PLURALS.erp),
         '<strong>' + integrations + ' ' + plur(integrations, PLURALS.integration) + '</strong>',
         '${hlp('integrations',t("tip.derived","How this is derived"))}')}
@@ -3957,7 +3977,7 @@ function build(){
     + '<td class="num" data-col="${tj("col.banks","Saved on this scope")}">&mdash;</td>';
 
   document.getElementById('savingsTable').innerHTML = \`
-    <table><thead><tr><th>${t("col.benefit","Benefit")}</th><th>${t("col.basis","Basis")}</th><th class="num">${t("col.gross","Annual value")}</th><th class="num">${t("col.banks","Saved on this scope")}</th></tr></thead><tbody>
+    <table><thead><tr><th>${t("col.benefit","Benefit")}</th><th>${t("col.basis","Basis")}</th><th class="num">${t("col.gross","Annual value")}</th><th class="num">${t("col.banks","Saved on this scope")}${hlp("colBanks",t("tip.means","What this means"))}</th></tr></thead><tbody>
 
     <tr class="grp"><td colspan="4">${t("grp.priced","Priced &mdash; counted in the business case")}</td></tr>
 
@@ -4008,10 +4028,22 @@ function build(){
   // The three hues are stepped for this surface and validated against it
   // AND white paper, because the same bar goes into the PDF.
   SV = { segs: [
-    { c: '#399a6c', n: '${tj("sv.capture","Invoice capture and keying")}', v: bankedAP },
-    { c: '#c07d1c', n: '${tj("sv.issue","Invoice issuing (AR)")}',        v: savingAR },
-    { c: '#6b86d8', n: '${tj("sv.tax","Tax reporting and audit prep")}',  v: l2 },
-  ].concat(banked ? [{ c: '#b5432f', n: '${tj("sv.rework","Rework avoided")}', v: bankedErr }] : [])
+  // ONE NAME PER NUMBER. The pie called these "Invoice capture and
+  // keying", "Invoice issuing (AR)" and "Tax reporting and audit prep"
+  // while the table two inches below called the identical figures
+  // "Processing cost reduction (AP)", "Issuing cost reduction (AR)" and
+  // "Reduced tax reporting & audit-prep effort" -- an independent reader
+  // matched them by the money, not by the label.
+  //
+  // Third instance of the same defect in three days: the A/B/C/D grade
+  // labels, platform-versus-software-fees, and now this. The fix is the
+  // one that worked twice before -- delete the second vocabulary rather
+  // than edit it into agreement, so the pie reads the ROW keys and the
+  // two cannot drift.
+    { c: '#399a6c', n: '${tj("row.ap","Processing cost reduction (AP)")}', v: bankedAP },
+    { c: '#c07d1c', n: '${tj("row.ar","Issuing cost reduction (AR)")}',   v: savingAR },
+    { c: '#6b86d8', n: '${tj("row.tax","Reduced tax reporting &amp; audit-prep effort")}', v: l2 },
+  ].concat(banked ? [{ c: '#b5432f', n: '${tj("row.rework","Avoided rework on data-entry errors")}', v: bankedErr }] : [])
    .filter(x => x.v > 0), unbanked: Math.max(0, l1Unbanked) };
   renderSavings();
 
@@ -4111,7 +4143,28 @@ function build(){
   //    this: an off-board row was indistinguishable from a superseded
   //    one, so the planner could file Denmark under "no fixed deadline"
   //    with a straight face.
-  const mistimed = sel.filter(c => c[9] && (!c[5] || c[9] < c[5]));
+  // MATERIALITY, because a one-day gap in a red box teaches a reader to
+  // ignore red boxes.
+  //
+  // An independent read of the rendered page found this firing full-width
+  // and alarming for Poland: an obligation on 2026-12-31 against a plan
+  // that starts it on 2027-01-01. One day. The warning is literally true
+  // and the runway it describes is a rounding error, and a board member
+  // who does that subtraction discounts every other guard on the page --
+  // which costs far more than the thing this one is protecting.
+  //
+  // 30 days rather than 0. Chosen as roughly the granularity a wave plan
+  // has any right to claim: phases are whole weeks, the pace control
+  // moves things by months, and nothing in this model can honestly
+  // distinguish a fortnight. A gap smaller than the plan's own resolution
+  // is not a finding.
+  //
+  // The obligation is still real and still off the wave plan; what
+  // changes is whether we shout about it. If the gap ever matters at this
+  // scale the fix is a finer-grained plan, not a louder warning.
+  const MISTIMED_DAYS = 30;
+  const daysBetween = (a, b) => Math.round((new Date(b) - new Date(a)) / 86400000);
+  const mistimed = sel.filter(c => c[9] && (!c[5] || (c[9] < c[5] && daysBetween(c[9], c[5]) >= MISTIMED_DAYS)));
   if(mistimed.length){
     warn.push(fill(plur(mistimed.length, PLURALS.mistimed),
       mistimed.length,
@@ -4302,7 +4355,7 @@ function build(){
             dated.length ? fill('${tj("res.nearest","Nearest binding date &mdash; {0}")}', dated[0][0])
                          : '${tj("res.nearest.noneLab","Dated deadlines ahead")}',
             dated.length ? 'warn' : '',
-            dated.length ? fill(plur(dated.length, PLURALS.nearestCount), dated.length)
+            dated.length ? fill(plur(dated.length, PLURALS.nearestCount), dated.length, planned + ' ' + plur(planned, PLURALS.jur))
                          : '${tj("card.noDated","None of the selected jurisdictions has a future dated deadline on the tracker today.")}')
       + '</div>'
 
@@ -4317,13 +4370,14 @@ function build(){
       // meaningless on paper, but the words around it are not, and
       // rewriting them for print would be a third copy of a sentence this
       // migration exists to stop duplicating.
-      + '<div class="note">' + fill('${tj("card.mix","Across {0} jurisdictions you have {1} (CTC or 5-corner) and {2} (4-corner exchange){3}.")}',
+      + '<div class="note">' + fill('${tj("card.mix2","You selected {4}. The plan covers {0}: {1} (CTC or 5-corner) and {2} (4-corner exchange){3}.")}',
           '<strong>' + planned + '</strong>',
           '<strong>' + complex.length + ' ${tj("word.complex","complex")}</strong>',
           '<strong>' + simple.length + ' ' + plur(simple.length, PLURALS.regime) + '</strong>',
-          watch.length ? fill('${tj("card.plusNoMandate",", plus {0} with no mandate{1}")}', watch.length, '') : '')
+          watch.length ? fill('${tj("card.plusNoMandate",", plus {0} with no mandate{1}")}', watch.length, '') : '',
+          '<strong>' + sel.length + ' ' + plur(sel.length, PLURALS.jur) + '</strong>')
         + (euInjected ? ' ' + fill('${tj("card.euRow","One of these is the <strong>EU-wide obligation</strong>, added automatically because you selected a member state{0} &mdash; ViDA binds it whether or not it legislates its own mandate.")}', '') : '')
-        + ' ' + fill('${tj("card.integrations","With {0} that is roughly {1}{2} to deliver.")}',
+        + ' ' + fill('${tj("card.integrations2","With {0} that is roughly {1}{2} to deliver &mdash; one per jurisdiction in the plan, and one more per EU member state, because the EU-wide obligation reaches each of them separately.")}',
           erp + ' ' + plur(erp, PLURALS.erp),
           '<strong>' + integrations + ' ' + plur(integrations, PLURALS.integration) + '</strong>', '')
         + ' ${tj("ev.siteLabel","Source: tracker data")}.</div>'

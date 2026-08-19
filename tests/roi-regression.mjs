@@ -1110,9 +1110,20 @@ const strip = await page.evaluate(() => ({
 }));
 t.check(`the PDF strip has as many boxes as the screen (${strip.pdfBoxes} vs ${strip.screenStats})`,
   strip.pdfBoxes === strip.screenStats && strip.pdfBoxes === 5, JSON.stringify(strip));
+// Migration 587 rewrote this sentence to reconcile the reader's own count
+// with the plan's -- "You selected 11 jurisdictions. The plan covers 12"
+// -- so the check follows the fact rather than the old opening words, and
+// gets stricter: BOTH counts have to reach the PDF, because the whole
+// point of the rewrite is that one without the other is the defect.
 t.check("and page 1 states the footprint before it states the money",
-  /Across \d+ jurisdictions/.test(pdf.p1) && /country-system integration/.test(pdf.p1),
-  pdf.p1.slice(0, 200));
+  /You selected \d+ jurisdiction/.test(pdf.p1) && /plan covers \d+/.test(pdf.p1)
+    && /country-system integration/.test(pdf.p1), pdf.p1.slice(0, 220));
+// And the integration count has to say where the extra ones come from.
+// The investment side is built on it, and "roughly 22" beside "12
+// jurisdictions, 1 system" reads as an error unless the sentence accounts
+// for the gap.
+t.check("and says why there are more integrations than jurisdictions",
+  /member state/i.test(pdf.p1), pdf.p1.slice(0, 260));
 // The ribbon on each box says which way the number points. Dan: "green,
 // indicating positive saving, or net benefit, and red ribbon to indicate
 // a cost. I can see that the one-off investment is green, but this is an
@@ -1984,6 +1995,50 @@ t.check("and comes back as soon as there is",
   await page.evaluate(() => { const b = document.getElementById("selNone"); return !!(b.offsetWidth || b.offsetHeight); }));
 await page.click("#run"); await page.waitForTimeout(900);
 
+// ---- 35d3. the six the reassessment left open (migration 587) ---------
+await page.click("#run"); await page.waitForTimeout(900);
+// (a) ONE NAME PER NUMBER. The pie and the table described the same three
+//     figures with different words. Third instance of this defect in
+//     three days, after the grade labels and platform-vs-software-fees.
+const naming = await page.evaluate(() => ({
+  pie: [...document.querySelectorAll("#savings .svkey li span")].map((e) => e.innerText.trim()),
+  rows: [...document.querySelectorAll('#savingsTable tr[data-row] td:first-child')]
+    .map((e) => e.childNodes[0].textContent.trim()),
+}));
+t.check(`the pie names rows the way the table does (${naming.pie.length} slices)`,
+  naming.pie.length > 0 && naming.pie.every((n) => naming.rows.includes(n)),
+  JSON.stringify(naming.pie) + " vs " + JSON.stringify(naming.rows));
+// (b) THE SCOPE COLUMN EXPLAINS ITSELF. It varies 43% / 100% / 0% across
+//     rows, and 585 folded the justifications that said why.
+t.check("the scope column carries an explanation of its own three states",
+  await page.evaluate(() => {
+    const th = [...document.querySelectorAll("#savingsTable th")].pop();
+    return !!th.querySelector(".hlp");
+  }));
+// (c) A ONE-DAY GAP DOES NOT GET THE PAGE'S LOUDEST STYLING, and a real
+//     one still does. Poland's off-tracker obligation is one day before
+//     its planned date; Denmark's has no planned date at all. Both are
+//     asserted, because a threshold that silences everything is not a
+//     threshold, it is a deletion.
+const guardFor = async (name) => {
+  await page.evaluate((w) => {
+    document.querySelectorAll("#countryList input[type=checkbox]").forEach((bx) => {
+      const lab = bx.closest("label") || bx.parentElement;
+      bx.checked = (lab.textContent || "").trim().startsWith(w);
+    });
+    document.getElementById("countryList").dispatchEvent(new Event("change", { bubbles: true }));
+  }, name);
+  await page.click("#run"); await page.waitForTimeout(900);
+  return page.evaluate(() => (document.getElementById("guards") || {}).innerText || "");
+};
+t.check("a one-day mistiming no longer raises an alarm",
+  !/obligation earlier than the date this plan plans for/i.test(await guardFor("Poland")));
+t.check("but an obligation the plan does not schedule at all still does",
+  /obligation earlier than the date this plan plans for/i.test(await guardFor("Denmark")));
+// (d) NO WORD OF OURS THAT IS NOT ALSO THE READER'S.
+t.check("no guard calls the tracker by our internal name for it",
+  !/arrivals board/i.test(await page.locator("#results").innerText()));
+
 // ---- 35e. the nearest binding date leads its tile ---------------------
 // Item 9's last part. It was the fifth sentence of the footprint
 // paragraph while the tile beside it spent a KPI slot on the count -- the
@@ -1998,6 +2053,18 @@ t.check(`the last tile leads with a date (${dateTile.n})`,
   /^\d{4}-\d{2}-\d{2}$/.test(dateTile.n) || /^None$/i.test(dateTile.n), JSON.stringify(dateTile));
 t.check("and keeps the count as its sub-line",
   /dated deadline ahead/i.test(dateTile.l), dateTile.l.slice(0, 120));
+// AND THE COUNT USES THE SAME DENOMINATOR AS THE CARD BELOW IT. The first
+// version of this tile said "of your SELECTED jurisdictions" while
+// counting TRACKS, which include the injected EU-wide row nobody ticked
+// -- so it counted twelve things and named eleven, in the summary whose
+// other half exists to keep those two numbers apart.
+const cardCounts = (await page.locator("#summary .card p").first().innerText())
+  .replace(/\s+/g, " ");
+const planCount = Number((cardCounts.match(/plan covers (\d+)/) || [])[1]);
+const tileDenom = Number((dateTile.l.match(/of the (\d+)/) || [])[1]);
+t.check(`the tile counts out of the plan, not out of the selection (${tileDenom} vs ${planCount})`,
+  Number.isFinite(planCount) && tileDenom === planCount,
+  `${dateTile.l.slice(0, 90)} | ${cardCounts.slice(0, 90)}`);
 // ONE FACT, ONE HOME. Moving it and leaving the original is how a page
 // ends up with two statements that can disagree -- the shape 580 found in
 // the grade tags and 582 found in the scorecard.
@@ -2297,7 +2364,13 @@ const solo = await page.evaluate(() => ({
   stat: [...document.querySelectorAll("#summary .stat")].pop().innerText.replace(/\s+/g, " "),
 }));
 t.check(`one tick, and the card counts what is scheduled (${solo.ticked} ticked)`,
-  solo.ticked === 1 && /Across 2 jurisdictions/.test(solo.card), solo.card.slice(0, 120));
+  solo.ticked === 1 && /plan covers 2\b/.test(solo.card), solo.card.slice(0, 120));
+// AND IT SHOWS ITS WORKING. The whole reason 587 rewrote this sentence is
+// that a reader who ticked one country met the number 2 with nothing
+// linking the two. Both counts, in one sentence, or it is back where it
+// started.
+t.check("and reconciles it against what the reader actually ticked",
+  /You selected 1 jurisdiction\b/.test(solo.card), solo.card.slice(0, 120));
 const mix = solo.card.match(/(\d+) complex[\s\S]*?(\d+) simple/);
 t.check(`and the mix reconciles to that count (${mix ? mix[1] + "+" + mix[2] : "?"})`,
   !!mix && Number(mix[1]) + Number(mix[2]) === 2, solo.card.slice(0, 160));
