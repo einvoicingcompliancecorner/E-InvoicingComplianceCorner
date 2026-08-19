@@ -781,7 +781,11 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
 .hlp:hover .tip,.hlp:focus .tip{display:block}
 .hlp .tip b{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px}
 .tierA{border-left:4px solid var(--live)}.tierB{border-left:4px solid var(--soon)}.tierC{border-left:4px solid var(--stamp)}.tierD{border-left:4px solid var(--upcoming)}
-.tag{font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.5px;text-transform:uppercase;padding:1px 6px;border-radius:3px;border:1px solid currentColor;margin-left:6px}
+/* white-space:nowrap because "43% SAVED" broke across two lines in the
+   mobile savings card, leaving half a pill outline at the end of one line
+   and half at the start of the next -- read as two damaged controls, on
+   the first row a phone user sees. A badge is a single token. */
+.tag{font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.5px;text-transform:uppercase;padding:1px 6px;border-radius:3px;border:1px solid currentColor;margin-left:6px;white-space:nowrap;display:inline-block}
 .tA{color:#7fd0a8}.tB{color:#e2b978}.tC{color:#e0907f}.tD{color:#9fb2d4}
 .tang{color:#7fd0a8;border-color:#3f7d5c}.intang{color:#9fb2d4;border-color:#3a4864}
 /* The evidence scorecard. A stacked bar whose segments are flex-weighted
@@ -1899,7 +1903,29 @@ const collapseWorking = (hostId, cellIndex) => {
     const sum = document.createElement('summary');
     sum.textContent = '${tj("basis.showWorking","Show the working")}';
     d.appendChild(sum);
-    while(cell.firstChild !== null && cell.firstChild !== d) d.appendChild(cell.firstChild);
+    // ONLY THE JUSTIFICATION FOLDS. THE ARITHMETIC STAYS ON THE ROW.
+    //
+    // The first desktop version folded both, and an independent reviewer
+    // reading the rendered page did what a CFO's analyst does: took the
+    // visible $9.84 AP cost, multiplied it out, got $295,200, and found
+    // the table saying $426,900. The row is right -- it uses the manual
+    // invoice cost of $14.23 that migration 557 decomposed out of the
+    // blend -- but $14.23 had just gone behind a disclosure, so the only
+    // figure that reconciles the biggest row on the page was invisible.
+    //
+    // That is a regression my own fix for item 10 introduced, and it is
+    // the exact failure this page exists to avoid: a number a reader
+    // cannot check reads as a number we made up. The AR row survived the
+    // same test only because its inputs all happen to be on screen.
+    //
+    // So the CALCULATION -- the arithmetic anyone would redo on a napkin
+    // -- stays visible, and the JUSTIFICATION -- which source, at what
+    // grade -- folds. The height saving is most of what it was, because
+    // the justification is the longer of the two, and the row keeps the
+    // property the whole page is built on.
+    const just = cell.querySelector('.bjust');
+    if(just){ d.appendChild(just); }
+    else { while(cell.firstChild !== null && cell.firstChild !== d) d.appendChild(cell.firstChild); }
     // THE GRADES COME BACK OUT OF THE FOLD.
     //
     // Two things went wrong the first time this ran at desktop width, and
@@ -2045,7 +2071,7 @@ document.getElementById('notes').addEventListener('toggle', function(){
 // is per jurisdiction and is what the runway draws.
 //
 // Grouping is still one button away and unchanged.
-let SV = null, WAVES = [], UNDATED = [], ganttExpanded = true, GANTT_SOLID = false;
+let SV = null, WAVES = [], UNDATED = [], ganttExpanded = true, GANTT_SOLID = false, GANTT_DETAIL = false;
 function renderSavings(){
   const el = document.getElementById('savings');
   if(!el || !SV || !SV.segs.length) return;
@@ -2574,6 +2600,12 @@ const paintCount = () => {
   const sel = chosen();
   const el = document.getElementById('selCount');
   if(!el) return;
+  // A CONTROL THAT CANNOT DO ANYTHING, next to a message saying so. An
+  // independent reviewer found "Clear" live and clickable beside the
+  // words "No jurisdictions selected". Hidden rather than disabled: a
+  // disabled button still occupies the sentence and still gets clicked.
+  const clr = document.getElementById('selNone');
+  if(clr) clr.classList.toggle('hidden', !sel.length);
   el.innerHTML = !sel.length
     ? '${tj("countries.none","<strong>No jurisdictions selected.</strong> Pick the countries you invoice in, or use your saved list above.")}'
     : sel.length <= NAME_LIMIT
@@ -2994,7 +3026,7 @@ function buildGantt(sel0, erp, pace){
   // one. Wave bands are gone from this view -- the wave is a grouping of
   // deadlines and this view is ordered by urgency, so the two disagree by
   // construction. "Group by wave" is still one button away and unchanged.
-  GANTT_SOLID = false;
+  GANTT_SOLID = false; GANTT_DETAIL = false;
   const runwayRows = [...rows].sort((a, b) => a.slipDays - b.slipDays
     || String(a.c[0]).localeCompare(String(b.c[0])));
   if(ganttExpanded) runwayRows.forEach(r => {
@@ -3041,7 +3073,7 @@ function buildGantt(sel0, erp, pace){
     // see -- which is the defect this whole view exists to fix, and it
     // would have survived it. Recorded so the legend can say what the
     // chart is actually drawing.
-    if(!detail) GANTT_SOLID = true;
+    if(!detail) GANTT_SOLID = true; else GANTT_DETAIL = true;
     const late = r.slipDays < 0;
     if(detail){
       r.segs.forEach(sg => {
@@ -3050,7 +3082,7 @@ function buildGantt(sel0, erp, pace){
       });
     } else {
       const tip = r.segs.map(sg => fill('${tj("chart.segWeeksShort","{0}: {1}w")}', sg.n, sg.weeks)).join(', ');
-      s += \`<rect x="\${blockA}" y="\${y+4}" width="\${Math.max(6, blockB-blockA)}" height="\${RH-8}" rx="3" fill="\${late ? '#b5432f' : '#3987e5'}"><title>\${fill('${tj("chart.blockTip","{0} — {1} weeks of work, {2} to {3}")}', r.c[0], r.segs.reduce((a,sg)=>a+sg.weeks,0), isoD(r.segs[0].s), isoD(r.segs[r.segs.length-1].e))}\\n\${tip}</title></rect>\`;
+      s += \`<rect x="\${blockA}" y="\${y+4}" width="\${Math.max(6, blockB-blockA)}" height="\${RH-8}" rx="3" fill="\${late ? '#b5432f' : '#7b6bd6'}"><title>\${fill('${tj("chart.blockTip","{0} — {1} weeks of work, {2} to {3}")}', r.c[0], r.segs.reduce((a,sg)=>a+sg.weeks,0), isoD(r.segs[0].s), isoD(r.segs[r.segs.length-1].e))}\\n\${tip}</title></rect>\`;
     }
     // Go-live milestone. Only drawn on rows whose track actually ENDS at the
     // deadline — in a multi-country wave the earlier countries finish before
@@ -3220,11 +3252,27 @@ function buildGantt(sel0, erp, pace){
     : soon ? \`<div class="note">\${fill('${tj("guard.soon","<strong>{0} must start within 90 days</strong> to hit the published deadline on your current phase assumptions.")}', soon + ' ' + plur(soon, PLURALS.wave))}</div>\`
     : \`<div class="note"><strong>Runway is comfortable across all \${waveMeta.length} waves</strong> on your current assumptions.</div>\`);
 
+  // THE LEGEND NAMES ONLY WHAT WAS DRAWN.
+  //
+  // Migration 576 said this in terms -- "a legend for marks nobody can
+  // distinguish is worse than no legend, because it asserts a precision
+  // the picture does not have. The legend now says which it is drawing"
+  // -- and then listed all six phase colours anyway, beside a seventh
+  // entry for the solid block. An independent reviewer sampled the
+  // swatches and found two of the seven identical: the solid block was
+  // #3987e5, which is the mobilise phase's own colour from migration 505.
+  // Two legend entries, one colour, in the legend whose whole purpose is
+  // telling colours apart.
+  //
+  // Both halves are fixed. The block is its own violet, so the two cannot
+  // collide even in a mixed chart where some rows draw phases and some do
+  // not. And the phase entries render only when a phase was actually
+  // drawn, which is what 576 intended and did not implement.
   document.getElementById('ganttLegend').innerHTML =
     \`<div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;padding:8px 0 10px;font-size:11.5px;color:#93a3c0">
       <span style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:1px;text-transform:uppercase">${tj("chart.phase","Phase")}</span>
-      \${PROG().concat(PH()).map(p=>\`<span style="display:inline-flex;align-items:center;gap:5px"><span style="width:11px;height:11px;border-radius:2px;background:\${p.c};display:inline-block"></span>\${p.n}</span>\`).join('')}
-      \${GANTT_SOLID ? \`<span style="display:inline-flex;align-items:center;gap:5px"><span style="width:11px;height:11px;border-radius:2px;background:#3987e5;display:inline-block"></span>${tj("chart.key.work","country work &mdash; hover for phases")}</span>\` : ''}
+      \${GANTT_DETAIL ? PROG().concat(PH()).map(p=>\`<span style="display:inline-flex;align-items:center;gap:5px"><span style="width:11px;height:11px;border-radius:2px;background:\${p.c};display:inline-block"></span>\${p.n}</span>\`).join('') : ''}
+      \${GANTT_SOLID ? \`<span style="display:inline-flex;align-items:center;gap:5px"><span style="width:11px;height:11px;border-radius:2px;background:#7b6bd6;display:inline-block"></span>${tj("chart.key.work","country work &mdash; hover for phases")}</span>\` : ''}
       <span style="display:inline-flex;align-items:center;gap:5px"><span style="display:inline-block;width:0;height:0;border:6px solid transparent;border-left-color:#efe9db;transform:rotate(45deg)"></span>${tj("chart.golive","Go-live")}</span>
       <span style="display:inline-flex;align-items:center;gap:5px;color:#e0907f">${tj("chart.key.late","▲ already late")}</span>
       <span style="display:inline-flex;align-items:center;gap:5px;color:#e2b978">${tj("chart.key.soon","● start &lt;90d")}</span>

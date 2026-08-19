@@ -1941,6 +1941,49 @@ t.check("reset clears keeps too, and the controls come back",
   (await page.evaluate(() => document.querySelectorAll(".keepbtn").length)) > keptCount,
   `${await page.evaluate(() => document.querySelectorAll(".keepbtn").length)} vs ${keptCount} before reset`);
 
+// ---- 35d2. four things an independent read found ----------------------
+// Screenshots only, no source. Two of its findings were wrong and are
+// recorded in migration 586; these four were right and one of them was a
+// regression introduced hours earlier by the fix for item 10.
+//
+// (a) THE ARITHMETIC RECONCILES FROM WHAT IS ON SCREEN. The reviewer took
+//     the AP cost visible in the panel and could not reach the AP row.
+//     The row is right and the figure that reconciles it -- the manual
+//     cost decomposed out of the blend -- had gone behind a disclosure.
+await page.click("#run"); await page.waitForTimeout(900);
+const apCalc = await page.evaluate(() => {
+  const c = document.querySelector('#savingsTable tr[data-row="ap"] .bcalc');
+  return c ? c.innerText.replace(/\s+/g, " ") : "";
+});
+const apShown = Number((await page.locator('#savingsTable tr[data-row="ap"] td').nth(2).innerText())
+  .replace(/[^\d]/g, ""));
+const apParts = apCalc.match(/([\d,]+)\s*invoices.*?\$?([\d.]+)\s*manual cost.*?(\d+)%.*?(\d+)%/i);
+t.check("the AP row can be checked from the figures printed on it",
+  !!apParts && Math.abs(Number(apParts[1].replace(/,/g, "")) * Number(apParts[2])
+    * (Number(apParts[3]) / 100) * (Number(apParts[4]) / 100) - apShown) <= 2,
+  `${apCalc.slice(0, 120)} -> ${apShown}`);
+// (b) NO TWO LEGEND ENTRIES SHARE A COLOUR. Migration 576 picked the
+//     solid block's fill without checking it against the six phase
+//     colours, and landed on mobilise's own.
+const legendColours = await page.evaluate(() =>
+  [...document.querySelectorAll("#ganttLegend span span")]
+    .map((e) => getComputedStyle(e).backgroundColor)
+    .filter((c) => c && c !== "rgba(0, 0, 0, 0)"));
+t.check(`the chart legend has no duplicate colour (${legendColours.length} swatches)`,
+  legendColours.length > 0 && new Set(legendColours).size === legendColours.length,
+  JSON.stringify(legendColours));
+// (c) A CONTROL THAT CANNOT ACT IS NOT OFFERED.
+await page.evaluate(() => { document.getElementById("selNone").click(); });
+await page.waitForTimeout(200);
+t.check("Clear is not offered when there is nothing to clear",
+  await page.evaluate(() => { const b = document.getElementById("selNone"); return !(b.offsetWidth || b.offsetHeight); }));
+await page.evaluate(() => { const c = [...document.querySelectorAll(".foot2 input[type=checkbox]")]
+  .filter((x) => x.id && x.id !== "subOnly"); c.slice(0, 4).forEach((x) => { x.checked = true; x.dispatchEvent(new Event("change", { bubbles: true })); }); });
+await page.waitForTimeout(200);
+t.check("and comes back as soon as there is",
+  await page.evaluate(() => { const b = document.getElementById("selNone"); return !!(b.offsetWidth || b.offsetHeight); }));
+await page.click("#run"); await page.waitForTimeout(900);
+
 // ---- 35e. the nearest binding date leads its tile ---------------------
 // Item 9's last part. It was the fifth sentence of the footprint
 // paragraph while the tile beside it spent a KPI slot on the count -- the
@@ -2616,11 +2659,25 @@ for (const width of [390, 360]) {
     !fold.totalFolded && fold.totalOrder.join(",") === "title,Annual value,Saved on this scope",
     JSON.stringify(fold.totalOrder));
   // It has to open, or this is not a fold, it is a deletion.
+  //
+  // JUSTIFICATION, not Calculation. Migration 586 stopped folding the
+  // arithmetic: an independent reviewer took the visible $9.84 AP cost,
+  // multiplied it out, and got $295,200 against a table saying $426,900,
+  // because the $14.23 that reconciles it had gone behind this very
+  // disclosure. The calculation is now always on the row and only the
+  // sourcing folds -- so the check follows what the fold actually
+  // contains, and the line below asserts the other half stayed out.
   await m.evaluate(() => document.querySelector("#savingsTable details.working").open = true);
   await m.waitForTimeout(150);
   t.check(`${width}px: and opens to the full working`,
-    await m.evaluate(() => /Calculation/i.test(
+    await m.evaluate(() => /Justification/i.test(
       document.querySelector("#savingsTable details.working").textContent)));
+  t.check(`${width}px: and the arithmetic never folded in the first place`,
+    await m.evaluate(() => {
+      const cell = document.querySelector('#savingsTable tr[data-row="ap"] td:nth-child(2)');
+      const calc = cell.querySelector(".bcalc");
+      return !!calc && !calc.closest("details");
+    }));
 
   // (d) TAP TARGETS. Seventy country rows at 13px was the hardest thing
   //     on the page to operate and the first task anyone performs.
