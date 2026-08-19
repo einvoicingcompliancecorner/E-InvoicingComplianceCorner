@@ -146,7 +146,12 @@ try {
     ["a savings group label", "Named, not priced"],
     ["a savings column heading", "Saved on this scope"],
     ["a row tag, newly translatable", "not saved"],
-    ["a runtime stat label", "Jurisdictions with a dated deadline ahead"],
+    // Was "Jurisdictions with a dated deadline ahead" until migration 585
+    // gave that tile to the nearest binding date, which is the fact a
+    // board reads. Re-pointed at the label that replaced it rather than
+    // dropped -- the sample's job is one phrase per surface, and a
+    // runtime-computed stat label is a surface of its own.
+    ["a runtime stat label", "Nearest binding date"],
     // Was "The same saving, counted in people" until migration 582
     // removed "The reasoning" block. Re-pointed at the scorecard that
     // replaced it rather than dropped, because the sample's job is to

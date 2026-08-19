@@ -276,6 +276,17 @@ t.check(`tooltip markers present (${markers} >= 28)`, markers >= 28);
 // Ardent for cycle time and exceptions, with both benchmark rows sitting
 // in D1 rendered nowhere. Two statements on one screen, one of them
 // false, and no check could see it because both were prose.
+// MIGRATION 585 FOLDS THE WORKING AT EVERY WIDTH, not only on a phone, so
+// every check that reads a row's derivation has to open it first. Opening
+// it explicitly is stronger than the old read, not weaker: it proves the
+// disclosure works as well as that the text is there. Reading textContent
+// instead would have been one character and would have passed against a
+// row nobody can open.
+const openWorkings = async (pg = page) => {
+  await pg.evaluate(() => document.querySelectorAll("details.working").forEach((d) => { d.open = true; }));
+  await pg.waitForTimeout(120);
+};
+await openWorkings();
 const direct = await page.locator("#savingsTable").innerText();
 t.check("the cycle-time row carries Ardent's supplier-inquiry split",
   /12\.8%/.test(direct) && /24\.0%/.test(direct), direct.slice(0, 160));
@@ -556,6 +567,7 @@ const ind100k = await indValue();
 // what makes the pair defensible rather than convenient.
 t.check("the default volume returns the calibrated figure",
   ind100k === 194667, ind100k);
+await openWorkings();
 t.check("1.67 FTE at the tax rate, not the data-entry rate",
   /1\.67 FTE × \$116,800/.test(await indirect().innerText()), await indirect().innerText());
 
@@ -566,6 +578,7 @@ const ind1m = await indValue();
 // exact equality would be testing the rounding rather than the scaling.
 t.check(`ten times the volume, ten times the saving (${ind100k} -> ${ind1m})`,
   Math.abs(ind1m - ind100k * 10) <= 10, `${ind100k} -> ${ind1m}`);
+await openWorkings();
 t.check("and the row shows the APQC-implied headcount it scaled from",
   /83\.3 AP FTE/.test(await indirect().innerText()), await indirect().innerText());
 
@@ -887,6 +900,7 @@ t.check("reset restores the elimination assumption too",
 // the unchanged state cites a source rather than apologising for the
 // absence of one, and the changed state is still attributed to the
 // reader.
+await openWorkings();
 const reworkRow = await page.locator('#savingsTable tr[data-row="rework"]').innerText();
 // Migration 564 split the cell into Calculation and Justification, so
 // the arithmetic and its sourcing are now asserted separately — which is
@@ -898,6 +912,7 @@ t.check("and the justification names the source, unchanged",
   reworkRow.slice(0, 260));
 await page.fill("#errMins", "30");
 await page.click("#run"); await page.waitForTimeout(700);
+await openWorkings();
 const reworkMine = await page.locator('#savingsTable tr[data-row="rework"]').innerText();
 t.check("and becomes theirs once they change it",
   /your resolution time/.test(reworkMine), reworkMine.slice(0, 220));
@@ -1136,9 +1151,17 @@ t.check("and the year one box carries its three-part breakdown",
 t.check("and the PDF carries the bridge that makes the payback reconcile",
   /Year one nets/i.test(pdf.p1), pdf.p1.slice(0, 300));
 
+// MIGRATION 585 MOVED THIS OUT OF THE PARAGRAPH AND INTO A TILE. It was
+// the fifth sentence of the footprint prose while being the most
+// board-relevant fact on the page. The check follows the fact rather than
+// the sentence that used to carry it -- and the PDF is the surface where
+// it matters most, because a board pack is read without the tool open.
 t.check("naming the nearest binding date, or saying there is none",
-  /nearest binding date is|no future dated deadline|has a future dated deadline/i.test(pdf.p1),
+  /Nearest binding date|None of the selected jurisdictions/i.test(pdf.p1),
   pdf.p1.slice(0, 240));
+t.check("and the PDF prints the date itself, not just the label",
+  /Nearest binding date/i.test(pdf.p1)
+    ? /\d{4}-\d{2}-\d{2}/.test(pdf.p1) : true, pdf.p1.slice(0, 240));
 // "Banked annually" sat over l1Banked + l2 — a figure including the
 // modelled indirect row, which is not banked in this page's sense of the
 // word. 536 relabelled it rather than changing the arithmetic, per Dan.
@@ -1600,6 +1623,7 @@ t.check("banked rows come before the priced row that does not bank",
 const tax = monetised.find((r) => r.row === "tax");
 t.check(`the tax row is saved in full (${tax.tag})`,
   tax.tag === "saved" && tax.gross === tax.banks, JSON.stringify(tax));
+await openWorkings();
 t.check("and states its reason inline, as the direct rows do",
   /falls with the compliance build, not with a workflow change/.test(
     await page.locator('#savingsTable tr[data-row="tax"]').innerText()));
@@ -1867,6 +1891,76 @@ t.check("and 100% gives none, because there is nothing left to take",
 t.check("the halfway point is half the full saving, so the lever is linear",
   Math.abs(at50 * 2 - at0) <= 2, `${at50} x 2 vs ${at0}`);
 await apAt(50);
+
+// ---- 35d. keep: accepting a default is a thing you can do -------------
+// Item 7's open half. Until migration 585 the only route from amber to
+// green was changing a value, so the page rewarded typing over the
+// best-evidenced numbers on it. Green now means HANDLED -- changed, or
+// read and kept.
+await page.evaluate(() => { document.getElementById("assump").open = true; });
+await page.waitForTimeout(200);
+const keepState = async () => page.evaluate(() => {
+  const r = (document.getElementById("savePct") || {}).parentElement;
+  return { btn: !!r.querySelector(".keepbtn"), green: r.classList.contains("changed") };
+});
+const keepBefore = await keepState();
+const keepValBefore = await page.inputValue("#savePct");
+t.check("an untouched benchmark offers a keep control and is not green",
+  keepBefore.btn && !keepBefore.green, JSON.stringify(keepBefore));
+await page.click("#savePct ~ .keepbtn, .ribbon:has(#savePct) .keepbtn");
+await page.waitForTimeout(200);
+const keepAfter = await keepState();
+t.check("keeping it turns the ribbon green without changing the value",
+  keepAfter.green && (await page.inputValue("#savePct")) === keepValBefore,
+  `${JSON.stringify(keepAfter)} value ${await page.inputValue("#savePct")} was ${keepValBefore}`);
+// The control removes itself rather than sitting there disabled: a button
+// a screen reader still announces, for an action already taken, is worse
+// than no button.
+t.check("and the control removes itself once the field is handled",
+  !keepAfter.btn, JSON.stringify(keepAfter));
+// A kept field must count as handled everywhere, not only in the paint.
+// The scorecard reads the same state, and the two disagreeing is the
+// exact defect migration 557 recorded when a note said "4 fields still
+// hold our numbers" beside four green ribbons.
+const keptCount = await page.evaluate(() => document.querySelectorAll(".keepbtn").length);
+await page.click("#run"); await page.waitForTimeout(900);
+await page.evaluate(() => { document.getElementById("notes").open = true; });
+await page.waitForTimeout(300);
+const scoreYours = await page.locator("#evidence").innerText();
+const stated = Number((scoreYours.match(/(\d+)\s+fields? still hold our numbers/i) || [])[1]);
+const unhandledNeedsYou = await page.evaluate(() =>
+  ["cImplS","cImplC","cPlat","cRun","errMins","eShare","arShare"]
+    .filter((id) => !(document.getElementById(id) || {}).parentElement.classList.contains("changed")).length);
+t.check(`the scorecard counts kept fields as handled (${stated} stated)`,
+  stated === unhandledNeedsYou, `${stated} stated vs ${unhandledNeedsYou} amber`);
+// Reset must clear a keep as well as an edit, or a reader who resets is
+// left with green ribbons on values that are ours again.
+await page.evaluate(() => { document.getElementById("assump").open = true; });
+await page.click("#resetDefaults"); await page.waitForTimeout(400);
+t.check("reset clears keeps too, and the controls come back",
+  (await page.evaluate(() => document.querySelectorAll(".keepbtn").length)) > keptCount,
+  `${await page.evaluate(() => document.querySelectorAll(".keepbtn").length)} vs ${keptCount} before reset`);
+
+// ---- 35e. the nearest binding date leads its tile ---------------------
+// Item 9's last part. It was the fifth sentence of the footprint
+// paragraph while the tile beside it spent a KPI slot on the count -- the
+// less useful half of the same fact, since a reader plans against the
+// first date rather than against how many there are.
+await page.click("#run"); await page.waitForTimeout(900);
+const dateTile = await page.evaluate(() => {
+  const st = [...document.querySelectorAll("#summary .stat")].pop();
+  return { n: st.querySelector(".n").innerText.trim(), l: st.querySelector(".l").innerText.replace(/\s+/g, " ") };
+});
+t.check(`the last tile leads with a date (${dateTile.n})`,
+  /^\d{4}-\d{2}-\d{2}$/.test(dateTile.n) || /^None$/i.test(dateTile.n), JSON.stringify(dateTile));
+t.check("and keeps the count as its sub-line",
+  /dated deadline ahead/i.test(dateTile.l), dateTile.l.slice(0, 120));
+// ONE FACT, ONE HOME. Moving it and leaving the original is how a page
+// ends up with two statements that can disagree -- the shape 580 found in
+// the grade tags and 582 found in the scorecard.
+t.check("and the footprint paragraph no longer says it too",
+  !/nearest binding date/i.test(await page.locator("#summary .card p").first().innerText()),
+  (await page.locator("#summary .card p").first().innerText()).slice(-140));
 
 // ---- 36a. the evidence scorecard says what the page can prove ---------
 // Item 12 of the usability assessment: "Nothing summarises the evidence,
@@ -2219,6 +2313,7 @@ t.check("the wave introduction states one EU row rather than counting countries"
 // about crediting a share would be false.
 await page.selectOption("#scope", "compliance");
 await page.click("#run"); await page.waitForTimeout(900);
+await openWorkings();
 const apCompliance = await page.locator('#savingsTable tr[data-row="ap"]').innerText();
 t.check("compliance scope states where the 43% comes from",
   /9 of the 21 minutes of AP handling/.test(apCompliance), apCompliance.slice(0, 240));
@@ -2545,13 +2640,48 @@ await wide.click("#run"); await wide.waitForTimeout(800);
 t.check("1440px: the chart is still the default and the table is not",
   await wide.evaluate(() => !document.getElementById("gantt").parentElement.classList.contains("hidden")
     && document.getElementById("waves").classList.contains("hidden")));
-// THE EVIDENCE IS NOT FOLDED ON A DESKTOP. This is the check that matters
-// most in this block: the fold was asked for on mobile only, and a change
-// that quietly reached the wide layout would remove the thing the page is
-// for. Asserted on the rendered DOM rather than on the media query.
-t.check("1440px: and no evidence is collapsed",
-  await wide.evaluate(() => document.querySelectorAll("details.working").length === 0
-    && /Calculation/i.test(document.querySelector("#savingsTable tbody tr td:nth-child(2)").textContent)));
+// THE EVIDENCE FOLDS ON A DESKTOP TOO, since migration 585 and item 10 of
+// the usability assessment. This check used to assert the opposite, on the
+// reasoning that "the fold was asked for on mobile only, and a change that
+// quietly reached the wide layout would remove the thing the page is for".
+//
+// The concern was right and the remedy is not the absence of a fold: it is
+// that folding must never make the derivation UNREACHABLE. So the check
+// inverts and gets stricter -- the rows fold, the working is still in the
+// DOM, and opening one actually reveals it.
+const wideFold = await wide.evaluate(() => {
+  const ds = [...document.querySelectorAll("#savingsTable details.working")];
+  if(!ds.length) return { n: 0 };
+  const first = ds[0];
+  const shut = first.querySelector("div, span") ? first.scrollHeight : 0;
+  first.open = true;
+  return { n: ds.length, shut, open: first.scrollHeight,
+           hasText: /Calculation|Justification/i.test(first.textContent) };
+});
+t.check(`1440px: the working folds, and opens (${wideFold.n} rows)`,
+  wideFold.n > 0 && wideFold.hasText && wideFold.open > wideFold.shut,
+  JSON.stringify(wideFold));
+// And no figure was folded with it -- the same guard the mobile block
+// carries, because the total row's first cell spans two columns and the
+// first version of this mechanism folded a headline number.
+// THE GRADES STAY VISIBLE ON A COLLAPSED ROW. The assessment's own
+// condition on this change -- "with the grade chips still visible when
+// collapsed" -- and the first implementation failed it: the chips went
+// inside the fold and the BASIS column became nine identical links, which
+// is the repetition this item was raised about, reproduced by its fix.
+const sumGrades = await wide.evaluate(() =>
+  [...document.querySelectorAll("#savingsTable details.working > summary")]
+    .map((sm) => [...sm.querySelectorAll(".sumg")].map((c) => c.textContent.trim()).join("")));
+t.check(`1440px: every folded row shows its grades (${sumGrades.join("/")})`,
+  sumGrades.length > 0 && sumGrades.every((g) => g.length > 0), JSON.stringify(sumGrades));
+// And they DIFFER row to row, which is the whole point: a column of nine
+// identical summaries carries no information, and would pass a check that
+// only asked whether chips were present.
+t.check("1440px: and the grades differ between rows",
+  new Set(sumGrades).size > 1, JSON.stringify([...new Set(sumGrades)]));
+t.check("1440px: and no figure was folded with it",
+  await wide.evaluate(() => ![...document.querySelectorAll("#savingsTable td.num")]
+    .some((td) => td.querySelector("details.working"))));
 await wide.close();
 
 await browser.close();
