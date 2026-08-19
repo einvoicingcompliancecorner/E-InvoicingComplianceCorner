@@ -126,7 +126,8 @@
     "item4": "Verständliche Zusammenfassungen, was das für Ihr Team bedeutet — nicht nur Gesetzestext"
   },
   "roiPanel": {
-    "newTab": "In eigenem Tab öffnen ›"
+    "newTab": "In eigenem Tab öffnen ›",
+    "unavailable": "Der Planer konnte gerade nicht geladen werden. Bitte versuchen Sie es in Kürze erneut."
   },
   "stats": {
     "alreadyInEffect": "Bereits in Kraft",

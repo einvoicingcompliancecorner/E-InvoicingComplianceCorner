@@ -29,6 +29,11 @@ const SUITES = [
   // translation key is reported in a second rather than after the four
   // browser suites have spent two minutes not looking for it.
   { name: "tracker i18n", cmd: "node", args: [join(HERE, "tracker-i18n.mjs")], cwd: REPO },
+  // Also static. This is the one that asks whether the site will SERVE
+  // the pages it links to — the question every other suite here assumes
+  // the answer to, because they all call the render functions directly
+  // and never touch the router.
+  { name: "menu routes", cmd: "node", args: [join(HERE, "menu-routes.mjs")], cwd: REPO },
   { name: "ROI regression", cmd: "node", args: [join(HERE, "roi-regression.mjs")], cwd: REPO },
   { name: "ROI i18n", cmd: "node", args: [join(HERE, "roi-i18n.mjs")], cwd: REPO },
   { name: "ROI hardcoded strings", cmd: "node", args: [join(HERE, "roi-hardcoded.mjs")], cwd: REPO },
