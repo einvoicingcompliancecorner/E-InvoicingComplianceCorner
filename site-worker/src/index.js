@@ -794,6 +794,59 @@ const ROI_FRAME_REPORTER = `
   window.addEventListener('load', queue);
   document.addEventListener('click', function(){ setTimeout(queue, 60); }, true);
   queue();
+
+  // ---- IN-PAGE ANCHORS HAVE TO BE HANDED TO THE PARENT ----------------
+  //
+  // This frame is sized to its own full content height, so it never
+  // scrolls: its viewport IS the document. A fragment jump therefore has
+  // nowhere to go, and the browser falls back to scroll chaining -- the
+  // PARENT scrolls, by the least it can get away with, which puts the
+  // target at the BOTTOM edge of the reader's screen.
+  //
+  // Found by clicking the legend's new link in a framed render. It
+  // "worked": the assumptions panel opened and the page moved. It also
+  // left the heading half-clipped on the last row of pixels with every
+  // field the sentence asks the reader to review below the fold -- on
+  // the one link whose entire job is to send them to those fields.
+  //
+  // Every step chip has the same problem for the same reason. So this is
+  // a general handler for any in-page anchor, not a special case for one
+  // link, and it lives HERE rather than in roi-render.mjs because it is
+  // true only of the framed copy. The standalone page scrolls itself
+  // perfectly well and must keep doing so.
+  //
+  // ORDER MATTERS, and getting it wrong is silent. The click that follows
+  // an anchor here usually also OPENS something -- the assumptions panel
+  // is a <details> and the legend's link expands it -- so the frame grows
+  // by hundreds of pixels in the same tick. Send the scroll first and the
+  // parent scrolls a document that is still short, gets clamped by its
+  // own height, and stops a few hundred pixels above the target. Measured
+  // exactly that: asked for 1416, landed at 1137, because the frame had
+  // not been resized yet.
+  //
+  // So: force a height send, let the observer and the parent's resize
+  // land, and only then measure and ask for the scroll. The delay is the
+  // same 60ms the height path above already uses for click-driven growth,
+  // plus a frame -- long enough to be after the reflow, short enough to
+  // feel like part of the click.
+  document.addEventListener('click', function(e){
+    var a = e.target.closest && e.target.closest('a[href^="#"]');
+    if(!a) return;
+    var id = a.getAttribute('href').slice(1);
+    if(!id) return;
+    var el = document.getElementById(id);
+    if(!el) return;
+    e.preventDefault();
+    setTimeout(function(){
+      queue();
+      requestAnimationFrame(function(){
+        var top = 0, n = el;
+        while(n){ top += n.offsetTop; n = n.offsetParent; }
+        try { window.parent.postMessage({ type: 'eicc:roi-scroll', top: top }, window.location.origin); }
+        catch(err){ /* cross-origin parent: leave the default behaviour alone */ }
+      });
+    }, 80);
+  });
 })();
 `;
 

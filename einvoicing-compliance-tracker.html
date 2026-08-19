@@ -3488,12 +3488,35 @@ function closeRoiPage(opts){
 // still there when the origin changes.
 window.addEventListener('message', (e)=>{
   if(e.origin !== window.location.origin) return;
-  if(!e.data || e.data.type !== 'eicc:roi-height') return;
+  if(!e.data) return;
   const frame = document.getElementById('roiFrame');
   if(!frame) return;
-  const h = Number(e.data.height);
-  if(!Number.isFinite(h) || h < 200) return;
-  frame.style.height = Math.ceil(h) + 'px';
+
+  if(e.data.type === 'eicc:roi-height'){
+    const h = Number(e.data.height);
+    if(!Number.isFinite(h) || h < 200) return;
+    frame.style.height = Math.ceil(h) + 'px';
+    return;
+  }
+
+  // AND THE FRAME ASKS THE PARENT TO SCROLL. A frame sized to its own
+  // content never scrolls -- its viewport is the document -- so a
+  // fragment jump inside it has nowhere to go and the browser chains the
+  // scroll out to this window, moving it by the least it can and leaving
+  // the target clipped on the bottom row of pixels. On the legend's link
+  // to the assumptions panel that meant the heading was visible and
+  // every field it names was below the fold.
+  //
+  // The frame sends an offset in its OWN document's coordinates; adding
+  // the frame's position in this one is the whole conversion. Landing
+  // 90px high leaves the heading clear of the sticky topbar and shows
+  // the first fields under it, which is the point of going there.
+  if(e.data.type === 'eicc:roi-scroll'){
+    const top = Number(e.data.top);
+    if(!Number.isFinite(top) || top < 0) return;
+    const frameTop = frame.getBoundingClientRect().top + window.scrollY;
+    window.scrollTo({ top: Math.max(0, frameTop + top - 90), behavior: 'smooth' });
+  }
 });
 
 function closeMapPage(opts){
