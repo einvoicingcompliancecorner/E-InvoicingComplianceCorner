@@ -1714,8 +1714,64 @@ async function handleStartTrial(request, env, lang) {
   // organised abuse patterns, but isn't used to block on its own,
   // since a shared office/coffee-shop IP would otherwise wrongly lock
   // out a genuinely different second customer.
-  if (existing?.hadTrial) {
+  // ---- THE DORMANT ACCOUNT, AND THE DEAD END IT USED TO BE ------------
+  //
+  // Dan, 19 August 2026: "On subscribing via the new functionality, no
+  // email is sent to my account."
+  //
+  // Read this handler and handleLoginRequest together and there was a
+  // closed loop with no way out and no error message anywhere:
+  //
+  //   subscribe  -> hadTrial is set    -> "you already signed up",
+  //                                       with a button to the login
+  //   login      -> not currently active -> "check your email",
+  //                                       and no email is sent
+  //   back to subscribe, forever.
+  //
+  // Each half is correct on its own. Sign-up is one-per-email
+  // permanently, and the login deliberately behaves identically for
+  // known and unknown addresses so it cannot be used to discover who
+  // has an account. Together they lock out anyone whose record exists
+  // but is no longer active -- most obviously the accounts created
+  // before 2 August 2026, when sign-ups were trials with an expiresAt,
+  // which isCurrentlyActive() now reads as expired.
+  //
+  // Nobody in that state can report it usefully either: both pages look
+  // like success. The only symptom is an email that never arrives.
+  //
+  // SO A DORMANT ACCOUNT IS REVIVED RATHER THAN REFUSED. It keeps its
+  // countries and its details, becomes a free account with no expiry
+  // like every sign-up since 2 August, and gets the magic link it came
+  // for. `hadTrial` stays true throughout -- this is not a second
+  // sign-up, and nothing is granted that a first sign-up would not have
+  // given them today.
+  //
+  // NO NEW ENUMERATION SURFACE. This narrows the difference between a
+  // known and an unknown address rather than widening it: both now
+  // result in an email. An address that is already ACTIVE still gets the
+  // "already signed up" page, unchanged -- that route works, because the
+  // login it points at will email an active account.
+  const dormant = existing?.hadTrial && !(await isCurrentlyActive(env, email));
+  if (existing?.hadTrial && !dormant) {
     return htmlResponse(renderTrialAlreadyUsedPage(lang));
+  }
+  if (dormant) {
+    await putSubscriber(env, email, {
+      ...existing,
+      active: true,
+      plan: "free",
+      // Deleted, not set to null or a far-future date. isCurrentlyActive()
+      // only expires an account when it has BOTH a onetime/trial plan and
+      // an expiresAt; clearing the plan alone would leave a stale date on
+      // the record for a future reader to misread, and clearing the date
+      // alone would leave the plan lying about what the account is.
+      expiresAt: undefined,
+      reactivatedAt: Date.now(),
+    });
+    const token = await signToken(env.SESSION_SECRET, { email, purpose: "login" }, MAGIC_LINK_TTL_SECONDS);
+    const link = `${env.SITE_URL}/members/verify?token=${encodeURIComponent(token)}${lang !== "en" ? `&lang=${lang}` : ""}`;
+    await sendMagicLinkEmail(env, email, link);
+    return htmlResponse(renderCheckEmailPage(lang));
   }
 
   const trialStartedAt = Date.now();
