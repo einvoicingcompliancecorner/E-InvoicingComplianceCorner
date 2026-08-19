@@ -14005,3 +14005,180 @@ live site for two days.
 
 `npm test`: 10 suites. ROI regression **274 checks** (was 268). Replay OK
 across 579 files — **351 assertions, 96 standing invariants**.
+
+---
+
+## 19 August 2026 — the planner goes public: Resources menu, (Beta), and three checks that did not exist
+
+**Deployed and confirmed live by Dan**, in three rounds — the second and
+third because the first two were wrong in ways only the deployed site
+could show.
+
+**A gap in this file, stated rather than quietly backfilled:** migrations
+580-589 have no dated entry here. They were recorded in their own
+migration comments and in the project docs (`claude/roi-usability-status.md`
+is the reassessment). This entry does not attempt to reconstruct them.
+
+### What Dan asked for
+
+> "help to wire this page into the main site. I would like to initially
+> add it under the Resources menu option and have it open 'in-frame' like
+> other pages in this site" — and "please could you indicate that this is
+> (Beta) functionality, by adding (Beta) at the end of the menu link."
+
+Then, separately: remove *"Ours are defaults to argue with, not blanks to
+fill"* from the ribbon legend and replace the sentence with one that sends
+the reader to the assumptions panel.
+
+### Framed, not shadowed — and the choice was forced
+
+`/map`, `/sources` and `/insights` are fetched, stripped to their `.wrap`
+and mounted in a shadow root. The planner cannot be: its client script
+makes **95 `document.getElementById` calls** plus delegated listeners on
+`document`, and inside a shadow tree every one returns null. Rewriting
+them against a root reference is a change through 4,000 working lines.
+
+So it is an `<iframe>`, which this site already does for full documents in
+the whitepaper pop-out. Put to Dan before building; he chose the iframe
+and the gated preview.
+
+The frame reports its own height over `postMessage` — ResizeObserver,
+rAF-coalesced, origin-checked on receipt — because nothing on the parent
+side can measure a cross-document frame and the planner grows ~300px the
+moment Calculate is pressed.
+
+**The bar above the frame carries the way out.** Every other panel closes
+from a back link inside its own fetched markup; an iframe is opaque, so
+this side supplies one. Two things came off that bar before it shipped: a
+second "Beta" chip, repeating the menu marker two inches away, and a
+sentence saying the numbers were still being reviewed — a vaguer claim
+than the page beneath already makes about itself, over a tool that grades
+every benchmark it uses. A blanket hedge on top of that reads as a
+retraction of it.
+
+### The three deploys, and why there were three
+
+**Round 1 shipped a menu item pointing at a route that was switched off.**
+`ROI_PUBLIC` had been `"false"` in `site-worker/wrangler.toml` since 11
+August, at Dan's own request, while he road-tested the output. The route
+returns a bare `"Not found"` unless it is `"true"`. The link and the flag
+are one change and were shipped as two, so the first click opened a
+full-width panel onto the worker's two words.
+
+**Eleven suites passed and none could have caught it.** Every ROI harness
+in this repo calls `renderRoiCalculatorPage()` or `renderRoiPage()`
+directly. Not one goes through the router, which is the only code that
+reads that flag. The page was correct and the site was refusing to serve
+it, and those are tested by ten suites and by nothing at all.
+
+`ROI_PUBLIC` is now `"true"`. **`ROI_INDEXABLE` stays `"false"`** — being
+reachable from the menu is a different decision from wanting the page in
+search results while it carries a beta marker. `/roi-calculator` is
+deliberately still absent from `sitemap.xml`: a sitemap entry for a
+noindex page is an instruction and its own contradiction.
+
+**Round 2 shipped an anchor that scrolled to the wrong place.** The frame
+is sized to its own content, so it never scrolls — its viewport *is* its
+document. A fragment jump has nowhere to go, the browser chains the scroll
+out to the parent, and the parent moves by the least it can, leaving the
+target on the bottom row of pixels. On the legend's new link that meant
+the heading visible and every field it names below the fold.
+
+The frame now hands the scroll to the parent. One subtlety cost a round:
+the first version measured on the next animation frame and asked for
+1416, and the parent landed at 1137 — the click had just opened a
+`<details>`, the frame had not been resized yet, and the scroll was
+clamped by a document still too short. Nothing errors; it just stops
+early. The frame now sends its new height first and the scroll second.
+Verified at 90px from the top, against 867 before.
+
+### The legend (migration 590)
+
+`ribbon.legend4`. The removed clause was written for item 6 of the
+usability assessment and says something true — it is also the answer to a
+question nobody asked. A reader who has just learnt what the colours mean
+needs to be told what to *do*, and reassurance where an instruction
+belongs is how a page ends up polite and unread.
+
+**The panel names itself.** Dan's wording quoted it as
+'Assumptions & benchmarks'; typed into the string that is a literal beside
+the truth it must agree with — the shape that produced four defects this
+week (the A/B/C/D labels, platform-versus-software fees, the pie's row
+names, the nearest-date tile's noun). It is a **third slot** filled from
+`assumptions.title`, the same string the panel's own heading renders, and
+it renders as a link that **opens** the panel. The step chip has pointed
+at `#assump` since 518 and always landed on a collapsed summary; one
+delegated listener fixes both.
+
+Dan's "please review an update" is "please review and update", corrected
+and recorded in the migration so the difference from the request is not
+later rediscovered as a mistake.
+
+### What looking at the public render found
+
+Three defects, none of which any suite could have reported.
+
+**The public ROI route never got migration 589's fix.** `resolveRoiLang()`
+was built for complete-or-English and wired into the members worker only.
+The public page still passed the raw language to all four getters — the
+exact defect 589 exists to prevent, live on three of four languages,
+unnoticed because the members page is the one anyone signed in was
+looking at. It matters more now: the menu passes the reader's chosen
+language straight into the frame.
+
+**`ROI_STYLE` declared no colour for bare links.** `pageShell()` supplies
+`a{color:inherit}`; the public route supplies nothing. The legend's link
+was the page's first bare anchor and rendered in browser-default blue on
+dark navy at ~2:1 — while passing the contrast audit, which builds the
+members shell. The mirror image of the `.card` incident `ROI_STYLE`'s own
+comment records.
+
+**The `(Beta)` marker was a column, not a suffix.** `.dropdown-item` is a
+flex row, so a bare sibling span is pushed to the far right; nesting it
+inside the `data-i18n` span instead would have had `applyToDom()` delete
+it on the first language load. One wrapper solves both. Its colour was
+`var(--muted)`, tuned for the dark board and 2.1:1 on the cream dropdown.
+
+### `backLink` was referenced eleven times and defined nowhere
+
+Every in-page panel builds its close control as
+`(i18n && i18n.t('backLink')) || '← Back to global tracker'`. No language
+file has ever had the key. The fallback is right, and it turns a missing
+translation into a silent one: **seven panels have shown an English
+control to every Spanish, German and French reader** with nothing
+reporting a problem. `archive.loading` and `archive.officialSource` the
+same. Fixed in all four languages, which fixes seven existing surfaces as
+a side effect of adding the eighth.
+
+### Two dead parameters
+
+`renderRoiPage` accepted `unlockUrl` and `signedInAs` and read neither;
+the site-worker built a members URL on every request and handed it into a
+void. Migration 589's sweep missed them because a destructured parameter
+with a default *looks* like a declaration in use — it is named, assigned,
+and every caller mentions it. **The shape to grep for is a parameter named
+exactly once.**
+
+### Three new suites
+
+- **`tests/tracker-i18n.mjs`** — every literal key a page references
+  resolves in its own namespace file, and every language file holds
+  exactly English's key set. 636 references across 9 pages and 10
+  namespaces. Runtime-built keys are reported as uncheckable rather than
+  skipped in silence. The language list is read out of `i18n.js`.
+- **`tests/menu-routes.mjs`** — the coverage that was missing. Every
+  site-absolute menu link points at a route the worker declares; any route
+  behind an env gate has that gate open in `wrangler.toml`; the tracker
+  intercepts every alias of a gated route; and both halves of the frame's
+  postMessage protocol agree on the message names. Route sets and gate
+  names are read out of the worker, so a new route joins by existing.
+- **A render-lint rule**: `ROI_STYLE` must declare a colour for bare
+  anchors, so the page is legible whatever is or is not concatenated in
+  front of it.
+
+### Verified
+
+`npm test`: **12 suites**. ROI regression **325 checks**. Replay OK across
+**590 files — 405 assertions, 117 standing invariants**. The menu-routes
+and tracker-i18n checks were each negative-tested by breaking the thing
+they exist to catch and confirming they fail.
