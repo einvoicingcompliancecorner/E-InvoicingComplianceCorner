@@ -1,0 +1,153 @@
+-- ================================================================
+-- The three the reassessment left after 587.
+--
+-- Dan, 19 August 2026: "keep going."
+--
+-- ================================================================
+-- 1. A PHONE MET THE EXPLANATION BEFORE THE FIGURES IT EXPLAINS
+-- ================================================================
+--
+-- Migration 577 reordered the KPI grid on a phone so the two green money
+-- figures sat side by side -- gross saving and net saving -- and pushed
+-- the investment tile below them. The reasoning was that those two are
+-- the pair a reader compares, and it was right about the tiles it was
+-- describing.
+--
+-- IT STOPPED BEING RIGHT WHEN THE TILES LEARNED TO EXPLAIN THEMSELVES.
+-- Since 584 the net tile ends "Year one nets $10,849 after
+-- implementation" and names software fees and internal running cost --
+-- every one of which is printed in the cost tile that this ordering put
+-- BELOW it. So a phone reader met a sentence citing three figures they
+-- had not seen yet, in the summary whose whole recent history is about
+-- making its numbers reconcile on sight.
+--
+-- Document order now, because the sentence dependencies run that way:
+-- gross, then what it costs, then what is left. The first three go full
+-- width -- two carry three or four lines of sub-text and pairing those at
+-- 390px was never going to read -- and the two short tiles pair at the
+-- end. One row taller than 577's arrangement, in exchange for three tiles
+-- that no longer forward-reference each other.
+--
+-- No D1 change. Recorded because 577's reasoning is still on the page and
+-- reads as a contradiction of this one until you know what changed
+-- between them: the tiles gained sub-text that made their order a
+-- dependency rather than a preference.
+
+-- ================================================================
+-- 2. THE PHASE BREAKDOWN WAS REACHABLE ONLY BY HOVER
+-- ================================================================
+--
+-- When a country's block is too narrow to divide, migration 576 moved the
+-- phase breakdown into the SVG title -- "hover for phases" -- which on a
+-- touch device means nowhere. The legend said so in as many words.
+--
+-- CHECKING WHAT THE TOOLTIP ACTUALLY CONTAINED IS WHAT DECIDED THE FIX.
+-- Every per-country phase in roi_phases has scope 'all': mobilise,
+-- design, build and uat, with the change phase added on the wider scope
+-- for every country equally. So the breakdown is IDENTICAL on every row,
+-- and the page was hiding one sentence behind twelve tooltips.
+--
+-- Making twelve identical tooltips tappable would have been the obvious
+-- fix and the wrong one. The legend prints the breakdown instead --
+-- "country work: Mobilisation 1w, Design 2w, Build 3w, UAT & cutover 1w,
+-- the same shape on every country" -- which is reachable by everyone,
+-- reads at a glance, and says the thing the tooltips could only imply:
+-- that the tracks differ in WHEN, not in what.
+--
+-- The weeks come from the assumptions panel, so the line moves when a
+-- reader changes a duration. A hardcoded sentence here would have been
+-- the literal-beside-the-truth defect this project keeps finding.
+INSERT OR REPLACE INTO translations (namespace, key, lang, value) VALUES
+  ('roi', 'chart.key.work2', 'en', 'country work &mdash; {0}, the same shape on every country');
+
+DELETE FROM translations WHERE namespace = 'roi' AND key = 'chart.key.work';
+
+-- ================================================================
+-- 3. A BUTTON STYLED EXACTLY LIKE THE BADGE BESIDE IT
+-- ================================================================
+--
+-- The Keep control shipped in 585 as a 1px outline in --soon at 9.5px
+-- mono, which is the precise recipe for `.tag` -- the evidence badge
+-- sitting on the same label line, four pixels away. An independent read
+-- said it "doesn't read as a button". It was right: two elements with
+-- identical styling, one inert and one clickable.
+--
+-- Filled rather than outlined, with dark text. It is the one treatment
+-- nothing else on this page uses, which is what a control needs when it
+-- lives among badges. The contrast audit passes at every state.
+--
+-- No D1 change.
+
+-- ---- what this migration claims it did ------------------------------
+-- ASSERT: SELECT count(*) FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key = 'chart.key.work2' = 1
+-- ASSERT: SELECT count(*) FROM translations WHERE namespace = 'roi' AND key = 'chart.key.work' = 0
+--
+-- The legend must keep its slot, and this is the invariant that matters:
+-- the slot is the phase breakdown, filled from the durations the reader
+-- controls. Lose it and the line reads "country work, the same shape on
+-- every country" -- a sentence asserting a shape it does not show, on the
+-- one surface a touch reader can reach it.
+--
+-- ASSERT ALWAYS: SELECT count(*) FROM translations WHERE namespace = 'roi' AND key = 'chart.key.work2' AND value LIKE '%{0}%' = 1
+--
+-- And no legend entry may tell a reader to hover. Stated as a pattern
+-- rather than on the key that had it, because the next entry to acquire a
+-- hover instruction is the one worth catching -- half this audience is
+-- reading a board pack on a tablet.
+--
+-- ASSERT ALWAYS: SELECT count(*) FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key LIKE 'chart.%' AND value LIKE '%hover%' = 0
+
+-- ================================================================
+-- POSTSCRIPT, SAME DAY: THE KEEP CONTROL COMES BACK OUT
+-- ================================================================
+--
+-- Dan, on seeing it: "I dont like the keep button." And: "why did we
+-- introduce that?"
+--
+-- THE HONEST ANSWER IS THAT I REVIVED SOMETHING HE HAD ALREADY DECLINED.
+-- Item 7 of the 17 August assessment had two halves, and the assessment
+-- was mine. Migration 581 put the choice to him and he picked "legend
+-- only", with the reasons recorded there. Two days later he asked me to
+-- "fix these remaining items" and I read that broad instruction as
+-- reversing the specific decision, built the control in 585, and argued
+-- myself out of my own earlier objection to it in that file.
+--
+-- The instruction did not say that and I did not ask. A general "fix the
+-- rest" is not a licence to reopen a thing the person has already ruled
+-- on -- and the tell was there in my own migration text, which opens
+-- "Migration 581 shipped the legend and left this open, at Dan's choice".
+-- Writing down that it was his choice and then overriding it in the next
+-- paragraph is not a subtle mistake.
+--
+-- ---- WHAT THE REMOVAL COSTS, STATED SO IT IS NOT REDISCOVERED --------
+--
+-- Green means CHANGED again, not handled. So a reader who studies the 60%
+-- cost reduction, sees that two tax authorities corroborate it, and
+-- agrees leaves exactly the same amber mark as a reader who never
+-- scrolled to it. The affordance still rewards typing over the
+-- best-evidenced numbers on the page.
+--
+-- That criticism was mine and it stands. It is now open BY DECISION
+-- rather than by oversight, which is the only difference that matters --
+-- and two signals from the person who knows this audience outrank one
+-- analysis of mine.
+INSERT OR REPLACE INTO translations (namespace, key, lang, value) VALUES
+  ('roi', 'ribbon.legend3', 'en', 'The bar down the left of every input says whose number it is: {0} is ours, {1} is yours. Ours are defaults to argue with, not blanks to fill.');
+
+DELETE FROM translations WHERE namespace = 'roi'
+  AND key IN ('btn.keep', 'btn.keep.aria', 'ribbon.legend2');
+
+-- ASSERT: SELECT count(*) FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key = 'ribbon.legend3' = 1
+-- ASSERT: SELECT count(*) FROM translations WHERE namespace = 'roi' AND key IN ('btn.keep','btn.keep.aria','ribbon.legend2') = 0
+--
+-- The legend keeps both slots, inherited from 581 through 585 and landing
+-- here. Same rule each time: the two colours are slots rather than markup,
+-- so a translation that drops one describes colours it does not show.
+--
+-- ASSERT ALWAYS: SELECT count(*) FROM translations WHERE namespace = 'roi' AND key = 'ribbon.legend3' AND value LIKE '%{0}%{1}%' = 1
+--
+-- And no legend may promise a control that is not there. The 585 wording
+-- named a Keep button; shipping that sentence without the button would be
+-- worse than either state on its own.
+--
+-- ASSERT ALWAYS: SELECT count(*) FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key LIKE 'ribbon.legend%' AND value LIKE '%Keep%' = 0
