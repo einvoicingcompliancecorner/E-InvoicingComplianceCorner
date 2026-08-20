@@ -141,7 +141,7 @@ Everything around it was translated: the tracker, the education pages,
 migration 596 the sign-up panel. The planner was the one surface that
 never had been.
 
-**German is done** (migration 597). Spanish and French still fall back.
+**German (597) and French (598) are done.** Spanish still falls back.
 So translating one of those is Phases 1–4 of this document for a language
 that already exists everywhere else on the site — an unusual shape for
 this runbook, and worth reading Phase 5b before starting, because most of
@@ -435,8 +435,28 @@ at runtime, and read the expected plural form off the page. *A fixture
 that depends on a language staying untranslated has an expiry date
 nobody wrote down.*
 
+**And the second language cost almost none of that.** French landed the
+next day as migration 598 and the replay passed first time: no invariant
+broke, the coverage counter was already right, and the only test that
+moved was one that had been quietly naming the untranslated language.
+That is the whole argument for doing the structural language first —
+whatever you translate second is data.
+
+Two things French found that German could not:
+
+- **`pays` is invariable.** A plural check asserted that the singular and
+  plural forms could not be equal, which is an English-shaped assumption:
+  French has `pays`, `prix`, `mois`, `cas`, `temps`. What is under test
+  is that the CLDR selector picks the `other` form, not that the form
+  reads differently.
+- **The fallback test named its language for the third time.** It said
+  German, then French, then German again. Any test that names the
+  untranslated language expires the next time someone does good work; it
+  discovers one at runtime now, and says so plainly when there are none
+  left rather than passing on nothing.
+
 **Length, measured rather than feared.** German came out **15% longer
-overall**, with the worst short labels up 60–77%. Rendered at 1280px with
+overall** and French **17%**, with the worst short labels up 60–77%. Rendered at 1280px with
 six countries selected: **zero horizontal overflow anywhere in `.wrap`,
 zero page-level scroll.** Two assumption labels wrap to a second line and
 the layout takes it. The length worry was real enough to justify going
