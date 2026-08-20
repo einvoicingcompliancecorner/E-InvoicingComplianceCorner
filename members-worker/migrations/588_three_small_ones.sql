@@ -88,7 +88,22 @@ DELETE FROM translations WHERE namespace = 'roi' AND key = 'chart.key.work';
 -- every country" -- a sentence asserting a shape it does not show, on the
 -- one surface a touch reader can reach it.
 --
--- ASSERT ALWAYS: SELECT count(*) FROM translations WHERE namespace = 'roi' AND key = 'chart.key.work2' AND value LIKE '%{0}%' = 1
+-- RETIRED IN PLACE BY MIGRATION 597 (German), 21 August 2026.
+--
+-- IT COUNTED ROWS, and a second language adds rows. It broke the moment
+-- the planner gained one, with nothing actually wrong: the rule it states
+-- is still true of every row, and the arithmetic around it was written in
+-- a world where there was only ever one.
+--
+-- The successor in 597 counts VIOLATIONS instead of matches and expects
+-- zero, which is strictly stronger — it holds for English, for German and
+-- for every language after them, and it does not have to be edited again
+-- when the next one lands. That matters more than it sounds: the slot
+-- rules exist FOR translators, and this was the check that would have
+-- caught a dropped {0} in a language nobody on the team reads.
+--
+--   was: ASSERT ALWAYS: SELECT count(*) FROM translations WHERE namespace = 'roi' AND key = 'chart.key.work2' AND value LIKE '%{0}%' = 1
+--
 --
 -- And no legend entry may tell a reader to hover. Stated as a pattern
 -- rather than on the key that had it, because the next entry to acquire a

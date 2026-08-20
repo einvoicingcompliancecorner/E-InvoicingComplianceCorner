@@ -124,24 +124,28 @@ The corollary is that a half-finished language shows nothing. Use
 `IN_PROGRESS` in `tests/roi-coverage.mjs` while you work, and expect the
 page to stay English until you are done.
 
-### Which is why the planner is English for everyone, today
+### Which is why the planner was English for everyone until 21 August 2026
 
-Worth knowing before you assume otherwise, because nothing on the site
-says so and the gate is working exactly as designed.
+Worth knowing, because nothing on the site said so and the gate was
+working exactly as designed the whole time.
 
-The `roi` namespace has **433 English keys and zero rows in any other
-language** — not a partial translation, none at all. So `resolveRoiLang`
-falls back for `es`, `de` and `fr` on every request, and has since the
-planner was built. A Spanish reader gets a fully Spanish tracker, clicks
-Resources → ROI & Wave Planner, and lands on an English page with one
-line explaining why.
+The `roi` namespace held **433 English keys and zero rows in any other
+language** — not a partial translation, none at all. `resolveRoiLang`
+therefore fell back for `es`, `de` and `fr` on every request, and had done
+since the planner was built. A Spanish reader got a fully Spanish tracker,
+clicked Resources → ROI & Wave Planner, and landed on an English page with
+one line explaining why.
 
-Everything around it is translated: the tracker, the education pages,
+Everything around it was translated: the tracker, the education pages,
 `subscribe`, `feedback`, country names, milestones, deep dives, and as of
-migration 596 the sign-up panel. The planner is the one surface that
-never was. Translating it is Phases 1–4 of this document for a language
-that already exists everywhere else — which is an unusual shape for this
-runbook, and the reason it is called out here rather than buried.
+migration 596 the sign-up panel. The planner was the one surface that
+never had been.
+
+**German is done** (migration 597). Spanish and French still fall back.
+So translating one of those is Phases 1–4 of this document for a language
+that already exists everywhere else on the site — an unusual shape for
+this runbook, and worth reading Phase 5b before starting, because most of
+what the first one cost was not translation.
 
 ---
 
@@ -381,6 +385,62 @@ serves English inside an otherwise translated page. 596 asserts all four
 languages hold all 67 keys, and `tests/auth-code.mjs` asserts the English
 in the file still matches the fallback in the code character for
 character.
+
+---
+
+## Phase 5b — what the FIRST added language breaks
+
+Written 21 August 2026, immediately after German landed as migration 597.
+None of this was predicted by this document, and all of it cost time.
+
+**Eighteen standing invariants failed, and not one because anything was
+wrong.** Every one counted ROWS — *"exactly one row carries `{0}{1}{2}`"*
+— written in a world where there was only ever one row per key. A second
+language doubles the count and the assertion fails while the rule it
+states is still true of every row.
+
+Twelve of the eighteen are SLOT rules, which is the sharp end of it:
+those exist **for translators**, so the checks most needed the day a
+language arrives are precisely the ones guaranteed to break that day.
+
+The fix is not to narrow them to `lang = 'en'` — that would retire the
+protection exactly where it is most needed. Restate each to count
+VIOLATIONS and expect zero:
+
+```sql
+-- was: ... AND value LIKE '%{0}%{1}%' = 1
+-- now: ... AND value NOT LIKE '%{0}%{1}%' = 0
+```
+
+Strictly stronger, and it never needs editing again. 597 carries all
+eighteen; each is retired in place at its own migration with its text
+kept as `was:`.
+
+**The coverage counter and a standing invariant disagreed.**
+`roi_benchmark_translations.label` is read by nothing —
+`getRoiBenchmarks` selects only `hint` and `citation`, and an invariant
+forbids a non-English label so nobody fills in a dead field. The coverage
+counter did not know that and counted three columns for every language,
+so a German row that obeyed the invariant perfectly scored 2 of 3 and the
+language reported **94.3%: stranded by arithmetic at a number it could
+never improve on.** Non-English now counts two columns, denominator
+included. The column is `NOT NULL`, so pass `''`, not `NULL`.
+
+**Four tests were using the untranslated language as their fixture.**
+The complete-or-English checks asked about German because German was the
+language nobody had translated, and a plural check compared against the
+literal word `"jurisdiction"` — correct for a year only because every
+language rendered the English noun. They now find an incomplete language
+at runtime, and read the expected plural form off the page. *A fixture
+that depends on a language staying untranslated has an expiry date
+nobody wrote down.*
+
+**Length, measured rather than feared.** German came out **15% longer
+overall**, with the worst short labels up 60–77%. Rendered at 1280px with
+six countries selected: **zero horizontal overflow anywhere in `.wrap`,
+zero page-level scroll.** Two assumption labels wrap to a second line and
+the layout takes it. The length worry was real enough to justify going
+first, and the layout survived it.
 
 ---
 

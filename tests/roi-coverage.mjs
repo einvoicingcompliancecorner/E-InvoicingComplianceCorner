@@ -46,15 +46,38 @@ try {
   // The other two tables, measured per COLUMN because that is how they
   // fall back. A row that exists with a translated label and a NULL hint
   // is not a translated row.
-  const benchCols = ["label", "hint", "citation"];
+  //
+  // LABEL IS COUNTED FOR ENGLISH AND NOT FOR ANYTHING ELSE, and that is
+  // not a fudge — it is two checks that disagreed, discovered when German
+  // became the first language to test them against each other.
+  //
+  // getRoiBenchmarks selects only `hint` and `citation` from this table.
+  // The visible label comes from the roi namespace's own input.* keys, so
+  // a translated label here is read by nothing, and a STANDING INVARIANT
+  // forbids one on any non-English row precisely to stop somebody filling
+  // in a field that does not exist as far as the page is concerned.
+  //
+  // This counter did not know that. It counted three columns for every
+  // language, so a German row that obeyed the invariant perfectly scored
+  // 2 of 3 and the language reported 94.3% — stranded, by arithmetic,
+  // at a number it could never have improved on. One check demanded a
+  // cell the other forbade, and neither was wrong on its own.
+  const benchCols = (lang) => lang === "en" ? ["label", "hint", "citation"] : ["hint", "citation"];
   const phaseCols = ["name", "note"];
   const cellCount = async (table, idCol, cols, lang) => {
-    const rows = await q(`SELECT ${cols.join(", ")} FROM ${table} WHERE lang = '${lang}'`);
+    const use = typeof cols === "function" ? cols(lang) : cols;
+    const rows = await q(`SELECT ${use.join(", ")} FROM ${table} WHERE lang = '${lang}'`);
     let filled = 0;
-    for (const r of rows) for (const c of cols) if (r[c] !== null && String(r[c]).trim() !== "") filled++;
+    for (const r of rows) for (const c of use) if (r[c] !== null && String(r[c]).trim() !== "") filled++;
     return filled;
   };
   const benchEn = await cellCount("roi_benchmark_translations", "benchmark_id", benchCols, "en");
+  // THE DENOMINATOR MOVES WITH THE COLUMNS, or the fix above only changes
+  // the numerator and every non-English language is capped below 100 by
+  // construction — which is exactly the shape of the bug it repairs.
+  const benchRows = (await q(
+    "SELECT count(*) AS n FROM roi_benchmark_translations WHERE lang = 'en'"))[0].n;
+  const benchTarget = (lang) => benchRows * benchCols(lang).length;
   const phaseEn = await cellCount("roi_phase_translations", "phase_id", phaseCols, "en");
 
   // country_translations is deliberately NOT in the percentage. It is
@@ -71,7 +94,7 @@ try {
     const strings = enKeys.filter((k) => have.has(k)).length;
     const bench = await cellCount("roi_benchmark_translations", "benchmark_id", benchCols, lang);
     const phase = await cellCount("roi_phase_translations", "phase_id", phaseCols, lang);
-    const total = enKeys.length + benchEn + phaseEn;
+    const total = enKeys.length + benchTarget(lang) + phaseEn;
     const done = strings + bench + phase;
     const pct = total ? Math.round((done / total) * 1000) / 10 : 0;
     report.push({ lang, strings, bench, phase, done, total, pct });
@@ -81,7 +104,7 @@ try {
   console.log("  ---------------------------------------------------------");
   for (const r of report) {
     console.log(`  ${r.lang.padEnd(10)} ${String(r.strings).padStart(3)}/${String(enKeys.length).padEnd(4)}`
-      + `      ${String(r.bench).padStart(2)}/${String(benchEn).padEnd(3)}`
+      + `      ${String(r.bench).padStart(2)}/${String(benchTarget(r.lang)).padEnd(3)}`
       + `        ${String(r.phase).padStart(2)}/${String(phaseEn).padEnd(3)}`
       + `      ${String(r.pct).padStart(5)}%`);
   }
