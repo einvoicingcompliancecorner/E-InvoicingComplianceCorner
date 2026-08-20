@@ -568,4 +568,43 @@ t.check("every string in the i18n files matches the row that generates it",
       + "\n         re-run members-worker/migrations/generate_auth_i18n.mjs"
     : "");
 
+// ---- the two script tags agree on a version ----------------------------
+//
+// THE INCIDENT, 21 August 2026. Dan: "the Firstname, Lastname, Job Title,
+// Work Email and Company field headings are not translated" — while every
+// other string in the panel was.
+//
+// Nothing was wrong with the translations. The field keys had changed
+// SHAPE in the release that added them: "auth.field.email" went from a
+// leaf holding the label to a branch holding .label and .error, because
+// one JSON path cannot be both. A browser still holding the previous
+// auth-overlay.js asks for the leaf, lands on an object, and t()
+// correctly declines to return it — so exactly those five strings fall
+// back to English and every other key, whose shape never changed, goes on
+// working. A stale script and a fresh translation file, disagreeing about
+// five keys out of sixty-seven.
+//
+// The fix is a version on the script URL. The check is that the two
+// places referencing it — a static HTML file and a Worker template, with
+// nothing forcing them to match — carry the SAME version, because a bump
+// applied to one of them is a fix that reaches half the site.
+const TRACKER_SRC = readFileSync(join(dirname(dirname(fileURLToPath(import.meta.url))),
+  "einvoicing-compliance-tracker.html"), "utf8");
+const SITE_WORKER_SRC = readFileSync(join(dirname(dirname(fileURLToPath(import.meta.url))),
+  "site-worker", "src", "index.js"), "utf8");
+
+const versions = [
+  ["tracker", /<script src="auth-overlay\.js\?v=(\d+)"><\/script>/.exec(TRACKER_SRC)],
+  ["site-worker", /<script src="\/auth-overlay\.js\?v=(\d+)"><\/script>/.exec(SITE_WORKER_SRC)],
+];
+t.check("both places load the panel with a ?v= cache buster",
+  versions.every(([, m]) => m !== null),
+  versions.filter(([, m]) => !m).map(([w]) => w).join(", ") + " has none");
+if (versions.every(([, m]) => m)) {
+  const [a, b] = versions.map(([, m]) => m[1]);
+  t.check(`and both say v=${a}`, a === b,
+    a === b ? "" : `tracker v=${a} vs site-worker v=${b} — a bump that lands on `
+      + "one of them leaves half the site loading the old script");
+}
+
 process.exit(t.report() ? 0 : 1);
