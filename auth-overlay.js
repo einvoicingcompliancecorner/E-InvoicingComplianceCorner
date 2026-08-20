@@ -1072,5 +1072,20 @@
     });
   }
 
+  // AND IT FOLLOWS A LANGUAGE SWITCH WHILE IT IS OPEN.
+  //
+  // Every other translated surface on this site re-renders on
+  // eicc:languageChanged — the greeting does, the board does, the menus
+  // do. The panel did not, so switching language with it open left it
+  // frozen in whatever it opened in, next to a page that had changed
+  // around it. Only the details step is re-rendered: redrawing the code
+  // step would discard a code the reader is part-way through typing, and
+  // the language of a six-digit box is not worth that.
+  document.addEventListener("eicc:languageChanged", function () {
+    if (!root || !root.classList.contains("open")) return;
+    if (!body() || !body().querySelector('[data-go="details"]')) return;
+    rerenderKeepingInput();
+  });
+
   window.EICC_AUTH = { open: open, close: close };
 })();

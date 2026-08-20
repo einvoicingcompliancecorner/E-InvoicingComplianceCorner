@@ -1137,14 +1137,31 @@ async function renderRoiCalculatorPage(request, env) {
     getRoiPhases(env.eicc_content, roiLang.lang),
     getRoiStrings(env.eicc_content, roiLang.lang),
     getRoiFxRates(env.eicc_content),
-    // roiLang.lang, NOT the language that was asked for. The planner
-    // serves English wholesale unless the whole roi namespace is present
-    // in the requested language (resolveRoiLang, migration 589), and a
-    // Spanish panel sitting on an English page is precisely the
-    // half-translated render that rule exists to prevent. The panel
-    // follows the page it is on. The day the planner itself is
-    // translated, this follows it without being touched.
-    authStrings(env, roiLang.lang),
+    // THE SITE'S LANGUAGE, NOT THE PLANNER'S — corrected 21 August 2026.
+    //
+    // This was roiLang.lang, on the reasoning that a Spanish panel on an
+    // English page is the half-translated render migration 589 exists to
+    // prevent. That reasoning was wrong, and wrong in a way worth
+    // recording rather than quietly reversing.
+    //
+    // 589's rule is about a DOCUMENT: the planner's own prose, its
+    // headings, its country names. The panel is not part of that
+    // document. It is site chrome that opens on top of it — the same
+    // component, from the same file, that opens on the tracker and on
+    // every education page, all of which are fully translated.
+    //
+    // Following the planner meant the SAME PANEL appeared in German from
+    // one button and in English from another, on one site, for one
+    // reader. That inconsistency is worse than the mixed-language screen
+    // it was avoiding, because nothing explains it: the planner at least
+    // prints a line saying why IT is in English, and that line has never
+    // covered the panel.
+    //
+    // And the roi namespace has no non-English rows at all, so
+    // roiLang.lang was ALWAYS "en". This was not a rare edge — it was
+    // every non-English reader who ever opened the panel from the
+    // planner.
+    authStrings(env, lang),
   ]);
 
   const { body, script } = renderRoiPage({
@@ -1195,7 +1212,7 @@ async function renderRoiCalculatorPage(request, env) {
   a later load would still work -- but a reader who clicks in the gap
   would get the fallback navigation instead of the panel, which is a
   silent downgrade rather than a failure. Loading it first closes the
-  gap. --><script>window.EICC_AUTH_STRINGS=${JSON.stringify(panelStrings).replace(/<\//g, "<\\/")};</script><script src="/auth-overlay.js"></script><script>${script}</script>${framed ? `<script>${ROI_FRAME_REPORTER}</script>` : ""}</body></html>`;
+  gap. --><script>window.EICC_AUTH_STRINGS=${JSON.stringify(panelStrings).replace(/<\//g, "<\\/")};</script><script src="/auth-overlay.js?v=2"></script><script>${script}</script>${framed ? `<script>${ROI_FRAME_REPORTER}</script>` : ""}</body></html>`;
 
   // SIXTY SECONDS, NOT FIVE MINUTES, while this is Beta.
   //

@@ -730,7 +730,20 @@
      copy of a signup form to drift out of step. Loaded AFTER i18n.js
      because the sign-in button's click handler asks for window.EICC_AUTH,
      and declares nothing at the top level — see tests/page-scripts.mjs. -->
-<script src="auth-overlay.js"></script>
+<!-- ?v= IS A CACHE BUSTER, AND IT IS NOT DECORATION.
+     Dan, 21 August 2026: the five field headings were untranslated while
+     the rest of the panel was translated. The mechanism is a browser
+     holding an older auth-overlay.js against the newly published
+     i18n/<lang>.json: the field keys changed SHAPE in that release, from
+     a leaf ("auth.field.email") to a branch with .label and .error under
+     it, because one path cannot be both. An old script asks for the leaf,
+     lands on an object, and t() correctly refuses to return it — so those
+     five strings, and only those five, fall back to English.
+     Every other key kept its shape and went on working, which is what
+     made the symptom so specific and so misleading.
+     Bump this whenever auth-overlay.js changes the keys it asks for.
+     tests/auth-code.mjs checks the tracker and site-worker agree on it. -->
+<script src="auth-overlay.js?v=2"></script>
 </head>
 <body>
 
