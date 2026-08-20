@@ -49,7 +49,7 @@ import {
 // binding: it can verify who a reader is from the token's signature and
 // cannot read or change anything about their account. See the header of
 // shared/session.mjs for why that split, and what it deliberately trades.
-import { sessionEmail, sessionDiagnostic, readCookie, SESSION_COOKIE } from "../../shared/session.mjs";
+import { sessionEmail, sessionDiagnostic, readCookie, signOutCookies, SESSION_COOKIE } from "../../shared/session.mjs";
 import {
   getRoiCountries,
   getRoiBenchmarks,
@@ -194,8 +194,28 @@ async function renderTracker(request, env) {
     return new Response(out, {
       headers: {
         "Content-Type": "text/html; charset=UTF-8",
-        // Same short edge cache as the country deep-dive pages.
-        "Cache-Control": "public, max-age=300",
+        // SIXTY SECONDS, NOT FIVE MINUTES, matching the planner.
+        //
+        // This page's cache has now been implicated in three confused
+        // deploy checks in two days: Middle East countries "missing" from
+        // the sidebar on 3 August, the planner's gating change "not
+        // taking effect" on the 19th, and the sign-in button on the 20th
+        // — every one of them a browser serving HTML from disk while the
+        // deploy sat there working perfectly.
+        //
+        // The tracker is the page every check starts from, and the one
+        // that changes most often. A cache that makes a good deploy look
+        // like a failed one costs more than it saves here.
+        //
+        // NOT a correctness problem, and worth being precise about that:
+        // this HTML is identical for every reader. The greeting and the
+        // sign-in button are rendered client-side from a cookie, which is
+        // exactly what keeps this response shareable between them. Only
+        // the planner's route varies by session, and only that route goes
+        // private.
+        //
+        // Worth revisiting when the site stops changing daily.
+        "Cache-Control": "public, max-age=60",
       },
     });
   } catch (err) {
@@ -965,11 +985,29 @@ async function renderRoiCalculatorPage(request, env) {
   // secret does not match the one that signed it, which looks exactly
   // like "not signed in" from a browser. Logged so `wrangler tail` says
   // so out loud. No token, no address -- the fact alone.
+  //
+  // AND THE COOKIES ARE CLEARED, which is the half that matters to the
+  // reader rather than to the operator.
+  //
+  // The display cookie is validated by nothing -- that is exactly what
+  // lets a static page read it. So when a session stops verifying, the
+  // greeting carries on regardless: the site says "Signed in as ..." at
+  // the top while everything gated refuses. Dan sat in precisely that
+  // state after rotating the secret, and it is the same half-right shape
+  // that made the mismatch so hard to see in the first place.
+  //
+  // A token that will not verify is never going to. Nothing is lost by
+  // clearing both cookies, and what is gained is a page that tells the
+  // truth: the greeting goes, the Sign in button returns, and the next
+  // click leads somewhere that works.
+  let staleSession = false;
   if (!signedInAs && env.SESSION_SECRET) {
     const { value: presented } = readCookie(request, SESSION_COOKIE);
     if (presented) {
+      staleSession = true;
       console.warn("ROI: a session cookie was presented and could not be verified — "
-        + "check that SESSION_SECRET matches members-worker's.");
+        + "clearing it. In bulk, this means SESSION_SECRET does not match "
+        + "members-worker's.");
     }
   }
 
@@ -993,7 +1031,11 @@ async function renderRoiCalculatorPage(request, env) {
     // different fixes and should not share a symptom.
     "x-eicc-session": await sessionDiagnostic(request, env.SESSION_SECRET),
   };
-  return new Response(html, { headers });
+  const res = new Response(html, { headers });
+  if (staleSession) {
+    for (const c of signOutCookies()) res.headers.append("Set-Cookie", c);
+  }
+  return res;
 }
 
 async function renderMapPage(request, env) {
