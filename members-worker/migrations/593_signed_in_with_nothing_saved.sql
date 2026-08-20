@@ -1,0 +1,64 @@
+-- ================================================================
+-- A third state for the saved-countries control.
+--
+-- Dan, 20 August 2026, looking at the live planner while signed in:
+-- his own name in the header, and a greyed-out control four inches
+-- below it reading "sign in to use your saved countries".
+--
+-- ================================================================
+-- WHY TWO STATES STOPPED BEING ENOUGH
+-- ================================================================
+--
+-- The control has always had exactly two: signed out, or signed in with a
+-- saved list. That was complete while the planner only ever rendered
+-- unlocked on the members page, where a reader who could see it unlocked
+-- was by definition a reader whose subscriber record had already been
+-- loaded alongside it. "Unlocked" and "has a saved list" were the same
+-- fact wearing two names.
+--
+-- They came apart the moment the public planner learned to recognise a
+-- session. It knows WHO the reader is from the token's signature alone;
+-- it has no subscribers binding and cannot read an account. So it asks
+-- members-worker over a service binding, and that ask can come back empty
+-- for two entirely ordinary reasons: the reader has saved nothing yet, or
+-- the lookup did not answer.
+--
+-- Neither of those is "signed out". Saying so to a reader whose name is
+-- displayed at the top of the same page is the two-statements-that-
+-- disagree defect this project keeps catching -- in a control nobody had
+-- edited, surfaced by a change somewhere else entirely.
+--
+-- ---- NOTHING SAVED AND LOOKUP FAILED SHARE A MESSAGE ----------------
+--
+-- Deliberately, and it is the one judgement call here. The distinction is
+-- real and it matters to us, not to them: either way there is no list to
+-- apply and the next move is to pick countries by hand. A reader cannot
+-- act on "the service binding returned 502" and should not be asked to.
+--
+-- The difference is logged server-side instead, where somebody can do
+-- something about it. That is the split this project keeps arriving at --
+-- tell the operator what broke, tell the reader what to do.
+
+INSERT OR REPLACE INTO translations (namespace, key, lang, value) VALUES
+  ('roi', 'subs.none', 'en', 'no saved countries yet &mdash; set them in your preferences');
+
+-- subs.locked is KEPT, not replaced. It is still exactly right for the
+-- state it was written for -- an anonymous reader, who genuinely does
+-- need to sign in. The bug was never its wording; it was being shown to
+-- someone it did not describe.
+
+-- ---- what this migration claims it did ------------------------------
+-- ASSERT: SELECT count(*) FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key = 'subs.none' = 1
+-- ASSERT: SELECT count(*) FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key = 'subs.locked' = 1
+--
+-- THE TWO MESSAGES MUST NOT CONVERGE. If a future edit made subs.none
+-- tell a signed-in reader to sign in, the defect returns wearing the new
+-- key -- and it would look correct in every review, because the string
+-- would read perfectly well on its own. The only thing that makes it
+-- wrong is who sees it.
+--
+-- ASSERT ALWAYS: SELECT count(*) FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key = 'subs.none' AND lower(value) LIKE '%sign in%' = 0
+--
+-- And the anonymous one must keep saying it, since that is its whole job.
+--
+-- ASSERT ALWAYS: SELECT count(*) FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key = 'subs.locked' AND lower(value) LIKE '%sign in%' = 1

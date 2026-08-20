@@ -3111,5 +3111,43 @@ t.check("and only country codes that exist are ticked",
 await hostile.close();
 await gated.close();
 
+// ---- 43. signed in, nothing saved (migration 593) ---------------------
+//
+// The state that did not exist until the planner went public: a reader
+// the page recognises, whose saved-country list came back empty. Before
+// 593 they were told to sign in, four inches under their own name.
+const savedStates = await browser.newPage({ viewport: { width: 1300, height: 900 } });
+const { file: noSaved } = await buildRoiPage({ locked: false, subscribed: [] });
+await savedStates.goto(`file://${noSaved}`);
+await savedStates.waitForTimeout(400);
+const emptyLabel = await savedStates.evaluate(() =>
+  document.getElementById("subsCount").textContent.trim());
+t.check("a signed-in reader with nothing saved is NOT told to sign in",
+  !/sign in/i.test(emptyLabel), emptyLabel);
+t.check("and is told what to do instead",
+  /no saved countries/i.test(emptyLabel), emptyLabel);
+await savedStates.close();
+
+// The other two states still say what they always did.
+const anon = await browser.newPage({ viewport: { width: 1300, height: 900 } });
+const { file: anonFile } = await buildRoiPage({ locked: true, subscribed: [] });
+await anon.goto(`file://${anonFile}`);
+await anon.waitForTimeout(400);
+t.check("an anonymous reader IS told to sign in — that message keeps its job",
+  /sign in/i.test(await anon.evaluate(() =>
+    document.getElementById("subsCount").textContent)),
+  await anon.evaluate(() => document.getElementById("subsCount").textContent.trim()));
+await anon.close();
+
+const withSaved = await browser.newPage({ viewport: { width: 1300, height: 900 } });
+const { file: savedFile } = await buildRoiPage({ locked: false, subscribed: ["France", "Germany"] });
+await withSaved.goto(`file://${savedFile}`);
+await withSaved.waitForTimeout(400);
+const savedLabel = await withSaved.evaluate(() =>
+  document.getElementById("subsCount").textContent.trim());
+t.check("and a reader with a saved list gets its count, not either message",
+  /\(2\)/.test(savedLabel) && !/sign in/i.test(savedLabel), savedLabel);
+await withSaved.close();
+
 await browser.close();
 process.exit(t.report() ? 0 : 1);

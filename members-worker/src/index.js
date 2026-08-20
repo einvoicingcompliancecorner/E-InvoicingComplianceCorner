@@ -501,8 +501,13 @@ export default {
         // "keep reading" link, or a newsletter convenience link.
         const slug = decodeURIComponent(url.pathname.replace("/members/insights/", ""));
         response = await handleArticleFull(request, env, slug, lang);
+      } else if (request.method === "GET" && url.pathname === "/members/api/saved-countries") {
+        response = await handleSavedCountriesApi(request, env);
       } else if (request.method === "GET" && url.pathname === "/members/roi-calculator") {
-        response = await handleRoiCalculator(request, env, lang);
+        // Redirected rather than rendered -- see redirectToPublicPlanner.
+        // handleRoiCalculator is kept for now: turning the redirect off is
+        // a one-line change if the public copy ever needs to fall back.
+        response = redirectToPublicPlanner(url);
       } else if (request.method === "GET" && url.pathname === "/admin/preview/milestones") {
         response = await handleMilestonesPreview(request, env, lang);
       } else if (request.method === "GET" && url.pathname === "/admin/preview/deep-dive") {
@@ -2007,6 +2012,65 @@ async function handleArchiveIssue(request, env, slug, lang) {
 // reader's own saved countries pulled straight from their preferences —
 // the same list the archive filter and the preferences page already use,
 // so nobody has to tell us their footprint twice.
+// ================================================================
+// SAVED COUNTRIES, FOR THE PUBLIC PLANNER
+// ================================================================
+// The planner now lives on the public site and opens in place for a
+// signed-in reader. Its one remaining gap was the "use my subscribed
+// countries" control, which needs the subscriber record -- and
+// site-worker deliberately cannot read one.
+//
+// So it asks. site-worker calls this over a Cloudflare service binding
+// and members-worker stays the only thing that ever touches an account.
+//
+// IT AUTHENTICATES THE READER, NOT THE CALLER, which is what makes it
+// safe to expose at all. requireSession() runs exactly as it does for a
+// direct browser request: the forwarded cookie must carry a validly
+// signed session AND the record must still be active. A caller cannot
+// ask for somebody else's countries, because the answer is always "whose
+// cookie is this" -- there is no email parameter to tamper with.
+//
+// That also means it is harmless that this route is reachable publicly.
+// It returns one subscriber's own country list to a request already
+// carrying that subscriber's session, which is strictly less than
+// /members/preferences already shows them.
+async function handleSavedCountriesApi(request, env) {
+  const email = await requireSession(request, env);
+  if (!email) {
+    // 200 with an empty list rather than 401. The caller is a page
+    // render, not a person: a signed-out reader simply has no saved
+    // countries, and an error status would make site-worker's fallback
+    // path harder to read for a case that is completely normal.
+    return jsonResponse({ countries: [] });
+  }
+  const sub = await getSubscriber(env, email);
+  return jsonResponse({ countries: (sub && sub.countries) || [] });
+}
+
+// ================================================================
+// ONE PLANNER, NOT TWO
+// ================================================================
+// Until 20 August 2026 the planner existed twice: gated here and gated
+// again on the public site, with two sets of locked/unlocked defaults to
+// keep in step. That duplication had already caused confusion this week --
+// "which one were you looking at" is not a question anyone should have to
+// ask about a tool that reconciles arithmetic for a living.
+//
+// The public copy is now fully capable for a signed-in reader, so this
+// one redirects to it and stops being a second thing to maintain.
+//
+// THE QUERY STRING IS PRESERVED, and that is not cosmetic: the gate's
+// sign-in link sends readers here via ?next=/members/roi-calculator?...
+// carrying their volumes and country picks. Dropping it here would throw
+// away the work the hand-off exists to protect, at the last hop.
+function redirectToPublicPlanner(url) {
+  const qs = url.search || "";
+  return new Response(null, {
+    status: 302,
+    headers: { Location: `https://e-invoicingcompliancecorner.com/roi-calculator${qs}` },
+  });
+}
+
 async function handleRoiCalculator(request, env, lang) {
   const email = await requireSession(request, env);
   if (!email) return redirectToLogin("/members/roi-calculator");
