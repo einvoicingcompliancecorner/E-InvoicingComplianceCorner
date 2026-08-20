@@ -2075,6 +2075,16 @@ function renderStats(){
   // note from the Netherlands session: a raw count that includes the
   // EU row inflates the true number by one).
   const countries = new Set(DATA.map(e=>e.country).filter(c => c !== 'European Union')).size;
+  // PUBLISHED FOR THE SIGNUP PANEL, which says "N jurisdictions tracked"
+  // and must not carry a copy of N. auth-overlay.js reads this; the
+  // planner publishes the same global from its own rows, by the same
+  // rule (distinct countries, European Union excluded).
+  //
+  // Both are COMPUTED from live data rather than typed, which is the
+  // whole point: the last time this number was written down it sat at
+  // 48 across seven HTML files and four JSON files while D1 said 56,
+  // through several country additions, with nothing complaining.
+  window.EICC_JURISDICTION_COUNT = countries;
   const inforce = DATA.filter(e=>computeStatus(e,NOW)==='inforce').length;
   const soon = DATA.filter(e=>computeStatus(e,NOW)==='soon').length;
   const upcoming = DATA.filter(e=>computeStatus(e,NOW)==='upcoming').length;
