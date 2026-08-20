@@ -127,7 +127,12 @@
   },
   "roiPanel": {
     "newTab": "Abrir en su propia pestaña ›",
-    "unavailable": "El planificador no se ha podido cargar en este momento. Vuelva a intentarlo en unos minutos."
+    "unavailable": "El planificador no se ha podido cargar en este momento. Vuelva a intentarlo en unos minutos.",
+    "gateEyebrow": "Herramienta para suscriptores",
+    "gateTitle": "Calculadora de ROI y planificador de oleadas",
+    "gateBody": "Suscribirse es gratuito. El planificador construye un caso de negocio listo para el consejo a partir de sus propios volúmenes de facturación y su presencia por países, con un plan de oleadas de implantación calculado hacia atrás desde las fechas límite realmente publicadas que este sitio sigue &mdash; y una calificación de evidencia para cada referencia que utiliza.",
+    "gateSubscribe": "Suscríbase gratis",
+    "gateSignedUp": "¿Ya está suscrito?"
   },
   "stats": {
     "alreadyInEffect": "Ya en vigor",
@@ -138,7 +143,8 @@
   },
   "who": {
     "signedInAs": "Sesión iniciada como",
-    "signOut": "Cerrar sesión"
+    "signOut": "Cerrar sesión",
+    "signIn": "Iniciar sesión"
   },
   "regionNames": {
     "Europe": "Europa",
