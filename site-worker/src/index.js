@@ -194,8 +194,28 @@ async function renderTracker(request, env) {
     return new Response(out, {
       headers: {
         "Content-Type": "text/html; charset=UTF-8",
-        // Same short edge cache as the country deep-dive pages.
-        "Cache-Control": "public, max-age=300",
+        // SIXTY SECONDS, NOT FIVE MINUTES, matching the planner.
+        //
+        // This page's cache has now been implicated in three confused
+        // deploy checks in two days: Middle East countries "missing" from
+        // the sidebar on 3 August, the planner's gating change "not
+        // taking effect" on the 19th, and the sign-in button on the 20th
+        // — every one of them a browser serving HTML from disk while the
+        // deploy sat there working perfectly.
+        //
+        // The tracker is the page every check starts from, and the one
+        // that changes most often. A cache that makes a good deploy look
+        // like a failed one costs more than it saves here.
+        //
+        // NOT a correctness problem, and worth being precise about that:
+        // this HTML is identical for every reader. The greeting and the
+        // sign-in button are rendered client-side from a cookie, which is
+        // exactly what keeps this response shareable between them. Only
+        // the planner's route varies by session, and only that route goes
+        // private.
+        //
+        // Worth revisiting when the site stops changing daily.
+        "Cache-Control": "public, max-age=60",
       },
     });
   } catch (err) {
