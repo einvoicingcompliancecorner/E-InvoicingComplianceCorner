@@ -111,6 +111,16 @@
     "  line-height:1;padding:0 3px;}",
     ".eicc-auth-chip button:hover{color:#b5432f;}",
     ".eicc-auth-note{font-size:11.5px;color:#6f6444;line-height:1.5;margin:0 0 14px;}",
+    ".eicc-auth-toggle{background:none;border:none;padding:0;margin:0 0 12px;cursor:pointer;",
+    "  font-family:'IBM Plex Mono',monospace;font-size:11px;color:#96621c;text-decoration:underline;}",
+    ".eicc-auth-toggle:hover{color:#b5432f;}",
+    ".eicc-auth-picker{max-height:190px;overflow-y:auto;border:1px solid #cfc4a8;border-radius:6px;",
+    "  background:#fffdf7;padding:8px 10px;margin:0 0 14px;}",
+    ".eicc-auth-region{font-family:'IBM Plex Mono',monospace;font-size:9.5px;text-transform:uppercase;",
+    "  letter-spacing:.8px;color:#6f6444;margin:8px 0 4px;}",
+    ".eicc-auth-region:first-child{margin-top:0;}",
+    ".eicc-auth-pick{display:block;font-size:12.5px;color:#241d10;padding:2px 0;cursor:pointer;}",
+    ".eicc-auth-pick input{margin:0 6px 0 0;vertical-align:middle;}",
     ".eicc-auth-note a{color:#b5432f;}",
     ".eicc-auth-go{width:100%;padding:12px 18px;background:#b5432f;color:#fff;border:none;border-radius:6px;",
     "  font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:700;cursor:pointer;",
@@ -307,55 +317,234 @@
     if (first) first.focus();
   }
 
-  // THE COUNTRIES ARE CARRIED, NOT ASKED FOR AGAIN.
+  // THE COUNTRIES, CARRIED WHERE THERE ARE ANY AND CHOOSABLE WHERE THERE
+  // ARE NOT.
   //
-  // The planner's list means "where I invoice"; the alert preference
-  // means "what to tell me about". They are different questions and the
-  // old flow asked both, on two forms, in two places. Here the planner's
-  // selection arrives pre-filled and the reader can take entries OUT.
+  // Two different journeys arrive here and they need different things.
   //
-  // Removal only, deliberately. Adding needs the full 70-country list,
-  // which does not fit a panel and is not in the planner document at all
-  // — and removal is the common edit anyway, since a business case is
-  // usually drawn wider than the countries someone wants email about.
-  // Adding lives in preferences, and the note says so.
-  function countriesHtml() {
-    if (!countries.length) {
-      return '<p class="eicc-auth-note">'
-        + esc(t("countries.none", "We'll send you the full monthly digest. You can narrow it to specific countries any time in your preferences."))
-        + '</p>';
+  // FROM THE PLANNER the reader has already picked their jurisdictions,
+  // so asking again would be the two-forms defect this panel exists to
+  // remove — they arrive as chips and the only edit needed is taking some
+  // OUT, since a business case is usually drawn wider than the countries
+  // somebody wants email about.
+  //
+  // FROM THE TRACKER, where Subscribe now opens this panel, there is
+  // nothing to carry. Shipping only removal there would have quietly
+  // dropped country preferences from every signup that did not come
+  // through the planner — and Dan's whole objection to the one-field
+  // version was not knowing "name, title, company and countries". So the
+  // full picker appears, built from countries.js, which the tracker
+  // already loads.
+  //
+  // THE LIST IS FETCHED WHEN IT IS ASKED FOR, not when the page loads.
+  //
+  // The first version made the picker conditional on
+  // EICC_COUNTRIES_BY_REGION already being present, which was neat and
+  // wrong: the tracker loads countries.js LAZILY, so the global does not
+  // exist until something else has needed it. The picker was therefore
+  // never offered on the one page it was built for. It rendered
+  // correctly, in the sense that it correctly rendered nothing.
+  //
+  // Loading it here on the toggle costs nobody anything who does not
+  // press it, and means the picker works on the planner too — where the
+  // reader may perfectly well want alerts on a country they did not put
+  // in the business case.
+  //
+  // THE PROMISE IS SHARED ON WINDOW, and that is not fussiness.
+  // countries.js declares a top-level const, so two script tags for it
+  // throw "already declared" and take the running script down with them.
+  // The tracker has its own loader; both now go through
+  // window.EICC_COUNTRIES_LOAD so whoever asks first creates the one
+  // promise and the other waits on it.
+  var pickerOpen = false;
+  var pickerLoading = false;
+  var pickerFailed = false;
+
+  /** A TOP-LEVEL `const` IS NOT A PROPERTY OF `window`, and this cost a
+   *  round trip.
+   *
+   *  countries.js declares `const EICC_COUNTRIES_BY_REGION = {...}` at
+   *  the top level of a classic script. That creates a global BINDING —
+   *  visible to every script on the page as a bare identifier — but ES6
+   *  deliberately keeps `const` and `let` out of the global object, so
+   *  `window.EICC_COUNTRIES_BY_REGION` stays undefined forever. (`var`
+   *  and `function` do become window properties. `const` does not.)
+   *
+   *  The first version of this read it off `window`, so the list loaded
+   *  perfectly, the global existed, and the picker rendered zero
+   *  countries with no error anywhere. The tracker's own loader has
+   *  always used the bare-identifier form, which is why it never hit
+   *  this.
+   *
+   *  try/catch as well as typeof: typeof alone is safe for an undeclared
+   *  name, but not for one in the temporal dead zone, which is exactly
+   *  what a const being defined by a script still executing looks like.
+   *  That would throw a ReferenceError and take this panel with it. */
+  function regionGroups() {
+    var byRegion = null;
+    try {
+      if (typeof EICC_COUNTRIES_BY_REGION !== "undefined") byRegion = EICC_COUNTRIES_BY_REGION;
+    } catch (err) {
+      byRegion = null;
     }
-    var chips = countries.map(function (c, i) {
+    return (byRegion && typeof byRegion === "object") ? byRegion : null;
+  }
+
+  function loadCountries() {
+    if (regionGroups()) return Promise.resolve();
+    if (window.EICC_COUNTRIES_LOAD) return window.EICC_COUNTRIES_LOAD;
+    window.EICC_COUNTRIES_LOAD = new Promise(function (resolve, reject) {
+      var s = document.createElement("script");
+      s.src = "/countries.js";
+      s.onload = resolve;
+      s.onerror = function (err) { window.EICC_COUNTRIES_LOAD = null; reject(err); };
+      document.head.appendChild(s);
+    });
+    return window.EICC_COUNTRIES_LOAD;
+  }
+
+  function chipsHtml() {
+    if (!countries.length) return "";
+    return countries.map(function (c, i) {
       return '<span class="eicc-auth-chip">' + esc(c)
         + '<button type="button" data-drop="' + i + '" aria-label="Remove ' + esc(c) + '">&times;</button></span>';
     }).join("");
-    return '<p class="eicc-auth-note" style="margin-bottom:6px;">'
-      + esc(t("countries.lede", "We'll alert you when these change — carried over from your plan. Remove any you don't want email about:"))
-      + '</p><div class="eicc-auth-chips">' + chips + '</div>';
   }
 
-  // Removing a chip re-renders the whole step rather than patching two
-  // nodes in place. Patching is where a visible list starts disagreeing
-  // with the array that actually gets submitted, and the reader has no
-  // way to see which one won. Whatever they have typed is carried across
-  // explicitly below, because a re-render would otherwise lose it.
+  function pickerHtml() {
+    var groups = regionGroups();
+    if (!groups) return "";
+    var out = "";
+    Object.keys(groups).forEach(function (region) {
+      var list = groups[region] || [];
+      if (!list.length) return;
+      out += '<p class="eicc-auth-region">' + esc(region) + "</p>";
+      list.forEach(function (c) {
+        var on = countries.indexOf(c) !== -1;
+        out += '<label class="eicc-auth-pick"><input type="checkbox" value="' + esc(c) + '"'
+          + (on ? " checked" : "") + ">" + esc(c) + "</label>";
+      });
+    });
+    return '<div class="eicc-auth-picker">' + out + "</div>";
+  }
+
+  function countriesHtml() {
+    var lede = countries.length
+      ? t("countries.lede", "We'll alert you when these change — carried over from your plan. Remove any you don't want email about:")
+      : pickerFailed
+        ? t("countries.none", "We'll send you the full monthly digest. You can narrow it to specific countries any time in your preferences.")
+        : t("countries.pick", "Which countries should we alert you about? Leave this empty and you'll get the full monthly digest.");
+
+    var label = pickerLoading
+      ? t("countries.loading", "Loading the list…")
+      : pickerOpen
+        ? t("countries.hide", "Done choosing")
+        : countries.length
+          ? t("countries.more", "Add or change countries")
+          : t("countries.choose", "Choose countries");
+
+    // The toggle disappears only if the list could not be fetched. Then
+    // the note above already says where to set them instead, so the
+    // reader is told what to do rather than shown a control that does
+    // nothing.
+    var toggle = pickerFailed ? ""
+      : '<button type="button" class="eicc-auth-toggle" data-picker'
+        + (pickerLoading ? " disabled" : "") + ">" + esc(label) + "</button>";
+
+    return '<p class="eicc-auth-note" style="margin-bottom:6px;">' + esc(lede) + "</p>"
+      + '<div class="eicc-auth-chips">' + chipsHtml() + "</div>"
+      + toggle
+      + (pickerOpen && regionGroups() ? pickerHtml() : "");
+  }
+
+  /** Whatever is currently typed into the five fields. A re-render
+   *  rebuilds the inputs, so anything half-entered has to be carried
+   *  across by hand — losing a reader's company name because they
+   *  reached for the country list is the kind of small betrayal that
+   *  ends a signup. */
+  function readTyped() {
+    var typed = {};
+    ["firstName", "lastName", "email", "jobTitle", "company"].forEach(function (id) {
+      if (fieldEl(id)) typed[id] = fieldVal(id);
+    });
+    return typed;
+  }
+
+  function writeTyped(typed) {
+    Object.keys(typed).forEach(function (id) {
+      var el = fieldEl(id);
+      if (el && typed[id]) el.querySelector("input").value = typed[id];
+    });
+  }
+
+  function rerenderKeepingInput() {
+    var typed = readTyped();
+    email = typed.email || email;
+    renderDetails();
+    writeTyped(typed);
+  }
+
   function wireChips() {
-    var box = body().querySelector(".eicc-auth-chips");
-    if (!box) return;
-    box.addEventListener("click", function (e) {
-      var btn = e.target.closest ? e.target.closest("[data-drop]") : null;
-      if (!btn) return;
-      var typed = {};
-      ["firstName", "lastName", "email", "jobTitle", "company"].forEach(function (id) {
-        if (fieldEl(id)) typed[id] = fieldVal(id);
+    var host = body();
+    if (!host) return;
+    // BOUND ONCE. renderDetails() runs again on every chip removal and
+    // every picker toggle, and .eicc-auth-body is the one node that
+    // survives all of it — so re-binding here would add a second handler
+    // per re-render, and the third click would remove three chips. The
+    // old version escaped this only because it bound to a node the
+    // re-render replaced, which is luck rather than design.
+    if (host.dataset.chipsWired) return;
+    host.dataset.chipsWired = "1";
+
+    // Removing a chip and opening the picker both re-render the whole
+    // step rather than patching nodes. Patching is where a visible list
+    // starts disagreeing with the array that actually gets submitted,
+    // and the reader has no way of seeing which one won.
+    host.addEventListener("click", function (e) {
+      var drop = e.target.closest ? e.target.closest("[data-drop]") : null;
+      if (drop) {
+        countries.splice(Number(drop.getAttribute("data-drop")), 1);
+        rerenderKeepingInput();
+        return;
+      }
+      var toggle = e.target.closest ? e.target.closest("[data-picker]") : null;
+      if (!toggle || pickerLoading) return;
+      if (pickerOpen) { pickerOpen = false; rerenderKeepingInput(); return; }
+      if (regionGroups()) { pickerOpen = true; rerenderKeepingInput(); return; }
+
+      // First open on a page that has not needed the list yet. Show the
+      // loading label rather than nothing: a button that does nothing for
+      // 200ms is a button the reader presses again.
+      pickerLoading = true;
+      rerenderKeepingInput();
+      loadCountries().then(function () {
+        pickerLoading = false;
+        pickerOpen = !!regionGroups();
+        pickerFailed = !pickerOpen;
+        rerenderKeepingInput();
+      }).catch(function () {
+        pickerLoading = false;
+        pickerFailed = true;
+        rerenderKeepingInput();
       });
-      countries.splice(Number(btn.getAttribute("data-drop")), 1);
-      email = typed.email || email;
-      renderDetails();
-      Object.keys(typed).forEach(function (id) {
-        var el = fieldEl(id);
-        if (el && typed[id]) el.querySelector("input").value = typed[id];
-      });
+    });
+
+    // A TICK DOES NOT RE-RENDER, and that is not an inconsistency. The
+    // picker is a scrolling list of seventy: rebuilding it would throw
+    // the reader back to the top on every single tick, which makes
+    // choosing four countries an exercise in re-finding your place. Only
+    // the chips are repainted, and they are repainted FROM the array
+    // rather than nudged, so the two cannot drift apart.
+    host.addEventListener("change", function (e) {
+      var box = e.target;
+      if (!box || box.type !== "checkbox" || !box.closest(".eicc-auth-picker")) return;
+      var name = box.value;
+      var at = countries.indexOf(name);
+      if (box.checked && at === -1) countries.push(name);
+      if (!box.checked && at !== -1) countries.splice(at, 1);
+      var chipBox = host.querySelector(".eicc-auth-chips");
+      if (chipBox) chipBox.innerHTML = chipsHtml();
+      place();
     });
   }
 
