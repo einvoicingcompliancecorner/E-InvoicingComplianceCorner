@@ -34,7 +34,7 @@ unless you genuinely need the distinction.
 **Whether you are translating the whole site or just the planner.** The
 ROI page is not standalone. A reader arrives from the tracker, and a
 tracker in English leading to a planner in Italian is worse than either.
-The planner is 521 cells; the rest of the site is another 586 rows. See
+The planner is 521 cells; the rest of the site is another 653 rows. See
 Phase 5.
 
 **Who is translating.** This matters more than usual, because **68 of the
@@ -123,6 +123,25 @@ edit the gate.
 The corollary is that a half-finished language shows nothing. Use
 `IN_PROGRESS` in `tests/roi-coverage.mjs` while you work, and expect the
 page to stay English until you are done.
+
+### Which is why the planner is English for everyone, today
+
+Worth knowing before you assume otherwise, because nothing on the site
+says so and the gate is working exactly as designed.
+
+The `roi` namespace has **433 English keys and zero rows in any other
+language** — not a partial translation, none at all. So `resolveRoiLang`
+falls back for `es`, `de` and `fr` on every request, and has since the
+planner was built. A Spanish reader gets a fully Spanish tracker, clicks
+Resources → ROI & Wave Planner, and lands on an English page with one
+line explaining why.
+
+Everything around it is translated: the tracker, the education pages,
+`subscribe`, `feedback`, country names, milestones, deep dives, and as of
+migration 596 the sign-up panel. The planner is the one surface that
+never was. Translating it is Phases 1–4 of this document for a language
+that already exists everywhere else — which is an unusual shape for this
+runbook, and the reason it is called out here rather than buried.
 
 ---
 
@@ -313,17 +332,55 @@ currently at four-language parity:
 | `edu-preparing-for-mandate` | 102 |
 | `edu-impact-of-mandate` | 100 |
 | `edu-mandate-types` | 81 |
-| `tracker` | 76 |
+| `tracker` | 76 + **67 `auth.*`** |
 | `edu-certified-providers` | 50 |
 | `subscribe` | 50 |
 | `feedback` | 20 |
 | `regions` | 4 |
 
-That is **586 rows per language**. Plus the per-country content tables —
+That is **653 rows per language**. Plus the per-country content tables —
 `milestone_translations` (412 rows in each language),
 `story_translations`, and the eight
 `deep_dive_*_translations` tables — which are a much larger job and are
 covered by `ADDING-A-COUNTRY.md` rather than here.
+
+### The sign-up panel lives inside `tracker`, under `auth.*`
+
+Added 21 August 2026 (migration 596). This is the panel that opens over
+whatever page the reader is on when they press Sign in or Subscribe — 67
+strings, and the route people now actually create an account through, so
+it is not optional polish.
+
+**It is not its own namespace, deliberately.** `generate_files.py` maps
+the `tracker` namespace to `i18n/<lang>.json` and every other namespace
+to `i18n/<lang>-<ns>.json`. A namespace called `auth` would have produced
+`i18n/<lang>-auth.json`, which nothing loads. The panel reads the `auth`
+block of the shared file, and dotted keys unflatten into exactly that.
+
+**Twelve of the 67 are inherited from `subscribe`** rather than
+translated twice: the five field labels, their five error messages, the
+benefits eyebrow and the free badge. The panel's English was changed to
+match `subscribe.html` word for word so this could work — two
+vocabularies for one form is a defect this project has hit four times.
+`generate_auth_i18n.mjs` refuses to run if the two sides drift, so if you
+translate `subscribe` for a new language those twelve come across free:
+re-run the generator rather than writing them again.
+
+**Two strings carry `{0}` slots and both exist *because* of
+translation.** `auth.code.lede` holds the address, which German puts
+before the verb, so the original "prefix + address" version could only
+ever have read wrongly there. `auth.err.wrongMany` holds the attempt
+count, which used to sit between two fragments and had no singular at
+all — English itself said "1 tries left." Dropping either brace loses the
+value out of the sentence while the rest still reads perfectly; standing
+invariants in 596 catch it.
+
+**Every panel string has an English fallback in the code behind it.**
+That is what makes a missing language invisible rather than broken: it
+serves English inside an otherwise translated page. 596 asserts all four
+languages hold all 67 keys, and `tests/auth-code.mjs` asserts the English
+in the file still matches the fallback in the code character for
+character.
 
 ---
 
@@ -331,8 +388,14 @@ covered by `ADDING-A-COUNTRY.md` rather than here.
 
 ```bash
 node tests/roi-coverage.mjs        # per-language, all three ROI tables
-npm test                           # 10 suites
+node tests/auth-code.mjs           # the sign-up panel's 67 strings
+npm test                           # every suite
 ```
+
+**The suite count is not written down here on purpose.** It was "10
+suites" in this file while the repository had fifteen, which is the same
+class of defect as a hardcoded country count: a number with no
+connection to the thing it counts. `npm test` prints the real one.
 
 The coverage report is the one to run first and last. It fails on a
 language stranded past 20% and under 100%, on a stale in-progress

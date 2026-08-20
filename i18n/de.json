@@ -227,5 +227,98 @@
     "legendScheduled": "über ein Jahr hinaus",
     "pagesAria": "Tafelseiten",
     "pageAria": "Tafelseite"
+  },
+  "auth": {
+    "signin": {
+      "eyebrow": "Anmelden",
+      "title": "Willkommen zurück",
+      "lede": "Geben Sie Ihre E-Mail-Adresse ein, und wir senden Ihnen einen 6-stelligen Code. Kein Passwort zu merken.",
+      "cta": "Code per E-Mail senden",
+      "newHere": "Neu hier?",
+      "createOne": "Kostenloses Konto erstellen"
+    },
+    "signup": {
+      "eyebrow": "Kostenloses Konto",
+      "title": "Behalten Sie das — und erfahren Sie, wenn es sich ändert",
+      "lede": "Kostenlos, ohne Zahlungsdaten. Wir senden Ihnen per E-Mail einen 6-stelligen Code zur Bestätigung der Adresse — Sie bleiben auf dieser Seite, und nichts von dem, was Sie eingegeben haben, geht verloren.",
+      "cta": "Kostenloses Konto erstellen",
+      "fine": "Sie haben bereits ein Konto? Verwenden Sie dieselbe Adresse, und wir melden Sie einfach an."
+    },
+    "sell": {
+      "stat1": "erfasste Länder",
+      "stat2num": "Monatlich",
+      "stat2": "Überblick, plus Warnungen",
+      "stat3num": "Null",
+      "stat3": "Spam dazwischen",
+      "perk1": "Regeländerungen in klarer Sprache",
+      "perk2": "Nur die Länder, die Sie wählen",
+      "perk3": "Alle früheren Ausgaben, durchsuchbar",
+      "perk5": "Whitepaper und Analysen, direkt in Ihr Postfach",
+      "perk6": "ROI-Rechner und Compliance-Wellenplanung, mit Ihren gespeicherten Ländern",
+      "perk4": "Neue Leitfäden vor allen anderen",
+      "eyebrow": "Nie wieder überrascht werden",
+      "title": "Erfahren Sie es, sobald eine Regierung handelt",
+      "free": "✨ Kostenlos beitreten — keine Zahlung erforderlich"
+    },
+    "countries": {
+      "lede": "Wir benachrichtigen Sie, wenn sich diese ändern — aus Ihrem Plan übernommen. Entfernen Sie die, zu denen Sie keine E-Mails möchten:",
+      "none": "Wir senden Ihnen den vollständigen monatlichen Überblick. Sie können ihn jederzeit in Ihren Einstellungen auf bestimmte Länder eingrenzen.",
+      "pick": "Zu welchen Ländern sollen wir Sie benachrichtigen? Lassen Sie das Feld leer, und Sie erhalten den vollständigen monatlichen Überblick.",
+      "loading": "Liste wird geladen…",
+      "hide": "Fertig",
+      "more": "Länder hinzufügen oder ändern",
+      "choose": "Länder auswählen"
+    },
+    "sending": "Ihr Code wird gesendet…",
+    "err": {
+      "rate": "Das sind viele Codes in einer Stunde. Bitte warten Sie etwas und versuchen Sie es erneut.",
+      "email": "Diese Adresse sieht nicht richtig aus. Bitte prüfen Sie sie.",
+      "fields": "Bitte füllen Sie alle Felder aus.",
+      "down": "Wir erreichen den Kontodienst gerade nicht. Bitte versuchen Sie es in einer Minute erneut.",
+      "generic": "Beim Senden Ihres Codes ist etwas schiefgegangen. Bitte versuchen Sie es erneut.",
+      "codeShape": "Bitte geben Sie alle sechs Ziffern ein.",
+      "wrongOne": "Dieser Code ist nicht richtig. Noch 1 Versuch.",
+      "wrongMany": "Dieser Code ist nicht richtig. Noch {0} Versuche.",
+      "locked": "Zu viele Versuche. Fordern Sie einen neuen Code an.",
+      "expired": "Dieser Code ist abgelaufen. Fordern Sie einen neuen an.",
+      "used": "Dieser Code wurde bereits verwendet. Fordern Sie einen neuen an.",
+      "browser": "Dieser Code gehört zu einem anderen Browser. Fordern Sie hier einen neuen an.",
+      "none": "Wir finden diesen Code nicht. Fordern Sie einen neuen an.",
+      "generic2": "Wir konnten diesen Code nicht prüfen. Bitte versuchen Sie es erneut."
+    },
+    "code": {
+      "eyebrow": "Prüfen Sie Ihre E-Mails",
+      "title": "Geben Sie Ihren 6-stelligen Code ein",
+      "lede": "Wir haben einen Code an {0} gesendet.",
+      "lede2": "Er läuft in 10 Minuten ab. Lassen Sie dieses Fenster offen — nichts von dem, was Sie eingegeben haben, geht verloren.",
+      "cta": "Bestätigen",
+      "back": "Falsche Adresse? Zurück",
+      "resend": "Erneut senden",
+      "noAccount": "Kommt nichts an? Vielleicht haben Sie noch kein Konto.",
+      "resendIn": "Erneut senden",
+      "checking": "Wird geprüft…"
+    },
+    "field": {
+      "firstName": {
+        "label": "Vorname",
+        "error": "Vorname ist erforderlich"
+      },
+      "lastName": {
+        "label": "Nachname",
+        "error": "Nachname ist erforderlich"
+      },
+      "email": {
+        "label": "E-Mail-Adresse",
+        "error": "Eine gültige E-Mail-Adresse ist erforderlich"
+      },
+      "jobTitle": {
+        "label": "Position",
+        "error": "Position ist erforderlich"
+      },
+      "company": {
+        "label": "Firmenname",
+        "error": "Firmenname ist erforderlich"
+      }
+    }
   }
 }

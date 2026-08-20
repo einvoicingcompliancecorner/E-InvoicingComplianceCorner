@@ -427,4 +427,145 @@ t.check("and the mode travels with the request, so the Worker knows which form i
   /mode:\s*signin\s*\?\s*"signin"\s*:\s*"signup"/.test(OVERLAY_SRC)
   || /mode:\s*opts\.mode === "signin"/.test(OVERLAY_SRC));
 
+// ---- and the panel speaks all four languages ---------------------------
+//
+// tracker-i18n.mjs already proves the four shared files hold identical
+// key sets, so a key present in en.json is present everywhere. What it
+// cannot see is whether the PANEL's keys are among them: auth-overlay.js
+// is a script, not a page, and that suite scans pages.
+//
+// So this is the missing half — every key the panel asks for, including
+// the five field labels it builds from a table rather than writing out,
+// resolves to a real string in English. Without it the panel could lose
+// its translations one key at a time and go on looking translated,
+// because every t() has an English fallback sitting right behind it.
+const I18N_EN = JSON.parse(readFileSync(
+  join(dirname(dirname(fileURLToPath(import.meta.url))), "i18n", "en.json"), "utf8"));
+
+function resolve(doc, dotted) {
+  let node = doc;
+  for (const part of dotted.split(".")) {
+    if (!node || typeof node !== "object" || !(part in node)) return null;
+    node = node[part];
+  }
+  return typeof node === "string" ? node : null;
+}
+
+const literalKeys = [...OVERLAY_SRC.matchAll(
+  /\bt\(\s*"([a-zA-Z0-9._]+)"\s*,\s*"((?:[^"\\]|\\.)*)"\s*\)/g)]
+  .map((m) => [m[1], m[2].replace(/\\"/g, '"').replace(/\\\\/g, "\\")]);
+
+// The five fields, whose keys are built as t("field." + f.id + ".label").
+// A regex over call sites cannot see them, and missing them is exactly
+// how twenty ROI keys once dropped out of a passing check.
+const fieldBlock = /var FIELDS = \[([\s\S]*?)\n {2}\];/.exec(OVERLAY_SRC);
+t.check("the FIELDS table is readable", !!fieldBlock);
+const fieldKeys = [];
+if (fieldBlock) {
+  for (const f of fieldBlock[1].matchAll(
+    /\{\s*id:\s*"(\w+)",\s*label:\s*"((?:[^"\\]|\\.)*)",\s*err:\s*"((?:[^"\\]|\\.)*)"/g)) {
+    fieldKeys.push([`field.${f[1]}.label`, f[2]], [`field.${f[1]}.error`, f[3]]);
+  }
+}
+t.check("and describes five fields", fieldKeys.length === 10, fieldKeys.length / 2);
+
+const allKeys = [...literalKeys, ...fieldKeys];
+t.check(`the panel asks for ${allKeys.length} strings`, allKeys.length >= 60, allKeys.length);
+
+const unresolved = allKeys.filter(([k]) => resolve(I18N_EN, "auth." + k) === null).map(([k]) => k);
+t.check("and every one of them exists in i18n/en.json",
+  unresolved.length === 0,
+  unresolved.length
+    ? `${unresolved.slice(0, 8).join(", ")}${unresolved.length > 8 ? ` …and ${unresolved.length - 8} more` : ""}`
+      + "\n         run members-worker/migrations/generate_auth_i18n.mjs"
+    : "");
+
+// THE ENGLISH IN THE FILE IS THE ENGLISH IN THE CODE, character for
+// character. The fallback beside each t() is what a reader gets when the
+// file is missing, so the two disagreeing means the panel silently says
+// two different things depending on whether i18n.js loaded. The same
+// check exists for the ROI planner and has caught a real edit.
+const drifted = allKeys
+  .filter(([k, en]) => {
+    const got = resolve(I18N_EN, "auth." + k);
+    return got !== null && got !== en;
+  })
+  .map(([k, en]) => `${k}\n           code: ${en.slice(0, 70)}\n           json: ${String(resolve(I18N_EN, "auth." + k)).slice(0, 70)}`);
+t.check("and says exactly what the code's fallback says",
+  drifted.length === 0,
+  drifted.length ? `${drifted.length} drifted\n         ${drifted.slice(0, 3).join("\n         ")}` : "");
+
+// THE {0} SLOTS HAVE TO SURVIVE TRANSLATION, in every language and not
+// just in English — which is the only place the risk actually lives.
+//
+// Both slots exist BECAUSE of translation: the address used to be glued
+// onto the end of an English prefix, which German cannot do, and the
+// attempt count used to sit between two fragments. A translator dropping
+// the brace is the one way that work gets quietly undone, and the result
+// is a sentence with the address or the number simply missing.
+//
+// tracker-i18n.mjs proves the four files hold the same KEYS. Nothing
+// proves they hold the same PLACEHOLDERS, so this does.
+const I18N_ALL = Object.fromEntries(["en", "es", "de", "fr"].map((l) => [l,
+  JSON.parse(readFileSync(
+    join(dirname(dirname(fileURLToPath(import.meta.url))), "i18n", `${l}.json`), "utf8"))]));
+
+for (const key of ["code.lede", "err.wrongMany"]) {
+  const without = Object.entries(I18N_ALL)
+    .filter(([, doc]) => {
+      const v = resolve(doc, "auth." + key);
+      return v === null || !v.includes("{0}");
+    })
+    .map(([l]) => l);
+  t.check(`${key} keeps its {0} slot in all four languages`,
+    without.length === 0,
+    without.length ? `missing in: ${without.join(", ")}` : "");
+}
+
+// ---- D1 and the JSON say the same thing --------------------------------
+//
+// THE JSON FILES ARE AN ARTEFACT, NOT A SOURCE, and that is easy to
+// forget because they are checked in and readable. generate_files.py
+// RECONSTRUCTS i18n/<lang>.json from D1's translations table, so a block
+// hand-written into one of them survives exactly until the next person
+// runs it. The first version of this work did that, and it would have
+// looked fine for weeks.
+//
+// Migration 596 is therefore the source and the JSON is its output. Both
+// come from one generator in one run, so they can only disagree if
+// somebody edits one by hand — which is precisely the thing worth
+// catching, and needs no database to catch: compare the file to the SQL.
+const MIGRATION = (() => {
+  try {
+    return readFileSync(join(dirname(dirname(fileURLToPath(import.meta.url))),
+      "members-worker", "migrations", "596_auth_panel_strings.sql"), "utf8");
+  } catch { return ""; }
+})();
+t.check("migration 596 exists", MIGRATION.length > 0);
+
+const sqlRows = new Map();
+for (const m of MIGRATION.matchAll(
+  /VALUES \('tracker', '((?:[^']|'')+)', '(\w\w)', '((?:[^']|'')*)'\);/g)) {
+  const un = (v) => v.replace(/''/g, "'");
+  sqlRows.set(`${m[2]}|${un(m[1])}`, un(m[3]));
+}
+t.check(`it carries ${sqlRows.size} rows`, sqlRows.size === 67 * 4, sqlRows.size);
+
+const mismatches = [];
+for (const [lang, doc] of Object.entries(I18N_ALL)) {
+  for (const [key] of allKeys) {
+    const fromJson = resolve(doc, "auth." + key);
+    const fromSql = sqlRows.get(`${lang}|auth.${key}`);
+    if (fromJson !== fromSql) {
+      mismatches.push(`${lang} auth.${key}: json=${JSON.stringify(fromJson)} sql=${JSON.stringify(fromSql)}`);
+    }
+  }
+}
+t.check("every string in the i18n files matches the row that generates it",
+  mismatches.length === 0,
+  mismatches.length
+    ? `${mismatches.length} differ\n         ${mismatches.slice(0, 3).join("\n         ")}`
+      + "\n         re-run members-worker/migrations/generate_auth_i18n.mjs"
+    : "");
+
 process.exit(t.report() ? 0 : 1);

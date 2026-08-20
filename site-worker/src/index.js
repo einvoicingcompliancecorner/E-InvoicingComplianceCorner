@@ -918,6 +918,50 @@ async function relayToMembers(request, env, path) {
   return new Response(await upstream.text(), { status: upstream.status, headers: out });
 }
 
+// ---- the signup panel's own strings, for the planner --------------------
+//
+// The panel is one file shared by the static pages and the planner, but
+// the two get their translations by different routes. The static pages
+// have i18n.js, which loads i18n/<lang>.json already; the planner is a
+// Worker-rendered document with no i18n.js at all, so this hands it the
+// same data inline.
+//
+// ONE SOURCE, TWO TRANSPORTS. The strings are NOT copied into D1 for
+// this. A second copy is the defect this project keeps meeting; a second
+// way of delivering one copy is not, and the asset layer already holds
+// the file. env.ASSETS.fetch() reads it exactly as a browser would.
+//
+// FLATTENED TO DOTTED KEYS, because that is the shape auth-overlay.js's
+// t() looks things up by. i18n.js walks the nested object instead, which
+// is why the file itself is nested — the flattening belongs here, at the
+// one consumer that wants it otherwise.
+async function authStrings(env, lang) {
+  if (!env.ASSETS) return {};
+  try {
+    const res = await env.ASSETS.fetch(
+      new Request(`https://assets.local/i18n/${encodeURIComponent(lang)}.json`));
+    if (!res.ok) return {};
+    const doc = await res.json();
+    const out = {};
+    const walk = (node, prefix) => {
+      for (const [k, v] of Object.entries(node || {})) {
+        const key = prefix ? `${prefix}.${k}` : k;
+        if (v && typeof v === "object") walk(v, key);
+        else if (typeof v === "string") out[key] = v;
+      }
+    };
+    walk(doc.auth, "");
+    return out;
+  } catch (err) {
+    // FAILS SOFT, like the saved-countries lookup. A missing or malformed
+    // language file means the panel falls back to its own English, which
+    // is a worse panel and still a working one. Taking the planner down
+    // over a translation would be the wrong trade by a wide margin.
+    console.warn(`auth strings: could not load i18n/${lang}.json — ${err && err.message}`);
+    return {};
+  }
+}
+
 // ---- the planner, framed inside the tracker -----------------------------
 //
 // Dan, 19 August 2026: wire the planner into the site "under the Resources
@@ -1087,12 +1131,20 @@ async function renderRoiCalculatorPage(request, env) {
 
   const roiLang = await resolveRoiLang(env.eicc_content, lang);
 
-  const [countries, benchmarks, phases, strings, fx] = await Promise.all([
+  const [countries, benchmarks, phases, strings, fx, panelStrings] = await Promise.all([
     getRoiCountries(env.eicc_content, null, roiLang.lang),
     getRoiBenchmarks(env.eicc_content, roiLang.lang),
     getRoiPhases(env.eicc_content, roiLang.lang),
     getRoiStrings(env.eicc_content, roiLang.lang),
     getRoiFxRates(env.eicc_content),
+    // roiLang.lang, NOT the language that was asked for. The planner
+    // serves English wholesale unless the whole roi namespace is present
+    // in the requested language (resolveRoiLang, migration 589), and a
+    // Spanish panel sitting on an English page is precisely the
+    // half-translated render that rule exists to prevent. The panel
+    // follows the page it is on. The day the planner itself is
+    // translated, this follows it without being touched.
+    authStrings(env, roiLang.lang),
   ]);
 
   const { body, script } = renderRoiPage({
@@ -1143,7 +1195,7 @@ async function renderRoiCalculatorPage(request, env) {
   a later load would still work -- but a reader who clicks in the gap
   would get the fallback navigation instead of the panel, which is a
   silent downgrade rather than a failure. Loading it first closes the
-  gap. --><script src="/auth-overlay.js"></script><script>${script}</script>${framed ? `<script>${ROI_FRAME_REPORTER}</script>` : ""}</body></html>`;
+  gap. --><script>window.EICC_AUTH_STRINGS=${JSON.stringify(panelStrings).replace(/<\//g, "<\\/")};</script><script src="/auth-overlay.js"></script><script>${script}</script>${framed ? `<script>${ROI_FRAME_REPORTER}</script>` : ""}</body></html>`;
 
   // SIXTY SECONDS, NOT FIVE MINUTES, while this is Beta.
   //

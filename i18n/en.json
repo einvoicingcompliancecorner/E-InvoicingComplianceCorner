@@ -227,5 +227,98 @@
     "legendScheduled": "beyond a year",
     "pagesAria": "Board pages",
     "pageAria": "Board page"
+  },
+  "auth": {
+    "signin": {
+      "eyebrow": "Sign in",
+      "title": "Welcome back",
+      "lede": "Enter your email address and we'll send you a 6-digit code. No password to remember.",
+      "cta": "Email me a code",
+      "newHere": "New here?",
+      "createOne": "Create a free account"
+    },
+    "signup": {
+      "eyebrow": "Free account",
+      "title": "Save this, and get told when it changes",
+      "lede": "Free, no payment details. We'll email you a 6-digit code to confirm the address — you stay on this page and nothing you've entered is lost.",
+      "cta": "Create my free account",
+      "fine": "Already have an account? Use the same address and we'll just sign you in."
+    },
+    "sell": {
+      "stat1": "jurisdictions tracked",
+      "stat2num": "Monthly",
+      "stat2": "digest, plus alerts",
+      "stat3num": "Zero",
+      "stat3": "spam in between",
+      "perk1": "Rule changes in plain language",
+      "perk2": "Only the countries you pick",
+      "perk3": "Every back issue, searchable",
+      "perk5": "Whitepapers and insights, straight to your inbox",
+      "perk6": "ROI calculator and compliance wave planning, with your countries saved",
+      "perk4": "New guides before anyone else",
+      "eyebrow": "Never get caught off guard",
+      "title": "Know the moment a government moves",
+      "free": "✨ Free to join — no payment required"
+    },
+    "countries": {
+      "lede": "We'll alert you when these change — carried over from your plan. Remove any you don't want email about:",
+      "none": "We'll send you the full monthly digest. You can narrow it to specific countries any time in your preferences.",
+      "pick": "Which countries should we alert you about? Leave this empty and you'll get the full monthly digest.",
+      "loading": "Loading the list…",
+      "hide": "Done choosing",
+      "more": "Add or change countries",
+      "choose": "Choose countries"
+    },
+    "sending": "Sending your code…",
+    "err": {
+      "rate": "That's a lot of codes in one hour. Please wait a while and try again.",
+      "email": "That address doesn't look right. Please check it.",
+      "fields": "Please fill in every field.",
+      "down": "We can't reach the account service just now. Please try again in a minute.",
+      "generic": "Something went wrong sending your code. Please try again.",
+      "codeShape": "Please enter all six digits.",
+      "wrongOne": "That code isn't right. One try left.",
+      "wrongMany": "That code isn't right. {0} tries left.",
+      "locked": "Too many attempts. Ask for a new code.",
+      "expired": "That code has expired. Ask for a new one.",
+      "used": "That code has already been used. Ask for a new one.",
+      "browser": "This code belongs to a different browser. Ask for a new one here.",
+      "none": "We can't find that code. Ask for a new one.",
+      "generic2": "We couldn't check that code. Please try again."
+    },
+    "code": {
+      "eyebrow": "Check your email",
+      "title": "Enter your 6-digit code",
+      "lede": "We've sent a code to {0}.",
+      "lede2": "It expires in 10 minutes. Keep this panel open — nothing you've entered is lost.",
+      "cta": "Confirm",
+      "back": "Wrong address? Go back",
+      "resend": "Send it again",
+      "noAccount": "Nothing arriving? You may not have an account yet.",
+      "resendIn": "Send it again",
+      "checking": "Checking…"
+    },
+    "field": {
+      "firstName": {
+        "label": "First name",
+        "error": "First name is required"
+      },
+      "lastName": {
+        "label": "Last name",
+        "error": "Last name is required"
+      },
+      "email": {
+        "label": "Email address",
+        "error": "A valid email address is required"
+      },
+      "jobTitle": {
+        "label": "Title",
+        "error": "Title is required"
+      },
+      "company": {
+        "label": "Company name",
+        "error": "Company name is required"
+      }
+    }
   }
 }
