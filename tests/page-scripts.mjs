@@ -132,4 +132,59 @@ t.check("and the greeting's own strings resolve in every language",
     return d.who && d.who.signedInAs && d.who.signOut;
   }));
 
+// ---- and nothing links to a POST-only route ---------------------------
+//
+// THE BUG: the greeting's sign-out was written as
+// <a href=".../members/logout">. That route is POST-only, so the link
+// 404'd — and left the reader believing they had signed out while the
+// session was completely untouched. The worst of both: a dead end that
+// looks like success.
+//
+// /members/logout is POST-only on purpose. A GET logout can be fired by
+// any page anywhere with an <img src="...logout">, signing people out of
+// a site they were using. Every in-page logout button on the members side
+// has always been a form for exactly that reason — the rule existed and
+// was well understood, and the new control simply did not follow it.
+//
+// So the check is the rule, not the instance: read the POST-only paths
+// out of members-worker's router, and refuse an anchor pointing at any of
+// them from the shared scripts or the pages.
+const workerSrc = readFileSync(join(REPO, "members-worker/src/index.js"), "utf8");
+const postOnly = new Set();
+const getPaths = new Set();
+for (const m of workerSrc.matchAll(
+  /request\.method === "(GET|POST)" && url\.pathname === "([^"]+)"/g)) {
+  (m[1] === "POST" ? postOnly : getPaths).add(m[2]);
+}
+// A path served for BOTH verbs is fine to link to.
+for (const p of getPaths) postOnly.delete(p);
+t.check(`members-worker has ${postOnly.size} POST-only route(s) to protect`,
+  postOnly.size > 0, [...postOnly].join(", "));
+
+const linkSources = [
+  ["i18n/i18n.js", i18nSrc],
+  ["einvoicing-compliance-tracker.html", trackerSrc],
+];
+const badLinks = [];
+for (const [name, src] of linkSources) {
+  for (const path of postOnly) {
+    // An <a href> or a JS-built anchor string pointing at the route.
+    const re = new RegExp(`<a[^>]*href=["'\`][^"'\`]*${path.replace(/\//g, "\\/")}`, "g");
+    if (re.test(src)) badLinks.push(`${name} links to ${path}`);
+  }
+}
+t.check("nothing renders an <a> to a POST-only route",
+  badLinks.length === 0,
+  badLinks.length
+    ? `\n         ${badLinks.join("\n         ")}`
+      + "\n         That route answers POST only, so the link 404s — and the"
+      + "\n         reader believes the action succeeded. Use a form."
+    : "");
+
+// And the specific pairing, since sign-out is the one that bit.
+t.check("sign-out is a form POST, not a link",
+  /method="POST"[\s\S]{0,200}\/members\/logout/.test(i18nSrc)
+    || /\/members\/logout[\s\S]{0,200}method="POST"/.test(i18nSrc),
+  "the greeting must submit sign-out, not link to it");
+
 process.exit(t.report() ? 0 : 1);

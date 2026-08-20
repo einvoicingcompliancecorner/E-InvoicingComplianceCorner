@@ -697,7 +697,14 @@
     margin:0 0 8px; flex-wrap:wrap;
   }
   .who-am-i .who-name{color:var(--text-lo); font-weight:600;}
-  .who-am-i .who-out{color:var(--muted); text-decoration:underline; text-underline-offset:2px;}
+  /* The sign-out control is a <button> inside a form, not a link — see
+     i18n.js for why — so it is styled back down to look like the link it
+     replaced rather than like a third button in the header. */
+  .who-am-i .who-out-form{display:inline; margin:0;}
+  .who-am-i .who-out{
+    background:none; border:0; padding:0; font:inherit; cursor:pointer;
+    color:var(--muted); text-decoration:underline; text-underline-offset:2px;
+  }
   .who-am-i .who-out:hover{color:var(--soon);}
   @media(max-width:700px){ .who-am-i{justify-content:flex-start; margin-bottom:10px;} }
 

@@ -431,10 +431,32 @@ const EICC_WHO = {
     const out = (window.EICC_I18N && window.EICC_I18N.t("who.signOut")) || "Sign out";
     const esc = (t) => String(t).replace(/&/g, "&amp;").replace(/</g, "&lt;")
       .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    // A FORM, NOT A LINK, and the reason is worth stating because the
+    // first version got it wrong and looked fine.
+    //
+    // /members/logout is POST-only, deliberately: a GET logout can be
+    // fired by any page anywhere with an <img src="...logout">, which
+    // signs people out of a site they were happily using. Every in-page
+    // logout button on the members side has always been a form for that
+    // reason. The link version here 404'd, and — worse — left the reader
+    // believing they had signed out when the session was untouched.
+    //
+    // Cross-ORIGIN but same-SITE: apex to members subdomain shares the
+    // registrable domain, so SameSite=Lax still sends the cookie on this
+    // POST. A genuinely cross-site page cannot do the same, which is the
+    // protection staying intact.
+    //
+    // target=_top so it escapes the tracker's Resources frame rather than
+    // signing out inside a panel; return=tracker asks to land back where
+    // they were instead of on a members sign-in page.
     host.innerHTML =
       `<span class="who-label">${esc(label)}</span> `
       + `<span class="who-name" title="${esc(email)}">${esc(this.shortName(email))}</span> `
-      + `<a class="who-out" href="${this.membersOrigin}/members/logout">${esc(out)}</a>`;
+      + `<form class="who-out-form" method="POST" target="_top" `
+      +   `action="${this.membersOrigin}/members/logout">`
+      +   `<input type="hidden" name="return" value="tracker">`
+      +   `<button type="submit" class="who-out">${esc(out)}</button>`
+      + `</form>`;
   },
 };
 
