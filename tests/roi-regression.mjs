@@ -2574,6 +2574,58 @@ await page.waitForTimeout(300);
 t.check("changing the country selection marks them stale too",
   await page.evaluate(() => !document.getElementById("stale").classList.contains("hidden")));
 
+// ---- AND SOMEBODY ELSE'S FIELD DOES NOT --------------------------------
+//
+// THE DEFECT, 20 August 2026, found by looking at the signup panel and by
+// nothing else. markStale() is delegated from `document`, so it fired for
+// every input event in the document — including the panel's own name and
+// email fields, which have nothing to do with the model. Typing "Dan"
+// into it raised "These figures no longer match the inputs above" behind
+// the panel and relabelled the button to Recalculate.
+//
+// Nothing had changed. It is a false alarm in the loudest styling on the
+// page, about the one number this tool asks to be trusted on, at the
+// moment someone is deciding whether to hand over their details.
+//
+// Checked against THE RULE rather than against the panel: any input from
+// outside .wrap is somebody else's. That way this covers the next panel
+// too, which is the whole reason the guard was written as "the planner
+// owns .wrap" rather than "ignore the overlay".
+await page.click("#run"); await page.waitForTimeout(700);
+const foreignStale = await page.evaluate(() => {
+  // BEFORE and AFTER, not an absolute expectation. The button keeps the
+  // "Recalculate" label once anything has ever staled the results — the
+  // check above deliberately staled them a moment ago — so asserting the
+  // label reads "Calculate" here would fail on leftover state from a
+  // different test rather than on this behaviour. The property that
+  // matters is that the foreign event changes NOTHING.
+  const before = {
+    shown: !document.getElementById("stale").classList.contains("hidden"),
+    btn: document.getElementById("run").textContent,
+  };
+  const el = document.createElement("input");
+  el.id = "notOurField";
+  document.body.appendChild(el);          // outside .wrap, like the panel
+  el.value = "Dan";
+  el.dispatchEvent(new Event("input", { bubbles: true }));
+  el.dispatchEvent(new Event("change", { bubbles: true }));
+  const after = {
+    shown: !document.getElementById("stale").classList.contains("hidden"),
+    btn: document.getElementById("run").textContent,
+  };
+  el.remove();
+  return { before, after };
+});
+t.check("an input OUTSIDE the planner does not mark the results stale",
+  foreignStale.before.shown === false && foreignStale.after.shown === false,
+  foreignStale.after.shown
+    ? "a field appended to the body raised the stale warning — the delegated "
+      + "handler is listening to the whole document again"
+    : `warning was already showing before the test (${foreignStale.before.shown})`);
+t.check("and changes nothing about the calculate button",
+  foreignStale.before.btn === foreignStale.after.btn,
+  `${foreignStale.before.btn} -> ${foreignStale.after.btn}`);
+
 // (b) AN EMPTY SELECTION IS NOT A BUSINESS CASE -- AND IS NO LONGER ONE.
 //
 // THIS CHECK USED TO ENCODE THE DEFECT. It cleared the country list,
@@ -3018,7 +3070,7 @@ await wide.close();
 // that asks for it. Every other check here builds the members shell,
 // which is exactly why the gate went a week without being looked at.
 const { file: publicFile } = await buildRoiPage({
-  locked: true, membersUrl: "https://members.e-invoicingcompliancecorner.com" });
+  signedIn: false, membersUrl: "https://members.e-invoicingcompliancecorner.com" });
 const gated = await browser.newPage({ viewport: { width: 1300, height: 1000 } });
 await gated.goto(`file://${publicFile}`);
 await gated.evaluate(() => {
@@ -3117,7 +3169,7 @@ await gated.close();
 // the page recognises, whose saved-country list came back empty. Before
 // 593 they were told to sign in, four inches under their own name.
 const savedStates = await browser.newPage({ viewport: { width: 1300, height: 900 } });
-const { file: noSaved } = await buildRoiPage({ locked: false, subscribed: [] });
+const { file: noSaved } = await buildRoiPage({ signedIn: true, subscribed: [] });
 await savedStates.goto(`file://${noSaved}`);
 await savedStates.waitForTimeout(400);
 const emptyLabel = await savedStates.evaluate(() =>
@@ -3130,7 +3182,7 @@ await savedStates.close();
 
 // The other two states still say what they always did.
 const anon = await browser.newPage({ viewport: { width: 1300, height: 900 } });
-const { file: anonFile } = await buildRoiPage({ locked: true, subscribed: [] });
+const { file: anonFile } = await buildRoiPage({ signedIn: false, subscribed: [] });
 await anon.goto(`file://${anonFile}`);
 await anon.waitForTimeout(400);
 t.check("an anonymous reader IS told to sign in — that message keeps its job",
@@ -3140,7 +3192,7 @@ t.check("an anonymous reader IS told to sign in — that message keeps its job",
 await anon.close();
 
 const withSaved = await browser.newPage({ viewport: { width: 1300, height: 900 } });
-const { file: savedFile } = await buildRoiPage({ locked: false, subscribed: ["France", "Germany"] });
+const { file: savedFile } = await buildRoiPage({ signedIn: true, subscribed: ["France", "Germany"] });
 await withSaved.goto(`file://${savedFile}`);
 await withSaved.waitForTimeout(400);
 const savedLabel = await withSaved.evaluate(() =>

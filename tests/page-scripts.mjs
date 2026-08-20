@@ -34,7 +34,13 @@ import { suite } from "./lib/browser.mjs";
 const REPO = dirname(dirname(fileURLToPath(import.meta.url)));
 
 // Scripts every page pulls in, whose scope the page then shares.
-const SHARED = ["i18n/i18n.js", "countries.js", "map-panel.js"];
+//
+// auth-overlay.js joined on 20 August 2026. It is written as an IIFE and
+// therefore declares NOTHING at the top level today — which is exactly
+// why it belongs on this list rather than being left off it. The rule
+// this suite enforces is cheap while a file is clean and expensive to
+// retrofit after someone has hoisted one constant out of the closure.
+const SHARED = ["i18n/i18n.js", "countries.js", "map-panel.js", "auth-overlay.js"];
 
 /** Top-level declarations only — column zero, no leading whitespace.
  *  Anything indented is inside a function, an object or a block, and

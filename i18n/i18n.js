@@ -403,6 +403,28 @@ const EICC_WHO = {
    *  server-side against the HttpOnly session, not against this. */
   isSignedIn() { return !!this.read(); },
 
+  /** Sign in without leaving the page — Dan, 20 August 2026, on the code:
+   *  "code used in other locations when signing in."
+   *
+   *  PROGRESSIVE ENHANCEMENT, ON PURPOSE. The control stays a real <a>
+   *  with a real href to the members sign-in page, and this only
+   *  intercepts the click when the overlay is actually loaded. If
+   *  auth-overlay.js is missing, blocked, or still in flight, the link
+   *  does what it has always done instead of doing nothing — which is
+   *  the failure a button with a JS handler would have had, silently.
+   *
+   *  Bound once. render() runs again on every language change, and a
+   *  handler added each time would open one overlay per switch. */
+  wireSignIn(el) {
+    if (el.dataset.authWired) return;
+    el.dataset.authWired = "1";
+    el.addEventListener("click", (e) => {
+      if (!window.EICC_AUTH) return;   // let the href do its job
+      e.preventDefault();
+      window.EICC_AUTH.open({ mode: "signin" });
+    });
+  },
+
   render() {
     const email = this.read();
 
@@ -413,7 +435,10 @@ const EICC_WHO = {
     // stays in step with the greeting by construction — two places
     // deciding the same thing is how they come to disagree.
     const signIn = document.getElementById("signInBtn");
-    if (signIn) signIn.hidden = !!email;
+    if (signIn) {
+      signIn.hidden = !!email;
+      this.wireSignIn(signIn);
+    }
 
     // Marks on menu items that need an account. Any element carrying
     // data-needs-session is revealed only when signed OUT, so a reader

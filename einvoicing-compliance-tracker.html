@@ -725,6 +725,12 @@
 </style>
 <!-- i18n loader — see i18n/i18n.js for how this works and how to add a language -->
 <script src="i18n/i18n.js"></script>
+<!-- Signing in without leaving the page. One file, shared with the ROI
+     planner (a separate document, same origin) so there is never a second
+     copy of a signup form to drift out of step. Loaded AFTER i18n.js
+     because the sign-in button's click handler asks for window.EICC_AUTH,
+     and declares nothing at the top level — see tests/page-scripts.mjs. -->
+<script src="auth-overlay.js"></script>
 </head>
 <body>
 
@@ -3656,8 +3662,55 @@ window.addEventListener('message', (e)=>{
     if(!Number.isFinite(top) || top < 0) return;
     const frameTop = frame.getBoundingClientRect().top + window.scrollY;
     window.scrollTo({ top: Math.max(0, frameTop + top - 90), behavior: 'smooth' });
+    return;
+  }
+
+  // ---- AND THE FRAME CANNOT POSITION ITS OWN MODAL --------------------
+  //
+  // Same root cause as the scroll handler above, and a worse symptom.
+  // The frame is sized to its full content height, so it never scrolls
+  // and its viewport IS the document. position:fixed inside it is
+  // therefore fixed to a box that can be nine thousand pixels tall, and
+  // a centred card lands four thousand pixels below whatever the reader
+  // is looking at: rendered perfectly, and invisible.
+  //
+  // So the parent, which is the thing that actually has a viewport,
+  // tells the frame where the visible window sits IN THE FRAME'S OWN
+  // COORDINATES. The frame positions absolutely inside that.
+  //
+  // Scroll is LOCKED while the overlay is open rather than tracked. That
+  // is what a modal should do anyway, and it means the viewport can be
+  // sent once and on resize instead of on every scroll event — no
+  // per-frame message storm behind a card that is not moving.
+  if(e.data.type === 'eicc:overlay-open'){
+    roiOverlayOpen = true;
+    document.body.style.overflow = 'hidden';
+    sendRoiViewport();
+    return;
+  }
+  if(e.data.type === 'eicc:overlay-close'){
+    roiOverlayOpen = false;
+    document.body.style.overflow = '';
+    return;
   }
 });
+
+let roiOverlayOpen = false;
+
+function sendRoiViewport(){
+  const frame = document.getElementById('roiFrame');
+  if(!frame || !frame.contentWindow) return;
+  const frameTop = frame.getBoundingClientRect().top + window.scrollY;
+  frame.contentWindow.postMessage({
+    type: 'eicc:viewport',
+    // Clamped at zero: while the reader is above the frame, the visible
+    // region starts at the frame's own top, not at a negative offset.
+    top: Math.max(0, window.scrollY - frameTop),
+    height: window.innerHeight,
+  }, window.location.origin);
+}
+
+window.addEventListener('resize', ()=>{ if(roiOverlayOpen) sendRoiViewport(); });
 
 function closeMapPage(opts){
   opts = opts || {};
