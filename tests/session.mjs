@@ -22,7 +22,7 @@
 //      in any of them is silent: the site keeps working, and either the
 //      greeting never appears or a session cookie quietly loses HttpOnly.
 import {
-  signToken, verifyToken, sessionEmail,
+  signToken, verifyToken, sessionEmail, sessionDiagnostic,
   signInCookies, signOutCookies,
   SESSION_COOKIE, DISPLAY_COOKIE, COOKIE_DOMAIN,
 } from "../shared/session.mjs";
@@ -91,7 +91,35 @@ t.check("with two session cookies present, the newer one wins",
   (await sessionEmail(req(`${SESSION_COOKIE}=${older}; ${SESSION_COOKIE}=${good}`), SECRET))
     === "a@b.com");
 
-// ---- 3. the Set-Cookie lines ------------------------------------------
+// ---- 3. the four-word diagnosis ---------------------------------------
+//
+// This exists because a mismatched SESSION_SECRET between the two Workers
+// is INVISIBLE from a browser: site-worker rejects every genuine session
+// and the reader sees the gate, exactly as a stranger would. The greeting
+// keeps working the whole time, because it reads the display cookie and
+// never touches the secret — so the site looks half-right and points
+// nowhere. It cost three round trips to find.
+//
+// "no cookie" and "cookie I cannot verify" are the distinction that
+// matters. The first is normal. The second is a wrong key, a forgery, or
+// a rotated secret, and is never normal in bulk.
+const otherSecret = await signToken("a-different-secret",
+  { email: "a@b.com", purpose: "session" }, 3600);
+t.check("no secret configured is its own answer, not 'none'",
+  (await sessionDiagnostic(req(`${SESSION_COOKIE}=${good}`), undefined)) === "no-secret");
+t.check("no cookie at all reads as none",
+  (await sessionDiagnostic(req(null), SECRET)) === "none");
+t.check("a good cookie reads as ok",
+  (await sessionDiagnostic(req(`${SESSION_COOKIE}=${good}`), SECRET)) === "ok");
+t.check("a cookie signed by the WRONG secret is bad-token, not none — the whole point",
+  (await sessionDiagnostic(req(`${SESSION_COOKIE}=${otherSecret}`), SECRET)) === "bad-token",
+  await sessionDiagnostic(req(`${SESSION_COOKIE}=${otherSecret}`), SECRET));
+t.check("and so is a corrupt one",
+  (await sessionDiagnostic(req(`${SESSION_COOKIE}=garbage`), SECRET)) === "bad-token");
+t.check("the diagnosis never contains an address",
+  !["no-secret", "none", "ok", "bad-token"].join("").includes("@"));
+
+// ---- 4. the Set-Cookie lines ------------------------------------------
 const inCookies = signInCookies("TOKEN123", "dan@example.com", 60);
 t.check("signing in sets exactly three cookie headers", inCookies.length === 3,
   JSON.stringify(inCookies));

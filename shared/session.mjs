@@ -146,6 +146,31 @@ export async function sessionEmail(request, secret) {
   return typeof payload.email === "string" ? payload.email : null;
 }
 
+/** Why a request is, or is not, recognised — as one of four words.
+ *
+ *  WRITTEN AFTER A DIAGNOSIS THAT TOOK THREE ROUND TRIPS. site-worker had
+ *  a SESSION_SECRET that did not match members-worker's, so it rejected
+ *  every genuine session. From a browser that is indistinguishable from
+ *  being signed out: the gate appears, exactly as it does for a stranger.
+ *  Worse, the greeting still worked — it reads the display cookie and
+ *  never touches the secret — so the site looked half-right in a way that
+ *  pointed nowhere.
+ *
+ *  The distinction that matters is NO COOKIE versus COOKIE I CANNOT
+ *  VERIFY. The first is a reader who is not signed in and is the normal
+ *  case. The second can only be a wrong key, a forgery, or a token so old
+ *  its secret has been rotated — and it is never normal in bulk. Folding
+ *  them both into "none", as the first version did, is what cost the
+ *  three round trips.
+ *
+ *  Deliberately carries no address and no token: it says why, never who. */
+export async function sessionDiagnostic(request, secret) {
+  if (!secret) return "no-secret";
+  const { value } = readCookie(request, SESSION_COOKIE);
+  if (!value) return "none";
+  return (await sessionEmail(request, secret)) ? "ok" : "bad-token";
+}
+
 /** The Set-Cookie lines for signing someone in.
  *
  *  THREE HEADERS, NOT TWO, and the third is the interesting one: it
