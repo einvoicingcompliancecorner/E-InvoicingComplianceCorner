@@ -209,4 +209,29 @@ t.check("while still allowing the planner hand-off with its query string",
 t.check("and the pages it has always allowed",
   pathGuard("/members/archive") && pathGuard("/members/preferences"));
 
+// ---- 6. the default destination ---------------------------------------
+//
+// A sign-in that carries no destination must land on the tracker, not the
+// archive. That default is what makes the feature survive a cached button,
+// a bookmark, a typed URL, or any future entry point that forgets the
+// parameter — and Dan met every one of those as a single symptom: an
+// emailed link dropping him on the standalone archive.
+//
+// Read out of the Worker rather than restated, so this follows the real
+// behaviour instead of a copy that can drift.
+const resolveSrc = worker.slice(
+  worker.indexOf("function resolveNextTarget"),
+  worker.indexOf("}", worker.indexOf("function resolveNextTarget")));
+t.check("a next-less sign-in defaults to the tracker, not the archive",
+  /VERIFY_RETURN\.tracker/.test(resolveSrc) && !/"\/members\/archive"/.test(resolveSrc),
+  resolveSrc.trim());
+
+// AND NO CALLER LEANS ON IT. Every redirectToLogin() that wants somewhere
+// specific must name it — the archive, preferences and the deep links all
+// used to inherit a default that happened to suit them, and stopped
+// suiting them the moment it moved.
+t.check("no caller relies on the default by passing nothing",
+  !/redirectToLogin\(\)/.test(worker),
+  (worker.match(/.*redirectToLogin\(\).*/g) || []).join(" | "));
+
 process.exit(t.report() ? 0 : 1);

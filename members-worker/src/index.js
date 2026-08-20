@@ -111,9 +111,29 @@ function isAllowedNext(next) {
 }
 
 /** Where a verified link should actually land. */
+//  THE DEFAULT IS THE TRACKER, changed 20 August 2026, and the change is
+//  the point rather than an aside.
+//
+//  It used to be /members/archive, which was right when the archive was
+//  the only thing behind the gate. It is not any more: signing in now
+//  covers the whole site, and the tracker is where a reader arrives,
+//  where the Sign in button lives and where the greeting appears.
+//
+//  Dan hit the old default from a cached page whose Sign in button
+//  predated ?next=tracker, so the POST carried no destination and the
+//  emailed link dropped him on the standalone archive. Every part of the
+//  chain behaved correctly for a request that never said where to go.
+//
+//  A CORRECT DEFAULT BEATS A PARAMETER EVERY ENTRY POINT MUST REMEMBER.
+//  Relying on the parameter means every button, every future link and
+//  every cached copy of a page has to carry it, and the failure when one
+//  does not is silent and looks like a bug somewhere else. Callers that
+//  want a specific destination still say so — and now they say so
+//  explicitly, rather than leaning on a default that happened to suit
+//  them.
 function resolveNextTarget(next) {
   if (VERIFY_RETURN[next]) return VERIFY_RETURN[next];
-  return isSafeVerifyNextPath(next) ? next : "/members/archive";
+  return isSafeVerifyNextPath(next) ? next : VERIFY_RETURN.tracker;
 }
 
 function isSafeVerifyNextPath(next) {
@@ -1996,7 +2016,9 @@ async function handleArchiveList(request, env, lang) {
     if (env.ARCHIVE_PUBLIC === "true") {
       email = null;
     } else {
-      return redirectToLogin();
+      // Explicit now that the default has moved to the tracker: someone
+      // bounced off the archive should come back to the archive.
+      return redirectToLogin("/members/archive");
     }
   }
 
@@ -2012,7 +2034,7 @@ async function handleArchiveIssue(request, env, slug, lang) {
     if (env.ARCHIVE_PUBLIC === "true") {
       email = null;
     } else {
-      return redirectToLogin();
+      return redirectToLogin(`/members/archive/${slug}`);
     }
   }
 
@@ -2300,7 +2322,7 @@ function redirectToLogin(next) {
 // ================================================================
 async function handlePreferencesGet(request, env, lang) {
   const email = await requireSession(request, env);
-  if (!email) return redirectToLogin();
+  if (!email) return redirectToLogin("/members/preferences");
 
   const sub = await getSubscriber(env, email);
   const currentCountries = sub?.countries || [];
@@ -2311,7 +2333,7 @@ async function handlePreferencesGet(request, env, lang) {
 
 async function handlePreferencesPost(request, env, lang) {
   const email = await requireSession(request, env);
-  if (!email) return redirectToLogin();
+  if (!email) return redirectToLogin("/members/preferences");
 
   const form = await request.formData();
   const selected = form.getAll("countries"); // array of checked values
