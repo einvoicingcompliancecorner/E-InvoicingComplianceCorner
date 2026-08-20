@@ -85,6 +85,37 @@ const CONVENIENCE_LINK_TTL_SECONDS = 60 * 60 * 24 * 7;
 // "/\evil.com", which some browsers normalise into a protocol-relative
 // URL. That last one is why this is an allowlist rather than a
 // "does it begin with a slash" test.
+// NAMED DESTINATIONS, for the places a sign-in should land that are not
+// on this origin at all.
+//
+// Dan, 20 August 2026: signing in from the tracker's new Sign in button
+// emailed a link that dropped him on the standalone newsletter archive.
+// Correct per the old rules and wrong for what he asked for — the whole
+// point of the button is to come back signed in to where he was.
+//
+// The path allowlist below cannot express that: the tracker lives on the
+// apex, a different origin, and the guard exists precisely to refuse
+// anything that could leave this one. So the caller SELECTS a
+// destination by name and never supplies a URL, the same shape as
+// LOGOUT_RETURN. A sign-in link is the most forwarded thing this site
+// sends; it must not be able to carry someone somewhere of the sender's
+// choosing.
+const VERIFY_RETURN = {
+  tracker: "https://e-invoicingcompliancecorner.com/einvoicing-compliance-tracker.html",
+};
+
+/** A next= value that may be kept and round-tripped — either a named
+ *  destination or a safe same-origin path. */
+function isAllowedNext(next) {
+  return !!next && (Object.hasOwn(VERIFY_RETURN, next) || isSafeVerifyNextPath(next));
+}
+
+/** Where a verified link should actually land. */
+function resolveNextTarget(next) {
+  if (VERIFY_RETURN[next]) return VERIFY_RETURN[next];
+  return isSafeVerifyNextPath(next) ? next : "/members/archive";
+}
+
 function isSafeVerifyNextPath(next) {
   return next === "/members/archive" || next === "/members/preferences" || next.startsWith("/members/archive/")
     || next.startsWith("/members/insights/")
@@ -1721,7 +1752,7 @@ async function handleLoginRequest(request, env, lang) {
   const form = await request.formData();
   const email = (form.get("email") || "").toString().toLowerCase().trim();
   const requestedNext = (form.get("next") || "").toString();
-  const next = isSafeVerifyNextPath(requestedNext) ? requestedNext : "";
+  const next = isAllowedNext(requestedNext) ? requestedNext : "";
 
   if (!email || !email.includes("@")) {
     return htmlResponse(renderLoginPage(t(lang, "login.errorInvalid"), lang, next));
@@ -1894,7 +1925,7 @@ async function handleVerify(request, env, lang) {
 
   const sessionToken = await signToken(env.SESSION_SECRET, { email: payload.email, purpose: "session" }, SESSION_TTL_SECONDS);
   const requestedNext = url.searchParams.get("next") || "";
-  const redirectTo = isSafeVerifyNextPath(requestedNext) ? requestedNext : "/members/archive";
+  const redirectTo = resolveNextTarget(requestedNext);
   const headers = new Headers();
   headers.set("Location", redirectTo);
   // PARENT-DOMAIN NOW, so one sign-in covers the public site too, plus a
@@ -2257,7 +2288,7 @@ async function handleMilestonesPreview(request, env, lang) {
 
 
 function redirectToLogin(next) {
-  const location = next && isSafeVerifyNextPath(next) ? `/members?next=${encodeURIComponent(next)}` : "/members";
+  const location = isAllowedNext(next) ? `/members?next=${encodeURIComponent(next)}` : "/members";
   return new Response(null, { status: 302, headers: { Location: location } });
 }
 
@@ -2519,8 +2550,8 @@ async function sendWelcomeEmail(env, email, firstName, countries, archiveLink, p
 async function sendMagicLinkEmail(env, email, link) {
   const body = `
     <p style="margin:0 0 6px; font-family:'Courier New',Courier,monospace; font-size:11px; text-transform:uppercase; letter-spacing:1px; color:#c98a3a;">Sign-in link</p>
-    <h1 style="margin:0 0 14px; font-size:20px; line-height:1.3; color:#241d10; font-family:Georgia,'Times New Roman',serif;">Access the subscriber archive</h1>
-    <p style="margin:0 0 22px; font-size:14px; line-height:1.6; color:#4a4030;">Click below to sign in. This link expires in 15 minutes and can only be used once.</p>
+    <h1 style="margin:0 0 14px; font-size:20px; line-height:1.3; color:#241d10; font-family:Georgia,'Times New Roman',serif;">Sign in to The E-Invoicing Compliance Corner</h1>
+    <p style="margin:0 0 22px; font-size:14px; line-height:1.6; color:#4a4030;">Click below and you&rsquo;ll be signed in across the whole site &mdash; the tracker, the ROI &amp; Wave Planner, the newsletter archive and your preferences. This link expires in 15 minutes and can only be used once.</p>
     <table role="presentation" cellpadding="0" cellspacing="0">
       <tr>
         <td style="background-color:#b5432f; border-radius:6px;">
@@ -2809,7 +2840,7 @@ ${bodyHtml}
 
 function renderLoginPage(error, lang, next) {
   lang = lang || "en";
-  const safeNext = next && isSafeVerifyNextPath(next) ? next : "";
+  const safeNext = isAllowedNext(next) ? next : "";
   const body = `
   <div class="wrap">
     <a class="back-link" href="https://e-invoicingcompliancecorner.com/einvoicing-compliance-tracker.html" style="margin:0;">${t(lang, "backToTracker")}</a>

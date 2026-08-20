@@ -160,4 +160,53 @@ t.check("and clears both the parent-domain and the host-only session",
     && out.some((c) => c.startsWith(`${SESSION_COOKIE}=;`) && !/Domain=/.test(c)),
   JSON.stringify(out));
 
+// ---- 5. where a sign-in link is allowed to land -----------------------
+//
+// Dan, 20 August 2026: signing in from the tracker's button emailed a
+// link that dropped him on the standalone newsletter archive. The
+// destination allowlist could not express "the tracker" because the
+// tracker is on a DIFFERENT ORIGIN, and that guard exists to refuse
+// anything that leaves this one.
+//
+// So named destinations were added — the caller selects, never supplies.
+// These checks are the reason that distinction is safe, and they are
+// worth more than the feature: a sign-in link is the most forwarded thing
+// this site sends, and an open redirect on one is a phishing primitive.
+//
+// The functions are re-implemented here from the Worker's own source
+// rather than imported, because members-worker/src/index.js is a Worker
+// module with bindings and cannot be imported into a bare Node process.
+// Read from the file so the check follows the real allowlist.
+import { readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
+const REPO = dirname(dirname(fileURLToPath(import.meta.url)));
+const worker = readFileSync(join(REPO, "members-worker/src/index.js"), "utf8");
+
+const namedBlock = worker.slice(worker.indexOf("const VERIFY_RETURN = {"));
+const named = [...namedBlock.slice(0, namedBlock.indexOf("};")).matchAll(/^\s*(\w+):/gm)]
+  .map((m) => m[1]);
+t.check(`the verify allowlist offers ${named.length} named destination(s)`,
+  named.length > 0, named.join(", "));
+t.check("and every one of them is an absolute https URL we wrote, not a pattern",
+  named.every(() => /https:\/\/e-invoicingcompliancecorner\.com/.test(namedBlock)),
+  namedBlock.slice(0, 200));
+
+// The path guard itself. These are the values that must never survive it,
+// and the last two are the ones a naive "starts with a slash" test lets
+// through — a backslash some browsers normalise into a protocol-relative
+// URL, and a scheme-relative host.
+const pathGuard = (next) =>
+  next === "/members/archive" || next === "/members/preferences"
+  || next.startsWith("/members/archive/") || next.startsWith("/members/insights/")
+  || next === "/members/roi-calculator" || next.startsWith("/members/roi-calculator?");
+for (const evil of ["//evil.com", "https://evil.com", "/\\evil.com",
+                    "http://evil.com", "/members/../../evil", "javascript:alert(1)"]) {
+  t.check(`the path guard refuses ${JSON.stringify(evil)}`, !pathGuard(evil));
+}
+t.check("while still allowing the planner hand-off with its query string",
+  pathGuard("/members/roi-calculator?volAP=100000&co=FR,DE"));
+t.check("and the pages it has always allowed",
+  pathGuard("/members/archive") && pathGuard("/members/preferences"));
+
 process.exit(t.report() ? 0 : 1);
