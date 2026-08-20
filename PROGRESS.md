@@ -14182,3 +14182,221 @@ exactly once.**
 **590 files — 405 assertions, 117 standing invariants**. The menu-routes
 and tracker-i18n checks were each negative-tested by breaking the thing
 they exist to catch and confirming they fail.
+
+---
+
+## 19–20 August 2026 — the site learns who you are
+
+**All deployed and confirmed live by Dan**, in thirteen commits across two
+days. This entry covers migrations 591–593 and the logged-in-site work.
+
+The through-line is worth stating before the detail, because it is the
+same defect wearing eleven different costumes: **a thing that looks like
+it worked.** A gate that withheld nothing. A menu item pointing at a
+route that was switched off. A sign-out link that 404'd while leaving the
+session intact. A greeting that kept saying "signed in" after the session
+stopped verifying. A feature that vanished from the repo while fourteen
+suites passed. Every one of them rendered fine and behaved wrongly, which
+is the failure mode this codebase is least equipped to notice and the
+reason so much of what follows is checks rather than features.
+
+### The planner's gate stopped pretending (591, 592)
+
+Dan asked for a check that at least one country is selected before
+Calculate. Migration 575 had already handled that — inside the results,
+underneath a complete business case, explaining that the business case
+above it was for no programme. Right instinct, wrong place: every other
+guard reports an implausible OUTPUT and needs figures to exist to have an
+opinion about them. An empty selection is a missing precondition, so the
+page now declines and says which thing is missing.
+
+**The check lives in showResults(), not on the button.** Several things
+call it — the currency switch, the scope dropdown, the subscribed-
+countries toggle. Guard the button alone and clearing the list then
+nudging the scope dropdown brings the whole defect back through a
+different door.
+
+Then Dan reported the gate itself: *"upon clicking sign-in / subscribe
+free it just gives me the results, without signing in, or subscribing."*
+Right, and worse than described. **There was nothing for it to unlock.**
+The page computes everything client-side, so the locked render already
+shipped every benchmark, the whole model and the unlocked flag itself —
+295KB of page whose gate declined to run a function over data the reader
+already had. View-source defeated it.
+
+That cannot be fixed in place, and the finding matters more than the fix:
+**no work on that page makes it a gate while the arithmetic runs in the
+reader's browser.** The only surface that can withhold is the members
+page. So the CTA became a real link there, carrying the reader's own
+figures so signing in continues their work.
+
+Then 592, the next day: the button read "Sign in / subscribe free" and
+pointed at the LOGIN, which emails only addresses that already have an
+account and silently sends nothing to anyone else. A new reader — most of
+an unindexed Beta page's audience — got a confirmation page and silence.
+**A control that names two things and does one**, which is the same shape
+as 587's "Calculate"/"Recalculate" chip and 588's legend describing a
+removed button. Built while writing about the other three.
+
+### One login for the whole site
+
+Dan asked for a logged-in version of the entire site. One correction
+changed the design: **nobody was logging in repeatedly.** The session
+lasts 30 days and every members page accepts it. The friction was that
+the public site could not SEE that cookie — so every crossing looked like
+starting over. The fix was not a stickier login.
+
+The evaluation is in `claude/logged-in-site-evaluation.md`; what shipped:
+
+**site-worker gets SESSION_SECRET and no subscribers binding.** The token
+is a self-contained HMAC, so verifying the signature proves identity
+without consulting anything. Entitlement stays on members-worker.
+
+**A correction to that framing, made once it mattered:** the secret can
+MINT a token for any address, so it is strictly more powerful than read
+access to the data. An attacker holding it reaches everything anyway.
+What the separation still buys is protection from ACCIDENTS — a bug on a
+public page can leak what that Worker holds and will not spontaneously
+forge a session and query the other one. Worth keeping, at that price,
+not the one originally implied.
+
+**The greeting is client-side**, and not from laziness. Most of the site
+is served straight from the asset layer with the Worker never running —
+the education pages, subscribe.html, feedback.html cannot be personalised
+server-side at all. i18n.js already loads on every one, so the greeting
+reaches everywhere and the HTML stays identical for every reader, which
+is what keeps it cacheable.
+
+**The caching rule was the dangerous part.** A personalised response in a
+shared cache serves one reader's page to another. The planner is
+`private, no-store` when signed in, sixty seconds when not, `Vary: Cookie`
+either way.
+
+**Existing sessions upgrade in place** rather than forcing everyone to
+sign in again. The signal is the DISPLAY cookie's absence, not the
+session's presence: a Cookie header does not say which domain each cookie
+came from, but the display cookie only ever ships alongside a
+parent-domain session.
+
+Then Dan asked for a Sign in button and for the planner menu item to need
+an account — reversing the earlier decision to keep the ask at Calculate.
+His call; what it costs is the demonstration, and if conversion drops
+that is the change to look at first. **The menu check is a courtesy, not
+the gate**: it reads the forgeable display cookie and only decides what is
+worth showing. The real gate is server-side on the route.
+
+Finally the planner's last gap closed: **saved countries via a service
+binding.** site-worker asks members-worker, forwarding the reader's own
+cookie; the endpoint authenticates the READER, not the caller, so there
+is no email parameter to tamper with. It fails soft. And with the public
+copy fully capable, `/members/roi-calculator` now redirects to it —
+**one planner instead of two**, query string preserved because the
+sign-in hand-off routes through there carrying the reader's work.
+
+### Five defects only the live site showed
+
+Recorded because none of them would have been found by reading code.
+
+**The public ROI route never got 589's complete-or-English fix**, so
+`?lang=de` served German country names inside English prose — live on
+three of four languages.
+
+**ROI_STYLE declared no colour for bare links.** pageShell supplies
+`a{color:inherit}`; the public route supplies nothing, so the first bare
+anchor rendered in browser-default blue on navy at ~2:1 while passing the
+contrast audit, which builds the members shell.
+
+**The (Beta) marker was a column, not a suffix** — `.dropdown-item` is a
+flex row, and nesting it inside the data-i18n span instead would have had
+applyToDom() delete it on the first language load.
+
+**A duplicate top-level `const MEMBERS_ORIGIN`** in i18n.js and the
+tracker. The throw kills the ENTIRE inline script — every panel, filter
+and handler — while the page still renders and looks fine.
+
+**The saved-countries control told a signed-in reader to sign in.** Two
+states were complete while the planner only rendered unlocked on the
+members page, where "unlocked" and "has a saved list" were the same fact
+under two names. Recognising a session pulled them apart. Migration 593.
+
+### Sign-out, and where sign-in lands
+
+`/members/logout` is POST-only on purpose — a GET logout can be fired by
+any page with an `<img src>`. The greeting rendered a link to it, so it
+404'd and left the reader believing they had signed out. The rule existed
+and was well understood; the new control simply did not follow it, which
+is an argument for a check rather than for more care.
+
+Then the emailed link dropped Dan on the standalone archive. The Sign in
+button could not say "back to the tracker" — the allowlist only permits
+same-origin `/members/...` paths, which is its entire purpose. So named
+destinations were added: the caller SELECTS, never supplies.
+
+**And then the default moved.** Dan's actual link carried no `next=` at
+all, from a cached page whose button predated the parameter. Chasing the
+parameter means every button, every future link and every cached page has
+to carry it, and the failure is silent. `/members/archive` was right when
+the archive was the only thing behind the gate; the tracker is right now.
+Four callers were quietly depending on the old default and each now names
+its own destination — **a default three callers silently rely on is not a
+default, it is four decisions wearing one name.**
+
+### Caches, three times
+
+The five-minute cache on the planner and then the tracker produced three
+confused deploy checks in two days: Middle East countries "missing" (3
+Aug), the gating change "not taking effect" (19 Aug), the sign-in button
+absent (20 Aug). Both are sixty seconds now. Never a correctness problem —
+the HTML is identical for every reader — purely a cache that made good
+deploys look like failed ones, on the two pages every check starts from.
+
+### Dormant accounts
+
+Found while chasing a missing email. Subscribe said "you already signed
+up" and linked to the login; the login said "check your email" and sent
+nothing. Each half correct alone — one-signup-per-email, and an
+anti-enumeration login — and together a closed loop with no exit and no
+error message. Anyone whose record went inactive, most obviously every
+pre-2-August trial account, was locked out permanently and could not
+report it because both pages looked like success.
+
+Re-signing up now revives a dormant account. `revive_dormant_accounts.py`
+sweeps for existing ones, dry-run by default, skipping records with
+payment-provider fields because reviving a cancelled customer is a
+business decision rather than a repair. Dan ran it: four records, none
+dormant.
+
+### New suites
+
+- **tests/session.mjs** (46) — the token and the exact Set-Cookie lines.
+  Tampered payloads, expired-but-validly-signed tokens, a login token
+  refused as a session, the four-word diagnosis, and the redirect guard
+  against `//evil.com`, `/\evil.com` and four others.
+- **tests/page-scripts.mjs** (18) — no shared script may declare a
+  top-level name a page also declares; nothing may render an `<a>` to a
+  POST-only route, read from the router itself.
+- **tests/menu-routes.mjs**, **tests/tracker-i18n.mjs** — from the
+  previous entry, both still green.
+
+Every one was negative-tested by reintroducing the defect it exists to
+catch.
+
+### Two near-misses worth keeping
+
+**A stray `git checkout` reverted the greeting**, and fourteen suites
+passed with the feature entirely absent — the element in the page with
+nothing to fill it, the strings in four files with nothing reading them.
+Caught from `git status`, not from any check. The suites are good at
+"does this work" and were blind to "is this still here". A pairing check
+now covers it.
+
+**A confident wrong diagnosis.** Dan's session was confirmed "valid on
+members" by loading `/members/archive` — which is currently open to
+everyone under ARCHIVE_PUBLIC. It proved nothing, and sent us down a
+secret-rotation path. `/members/preferences` settled it in seconds. A
+test whose control is not controlled is worse than no test.
+
+### Verified
+
+`npm test`: **14 suites**. ROI regression **344 checks**. Replay OK
+across **593 files — 417 assertions, 123 standing invariants**.
