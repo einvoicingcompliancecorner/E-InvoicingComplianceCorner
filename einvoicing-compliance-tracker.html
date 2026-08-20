@@ -917,7 +917,13 @@
                destroyed the moment a language loads. One wrapper solves
                both -- the label translates, the marker survives, and the
                two flow as one line that wraps together. -->
-          <a class="dropdown-item" href="/roi-calculator"><span class="dd-icon">🧮</span><span class="dd-label"><span data-i18n="menu.roi">ROI &amp; Wave Planner</span> <span class="dd-beta">(Beta)</span><span class="dd-lock" data-needs-session hidden title="Subscribers only" aria-hidden="true">&#128274;</span></span></a>
+          <!-- THE PADLOCK IS GONE, 21 August 2026, with the wall it
+               warned about. It told a signed-out reader "subscribers
+               only" about a page that is served to everyone and always
+               was — a promise of exclusivity the site could not keep,
+               made to the one person it would turn away. See
+               openRoiPage() for why the wall went. -->
+          <a class="dropdown-item" href="/roi-calculator"><span class="dd-icon">🧮</span><span class="dd-label"><span data-i18n="menu.roi">ROI &amp; Wave Planner</span> <span class="dd-beta">(Beta)</span></span></a>
         </div>
       </div>
       <div class="actions-menu" id="educationMenu">
@@ -3489,50 +3495,35 @@ async function openRoiPage(opts){
   const backLabel = (i18n && i18n.t('backLink')) || '← Back to global tracker';
   const tabLabel = (i18n && i18n.t('roiPanel.newTab')) || 'Open in its own tab ›';
 
-  // can reproduce a bug in.
-  // ---- SUBSCRIBERS ONLY, FROM HERE ------------------------------------
+  // ---- AND EVERYONE GETS THE PLANNER ----------------------------------
   //
-  // Dan, 20 August 2026: "gate the wave planner menu item to being logged
-  // in only."
+  // A signed-out reader used to get an offer here instead of the tool:
+  // Dan asked for that on 20 August ("gate the wave planner menu item to
+  // being logged in only"), when the planner was still framed as
+  // subscriber content.
   //
-  // A signed-out reader gets the offer instead of the tool, before they
-  // have entered anything. That is a reversal of the earlier decision to
-  // keep the ask at Calculate, and it is his call to make -- what it buys
-  // is that nobody fills in six fields and picks eleven countries only to
-  // be stopped. What it costs is the demonstration: they are now asked to
-  // subscribe for something they have not watched work. Recorded here
-  // because if conversion drops, this is the change to look at first.
+  // IT IS REMOVED BECAUSE HIS NEXT DECISION CONTRADICTED IT. On 20 August
+  // he also chose "results immediately with the code protecting the
+  // account" -- and a wall in front of the whole page means the results
+  // are not immediate for the only people the prompt is aimed at. The two
+  // instructions cannot both stand; the later one wins, and this is the
+  // one that had to go.
   //
-  // THIS IS A COURTESY, NOT THE GATE. It reads the display cookie, which
-  // anyone can forge, so it decides only what is worth showing. The real
-  // gate is on the /roi-calculator route itself, server-side, against the
-  // HttpOnly session -- a reader who edits the cookie or types the URL
-  // still meets it. Two mechanisms, doing two different jobs: this one
-  // saves wasted effort, that one withholds.
-  const signedIn = !!(window.EICC_WHO && window.EICC_WHO.isSignedIn());
-  if(!signedIn){
-    const i18n2 = window.EICC_I18N;
-    const tt = (k, fb) => (i18n2 && i18n2.t(k)) || fb;
-    panel.innerHTML = ''
-      + '<div class="roi-frame-note">'
-      +   `<a class="roi-back" id="roiCloseLink" href="/einvoicing-compliance-tracker.html">${backLabel}</a>`
-      + '</div>'
-      + '<div class="roi-gate">'
-      +   `<p class="roi-gate-eyebrow">${tt('roiPanel.gateEyebrow','Subscriber tool')}</p>`
-      +   `<h2 class="roi-gate-title">${tt('roiPanel.gateTitle','ROI &amp; Wave Planner')}</h2>`
-      +   `<p class="roi-gate-body">${tt('roiPanel.gateBody','Subscribing is free. The planner builds a board-ready business case from your own invoice volumes and country footprint, with a delivery wave plan back-planned from the real published deadlines this site tracks &mdash; and an evidence grade against every benchmark it uses.')}</p>`
-      +   `<p class="roi-gate-actions"><a class="roi-gate-cta" href="/subscribe.html">${tt('roiPanel.gateSubscribe','Subscribe free')}</a></p>`
-      +   `<p class="roi-gate-signin">${tt('roiPanel.gateSignedUp','Already subscribed?')} <a href="https://members.e-invoicingcompliancecorner.com/members?next=${encodeURIComponent('/members/roi-calculator')}">${tt('who.signIn','Sign in')}</a></p>`
-      + '</div>';
-    document.getElementById('roiCloseLink').addEventListener('click', (e)=>{
-      e.preventDefault();
-      closeRoiPage();
-    });
-    if(!opts.skipHistory){
-      history.pushState({ roi: true }, '', '/roi-calculator');
-    }
-    return;
-  }
+  // IT ALSO WITHHELD NOTHING. The comment that stood here claimed "the
+  // real gate is on the /roi-calculator route itself, server-side" --
+  // that was never true. ROI_PUBLIC decides whether the route EXISTS, not
+  // who may have it, and site-worker serves the planner to anyone who
+  // asks. Typing the URL walked straight past this. So it turned readers
+  // away from a page it could not actually close.
+  //
+  // AND IT WAS THE THING SENDING PEOPLE TO THE MAGIC LINK. Dan, 21
+  // August: "when launching the roi-calculator, when not logged in - the
+  // user is taken to the send a link request, rather than send a code."
+  // Its Sign in pointed at the members login page, which is the one
+  // remaining route that emails a link rather than a code.
+  //
+  // The ask now lives beside the results, at the moment intent is
+  // highest, and it opens the panel rather than another origin.
 
   // THE BAR CARRIES THE WAY OUT, and that is the whole reason it exists.
   // Every other panel on this site closes from a back link inside the
@@ -3892,7 +3883,26 @@ async function openArchive(opts){
   const lang = (window.EICC_I18N && window.EICC_I18N.currentLang) || 'en';
   let html;
   try {
-    const res = await fetch(`${MEMBERS_ORIGIN}/members/archive?lang=${lang}`);
+    // SAME-ORIGIN, THROUGH SITE-WORKER'S RELAY, since 21 August 2026.
+    //
+    // Dan: the archive "displays a banner at the top saying You're
+    // viewing the full archive for free — no account needed ...
+    // regardless of whether you are subscribed or not, or logged in or
+    // not."
+    //
+    // This line was why. It fetched members.e-invoicingcompliancecorner
+    // .com directly, and fetch() defaults to credentials:'same-origin' —
+    // so on a cross-origin request the session cookie was silently left
+    // behind. members-worker saw an anonymous reader every single time
+    // and rendered the promo banner accordingly. Its logic was correct
+    // throughout; it was answering a question nobody was really asking.
+    //
+    // The alternative fix is credentials:'include' plus
+    // Access-Control-Allow-Credentials on the other side, and that is
+    // the one thing this codebase has repeatedly declined to switch on.
+    // Relaying through our own origin makes the cookie first-party and
+    // needs no CORS at all.
+    const res = await fetch(`/api/archive?lang=${lang}`);
     if(!res.ok) throw new Error('archive fetch failed: ' + res.status);
     html = await res.text();
   } catch(err){
@@ -3961,12 +3971,30 @@ async function openArchive(opts){
     .replace(/(?<![.\w#-])body\{/g, ':host{')
     + '\n.archive-wrap, .topbar-wide{margin:0 auto;}';
 
-  // Fix relative /members/... links (e.g. manage-preferences, though
-  // that only ever appears when signed in, which this cross-origin
-  // fetch never is, since cookies aren't sent across origins) so they
-  // resolve against the members subdomain, not this page's own origin.
+  // Fix root-relative /members/... links so they resolve against the
+  // members subdomain rather than this page's own origin.
+  //
+  // THE COMMENT THAT USED TO BE HERE CONTAINED THE BUG, filed as a fact:
+  // "manage-preferences ... only ever appears when signed in, which this
+  // cross-origin fetch never is, since cookies aren't sent across
+  // origins." Every word true, and it is a defect report written as an
+  // aside — the panel could not show a signed-in reader anything,
+  // including their own name, and that was noted and moved past. Dan
+  // reported the visible half on 21 August; the fetch is same-origin
+  // through the relay now, so this branch is live for the first time.
+  //
+  // FORMS TOO, and that is not decoration. The signed-in archive renders
+  // a sign-out FORM posting to /members/logout — a POST-only route, on
+  // the other origin. Left relative it would post to this origin and
+  // 404, leaving the reader believing they had signed out with the
+  // session untouched: exactly the defect fixed on 20 August, arriving
+  // again by a different door, and it would have shipped the moment this
+  // panel first saw a session.
   wrap.querySelectorAll('a[href^="/"]').forEach(a => {
     a.setAttribute('href', MEMBERS_ORIGIN + a.getAttribute('href'));
+  });
+  wrap.querySelectorAll('form[action^="/"]').forEach(f => {
+    f.setAttribute('action', MEMBERS_ORIGIN + f.getAttribute('action'));
   });
 
   panel.innerHTML = '';
@@ -4045,7 +4073,7 @@ function wireArchiveStoryModal(shadow){
     try{
       const lang = (window.EICC_I18N && window.EICC_I18N.currentLang) || 'en';
       const langSuffix = lang !== 'en' ? '?lang=' + lang : '';
-      const res = await fetch(`${MEMBERS_ORIGIN}/members/archive/${encodeURIComponent(id)}${langSuffix}`);
+      const res = await fetch(`/api/archive/${encodeURIComponent(id)}${langSuffix}`);
       if(!res.ok) throw new Error('fetch failed: ' + res.status);
       const html = await res.text();
       const doc = new DOMParser().parseFromString(html, 'text/html');
@@ -4474,17 +4502,34 @@ let subscribePageOpen = false;
 let currentSubscribeShadow = null;
 
 let countriesJsLoadPromise = null;
+// ONE PROMISE, ON WINDOW, since 21 August 2026.
+//
+// countries.js declares a TOP-LEVEL `const EICC_COUNTRIES_BY_REGION`, so
+// injecting it twice throws "Identifier has already been declared" — and
+// that throw kills whichever script is running, not just the line. This
+// page has been bitten by exactly that shape once already (MEMBERS_ORIGIN
+// in i18n.js, 20 August), and it is the reason tests/page-scripts.mjs
+// exists.
+//
+// The guard below was enough while this function was the only loader. It
+// is not any more: auth-overlay.js loads the same file on demand for the
+// signup panel's country picker, and two loaders each holding their own
+// in-flight promise can both pass the typeof check in the same tick and
+// append two script tags.
+//
+// So the promise lives on `window` where both can see it. Neither owns
+// it; whoever asks first creates it.
 function loadCountriesJs(){
   if(typeof EICC_COUNTRIES_BY_REGION !== 'undefined') return Promise.resolve();
-  if(countriesJsLoadPromise) return countriesJsLoadPromise;
-  countriesJsLoadPromise = new Promise((resolve, reject)=>{
+  if(window.EICC_COUNTRIES_LOAD) return window.EICC_COUNTRIES_LOAD;
+  window.EICC_COUNTRIES_LOAD = new Promise((resolve, reject)=>{
     const script = document.createElement('script');
     script.src = 'countries.js';
     script.onload = () => resolve();
-    script.onerror = (err) => { countriesJsLoadPromise = null; reject(err); };
+    script.onerror = (err) => { window.EICC_COUNTRIES_LOAD = null; reject(err); };
     document.head.appendChild(script);
   });
-  return countriesJsLoadPromise;
+  return window.EICC_COUNTRIES_LOAD;
 }
 
 function isValidSubscribeEmail(v){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); }
@@ -4790,13 +4835,31 @@ function wireDeepDiveInPagePanel(){
       return;
     }
 
-    // The "Subscribe" links (perks CTA + Menu dropdown item) -- same
-    // in-page treatment, though the form itself still performs a real
-    // cross-origin POST navigation to members-worker once submitted.
+    // The "Subscribe" links (perks CTA + Menu dropdown item).
+    //
+    // THE PANEL, NOT THE PAGE, since 21 August 2026. Dan: "The Sign-In
+    // button can be used for sending a code, but not Subscribe to the
+    // site." Signing in had moved to the code and subscribing had not,
+    // so the site had two different answers to the same question
+    // depending on which control you happened to press -- and the
+    // subscribe half was the one that still made you wait for an email
+    // and click a link.
+    //
+    // THREE FALLBACKS DEEP, and each one is a real page rather than a
+    // dead end: the panel if auth-overlay.js loaded, the in-page
+    // subscribe view if it did not, and a plain navigation to
+    // subscribe.html if the fetch fails. The href is never removed.
+    // subscribe.html stays for exactly this reason, and because Dan
+    // asked it to: "There is a chance a visitor goes to the menu, and
+    // clicks subscribe which I think would bring them to this page."
     if(href === 'subscribe.html'){
       e.preventDefault();
       document.getElementById('sidebar')?.classList.remove('open');
       document.getElementById('sidebarOverlay')?.classList.remove('open');
+      if(window.EICC_AUTH){
+        window.EICC_AUTH.open({ mode: 'signup' });
+        return;
+      }
       openSubscribePage();
       return;
     }

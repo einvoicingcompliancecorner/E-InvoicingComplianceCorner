@@ -792,6 +792,77 @@ const AUTH_RELAY = new Map([
   ["/api/auth/code/verify", "/members/api/code/verify"],
 ]);
 
+// ---- and the archive, for the same reason ------------------------------
+//
+// THE BUG, reported by Dan on 21 August 2026: the newsletter archive
+// showed "You're viewing the full archive for free — no account needed"
+// to everyone, "regardless of whether you are subscribed or not, or
+// logged in or not."
+//
+// members-worker was right. The tracker's in-page archive panel fetched
+// it CROSS-ORIGIN with no credentials option, so fetch()'s default of
+// `same-origin` applied and the cookie was never sent. Every request
+// arrived anonymous, so the promo banner rendered and the "Signed in as"
+// line never did — for subscribers, on the page their subscription is
+// most for.
+//
+// It has been like that since the panel was built. Nothing pointed at it
+// until 20 August, because until then the tracker had no signed-in state
+// for the banner to contradict. A defect can sit in plain sight for
+// weeks and only become visible when something else grows a memory.
+//
+// THE FIX IS NOT CORS-WITH-CREDENTIALS. That is what this codebase has
+// twice declined to turn on, and it would mean relaxing the one header
+// standing between a subscriber's session and any page that can talk to
+// members-worker. It is a relay instead — the same service binding the
+// auth panel and the saved-countries lookup already use, so the browser
+// talks to its own origin and the cookie travels as a first-party one.
+const ARCHIVE_RELAY_PREFIX = "/api/archive";
+
+/** GET relay for the archive, list and single issue.
+ *
+ *  Deliberately narrower than the auth relay's exact-path map: the issue
+ *  route carries a slug, so a prefix is unavoidable. The slug is
+ *  re-encoded rather than pasted, and anything with a slash in it is
+ *  refused — a relay that forwards "../../admin/..." is a relay that
+ *  hands the public origin whatever the other Worker will answer. */
+async function relayArchive(request, env, url) {
+  if (!env.MEMBERS) return new Response("Not found", { status: 404 });
+  const rest = url.pathname.slice(ARCHIVE_RELAY_PREFIX.length);   // "" or "/<slug>"
+  let target;
+  if (rest === "" || rest === "/") {
+    target = "/members/archive";
+  } else {
+    const slug = decodeURIComponent(rest.slice(1));
+    if (!slug || slug.includes("/") || slug.includes("..")) {
+      return new Response("Not found", { status: 404 });
+    }
+    target = "/members/archive/" + encodeURIComponent(slug);
+  }
+  const qs = url.searchParams.toString();
+
+  let upstream;
+  try {
+    upstream = await env.MEMBERS.fetch(new Request(
+      MEMBERS_ORIGIN + target + (qs ? "?" + qs : ""),
+      { headers: { Cookie: request.headers.get("Cookie") || "" } }));
+  } catch (err) {
+    console.warn(`archive relay: service binding failed — ${err && err.message}`);
+    return new Response("Archive unavailable", { status: 503 });
+  }
+
+  // PRIVATE AND Vary: Cookie, because this response now differs per
+  // reader — a signed-in subscriber gets their name and their preferred
+  // countries where an anonymous visitor gets the promo banner. This is
+  // trap 1 from the logged-in-site evaluation, arriving for real: a
+  // personalised response that is publicly cacheable serves one
+  // subscriber's page to the next person along.
+  const headers = new Headers(upstream.headers);
+  headers.set("Cache-Control", "private, no-store");
+  headers.set("Vary", "Cookie");
+  return new Response(upstream.body, { status: upstream.status, headers });
+}
+
 // Headers that must survive the hop, and nothing else.
 //
 // Cookie carries the browser-binding cookie on the way in; Set-Cookie
@@ -1377,6 +1448,11 @@ export default {
     // headers; it inspects, decides and shortcuts nothing.
     if (request.method === "POST" && AUTH_RELAY.has(url.pathname)) {
       return relayToMembers(request, env, AUTH_RELAY.get(url.pathname));
+    }
+    if (request.method === "GET"
+        && (url.pathname === ARCHIVE_RELAY_PREFIX
+            || url.pathname.startsWith(ARCHIVE_RELAY_PREFIX + "/"))) {
+      return relayArchive(request, env, url);
     }
 
     // The tracking-sources page — D1-rendered, no asset file behind it.

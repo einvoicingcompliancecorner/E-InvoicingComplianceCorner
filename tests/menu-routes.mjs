@@ -209,4 +209,69 @@ t.check("and listens for nothing the tracker never sends",
   neverSent.length === 0,
   neverSent.length ? `${neverSent.join(", ")} — handled but never sent` : "");
 
+// ---- nothing fetches the members origin from the tracker ---------------
+//
+// THE BUG, reported by Dan on 21 August 2026: the newsletter archive
+// showed "You're viewing the full archive for free — no account needed"
+// to everyone, signed in or not.
+//
+// members-worker was right every time. The tracker fetched
+// members.e-invoicingcompliancecorner.com DIRECTLY, and fetch() defaults
+// to credentials:'same-origin' — so on a cross-origin request the session
+// cookie is silently left behind and the other Worker sees an anonymous
+// reader. No error, no warning, a perfectly good 200: the response is
+// just answering a question about nobody.
+//
+// The old comment beside that line contained the whole diagnosis, filed
+// as an aside: "that only ever appears when signed in, which this
+// cross-origin fetch never is, since cookies aren't sent across origins."
+// Known, written down, and not read as a defect for weeks.
+//
+// The rule is therefore simple and absolute: THIS PAGE DOES NOT FETCH THE
+// OTHER ORIGIN. Anything it needs from members-worker comes through
+// site-worker's relay, where the cookie is first-party. Navigations are
+// fine — an <a href> or a form POST carries cookies normally, which is
+// why only fetch() is checked.
+const fetchesMembers = [...TRACKER.matchAll(
+  /fetch\(\s*[`'"][^`'"]*members\.e-invoicingcompliancecorner\.com[^`'"]*[`'"]/g)]
+  .map((m) => m[0].slice(0, 80));
+const fetchesMembersVar = [...TRACKER.matchAll(
+  /fetch\(\s*`\$\{MEMBERS_ORIGIN\}[^`]*`/g)].map((m) => m[0].slice(0, 80));
+// ONE EXEMPTION, NAMED. /members/feedback is deliberately anonymous: the
+// form carries the sender's address as a field, members-worker turns CORS
+// on for that route specifically, and there is no session for it to lose.
+// It is listed here rather than excluded by a looser pattern so that a
+// second cross-origin fetch has to come and argue with this comment.
+const ALLOWED_CROSS_ORIGIN = ["/members/feedback"];
+const crossOriginFetches = [...fetchesMembers, ...fetchesMembersVar]
+  .filter((f) => !ALLOWED_CROSS_ORIGIN.some((p) => f.includes(p)));
+
+t.check("the tracker never fetch()es the members origin directly",
+  crossOriginFetches.length === 0,
+  crossOriginFetches.length
+    ? `\n         ${crossOriginFetches.join("\n         ")}`
+      + "\n         fetch() defaults to credentials:'same-origin', so the session"
+      + "\n         cookie is dropped and members-worker answers as if nobody is"
+      + "\n         signed in — a clean 200 that is silently about the wrong reader."
+      + "\n         Use site-worker's relay instead."
+    : "");
+
+// And the relay it is supposed to use actually exists.
+t.check("site-worker relays the archive same-origin",
+  /ARCHIVE_RELAY_PREFIX\s*=\s*"\/api\/archive"/.test(WORKER)
+  && /relayArchive\(/.test(WORKER));
+t.check("and the tracker asks for that path",
+  /fetch\(\s*[`'"]\/api\/archive/.test(TRACKER));
+
+// The archive panel injects members-worker's own markup into this page,
+// where a root-relative href or form action resolves against the WRONG
+// origin. Links were already rewritten; forms were not, and the signed-in
+// archive renders a sign-out form posting to /members/logout — POST-only,
+// on the other host. Left relative it 404s and the reader believes they
+// signed out. That is the 20 August defect arriving by a second door, and
+// it could only ever appear once the panel could see a session at all.
+t.check("the archive panel rewrites relative form actions, not just links",
+  /querySelectorAll\('form\[action\^="\/"\]'\)/.test(TRACKER),
+  "a relative form action posts to the public origin and 404s");
+
 process.exit(t.report() ? 0 : 1);
