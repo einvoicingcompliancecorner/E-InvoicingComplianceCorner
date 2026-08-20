@@ -521,7 +521,7 @@ export default {
       } else if (request.method === "GET" && url.pathname === "/members/unsubscribe-notifications") {
         response = await handleUnsubscribeNotifications(request, env, lang);
       } else if (request.method === "POST" && url.pathname === "/members/logout") {
-        response = handleLogout();
+        response = await handleLogout(request);
       } else if (request.method === "POST" && url.pathname === "/admin/send-monthly-notifications") {
         // Manual trigger for testing the monthly notification job without
         // waiting for the actual cron schedule — see README for how to call
@@ -1907,9 +1907,30 @@ async function handleVerify(request, env, lang) {
   return new Response(null, { status: 302, headers });
 }
 
-function handleLogout() {
+// The public site's greeting signs out through here too, and it wants to
+// land the reader back on the tracker rather than on a members sign-in
+// page they never asked to see.
+//
+// AN ALLOWLIST, NOT A URL. The field selects from destinations written
+// here; it never supplies one. A logout that redirects to whatever it is
+// handed is an open redirect, and a sign-out link is the single most
+// forwarded, most clicked-without-looking control on any site.
+const LOGOUT_RETURN = {
+  tracker: "https://e-invoicingcompliancecorner.com/einvoicing-compliance-tracker.html",
+};
+
+async function handleLogout(request) {
+  let where = "/members";
+  try {
+    const form = await request.formData();
+    const asked = (form.get("return") || "").toString();
+    if (LOGOUT_RETURN[asked]) where = LOGOUT_RETURN[asked];
+  } catch {
+    // No body, or not a form. Falls through to the members default, which
+    // is what every in-page logout button has always done.
+  }
   const headers = new Headers();
-  headers.set("Location", "/members");
+  headers.set("Location", where);
   // All three shapes: both parent-domain cookies and the legacy host-only
   // one. Clearing two of three leaves a browser that still believes it is
   // signed in on the other host, which is a worse bug than not signing
