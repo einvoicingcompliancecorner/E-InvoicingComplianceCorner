@@ -88,3 +88,26 @@ database_id = "d1d10bd0-e90a-44a3-9494-a63689e8d32e"
 [vars]
 ROI_PUBLIC = "true"
 ROI_INDEXABLE = "false"
+
+# ----------------------------------------------------------------
+# SESSION_SECRET — a SECRET, not a var. Deliberately not written here.
+#
+# Set it once, from your own machine, to the SAME value members-worker
+# already uses (otherwise this Worker will reject every valid session and
+# nobody will ever appear signed in on the public site):
+#
+#     cd site-worker
+#     npx wrangler secret put SESSION_SECRET
+#
+# WHAT THIS WORKER CAN DO WITH IT, and what it cannot. The session token
+# is a self-contained HMAC, so the secret lets this Worker verify WHO a
+# reader is. It is given no subscribers binding, so it cannot read or
+# change anything about their account — every entitlement decision stays
+# on members-worker. See shared/session.mjs for the full reasoning and
+# the trade it accepts.
+#
+# If the secret is absent, sessionEmail() returns null and the site
+# behaves exactly as it did before: nobody is recognised, the planner
+# gates as normal. That is a deliberate fail-closed, so a missed secret
+# is a feature that does not appear rather than a site that breaks.
+# ----------------------------------------------------------------

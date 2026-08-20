@@ -339,6 +339,88 @@ const EICC_I18N = {
   },
 };
 
+// ================================================================
+// WHO IS SIGNED IN — rendered client-side, on every page
+// ================================================================
+// Dan, 19 August 2026: show "You are logged in as <user>" at the top of
+// the tracker, next to the menus.
+//
+// IT LIVES HERE, IN THE i18n LOADER, for a reason that is easy to miss:
+// most of this site is served straight from Cloudflare's asset layer and
+// the Worker never runs for it. The education pages, subscribe.html and
+// feedback.html cannot be personalised server-side at all. This script is
+// already on every one of them, so putting the greeting here is what
+// makes it appear everywhere rather than only on the two rendered routes.
+//
+// IT READS A COOKIE THAT CARRIES NO AUTHORITY. `eicc_who` is set beside
+// the real session cookie at sign-in and is deliberately readable by
+// JavaScript. Forging it changes the name in the corner and nothing else:
+// the session cookie is HttpOnly, and every decision that matters is made
+// against it, server-side. This is display, not access control — which is
+// also why it can be trusted to a static page in the first place.
+//
+// Sign-out is a real link to the members Worker, because only that side
+// can clear an HttpOnly cookie.
+//
+// EVERY NAME IS SCOPED INSIDE THE OBJECT, not declared at the top level.
+// This file and each page's inline script share one global scope, and the
+// tracker has had its own MEMBERS_ORIGIN since the archive panel was
+// built. Two top-level consts of the same name throw
+// "Identifier has already been declared", which kills BOTH scripts on
+// that page — every panel, filter and handler — while the page still
+// renders and looks perfectly fine. That happened on the first render
+// after this was written. See tests/page-scripts.mjs.
+const EICC_WHO = {
+  cookieName: "eicc_who",
+  membersOrigin: "https://members.e-invoicingcompliancecorner.com",
+
+  read() {
+    // Built from the constant rather than written twice — a literal
+    // beside the name it has to agree with is this project's most
+    // frequent defect.
+    const m = (document.cookie || "").match(
+      new RegExp("(?:^|; )" + this.cookieName + "=([^;]*)"));
+    if (!m) return null;
+    try {
+      const v = decodeURIComponent(m[1]).trim();
+      return v || null;
+    } catch (err) {
+      return null; // a malformed cookie is the same as no cookie
+    }
+  },
+
+  // The full address is the truth and is what the tooltip shows, but a
+  // long one would push the menus around on a narrow header — so the
+  // visible text is the local part, which is what people recognise
+  // anyway.
+  shortName(email) {
+    const at = email.indexOf("@");
+    return at > 0 ? email.slice(0, at) : email;
+  },
+
+  render() {
+    const host = document.getElementById("whoAmI");
+    if (!host) return;
+    const email = this.read();
+    if (!email) { host.innerHTML = ""; host.hidden = true; return; }
+    host.hidden = false;
+    const label = (window.EICC_I18N && window.EICC_I18N.t("who.signedInAs"))
+      || "Signed in as";
+    const out = (window.EICC_I18N && window.EICC_I18N.t("who.signOut")) || "Sign out";
+    const esc = (t) => String(t).replace(/&/g, "&amp;").replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    host.innerHTML =
+      `<span class="who-label">${esc(label)}</span> `
+      + `<span class="who-name" title="${esc(email)}">${esc(this.shortName(email))}</span> `
+      + `<a class="who-out" href="${this.membersOrigin}/members/logout">${esc(out)}</a>`;
+  },
+};
+
+window.EICC_WHO = EICC_WHO;
+// Re-rendered on a language change as well as at load, or the label would
+// stay in whatever language the page opened in.
+document.addEventListener("eicc:languageChanged", () => EICC_WHO.render());
+
 window.EICC_I18N = EICC_I18N;
 window.EICC_SUPPORTED_LANGUAGES = SUPPORTED_LANGUAGES;
 

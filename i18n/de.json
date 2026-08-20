@@ -136,6 +136,10 @@
     "jurisdictionsTracked": "Erfasste Rechtsordnungen",
     "milestonesTracked": "Erfasste Meilensteine"
   },
+  "who": {
+    "signedInAs": "Angemeldet als",
+    "signOut": "Abmelden"
+  },
   "regionNames": {
     "Europe": "Europa",
     "Middle East / Africa": "Naher Osten / Afrika",

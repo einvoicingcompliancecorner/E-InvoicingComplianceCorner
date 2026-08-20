@@ -136,6 +136,10 @@
     "jurisdictionsTracked": "Juridictions suivies",
     "milestonesTracked": "Jalons suivis"
   },
+  "who": {
+    "signedInAs": "Connecté en tant que",
+    "signOut": "Se déconnecter"
+  },
   "regionNames": {
     "Europe": "Europe",
     "Middle East / Africa": "Moyen-Orient / Afrique",
