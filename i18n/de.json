@@ -127,7 +127,12 @@
   },
   "roiPanel": {
     "newTab": "In eigenem Tab öffnen ›",
-    "unavailable": "Der Planer konnte gerade nicht geladen werden. Bitte versuchen Sie es in Kürze erneut."
+    "unavailable": "Der Planer konnte gerade nicht geladen werden. Bitte versuchen Sie es in Kürze erneut.",
+    "gateEyebrow": "Werkzeug für Abonnenten",
+    "gateTitle": "ROI- und Wellenplaner",
+    "gateBody": "Das Abonnement ist kostenlos. Der Planer erstellt aus Ihren eigenen Rechnungsvolumina und Ländern einen vorstandsreifen Business Case, mit einem Einführungsplan, der von den tatsächlich veröffentlichten Fristen dieses Trackers zurückgerechnet wird &mdash; und einer Evidenzbewertung für jeden verwendeten Referenzwert.",
+    "gateSubscribe": "Kostenlos abonnieren",
+    "gateSignedUp": "Bereits Abonnent?"
   },
   "stats": {
     "alreadyInEffect": "Bereits in Kraft",
@@ -138,7 +143,8 @@
   },
   "who": {
     "signedInAs": "Angemeldet als",
-    "signOut": "Abmelden"
+    "signOut": "Abmelden",
+    "signIn": "Anmelden"
   },
   "regionNames": {
     "Europe": "Europa",

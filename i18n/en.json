@@ -127,7 +127,12 @@
   },
   "roiPanel": {
     "newTab": "Open in its own tab ›",
-    "unavailable": "The planner could not be loaded just now. Please try again shortly."
+    "unavailable": "The planner could not be loaded just now. Please try again shortly.",
+    "gateEyebrow": "Subscriber tool",
+    "gateTitle": "ROI &amp; Wave Planner",
+    "gateBody": "Subscribing is free. The planner builds a board-ready business case from your own invoice volumes and country footprint, with a delivery wave plan back-planned from the real published deadlines this site tracks &mdash; and an evidence grade against every benchmark it uses.",
+    "gateSubscribe": "Subscribe free",
+    "gateSignedUp": "Already subscribed?"
   },
   "stats": {
     "alreadyInEffect": "Already in effect",
@@ -138,7 +143,8 @@
   },
   "who": {
     "signedInAs": "Signed in as",
-    "signOut": "Sign out"
+    "signOut": "Sign out",
+    "signIn": "Sign in"
   },
   "regionNames": {
     "Europe": "Europe",

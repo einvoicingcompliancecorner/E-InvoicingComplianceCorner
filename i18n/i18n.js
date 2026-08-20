@@ -398,10 +398,32 @@ const EICC_WHO = {
     return at > 0 ? email.slice(0, at) : email;
   },
 
+  /** True when a display cookie is present. Display only — never a
+   *  gate. Anything that must actually be withheld is decided
+   *  server-side against the HttpOnly session, not against this. */
+  isSignedIn() { return !!this.read(); },
+
   render() {
+    const email = this.read();
+
+    // The signed-out counterpart to the greeting: one control, shown to
+    // exactly the people the greeting is not. Dan, 20 August 2026: "show
+    // a Sign-In button on the main tracker page, to the left of the menu
+    // boxes." Toggled here rather than in the page's own script so it
+    // stays in step with the greeting by construction — two places
+    // deciding the same thing is how they come to disagree.
+    const signIn = document.getElementById("signInBtn");
+    if (signIn) signIn.hidden = !!email;
+
+    // Marks on menu items that need an account. Any element carrying
+    // data-needs-session is revealed only when signed OUT, so a reader
+    // knows before they click rather than after.
+    document.querySelectorAll("[data-needs-session]").forEach((el) => {
+      el.hidden = !!email;
+    });
+
     const host = document.getElementById("whoAmI");
     if (!host) return;
-    const email = this.read();
     if (!email) { host.innerHTML = ""; host.hidden = true; return; }
     host.hidden = false;
     const label = (window.EICC_I18N && window.EICC_I18N.t("who.signedInAs"))

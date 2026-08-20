@@ -635,6 +635,33 @@
   }
   #roiView .roi-frame-note a{color:var(--muted); text-decoration:none;}
   #roiView .roi-frame-note a:hover{color:var(--soon);}
+  /* The subscribers-only prompt, shown instead of the planner to a reader
+     with no session. Deliberately sized like a page rather than a dialog:
+     it is what they navigated to, not something interrupting them. */
+  #roiView .roi-gate{max-width:60ch; margin:0 auto; padding:64px 5vw 80px; text-align:center;}
+  #roiView .roi-gate-eyebrow{
+    font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:2px;
+    text-transform:uppercase; color:var(--soon); margin:0 0 8px;
+  }
+  #roiView .roi-gate-title{
+    font-family:'Big Shoulders Display',sans-serif; font-weight:800;
+    font-size:clamp(26px,4vw,38px); text-transform:uppercase; letter-spacing:.5px;
+    margin:0 0 14px; color:var(--text-lo);
+  }
+  #roiView .roi-gate-body{color:var(--muted); margin:0 0 22px; line-height:1.6;}
+  #roiView .roi-gate-actions{margin:0 0 12px;}
+  #roiView .roi-gate-cta{
+    display:inline-block; background:var(--soon); border:1px solid var(--soon);
+    color:#231a09; font-weight:700; border-radius:6px; padding:11px 20px;
+    text-decoration:none;
+  }
+  #roiView .roi-gate-cta:hover{filter:brightness(1.08); color:#231a09;}
+  #roiView .roi-gate-signin{
+    font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--muted); margin:0;
+  }
+  #roiView .roi-gate-signin a{color:var(--muted); text-decoration:underline; text-underline-offset:2px;}
+  #roiView .roi-gate-signin a:hover{color:var(--soon);}
+
   /* Shown in place of the frame when what came back is not the planner.
      Styled like the page, not like a browser error, because the reader
      is still inside the site and the frame's own 404 body is exactly
@@ -643,6 +670,24 @@
     margin:0; padding:70px 5vw; text-align:center; color:var(--muted);
     font-family:'IBM Plex Mono',monospace; font-size:13.5px;
   }
+  /* The sign-in button. Outlined rather than filled: the three menu
+     buttons beside it are solid amber, and a fourth solid button would
+     read as a fourth menu rather than as the one thing a signed-out
+     reader might want. Same height and font so the row still lines up. */
+  .signin-btn{
+    display:inline-flex; align-items:center;
+    font-family:'IBM Plex Mono',monospace; font-size:12.5px; font-weight:600;
+    color:var(--text-lo); background:transparent;
+    border:1px solid var(--line); border-radius:6px;
+    padding:9px 14px; text-decoration:none; white-space:nowrap;
+  }
+  .signin-btn:hover,.signin-btn:focus{border-color:var(--soon); color:var(--soon);}
+  .signin-btn[hidden]{display:none;}
+  /* The padlock on a menu item that needs an account. Tiny and after the
+     label, because it qualifies the item rather than replacing it. */
+  .dd-lock{margin-left:6px; font-size:11px; opacity:.75;}
+  .dd-lock[hidden]{display:none;}
+
   /* The signed-in line. Muted and small: it is a statement of state, not
      a control, and it sits beside three amber menu buttons that are.
      Measured against the dark topbar rather than picked by eye. */
@@ -790,6 +835,15 @@
          stay cacheable. -->
     <div id="whoAmI" class="who-am-i" hidden></div>
     <div class="topbar-menus">
+      <!-- Dan, 20 Aug 2026: a Sign-In button, left of the menu boxes.
+           Hidden in the markup and revealed by i18n.js when there is no
+           display cookie — the mirror image of #whoAmI, toggled by the
+           same function so the two can never both be showing. Styled as
+           a quieter sibling of the three menu buttons: it belongs to that
+           row, but it is not one of the three things this site is for. -->
+      <a class="signin-btn" id="signInBtn" hidden
+         href="https://members.e-invoicingcompliancecorner.com/members"
+         data-i18n="who.signIn">Sign in</a>
       <div class="actions-menu" id="resourcesMenu">
         <button class="menu-trigger" id="resourcesTrigger" data-i18n="menu.resources">Resources</button>
         <div class="dropdown-panel" id="resourcesPanel">
@@ -840,7 +894,7 @@
                destroyed the moment a language loads. One wrapper solves
                both -- the label translates, the marker survives, and the
                two flow as one line that wraps together. -->
-          <a class="dropdown-item" href="/roi-calculator"><span class="dd-icon">🧮</span><span class="dd-label"><span data-i18n="menu.roi">ROI &amp; Wave Planner</span> <span class="dd-beta">(Beta)</span></span></a>
+          <a class="dropdown-item" href="/roi-calculator"><span class="dd-icon">🧮</span><span class="dd-label"><span data-i18n="menu.roi">ROI &amp; Wave Planner</span> <span class="dd-beta">(Beta)</span><span class="dd-lock" data-needs-session hidden title="Subscribers only" aria-hidden="true">&#128274;</span></span></a>
         </div>
       </div>
       <div class="actions-menu" id="educationMenu">
@@ -3399,7 +3453,7 @@ async function openRoiPage(opts){
   // than a referrer check because a bookmarked /roi-calculator?frame=1
   // should behave the same as one reached from here -- a page that
   // renders differently depending on how you arrived is a page nobody
-  // can reproduce a bug in.
+
   const src = `/roi-calculator?frame=1&lang=${encodeURIComponent(lang)}`;
 
   // t(), NOT data-i18n. Every other panel does the same and the reason is
@@ -3411,6 +3465,51 @@ async function openRoiPage(opts){
   const i18n = window.EICC_I18N;
   const backLabel = (i18n && i18n.t('backLink')) || '← Back to global tracker';
   const tabLabel = (i18n && i18n.t('roiPanel.newTab')) || 'Open in its own tab ›';
+
+  // can reproduce a bug in.
+  // ---- SUBSCRIBERS ONLY, FROM HERE ------------------------------------
+  //
+  // Dan, 20 August 2026: "gate the wave planner menu item to being logged
+  // in only."
+  //
+  // A signed-out reader gets the offer instead of the tool, before they
+  // have entered anything. That is a reversal of the earlier decision to
+  // keep the ask at Calculate, and it is his call to make -- what it buys
+  // is that nobody fills in six fields and picks eleven countries only to
+  // be stopped. What it costs is the demonstration: they are now asked to
+  // subscribe for something they have not watched work. Recorded here
+  // because if conversion drops, this is the change to look at first.
+  //
+  // THIS IS A COURTESY, NOT THE GATE. It reads the display cookie, which
+  // anyone can forge, so it decides only what is worth showing. The real
+  // gate is on the /roi-calculator route itself, server-side, against the
+  // HttpOnly session -- a reader who edits the cookie or types the URL
+  // still meets it. Two mechanisms, doing two different jobs: this one
+  // saves wasted effort, that one withholds.
+  const signedIn = !!(window.EICC_WHO && window.EICC_WHO.isSignedIn());
+  if(!signedIn){
+    const i18n2 = window.EICC_I18N;
+    const tt = (k, fb) => (i18n2 && i18n2.t(k)) || fb;
+    panel.innerHTML = ''
+      + '<div class="roi-frame-note">'
+      +   `<a class="roi-back" id="roiCloseLink" href="/einvoicing-compliance-tracker.html">${backLabel}</a>`
+      + '</div>'
+      + '<div class="roi-gate">'
+      +   `<p class="roi-gate-eyebrow">${tt('roiPanel.gateEyebrow','Subscriber tool')}</p>`
+      +   `<h2 class="roi-gate-title">${tt('roiPanel.gateTitle','ROI &amp; Wave Planner')}</h2>`
+      +   `<p class="roi-gate-body">${tt('roiPanel.gateBody','Subscribing is free. The planner builds a board-ready business case from your own invoice volumes and country footprint, with a delivery wave plan back-planned from the real published deadlines this site tracks &mdash; and an evidence grade against every benchmark it uses.')}</p>`
+      +   `<p class="roi-gate-actions"><a class="roi-gate-cta" href="/subscribe.html">${tt('roiPanel.gateSubscribe','Subscribe free')}</a></p>`
+      +   `<p class="roi-gate-signin">${tt('roiPanel.gateSignedUp','Already subscribed?')} <a href="https://members.e-invoicingcompliancecorner.com/members">${tt('who.signIn','Sign in')}</a></p>`
+      + '</div>';
+    document.getElementById('roiCloseLink').addEventListener('click', (e)=>{
+      e.preventDefault();
+      closeRoiPage();
+    });
+    if(!opts.skipHistory){
+      history.pushState({ roi: true }, '', '/roi-calculator');
+    }
+    return;
+  }
 
   // THE BAR CARRIES THE WAY OUT, and that is the whole reason it exists.
   // Every other panel on this site closes from a back link inside the

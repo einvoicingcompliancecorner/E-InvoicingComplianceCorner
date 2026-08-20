@@ -965,6 +965,21 @@ async function renderRoiCalculatorPage(request, env) {
     "content-type": "text/html; charset=utf-8",
     "cache-control": signedInAs ? "private, no-store" : "public, max-age=60",
     vary: "Cookie",
+    // A DIAGNOSTIC, because "it still shows the gate" has three different
+    // causes that look identical from a browser: the secret is unset on
+    // this Worker, the reader's cookie predates the parent-domain change,
+    // or a cache served them somebody else's anonymous copy.
+    //
+    // Boolean only, never the address. It reveals nothing a reader cannot
+    // already infer from whether the gate appeared -- and it turns a
+    // round-trip of guesses into:
+    //     curl -sI https://e-invoicingcompliancecorner.com/roi-calculator
+    //
+    // "no-secret" is its own answer rather than being folded into "none",
+    // because a missing secret is a deployment step nobody did, and a
+    // missing cookie is a reader who is not signed in. Those need
+    // different fixes and should not share a symptom.
+    "x-eicc-session": !env.SESSION_SECRET ? "no-secret" : (signedInAs ? "ok" : "none"),
   };
   return new Response(html, { headers });
 }

@@ -127,7 +127,12 @@
   },
   "roiPanel": {
     "newTab": "Ouvrir dans son propre onglet ›",
-    "unavailable": "Le planificateur n'a pas pu être chargé pour le moment. Veuillez réessayer dans quelques instants."
+    "unavailable": "Le planificateur n'a pas pu être chargé pour le moment. Veuillez réessayer dans quelques instants.",
+    "gateEyebrow": "Outil réservé aux abonnés",
+    "gateTitle": "Planificateur de ROI et de vagues",
+    "gateBody": "L'abonnement est gratuit. Le planificateur construit un dossier d'investissement prêt pour le conseil d'administration à partir de vos propres volumes de factures et de votre présence par pays, avec un plan de déploiement par vagues calculé à rebours depuis les échéances réellement publiées que ce site suit &mdash; et une note de fiabilité pour chaque référence utilisée.",
+    "gateSubscribe": "S'abonner gratuitement",
+    "gateSignedUp": "Déjà abonné ?"
   },
   "stats": {
     "alreadyInEffect": "Déjà en vigueur",
@@ -138,7 +143,8 @@
   },
   "who": {
     "signedInAs": "Connecté en tant que",
-    "signOut": "Se déconnecter"
+    "signOut": "Se déconnecter",
+    "signIn": "Se connecter"
   },
   "regionNames": {
     "Europe": "Europe",
