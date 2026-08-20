@@ -848,8 +848,18 @@
            same function so the two can never both be showing. Styled as
            a quieter sibling of the three menu buttons: it belongs to that
            row, but it is not one of the three things this site is for. -->
+      <!-- ?next=tracker so the emailed link comes BACK here, signed in,
+           rather than dropping the reader on the standalone newsletter
+           archive. Dan hit exactly that: the button is on the tracker, so
+           landing somewhere else is the one thing it must not do.
+
+           A NAME, NOT A URL. members-worker resolves "tracker" against its
+           own allowlist (VERIFY_RETURN) and never accepts a destination
+           from the query string. A sign-in link is the most forwarded
+           thing this site sends; it must not be able to carry someone
+           somewhere of the sender's choosing. -->
       <a class="signin-btn" id="signInBtn" hidden
-         href="https://members.e-invoicingcompliancecorner.com/members"
+         href="https://members.e-invoicingcompliancecorner.com/members?next=tracker"
          data-i18n="who.signIn">Sign in</a>
       <div class="actions-menu" id="resourcesMenu">
         <button class="menu-trigger" id="resourcesTrigger" data-i18n="menu.resources">Resources</button>
@@ -3506,7 +3516,7 @@ async function openRoiPage(opts){
       +   `<h2 class="roi-gate-title">${tt('roiPanel.gateTitle','ROI &amp; Wave Planner')}</h2>`
       +   `<p class="roi-gate-body">${tt('roiPanel.gateBody','Subscribing is free. The planner builds a board-ready business case from your own invoice volumes and country footprint, with a delivery wave plan back-planned from the real published deadlines this site tracks &mdash; and an evidence grade against every benchmark it uses.')}</p>`
       +   `<p class="roi-gate-actions"><a class="roi-gate-cta" href="/subscribe.html">${tt('roiPanel.gateSubscribe','Subscribe free')}</a></p>`
-      +   `<p class="roi-gate-signin">${tt('roiPanel.gateSignedUp','Already subscribed?')} <a href="https://members.e-invoicingcompliancecorner.com/members">${tt('who.signIn','Sign in')}</a></p>`
+      +   `<p class="roi-gate-signin">${tt('roiPanel.gateSignedUp','Already subscribed?')} <a href="https://members.e-invoicingcompliancecorner.com/members?next=${encodeURIComponent('/members/roi-calculator')}">${tt('who.signIn','Sign in')}</a></p>`
       + '</div>';
     document.getElementById('roiCloseLink').addEventListener('click', (e)=>{
       e.preventDefault();
