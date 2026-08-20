@@ -1918,6 +1918,15 @@ ${langAsked && langAsked !== lang ? `<p class="note noprint" style="margin:0 0 1
 `;
   const script = `
 const COUNTRIES = __ROI_COUNTRIES__;
+// PUBLISHED FOR THE SIGNUP PANEL, which shows "N jurisdictions tracked"
+// and must not carry its own copy of N. This document does not load
+// countries.js, so auth-overlay.js has nothing else to count here.
+//
+// Index 1 is the ISO code, and the European Union row is an umbrella
+// tagging entity rather than a jurisdiction anyone subscribes to -- it
+// is excluded from the subscribe picker for the same reason, so counting
+// it here would make this panel disagree with that one by exactly one.
+window.EICC_JURISDICTION_COUNT = COUNTRIES.filter(c => c[1] !== 'EU').length;
 let signedIn = __ROI_SIGNED_IN__;
 // The members origin, injected rather than hardcoded: this module is
 // shared by both Workers and only the public one has a gate to point

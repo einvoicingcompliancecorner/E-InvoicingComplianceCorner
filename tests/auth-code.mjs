@@ -373,6 +373,56 @@ const OVERLAY_SRC = readFileSync(
 const switches = [...OVERLAY_SRC.matchAll(/data-switch="signup"/g)].length;
 t.check("the panel offers 'create a free account' in two places",
   switches >= 2, `${switches} found — expected the sign-in step and the code step`);
+// ---- the sell column ---------------------------------------------------
+//
+// Dan asked for the old subscribe page's benefits back, "on the left".
+// Two halves in one file, and the pairing is what is worth checking: a
+// column that renders nothing and a column that is never shown both look
+// identical from outside.
+t.check("the panel builds a sell column and paints it",
+  /function sellHtml\(/.test(OVERLAY_SRC) && /function paintSell\(/.test(OVERLAY_SRC)
+  && /paintSell\(!signin\)/.test(OVERLAY_SRC),
+  "signup shows it, sign-in does not");
+t.check("and the card only widens when there is something in it",
+  /has-sell/.test(OVERLAY_SRC) && /classList\.toggle\("has-sell"/.test(OVERLAY_SRC));
+
+const perkCount = [...OVERLAY_SRC.matchAll(/t\("sell\.perk\d+",/g)].length;
+t.check(`it lists ${perkCount} benefits`, perkCount >= 6, perkCount);
+
+// NOT "IN PLAIN ENGLISH". Dan, 21 August: "the site is delivered in
+// multiple languages". Stated as a rule rather than as a one-off fix,
+// because the phrase is a natural thing to reach for in English copy and
+// the panel is the one surface that sells the digest to a reader who may
+// be reading the whole site in Spanish, German or French.
+// COMMENTS STRIPPED FIRST, and this is the SECOND time today a check of
+// mine read prose as if it were behaviour — the first compared
+// indexOf("missing_fields") and found the word in the comment explaining
+// the bug, sitting above the fix.
+//
+// It is a predictable failure in a codebase that explains itself at
+// length: every rule worth checking is also worth a paragraph naming the
+// thing it forbids, and a naive search finds the paragraph. So the two
+// content rules below look at CODE only.
+const OVERLAY_CODE = OVERLAY_SRC
+  .replace(/\/\*[\s\S]*?\*\//g, " ")
+  .split("\n").map((l) => l.replace(/(^|\s)\/\/.*$/, "$1")).join("\n");
+
+t.check("and never promises anything 'in plain English'",
+  !/plain English/i.test(OVERLAY_CODE),
+  "this site publishes in four languages; the phrase tells three of its "
+  + "audiences the product is not for them, in the sentence selling it");
+
+// THE COUNT IS COUNTED. "70 countries" was hardcoded across eleven files
+// once and sat at 48 while D1 said 56, through several country additions.
+// This panel says "N jurisdictions tracked" and must never be the twelfth
+// copy — it reads a number the tracker and the planner each publish from
+// their own live rows.
+t.check("the jurisdiction count is read, never typed",
+  /function jurisdictionCount\(/.test(OVERLAY_SRC)
+  && /EICC_JURISDICTION_COUNT/.test(OVERLAY_SRC)
+  && !/\b\d{2,3}\s*(?:-|\s)?\s*(?:jurisdictions?|countries|country)/i.test(OVERLAY_CODE),
+  "a literal count here is a number with no connection to the thing it counts");
+
 t.check("and the mode travels with the request, so the Worker knows which form it is",
   /mode:\s*signin\s*\?\s*"signin"\s*:\s*"signup"/.test(OVERLAY_SRC)
   || /mode:\s*opts\.mode === "signin"/.test(OVERLAY_SRC));

@@ -80,11 +80,18 @@
     ".eicc-auth-veil{position:fixed;inset:0;background:rgba(12,10,6,.72);z-index:9000;display:none;}",
     ".eicc-auth-veil.eicc-auth-abs{position:absolute;top:0;left:0;right:0;bottom:0;height:auto;}",
     ".eicc-auth-veil.open{display:block;}",
+    // TWO COLUMNS WHEN THERE IS SOMETHING TO SELL, one when there is not.
+    // Dan asked for the benefits kept "on the left", as they were on the
+    // full subscribe page. The card widens to carry them and narrows back
+    // for a sign-in, which has nothing to sell to somebody who has
+    // already bought.
     ".eicc-auth-card{position:absolute;left:50%;transform:translateX(-50%);width:min(92vw,460px);",
-    "  background:#f6f0e2;color:#241d10;border-radius:10px;padding:26px 24px 22px;",
+    "  background:#f6f0e2;color:#241d10;border-radius:10px;",
     "  box-shadow:0 24px 60px rgba(0,0,0,.5);font-family:'IBM Plex Sans',system-ui,sans-serif;",
-    "  max-height:92vh;overflow-y:auto;}",
+    "  max-height:92vh;overflow-y:auto;display:flex;align-items:stretch;}",
+    ".eicc-auth-card.has-sell{width:min(94vw,780px);}",
     ".eicc-auth-card *{box-sizing:border-box;}",
+    ".eicc-auth-body{flex:1 1 auto;min-width:0;padding:26px 24px 22px;}",
     ".eicc-auth-x{position:absolute;top:10px;right:14px;background:none;border:none;font-size:24px;",
     "  line-height:1;color:#6f6444;cursor:pointer;padding:4px 6px;}",
     ".eicc-auth-x:hover{color:#b5432f;}",
@@ -111,6 +118,46 @@
     "  line-height:1;padding:0 3px;}",
     ".eicc-auth-chip button:hover{color:#b5432f;}",
     ".eicc-auth-note{font-size:11.5px;color:#6f6444;line-height:1.5;margin:0 0 14px;}",
+    // The sell. Background is #efe9db so the muted tone still clears AA
+    // on it (4.84:1) — a strip that tints the card is a strip that
+    // changes every contrast ratio sitting on top of it, and the easy
+    // mistake is to check the colours against the card they were
+    // designed for rather than the panel they end up in.
+    ".eicc-auth-sell{flex:0 0 246px;background:#efe9db;padding:26px 20px;",
+    "  border-radius:10px 0 0 10px;display:none;}",
+    ".eicc-auth-card.has-sell .eicc-auth-sell{display:block;}",
+    ".eicc-auth-sell-eyebrow{font-family:'IBM Plex Mono',monospace;font-size:10px;",
+    // #8a5a12, not the #96621c used on the card. The strip sits on a
+    // darker background, and the same amber that clears AA there drops
+    // to 4.27:1 here — a colour is not accessible, a PAIRING is, and
+    // moving an element to a tinted panel silently revalues every one
+    // of them.
+    "  text-transform:uppercase;letter-spacing:1px;color:#8a5a12;margin:0 0 7px;}",
+    ".eicc-auth-sell-title{font-family:'Big Shoulders Display',sans-serif;font-weight:800;",
+    "  font-size:20px;line-height:1.08;text-transform:uppercase;margin:0 0 16px;color:#241d10;}",
+    ".eicc-auth-stats{margin:0 0 14px;}",
+    ".eicc-auth-stats span{display:block;font-size:10.5px;line-height:1.3;color:#5f5638;",
+    "  font-family:'IBM Plex Mono',monospace;margin:0 0 9px;}",
+    ".eicc-auth-stats b{display:block;font-family:'Big Shoulders Display',sans-serif;",
+    "  font-weight:800;font-size:22px;line-height:1;color:#241d10;letter-spacing:.3px;}",
+    ".eicc-auth-perks{margin:0;padding:14px 0 0;list-style:none;border-top:1px solid #ded5bd;}",
+    ".eicc-auth-perks li{font-size:11.5px;line-height:1.4;color:#241d10;margin:0 0 8px;}",
+    ".eicc-auth-perks li:last-child{margin-bottom:0;}",
+    ".eicc-auth-free{margin:16px 0 0;padding:8px 10px;background:#e2dbc4;border-radius:5px;",
+    "  font-family:'IBM Plex Mono',monospace;font-size:10.5px;line-height:1.45;color:#4a4030;}",
+    // NARROW SCREENS STACK, and the sell goes ON TOP rather than being
+    // hidden. It is the reason someone is filling the form in; a phone
+    // is not a reason to drop it. Horizontal stats there, because a
+    // stacked column of three would push the first field off screen.
+    "@media (max-width:640px){",
+    "  .eicc-auth-card{display:block;}",
+    "  .eicc-auth-card.has-sell{width:min(92vw,460px);}",
+    "  .eicc-auth-sell{border-radius:10px 10px 0 0;padding:18px 20px;}",
+    "  .eicc-auth-sell-title{font-size:18px;margin-bottom:12px;}",
+    "  .eicc-auth-stats{display:flex;gap:14px;margin-bottom:12px;}",
+    "  .eicc-auth-stats span{flex:1;margin:0;}",
+    "  .eicc-auth-stats b{font-size:18px;}",
+    "}",
     ".eicc-auth-toggle{background:none;border:none;padding:0;margin:0 0 12px;cursor:pointer;",
     "  font-family:'IBM Plex Mono',monospace;font-size:11px;color:#96621c;text-decoration:underline;}",
     ".eicc-auth-toggle:hover{color:#b5432f;}",
@@ -208,7 +255,13 @@
     root.className = "eicc-auth-veil" + (framed ? " eicc-auth-abs" : "");
     root.setAttribute("role", "dialog");
     root.setAttribute("aria-modal", "true");
-    root.innerHTML = '<div class="eicc-auth-card"><button class="eicc-auth-x" aria-label="Close">&times;</button>'
+    // THE SELL IS A SIBLING OF THE FORM, not part of it. It has to be, to
+    // sit beside it — and it also means every re-render of the step (a
+    // chip removed, the picker opened, a switch to sign-in) leaves it
+    // untouched instead of rebuilding it four times.
+    root.innerHTML = '<div class="eicc-auth-card">'
+      + '<button class="eicc-auth-x" aria-label="Close">&times;</button>'
+      + '<aside class="eicc-auth-sell"></aside>'
       + '<div class="eicc-auth-body"></div></div>';
     document.body.appendChild(root);
 
@@ -286,6 +339,10 @@
         : t("signup.lede", "Free, no payment details. We'll email you a 6-digit code to confirm the address — you stay on this page and nothing you've entered is lost."))
       + '</p>'
       + '<div class="eicc-auth-alert"></div>';
+
+    // The sell lives in its own column and is painted here rather than
+    // inside `html`, so it survives every re-render of this step.
+    paintSell(!signin);
 
     if (signin) {
       html += fieldHtml(FIELDS[2]);
@@ -371,6 +428,136 @@
       renderDetails();
       writeTyped(typed);
     });
+  }
+
+  // ---- WHAT THEY GET, IN NINETY PIXELS ----------------------------------
+  //
+  // Dan, 21 August 2026: the old /subscribe.html "included some subscriber
+  // benefits to the left of the screen. I liked this feature at the point
+  // of subscription, as it 'sells' what the user will get ... perhaps
+  // something more discrete and punchy would be appropriate?"
+  //
+  // The full-page version is a headline, a paragraph, a badge, a sample
+  // link, three stats and four benefits with a sentence each. It has a
+  // column to live in. This has a card the reader is about to type into,
+  // and a panel that competes with its own form is a panel that gets
+  // scrolled past — so this keeps the three stats and reduces the four
+  // benefits to four phrases. Same claims, no sentences.
+  //
+  // ABOVE THE FIELDS, not below them: the answer to "why am I filling
+  // this in" is worth nothing after the decision to fill it in.
+  //
+  // SIGNUP ONLY. Selling the archive to somebody who is signing in to
+  // read the archive is noise, and it would push the one field they came
+  // for below the fold.
+
+  /** The jurisdiction count, COUNTED rather than typed.
+   *
+   *  "70 countries" was hardcoded into seven HTML files and four JSON
+   *  files once, and sat at 48 through several country additions while
+   *  D1 said 56 — a number stating a fact it had no connection to. It is
+   *  not being typed here as an eighth copy.
+   *
+   *  Two sources, because the two host documents have different ones:
+   *  countries.js on the site pages, and a count the planner publishes
+   *  from the rows it was actually rendered with. If neither is present
+   *  the stat is DROPPED rather than guessed — two true stats read
+   *  better than three with one invented. */
+  //  THROUGH regionGroups(), NOT off `window` — and the first version of
+  //  this function did exactly what the long comment above regionGroups()
+  //  warns about, three lines below reading it. countries.js declares a
+  //  top-level `const`, which is a global BINDING and never a property of
+  //  `window`, so `window.EICC_COUNTRIES_BY_REGION` is undefined even
+  //  when the file is loaded. The stat silently vanished on the tracker —
+  //  the page most signups start from — while everything else worked.
+  //
+  //  A warning written down is not a guard. This now goes through the one
+  //  accessor that knows how to read that binding, so there is no second
+  //  way to get it wrong.
+  function jurisdictionCount() {
+    var byRegion = regionGroups();
+    if (byRegion) {
+      var n = 0;
+      Object.keys(byRegion).forEach(function (r) {
+        n += (byRegion[r] || []).length;
+      });
+      if (n > 0) return n;
+    }
+    // Published by the tracker and by the planner from their own live
+    // rows, by the same rule: distinct countries, European Union row
+    // excluded. Neither types the number.
+    var declared = Number(window.EICC_JURISDICTION_COUNT);
+    return isFinite(declared) && declared > 0 ? declared : 0;
+  }
+
+  /** Show or hide the left column, and paint it once.
+   *
+   *  The card's width is driven by a class rather than by measuring
+   *  anything, so the two-column and one-column layouts are one CSS rule
+   *  apart and cannot disagree with what is actually in the column. */
+  function paintSell(show) {
+    if (!root) return;
+    var col = root.querySelector(".eicc-auth-sell");
+    var card = root.querySelector(".eicc-auth-card");
+    if (!col || !card) return;
+    card.classList.toggle("has-sell", !!show);
+    col.innerHTML = show ? sellHtml() : "";
+  }
+
+  function sellHtml() {
+    var n = jurisdictionCount();
+    var stats = "";
+    if (n) {
+      stats += "<span><b>" + n + "</b>" + esc(t("sell.stat1", "jurisdictions tracked")) + "</span>";
+    }
+    stats += "<span><b>" + esc(t("sell.stat2num", "Monthly")) + "</b>"
+      + esc(t("sell.stat2", "digest, plus alerts")) + "</span>";
+    stats += "<span><b>" + esc(t("sell.stat3num", "Zero")) + "</b>"
+      + esc(t("sell.stat3", "spam in between")) + "</span>";
+
+    // NOT "in plain English". Dan, 21 August: "the site is delivered in
+    // multiple languages". It was true of the copy and false of the
+    // product — this site publishes in four, and a Spanish reader being
+    // promised plain English is being told the digest is not for them,
+    // in the sentence meant to sell it. "Plain language" is also what
+    // subscribe.html has said all along, so this stops disagreeing with
+    // the page it summarises.
+    // SIX, after Dan asked for the whitepapers and the planner to be
+    // named here too. Both are worth stating and one needed care.
+    //
+    // THE PLANNER IS FREE TO EVERYONE — that was settled on 20 August and
+    // migration 595 exists because the old copy promised things the
+    // account did not actually hold. Listing "ROI calculator" flat would
+    // put that defect straight back, in the panel built to replace it.
+    // What an account genuinely adds there is the saved country list the
+    // planner reads, so the line says so. Same claim Dan asked for, with
+    // the part that is true about the ACCOUNT attached.
+    //
+    // The whitepapers line needs no such care: the documents are public,
+    // and having them arrive in your inbox is not.
+    var perks = [
+      ["🔔", t("sell.perk1", "Rule changes in plain language")],
+      ["🌍", t("sell.perk2", "Only the countries you pick")],
+      ["🗂️", t("sell.perk3", "Every back issue, searchable")],
+      ["📄", t("sell.perk5", "Whitepapers and insights, straight to your inbox")],
+      ["🧮", t("sell.perk6", "ROI calculator and compliance wave planning, with your countries saved")],
+      ["📘", t("sell.perk4", "New guides before anyone else")],
+    ].map(function (p) {
+      return "<li>" + p[0] + " " + esc(p[1]) + "</li>";
+    }).join("");
+
+    return '<p class="eicc-auth-sell-eyebrow">'
+      + esc(t("sell.eyebrow", "Never get caught off guard")) + "</p>"
+      + '<h3 class="eicc-auth-sell-title">'
+      + esc(t("sell.title", "Know the moment a government moves")) + "</h3>"
+      + '<div class="eicc-auth-stats">' + stats + "</div>"
+      + '<ul class="eicc-auth-perks">' + perks + "</ul>"
+      // The closer, and the last thing read before the first field. It
+      // is the objection this panel actually has to answer: five fields
+      // and a code look like the beginning of a payment flow, and the
+      // page has to say otherwise before the reader decides it is.
+      + '<p class="eicc-auth-free">'
+      + esc(t("sell.free", "Free to join — no payment details, ever")) + "</p>";
   }
 
   // THE COUNTRIES, CARRIED WHERE THERE ARE ANY AND CHOOSABLE WHERE THERE
