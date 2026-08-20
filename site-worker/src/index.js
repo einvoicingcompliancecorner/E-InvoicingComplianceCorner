@@ -49,7 +49,7 @@ import {
 // binding: it can verify who a reader is from the token's signature and
 // cannot read or change anything about their account. See the header of
 // shared/session.mjs for why that split, and what it deliberately trades.
-import { sessionEmail } from "../../shared/session.mjs";
+import { sessionEmail, sessionDiagnostic, readCookie, SESSION_COOKIE } from "../../shared/session.mjs";
 import {
   getRoiCountries,
   getRoiBenchmarks,
@@ -961,6 +961,18 @@ async function renderRoiCalculatorPage(request, env) {
   // So a personalised render is private and uncacheable, and Vary tells
   // any cache that the cookie is part of the key even so. The anonymous
   // render keeps its sixty seconds, because it is the same for everyone.
+  // A cookie that will not verify is never normal in bulk: it means the
+  // secret does not match the one that signed it, which looks exactly
+  // like "not signed in" from a browser. Logged so `wrangler tail` says
+  // so out loud. No token, no address -- the fact alone.
+  if (!signedInAs && env.SESSION_SECRET) {
+    const { value: presented } = readCookie(request, SESSION_COOKIE);
+    if (presented) {
+      console.warn("ROI: a session cookie was presented and could not be verified — "
+        + "check that SESSION_SECRET matches members-worker's.");
+    }
+  }
+
   const headers = {
     "content-type": "text/html; charset=utf-8",
     "cache-control": signedInAs ? "private, no-store" : "public, max-age=60",
@@ -979,7 +991,7 @@ async function renderRoiCalculatorPage(request, env) {
     // because a missing secret is a deployment step nobody did, and a
     // missing cookie is a reader who is not signed in. Those need
     // different fixes and should not share a symptom.
-    "x-eicc-session": !env.SESSION_SECRET ? "no-secret" : (signedInAs ? "ok" : "none"),
+    "x-eicc-session": await sessionDiagnostic(request, env.SESSION_SECRET),
   };
   return new Response(html, { headers });
 }
