@@ -643,6 +643,19 @@
     margin:0; padding:70px 5vw; text-align:center; color:var(--muted);
     font-family:'IBM Plex Mono',monospace; font-size:13.5px;
   }
+  /* The signed-in line. Muted and small: it is a statement of state, not
+     a control, and it sits beside three amber menu buttons that are.
+     Measured against the dark topbar rather than picked by eye. */
+  .who-am-i{
+    font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--muted);
+    display:flex; align-items:center; gap:7px; justify-content:flex-end;
+    margin:0 0 8px; flex-wrap:wrap;
+  }
+  .who-am-i .who-name{color:var(--text-lo); font-weight:600;}
+  .who-am-i .who-out{color:var(--muted); text-decoration:underline; text-underline-offset:2px;}
+  .who-am-i .who-out:hover{color:var(--soon);}
+  @media(max-width:700px){ .who-am-i{justify-content:flex-start; margin-bottom:10px;} }
+
   /* The (Beta) marker on the menu item itself. Muted rather than
      coloured: it qualifies the link, it is not a warning about it.
      .dd-label keeps the label and the marker in ONE flex item, so the
@@ -765,6 +778,17 @@
       <h1 class="brand-title display" data-i18n="brand.title">The E-Invoicing<br>Compliance Corner</h1>
     </div>
     <div class="topbar-right">
+    <!-- Dan, 19 Aug 2026: "You are logged in as <user>" at the top, next
+         to the menu drop-downs.
+
+         EMPTY AND HIDDEN IN THE MARKUP, filled by i18n.js from the
+         display cookie. Deliberately not rendered server-side: the same
+         script runs on the education pages and subscribe.html, which the
+         Worker never touches, so this is the only way the greeting
+         appears everywhere rather than only here. It also keeps this
+         page's HTML identical for every reader, which is what lets it
+         stay cacheable. -->
+    <div id="whoAmI" class="who-am-i" hidden></div>
     <div class="topbar-menus">
       <div class="actions-menu" id="resourcesMenu">
         <button class="menu-trigger" id="resourcesTrigger" data-i18n="menu.resources">Resources</button>

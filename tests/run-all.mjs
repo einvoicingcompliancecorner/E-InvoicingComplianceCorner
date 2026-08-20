@@ -34,6 +34,14 @@ const SUITES = [
   // the answer to, because they all call the render functions directly
   // and never touch the router.
   { name: "menu routes", cmd: "node", args: [join(HERE, "menu-routes.mjs")], cwd: REPO },
+  // The shared session token and its Set-Cookie lines. No browser, no
+  // network. It runs early because a break here logs everyone out of the
+  // whole site, which is a worse failure than anything below it.
+  { name: "session", cmd: "node", args: [join(HERE, "session.mjs")], cwd: REPO },
+  // The shared scripts and each page's inline script share one global
+  // scope. A duplicate top-level const there throws, and the throw kills
+  // the entire inline script while the page still looks fine.
+  { name: "page scripts", cmd: "node", args: [join(HERE, "page-scripts.mjs")], cwd: REPO },
   { name: "ROI regression", cmd: "node", args: [join(HERE, "roi-regression.mjs")], cwd: REPO },
   { name: "ROI i18n", cmd: "node", args: [join(HERE, "roi-i18n.mjs")], cwd: REPO },
   { name: "ROI hardcoded strings", cmd: "node", args: [join(HERE, "roi-hardcoded.mjs")], cwd: REPO },

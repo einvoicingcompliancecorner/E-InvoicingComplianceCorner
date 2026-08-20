@@ -25,6 +25,16 @@ import {
   SUPPORTED_LANGS,
 } from "../../shared/deep-dive-render.mjs";
 import {
+  SESSION_COOKIE as SHARED_SESSION_COOKIE,
+  signToken,
+  verifyToken,
+  sessionEmail,
+  readCookie as readSharedCookie,
+  DISPLAY_COOKIE,
+  signInCookies,
+  signOutCookies,
+} from "../../shared/session.mjs";
+import {
   getRoiCountries as sharedGetRoiCountries,
   getRoiBenchmarks as sharedGetRoiBenchmarks,
   getRoiPhases as sharedGetRoiPhases,
@@ -40,7 +50,10 @@ import {
   INSIGHTS_STYLE,
 } from "../../shared/resources-render.mjs";
 
-const SESSION_COOKIE = "eicc_session";
+// Imported, not redeclared. site-worker now reads the same cookie, and a
+// second copy of the name is a second thing to keep in step -- the exact
+// defect migration 589 removed when SUPPORTED_LANGS existed twice.
+const SESSION_COOKIE = SHARED_SESSION_COOKIE;
 const SESSION_TTL_SECONDS = 60 * 60 * 24 * 30; // 30 days
 const MAGIC_LINK_TTL_SECONDS = 60 * 15; // 15 minutes
 // Separate, deliberately longer TTL for "convenience" login links sent
@@ -356,6 +369,44 @@ function resolveLanguage(request) {
   return { lang: "en", shouldSetCookie: false, cookieDuplicated };
 }
 
+// SELF-HEALING FOR SESSIONS THAT PREDATE THE PARENT-DOMAIN COOKIE.
+//
+// Every subscriber signed in before 20 August 2026 is carrying a
+// HOST-ONLY eicc_session. It still works here, and the public site cannot
+// see it — so without this they would go unrecognised on the tracker for
+// up to thirty days, until their session happened to expire and they
+// signed in again. Making everyone sign in again to fix that would be a
+// worse trade than the problem.
+//
+// THE SIGNAL IS THE DISPLAY COOKIE'S ABSENCE, not the session's presence.
+// A Cookie header does not say which domain each cookie came from, so
+// host-only and parent-domain sessions are indistinguishable here. But the
+// display cookie is only ever set alongside a parent-domain session, so
+// "valid session, no display cookie" means exactly one thing: this is an
+// old cookie that needs upgrading. It is a one-shot condition that stops
+// being true the moment it is fixed.
+//
+// The REMAINING lifetime is used rather than a fresh thirty days. The
+// token carries its own exp and verifyToken enforces it, so a cookie
+// outliving its token would be harmless — but it would also be a cookie
+// whose Max-Age is a lie, and someone would eventually read it as the
+// session length.
+async function withUpgradedSession(request, env, response) {
+  const { value: display } = readSharedCookie(request, DISPLAY_COOKIE);
+  if (display) return response;
+  const { value: token } = getCookie(request, SESSION_COOKIE);
+  if (!token) return response;
+  const payload = await verifyToken(env.SESSION_SECRET, token);
+  if (!payload || payload.purpose !== "session") return response;
+  const remaining = Math.floor((payload.exp - Date.now()) / 1000);
+  if (remaining <= 0) return response;
+  const headers = new Headers(response.headers);
+  for (const c of signInCookies(token, payload.email, remaining)) {
+    headers.append("Set-Cookie", c);
+  }
+  return new Response(response.body, { status: response.status, headers });
+}
+
 function withLangCookie(response, lang, shouldSetCookie, cookieDuplicated) {
   if (!shouldSetCookie && !cookieDuplicated) return response;
   const headers = new Headers(response.headers);
@@ -476,7 +527,7 @@ export default {
       } else {
         response = new Response("Not found", { status: 404 });
       }
-      return withLangCookie(response, lang, shouldSetCookie, cookieDuplicated);
+      return await withUpgradedSession(request, env, withLangCookie(response, lang, shouldSetCookie, cookieDuplicated));
     } catch (err) {
       return new Response("Server error — " + err.message, { status: 500 });
     }
@@ -1841,31 +1892,42 @@ async function handleVerify(request, env, lang) {
   const redirectTo = isSafeVerifyNextPath(requestedNext) ? requestedNext : "/members/archive";
   const headers = new Headers();
   headers.set("Location", redirectTo);
-  headers.append(
-    "Set-Cookie",
-    `${SESSION_COOKIE}=${sessionToken}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${SESSION_TTL_SECONDS}`
-  );
+  // PARENT-DOMAIN NOW, so one sign-in covers the public site too, plus a
+  // readable display cookie for the pages the Worker never renders. The
+  // third header clears the legacy host-only cookie -- see
+  // signInCookies() for why that matters and what it cost last time.
+  for (const c of signInCookies(sessionToken, payload.email, SESSION_TTL_SECONDS)) {
+    headers.append("Set-Cookie", c);
+  }
   return new Response(null, { status: 302, headers });
 }
 
 function handleLogout() {
   const headers = new Headers();
   headers.set("Location", "/members");
-  headers.append("Set-Cookie", `${SESSION_COOKIE}=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0`);
+  // All three shapes: both parent-domain cookies and the legacy host-only
+  // one. Clearing two of three leaves a browser that still believes it is
+  // signed in on the other host, which is a worse bug than not signing
+  // out at all because it looks like it worked.
+  for (const c of signOutCookies()) headers.append("Set-Cookie", c);
   return new Response(null, { status: 302, headers });
 }
 
 // ================================================================
 // GATED ARCHIVE
 // ================================================================
+// IDENTITY AND ENTITLEMENT, as two steps rather than one blur.
+//
+// sessionEmail() answers "who is this", from the signature alone — that
+// is the half site-worker also runs, and all it is trusted with.
+// isCurrentlyActive() answers "may they have this", which needs the
+// subscriber record and stays here, on the Worker that owns accounts.
+//
+// Everything genuinely gated calls THIS. Nothing on the public site does.
 async function requireSession(request, env) {
-  const { value: cookie } = getCookie(request, SESSION_COOKIE);
-  if (!cookie) return null;
-  const payload = await verifyToken(env.SESSION_SECRET, cookie);
-  if (!payload || payload.purpose !== "session") return null;
-  const active = await isCurrentlyActive(env, payload.email);
-  if (!active) return null;
-  return payload.email;
+  const email = await sessionEmail(request, env.SESSION_SECRET);
+  if (!email) return null;
+  return (await isCurrentlyActive(env, email)) ? email : null;
 }
 
 async function handleArchiveList(request, env, lang) {
@@ -2473,29 +2535,12 @@ function base64urlToBytes(str) {
   return bytes;
 }
 
-async function signToken(secret, payloadObj, ttlSeconds) {
-  const payload = { ...payloadObj, exp: Date.now() + ttlSeconds * 1000 };
-  const payloadB64 = bytesToBase64url(new TextEncoder().encode(JSON.stringify(payload)));
-  const key = await hmacKey(secret);
-  const sig = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(payloadB64));
-  return `${payloadB64}.${bytesToBase64url(sig)}`;
-}
-
-async function verifyToken(secret, token) {
-  if (!token || !token.includes(".")) return null;
-  const [payloadB64, sigB64] = token.split(".");
-  const key = await hmacKey(secret);
-  const valid = await crypto.subtle.verify(
-    "HMAC",
-    key,
-    base64urlToBytes(sigB64),
-    new TextEncoder().encode(payloadB64)
-  );
-  if (!valid) return null;
-  const payload = JSON.parse(new TextDecoder().decode(base64urlToBytes(payloadB64)));
-  if (Date.now() > payload.exp) return null;
-  return payload;
-}
+// signToken/verifyToken now live in shared/session.mjs, because
+// site-worker verifies the same token and two copies of a signature
+// routine is two chances to drift on something where drift means either
+// locking everyone out or accepting forgeries. hmacKey and the base64url
+// helpers stay here: the Lemon Squeezy webhook's verifyHmacSha256Hex
+// still needs them and has nothing to do with sessions.
 
 async function verifyHmacSha256Hex(secret, message, hexSignature) {
   if (!hexSignature) return false;

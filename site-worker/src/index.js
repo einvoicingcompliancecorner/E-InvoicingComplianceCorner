@@ -45,6 +45,11 @@ import {
   renderArticleFragment,
   INSIGHTS_STYLE,
 } from "../../shared/resources-render.mjs";
+// IDENTITY ONLY. This Worker gets SESSION_SECRET and no subscribers
+// binding: it can verify who a reader is from the token's signature and
+// cannot read or change anything about their account. See the header of
+// shared/session.mjs for why that split, and what it deliberately trades.
+import { sessionEmail } from "../../shared/session.mjs";
 import {
   getRoiCountries,
   getRoiBenchmarks,
@@ -878,6 +883,12 @@ async function renderRoiCalculatorPage(request, env) {
   // It matters more now than it did this morning: the tracker's menu item
   // passes the reader's chosen language straight into the frame, so this
   // is the route three of the four site languages will arrive by.
+  // A signed-in reader gets the planner unlocked in place -- no gate, no
+  // hop to another origin. This is the whole point of the change: the
+  // page could always have done this, it just had no way to know who was
+  // asking.
+  const signedInAs = await sessionEmail(request, env.SESSION_SECRET);
+
   const roiLang = await resolveRoiLang(env.eicc_content, lang);
 
   const [countries, benchmarks, phases, strings, fx] = await Promise.all([
@@ -896,8 +907,11 @@ async function renderRoiCalculatorPage(request, env) {
     fx,
     lang: roiLang.lang,
     langAsked: roiLang.asked,
-    locked: true,          // anonymous: results behind the gate
-    subscribed: [],        // no saved preferences without a session
+    locked: !signedInAs,   // anonymous: results behind the gate
+    // Still empty even when signed in. Saved countries live in the
+    // subscriber record, and this Worker deliberately cannot read it --
+    // that control stays on the members page, which can.
+    subscribed: [],
     // Where the gate's CTA sends people. The ORIGIN only -- the rest of
     // the URL is assembled in the browser at click time, because it has
     // to describe what the reader has typed, and at render time they have
@@ -936,9 +950,23 @@ async function renderRoiCalculatorPage(request, env) {
   // planner; it does not survive a deploy-and-check.
   //
   // Worth raising again when this leaves Beta and stops changing daily.
-  return new Response(html, {
-    headers: { "content-type": "text/html; charset=utf-8", "cache-control": "public, max-age=60" },
-  });
+  // ---- THE CACHING RULE, AND IT IS THE DANGEROUS ONE -----------------
+  //
+  // The moment a response depends on who is asking, a shared cache
+  // holding it is a bug that serves one reader's page to another. Not
+  // theoretical: Cloudflare, a corporate proxy and a shared browser
+  // profile would all happily do it, and the symptom -- seeing someone
+  // else's session -- is the worst-looking failure this site could have.
+  //
+  // So a personalised render is private and uncacheable, and Vary tells
+  // any cache that the cookie is part of the key even so. The anonymous
+  // render keeps its sixty seconds, because it is the same for everyone.
+  const headers = {
+    "content-type": "text/html; charset=utf-8",
+    "cache-control": signedInAs ? "private, no-store" : "public, max-age=60",
+    vary: "Cookie",
+  };
+  return new Response(html, { headers });
 }
 
 async function renderMapPage(request, env) {
