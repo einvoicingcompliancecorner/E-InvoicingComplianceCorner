@@ -227,5 +227,98 @@
     "legendScheduled": "a más de un año",
     "pagesAria": "Páginas del panel",
     "pageAria": "Página del panel"
+  },
+  "auth": {
+    "signin": {
+      "eyebrow": "Iniciar sesión",
+      "title": "Bienvenido de nuevo",
+      "lede": "Introduzca su dirección de correo y le enviaremos un código de 6 dígitos. Sin contraseña que recordar.",
+      "cta": "Envíenme un código",
+      "newHere": "¿Es nuevo aquí?",
+      "createOne": "Cree una cuenta gratuita"
+    },
+    "signup": {
+      "eyebrow": "Cuenta gratuita",
+      "title": "Guarde esto y entérese cuando cambie",
+      "lede": "Gratis, sin datos de pago. Le enviaremos por correo un código de 6 dígitos para confirmar la dirección — usted permanece en esta página y no se pierde nada de lo que haya introducido.",
+      "cta": "Crear mi cuenta gratuita",
+      "fine": "¿Ya tiene una cuenta? Use la misma dirección y simplemente le iniciaremos sesión."
+    },
+    "sell": {
+      "stat1": "jurisdicciones seguidas",
+      "stat2num": "Mensual",
+      "stat2": "resumen, más alertas",
+      "stat3num": "Cero",
+      "stat3": "spam entre medias",
+      "perk1": "Cambios normativos en lenguaje claro",
+      "perk2": "Solo los países que elija",
+      "perk3": "Todos los números anteriores, con búsqueda",
+      "perk5": "Informes y análisis, directamente en su correo",
+      "perk6": "Calculadora de ROI y planificación de olas de cumplimiento, con sus países guardados",
+      "perk4": "Nuevas guías antes que nadie",
+      "eyebrow": "Nunca más se lleve una sorpresa",
+      "title": "Sepa en cuanto un gobierno se mueva",
+      "free": "✨ Gratis para unirse — no se requiere pago"
+    },
+    "countries": {
+      "lede": "Le avisaremos cuando estos cambien — traídos de su plan. Quite los que no quiera recibir por correo:",
+      "none": "Le enviaremos el resumen mensual completo. Puede limitarlo a países concretos en cualquier momento desde sus preferencias.",
+      "pick": "¿Sobre qué países quiere que le avisemos? Déjelo vacío y recibirá el resumen mensual completo.",
+      "loading": "Cargando la lista…",
+      "hide": "Listo",
+      "more": "Añadir o cambiar países",
+      "choose": "Elegir países"
+    },
+    "sending": "Enviando su código…",
+    "err": {
+      "rate": "Son muchos códigos en una hora. Espere un poco e inténtelo de nuevo.",
+      "email": "Esa dirección no parece correcta. Compruébela, por favor.",
+      "fields": "Rellene todos los campos.",
+      "down": "No podemos contactar con el servicio de cuentas en este momento. Inténtelo de nuevo en un minuto.",
+      "generic": "Algo salió mal al enviar su código. Inténtelo de nuevo.",
+      "codeShape": "Introduzca los seis dígitos.",
+      "wrongOne": "Ese código no es correcto. Queda 1 intento.",
+      "wrongMany": "Ese código no es correcto. Quedan {0} intentos.",
+      "locked": "Demasiados intentos. Pida un código nuevo.",
+      "expired": "Ese código ha caducado. Pida uno nuevo.",
+      "used": "Ese código ya se ha usado. Pida uno nuevo.",
+      "browser": "Ese código pertenece a otro navegador. Pida uno nuevo aquí.",
+      "none": "No encontramos ese código. Pida uno nuevo.",
+      "generic2": "No hemos podido comprobar ese código. Inténtelo de nuevo."
+    },
+    "code": {
+      "eyebrow": "Revise su correo",
+      "title": "Introduzca su código de 6 dígitos",
+      "lede": "Hemos enviado un código a {0}.",
+      "lede2": "Caduca en 10 minutos. Mantenga este panel abierto — no se pierde nada de lo que haya introducido.",
+      "cta": "Confirmar",
+      "back": "¿Dirección incorrecta? Volver",
+      "resend": "Enviar de nuevo",
+      "noAccount": "¿No llega nada? Puede que aún no tenga una cuenta.",
+      "resendIn": "Enviar de nuevo",
+      "checking": "Comprobando…"
+    },
+    "field": {
+      "firstName": {
+        "label": "Nombre",
+        "error": "El nombre es obligatorio"
+      },
+      "lastName": {
+        "label": "Apellidos",
+        "error": "Los apellidos son obligatorios"
+      },
+      "email": {
+        "label": "Correo electrónico",
+        "error": "Se requiere una dirección de correo electrónico válida"
+      },
+      "jobTitle": {
+        "label": "Cargo",
+        "error": "El cargo es obligatorio"
+      },
+      "company": {
+        "label": "Nombre de la empresa",
+        "error": "El nombre de la empresa es obligatorio"
+      }
+    }
   }
 }

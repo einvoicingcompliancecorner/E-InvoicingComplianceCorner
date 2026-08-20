@@ -227,5 +227,98 @@
     "legendScheduled": "au-delà d'un an",
     "pagesAria": "Pages du tableau",
     "pageAria": "Page du tableau"
+  },
+  "auth": {
+    "signin": {
+      "eyebrow": "Connexion",
+      "title": "Bon retour",
+      "lede": "Saisissez votre adresse e-mail et nous vous enverrons un code à 6 chiffres. Aucun mot de passe à retenir.",
+      "cta": "Envoyez-moi un code",
+      "newHere": "Nouveau ici ?",
+      "createOne": "Créer un compte gratuit"
+    },
+    "signup": {
+      "eyebrow": "Compte gratuit",
+      "title": "Gardez ceci, et soyez averti des changements",
+      "lede": "Gratuit, sans données de paiement. Nous vous enverrons par e-mail un code à 6 chiffres pour confirmer l'adresse — vous restez sur cette page et rien de ce que vous avez saisi n'est perdu.",
+      "cta": "Créer mon compte gratuit",
+      "fine": "Vous avez déjà un compte ? Utilisez la même adresse et nous vous connecterons simplement."
+    },
+    "sell": {
+      "stat1": "juridictions suivies",
+      "stat2num": "Mensuel",
+      "stat2": "synthèse, plus alertes",
+      "stat3num": "Zéro",
+      "stat3": "spam entre-temps",
+      "perk1": "Changements de règles en langage clair",
+      "perk2": "Uniquement les pays que vous choisissez",
+      "perk3": "Tous les anciens numéros, avec recherche",
+      "perk5": "Livres blancs et analyses, directement dans votre boîte mail",
+      "perk6": "Calculateur de ROI et planification des vagues de conformité, avec vos pays enregistrés",
+      "perk4": "De nouveaux guides avant tout le monde",
+      "eyebrow": "Ne soyez plus jamais pris au dépourvu",
+      "title": "Sachez dès qu'un gouvernement bouge",
+      "free": "✨ Gratuit — aucun paiement requis"
+    },
+    "countries": {
+      "lede": "Nous vous préviendrons lorsque ceux-ci changeront — repris de votre plan. Retirez ceux dont vous ne voulez pas d'e-mails :",
+      "none": "Nous vous enverrons la synthèse mensuelle complète. Vous pouvez la restreindre à certains pays à tout moment dans vos préférences.",
+      "pick": "Sur quels pays souhaitez-vous être alerté ? Laissez vide et vous recevrez la synthèse mensuelle complète.",
+      "loading": "Chargement de la liste…",
+      "hide": "Terminé",
+      "more": "Ajouter ou modifier des pays",
+      "choose": "Choisir des pays"
+    },
+    "sending": "Envoi de votre code…",
+    "err": {
+      "rate": "Cela fait beaucoup de codes en une heure. Patientez un peu et réessayez.",
+      "email": "Cette adresse ne semble pas correcte. Veuillez la vérifier.",
+      "fields": "Veuillez remplir tous les champs.",
+      "down": "Nous ne parvenons pas à joindre le service de comptes pour le moment. Réessayez dans une minute.",
+      "generic": "Une erreur s'est produite lors de l'envoi de votre code. Veuillez réessayer.",
+      "codeShape": "Veuillez saisir les six chiffres.",
+      "wrongOne": "Ce code n'est pas correct. Il reste 1 essai.",
+      "wrongMany": "Ce code n'est pas correct. Il reste {0} essais.",
+      "locked": "Trop de tentatives. Demandez un nouveau code.",
+      "expired": "Ce code a expiré. Demandez-en un nouveau.",
+      "used": "Ce code a déjà été utilisé. Demandez-en un nouveau.",
+      "browser": "Ce code appartient à un autre navigateur. Demandez-en un nouveau ici.",
+      "none": "Nous ne trouvons pas ce code. Demandez-en un nouveau.",
+      "generic2": "Nous n'avons pas pu vérifier ce code. Veuillez réessayer."
+    },
+    "code": {
+      "eyebrow": "Consultez vos e-mails",
+      "title": "Saisissez votre code à 6 chiffres",
+      "lede": "Nous avons envoyé un code à {0}.",
+      "lede2": "Il expire dans 10 minutes. Gardez ce panneau ouvert — rien de ce que vous avez saisi n'est perdu.",
+      "cta": "Confirmer",
+      "back": "Mauvaise adresse ? Revenir",
+      "resend": "Renvoyer",
+      "noAccount": "Rien n'arrive ? Vous n'avez peut-être pas encore de compte.",
+      "resendIn": "Renvoyer",
+      "checking": "Vérification…"
+    },
+    "field": {
+      "firstName": {
+        "label": "Prénom",
+        "error": "Le prénom est requis"
+      },
+      "lastName": {
+        "label": "Nom",
+        "error": "Le nom est requis"
+      },
+      "email": {
+        "label": "Adresse e-mail",
+        "error": "Une adresse e-mail valide est requise"
+      },
+      "jobTitle": {
+        "label": "Fonction",
+        "error": "La fonction est requise"
+      },
+      "company": {
+        "label": "Nom de l'entreprise",
+        "error": "Le nom de l'entreprise est requis"
+      }
+    }
   }
 }

@@ -43,6 +43,12 @@
     return fallback;
   }
 
+  /** {0}-style substitution, so a translated sentence can put the value
+   *  wherever its own grammar needs it rather than where English does. */
+  function fill(template, value) {
+    return String(template).replace(/\{0\}/g, value);
+  }
+
   function esc(s) {
     return String(s == null ? "" : s)
       .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
@@ -310,17 +316,31 @@
 
   // ---- step one: who are you ------------------------------------------
 
+  // THE SAME FIVE LABELS subscribe.html uses, word for word.
+  //
+  // They were "Work email", "Job title" and "Company" here and "Email
+  // address", "Title" and "Company name" there — two vocabularies for one
+  // form, which is the defect this project has now hit four times (the
+  // A/B/C/D grades, platform-versus-software fees, the pie and the table,
+  // the ribbon legend's section name). Nobody would ever have noticed on
+  // one screen, and a translator would have produced two of everything.
+  //
+  // Aligning them also means the panel INHERITS ten already-translated
+  // strings from i18n/<lang>-subscribe.json rather than commissioning ten
+  // new ones that mean the same thing. The generator asserts the English
+  // still matches, so this stops being a coincidence and starts being a
+  // checked fact.
   var FIELDS = [
     { id: "firstName", label: "First name", err: "First name is required", auto: "given-name", half: true },
     { id: "lastName", label: "Last name", err: "Last name is required", auto: "family-name", half: true },
-    { id: "email", label: "Work email", err: "A valid email address is required", auto: "email", type: "email" },
-    { id: "jobTitle", label: "Job title", err: "Title is required", auto: "organization-title" },
-    { id: "company", label: "Company", err: "Company name is required", auto: "organization" }
+    { id: "email", label: "Email address", err: "A valid email address is required", auto: "email", type: "email" },
+    { id: "jobTitle", label: "Title", err: "Title is required", auto: "organization-title" },
+    { id: "company", label: "Company name", err: "Company name is required", auto: "organization" }
   ];
 
   function fieldHtml(f) {
     return '<div class="eicc-auth-field" data-field="' + f.id + '">'
-      + '<label for="eiccAuth_' + f.id + '">' + esc(t("field." + f.id, f.label)) + '</label>'
+      + '<label for="eiccAuth_' + f.id + '">' + esc(t("field." + f.id + ".label", f.label)) + '</label>'
       + '<input id="eiccAuth_' + f.id + '" type="' + (f.type || "text") + '" autocomplete="' + f.auto + '"'
       + (f.id === "email" && email ? ' value="' + esc(email) + '"' : "") + '>'
       + '<p class="eicc-auth-err">' + esc(t("field." + f.id + ".error", f.err)) + '</p></div>';
@@ -557,7 +577,7 @@
       // and a code look like the beginning of a payment flow, and the
       // page has to say otherwise before the reader decides it is.
       + '<p class="eicc-auth-free">'
-      + esc(t("sell.free", "Free to join — no payment details, ever")) + "</p>";
+      + esc(t("sell.free", "✨ Free to join — no payment required")) + "</p>";
   }
 
   // THE COUNTRIES, CARRIED WHERE THERE ARE ANY AND CHOOSABLE WHERE THERE
@@ -856,8 +876,20 @@
   function renderCode() {
     body().innerHTML = '<p class="eicc-auth-eyebrow">' + esc(t("code.eyebrow", "Check your email")) + '</p>'
       + '<h2 class="eicc-auth-title">' + esc(t("code.title", "Enter your 6-digit code")) + '</h2>'
+      // A WHOLE SENTENCE WITH A SLOT, not a prefix glued to a value.
+      //
+      // This was `t("code.lede") + email + ". " + t("code.lede2")`, which
+      // is only translatable into languages that put the address in the
+      // same place English does. German does not — "Wir haben einen Code
+      // an dan@… gesendet" ends with the verb — so the German version
+      // could only ever have been written as a sentence that reads
+      // wrongly. Migration 573 taught this project the same lesson about
+      // plurals; the fix is the same, and it is cheaper to apply before
+      // the translation than after it.
       + '<p class="eicc-auth-lede">'
-      + esc(t("code.lede", "We've sent a code to")) + ' <strong>' + esc(email) + '</strong>. '
+      + fill(esc(t("code.lede", "We've sent a code to {0}.")),
+             "<strong>" + esc(email) + "</strong>")
+      + " "
       + esc(t("code.lede2", "It expires in 10 minutes. Keep this panel open — nothing you've entered is lost."))
       + '</p>'
       + '<div class="eicc-auth-alert"></div>'
@@ -984,8 +1016,15 @@
     var e = (res.body && res.body.error) || "";
     if (e === "wrong-code") {
       var left = res.body && res.body.attemptsLeft;
+      // TWO WHOLE SENTENCES, ONE PER PLURAL, for the same reason as
+      // code.lede above. The first version built "That code isn't right."
+      // + " 4 " + "tries left." — three fragments a translator cannot
+      // reorder, and no singular at all, so the last attempt read "1
+      // tries left." in every language including this one.
       return typeof left === "number" && left > 0
-        ? t("err.wrong", "That code isn't right.") + " " + left + " " + t("err.triesLeft", "tries left.")
+        ? left === 1
+          ? t("err.wrongOne", "That code isn't right. One try left.")
+          : fill(t("err.wrongMany", "That code isn't right. {0} tries left."), left)
         : t("err.locked", "Too many attempts. Ask for a new code.");
     }
     if (e === "expired") return t("err.expired", "That code has expired. Ask for a new one.");
