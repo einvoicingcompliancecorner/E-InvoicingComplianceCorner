@@ -38,6 +38,11 @@ const SUITES = [
   // network. It runs early because a break here logs everyone out of the
   // whole site, which is a worse failure than anything below it.
   { name: "session", cmd: "node", args: [join(HERE, "session.mjs")], cwd: REPO },
+  // The 6-digit code, which is the only thing between a typed address and
+  // a session in that person's name. Runs beside session.mjs and for the
+  // same reason: it fails in someone else's favour and the failure looks
+  // exactly like it working.
+  { name: "auth code", cmd: "node", args: [join(HERE, "auth-code.mjs")], cwd: REPO },
   // The shared scripts and each page's inline script share one global
   // scope. A duplicate top-level const there throws, and the throw kills
   // the entire inline script while the page still looks fine.

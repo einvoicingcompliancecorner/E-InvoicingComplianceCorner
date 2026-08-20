@@ -111,8 +111,15 @@ try {
   const drifted = [...sites.entries()]
     .filter(([k, fb]) => d1.has(k) && d1.get(k) !== fb)
     .map(([k, fb]) => `${k}\n      code: ${fb.slice(0, 90)}\n      D1:   ${String(d1.get(k)).slice(0, 90)}`);
+  // THE COUNT IS PART OF THE MESSAGE. This printed the first three and
+  // said nothing about the rest, so a change that drifted five keys was
+  // reported as three — and the two it hid were fixed only because the
+  // suite failed a second time. A truncated list that does not admit to
+  // being truncated reads as a complete one.
   t.check("D1 and the inline fallbacks are character-identical",
-    drifted.length === 0, "\n    " + drifted.slice(0, 3).join("\n    "));
+    drifted.length === 0,
+    `${drifted.length} drifted\n    ` + drifted.slice(0, 3).join("\n    ")
+      + (drifted.length > 3 ? `\n    …and ${drifted.length - 3} more` : ""));
 
   // 3. the strings actually reach the page
   // Render once normally and once with every key replaced by a sentinel.
@@ -126,7 +133,7 @@ try {
   const sentinel = Object.fromEntries([...sites.keys()].map((k) => [k, `«${k}»`]));
   const render = (strings) => {
     const r = roi.renderRoiPage({ countries, benchmarks, phases, strings, fx,
-      locked: false, subscribed: [] });
+      signedIn: true, subscribed: [] });
     return r.body + r.script;
   };
   const real = render(Object.fromEntries(d1));
@@ -142,7 +149,12 @@ try {
     // named only part of what sat under it.
     ["an assumptions heading", "Implementation &mdash; durations"],
     ["the placeholder warning", "placeholders only"],
-    ["the paywall gate", "Your results are ready"],
+    // NOT "the paywall gate" any more, and the rename is the point.
+    // Migration 595 turned it into a prompt that sits beside the results
+    // rather than instead of them: this page computes everything in the
+    // browser, so it never withheld anything and calling it a paywall
+    // flattered it. The sampled phrase moved with the copy.
+    ["the sign-up prompt", "Keep this, and hear when it changes"],
     ["a results heading", "Assumptions, sources and caveats"],
     ["a step chip", "Move go-live dates"],
     ["the savings lede", "named below the total"],
@@ -284,7 +296,7 @@ try {
   const HOSTILE = "l'operation d'un \"Sollwert\" n'est-ce pas 'x' \"y\"";
   const hostileStrings = Object.fromEntries([...sites.keys()].map((k) => [k, HOSTILE]));
   const hostileRender = roi.renderRoiPage({ countries, benchmarks, phases,
-    strings: hostileStrings, fx, locked: false, subscribed: [] });
+    strings: hostileStrings, fx, signedIn: true, subscribed: [] });
   let parsed = "ok";
   try { new Function(hostileRender.script); } catch (err) { parsed = err.message; }
   t.check("a translation containing apostrophes does not break the client script",

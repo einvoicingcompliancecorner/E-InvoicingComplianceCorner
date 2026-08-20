@@ -60,7 +60,7 @@ const KNOWN = new Set([
 ]);
 
 const { file, countries } = await buildRoiPage({
-  stubStrings: true, locked: false, subscribed: ["x"] });
+  stubStrings: true, signedIn: true, subscribed: ["x"] });
 const browser = await launch();
 const page = await browser.newPage({ viewport: { width: 1300, height: 1200 } });
 await page.goto("file://" + file);

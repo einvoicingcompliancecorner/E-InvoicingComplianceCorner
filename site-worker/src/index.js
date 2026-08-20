@@ -780,6 +780,73 @@ const ROI_PATHS = new Set(["/roi-calculator", "/roi-calculator.html", "/roi", "/
 // code rather than emitted into markup here, so it gets a name.
 const MEMBERS_ORIGIN = "https://members.e-invoicingcompliancecorner.com";
 
+// ---- the auth relay -----------------------------------------------------
+//
+// A MAP, NOT A PREFIX REWRITE. The tempting version of this route is
+// "anything under /api/auth/ goes to members-worker with the same path",
+// and it is one typo in members-worker's router away from exposing an
+// admin endpoint to the public origin. Two entries, both written out,
+// and adding a third is a deliberate act.
+const AUTH_RELAY = new Map([
+  ["/api/auth/code/request", "/members/api/code/request"],
+  ["/api/auth/code/verify", "/members/api/code/verify"],
+]);
+
+// Headers that must survive the hop, and nothing else.
+//
+// Cookie carries the browser-binding cookie on the way in; Set-Cookie
+// carries the session on the way out. Content-Type because the body is
+// JSON. The client IP is forwarded EXPLICITLY under our own name --
+// behind a service binding the connecting address members-worker sees is
+// Cloudflare's, not the reader's, so without this every relayed request
+// would land in one rate-limit bucket and the twentieth signup of the
+// hour would lock out the twenty-first reader anywhere in the world.
+async function relayToMembers(request, env, path) {
+  if (!env.MEMBERS) {
+    // No binding means one of the two Workers has not been deployed.
+    // Said plainly rather than as a 404, because the panel needs to tell
+    // the reader something true and "not found" is not it.
+    return new Response(JSON.stringify({ ok: false, error: "unavailable" }), {
+      status: 503, headers: { "Content-Type": "application/json; charset=UTF-8" },
+    });
+  }
+  const headers = new Headers();
+  headers.set("Content-Type", request.headers.get("Content-Type") || "application/json");
+  headers.set("Cookie", request.headers.get("Cookie") || "");
+  headers.set("X-EICC-Client-IP", request.headers.get("CF-Connecting-IP") || "unknown");
+
+  let upstream;
+  try {
+    upstream = await env.MEMBERS.fetch(new Request(MEMBERS_ORIGIN + path, {
+      method: "POST",
+      headers,
+      body: await request.text(),
+    }));
+  } catch (err) {
+    console.warn(`auth relay: service binding failed — ${err && err.message}`);
+    return new Response(JSON.stringify({ ok: false, error: "unavailable" }), {
+      status: 503, headers: { "Content-Type": "application/json; charset=UTF-8" },
+    });
+  }
+
+  // getSetCookie() rather than get("Set-Cookie"). The sign-in response
+  // carries FOUR Set-Cookie headers -- session, display name, the legacy
+  // host-only clear, and the binding cookie's own clear -- and get()
+  // returns them folded into one comma-joined string that no browser
+  // will parse back into four. Reading them as a list is the difference
+  // between signing someone in and appearing to.
+  const out = new Headers({ "Content-Type": "application/json; charset=UTF-8" });
+  const cookies = typeof upstream.headers.getSetCookie === "function"
+    ? upstream.headers.getSetCookie()
+    : [];
+  for (const c of cookies) out.append("Set-Cookie", c);
+  // Never cached. Obvious, and exactly the kind of obvious that gets
+  // missed: a cached 200 from this route would hand one reader's
+  // Set-Cookie to the next one.
+  out.set("Cache-Control", "no-store");
+  return new Response(await upstream.text(), { status: upstream.status, headers: out });
+}
+
 // ---- the planner, framed inside the tracker -----------------------------
 //
 // Dan, 19 August 2026: wire the planner into the site "under the Resources
@@ -965,7 +1032,11 @@ async function renderRoiCalculatorPage(request, env) {
     fx,
     lang: roiLang.lang,
     langAsked: roiLang.asked,
-    locked: !signedInAs,   // anonymous: results behind the gate
+    // NOT `locked`, and not inverted by accident: renderRoiPage throws if
+    // it sees the old name, because the meaning flipped when the gate
+    // stopped withholding the results. It says "do we know who this is",
+    // and it drives the saved-countries control and the prompt.
+    signedIn: !!signedInAs,
     subscribed,
     // Where the gate's CTA sends people. The ORIGIN only -- the rest of
     // the URL is assembled in the browser at click time, because it has
@@ -987,7 +1058,21 @@ async function renderRoiCalculatorPage(request, env) {
 <meta name="robots" content="${env.ROI_INDEXABLE === "true" ? "index,follow" : "noindex,nofollow"}">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>${ROI_STYLE}${framed ? FRAMED_ROI_STYLE : ""}</style></head><body${framed ? ' data-framed="1"' : ""}>${body}<script>${script}</script>${framed ? `<script>${ROI_FRAME_REPORTER}</script>` : ""}</body></html>`;
+<style>${ROI_STYLE}${framed ? FRAMED_ROI_STYLE : ""}</style></head><body${framed ? ' data-framed="1"' : ""}>${body}<!--
+  The signup panel, loaded BEFORE the page's own script.
+
+  Same file the tracker loads, from the same origin -- this page is
+  served at /roi-calculator on the public host, so /auth-overlay.js is
+  simply an asset here. That is what makes one implementation possible
+  across a Worker-rendered document and a static one, with no build step
+  and no second copy of a signup form to drift.
+
+  ORDER MATTERS: the planner's script wires the two prompt controls at
+  parse time and asks for window.EICC_AUTH inside the click handler, so
+  a later load would still work -- but a reader who clicks in the gap
+  would get the fallback navigation instead of the panel, which is a
+  silent downgrade rather than a failure. Loading it first closes the
+  gap. --><script src="/auth-overlay.js"></script><script>${script}</script>${framed ? `<script>${ROI_FRAME_REPORTER}</script>` : ""}</body></html>`;
 
   // SIXTY SECONDS, NOT FIVE MINUTES, while this is Beta.
   //
@@ -1270,6 +1355,28 @@ export default {
     const dataJsonMatch = url.pathname.match(DATA_JSON_RE);
     if (dataJsonMatch) {
       return renderTrackerDataJson(request, env, dataJsonMatch[1]);
+    }
+
+    // ---- THE AUTH RELAY ------------------------------------------------
+    //
+    // Signing up and signing in now happen in a panel on whatever page
+    // the reader is already on, which means the request has to be
+    // SAME-ORIGIN to the browser. It cannot be: accounts live on
+    // members-worker, on the other host.
+    //
+    // The two ways to bridge that are CORS-with-credentials, which this
+    // codebase has twice refused to do and would certainly not start
+    // doing for the one endpoint that hands out sessions, or a relay.
+    // This is the relay, and it is the same service binding the planner
+    // already uses to ask for a reader's saved countries, pointed the
+    // other way.
+    //
+    // The browser talks to its own origin. members-worker still owns
+    // every decision and stays the only thing that can mint a session or
+    // touch an account. This Worker forwards a body and copies back
+    // headers; it inspects, decides and shortcuts nothing.
+    if (request.method === "POST" && AUTH_RELAY.has(url.pathname)) {
+      return relayToMembers(request, env, AUTH_RELAY.get(url.pathname));
     }
 
     // The tracking-sources page — D1-rendered, no asset file behind it.

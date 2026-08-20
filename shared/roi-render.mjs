@@ -1053,9 +1053,28 @@ footer{margin-top:40px;padding-top:16px;border-top:1px solid var(--line);font-si
 }
 `;
 
-// The page. `locked` controls whether results are reachable without a
-// session; `subscribed` is the signed-in reader's own saved countries
-// (empty for anonymous visitors, which disables that control).
+// The page. `signedIn` says whether this reader has a session;
+// `subscribed` is their own saved countries (empty for anonymous
+// visitors, which disables that control).
+//
+// IT USED TO BE CALLED `locked`, AND IT USED TO GATE THE RESULTS. Dan
+// settled that on 20 August: "results immediately with the code
+// protecting the account". The gate was never a boundary and could not
+// be one -- every benchmark, the whole model and the flag itself ship to
+// the browser in the locked render, so withholding the results was
+// theatre performed on the honest. What is worth protecting is the
+// SESSION, and that now sits behind a 6-digit code.
+//
+// So the flag stopped meaning "are the results reachable" and started
+// meaning "do we know who this is", which changes what the page does
+// with it: enable the saved-countries control, and drop the prompt.
+//
+// RENAMED RATHER THAN REDEFINED, AND INVERTED -- which is why the guard
+// below exists. A caller still passing `locked: true` would be read as
+// `signedIn: true` if the old name were quietly ignored: anonymous
+// readers treated as subscribers, silently, on the one flag where that
+// is the wrong way to fail. A parameter that changes meaning without
+// changing name is a bug with a delayed fuse.
 //
 // TWO PARAMETERS CAME OUT HERE, 19 August 2026, and how they survived is
 // the more useful half. `unlockUrl` and `signedInAs` were both accepted,
@@ -1072,9 +1091,18 @@ footer{margin-top:40px;padding-top:16px;border-top:1px solid var(--line);font-si
 //
 // If the planner should say who is signed in, that is a feature to build,
 // not a parameter to keep warm against the day someone builds it.
-export function renderRoiPage({ countries, benchmarks = [], phases = [], strings = {}, fx = {},
-                                lang = "en", langAsked = "",
-                                locked = true, subscribed = [], membersUrl = "" }) {
+export function renderRoiPage(options) {
+  if (options && "locked" in options) {
+    throw new Error(
+      "renderRoiPage: `locked` is gone and its replacement is INVERTED. "
+      + "Pass signedIn: " + (options.locked ? "false" : "true")
+      + " instead of locked: " + options.locked + ". "
+      + "Silently accepting the old name would treat anonymous readers as "
+      + "subscribers.");
+  }
+  const { countries, benchmarks = [], phases = [], strings = {}, fx = {},
+          lang = "en", langAsked = "",
+          signedIn = false, subscribed = [], membersUrl = "" } = options || {};
   // Benchmarks, phases and citations are injected from D1 rather than
   // hardcoded here. This is what makes the tool translation-ready without
   // a code change: a Spanish reader gets Spanish labels, hints and
@@ -1758,10 +1786,24 @@ ${langAsked && langAsked !== lang ? `<p class="note noprint" style="margin:0 0 1
      jobs. -->
 <p id="needCountries" class="note warn hidden noprint" style="margin:12px 0 0"></p>
 
+<!-- A PROMPT, AND NO LONGER A GATE. Dan, 20 August 2026: "results
+     immediately with the code protecting the account."
+
+     It renders BESIDE the results now instead of instead of them, which
+     is the honest arrangement. This page computes everything in the
+     browser: the anonymous render has always shipped every benchmark,
+     the whole model, and the flag itself in view-source. Nothing was
+     withheld, and nothing could be while the maths runs here — so what
+     stood here was a toll gate with no road behind it, collected only
+     from readers who did not look.
+
+     What an account actually buys is real and is what this now says:
+     alerts when a mandate moves, a saved country list, and a session.
+     Those live on the server and cannot be had by reading the page. -->
 <div id="gate" class="gate noprint hidden">
-  <p class="eyebrow" style="color:var(--soon)">${t("gate.eyebrow", "Subscriber content")}</p>
-  <h3 style="font-family:'Big Shoulders Display';font-size:22px;text-transform:uppercase;letter-spacing:.5px">${t("gate.title", "Your results are ready")}</h3>
-  <p class="lede" style="margin:0 auto 14px;max-width:52ch">${t("gate.body2", "Subscribing is free. It unlocks the full wave plan, the two-layer ROI model and the evidence panel, pulls in the countries you already follow, and lets you download the PDF for your board pack.")}</p>
+  <p class="eyebrow" style="color:var(--soon)">${t("gate.eyebrow", "Free account")}</p>
+  <h3 style="font-family:'Big Shoulders Display';font-size:22px;text-transform:uppercase;letter-spacing:.5px">${t("gate.title", "Keep this, and hear when it changes")}</h3>
+  <p class="lede" style="margin:0 auto 14px;max-width:52ch">${t("gate.body2", "Your figures are above and they are yours to keep. A free account saves the jurisdictions you selected, emails you when one of these mandates actually moves, and remembers your assumptions for next time. It takes a 6-digit code and no password &mdash; and you stay on this page.")}</p>
   <!-- A REAL LINK TO A REAL SIGN-IN, since 19 August 2026. Dan: "upon
        clicking sign-in / subscribe free it just gives me the results,
        without signing in, or subscribing. So effectively not gated."
@@ -1797,8 +1839,19 @@ ${langAsked && langAsked !== lang ? `<p class="note noprint" style="margin:0 0 1
        up is the primary action and goes to the real form; signing in is
        secondary and goes to the login. A button naming two things and
        doing one is the shape this page keeps being caught by. -->
-  <a class="primary" id="subscribe" target="_top" rel="noopener" href="/subscribe.html">${t("gate.cta2", "Subscribe free")}</a>
-  <p class="hint" style="margin:12px 0 0">${sfill(t("gate.signin", "Already subscribed? {0}."),
+  <!-- STILL REAL LINKS, and that is deliberate. The click handler opens
+       the in-page panel; the href is what happens when it cannot. If
+       auth-overlay.js is missing, blocked or still loading, these do
+       what they have always done instead of doing nothing at all —
+       which is exactly the failure a <button> would have had, and had
+       silently. Middle-click and "open in new tab" keep working too.
+
+       target=_top because this page is framed inside the tracker's
+       Resources panel: without it the fallback would open a full
+       sign-up page inside a panel with no chrome. Harmless unframed,
+       where _top is this window. -->
+  <a class="primary" id="subscribe" target="_top" rel="noopener" href="/subscribe.html">${t("gate.cta2", "Create a free account")}</a>
+  <p class="hint" style="margin:12px 0 0">${sfill(t("gate.signin", "Already have one? {0}."),
       `<a id="signin" target="_top" rel="noopener" href="${esc(membersUrl)}/members">${t("gate.signin.link", "Sign in")}</a>`)}</p>
 </div>
 
@@ -1865,7 +1918,7 @@ ${langAsked && langAsked !== lang ? `<p class="note noprint" style="margin:0 0 1
 `;
   const script = `
 const COUNTRIES = __ROI_COUNTRIES__;
-let unlocked = __ROI_UNLOCKED__;
+let signedIn = __ROI_SIGNED_IN__;
 // The members origin, injected rather than hardcoded: this module is
 // shared by both Workers and only the public one has a gate to point
 // anywhere. Empty on the members page, where the gate never renders.
@@ -2462,7 +2515,7 @@ document.getElementById('resetDefaults').onclick = () => {
   CUR_INPUTS.forEach(id => { usdCurrent[id] = usdDefault[id]; });   // re-anchor the canon too
   touched.clear();                                  // every ribbon back to amber
   dirtyCur.clear();
-  markOverridden(); syncScope(); if(unlocked) showResults();
+  markOverridden(); syncScope(); if(signedIn) showResults();
 };
 // DELEGATED FROM document, not from the assumptions panel. Both of these
 // listeners were bound to #assump and relied on events bubbling out of
@@ -2515,7 +2568,36 @@ const markStale = () => {
   const chip = document.getElementById('stepRun');
   if(chip) chip.textContent = '${tj("btn.recalculate", "Recalculate")}';
 };
+// ---- AND IT ONLY LISTENS TO THIS PAGE'S OWN FIELDS ---------------------
+//
+// Delegated from document, so until 20 August 2026 this fired for EVERY
+// input event anywhere in the document, including ones belonging to
+// something else entirely.
+//
+// Found by looking at the signup panel, not by any check. Typing a first
+// name into it raised the stale warning behind the panel and relabelled
+// the button to "Recalculate": the reader enters their name and the page
+// quietly tells them the business case they just produced no longer
+// matches its inputs. Nothing had changed. It is a false alarm in the
+// loudest styling on the page, about the one thing this tool asks to be
+// trusted on, at the exact moment someone is deciding whether to hand
+// over their details.
+//
+// THE GUARD IS POSITIVE, NOT NEGATIVE. The obvious fix is "ignore events
+// from inside the overlay", and it is the wrong shape: it makes every
+// future panel responsible for remembering to exclude itself, and a
+// default every new entry point has to remember is not a default. So the
+// planner claims its own region instead. .wrap is this page's container
+// and every input this handler cares about is inside it, while anything
+// appended to the body is not -- so a new panel is foreign by
+// construction rather than by remembering to be.
+//
+// This is recommendation 4 of the design review ("handlers bound to
+// layout") arriving as a real defect rather than a hypothesis. The three
+// other delegated listeners here each match a specific selector and were
+// never exposed to it; this one matched everything.
 const noteTouch = (e) => {
+  if(!(e.target && e.target.closest && e.target.closest('.wrap'))) return;
   const id = e.target && e.target.id;
   if(id && RIBBONED.indexOf(id) !== -1) touched.add(id);
   markOverridden();
@@ -2640,7 +2722,7 @@ function applyCurrency(next){
 }
 document.getElementById('cur').addEventListener('change', (e) => {
   applyCurrency(e.target.value);
-  if(unlocked) showResults();
+  if(signedIn) showResults();
 });
 
 // ---- platform / network fees: derived from the volumes above ----------
@@ -2732,7 +2814,10 @@ const boxes = () => [...list.querySelectorAll('input[type=checkbox]')].filter(b 
 // has to tell us twice. Mocked here, and gated: it is one of the few things
 // on the page that genuinely CANNOT work for an anonymous visitor, which
 // makes it an honest reason to sign in rather than an artificial one.
-const MOCK_SUBSCRIBED = __ROI_SUBSCRIBED__;
+// A let, not a const: signing up in the panel replaces this list in place
+// without a reload -- see onSignedIn(). Everything that reads it reads it
+// at call time, so there is nothing to re-wire.
+let MOCK_SUBSCRIBED = __ROI_SUBSCRIBED__;
 const subsBox = document.getElementById('useSubs');
 const subsRow = document.getElementById('subsRow');
 // THREE STATES, NOT TWO, since the planner went public on 20 August 2026.
@@ -2755,7 +2840,11 @@ const subsRow = document.getElementById('subsRow');
 // hand. The difference is logged server-side, where it can be acted on,
 // rather than shown to someone who cannot act on it.
 function setSubsAvailable(on){
-  const signedIn = typeof unlocked !== 'undefined' && unlocked;
+  // Reads the outer signedIn directly. It used to copy it into a local
+  // behind a typeof guard, from when this function was defined above the
+  // flag it needed; the flag is declared at the top of this script now,
+  // and the local shadowed it into a self-reference the moment the two
+  // shared a name.
   const has = MOCK_SUBSCRIBED.length > 0;
   subsBox.disabled = !on;
   subsRow.style.opacity = on ? '1' : '.55';
@@ -2764,13 +2853,13 @@ function setSubsAvailable(on){
     : signedIn ? '— ${tj("subs.none","no saved countries yet &mdash; set them in your preferences")}'
     : '— ${tj("subs.locked","sign in to use your saved countries")}';
 }
-// Initialise from the unlock state, NOT unconditionally false. On the
+// Initialise from the session state, NOT unconditionally false. On the
 // members page the reader is already signed in and the sign-in handler
 // never runs, so hardcoding false left a subscriber staring at their own
 // saved countries permanently greyed out. Caught in browser testing of
 // the real rendered page rather than the prototype, because the
 // prototype always starts locked.
-setSubsAvailable(unlocked && MOCK_SUBSCRIBED.length > 0);
+setSubsAvailable(signedIn && MOCK_SUBSCRIBED.length > 0);
 subsBox.onchange = () => {
   if(subsBox.checked){
     // MATCHED ON INDEX 7, THE ENGLISH NAME, not on index 0, the displayed
@@ -2784,7 +2873,7 @@ subsBox.onchange = () => {
     boxes().forEach(b => b.checked = false);
   }
   paintCount();
-  if(typeof unlocked !== 'undefined' && unlocked) showResults();
+  if(typeof signedIn !== 'undefined' && signedIn) showResults();
 };
 // Any manual change means the selection is no longer "my subscribed countries".
 list.addEventListener('change', e => { if(e.target !== subsBox) subsBox.checked = false; paintCount(); markStale(); });
@@ -3596,7 +3685,7 @@ document.getElementById('adjust').addEventListener('toggle', function(){
 // reason this is more than three lines. Several other things call
 // showResults(): the currency switch, the scope dropdown, the
 // subscribed-countries toggle and every input handler once the reader is
-// unlocked. Guard the button alone and a reader who clears the list and
+// signed in. Guard the button alone and a reader who clears the list and
 // then changes the scope dropdown still gets a full business case for no
 // programme -- the same defect, reached through a different door. One
 // choke point, and every caller is covered by construction.
@@ -3662,23 +3751,26 @@ function showResults(scroll){
   document.getElementById('results').classList.remove('hidden');
   document.getElementById('stale').classList.add('hidden');
   document.getElementById('print').classList.remove('hidden');
+  // The prompt travels WITH the results, for the same reason the
+  // precondition lives in here rather than on the button: several things
+  // call showResults() -- the currency switch, the scope dropdown, the
+  // saved-countries toggle, every input once results are up -- and a
+  // prompt shown by only one of those doors is a prompt that flickers
+  // in and out depending on which control the reader last touched.
+  document.getElementById('gate').classList.toggle('hidden', signedIn);
   if(scroll) document.getElementById('results').scrollIntoView({behavior:'smooth'});
 }
-document.getElementById('run').onclick = () => {
-  if(unlocked){ showResults(true); return; }
-  // The locked path never reaches showResults(), so the precondition is
-  // checked here too. Asking someone to sign in to be shown nothing is
-  // the worst of the three outcomes available.
-  if(!chosen().length){ noCountries(); return; }
-  const gate = document.getElementById('gate');
-  const cta = document.getElementById('signin');
-  if(cta && MEMBERS_URL) cta.setAttribute('href', gateHref());
-  gate.classList.remove('hidden');
-  gate.scrollIntoView({behavior:'smooth', block:'center'});
-};
+// ONE PATH FOR EVERYONE NOW. There used to be two -- signed in went to
+// the results, anonymous went to the gate -- and the anonymous branch
+// carried its own copy of the empty-selection precondition because it
+// never reached showResults(). Two branches, one of them duplicating a
+// check the other got for free, is how the two came to disagree in the
+// first place. There is one door, and showResults() decides everything
+// behind it including whether the prompt is shown.
+document.getElementById('run').onclick = () => { showResults(true); };
 document.getElementById('print').onclick = () => window.print();
 const syncScope = () => { document.getElementById('chgRow').style.display = scopeVal()==='both' ? '' : 'none'; };
-document.getElementById('scope').onchange = () => { syncScope(); if(unlocked) showResults(); };
+document.getElementById('scope').onchange = () => { syncScope(); if(signedIn) showResults(); };
 syncScope();
 
 // ---- carrying the reader's work across the sign-in hop -----------------
@@ -3773,6 +3865,60 @@ function applyCarried(){
 // swallowed by whatever catch happened to be nearest. That is not
 // hypothetical in this file.
 applyCarried();
+
+// ---- signing up without leaving the page --------------------------------
+//
+// Dan, 20 August 2026: a panel "would allow the user to enter credentials
+// in the same session as the roi-calculator they are building. Rather
+// than sending the user a link, to reopen the whole session, we could
+// send a randomly generated 6 digit code."
+//
+// The panel is auth-overlay.js, loaded as a plain script by this page and
+// by the tracker -- ONE implementation, because a second copy of a signup
+// form is the fourth instance this month of two copies of one truth
+// drifting apart, and the first where the drift would be somebody's
+// account.
+//
+// PROGRESSIVE ENHANCEMENT: the two controls stay real links to real
+// pages, and this only intercepts the click when the overlay is actually
+// there. The gateHref() carry-the-inputs machinery above is still what
+// the fallback uses, and is still worth its length -- that path is what
+// runs when the script is blocked, slow, or broken.
+function openAuth(mode){
+  if(!window.EICC_AUTH) return false;
+  window.EICC_AUTH.open({
+    mode: mode,
+    // The countries they picked HERE, carried into the alert preference
+    // rather than asked for a second time on a different form. Index 7 is
+    // the English name, which is the identity preferences are stored
+    // under -- the displayed name is translated and would save nothing a
+    // French reader could later recognise.
+    countries: mode === 'signin' ? [] : chosen().map(c => c[7]).filter(Boolean),
+    onSuccess: onSignedIn,
+  });
+  return true;
+}
+
+// AND NOTHING RELOADS. Reloading is the easy way to pick up a new session
+// everywhere, and here it would throw away the business case the reader
+// has just spent ten minutes building -- which is the entire thing this
+// panel exists to protect. So the page is updated in place instead, and
+// this function is the complete list of what "being signed in" changes on
+// it. If that list ever grows, it grows here.
+function onSignedIn(who, savedCountries){
+  signedIn = true;
+  MOCK_SUBSCRIBED = (savedCountries || []).slice();
+  document.getElementById('gate').classList.add('hidden');
+  setSubsAvailable(MOCK_SUBSCRIBED.length > 0);
+}
+
+['subscribe','signin'].forEach(function(id){
+  const el = document.getElementById(id);
+  if(!el) return;
+  el.addEventListener('click', function(e){
+    if(openAuth(id === 'signin' ? 'signin' : 'signup')) e.preventDefault();
+  });
+});
 
 function build(){
   cur = document.getElementById('cur').value;
@@ -4847,7 +4993,7 @@ function build(){
     .replace("__ROI_COUNTRIES__", JSON.stringify(countries.map((c) =>
       (c[1] === "EU" ? [t("country.eu", "European Union"), ...c.slice(1)] : c))))
     .replace("__ROI_SUBSCRIBED__", JSON.stringify(subscribed))
-    .replace("__ROI_UNLOCKED__", locked ? "false" : "true")
+    .replace("__ROI_SIGNED_IN__", signedIn ? "true" : "false")
     .replace("__ROI_MEMBERS_URL__", JSON.stringify(String(membersUrl || "")))
     .replace("__ROI_DEFAULTS__", JSON.stringify(defaults))
     .replace("__ROI_EVIDENCE__", JSON.stringify(evidence))

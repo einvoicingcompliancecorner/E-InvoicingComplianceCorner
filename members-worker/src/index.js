@@ -49,6 +49,26 @@ import {
   renderArticleFragment as sharedRenderArticleFragment,
   INSIGHTS_STYLE,
 } from "../../shared/resources-render.mjs";
+import {
+  CODE_TTL_SECONDS,
+  CODE_MAX_ATTEMPTS,
+  CODE_MAX_PER_HOUR_PER_EMAIL,
+  CODE_MAX_PER_HOUR_PER_IP,
+  CODE_RESEND_COOLDOWN_SECONDS,
+  BROWSER_COOKIE,
+  generateCode,
+  generateBrowserId,
+  hashCode,
+  normaliseEmail,
+  isValidEmailShape,
+  normaliseCode,
+  isValidCodeShape,
+  isValidBrowserId,
+  browserIdCookie,
+  clearBrowserIdCookie,
+  evaluateCode,
+  countsAsAttempt,
+} from "../../shared/auth-code.mjs";
 
 // Imported, not redeclared. site-worker now reads the same cookie, and a
 // second copy of the name is a second thing to keep in step -- the exact
@@ -552,6 +572,15 @@ export default {
         // "keep reading" link, or a newsletter convenience link.
         const slug = decodeURIComponent(url.pathname.replace("/members/insights/", ""));
         response = await handleArticleFull(request, env, slug, lang);
+      } else if (request.method === "POST" && url.pathname === "/members/api/code/request") {
+        // Same-origin only, deliberately: NO withCors. The public site
+        // reaches these two through site-worker's service-binding relay,
+        // which makes them same-origin to the browser. Opening them up
+        // cross-origin would put an unauthenticated "email this address"
+        // endpoint on the open internet with a CORS blessing.
+        response = await handleCodeRequest(request, env, lang);
+      } else if (request.method === "POST" && url.pathname === "/members/api/code/verify") {
+        response = await handleCodeVerify(request, env);
       } else if (request.method === "GET" && url.pathname === "/members/api/saved-countries") {
         response = await handleSavedCountriesApi(request, env);
       } else if (request.method === "GET" && url.pathname === "/members/roi-calculator") {
@@ -1958,6 +1987,276 @@ async function handleVerify(request, env, lang) {
   return new Response(null, { status: 302, headers });
 }
 
+// =====================================================================
+// THE 6-DIGIT CODE
+//
+// Dan, 20 August 2026: sign up inside the planner, in a panel, without
+// the reader losing the business case they have spent ten minutes
+// building -- "rather than sending the user a link, to reopen the whole
+// session, we could send a randomly generated 6 digit code". And on
+// where it sits: "results immediately with the code protecting the
+// account, and code used in other locations when signing in."
+//
+// SO THE CODE IS NOT A GATE ON THE RESULTS. The planner's arithmetic
+// runs in the reader's browser and the page ships the entire model, so
+// withholding the results was only ever theatre -- established a
+// fortnight ago and unchanged. The code protects the thing that is
+// actually worth protecting: the SESSION, and everything account-shaped
+// behind it.
+//
+// The rules, the generation and the comparison live in
+// shared/auth-code.mjs, deliberately free of D1, email and cookies so
+// they can be tested exhaustively. What is here is the part that needs a
+// database and a mail server.
+//
+// TWO PURPOSES, ONE ENDPOINT, AND THE CALLER DOES NOT CHOOSE. Whether a
+// request becomes a signup or a sign-in is decided here, by looking the
+// address up. A caller that could choose would be a caller that could
+// ask "is this address a subscriber?" and read the answer off which
+// branch it got.
+// =====================================================================
+
+/** The reader's IP. Behind the service binding the request arrives from
+ *  site-worker, which forwards the original -- see its relay. Falling
+ *  back to "unknown" rather than to the connecting address matters: the
+ *  connecting address there is Cloudflare's own, so treating it as the
+ *  reader's would put EVERY relayed request into one rate-limit bucket
+ *  and lock the whole site out on the twentieth signup of the hour. */
+function clientIp(request) {
+  return request.headers.get("X-EICC-Client-IP")
+    || request.headers.get("CF-Connecting-IP")
+    || "unknown";
+}
+
+async function readJsonBody(request) {
+  try {
+    const body = await request.json();
+    return body && typeof body === "object" ? body : {};
+  } catch {
+    return {};
+  }
+}
+
+/** Rows older than an hour are of no use to anything: the rate limits
+ *  look back one hour and codes live ten minutes. Swept opportunistically
+ *  on request rather than by a cron, because a table nobody ever prunes
+ *  is how a rate-limit query gets slow eighteen months from now, and a
+ *  cron for four rows would be its own kind of silly. */
+async function pruneAuthCodes(env) {
+  const cutoff = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+  await env.eicc_content.prepare("DELETE FROM auth_codes WHERE created_at < ?").bind(cutoff).run();
+}
+
+/** POST /members/api/code/request
+ *
+ *  Always answers the same shape. The only distinctions it will admit to
+ *  are about the REQUEST -- a malformed address, missing fields, too many
+ *  attempts from this IP -- never about the ACCOUNT. */
+async function handleCodeRequest(request, env, lang) {
+  const body = await readJsonBody(request);
+  const email = normaliseEmail(body.email);
+  const ip = clientIp(request);
+
+  if (!isValidEmailShape(email)) {
+    return jsonResponse({ ok: false, error: "invalid_email" }, 400);
+  }
+
+  await pruneAuthCodes(env);
+
+  const hourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+
+  // PER IP FIRST, because it is the cap that protects everyone else --
+  // the Resend quota and every inbox this could be aimed at.
+  const byIp = await d1First(env,
+    "SELECT COUNT(*) AS n FROM auth_codes WHERE ip = ? AND created_at > ?", ip, hourAgo);
+  if ((byIp?.n || 0) >= CODE_MAX_PER_HOUR_PER_IP) {
+    return jsonResponse({ ok: false, error: "rate_limited" }, 429);
+  }
+
+  // PER ADDRESS second. Note this 429 leaks nothing: a subscriber and a
+  // stranger who each ask six times in an hour get the identical answer.
+  const byEmail = await d1First(env,
+    "SELECT COUNT(*) AS n FROM auth_codes WHERE email = ? AND created_at > ?", email, hourAgo);
+  if ((byEmail?.n || 0) >= CODE_MAX_PER_HOUR_PER_EMAIL) {
+    return jsonResponse({ ok: false, error: "rate_limited" }, 429);
+  }
+
+  // A live, unconsumed code younger than the cooldown means the last
+  // email is still valid and still in flight. Say yes and send nothing:
+  // a double-click, an impatient reader and a script all get one email.
+  const cooldownFrom = new Date(Date.now() - CODE_RESEND_COOLDOWN_SECONDS * 1000).toISOString();
+  const recent = await d1First(env,
+    "SELECT id FROM auth_codes WHERE email = ? AND consumed_at IS NULL AND created_at > ? ORDER BY id DESC LIMIT 1",
+    email, cooldownFrom);
+  if (recent) {
+    return jsonResponse({ ok: true, resent: false });
+  }
+
+  // THE PURPOSE IS DECIDED HERE, not by the caller.
+  //
+  // An address that is already an active subscriber gets a SIGN-IN code
+  // even if it arrived through the signup panel -- which is also the
+  // right behaviour for a human being: someone who forgot they had
+  // subscribed types their details, gets a code, and is simply signed
+  // in. Nothing tells them they already had an account, because nothing
+  // needs to.
+  const active = await isCurrentlyActive(env, email);
+  const purpose = active ? "login" : "signup";
+
+  let details = null;
+  if (purpose === "signup") {
+    // The same five fields subscribe.html requires, and required for the
+    // same reason Dan gave when he refused the one-field version: "we
+    // then have subscribers without knowing anything about them, such as
+    // name, title, company and countries."
+    const firstName = String(body.firstName || "").trim();
+    const lastName = String(body.lastName || "").trim();
+    const jobTitle = String(body.jobTitle || "").trim();
+    const company = String(body.company || "").trim();
+    if (!firstName || !lastName || !jobTitle || !company) {
+      return jsonResponse({ ok: false, error: "missing_fields" }, 400);
+    }
+    const countries = Array.isArray(body.countries)
+      ? body.countries.map((c) => String(c).trim()).filter(Boolean).slice(0, 200)
+      : [];
+    details = JSON.stringify({ firstName, lastName, jobTitle, company, countries });
+  }
+
+  // A fresh browser id per request rather than reusing whatever is on
+  // the request. Two reasons: a reader who starts over in a new tab gets
+  // a working flow, and an id that is never rotated is an id that
+  // becomes a tracking cookie by accident.
+  const browserId = generateBrowserId();
+  const code = generateCode();
+  const now = Date.now();
+
+  await env.eicc_content.prepare(
+    "INSERT INTO auth_codes (created_at, expires_at, email, purpose, code_hash, browser_id, attempts, ip, details) "
+    + "VALUES (?, ?, ?, ?, ?, ?, 0, ?, ?)"
+  ).bind(
+    new Date(now).toISOString(),
+    new Date(now + CODE_TTL_SECONDS * 1000).toISOString(),
+    email,
+    purpose,
+    await hashCode(email, code),
+    browserId,
+    ip,
+    details,
+  ).run();
+
+  // THE ROW IS WRITTEN BEFORE THE EMAIL IS SENT, matching handleFeedback:
+  // a send that fails must not leave a reader holding a code with no row
+  // behind it. The other order fails in the direction that cannot be
+  // recovered.
+  //
+  // AND THERE IS NO DEAD END IF THE MAIL NEVER ARRIVES, which was the
+  // main risk in trading a link for a code. Asking again issues a fresh
+  // code and verification always reads the NEWEST row for the address,
+  // so closing the panel and starting over works -- the details are
+  // already held server-side, which is a better place for them than the
+  // browser session Dan wanted to preserve them in.
+  await sendCodeEmail(env, email, code, purpose, lang);
+
+  const headers = new Headers({ "Content-Type": "application/json; charset=UTF-8" });
+  headers.append("Set-Cookie", browserIdCookie(browserId));
+  return new Response(JSON.stringify({ ok: true, resent: true }), { status: 200, headers });
+}
+
+/** POST /members/api/code/verify
+ *
+ *  The only route on this Worker that hands out a session without an
+ *  inbox round-trip having happened in a browser we control -- which is
+ *  precisely why the browser binding exists. */
+async function handleCodeVerify(request, env) {
+  const body = await readJsonBody(request);
+  const email = normaliseEmail(body.email);
+  const code = normaliseCode(body.code);
+  const { value: browserId } = readSharedCookie(request, BROWSER_COOKIE);
+
+  if (!isValidEmailShape(email) || !isValidCodeShape(code)) {
+    return jsonResponse({ ok: false, error: "invalid" }, 400);
+  }
+  if (!isValidBrowserId(browserId)) {
+    // No usable binding cookie at all: a different browser, a cleared
+    // jar, or a reader who opened the email on their phone and is typing
+    // the code there. Named distinctly so the panel can say something
+    // true rather than "wrong code".
+    return jsonResponse({ ok: false, error: "wrong-browser" }, 400);
+  }
+
+  const row = await d1First(env,
+    "SELECT * FROM auth_codes WHERE email = ? ORDER BY id DESC LIMIT 1", email);
+  const verdict = evaluateCode(row, await hashCode(email, code), browserId, Date.now());
+
+  if (!verdict.ok) {
+    if (countsAsAttempt(verdict.reason) && row) {
+      await env.eicc_content.prepare(
+        "UPDATE auth_codes SET attempts = attempts + 1 WHERE id = ?").bind(row.id).run();
+      const left = Math.max(0, CODE_MAX_ATTEMPTS - ((row.attempts || 0) + 1));
+      return jsonResponse({ ok: false, error: "wrong-code", attemptsLeft: left }, 400);
+    }
+    return jsonResponse({ ok: false, error: verdict.reason }, 400);
+  }
+
+  // CONSUMED BEFORE ANYTHING ELSE HAPPENS. Marking it after the account
+  // is created would leave a window in which two requests with the same
+  // code both pass the check.
+  await env.eicc_content.prepare(
+    "UPDATE auth_codes SET consumed_at = ? WHERE id = ? AND consumed_at IS NULL")
+    .bind(new Date().toISOString(), row.id).run();
+
+  if (row.purpose === "signup") {
+    await createSubscriberFromPending(env, email, row.details);
+  }
+
+  const sessionToken = await signToken(env.SESSION_SECRET, { email, purpose: "session" }, SESSION_TTL_SECONDS);
+  const headers = new Headers({ "Content-Type": "application/json; charset=UTF-8" });
+  for (const c of signInCookies(sessionToken, email, SESSION_TTL_SECONDS)) headers.append("Set-Cookie", c);
+  // The binding cookie has done its job and is cleared rather than left
+  // to expire -- it is only ever meaningful for one code.
+  headers.append("Set-Cookie", clearBrowserIdCookie());
+  return new Response(JSON.stringify({ ok: true, email }), { status: 200, headers });
+}
+
+/** Turn a verified pending signup into a real subscriber.
+ *
+ *  This is the ONLY place a signup becomes an account, and it runs after
+ *  proof of the address rather than before. See 594_auth_codes.sql for
+ *  why the record cannot be created at submit time: sign-up is
+ *  one-per-email permanently, so an account created for an abandoned
+ *  attempt locks its own owner out when they come back to finish. */
+async function createSubscriberFromPending(env, email, detailsJson) {
+  let details = {};
+  try { details = JSON.parse(detailsJson || "{}"); } catch { details = {}; }
+  const countries = Array.isArray(details.countries) ? details.countries : [];
+
+  const existing = await getSubscriber(env, email);
+  await putSubscriber(env, email, {
+    ...(existing || {}),
+    active: true,
+    plan: "free",
+    countries,
+    hadTrial: true,
+    trialStartedAt: existing?.trialStartedAt || Date.now(),
+    // No expiresAt -- see handleStartTrial's comment. A free account
+    // with no expiry is what every sign-up has granted since 2 August.
+    expiresAt: undefined,
+    firstName: details.firstName || "",
+    lastName: details.lastName || "",
+    jobTitle: details.jobTitle || "",
+    company: details.company || "",
+    // Distinguishable from a link-verified account later without being
+    // treated differently now.
+    verifiedBy: "code",
+    verifiedAt: Date.now(),
+  });
+
+  const convenienceToken = await signToken(env.SESSION_SECRET, { email, purpose: "login" }, CONVENIENCE_LINK_TTL_SECONDS);
+  const archiveLink = `${env.SITE_URL}/members/verify?token=${encodeURIComponent(convenienceToken)}&next=${encodeURIComponent("/members/archive")}`;
+  const prefsLink = `${env.SITE_URL}/members/verify?token=${encodeURIComponent(convenienceToken)}&next=${encodeURIComponent("/members/preferences")}`;
+  await sendWelcomeEmail(env, email, details.firstName || "", countries, archiveLink, prefsLink);
+}
+
 // The public site's greeting signs out through here too, and it wants to
 // land the reader back on the tracker rather than on a members sign-in
 // page they never asked to see.
@@ -2587,6 +2886,72 @@ async function sendMagicLinkEmail(env, email, link) {
     from: env.FROM_EMAIL,
     to: email,
     subject: "Your sign-in link — The E-Invoicing Compliance Corner",
+    html: buildEmailShell(body, footer, buildBoldMastheadHtml()),
+  });
+}
+
+/** The code email.
+ *
+ *  THE CODE IS THE SUBJECT LINE AS WELL AS THE BODY. A six-digit code is
+ *  read off a notification and typed without the message ever being
+ *  opened, and putting it in the subject is the difference between four
+ *  seconds and forty.
+ *
+ *  A LOGIN code also carries the magic link, because that route already
+ *  exists and costs nothing: the reader gets one email with two doors,
+ *  and which one they use tells us nothing we need to know. A SIGNUP
+ *  code cannot -- there is no account for a link to sign into yet, which
+ *  is the entire point of the pending row.
+ *
+ *  AND IT SAYS WE WILL NEVER ASK FOR IT. Talking somebody into reading
+ *  out a code they were just emailed is the standard attack on this
+ *  pattern, and it is the one thing the browser binding does not fully
+ *  stop -- an attacker who starts the flow themselves holds the matching
+ *  browser. The sentence is cheap and it is the only defence against it. */
+async function sendCodeEmail(env, email, code, purpose, lang = "en") {
+  const spaced = `${code.slice(0, 3)} ${code.slice(3)}`;
+  const minutes = Math.round(CODE_TTL_SECONDS / 60);
+
+  let linkBlock = "";
+  if (purpose === "login") {
+    const token = await signToken(env.SESSION_SECRET, { email, purpose: "login" }, MAGIC_LINK_TTL_SECONDS);
+    const link = `${env.SITE_URL}/members/verify?token=${encodeURIComponent(token)}${lang !== "en" ? `&lang=${lang}` : ""}&next=tracker`;
+    linkBlock = `
+    <p style="margin:22px 0 10px; font-size:13px; line-height:1.6; color:#8a7d5a;">Or, if you&rsquo;d rather not type it:</p>
+    <table role="presentation" cellpadding="0" cellspacing="0">
+      <tr>
+        <td style="background-color:#b5432f; border-radius:6px;">
+          <a href="${link}" style="display:inline-block; padding:11px 20px; font-family:'Courier New',Courier,monospace; font-size:13px; font-weight:bold; color:#ffffff; text-decoration:none;">Sign in here instead &rarr;</a>
+        </td>
+      </tr>
+    </table>`;
+  }
+
+  const heading = purpose === "signup"
+    ? "Confirm your email address"
+    : "Sign in to The E-Invoicing Compliance Corner";
+  const lede = purpose === "signup"
+    ? `Enter this code in the panel you left open to finish setting up your account. It expires in ${minutes} minutes.`
+    : `Enter this code in the panel you left open. It expires in ${minutes} minutes.`;
+
+  const body = `
+    <p style="margin:0 0 6px; font-family:'Courier New',Courier,monospace; font-size:11px; text-transform:uppercase; letter-spacing:1px; color:#c98a3a;">Your code</p>
+    <h1 style="margin:0 0 14px; font-size:20px; line-height:1.3; color:#241d10; font-family:Georgia,'Times New Roman',serif;">${heading}</h1>
+    <p style="margin:0 0 20px; font-size:14px; line-height:1.6; color:#4a4030;">${lede}</p>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#e4dcc6; border-radius:8px;">
+      <tr>
+        <td align="center" style="padding:18px 12px;">
+          <span style="font-family:'Courier New',Courier,monospace; font-size:34px; font-weight:bold; letter-spacing:8px; color:#241d10;">${escapeHtml(spaced)}</span>
+        </td>
+      </tr>
+    </table>${linkBlock}`;
+
+  const footer = `<p style="margin:0; font-size:11.5px; color:#8a7d5a; line-height:1.5;">We will never ask you for this code &mdash; not by email, not by phone. If you didn&rsquo;t request it, you can ignore this message and nothing will happen to your account.</p>`;
+
+  return await sendViaResend(env, {
+    from: env.FROM_EMAIL,
+    to: email,
+    subject: `${code} is your code — The E-Invoicing Compliance Corner`,
     html: buildEmailShell(body, footer, buildBoldMastheadHtml()),
   });
 }

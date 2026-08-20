@@ -98,6 +98,14 @@ DELETE FROM translations WHERE namespace = 'roi' AND key IN ('gate.cta', 'gate.b
 -- ASSERT: SELECT count(*) FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key IN ('gate.cta2','gate.signin','gate.signin.link','gate.body2') = 4
 -- ASSERT: SELECT count(*) FROM translations WHERE namespace = 'roi' AND key IN ('gate.cta','gate.body') = 0
 --
+-- RETIRED IN PLACE BY MIGRATION 595, 20 August 2026. Not deleted and not
+-- left to fail: the rule was right for exactly as long as its premise
+-- was, and the premise is what changed.
+--
+--   was: ASSERT ALWAYS: SELECT count(*) FROM translations WHERE
+--        namespace = 'roi' AND lang = 'en' AND key = 'gate.body2'
+--        AND value LIKE '%PDF%' = 1
+--
 -- INHERITED FROM 591, which had to retire it in place when the key was
 -- renamed. Same rule, same reason: the sentence must keep naming the PDF,
 -- because the PDF is one of the things the members page genuinely does
@@ -105,7 +113,15 @@ DELETE FROM translations WHERE namespace = 'roi' AND key IN ('gate.cta', 'gate.b
 -- away from what is behind it is a mock with better wording, which is the
 -- state 591 found this panel in.
 --
--- ASSERT ALWAYS: SELECT count(*) FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key = 'gate.body2' AND value LIKE '%PDF%' = 1
+-- WHY THE PREMISE WENT. Dan settled on 20 August that the results appear
+-- immediately and the code protects the ACCOUNT, not the output. The
+-- print button now shows for everyone who has results, so the PDF is not
+-- behind anything -- and promising it would be precisely the defect this
+-- invariant existed to prevent, a promise with nothing behind it.
+--
+-- THE CONCERN SURVIVES, INVERTED, in 595: the sentence must NOT promise
+-- the PDF and must not claim to unlock anything. Same rule as ever --
+-- what the panel says it gives has to be what it gives.
 --
 -- THE SIGN-IN SENTENCE KEEPS ITS SLOT, which is the link itself. Lose it
 -- and the line becomes the words "Already subscribed?" with no way to do

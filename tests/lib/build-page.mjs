@@ -114,7 +114,13 @@ export async function buildRoiPage(opts = {}) {
       // 19 August 2026, which is part of why the gate went unexamined for
       // a week: every suite built the members shell, where there is no
       // gate to look at.
-      locked: opts.locked === true,
+      // DEFAULTS TO SIGNED IN, which is what most suites want and what
+      // `locked: opts.locked === true` used to give them. The name
+      // changed and the sense inverted on 20 August when the gate stopped
+      // withholding the results — renderRoiPage throws on the old name
+      // rather than reading it backwards, so a missed call site here is
+      // an error rather than a suite quietly testing the wrong page.
+      signedIn: opts.signedIn !== false,
       membersUrl: opts.membersUrl || "",
       subscribed,
     });
