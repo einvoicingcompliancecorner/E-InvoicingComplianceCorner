@@ -2803,10 +2803,31 @@ t.check("and the common names are not truncated to make that true",
 }
 // And the reader is told, in their own language's name for itself.
 {
-  // Same reason as above: the rendered notice needs a language that
-  // genuinely falls back, and German stopped being one.
-  const FALLBACK_LANG = "fr";
-  const FALLBACK_NAME = "fran\u00e7ais";   // as French names itself, lower case
+  // THE LANGUAGE IS DISCOVERED, NOT NAMED. Third time of asking.
+  //
+  // This block hardcoded German until German was translated, then French
+  // until French was translated a day later. Twice is a pattern: any test
+  // that names the untranslated language is a test with an expiry date,
+  // and the expiry date is "the next time somebody does good work".
+  //
+  // So it finds one, and when the last language is translated it says
+  // that plainly instead of passing on nothing. At that point the honest
+  // move is a synthetic language — the `zz` trick a few lines above
+  // already does exactly that for the resolveRoiLang half.
+  const ENDONYM = { es: "espa\u00f1ol", de: "Deutsch", fr: "fran\u00e7ais" };
+  let FALLBACK_LANG = null;
+  for (const code of ["es", "de", "fr"]) {
+    const r = await (await import("../shared/roi-render.mjs")).resolveRoiLang(
+      (await (await import("./lib/replay-db.mjs")).openReplayDb()).d1, code);
+    if (r.fellBack) { FALLBACK_LANG = code; break; }
+  }
+  t.check("a language that still falls back exists to render the notice with",
+    FALLBACK_LANG !== null,
+    FALLBACK_LANG ? `using ${FALLBACK_LANG}`
+      : "every supported language is complete — rewrite this against a synthetic "
+        + "language the way the resolveRoiLang checks above already do");
+  if (FALLBACK_LANG) {
+  const FALLBACK_NAME = ENDONYM[FALLBACK_LANG];
   const { file: fb } = await buildRoiPage({ lang: FALLBACK_LANG });
   const pf = await browser.newPage({ viewport: { width: 1280, height: 900 } });
   t.watch(pf);
@@ -2823,6 +2844,7 @@ t.check("and the common names are not truncated to make that true",
     COUNTRIES.some((c) => ["Allemagne", "Pays-Bas", "Belgique", "Espagne"].includes(c[0])));
   t.check("and no country name is left in the language we did not serve", !anyTranslated);
   await pf.close();
+  }
 }
 
 for (const [lang, sep] of [["de", "."], ["fr", "\u202f"]]) {
@@ -2914,8 +2936,17 @@ for (const [lang, sep] of [["de", "."], ["fr", "\u202f"]]) {
   t.check(`${lang}: plural sets reach the page (${plurals.keys} nouns)`, plurals.keys >= 10, plurals.keys);
   t.check(`${lang}: 1 is singular (${plurals.one})`,
     plurals.one === plurals.singular, `${plurals.one} vs ${plurals.singular}`);
-  t.check(`${lang}: 2 is plural (${plurals.two})`,
-    plurals.two === plurals.plural && plurals.plural !== plurals.singular, plurals.two);
+  // NOT "the two forms differ" — French has invariable nouns.
+  //
+  // `pays` is the same word singular and plural, as are prix, mois, cas
+  // and temps. The extra clause here asserted that the singular and
+  // plural strings could not be equal, which is an English-shaped
+  // assumption and false in the second language it met. What is actually
+  // under test is that the CLDR selector picks the `other` form for 2 —
+  // whether that form happens to read differently is the language's
+  // business, not the machinery's.
+  t.check(`${lang}: 2 selects the plural form (${plurals.two})`,
+    plurals.two === plurals.plural, `${plurals.two} vs ${plurals.plural}`);
   t.check(`${lang}: zero is ${lang === "fr" ? "singular, as French requires" : "plural, as German requires"}`,
     lang === "fr" ? plurals.zero === plurals.singular : plurals.zero === plurals.plural,
     `${lang} zero -> ${plurals.zero} (categories seen: ${plurals.cats.join(",")})`);
