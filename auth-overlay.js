@@ -300,21 +300,77 @@
       + esc(signin ? t("signin.cta", "Email me a code") : t("signup.cta", "Create my free account"))
       + '</button>';
 
-    if (!signin) {
-      html += '<p class="eicc-auth-note" style="margin-top:12px;">'
+    // ---- THE OTHER DOOR, ON BOTH SIDES --------------------------------
+    //
+    // Dan, 21 August 2026: "the Sign-In button on the main page still has
+    // no Subscribe capability."
+    //
+    // A stranger who pressed Sign in reached one email field, a button,
+    // and nothing else — no account, and no way to get one without
+    // closing the panel and finding a different control. Half a login
+    // form is not a front door.
+    //
+    // It matters more than a missing convenience, because the Worker
+    // cannot help here: for an address with no account a sign-in now
+    // answers exactly what it answers for one WITH an account, and sends
+    // nothing, so that it never reveals who exists. That is the right
+    // trade only if the way forward is visible on the page. This link IS
+    // that way forward, which is why it is not decoration.
+    //
+    // The reverse direction was already covered in words -- an existing
+    // subscriber who fills in the signup form is simply signed in -- so
+    // that side stays a sentence rather than a second control.
+    html += signin
+      ? '<p class="eicc-auth-note" style="margin-top:12px;">'
+        + esc(t("signin.newHere", "New here?")) + " "
+        + '<button type="button" class="eicc-auth-toggle" data-switch="signup">'
+        + esc(t("signin.createOne", "Create a free account")) + "</button></p>"
+      : '<p class="eicc-auth-note" style="margin-top:12px;">'
         + esc(t("signup.fine", "Already have an account? Use the same address and we'll just sign you in."))
         + '</p>';
-    }
 
     body().innerHTML = html;
     body().querySelector('[data-go="details"]').addEventListener("click", submitDetails);
-    body().addEventListener("keydown", function (e) {
-      if (e.key === "Enter") { e.preventDefault(); submitDetails(); }
-    });
+    wireOnce();
     wireChips();
     place();
     var first = body().querySelector("input");
     if (first) first.focus();
+  }
+
+  /** Listeners that belong to the panel body rather than to one render.
+   *
+   *  BOUND ONCE, because .eicc-auth-body survives every re-render and the
+   *  step is re-rendered on a chip removal, a picker toggle and a mode
+   *  switch. Re-binding the Enter handler here would submit the form
+   *  twice on the second render and three times on the third. */
+  function wireOnce() {
+    var host = body();
+    if (!host || host.dataset.bodyWired) return;
+    host.dataset.bodyWired = "1";
+
+    host.addEventListener("keydown", function (e) {
+      if (e.key !== "Enter") return;
+      // Only while the details step is on screen; the code step has its
+      // own Enter handler on the code input.
+      if (!host.querySelector('[data-go="details"]')) return;
+      e.preventDefault();
+      submitDetails();
+    });
+
+    host.addEventListener("click", function (e) {
+      var sw = e.target.closest ? e.target.closest("[data-switch]") : null;
+      if (!sw) return;
+      // The switch can be pressed from the CODE step as well as the
+      // first one, so the resend countdown has to be stopped here or it
+      // keeps ticking against a button that no longer exists.
+      if (cooldownTimer) { clearInterval(cooldownTimer); cooldownTimer = null; }
+      var typed = readTyped();
+      opts.mode = sw.getAttribute("data-switch");
+      email = typed.email || email;
+      renderDetails();
+      writeTyped(typed);
+    });
   }
 
   // THE COUNTRIES, CARRIED WHERE THERE ARE ANY AND CHOOSABLE WHERE THERE
@@ -563,7 +619,11 @@
   function submitDetails() {
     clearAlert();
     var signin = opts.mode === "signin";
-    var payload = { email: fieldVal("email") };
+    // THE MODE TRAVELS, and it says which FORM this is — one field or
+    // five — not who the reader is. The Worker still decides on its own
+    // whether an account exists and never reports that either way; this
+    // only stops it demanding four fields nobody is looking at.
+    var payload = { mode: signin ? "signin" : "signup", email: fieldVal("email") };
     var ok = looksLikeEmail(payload.email);
     markBad("email", !ok);
 
@@ -620,7 +680,26 @@
       + '<div class="eicc-auth-links">'
       + '<button type="button" data-back>' + esc(t("code.back", "Wrong address? Go back")) + '</button>'
       + '<button type="button" data-resend>' + esc(t("code.resend", "Send it again")) + '</button>'
-      + '</div>';
+      + '</div>'
+      // THE ONE PLACE A SIGN-IN CAN GO WRONG SILENTLY.
+      //
+      // A sign-in for an address with no account answers exactly what a
+      // sign-in for a real one answers, and sends nothing — that is
+      // deliberate, and it is what stops this route being used to find
+      // out who has an account. The cost is a reader sitting in front of
+      // a code box waiting for mail that is never coming, with no way to
+      // tell that from slow mail.
+      //
+      // So the alternative is written on the same screen, before they
+      // have a reason to suspect anything. It is the only honest thing
+      // available: we will not say whether they have an account, so we
+      // say what to do if they do not.
+      + (opts.mode === "signin"
+        ? '<p class="eicc-auth-note" style="margin:14px 0 0;">'
+          + esc(t("code.noAccount", "Nothing arriving? You may not have an account yet."))
+          + ' <button type="button" class="eicc-auth-toggle" data-switch="signup">'
+          + esc(t("signin.createOne", "Create a free account")) + "</button></p>"
+        : "");
 
     var input = body().querySelector(".eicc-auth-code");
     input.addEventListener("keydown", function (e) {
@@ -673,7 +752,7 @@
   // reader would read as "the resend button is broken".
   function resend() {
     clearAlert();
-    var payload = { email: email };
+    var payload = { mode: opts.mode === "signin" ? "signin" : "signup", email: email };
     if (opts.mode !== "signin") {
       payload.firstName = lastDetails.firstName || "";
       payload.lastName = lastDetails.lastName || "";

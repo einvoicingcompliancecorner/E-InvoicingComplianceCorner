@@ -15,6 +15,9 @@
 // which is the whole reason shared/auth-code.mjs is free of all four.
 // A check you can only run from one machine is a check that gets skipped
 // — the same rule that put the other thirteen suites in this directory.
+import { readFileSync } from "node:fs";
+import { join, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
 import { suite } from "./lib/browser.mjs";
 import {
   CODE_TTL_SECONDS,
@@ -289,5 +292,89 @@ t.check("and a resend cooldown exists, so a double-click sends one email",
 const perHour = CODE_MAX_ATTEMPTS * CODE_MAX_PER_HOUR_PER_EMAIL;
 t.check("an attacker gets at most 1-in-40,000 per address per hour",
   perHour / 1000000 < 0.00005, `${perHour} guesses/hour`);
+
+// ---- the request route tells nobody who exists -------------------------
+//
+// THE HOLE, found by Dan on 21 August 2026 from the wrong end of it: "if
+// I add a new, unrecognised email address I see an error message saying
+// 'Please fill in every field.', but only the email address field is
+// shown."
+//
+// The bad message was the visible half. The other half was that the
+// message only ever appeared for an address with NO account — a known
+// address got "ok", a stranger got "missing_fields" — so anyone could
+// ask this route whether a given person was a subscriber, one address at
+// a time. handleLoginRequest goes to deliberate trouble to prevent that
+// ("always show the same confirmation regardless of whether the email is
+// an active subscriber") and this route was quietly undoing it.
+//
+// THE INVARIANT IS THAT EVERY SUCCESS ANSWER IS THE SAME BYTES. Not
+// "similar", not "both 200": identical, so no field, flag or ordering
+// can carry a signal. The first version failed this on a `resent` flag
+// that no caller ever read and that reported whether a code was already
+// in flight for the address.
+//
+// Read out of the Worker rather than asserted about behaviour, because
+// this suite deliberately runs without one — a rule you can only check
+// by deploying is a rule that gets checked after it is broken.
+const WORKER_SRC = readFileSync(
+  join(dirname(dirname(fileURLToPath(import.meta.url))), "members-worker", "src", "index.js"),
+  "utf8");
+
+const reqStart = WORKER_SRC.indexOf("async function handleCodeRequest");
+const reqEnd = WORKER_SRC.indexOf("\nasync function handleCodeVerify");
+t.check("handleCodeRequest was found in the Worker", reqStart > 0 && reqEnd > reqStart);
+const requestFn = WORKER_SRC.slice(reqStart, reqEnd);
+
+// Every ok:true payload it can emit, however it is emitted.
+const okPayloads = [
+  ...requestFn.matchAll(/jsonResponse\(\s*(\{[^}]*ok:\s*true[^}]*\})/g),
+  ...requestFn.matchAll(/JSON\.stringify\(\s*(\{[^}]*ok:\s*true[^}]*\})/g),
+].map((m) => m[1].replace(/\s+/g, " ").trim());
+
+t.check(`the route has ${okPayloads.length} success answer(s)`, okPayloads.length >= 3, okPayloads.join(" | "));
+t.check("and every one of them is byte-identical",
+  new Set(okPayloads).size === 1,
+  okPayloads.length ? [...new Set(okPayloads)].join("  VS  ") : "none found");
+t.check("and carries nothing but ok",
+  okPayloads.every((p) => /^\{\s*ok:\s*true\s*\}$/.test(p)),
+  [...new Set(okPayloads)].join(" | "));
+
+// The specific branch Dan's report exposed: a sign-in for an address with
+// no account must take the same exit as one with.
+t.check("a sign-in for an unknown address returns success, not missing_fields",
+  /if\s*\(\s*signingIn\s*&&\s*!active\s*\)\s*\{\s*\n?\s*return jsonResponse\(\s*\{\s*ok:\s*true\s*\}\s*\);/.test(requestFn),
+  "the signingIn && !active early return is what stops this route being an "
+  + "account-existence oracle");
+
+// missing_fields is fine — but only where five fields are on screen.
+//
+// MATCHED ON THE RETURN, NOT ON THE WORD. The first version compared
+// indexOf("missing_fields"), which found the word in the comment
+// EXPLAINING the bug — sitting, of course, above the fix. It failed
+// while the code was correct, which is the cheap version of the
+// expensive mistake: a check that reads prose as if it were behaviour.
+const emitsMissing = requestFn.indexOf('error: "missing_fields"');
+const signinExit = requestFn.indexOf("if (signingIn && !active)");
+t.check("missing_fields is only reachable from the five-field form",
+  emitsMissing > 0 && signinExit > 0 && emitsMissing > signinExit,
+  "it must sit after the sign-in early return, or a one-field form gets told "
+  + "to fill in four fields it is not showing");
+
+// ---- and the panel always offers the way out ---------------------------
+//
+// The security trade above is only acceptable because the reader can see
+// what to do instead. A sign-in that answers "sent" for an address with
+// no account leaves someone waiting for mail that is not coming, and the
+// Worker must not tell them why — so the panel has to, in advance, on
+// both steps.
+const OVERLAY_SRC = readFileSync(
+  join(dirname(dirname(fileURLToPath(import.meta.url))), "auth-overlay.js"), "utf8");
+const switches = [...OVERLAY_SRC.matchAll(/data-switch="signup"/g)].length;
+t.check("the panel offers 'create a free account' in two places",
+  switches >= 2, `${switches} found — expected the sign-in step and the code step`);
+t.check("and the mode travels with the request, so the Worker knows which form it is",
+  /mode:\s*signin\s*\?\s*"signin"\s*:\s*"signup"/.test(OVERLAY_SRC)
+  || /mode:\s*opts\.mode === "signin"/.test(OVERLAY_SRC));
 
 process.exit(t.report() ? 0 : 1);
