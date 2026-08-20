@@ -2735,11 +2735,33 @@ const boxes = () => [...list.querySelectorAll('input[type=checkbox]')].filter(b 
 const MOCK_SUBSCRIBED = __ROI_SUBSCRIBED__;
 const subsBox = document.getElementById('useSubs');
 const subsRow = document.getElementById('subsRow');
+// THREE STATES, NOT TWO, since the planner went public on 20 August 2026.
+//
+// Until then two were enough, because a reader who could see this page
+// unlocked was a reader whose saved countries had come with it. Now the
+// public planner opens in place for anyone signed in, and it asks
+// members-worker for the list separately -- so "signed in" and "has a
+// saved list" have come apart.
+//
+// The missing third state showed up immediately, and only on the real
+// site: Dan, signed in, with his own name in the header, looking at a
+// greyed-out control reading "sign in to use your saved countries". Two
+// statements contradicting each other on one screen -- this page's most
+// frequent defect, arriving in a control nobody had touched.
+//
+// A READER WITH NOTHING SAVED AND A FAILED LOOKUP SEE THE SAME MESSAGE,
+// deliberately. The distinction matters to us and not to them: either way
+// there is no list to apply and the next move is to pick countries by
+// hand. The difference is logged server-side, where it can be acted on,
+// rather than shown to someone who cannot act on it.
 function setSubsAvailable(on){
+  const signedIn = typeof unlocked !== 'undefined' && unlocked;
+  const has = MOCK_SUBSCRIBED.length > 0;
   subsBox.disabled = !on;
   subsRow.style.opacity = on ? '1' : '.55';
-  document.getElementById('subsCount').textContent = on
-    ? fill('${tj("subs.fromSaved","({0}) — from your saved preferences")}', MOCK_SUBSCRIBED.length)
+  document.getElementById('subsCount').textContent =
+    on && has ? fill('${tj("subs.fromSaved","({0}) — from your saved preferences")}', MOCK_SUBSCRIBED.length)
+    : signedIn ? '— ${tj("subs.none","no saved countries yet &mdash; set them in your preferences")}'
     : '— ${tj("subs.locked","sign in to use your saved countries")}';
 }
 // Initialise from the unlock state, NOT unconditionally false. On the

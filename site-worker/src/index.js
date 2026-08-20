@@ -909,6 +909,44 @@ async function renderRoiCalculatorPage(request, env) {
   // asking.
   const signedInAs = await sessionEmail(request, env.SESSION_SECRET);
 
+  // ---- THEIR SAVED COUNTRIES, ASKED FOR RATHER THAN READ -------------
+  //
+  // This Worker has no subscribers binding and is not getting one. It
+  // asks members-worker over a service binding instead, forwarding the
+  // reader's own cookie, so the Worker that owns accounts stays the only
+  // thing that reads one.
+  //
+  // WHY NOT JUST GIVE THIS WORKER THE BINDING. Because the boundary is
+  // worth something even though it is not absolute: this Worker already
+  // holds SESSION_SECRET, which can mint a token for any address, so an
+  // ATTACKER with the secret could reach the same data anyway. What the
+  // separation still buys is protection from ACCIDENTS -- a bug on any
+  // public page can leak what this Worker directly holds, and cannot
+  // spontaneously forge a session and go querying the other one.
+  //
+  // IT FAILS SOFT, DELIBERATELY. No binding, a deploy skew, an error, a
+  // slow response: the reader gets the planner with the control disabled
+  // and an honest label, rather than no planner. A convenience that takes
+  // the page down with it when it breaks is not a convenience.
+  let subscribed = [];
+  if (signedInAs && env.MEMBERS) {
+    try {
+      const r = await env.MEMBERS.fetch(
+        new Request("https://members.e-invoicingcompliancecorner.com/members/api/saved-countries", {
+          headers: { Cookie: request.headers.get("Cookie") || "" },
+        })
+      );
+      if (r.ok) {
+        const body = await r.json();
+        if (Array.isArray(body.countries)) subscribed = body.countries;
+      } else {
+        console.warn(`saved countries: members-worker answered ${r.status}`);
+      }
+    } catch (err) {
+      console.warn(`saved countries: service binding failed — ${err && err.message}`);
+    }
+  }
+
   const roiLang = await resolveRoiLang(env.eicc_content, lang);
 
   const [countries, benchmarks, phases, strings, fx] = await Promise.all([
@@ -928,10 +966,7 @@ async function renderRoiCalculatorPage(request, env) {
     lang: roiLang.lang,
     langAsked: roiLang.asked,
     locked: !signedInAs,   // anonymous: results behind the gate
-    // Still empty even when signed in. Saved countries live in the
-    // subscriber record, and this Worker deliberately cannot read it --
-    // that control stays on the members page, which can.
-    subscribed: [],
+    subscribed,
     // Where the gate's CTA sends people. The ORIGIN only -- the rest of
     // the URL is assembled in the browser at click time, because it has
     // to describe what the reader has typed, and at render time they have

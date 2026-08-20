@@ -85,6 +85,29 @@ database_id = "d1d10bd0-e90a-44a3-9494-a63689e8d32e"
 # true as well. It is deliberately NOT there yet: a sitemap entry for a
 # noindex page is an instruction and its own contradiction.
 # ----------------------------------------------------------------
+# ----------------------------------------------------------------
+# Service binding to members-worker, added 20 August 2026.
+#
+# The planner needs a signed-in reader's saved countries, and this Worker
+# deliberately has no subscribers binding. So it asks: it forwards the
+# reader's own cookie to /members/api/saved-countries, which authenticates
+# the READER rather than the caller — there is no email parameter, so a
+# caller cannot ask for somebody else's list.
+#
+# members-worker stays the only thing that reads an account. That boundary
+# is not absolute (this Worker holds SESSION_SECRET, which can mint a
+# token for any address) but it is real against accidents: a bug on a
+# public page can leak what this Worker holds and cannot forge a session
+# and go querying the other one.
+#
+# BOTH WORKERS MUST BE DEPLOYED for this to resolve. If the binding is
+# missing the planner still renders — the saved-countries control simply
+# disables itself with an honest label. Fails soft on purpose.
+[[services]]
+binding = "MEMBERS"
+service = "eicc-members"
+# ----------------------------------------------------------------
+
 [vars]
 ROI_PUBLIC = "true"
 ROI_INDEXABLE = "false"
