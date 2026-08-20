@@ -2089,18 +2089,62 @@ async function handleCodeRequest(request, env, lang) {
     "SELECT id FROM auth_codes WHERE email = ? AND consumed_at IS NULL AND created_at > ? ORDER BY id DESC LIMIT 1",
     email, cooldownFrom);
   if (recent) {
-    return jsonResponse({ ok: true, resent: false });
+    // NO `resent` FLAG. The first version returned {ok:true, resent:false}
+    // here and {ok:true, resent:true} below, which nothing on the client
+    // read and which quietly told anyone who looked whether an address
+    // had a code in flight. A field no caller uses is not free if it
+    // answers a question we decline to answer everywhere else.
+    return jsonResponse({ ok: true });
   }
 
-  // THE PURPOSE IS DECIDED HERE, not by the caller.
+  // WHAT THE READER IS LOOKING AT, which is not the same as what they
+  // are entitled to.
   //
-  // An address that is already an active subscriber gets a SIGN-IN code
-  // even if it arrived through the signup panel -- which is also the
-  // right behaviour for a human being: someone who forgot they had
-  // subscribed types their details, gets a code, and is simply signed
-  // in. Nothing tells them they already had an account, because nothing
-  // needs to.
+  // The caller says which FORM it is -- one email field, or five -- and
+  // nothing else. It never says, and is never told, whether an account
+  // exists. That stays this Worker's business.
+  const signingIn = String(body.mode || "signup") === "signin";
   const active = await isCurrentlyActive(env, email);
+
+  // ---- THE DEAD END THIS REPLACES -------------------------------------
+  //
+  // Dan, 21 August 2026: "if I add a new, unrecognised email address I
+  // see an error message saying 'Please fill in every field.', but only
+  // the email address field is shown."
+  //
+  // Exactly right, and it was worse than a bad message. The panel asked
+  // for one field; the Worker decided the purpose entirely from whether
+  // the address was known, so an unknown address became a SIGNUP, a
+  // signup needs five fields, and the answer came back missing_fields --
+  // naming four fields the reader could not see, about a form they were
+  // not filling in. There was no way forward from that screen at all.
+  //
+  // AND IT WAS AN ENUMERATION ORACLE. Submit any address with no details
+  // and the reply told you whether it was a subscriber: ok for a known
+  // one, missing_fields for a stranger. handleLoginRequest goes to real
+  // trouble to avoid exactly that -- "always show the same confirmation
+  // regardless of whether the email is an active subscriber" -- and this
+  // route was undoing it two hundred lines away.
+  //
+  // So a sign-in for an address with no account now answers precisely
+  // what a sign-in for one WITH an account answers, and sends nothing.
+  // Same shape as the old login page, deliberately.
+  //
+  // That leaves the reader waiting for an email that will not arrive,
+  // which is only acceptable because the panel now carries a visible
+  // "create a free account" route on both of its steps. The way out is
+  // in the UI, where it costs nothing to say, rather than in a response
+  // that would have to reveal who exists.
+  if (signingIn && !active) {
+    return jsonResponse({ ok: true });
+  }
+
+  // An address that IS an active subscriber gets a sign-in code even when
+  // it arrived through the five-field signup form -- which is also the
+  // right thing for a human being: someone who forgot they had
+  // subscribed fills the form in, gets a code, and is simply signed in.
+  // Nothing tells them they already had an account, because nothing
+  // needs to.
   const purpose = active ? "login" : "signup";
 
   let details = null;
@@ -2109,6 +2153,10 @@ async function handleCodeRequest(request, env, lang) {
     // same reason Dan gave when he refused the one-field version: "we
     // then have subscribers without knowing anything about them, such as
     // name, title, company and countries."
+    //
+    // missing_fields can only be reached from the five-field form now, so
+    // it is finally an honest message: the reader is looking at the
+    // fields it is talking about.
     const firstName = String(body.firstName || "").trim();
     const lastName = String(body.lastName || "").trim();
     const jobTitle = String(body.jobTitle || "").trim();
@@ -2159,7 +2207,7 @@ async function handleCodeRequest(request, env, lang) {
 
   const headers = new Headers({ "Content-Type": "application/json; charset=UTF-8" });
   headers.append("Set-Cookie", browserIdCookie(browserId));
-  return new Response(JSON.stringify({ ok: true, resent: true }), { status: 200, headers });
+  return new Response(JSON.stringify({ ok: true }), { status: 200, headers });
 }
 
 /** POST /members/api/code/verify
