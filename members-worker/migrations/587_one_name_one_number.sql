@@ -178,7 +178,22 @@ DELETE FROM translations WHERE namespace = 'roi' AND key LIKE 'res.nearest2.%';
 -- or the summary is back to two numbers nobody can reconcile -- which is
 -- the whole subject of this file.
 --
--- ASSERT ALWAYS: SELECT count(*) FROM translations WHERE namespace = 'roi' AND key LIKE 'res.nearest3.%' AND value LIKE '%{0}%{1}%' = 2
+-- RETIRED IN PLACE BY MIGRATION 597 (German), 21 August 2026.
+--
+-- IT COUNTED ROWS, and a second language adds rows. It broke the moment
+-- the planner gained one, with nothing actually wrong: the rule it states
+-- is still true of every row, and the arithmetic around it was written in
+-- a world where there was only ever one.
+--
+-- The successor in 597 counts VIOLATIONS instead of matches and expects
+-- zero, which is strictly stronger — it holds for English, for German and
+-- for every language after them, and it does not have to be edited again
+-- when the next one lands. That matters more than it sounds: the slot
+-- rules exist FOR translators, and this was the check that would have
+-- caught a dropped {0} in a language nobody on the team reads.
+--
+--   was: ASSERT ALWAYS: SELECT count(*) FROM translations WHERE namespace = 'roi' AND key LIKE 'res.nearest3.%' AND value LIKE '%{0}%{1}%' = 2
+--
 -- ASSERT: SELECT count(*) FROM translations WHERE namespace = 'roi' AND lang = 'en' AND key LIKE 'guard.mistimed.%' AND value LIKE '%arrivals board%' = 0
 --
 -- The footprint sentence must keep BOTH counts. Its whole purpose is
@@ -186,7 +201,22 @@ DELETE FROM translations WHERE namespace = 'roi' AND key LIKE 'res.nearest2.%';
 -- the EU row -- drop either and it goes back to printing a number the
 -- reader has never seen, which is the defect rather than a symptom of it.
 --
--- ASSERT ALWAYS: SELECT count(*) FROM translations WHERE namespace = 'roi' AND key = 'card.mix2' AND value LIKE '%{0}%' AND value LIKE '%{4}%' = 1
+-- RETIRED IN PLACE BY MIGRATION 597 (German), 21 August 2026.
+--
+-- IT COUNTED ROWS, and a second language adds rows. It broke the moment
+-- the planner gained one, with nothing actually wrong: the rule it states
+-- is still true of every row, and the arithmetic around it was written in
+-- a world where there was only ever one.
+--
+-- The successor in 597 counts VIOLATIONS instead of matches and expects
+-- zero, which is strictly stronger — it holds for English, for German and
+-- for every language after them, and it does not have to be edited again
+-- when the next one lands. That matters more than it sounds: the slot
+-- rules exist FOR translators, and this was the check that would have
+-- caught a dropped {0} in a language nobody on the team reads.
+--
+--   was: ASSERT ALWAYS: SELECT count(*) FROM translations WHERE namespace = 'roi' AND key = 'card.mix2' AND value LIKE '%{0}%' AND value LIKE '%{4}%' = 1
+--
 --
 -- And the integration sentence must keep saying where the extra ones come
 -- from. The whole investment side rests on that count, and "roughly 22"

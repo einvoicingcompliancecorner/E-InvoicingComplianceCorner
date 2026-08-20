@@ -2755,9 +2755,31 @@ t.check("and the common names are not truncated to make that true",
   const { db: rdb } = await import("./lib/replay-db.mjs").then((m) => ({ db: m.openReplayDb() }));
   const d = await rdb;
   const { resolveRoiLang } = await import("../shared/roi-render.mjs");
-  const de = await resolveRoiLang(d.d1, "de");
-  t.check(`an incomplete language resolves to English (${de.have}/${de.need} rows)`,
-    de.lang === "en" && de.fellBack && de.asked === "de", JSON.stringify(de));
+  // WHICHEVER LANGUAGE IS ACTUALLY INCOMPLETE, found at runtime.
+  //
+  // This asked about GERMAN, because German was the language nobody had
+  // translated. Migration 597 translated it, and four checks went red
+  // without anything breaking — they were measuring a fact about the
+  // data rather than a property of the code, and the fact changed.
+  //
+  // A fixture that depends on a language staying untranslated is a
+  // fixture with an expiry date nobody wrote down. So the incomplete
+  // language is discovered instead, and when there are none left the
+  // check says so rather than quietly passing on nothing.
+  const supported = ["es", "de", "fr"];
+  let partial = null;
+  for (const code of supported) {
+    const r = await resolveRoiLang(d.d1, code);
+    if (r.fellBack) { partial = r; break; }
+  }
+  t.check("there is still an untranslated language to exercise the gate with",
+    partial !== null,
+    partial ? "" : "every supported language is complete — this check has nothing "
+      + "left to prove and should be rewritten against a synthetic language");
+  if (partial) {
+    t.check(`an incomplete language resolves to English (${partial.asked}: ${partial.have}/${partial.need} rows)`,
+      partial.lang === "en" && partial.fellBack, JSON.stringify(partial));
+  }
   const en = await resolveRoiLang(d.d1, "en");
   t.check("and English never falls back to itself", en.lang === "en" && !en.fellBack, JSON.stringify(en));
   // THE OTHER HALF, and the one that matters for adding a language: a
@@ -2781,7 +2803,11 @@ t.check("and the common names are not truncated to make that true",
 }
 // And the reader is told, in their own language's name for itself.
 {
-  const { file: fb } = await buildRoiPage({ lang: "de" });
+  // Same reason as above: the rendered notice needs a language that
+  // genuinely falls back, and German stopped being one.
+  const FALLBACK_LANG = "fr";
+  const FALLBACK_NAME = "fran\u00e7ais";   // as French names itself, lower case
+  const { file: fb } = await buildRoiPage({ lang: FALLBACK_LANG });
   const pf = await browser.newPage({ viewport: { width: 1280, height: 900 } });
   t.watch(pf);
   await pf.goto(`file://${fb}`);
@@ -2790,16 +2816,15 @@ t.check("and the common names are not truncated to make that true",
   t.check("the fallback is stated rather than silent",
     /not yet available/i.test(notice), notice.slice(0, 110));
   t.check("and names the language the way that language names itself",
-    /Deutsch/.test(notice), notice.slice(0, 110));
+    new RegExp(FALLBACK_NAME).test(notice), notice.slice(0, 110));
   // Nothing half-translated survived the fallback -- country names are the
   // ones that used to.
-  const anyGerman = await pf.evaluate(() =>
-    COUNTRIES.some((c) => ["Deutschland", "Niederlande", "Belgien"].includes(c[0])));
-  t.check("and no country name is left in the language we did not serve", !anyGerman);
+  const anyTranslated = await pf.evaluate(() =>
+    COUNTRIES.some((c) => ["Allemagne", "Pays-Bas", "Belgique", "Espagne"].includes(c[0])));
+  t.check("and no country name is left in the language we did not serve", !anyTranslated);
   await pf.close();
 }
 
-const PLURAL_SINGULAR = "jurisdiction";
 for (const [lang, sep] of [["de", "."], ["fr", "\u202f"]]) {
   // resolveLang:false BYPASSES THE COMPLETE-OR-ENGLISH GATE migration 589
   // added, and the bypass is the point of this block rather than a
@@ -2862,7 +2887,21 @@ for (const [lang, sep] of [["de", "."], ["fr", "\u202f"]]) {
   // failed before migration 573 and passes now, and it needs no French
   // rows to be meaningful: the category machinery is what is under test,
   // and French is a language this site already sells.
+  // THE EXPECTED WORD COMES FROM THE PAGE, NOT FROM A CONSTANT HERE.
+  //
+  // This compared against a hardcoded "jurisdiction" and passed for a
+  // year — because the roi namespace was English-only, so every language
+  // rendered the English noun and the English noun was the right answer
+  // by accident. German arriving on 21 August 2026 turned it red while
+  // the machinery under test was working perfectly: plur(1) returned
+  // "Land", which is exactly what it should return.
+  //
+  // What is actually being tested is that the CLDR category selector
+  // picks the singular form, whatever that form says. So the expectation
+  // is now read out of the same plural set the page is using.
   const plurals = await p2.evaluate(() => ({
+    singular: PLURALS.jur.one,
+    plural: PLURALS.jur.other,
     zero: plur(0, PLURALS.jur),
     one: plur(1, PLURALS.jur),
     two: plur(2, PLURALS.jur),
@@ -2873,10 +2912,12 @@ for (const [lang, sep] of [["de", "."], ["fr", "\u202f"]]) {
     keys: Object.keys(PLURALS).length,
   }));
   t.check(`${lang}: plural sets reach the page (${plurals.keys} nouns)`, plurals.keys >= 10, plurals.keys);
-  t.check(`${lang}: 1 is singular`, plurals.one === PLURAL_SINGULAR, plurals.one);
-  t.check(`${lang}: 2 is plural`, plurals.two !== PLURAL_SINGULAR, plurals.two);
+  t.check(`${lang}: 1 is singular (${plurals.one})`,
+    plurals.one === plurals.singular, `${plurals.one} vs ${plurals.singular}`);
+  t.check(`${lang}: 2 is plural (${plurals.two})`,
+    plurals.two === plurals.plural && plurals.plural !== plurals.singular, plurals.two);
   t.check(`${lang}: zero is ${lang === "fr" ? "singular, as French requires" : "plural, as German requires"}`,
-    lang === "fr" ? plurals.zero === PLURAL_SINGULAR : plurals.zero !== PLURAL_SINGULAR,
+    lang === "fr" ? plurals.zero === plurals.singular : plurals.zero === plurals.plural,
     `${lang} zero -> ${plurals.zero} (categories seen: ${plurals.cats.join(",")})`);
 
   await p2.close();

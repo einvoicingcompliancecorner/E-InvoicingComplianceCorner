@@ -101,7 +101,22 @@ DELETE FROM translations WHERE namespace = 'roi' AND key = 'input.countries.hint
 -- Both slots must survive on the named form, or the line reports a count
 -- with no countries or countries with no count.
 --
--- ASSERT ALWAYS: SELECT count(*) FROM translations WHERE namespace = 'roi' AND key = 'countries.named' AND value LIKE '%{0}%{1}%' = 1
+-- RETIRED IN PLACE BY MIGRATION 597 (German), 21 August 2026.
+--
+-- IT COUNTED ROWS, and a second language adds rows. It broke the moment
+-- the planner gained one, with nothing actually wrong: the rule it states
+-- is still true of every row, and the arithmetic around it was written in
+-- a world where there was only ever one.
+--
+-- The successor in 597 counts VIOLATIONS instead of matches and expects
+-- zero, which is strictly stronger — it holds for English, for German and
+-- for every language after them, and it does not have to be edited again
+-- when the next one lands. That matters more than it sounds: the slot
+-- rules exist FOR translators, and this was the check that would have
+-- caught a dropped {0} in a language nobody on the team reads.
+--
+--   was: ASSERT ALWAYS: SELECT count(*) FROM translations WHERE namespace = 'roi' AND key = 'countries.named' AND value LIKE '%{0}%{1}%' = 1
+--
 --
 -- ---- AND THE JURISDICTION COUNT, INHERITED FROM 518 -----------------
 --
@@ -113,4 +128,19 @@ DELETE FROM translations WHERE namespace = 'roi' AND key = 'input.countries.hint
 -- Same rule, following the string. This is the invariant that exists
 -- because "62 jurisdictions" sat on the live site for two days.
 --
--- ASSERT ALWAYS: SELECT count(*) FROM translations WHERE namespace = 'roi' AND key IN ('page.lede','input.countrySearch') AND value LIKE '%' || (SELECT count(*) FROM countries WHERE in_picker = 1) || '%' = 2
+-- RETIRED IN PLACE BY MIGRATION 597 (German), 21 August 2026.
+--
+-- IT COUNTED ROWS, and a second language adds rows. It broke the moment
+-- the planner gained one, with nothing actually wrong: the rule it states
+-- is still true of every row, and the arithmetic around it was written in
+-- a world where there was only ever one.
+--
+-- The successor in 597 counts VIOLATIONS instead of matches and expects
+-- zero, which is strictly stronger — it holds for English, for German and
+-- for every language after them, and it does not have to be edited again
+-- when the next one lands. That matters more than it sounds: the slot
+-- rules exist FOR translators, and this was the check that would have
+-- caught a dropped {0} in a language nobody on the team reads.
+--
+--   was: ASSERT ALWAYS: SELECT count(*) FROM translations WHERE namespace = 'roi' AND key IN ('page.lede','input.countrySearch') AND value LIKE '%' || (SELECT count(*) FROM countries WHERE in_picker = 1) || '%' = 2
+--
