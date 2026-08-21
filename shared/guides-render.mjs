@@ -477,7 +477,8 @@ h1,h2,h3,h4{font-family:'Big Shoulders Display','IBM Plex Sans',sans-serif;margi
 .cover .who{font-family:'IBM Plex Mono',monospace;font-size:7.2pt;letter-spacing:.7px;
   text-transform:uppercase;color:#555;text-align:right;line-height:1.5}
 .cover .lede{color:#444;margin:0 0 12px;max-width:150mm;font-size:9pt}
-table.summary{width:100%;border-collapse:collapse;font-size:8.4pt;color:#111}
+table.summary{width:100%;border-collapse:collapse;font-size:8.4pt;color:#111;table-layout:fixed}
+table.summary col.a{width:23%} table.summary col.b{width:15%} table.summary col.c{width:34%} table.summary col.d{width:28%}
 table.summary th{font-family:'IBM Plex Mono',monospace;font-size:7.2pt;letter-spacing:.8px;
   text-transform:uppercase;color:#555;text-align:left;border-bottom:1px solid #999;
   padding:4px 6px 4px 0;font-weight:500}
@@ -524,16 +525,31 @@ table.summary td.date{font-family:'IBM Plex Mono',monospace;white-space:nowrap;c
 .tl .s{font-weight:600;color:#111}
 .tl .x{color:#555}
 .tl li.past .d{color:#888}
-table.pen{width:100%;border-collapse:collapse;font-size:8pt;color:#111}
+table.pen{width:100%;border-collapse:collapse;font-size:8pt;color:#111;table-layout:fixed}
+table.pen col.f{width:44%} table.pen col.n{width:34%} table.pen col.c{width:22%}
+table.pen.nocap col.f{width:56%} table.pen.nocap col.n{width:44%}
 table.pen th{font-family:'IBM Plex Mono',monospace;font-size:6.9pt;letter-spacing:.8px;
   text-transform:uppercase;color:#555;text-align:left;padding:0 5px 3px 0;
   border-bottom:1px solid #999;font-weight:500}
 table.pen td{padding:3.5px 5px 3.5px 0;border-bottom:1px solid #e2e2e2;vertical-align:top;color:#222}
 .kv{margin:0 0 6px;break-inside:avoid;border-left:2px solid #e2e2e2;padding-left:7px}
 .kv h4{font-size:9.4pt;font-weight:700;color:#111;margin:0 0 2px}
-.kv .r{display:grid;grid-template-columns:auto 1fr;gap:6px;padding:1px 0}
-.kv .r .k{color:#666;font-size:7.7pt;white-space:nowrap}
-.kv .r .v{color:#222;font-size:8.1pt}
+/* ONE GRID PER CARD, NOT ONE PER ROW.
+   Dan, 21 August 2026: "the tabulation of fields is inconsistent making
+   [it] difficult to read in almost all sections of that page."
+   Every row used to be its own auto/1fr grid, so the key column was
+   sized to THAT row's key and every value started at a different x. Down
+   Nigeria's Format & clearance card that is five different indents in
+   five rows, and the eye has nothing to run along.
+   The grid now lives on the container and the rows are display:contents,
+   so every key in a card shares one column measured on the longest of
+   them. fit-content caps it, because "Processing taxable supplies outside
+   the fiscalisation system" as a key would otherwise leave no room for
+   its own value. */
+.kv .rows{display:grid;grid-template-columns:9.2em 1fr;column-gap:7px;row-gap:1.5px;align-items:start}
+.kv .r{display:contents}
+.kv .r .k{color:#666;font-size:7.7pt;line-height:1.25;overflow-wrap:anywhere}
+.kv .r .v{color:#222;font-size:8.1pt;line-height:1.25}
 .kv p{margin:2px 0 0;color:#444;font-size:8.1pt}
 ol.steps{margin:0;padding-left:15px}
 ol.steps li{padding:1.5px 0;break-inside:avoid}
@@ -595,6 +611,7 @@ export function renderGuideDocument({ bundle, order, lang, strings, today, siteO
   </div>
   <p class="lede">${fill(t("doc.lede", "{0} jurisdictions, drawn from this site's tracked mandate data on {1}. Each country follows on its own page. Dates are the published obligations as we hold them; the full detail for every country is on its deep dive."), rows.length, esc(today))}</p>
   <table class="summary">
+    <colgroup><col class="a"><col class="b"><col class="c"><col class="d"></colgroup>
     <tr><th>${t("col.country", "Jurisdiction")}</th><th>${t("col.next", "Next dated obligation")}</th>
         <th>${t("col.what", "What changes")}</th><th>${t("col.model", "Model")}</th></tr>
     ${rows.map((r) => `<tr>
@@ -648,7 +665,9 @@ export function renderGuideDocument({ bundle, order, lang, strings, today, siteO
     const caps = c.penalties.map((r) => (r.annual_cap || "").trim());
     const capsAllSame = caps.length > 1 && caps.every((v) => v === caps[0]);
     const penalties = c.penalties.length ? `<div class="blk keep"><h3>${t("sec.penalties", "Penalties")}</h3>
-      <table class="pen"><tr><th>${t("col.failure", "Failure")}</th><th>${t("col.fine", "Fine")}</th>${
+      <table class="pen${capsAllSame ? " nocap" : ""}">
+      <colgroup><col class="f"><col class="n">${capsAllSame ? "" : '<col class="c">'}</colgroup>
+      <tr><th>${t("col.failure", "Failure")}</th><th>${t("col.fine", "Fine")}</th>${
         capsAllSame ? "" : `<th>${t("col.cap", "Annual cap")}</th>`}</tr>
       ${c.penalties.map((r) => `<tr><td>${esc(r.failure_description)}</td><td>${esc(r.fine_amount || "—")}</td>${
         capsAllSame ? "" : `<td>${esc(r.annual_cap || "—")}</td>`}</tr>`).join("")}
@@ -660,8 +679,8 @@ export function renderGuideDocument({ bundle, order, lang, strings, today, siteO
       ${c.cards.map((card) => {
         const take = (card.rows || []).slice(0, Math.max(0, rowsLeft));
         rowsLeft -= take.length;
-        const rws = take.map(([k, v]) =>
-          `<div class="r"><span class="k">${esc(k)}</span><span class="v">${esc(v)}</span></div>`).join("");
+        const rws = take.length ? `<div class="rows">${take.map(([k, v]) =>
+          `<div class="r"><span class="k">${esc(k)}</span><span class="v">${esc(v)}</span></div>`).join("")}</div>` : "";
         const body = !plan.drop.has("bodies") && card.body ? `<p>${esc(card.body)}</p>` : "";
         const note = !plan.drop.has("notes") && card.note ? `<p>${esc(card.note)}</p>` : "";
         if (!rws && !body && !note) return "";
@@ -690,7 +709,7 @@ export function renderGuideDocument({ bundle, order, lang, strings, today, siteO
     const sourcesExtra = c.portals.length ? `<div class="blk" data-opt="sources" style="display:none">
       <h3>${t("sec.sources", "Where this is tracked")}</h3>
       ${c.portals.map((pt) => `<div class="kv"><h4>${esc(pt.label)}</h4>
-        <p style="font-family:'IBM Plex Mono',monospace;font-size:7pt;overflow-wrap:anywhere">${
+        <p style="font-family:'IBM Plex Mono',monospace;font-size:7pt;overflow-wrap:anywhere;margin:1px 0 0">${
           esc(String(pt.url || "").replace(/^https?:\/\//, ""))}</p></div>`).join("")}</div>` : "";
 
     const news = c.stories.length ? `<div class="news"><h3>${t("sec.news", "From the newsletter")}</h3>
@@ -827,6 +846,11 @@ export const GUIDE_FIT_SCRIPT = `
       // So an emptied card goes with its rows. The effect is that the
       // ladder sheds whole cards from the end once it reaches this depth,
       // which is what it should have been doing all along.
+      // .r rows now live inside a .rows wrapper, so "did this card empty"
+      // has to be asked of the card, not of the row's immediate parent.
+      if(owner.classList && owner.classList.contains('rows') && !owner.querySelector('.r')){
+        var card0 = owner.parentNode; owner.parentNode.removeChild(owner); owner = card0;
+      }
       if(owner.classList && owner.classList.contains('kv')
          && !owner.querySelector('.r') && !owner.querySelector('p')){
         owner.parentNode.removeChild(owner);
