@@ -2741,6 +2741,37 @@ t.check("and the common names are not truncated to make that true",
 // The roi namespace is English-only, so the noun itself renders in
 // English in every language -- what is being checked is which FORM the
 // category selector picks, not what it says.
+// A LANGUAGE THIS SITE CANNOT TRANSLATE, chosen at runtime.
+//
+// Third time of asking, and the last. Two checks below need a language
+// the planner falls back FROM, and both of them used to name a real site
+// language: German, until migration 597 translated it; French, until 598
+// did; then whichever of the three was still outstanding, until 599 left
+// none. Each rewrite was triggered by good work, which is the tell that
+// the fixture was measuring a fact about the data rather than a property
+// of the code.
+//
+// So it picks a tag that is NOT in SUPPORTED_LANGS. That is the whole
+// trick: a language the site does not offer can never acquire rows, so
+// this can never expire the way its three predecessors did. If Dan ever
+// adds one of these to the site, the picker moves to the next candidate
+// on its own and the checks carry on meaning the same thing.
+//
+// It must also be a tag Intl.DisplayNames can name in its own language,
+// because that is what the notice does -- `zz` renders as "zz" and would
+// let a broken endonym pass. Both conditions are asserted rather than
+// assumed, so a candidate list that runs dry fails loudly.
+function pickUntranslatableLang(supported) {
+  for (const code of ["it", "pt", "nl", "pl", "sv", "da"]) {
+    if (supported.includes(code)) continue;
+    let name = code;
+    try { name = new Intl.DisplayNames([code], { type: "language" }).of(code) || code; }
+    catch (e) { if (!(e instanceof RangeError)) throw e; }
+    if (name && name !== code) return { code, name };
+  }
+  return null;
+}
+
 // ---- 41b. complete or English, and never the mix (migration 589) ------
 //
 // Rendered ?lang=de before this, the page came back declaring lang="de",
@@ -2755,30 +2786,40 @@ t.check("and the common names are not truncated to make that true",
   const { db: rdb } = await import("./lib/replay-db.mjs").then((m) => ({ db: m.openReplayDb() }));
   const d = await rdb;
   const { resolveRoiLang } = await import("../shared/roi-render.mjs");
-  // WHICHEVER LANGUAGE IS ACTUALLY INCOMPLETE, found at runtime.
+  // A LANGUAGE WITH NO ROWS, and one the site cannot ever give rows to.
   //
   // This asked about GERMAN, because German was the language nobody had
   // translated. Migration 597 translated it, and four checks went red
   // without anything breaking — they were measuring a fact about the
-  // data rather than a property of the code, and the fact changed.
+  // data rather than a property of the code, and the fact changed. The
+  // replacement discovered the incomplete language at runtime, which
+  // survived French and then ran out entirely at Spanish: after 599
+  // every language this site offers is complete, and a check that needs
+  // an incomplete one has nothing left to point at.
   //
-  // A fixture that depends on a language staying untranslated is a
-  // fixture with an expiry date nobody wrote down. So the incomplete
-  // language is discovered instead, and when there are none left the
-  // check says so rather than quietly passing on nothing.
-  const supported = ["es", "de", "fr"];
-  let partial = null;
-  for (const code of supported) {
-    const r = await resolveRoiLang(d.d1, code);
-    if (r.fellBack) { partial = r; break; }
-  }
-  t.check("there is still an untranslated language to exercise the gate with",
-    partial !== null,
-    partial ? "" : "every supported language is complete — this check has nothing "
-      + "left to prove and should be rewritten against a synthetic language");
-  if (partial) {
-    t.check(`an incomplete language resolves to English (${partial.asked}: ${partial.have}/${partial.need} rows)`,
+  // pickUntranslatableLang solves it for good rather than for one more
+  // migration. See the note above it.
+  const { SUPPORTED_LANGS } = await import("../shared/deep-dive-render.mjs");
+  const untranslatable = pickUntranslatableLang(SUPPORTED_LANGS);
+  t.check("a language the site does not offer is available to test the gate with",
+    untranslatable !== null,
+    untranslatable ? `using ${untranslatable.code} (${untranslatable.name})`
+      : "every candidate is now a supported language — widen the list in "
+        + "pickUntranslatableLang");
+  if (untranslatable) {
+    const partial = await resolveRoiLang(d.d1, untranslatable.code);
+    t.check(`a language with no rows resolves to English (${partial.asked}: ${partial.have}/${partial.need} rows)`,
       partial.lang === "en" && partial.fellBack, JSON.stringify(partial));
+  }
+  // AND EVERY LANGUAGE THE SITE DOES OFFER RESOLVES TO ITSELF. The
+  // inverse of the check above, and the one that would catch a language
+  // silently losing rows -- a reader clicking ES and getting English
+  // with a notice is the failure this whole gate exists to make visible,
+  // so it should not be possible to reach it by accident.
+  for (const code of SUPPORTED_LANGS.filter((c) => c !== "en")) {
+    const r = await resolveRoiLang(d.d1, code);
+    t.check(`${code} is complete and resolves to itself (${r.have}/${r.need})`,
+      r.lang === code && !r.fellBack, JSON.stringify(r));
   }
   const en = await resolveRoiLang(d.d1, "en");
   t.check("and English never falls back to itself", en.lang === "en" && !en.fellBack, JSON.stringify(en));
@@ -2803,31 +2844,30 @@ t.check("and the common names are not truncated to make that true",
 }
 // And the reader is told, in their own language's name for itself.
 {
-  // THE LANGUAGE IS DISCOVERED, NOT NAMED. Third time of asking.
+  // THE LANGUAGE IS UNTRANSLATABLE, NOT MERELY UNTRANSLATED. Fourth and
+  // last time of asking.
   //
   // This block hardcoded German until German was translated, then French
-  // until French was translated a day later. Twice is a pattern: any test
-  // that names the untranslated language is a test with an expiry date,
-  // and the expiry date is "the next time somebody does good work".
+  // until French was translated a day later, then discovered whichever
+  // was still outstanding — which worked for exactly as long as one was.
+  // Migration 599 finished Spanish and there is no fourth.
   //
-  // So it finds one, and when the last language is translated it says
-  // that plainly instead of passing on nothing. At that point the honest
-  // move is a synthetic language — the `zz` trick a few lines above
-  // already does exactly that for the resolveRoiLang half.
-  const ENDONYM = { es: "espa\u00f1ol", de: "Deutsch", fr: "fran\u00e7ais" };
-  let FALLBACK_LANG = null;
-  for (const code of ["es", "de", "fr"]) {
-    const r = await (await import("../shared/roi-render.mjs")).resolveRoiLang(
-      (await (await import("./lib/replay-db.mjs")).openReplayDb()).d1, code);
-    if (r.fellBack) { FALLBACK_LANG = code; break; }
-  }
-  t.check("a language that still falls back exists to render the notice with",
-    FALLBACK_LANG !== null,
-    FALLBACK_LANG ? `using ${FALLBACK_LANG}`
-      : "every supported language is complete — rewrite this against a synthetic "
-        + "language the way the resolveRoiLang checks above already do");
-  if (FALLBACK_LANG) {
-  const FALLBACK_NAME = ENDONYM[FALLBACK_LANG];
+  // The fix is not a better search. It is a language the site does not
+  // offer, which no migration can ever complete: see
+  // pickUntranslatableLang. The endonym now comes from the same Intl call
+  // the renderer makes, so this proves the renderer can name a language
+  // nobody wrote a table entry for -- the ENDONYM map it replaces could
+  // only ever confirm three strings somebody had typed out twice.
+  const { SUPPORTED_LANGS: SL } = await import("../shared/deep-dive-render.mjs");
+  const fallbackLang = pickUntranslatableLang(SL);
+  t.check("a language the site does not offer is available to render the notice with",
+    fallbackLang !== null,
+    fallbackLang ? `using ${fallbackLang.code} (${fallbackLang.name})`
+      : "every candidate is now a supported language — widen the list in "
+        + "pickUntranslatableLang");
+  if (fallbackLang) {
+  const FALLBACK_LANG = fallbackLang.code;
+  const FALLBACK_NAME = fallbackLang.name;
   const { file: fb } = await buildRoiPage({ lang: FALLBACK_LANG });
   const pf = await browser.newPage({ viewport: { width: 1280, height: 900 } });
   t.watch(pf);
@@ -2839,11 +2879,72 @@ t.check("and the common names are not truncated to make that true",
   t.check("and names the language the way that language names itself",
     new RegExp(FALLBACK_NAME).test(notice), notice.slice(0, 110));
   // Nothing half-translated survived the fallback -- country names are the
-  // ones that used to.
-  const anyTranslated = await pf.evaluate(() =>
-    COUNTRIES.some((c) => ["Allemagne", "Pays-Bas", "Belgique", "Espagne"].includes(c[0])));
-  t.check("and no country name is left in the language we did not serve", !anyTranslated);
+  // ones that used to. Stated POSITIVELY now the asked-for language is one
+  // the site does not carry: a list of French and Spanish names could only
+  // fail if the renderer served a language nobody asked for, whereas
+  // "Germany is in English" fails the moment the fallback serves anything
+  // but English. That is the defect migration 589 exists for.
+  const engNames = await pf.evaluate(() =>
+    COUNTRIES.filter((c) => ["DE", "NL"].includes(c[1])).map((c) => c[0]).sort());
+  t.check("and every country name is the English one, not the asked-for language's",
+    engNames.join(",") === "Germany,Netherlands", engNames.join(","));
   await pf.close();
+  }
+}
+
+// ---- 41c. the scope control says the whole sentence, in every language --
+//
+// THE ONE CONTROL THAT CHANGES BOTH THE TOTALS AND THE TIMELINE, and a
+// <select> truncates rather than wraps -- so an option that does not fit
+// does not error, does not ellipsize and does not wrap. It just stops
+// mid-sentence, and the reader chooses a scope from a fragment.
+//
+// This has now happened twice. First in the right-hand column, where it
+// read "Compliance only - meet the mandates (what most programmes c";
+// the fix was to move the card full width and cap it at max-width:560px.
+// That number was measured against the English option, which needs 458px
+// -- and German needs 646, French 695, Spanish 733. Every translated
+// language shipped the same defect the fix was written for, because the
+// fix was a constant and the thing it constrained was not.
+//
+// The renderer now says width:max-content, so the control asks its
+// longest option how wide it is. This check is what stops the number
+// coming back: it measures the widest option IN EACH SUPPORTED LANGUAGE
+// against the space the control actually gives it, so a future cap that
+// suits English fails here in three languages at once rather than in
+// production in none of ours.
+{
+  const { SUPPORTED_LANGS: SLS } = await import("../shared/deep-dive-render.mjs");
+  for (const lang of SLS) {
+    const { file: sf } = await buildRoiPage({ lang });
+    const ps = await browser.newPage({ viewport: { width: 1280, height: 1000 } });
+    t.watch(ps);
+    await ps.goto(`file://${sf}`);
+    const m = await ps.evaluate(() => {
+      const s = document.getElementById("scope");
+      const cs = getComputedStyle(s);
+      // Measured in the select's own font, which is the only measurement
+      // that means anything -- the three webfonts are served over file://
+      // by the fixture precisely so widths here are the real ones.
+      const probe = document.createElement("span");
+      probe.style.cssText = "position:absolute;visibility:hidden;white-space:pre;font:" + cs.font;
+      document.body.appendChild(probe);
+      const opts = [...s.options].map((o) => {
+        probe.textContent = o.text;
+        return { text: o.text, w: Math.ceil(probe.getBoundingClientRect().width) };
+      });
+      probe.remove();
+      // clientWidth is the border box minus borders; take the padding off
+      // and leave room for the disclosure arrow the UA draws inside it.
+      const ARROW = 18;
+      const avail = s.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight) - ARROW;
+      const widest = opts.reduce((a, b) => (b.w > a.w ? b : a));
+      return { avail: Math.round(avail), widest, count: opts.length };
+    });
+    t.check(`${lang}: every scope option fits the control (widest ${m.widest.w} in ${m.avail})`,
+      m.count >= 2 && m.widest.w <= m.avail,
+      `"${m.widest.text}" needs ${m.widest.w}px, has ${m.avail}px`);
+    await ps.close();
   }
 }
 

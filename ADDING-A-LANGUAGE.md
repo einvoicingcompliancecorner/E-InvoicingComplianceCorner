@@ -141,11 +141,13 @@ Everything around it was translated: the tracker, the education pages,
 migration 596 the sign-up panel. The planner was the one surface that
 never had been.
 
-**German (597) and French (598) are done.** Spanish still falls back.
-So translating one of those is Phases 1–4 of this document for a language
-that already exists everywhere else on the site — an unusual shape for
-this runbook, and worth reading Phase 5b before starting, because most of
-what the first one cost was not translation.
+**All four languages are done** — German (597), French (598), Spanish
+(599). No supported language falls back any more, which means this
+runbook is now written for the language *after* these: a fifth one would
+be Phases 1–4 for a language that does **not** already exist elsewhere on
+the site, so it needs country names, tracker strings and the sign-up
+panel as well as the planner. Read Phase 5b before starting either way,
+because most of what the first one cost was not translation.
 
 ---
 
@@ -455,8 +457,53 @@ Two things French found that German could not:
   discovers one at runtime now, and says so plainly when there are none
   left rather than passing on nothing.
 
+**And the third language ran the discovery out.** Spanish landed as
+migration 599 and there is no fourth: every language this site offers is
+complete, so a fixture that *finds* an untranslated one has nothing left
+to find. Discovering it at runtime was a better rule than naming it and
+still had an expiry date, because it depended on the work not being
+finished.
+
+`pickUntranslatableLang()` in `tests/roi-regression.mjs` settles it. It
+picks a tag that is **not in `SUPPORTED_LANGS`** — today `it` — so no
+migration can ever complete it, and it asserts that `Intl.DisplayNames`
+can name that tag in its own language, because naming it is what the
+notice does. If Italian is ever added to the site the picker moves to the
+next candidate on its own. **Two checks that expired three times between
+them now cannot expire at all.** Use the same shape for anything else
+that needs a language the site does not serve.
+
+It also replaced a hand-written `ENDONYM` map. That map could only ever
+confirm three strings somebody had typed out twice; the endonym now comes
+from the same `Intl` call the renderer makes, so the check proves the
+renderer can name a language nobody wrote a table entry for.
+
+**One real defect, found by looking rather than by any check.** The scope
+`<select>` — the control that decides whether you are modelling
+compliance or compliance plus AP automation — carried `max-width:560px`.
+That number was measured against the English option, which needs 458px.
+German needs 646, French 695, Spanish 733. **All three translated
+languages shipped a truncated sentence** in the one control that changes
+both the totals and the timeline, reading *"Solo cumplimiento —
+satisfacer los mandatos (lo que hacen la"*. A `<select>` does not wrap,
+does not ellipsize and does not error; it just stops.
+
+Worse, the comment directly above it described fixing this exact defect
+in English, a month earlier. **A cap measured in one language is wrong in
+every other one, and it fails silently.** The renderer now says
+`width:max-content;max-width:100%` — the control asks its longest option
+how wide it is instead of being told — and `roi-regression` measures the
+widest option against the available space **in each supported language**,
+so a future constant fails in three languages at once rather than in
+production in none of ours.
+
+If you add a language, that check is the one that will tell you a control
+no longer says what it means. **Look for the same shape anywhere a fixed
+pixel width meets translated text.**
+
 **Length, measured rather than feared.** German came out **15% longer
-overall** and French **17%**, with the worst short labels up 60–77%. Rendered at 1280px with
+overall**, French **17%** and Spanish **14%**, with the worst short
+labels up 60–77%. Rendered at 1280px with
 six countries selected: **zero horizontal overflow anywhere in `.wrap`,
 zero page-level scroll.** Two assumption labels wrap to a second line and
 the layout takes it. The length worry was real enough to justify going

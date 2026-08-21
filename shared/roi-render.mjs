@@ -1693,10 +1693,26 @@ ${langAsked && langAsked !== lang ? `<p class="note noprint" style="margin:0 0 1
      carrying a 60-character option, and a select TRUNCATES rather than
      wraps -- in the right-hand column it read "Compliance only - meet the
      mandates (what most programmes c". The one control that changes both
-     the totals and the timeline is not one to abbreviate. -->
+     the totals and the timeline is not one to abbreviate.
+
+     AND THE FIX CAME BACK BROKEN THE MOMENT THE PAGE HAD A SECOND
+     LANGUAGE, which is the whole reason the number is gone. This carried
+     max-width:560px -- a figure measured against the English option, which
+     needs 458px. German needs 646, French 695 and Spanish 733, so all
+     three shipped the exact sentence-fragment the comment above says was
+     fixed: "Solo cumplimiento - satisfacer los mandatos (lo que hacen la".
+     A cap chosen by measuring one language is a cap that is wrong for
+     every other one, and it fails silently -- nothing errors, the control
+     just stops saying what it means.
+
+     width:max-content asks the OPTION how wide it is instead of telling
+     it, so the select is exactly as wide as its longest option in
+     whatever language is being served, and max-width:100% keeps it inside
+     the card on a phone. There is no number left to be wrong. Asserted
+     per language in roi-regression rather than trusted. -->
 <div class="card noprint">
   <label for="scope">${t("input.scope", "What are you modelling?")}${hlp("scope",t("tip.changes","What this changes"))}</label>
-  <select id="scope" style="max-width:560px">
+  <select id="scope" style="width:max-content;max-width:100%">
     <option value="compliance" selected>${t("scope.compliance", "Compliance only &mdash; meet the mandates (what most programmes do)")}</option>
     <option value="both">${t("scope.both", "Compliance + AP process automation &mdash; the fuller, larger programme")}</option>
   </select>
