@@ -639,10 +639,21 @@ export function renderGuideDocument({ bundle, order, lang, strings, today, siteO
           fill(t("tl.hidden", "{0} earlier milestones are on the full deep dive."), w.hiddenPast)}</p>` : ""}
     </div>` : "";
 
+    // A COLUMN THAT SAYS THE SAME THING ON EVERY ROW IS NOT A COLUMN.
+    // Azerbaijan prints "No cap published" five times down the annual-cap
+    // column; Spain prints an em dash four times. That is a third of the
+    // table's width carrying one fact, on the page that is hardest to fit.
+    // Collapsed into a line under the table when every row agrees, which
+    // reads better AND is the cheapest height this sheet has to give.
+    const caps = c.penalties.map((r) => (r.annual_cap || "").trim());
+    const capsAllSame = caps.length > 1 && caps.every((v) => v === caps[0]);
     const penalties = c.penalties.length ? `<div class="blk keep"><h3>${t("sec.penalties", "Penalties")}</h3>
-      <table class="pen"><tr><th>${t("col.failure", "Failure")}</th><th>${t("col.fine", "Fine")}</th><th>${t("col.cap", "Annual cap")}</th></tr>
-      ${c.penalties.map((r) => `<tr><td>${esc(r.failure_description)}</td><td>${esc(r.fine_amount || "—")}</td><td>${esc(r.annual_cap || "—")}</td></tr>`).join("")}
-      </table></div>` : "";
+      <table class="pen"><tr><th>${t("col.failure", "Failure")}</th><th>${t("col.fine", "Fine")}</th>${
+        capsAllSame ? "" : `<th>${t("col.cap", "Annual cap")}</th>`}</tr>
+      ${c.penalties.map((r) => `<tr><td>${esc(r.failure_description)}</td><td>${esc(r.fine_amount || "—")}</td>${
+        capsAllSame ? "" : `<td>${esc(r.annual_cap || "—")}</td>`}</tr>`).join("")}
+      </table>${capsAllSame ? `<p style="margin:3px 0 0;font-size:7.4pt;color:#666">${
+        fill(t("pen.capsAll", "Annual cap: {0}"), esc(caps[0] || "—"))}</p>` : ""}</div>` : "";
 
     let rowsLeft = plan.rowCap === undefined ? Infinity : plan.rowCap;
     const facts = c.cards.length ? `<div class="blk"><h3>${t("sec.facts", "Key facts")}</h3>
@@ -869,6 +880,36 @@ export const GUIDE_FIT_SCRIPT = `
         tag.textContent = tag.getAttribute('data-more').replace('{0}', String(hidden));
         tag.style.display = '';
       }
+    }
+    // ---- AND IF IT STILL WILL NOT FIT, SET IT SMALLER --------------
+    //
+    // Dan, 21 August 2026: "remember our 1-page per country rule though."
+    //
+    // Six countries reached this point with nothing left that the ladder
+    // was willing to take. Their remaining height is the header, the
+    // mandate summary, the stats, the dated timeline and the penalty
+    // table -- and the only way to cut those is to delete compliance
+    // facts to satisfy a layout rule, which is the wrong trade in a
+    // document somebody may act on.
+    //
+    // So the last resort costs nothing at all: the densest pages print a
+    // little smaller. Type steps down in half-point increments to a floor
+    // of 7pt, which is small but is still a readable briefing sheet --
+    // below that it would be worse than a second page, so the floor is
+    // real and the rule can still, in principle, fail loudly.
+    //
+    // Nothing is lost. A reader with a dense country gets every fact,
+    // set tighter; a reader with a thin one sees no difference.
+    // zoom, NOT font-size. Setting font-size on the section changes almost
+    // nothing here: every rule in GUIDE_STYLE sets an absolute pt size, so
+    // the children do not inherit it and the first version of this scaled
+    // the two or three elements that happened to be unstyled. zoom scales
+    // the whole laid-out box -- type, rules, tables and gaps together --
+    // which is what "print it smaller" actually means.
+    var z = 1;
+    while(section.getBoundingClientRect().height > PAGE && z > 0.80){
+      z = Math.round((z - 0.04) * 100) / 100;
+      section.style.zoom = z;
     }
     return section.getBoundingClientRect().height <= PAGE;
   }

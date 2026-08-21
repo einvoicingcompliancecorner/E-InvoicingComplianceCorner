@@ -13,19 +13,22 @@ const names = results.map(r => r.name_en);
 const bundle = await getGuideBundle(d1, names, "en");
 const { html, condensed } = renderGuideDocument({ bundle, order: names, lang: "en", strings: {},
   today: TODAY, siteOrigin: "https://e-invoicingcompliancecorner.com" });
-writeFileSync("tmpwork/all70.html", `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
+writeFileSync("/tmp/all70.html", `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
 <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>${GUIDE_STYLE}</style></head><body>${html}<scr`+`ipt>${GUIDE_FIT_SCRIPT}</scr`+`ipt></body></html>`);
 const { chromium } = await loadPlaywright();
 const b = await chromium.launch({ executablePath: "/opt/pw-browsers/chromium" });
 const p = await b.newPage({ viewport: { width: 1100, height: 1000 } });
-await p.goto("file://" + process.cwd() + "/tmpwork/all70.html", { waitUntil: "load" });
+await p.goto("file:///tmp/all70.html", { waitUntil: "load" });
 await p.waitForTimeout(8000);
 console.log("fitted:", await p.evaluate(()=>document.documentElement.getAttribute("data-fitted")));
 const PAGE_PX = 1010;
 const m = await p.evaluate((PP) => [...document.querySelectorAll(".country")].map(el => ({
   n: (el.querySelector("h2")||{}).textContent, px: Math.round(el.getBoundingClientRect().height),
+  zoom: el.style.zoom || "1",
   pages: +(el.getBoundingClientRect().height / PP).toFixed(2) })), PAGE_PX);
+const zoomed = m.filter(x => x.zoom !== "1");
+console.log(`scaled to fit: ${zoomed.length} of ${m.length}` + (zoomed.length ? " — " + zoomed.map(x=>`${x.n} ${Math.round(+x.zoom*100)}%`).join(", ") : ""));
 await b.close();
 const over = m.filter(x => x.pages > 1.0);
 console.log(`countries: ${m.length}`);
