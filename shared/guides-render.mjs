@@ -461,7 +461,7 @@ export const GUIDE_STYLE = `
 @page { size: A4 portrait; margin: 13mm 12mm; }
 *{box-sizing:border-box}
 html,body{background:#fff;color:#111}
-body{margin:0;font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:8.6pt;line-height:1.34}
+body{margin:0;font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:8.6pt;line-height:1.32}
 a{color:inherit;text-decoration:none}
 h1,h2,h3,h4{font-family:'Big Shoulders Display','IBM Plex Sans',sans-serif;margin:0}
 .sheet{max-width:186mm;margin:0 auto}
@@ -491,7 +491,17 @@ table.summary td.date{font-family:'IBM Plex Mono',monospace;white-space:nowrap;c
 .pill.eu{border-color:#a8ccb4;color:#2f7d55}
 
 /* ---- one country ---- */
-.country{break-after:page}
+/* ONE SCALE FOR THE WHOLE DOCUMENT.
+   Per-page scaling fitted every country but produced four different type
+   sizes across one pack -- 100%, 96%, 92%, 88% -- and a reader flipping
+   through sees that as the pages being inconsistent, which is the thing
+   Dan raised in the first place. A designed document has one type size.
+   88% is the size the densest pages need once the newsletter strip is
+   kept, so it is the size they all get. The thin pages simply have more
+   air, which the fitter then fills with the optional extras.
+   The per-page fallback below still exists for anything that cannot fit
+   even here -- it just no longer runs on two thirds of the pack. */
+.country{break-after:page;zoom:0.88}
 .country:last-child{break-after:auto}
 .chead{display:flex;align-items:baseline;gap:8px;border-bottom:2px solid #111;
   padding-bottom:5px;margin-bottom:7px}
@@ -513,13 +523,29 @@ table.summary td.date{font-family:'IBM Plex Mono',monospace;white-space:nowrap;c
    page. The individual fact cards still stay whole -- splitting one across
    a column boundary is what actually looks broken -- but the group they
    sit in may now break wherever it needs to. */
-.cols{column-count:2;column-gap:10px;orphans:2;widows:2}
-.blk{margin:0 0 8px}
-.blk.keep{break-inside:avoid}
+.cols{column-count:2;column-gap:9px;orphans:2;widows:2}
+
+/* SECTIONS ARE TILES. Dan, 21 August 2026: "would it be possible to put
+   the sections into cards or tiles on the page... sometimes the wall of
+   text is overwhelming."
+   Right, and the reason is that the blocks had headings but no edges: five
+   headings down one narrow column with nothing between them reads as one
+   long ribbon no matter how well the fields inside it align.
+   WHICH THING BECOMES A TILE IS THE WHOLE DESIGN. Timeline, penalties and
+   steps are single indivisible sections, so each is one tile. Key facts is
+   NOT -- it is eight or nine separate cards behind one heading, and boxing
+   the group would make it unbreakable, which is exactly the mistake that
+   left a third of Germany's page empty two rounds ago. So its heading
+   stays bare and each FACT is its own tile: the run still flows across the
+   column break, and every tile is whole.
+   Chrome costs about 18px a tile. The fitter pays for it. */
+.blk{margin:0 0 6px}
+.blk.keep{break-inside:avoid;border:1px solid #d3d3d3;background:#fbfcfd;padding:5px 7px 5px}
+.blk.bare > h3{margin-bottom:5px}
 .blk > h3{font-family:'IBM Plex Mono',monospace;font-size:7.4pt;letter-spacing:1.2px;
   text-transform:uppercase;color:#7a5a20;margin:0 0 4px;break-after:avoid}
 .tl{list-style:none;margin:0;padding:0}
-.tl li{display:grid;grid-template-columns:15mm 1fr;gap:5px;padding:3px 0;
+.tl li{display:grid;grid-template-columns:14mm 1fr;gap:5px;padding:2.5px 0;
   border-bottom:1px solid #e2e2e2;break-inside:avoid}
 .tl .d{font-family:'IBM Plex Mono',monospace;font-size:7.4pt;color:#7a5a20;white-space:nowrap}
 .tl .s{font-weight:600;color:#111}
@@ -531,9 +557,10 @@ table.pen.nocap col.f{width:56%} table.pen.nocap col.n{width:44%}
 table.pen th{font-family:'IBM Plex Mono',monospace;font-size:6.9pt;letter-spacing:.8px;
   text-transform:uppercase;color:#555;text-align:left;padding:0 5px 3px 0;
   border-bottom:1px solid #999;font-weight:500}
-table.pen td{padding:3.5px 5px 3.5px 0;border-bottom:1px solid #e2e2e2;vertical-align:top;color:#222}
-.kv{margin:0 0 6px;break-inside:avoid;border-left:2px solid #e2e2e2;padding-left:7px}
-.kv h4{font-size:9.4pt;font-weight:700;color:#111;margin:0 0 2px}
+table.pen td{padding:3px 5px 3px 0;border-bottom:1px solid #e2e2e2;vertical-align:top;color:#222}
+.kv{margin:0 0 5px;break-inside:avoid;border:1px solid #d3d3d3;background:#fbfcfd;
+  border-top:2px solid #c8ccd2;padding:4px 7px 5px}
+.kv h4{font-size:9.2pt;font-weight:700;color:#111;margin:0 0 3px}
 /* ONE GRID PER CARD, NOT ONE PER ROW.
    Dan, 21 August 2026: "the tabulation of fields is inconsistent making
    [it] difficult to read in almost all sections of that page."
@@ -675,7 +702,7 @@ export function renderGuideDocument({ bundle, order, lang, strings, today, siteO
         fill(t("pen.capsAll", "Annual cap: {0}"), esc(caps[0] || "—"))}</p>` : ""}</div>` : "";
 
     let rowsLeft = plan.rowCap === undefined ? Infinity : plan.rowCap;
-    const facts = c.cards.length ? `<div class="blk"><h3>${t("sec.facts", "Key facts")}</h3>
+    const facts = c.cards.length ? `<div class="blk bare"><h3>${t("sec.facts", "Key facts")}</h3>
       ${c.cards.map((card) => {
         const take = (card.rows || []).slice(0, Math.max(0, rowsLeft));
         rowsLeft -= take.length;
@@ -687,7 +714,8 @@ export function renderGuideDocument({ bundle, order, lang, strings, today, siteO
         return `<div class="kv"><h4>${esc(card.title)}</h4>${rws}${body}${note}</div>`;
       }).join("")}
       <p class="kv" data-more="${esc(t("facts.more", "{0} further detail rows are on the full deep dive."))}"
-         style="display:none;border:0;padding:0;color:#666;font-size:7.6pt"></p>
+         data-more-one="${esc(t("facts.more.one", "1 further detail row is on the full deep dive."))}"
+         style="display:none;border:0;background:none;padding:0;color:#666;font-size:7.6pt"></p>
       </div>` : "";
 
     const steps = c.steps.length ? `<div class="blk keep"><h3>${t("sec.steps", "What to do")}</h3>
@@ -706,7 +734,7 @@ export function renderGuideDocument({ bundle, order, lang, strings, today, siteO
     // OPTIONAL, AND ONLY IF THERE IS ROOM. The portals are already named in
     // the footer; this spells out where each one lives, which is worth
     // having on a thin country and is the first thing to go on a full one.
-    const sourcesExtra = c.portals.length ? `<div class="blk" data-opt="sources" style="display:none">
+    const sourcesExtra = c.portals.length ? `<div class="blk bare" data-opt="sources" style="display:none">
       <h3>${t("sec.sources", "Where this is tracked")}</h3>
       ${c.portals.map((pt) => `<div class="kv"><h4>${esc(pt.label)}</h4>
         <p style="font-family:'IBM Plex Mono',monospace;font-size:7pt;overflow-wrap:anywhere;margin:1px 0 0">${
@@ -795,6 +823,18 @@ export const GUIDE_FIT_SCRIPT = `
     // gives up its third card, then its second, before anything else does.
     // Dropping the whole strip is the final resort and means that country's
     // structure genuinely does not leave room for one more box.
+  ];
+  // NOT IN THE LADDER, and the reason is an ordering mistake worth keeping.
+  //
+  // These two used to sit at the end of the ladder above, so a page that
+  // was 20px over gave up the whole newsletter strip -- 110px of content
+  // Dan had specifically asked for -- while SCALING, which costs nothing at
+  // all, had not yet been tried. Germany lost its strip to save six pixels.
+  //
+  // The right order is cheapest-first, and scaling is the only lever here
+  // that loses nothing: shrink, then scale, and only sacrifice the strip if
+  // a page cannot be saved by either. So these run after the zoom step.
+  var NEWS_LADDER = [
     function(s){ var n = s.querySelectorAll('.news a'); return n.length > 1 ? n[n.length-1] : null; },
     function(s){ return s.querySelector('.news'); }
   ];
@@ -901,7 +941,15 @@ export const GUIDE_FIT_SCRIPT = `
     if(hidden > 0){
       var tag = section.querySelector('[data-more]');
       if(tag){
-        tag.textContent = tag.getAttribute('data-more').replace('{0}', String(hidden));
+        // A COUNT SLOTTED INTO A PLURAL SENTENCE. "1 further detail rows
+        // are on the full deep dive" was printing on Germany. The planner
+        // learned this in migration 573 and selects on CLDR categories;
+        // here there are exactly two cases and no arithmetic, so two
+        // strings is the honest amount of machinery -- but a translator
+        // still gets both, rather than one with a number jammed into it.
+        tag.textContent = hidden === 1
+          ? tag.getAttribute('data-more-one')
+          : tag.getAttribute('data-more').replace('{0}', String(hidden));
         tag.style.display = '';
       }
     }
@@ -930,11 +978,25 @@ export const GUIDE_FIT_SCRIPT = `
     // the two or three elements that happened to be unstyled. zoom scales
     // the whole laid-out box -- type, rules, tables and gaps together --
     // which is what "print it smaller" actually means.
-    var z = 1;
-    while(section.getBoundingClientRect().height > PAGE && z > 0.80){
-      z = Math.round((z - 0.04) * 100) / 100;
-      section.style.zoom = z;
+    var z = 0.88;   // the document scale set in CSS; see .country
+    function scaleTo(floor){
+      while(section.getBoundingClientRect().height > PAGE && z > floor){
+        z = Math.round((z - 0.04) * 100) / 100;
+        section.style.zoom = z;
+      }
     }
+    // A modest scale first: 88% is still comfortable reading, and it saves
+    // the strip on every page that is merely a little over.
+    scaleTo(0.84);
+    // Only now, if scaling alone was not enough, does content go.
+    var nrung = 0;
+    while(section.getBoundingClientRect().height > PAGE && nrung < NEWS_LADDER.length){
+      var nel = NEWS_LADDER[nrung](section);
+      if(!nel){ nrung++; continue; }
+      nel.parentNode.removeChild(nel);
+    }
+    // And the hard floor for anything still standing.
+    scaleTo(0.80);
     return section.getBoundingClientRect().height <= PAGE;
   }
   function run(){
