@@ -56,6 +56,25 @@ def listify(node):
         return {k: listify(v) for k, v in node.items()}
     return node
 
+def flatten_keys(node, prefix=""):
+    """Every leaf path in a loaded i18n file, as dotted keys — the same
+    shape unflatten() consumes, so the two can be compared directly.
+    countryNames/regionNames are excluded: they are rebuilt from the
+    countries tables rather than from `translations`, so they are never
+    'missing' in the sense this check cares about."""
+    out = set()
+    if isinstance(node, dict):
+        for k, v in node.items():
+            if not prefix and k in ("countryNames", "regionNames"):
+                continue
+            out |= flatten_keys(v, f"{prefix}{k}.")
+    elif isinstance(node, list):
+        for i, v in enumerate(node):
+            out |= flatten_keys(v, f"{prefix}{i}.")
+    else:
+        out.add(prefix[:-1])
+    return out
+
 def run_query(sql, remote):
     cmd = ["npx", "wrangler", "d1", "execute", "eicc-content", "--json", "--command", sql]
     if remote:
@@ -127,6 +146,57 @@ def main():
         written += 1
 
     print(f"Wrote {written} files to {args.out}/")
+
+    # ---- AND CHECK WHAT WOULD BE LOST ----------------------------------
+    #
+    # Found 21 August 2026, dormant and expensive. This script's premise is
+    # that i18n/*.json can be REBUILT from D1 -- and for 60 of the tracker
+    # namespace's 203 English keys that is not true: they exist only in the
+    # checked-in JSON and were never migrated. Among them are `backLink`
+    # (the only way out of every in-page panel), the entire Resources menu
+    # (menu.map, menu.roi, menu.sources, menu.insights, menu.resources,
+    # menu.navHelp), the whole home carousel, the About-the-author block
+    # and the ROI panel's own strings.
+    #
+    # Nothing is wrong today, because nobody has copied the output over the
+    # real folder. The danger is that the runbooks recommend running this
+    # after a country add, and the output LOOKS complete -- a full set of
+    # well-formed files, one per namespace and language. Copy them across
+    # and four languages quietly lose sixty strings, with no error at any
+    # point. The docstring says to diff first, which is right, and "the
+    # safety step is a sentence in a docstring" is exactly how this project
+    # has lost things before.
+    #
+    # So the script does the diff itself and says what would disappear. It
+    # does not refuse and it does not write into i18n/ -- it only ever
+    # writes to --out -- but nobody can now copy it across without having
+    # been told.
+    existing_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "..", "i18n")
+    losses = {}
+    for name in sorted(os.listdir(args.out)):
+        old_path = os.path.join(existing_dir, name)
+        if not os.path.exists(old_path):
+            continue
+        try:
+            was = json.load(open(old_path, encoding="utf-8"))
+            now = json.load(open(os.path.join(args.out, name), encoding="utf-8"))
+        except (OSError, ValueError):
+            continue
+        missing = sorted(flatten_keys(was) - flatten_keys(now))
+        if missing:
+            losses[name] = missing
+
+    if losses:
+        total = sum(len(v) for v in losses.values())
+        print(f"\n*** {total} key(s) in the CURRENT i18n/ files are NOT reproducible from D1. ***")
+        print("    Copying this output over i18n/ would delete them. Backfill them into")
+        print("    D1 with a migration first, or copy selectively.\n")
+        for name, keys in losses.items():
+            shown = ", ".join(keys[:6])
+            more = f", +{len(keys) - 6} more" if len(keys) > 6 else ""
+            print(f"    {name}: {len(keys)} missing — {shown}{more}")
+    else:
+        print("\nEvery key in the current i18n/ files is reproducible from D1.")
 
 if __name__ == "__main__":
     main()

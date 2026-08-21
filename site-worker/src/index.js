@@ -935,7 +935,7 @@ async function relayToMembers(request, env, path) {
 // t() looks things up by. i18n.js walks the nested object instead, which
 // is why the file itself is nested — the flattening belongs here, at the
 // one consumer that wants it otherwise.
-async function authStrings(env, lang) {
+async function authStrings(env, lang, subtree = "auth") {
   if (!env.ASSETS) return {};
   try {
     const res = await env.ASSETS.fetch(
@@ -950,7 +950,7 @@ async function authStrings(env, lang) {
         else if (typeof v === "string") out[key] = v;
       }
     };
-    walk(doc.auth, "");
+    walk(doc[subtree], "");
     return out;
   } catch (err) {
     // FAILS SOFT, like the saved-countries lookup. A missing or malformed
@@ -960,6 +960,161 @@ async function authStrings(env, lang) {
     console.warn(`auth strings: could not load i18n/${lang}.json — ${err && err.message}`);
     return {};
   }
+}
+
+// The wall's own styles. Sized like a PAGE rather than a dialog: it is
+// what the reader navigated to, not something interrupting them.
+//
+// These moved here from the tracker, where they had been dead since the
+// panel-level gate was removed on 20 August -- CSS for markup that no
+// longer existed, sitting in the file waiting to be mistaken for live
+// rules. Now that the gate is the route, the rules live with the thing
+// they style and there is only one copy.
+const ROI_GATE_STYLE = `
+.roi-gate{max-width:60ch; margin:0 auto; padding:64px 0 80px; text-align:center}
+.roi-gate-eyebrow{font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:2px;
+  text-transform:uppercase; color:var(--soon); margin:0 0 8px}
+.roi-gate-title{font-family:'Big Shoulders Display',sans-serif; font-weight:800;
+  font-size:clamp(26px,4vw,38px); text-transform:uppercase; letter-spacing:.5px;
+  margin:0 0 14px; color:var(--text-lo)}
+.roi-gate-body{color:var(--muted); margin:0 0 22px; line-height:1.6}
+.roi-gate-actions{margin:0 0 12px}
+.roi-gate-cta{display:inline-block; background:var(--soon); border:1px solid var(--soon);
+  color:#231a09; font-weight:700; border-radius:6px; padding:11px 20px; cursor:pointer;
+  font-family:inherit; font-size:15px}
+.roi-gate-cta:hover{filter:brightness(1.08)}
+.roi-gate-signin{font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--muted); margin:0}
+/* A button that has to read as a link, because it does a link's job in a
+   place where a link would be wrong -- see the note by the wiring. */
+.roi-gate-signin button{background:none; border:0; padding:0; cursor:pointer;
+  font:inherit; color:var(--muted); text-decoration:underline; text-underline-offset:2px}
+.roi-gate-signin button:hover{color:var(--soon)}
+`;
+
+// ---- THE GATE, AND THIS TIME IT ACTUALLY WITHHOLDS SOMETHING ----------
+//
+// Dan, 21 August 2026, choosing between leaving the planner open and
+// walling it: "gate the whole roi-calculator page, rather than show any
+// of it."
+//
+// THIS IS THE THIRD TIME A GATE HAS BEEN BUILT FOR THIS PAGE, and the
+// first two are the reason this one is here rather than in the tracker.
+//
+//   591  put a wall in the PLANNER, in front of the results only.
+//   -    a wall in the TRACKER's menu panel, in front of the frame.
+//   -    both removed on 20 August, when Dan settled on "results
+//        immediately with the code protecting the account".
+//
+// The tracker's version withheld NOTHING. It was client-side markup in a
+// panel, and /roi-calculator answered anyone who typed it -- so it turned
+// readers away from a page it could not actually close. Its own comment
+// claimed "the real gate is on the route itself, server-side", and that
+// was never true: ROI_PUBLIC decides whether the route EXISTS, not who
+// may have it.
+//
+// So the rule this time: THE GATE IS THE ROUTE. A signed-out request
+// never causes the planner to be rendered at all -- not hidden, not
+// disabled, not overlaid. It returns before the five D1 queries that
+// build the tool, which also means the wall is cheaper than the page it
+// replaces. There is no URL to type past, because there is nothing behind
+// the URL to reach.
+//
+// IT COSTS SOMETHING, RECORDED HONESTLY because I argued against it and
+// was overruled, which is exactly the kind of decision that gets
+// rediscovered later as a bug. Nobody now sees the tool before deciding
+// whether to sign up, on a page that is unindexed and marked Beta, so
+// most arrivals have no account and nothing to judge it by. If signups do
+// not move, that is the thing to revisit first -- and the middle option
+// (show the case, gate the dated wave plan and the PDF) is the one that
+// was on the table.
+//
+// EVERY STRING IS ALREADY TRANSLATED. roiPanel.gate* has existed in all
+// four languages since the tracker's version, and survived the removal
+// precisely because deleting five translated strings on Monday and asking
+// for them again on Tuesday is not tidiness -- see the note left in
+// migration 600's place. The sign-in label is auth.signin.eyebrow rather
+// than a sixth string saying the same word.
+//
+// AND IT IS THE SAME PANEL BEHIND IT, not a hop to the members origin.
+// That is the part of the 20 August design that survives intact: the
+// reader subscribes or signs in with a 6-digit code, in place, without a
+// second window. On success the page reloads and the planner is simply
+// there.
+async function renderRoiGate(request, env, lang, framed) {
+  const [panel, gate] = await Promise.all([
+    authStrings(env, lang, "auth"),
+    authStrings(env, lang, "roiPanel"),
+  ]);
+  // The file is the source; these are the fallbacks for a missing or
+  // malformed language file, which authStrings answers with {}.
+  const g = (k, fallback) => (typeof gate[k] === "string" && gate[k]) || fallback;
+  const signIn = (typeof panel["signin.eyebrow"] === "string" && panel["signin.eyebrow"]) || "Sign in";
+
+  const body = `<div class="wrap"><div class="roi-gate">
+<p class="roi-gate-eyebrow">${g("gateEyebrow", "Subscriber tool")}</p>
+<h1 class="roi-gate-title">${g("gateTitle", "ROI &amp; Wave Planner")}</h1>
+<p class="roi-gate-body">${g("gateBody", "Subscribing is free. The planner builds a board-ready business case from your own invoice volumes and country footprint, with a delivery wave plan back-planned from the real published deadlines this site tracks &mdash; and an evidence grade against every benchmark it uses.")}</p>
+<p class="roi-gate-actions"><button type="button" class="roi-gate-cta" id="roiGateSubscribe">${g("gateSubscribe", "Subscribe free")}</button></p>
+<p class="roi-gate-signin">${g("gateSignedUp", "Already subscribed?")} <button type="button" id="roiGateSignin">${escHtml(signIn)}</button></p>
+</div></div>`;
+
+  // BUTTONS, NOT LINKS, and the difference is the whole point of the 20
+  // August design. A link goes somewhere; these open the panel where the
+  // reader already is. There is no href to fall back to because there is
+  // no second page to fall back TO -- the members login is the one route
+  // that still emails a link rather than a code, and sending people there
+  // is the exact bug Dan reported on 21 August.
+  //
+  // If auth-overlay.js somehow fails to load, the buttons do nothing and
+  // say nothing, which is worse than a dead link. So the wiring checks,
+  // and falls back to the subscribe page rather than to silence.
+  const script = `
+(function(){
+  function go(mode){
+    if(window.EICC_AUTH && window.EICC_AUTH.open){
+      // No onSuccess: the panel's DEFAULT on success is to reload, and
+      // here that is exactly right. It is suppressed inside the planner
+      // because a reload there would throw away ten minutes of typed
+      // business case -- but this page has nothing to protect, and the
+      // reload is what replaces the wall with the tool.
+      window.EICC_AUTH.open({ mode: mode });
+      return;
+    }
+    window.top.location.href = '/subscribe.html';
+  }
+  var sub = document.getElementById('roiGateSubscribe');
+  var sin = document.getElementById('roiGateSignin');
+  if(sub) sub.addEventListener('click', function(){ go('subscribe'); });
+  if(sin) sin.addEventListener('click', function(){ go('signin'); });
+})();`;
+
+  const html = `<!DOCTYPE html><html lang="${escHtml(lang)}"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>E-Invoicing ROI &amp; Wave Planner — The E-Invoicing Compliance Corner</title>
+<meta name="robots" content="noindex,nofollow">
+<link rel="canonical" href="https://e-invoicingcompliancecorner.com/roi-calculator">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>${ROI_STYLE}${framed ? FRAMED_ROI_STYLE : ""}${ROI_GATE_STYLE}</style></head><body${framed ? ' data-framed="1"' : ""}>${body}<script>window.EICC_AUTH_STRINGS=${JSON.stringify(panel).replace(/<\//g, "<\\/")};</script><script src="/auth-overlay.js?v=3"></script><script>${script}</script>${framed ? `<script>${ROI_FRAME_REPORTER}</script>` : ""}</body></html>`;
+
+  // NOINDEX UNCONDITIONALLY, and not because ROI_INDEXABLE says so.
+  //
+  // ROI_INDEXABLE is a decision about the PLANNER. This is a wall, and a
+  // wall is never the thing to put in an index: the one outcome worse
+  // than not ranking for the planner is ranking for it and landing every
+  // arrival on a page that does not contain it. If the planner is ever
+  // opened to search engines, the answer is to serve them the planner,
+  // not to let them index the door.
+  return new Response(html, { headers: {
+    "content-type": "text/html; charset=utf-8",
+    // Anonymous and identical for everyone in this language, so it caches
+    // the same sixty seconds the anonymous planner used to. Vary stays,
+    // because the very next request may carry a cookie and must not be
+    // answered from here.
+    "cache-control": "public, max-age=60",
+    vary: "Cookie",
+    "x-eicc-session": await sessionDiagnostic(request, env.SESSION_SECRET),
+  }});
 }
 
 // ---- the planner, framed inside the tracker -----------------------------
@@ -1041,14 +1196,8 @@ const ROI_FRAME_REPORTER = `
   // same 60ms the height path above already uses for click-driven growth,
   // plus a frame -- long enough to be after the reflow, short enough to
   // feel like part of the click.
-  document.addEventListener('click', function(e){
-    var a = e.target.closest && e.target.closest('a[href^="#"]');
-    if(!a) return;
-    var id = a.getAttribute('href').slice(1);
-    if(!id) return;
-    var el = document.getElementById(id);
+  function relayScrollTo(el){
     if(!el) return;
-    e.preventDefault();
     setTimeout(function(){
       queue();
       requestAnimationFrame(function(){
@@ -1058,7 +1207,42 @@ const ROI_FRAME_REPORTER = `
         catch(err){ /* cross-origin parent: leave the default behaviour alone */ }
       });
     }, 80);
+  }
+
+  document.addEventListener('click', function(e){
+    var a = e.target.closest && e.target.closest('a[href^="#"]');
+    if(!a) return;
+    var id = a.getAttribute('href').slice(1);
+    if(!id) return;
+    var el = document.getElementById(id);
+    if(!el) return;
+    e.preventDefault();
+    relayScrollTo(el);
   });
+
+  // ---- AND THE PAGE'S OWN SCRIPT NEEDS THE SAME ROUTE ------------------
+  //
+  // Dan, 21 August 2026: "ensure that upon clicking 'calculate business
+  // case' focus is given to the results in the executive summary, and not
+  // the top of the page."
+  //
+  // Calculate is a BUTTON, so the anchor handler above never saw it, and
+  // showResults() reached for scrollIntoView() instead. That is the same
+  // dead end the handler above exists for: this frame cannot scroll, so
+  // the request chains to the parent and the parent does the least it can
+  // -- which is not where the reader was sent.
+  //
+  // Exposed rather than reimplemented in roi-render.mjs, because the
+  // hard part is not the postMessage. It is the ordering: Calculate grows
+  // the frame by thousands of pixels in the same tick, so a scroll sent
+  // before the parent has resized gets clamped by a height that no longer
+  // applies. That reasoning is written out above the timeout and should
+  // exist once.
+  //
+  // roi-render.mjs checks for this and falls back to scrollIntoView, which
+  // is correct for the standalone page and is why this is not simply
+  // called from there unconditionally.
+  window.EICC_FRAME_SCROLL = relayScrollTo;
 })();
 `;
 
@@ -1090,6 +1274,12 @@ async function renderRoiCalculatorPage(request, env) {
   // page could always have done this, it just had no way to know who was
   // asking.
   const signedInAs = await sessionEmail(request, env.SESSION_SECRET);
+
+  // THE WALL RETURNS BEFORE THE TOOL IS BUILT. Not a hidden panel, not a
+  // disabled control, not an overlay over a rendered page -- a signed-out
+  // request never causes the planner to exist. See renderRoiGate above
+  // for why this is a route-level decision and not a markup one.
+  if (!signedInAs) return renderRoiGate(request, env, lang, framed);
 
   // ---- THEIR SAVED COUNTRIES, ASKED FOR RATHER THAN READ -------------
   //
@@ -1212,7 +1402,7 @@ async function renderRoiCalculatorPage(request, env) {
   a later load would still work -- but a reader who clicks in the gap
   would get the fallback navigation instead of the panel, which is a
   silent downgrade rather than a failure. Loading it first closes the
-  gap. --><script>window.EICC_AUTH_STRINGS=${JSON.stringify(panelStrings).replace(/<\//g, "<\\/")};</script><script src="/auth-overlay.js?v=2"></script><script>${script}</script>${framed ? `<script>${ROI_FRAME_REPORTER}</script>` : ""}</body></html>`;
+  gap. --><script>window.EICC_AUTH_STRINGS=${JSON.stringify(panelStrings).replace(/<\//g, "<\\/")};</script><script src="/auth-overlay.js?v=3"></script><script>${script}</script>${framed ? `<script>${ROI_FRAME_REPORTER}</script>` : ""}</body></html>`;
 
   // SIXTY SECONDS, NOT FIVE MINUTES, while this is Beta.
   //

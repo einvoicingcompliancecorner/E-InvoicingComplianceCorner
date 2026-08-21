@@ -47,6 +47,10 @@ const SUITES = [
   // scope. A duplicate top-level const there throws, and the throw kills
   // the entire inline script while the page still looks fine.
   { name: "page scripts", cmd: "node", args: [join(HERE, "page-scripts.mjs")], cwd: REPO },
+  // Drives the ROUTER, not the renderer: what a signed-out request
+  // actually receives. The previous gate for this page was markup in the
+  // tracker and withheld nothing, and no renderer test could have said so.
+  { name: "ROI gate", cmd: "node", args: [join(HERE, "roi-gate.mjs")], cwd: REPO },
   { name: "ROI regression", cmd: "node", args: [join(HERE, "roi-regression.mjs")], cwd: REPO },
   { name: "ROI i18n", cmd: "node", args: [join(HERE, "roi-i18n.mjs")], cwd: REPO },
   { name: "ROI hardcoded strings", cmd: "node", args: [join(HERE, "roi-hardcoded.mjs")], cwd: REPO },

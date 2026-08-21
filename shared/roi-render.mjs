@@ -3783,7 +3783,26 @@ function showResults(scroll){
   // prompt shown by only one of those doors is a prompt that flickers
   // in and out depending on which control the reader last touched.
   document.getElementById('gate').classList.toggle('hidden', signedIn);
-  if(scroll) document.getElementById('results').scrollIntoView({behavior:'smooth'});
+  // TO THE EXECUTIVE SUMMARY, WHICH IS WHAT #results OPENS WITH -- the
+  // stale note (hidden by the line above) and then the section 2 heading.
+  //
+  // Dan, 21 August 2026: "ensure that upon clicking 'calculate business
+  // case' focus is given to the results in the executive summary, and not
+  // the top of the page."
+  //
+  // scrollIntoView is right on the standalone page and useless in the
+  // framed one, for the reason this file keeps meeting: the frame is sized
+  // to its own full content height, so it cannot scroll, and the request
+  // chains out to a parent that satisfies it as cheaply as it can. The
+  // framed copy hands the job to the parent instead, through the same
+  // relay the step chips and the legend link already use -- see
+  // EICC_FRAME_SCROLL, which site-worker injects only into the framed
+  // render, so this test is also the test for "am I framed".
+  if(scroll){
+    const target = document.getElementById('results');
+    if(typeof window.EICC_FRAME_SCROLL === 'function') window.EICC_FRAME_SCROLL(target);
+    else target.scrollIntoView({behavior:'smooth'});
+  }
 }
 // ONE PATH FOR EVERYONE NOW. There used to be two -- signed in went to
 // the results, anonymous went to the gate -- and the anonymous branch
