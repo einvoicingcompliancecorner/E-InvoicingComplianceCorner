@@ -651,32 +651,11 @@
     color:var(--muted); text-decoration:none;
   }
   #roiView .roi-frame-note a:hover{color:var(--soon);}
-  /* The subscribers-only prompt, shown instead of the planner to a reader
-     with no session. Deliberately sized like a page rather than a dialog:
-     it is what they navigated to, not something interrupting them. */
-  #roiView .roi-gate{max-width:60ch; margin:0 auto; padding:64px 5vw 80px; text-align:center;}
-  #roiView .roi-gate-eyebrow{
-    font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:2px;
-    text-transform:uppercase; color:var(--soon); margin:0 0 8px;
-  }
-  #roiView .roi-gate-title{
-    font-family:'Big Shoulders Display',sans-serif; font-weight:800;
-    font-size:clamp(26px,4vw,38px); text-transform:uppercase; letter-spacing:.5px;
-    margin:0 0 14px; color:var(--text-lo);
-  }
-  #roiView .roi-gate-body{color:var(--muted); margin:0 0 22px; line-height:1.6;}
-  #roiView .roi-gate-actions{margin:0 0 12px;}
-  #roiView .roi-gate-cta{
-    display:inline-block; background:var(--soon); border:1px solid var(--soon);
-    color:#231a09; font-weight:700; border-radius:6px; padding:11px 20px;
-    text-decoration:none;
-  }
-  #roiView .roi-gate-cta:hover{filter:brightness(1.08); color:#231a09;}
-  #roiView .roi-gate-signin{
-    font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--muted); margin:0;
-  }
-  #roiView .roi-gate-signin a{color:var(--muted); text-decoration:underline; text-underline-offset:2px;}
-  #roiView .roi-gate-signin a:hover{color:var(--soon);}
+  /* The wall's styles USED to be here, for markup this file built itself.
+     They moved into site-worker on 21 August, when Dan chose to gate the
+     whole page: the gate is now the ROUTE, so the frame arrives already
+     containing it and this side has nothing to style. Rules kept here
+     after their markup went are rules the next reader has to disprove. */
 
   /* Shown in place of the frame when what came back is not the planner.
      Styled like the page, not like a browser error, because the reader
