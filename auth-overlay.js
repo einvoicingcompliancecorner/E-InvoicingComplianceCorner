@@ -237,6 +237,20 @@
     card.style.top = Math.max(12, top) + "px";
   }
 
+  /** focus() without asking the browser to scroll anything.
+   *
+   *  preventScroll is honoured everywhere this site supports; where it is
+   *  not, the option is simply ignored and the behaviour is today's. That
+   *  makes this safe to use unconditionally -- there is no case where
+   *  scrolling to the focused field is what we want, framed or not, since
+   *  the card is already positioned in the reader's view by the time
+   *  anything inside it takes focus. */
+  function focusQuietly(el) {
+    if (!el) return;
+    try { el.focus({ preventScroll: true }); }
+    catch (err) { el.focus(); }
+  }
+
   if (framed) {
     window.addEventListener("message", function (e) {
       if (e.origin !== window.location.origin) return;
@@ -246,6 +260,29 @@
       viewport = { top: Math.max(0, top), height: height };
       place();
     });
+  }
+
+  /** A FALLBACK THAT COULD NOT BE REACHED IS NOT A FALLBACK.
+   *
+   *  place() carries `viewport || {top: 0, height: 700}` for the case
+   *  where no parent has told us where the window is -- and framed, the
+   *  only two things that CALL place() are the viewport message and a
+   *  resize. So in the one situation the default was written for, it
+   *  never ran: card.style.top was never set at all, and a card that is
+   *  position:absolute with no top sits at its static position, which is
+   *  the end of the document. The bottom of the frame.
+   *
+   *  That is reachable without anything being broken: a parent that does
+   *  not implement the protocol, a bookmarked ?frame=1, a message lost to
+   *  a race with the first render. So the card is placed on open whatever
+   *  happens, and the parent's answer refines it when it arrives.
+   *
+   *  Called from open() rather than build() because the card has to have
+   *  its content before its height means anything. */
+  function placeInitial() {
+    if (!framed) { place(); return; }
+    if (!viewport) viewport = { top: 0, height: Math.min(window.innerHeight, 700) };
+    place();
   }
 
   function tellParent(type) {
@@ -289,6 +326,7 @@
     tellParent("eicc:overlay-open");
     if (!framed) document.body.style.overflow = "hidden";
     renderDetails();
+    placeInitial();
   }
 
   function close() {
@@ -412,7 +450,32 @@
     wireChips();
     place();
     var first = body().querySelector("input");
-    if (first) first.focus();
+    // preventScroll, AND IT IS LOAD-BEARING RATHER THAN TIDY.
+    //
+    // Dan, 21 August 2026: "the pop-out subscribe box is difficult to
+    // see... it is fixed at the bottom of the frame", and "it's a problem
+    // when the countries list is expanded".
+    //
+    // A plain focus() asks the browser to scroll the focused element into
+    // view. This frame CANNOT scroll -- it is sized to its own full
+    // content height, so its viewport is its document -- and a scroll
+    // request that a frame cannot satisfy CHAINS OUT to the parent. So
+    // focusing the first field yanked the tracker's own scroll to the top
+    // of the planner, throwing the reader away from the results they were
+    // looking at, one line after place() had positioned the card against
+    // where they used to be.
+    //
+    // Both halves of the bug are here: the card ends up in the wrong
+    // place, and the reader ends up somewhere they did not ask to go. The
+    // taller the frame, the further both travel -- which is why expanding
+    // the jurisdiction list made it obvious.
+    //
+    // Same root cause as the eicc:roi-scroll handler in the tracker,
+    // which exists because an ANCHOR jump chains out of this frame the
+    // same way. That one was found and fixed; this one is the same
+    // mechanism reached through focus instead of a fragment, and it was
+    // not.
+    if (first) focusQuietly(first);
   }
 
   /** Listeners that belong to the panel body rather than to one render.
@@ -936,7 +999,7 @@
     body().querySelector("[data-resend]").addEventListener("click", resend);
     startCooldown();
     place();
-    input.focus();
+    focusQuietly(input);
   }
 
   // The resend button is disabled for the length of the server's own
@@ -1002,7 +1065,7 @@
       btn.disabled = false;
       btn.textContent = t("code.cta", "Confirm");
       input.value = "";
-      input.focus();
+      focusQuietly(input);
       showAlert(verifyError(res));
     });
   }

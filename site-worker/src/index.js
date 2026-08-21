@@ -1212,7 +1212,7 @@ async function renderRoiCalculatorPage(request, env) {
   a later load would still work -- but a reader who clicks in the gap
   would get the fallback navigation instead of the panel, which is a
   silent downgrade rather than a failure. Loading it first closes the
-  gap. --><script>window.EICC_AUTH_STRINGS=${JSON.stringify(panelStrings).replace(/<\//g, "<\\/")};</script><script src="/auth-overlay.js?v=2"></script><script>${script}</script>${framed ? `<script>${ROI_FRAME_REPORTER}</script>` : ""}</body></html>`;
+  gap. --><script>window.EICC_AUTH_STRINGS=${JSON.stringify(panelStrings).replace(/<\//g, "<\\/")};</script><script src="/auth-overlay.js?v=3"></script><script>${script}</script>${framed ? `<script>${ROI_FRAME_REPORTER}</script>` : ""}</body></html>`;
 
   // SIXTY SECONDS, NOT FIVE MINUTES, while this is Beta.
   //
