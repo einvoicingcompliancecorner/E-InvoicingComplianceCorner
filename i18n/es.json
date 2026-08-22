@@ -498,7 +498,7 @@
     "hist": {
       "cta": "Ver qué ha cambiado",
       "h": "Qué decía antes un dato",
-      "p1": "Cada cambio en los cinco estados principales queda registrado, con lo que decía antes, cuándo cambió y por qué, y los dos motivos se mantienen separados: que una obligación se mueva y que nos hayamos equivocado no son lo mismo, y solo uno es culpa nuestra. Un estado no puede cambiar sin que el cambio quede registrado: la compilación lo rechaza."
+      "p1": "Cada cambio en los cinco estados principales queda registrado, con lo que decía antes, cuándo cambió y por qué, y una corrección por nuestra parte se registra por separado de una obligación que se ha movido, porque el lector tiene derecho a saber cuál de las dos está viendo. Un estado no puede cambiar sin que el cambio quede registrado: la compilación lo rechaza."
     }
   },
   "changes": {
@@ -514,7 +514,7 @@
     "eyebrow": "El registro",
     "intro": "Cada cambio en los cinco datos principales que publicamos: qué decía antes, cuándo cambió y por qué.",
     "kind": {
-      "correction": "Nos equivocamos",
+      "correction": "Corregido",
       "moved": "La norma cambió"
     },
     "lbl": {
@@ -529,6 +529,7 @@
     },
     "none": "Nada ha cambiado desde que empezó el registro.",
     "title": "Qué ha cambiado",
-    "watch": "{0} datos de {1} jurisdicciones están registrados. Un estado no puede cambiar aquí sin que el cambio quede registrado: la compilación lo rechaza."
+    "watch": "{0} datos de {1} jurisdicciones están registrados. Un estado no puede cambiar aquí sin que el cambio quede registrado: la compilación lo rechaza.",
+    "opened": "Todos datan del día en que se abrió el registro. Surgieron de contrastar los mosaicos de cada país con su propia cronología —una comprobación que ahora se ejecuta en cada compilación—, de modo que cada uno fue una contradicción dentro de nuestros propios datos y no un dato publicado sobre el que alguien hubiera actuado."
   }
 }

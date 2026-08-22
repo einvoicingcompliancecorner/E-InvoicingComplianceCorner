@@ -498,7 +498,7 @@
     "hist": {
       "cta": "See what changed",
       "h": "What a fact used to say",
-      "p1": "Every change to the five headline statuses is on the record, with what it said before, when it changed and why — and the two reasons are kept apart, because a mandate moving and us having been wrong are not the same thing and only one of them is our fault. A status cannot change without the change being recorded: the build refuses it."
+      "p1": "Every change to the five headline statuses is on the record, with what it said before, when it changed and why — and a correction on our side is recorded separately from a mandate that moved, because a reader is entitled to know which of the two they are looking at. A status cannot change without the change being recorded: the build refuses it."
     }
   },
   "changes": {
@@ -514,7 +514,7 @@
     "eyebrow": "The record",
     "intro": "Every change to the five headline facts we publish — what it said before, when it changed, and why.",
     "kind": {
-      "correction": "We were wrong",
+      "correction": "Corrected",
       "moved": "The law moved"
     },
     "lbl": {
@@ -529,6 +529,7 @@
     },
     "none": "Nothing has changed since the record began.",
     "title": "What changed",
-    "watch": "{0} facts across {1} jurisdictions are on the record. A status cannot change here without the change being recorded — the build refuses it."
+    "watch": "{0} facts across {1} jurisdictions are on the record. A status cannot change here without the change being recorded — the build refuses it.",
+    "opened": "All of these date from the day the record was opened. They came from reconciling every country's tiles against its own timeline — a check that now runs on every build — so each was a disagreement inside our own data rather than a published fact anyone had acted on."
   }
 }
