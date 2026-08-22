@@ -4,6 +4,21 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Global E-Invoicing Mandate Tracker — The E-Invoicing Compliance Corner</title>
+<!-- ORGANIZATION AND WEBSITE, ONCE, HERE.
+     Every other page references these two by @id rather than repeating
+     them, so the publisher's name and its publishing principles move in
+     one place. This is the site's front door, which is where a crawler
+     looks for them.
+
+     publishingPrinciples points at /methodology — schema.org defines
+     that property as the statement of editorial standards a publisher
+     holds itself to, which is exactly what that page is. It is the
+     machine-readable half of it.
+
+     Static, not injected: site-worker only rewrites the two DATA blobs
+     in this file (see renderTracker), and nothing here depends on the
+     database. -->
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://e-invoicingcompliancecorner.com/#organization","name":"The E-Invoicing Compliance Corner","url":"https://e-invoicingcompliancecorner.com","description":"Independent tracking of e-invoicing mandates, legislation and deadlines across global jurisdictions.","publishingPrinciples":"https://e-invoicingcompliancecorner.com/methodology","founder":{"@type":"Person","name":"Dan Young","description":"25 years in financial software transformation, focused on invoice digitisation and Accounts Payable automation."}},{"@type":"WebSite","@id":"https://e-invoicingcompliancecorner.com/#website","name":"The E-Invoicing Compliance Corner","url":"https://e-invoicingcompliancecorner.com","inLanguage":"en","publisher":{"@id":"https://e-invoicingcompliancecorner.com/#organization"}}]}</script>
 <link rel="canonical" href="https://e-invoicingcompliancecorner.com/einvoicing-compliance-tracker.html">
 <meta name="description" content="Track e-invoicing mandates, deadlines, and clearance requirements across 70 countries — Poland's KSeF, France, Italy's SDI, Saudi Arabia's ZATCA, and more — updated monthly, with links to every official government source.">
 <!-- og:url intentionally omitted until a stable custom domain is in place — update this whole block once the site has a permanent address. -->
