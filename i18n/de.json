@@ -101,7 +101,8 @@
     "menu": "Menü",
     "resources": "Ressourcen",
     "subscribe": "Abonnieren",
-    "navHelp": "Navigationshilfe"
+    "navHelp": "Navigationshilfe",
+    "guides": "Compliance-Leitfäden"
   },
   "navTips": {
     "label": "So funktioniert diese Seite",
@@ -318,6 +319,101 @@
         "label": "Firmenname",
         "error": "Firmenname ist erforderlich"
       }
+    }
+  },
+  "guides": {
+    "back": "← Zurück zum globalen Tracker",
+    "col": {
+      "cap": "Jahresobergrenze",
+      "country": "Rechtsraum",
+      "failure": "Verstoß",
+      "fine": "Bußgeld",
+      "model": "Modell",
+      "next": "Nächste datierte Pflicht",
+      "what": "Was sich ändert"
+    },
+    "doc": {
+      "change": "← Länder ändern",
+      "convention": "In den fünf Kennzahlen-Kacheln jeder Seite beschreibt ein Status die Pflicht, eine E-Rechnung AUSZUSTELLEN. Besteht lediglich eine Pflicht, eine solche EMPFANGEN zu können, steht das in der Zeile unter der Kachel. NICHT BESTÄTIGT heißt, dass wir die Angabe nicht belegen konnten — das ist nicht dasselbe wie keine Pflicht.",
+      "count": "{0} Rechtsräume",
+      "emptyBack": "← Länder auswählen",
+      "emptyBody": "In diesem Link waren keine Länder genannt, also gibt es nichts zu erstellen. Wählen Sie die gewünschten Märkte aus, und wir erstellen den Leitfaden.",
+      "emptyTitle": "Nichts ausgewählt",
+      "eyebrow": "The E-Invoicing Compliance Corner",
+      "full": "Alle Einzelheiten: {0}",
+      "generated": "Erstellt {0}",
+      "lede": "{0} Rechtsräume, entnommen den auf dieser Website verfolgten Mandatsdaten vom {1}. Jedes Land folgt auf einer eigenen Seite. Die Daten sind die veröffentlichten Pflichten in unserem Stand; alle Einzelheiten stehen im jeweiligen Deep Dive.",
+      "print": "Drucken / als PDF speichern",
+      "title": "Compliance-Leitfaden"
+    },
+    "facts": {
+      "more": "{0} weitere Detailzeilen stehen im vollständigen Deep Dive.",
+      "moreOne": "1 weitere Detailzeile steht im vollständigen Deep Dive."
+    },
+    "gateBody": "Das Abonnement ist kostenlos. Wählen Sie die Märkte aus, die für Sie zählen, und wir erstellen für jeden ein einseitiges Briefing — die Pflicht in ihrem aktuellen Stand, die datierte Zeitleiste, die Sanktionen, die wichtigsten Fakten und die nächsten Schritte — fertig zum Drucken oder als PDF.",
+    "gateEyebrow": "Abonnenten-Tool",
+    "gateSignedUp": "Bereits abonniert?",
+    "gateSubscribe": "Kostenlos abonnieren",
+    "gateTitle": "Compliance-Leitfäden",
+    "hl": {
+      "active": "AKTIV",
+      "arch": {
+        "none": "KEINE PFLICHT",
+        "varies": "UNTERSCHIEDLICH"
+      },
+      "lbl": {
+        "archiving": "Archivierung",
+        "b2b": "B2B-E-Rechnung",
+        "b2c": "B2C-E-Rechnung",
+        "b2g": "B2G-E-Rechnung",
+        "signature": "Digitale Signatur"
+      },
+      "none": "KEINE PFLICHT",
+      "planned": "GEPLANT",
+      "sig": {
+        "conditional": "BEDINGT",
+        "not": "NICHT ERFORDERLICH",
+        "required": "ERFORDERLICH"
+      },
+      "unknown": "NICHT BESTÄTIGT",
+      "verified": "Fakten geprüft {0}",
+      "voluntary": "FREIWILLIG",
+      "yrs": "J."
+    },
+    "lbl": {
+      "updated": "Aktualisiert"
+    },
+    "pen": {
+      "capsAll": "Jahresobergrenze: {0}"
+    },
+    "pick": {
+      "all": "Alle auswählen",
+      "build": "Leitfaden erstellen",
+      "clear": "Leeren",
+      "countMany": "{0} Länder ausgewählt",
+      "countNone": "Keine Länder ausgewählt",
+      "countOne": "1 Land ausgewählt",
+      "eyebrow": "Abonnenten-Tool",
+      "lede": "Wählen Sie die Märkte aus, die für Sie zählen, und wir erstellen für jeden ein einseitiges Briefing: die Pflicht in ihrem aktuellen Stand, die datierte Zeitleiste, die Sanktionen, die wichtigsten Fakten und die nächsten Schritte. Es öffnet sich fertig zum Drucken oder als PDF.",
+      "savedNote": "Die von Ihnen verfolgten Länder sind bereits angehakt und mit einem Stern versehen. Sie können beliebig ergänzen oder entfernen.",
+      "title": "Compliance-Leitfäden"
+    },
+    "pill": {
+      "complex": "Komplex",
+      "eu": "EU",
+      "inforce": "In Kraft",
+      "nodate": "Kein datierter Schritt"
+    },
+    "sec": {
+      "facts": "Wichtigste Fakten",
+      "news": "Aus dem Newsletter",
+      "penalties": "Sanktionen",
+      "sources": "Wo wir das verfolgen",
+      "steps": "Was zu tun ist",
+      "timeline": "Compliance-Zeitleiste"
+    },
+    "tl": {
+      "hidden": "{0} frühere Meilensteine stehen im vollständigen Deep Dive."
     }
   }
 }

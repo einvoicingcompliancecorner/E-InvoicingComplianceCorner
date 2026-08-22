@@ -101,7 +101,8 @@
     "menu": "Menu",
     "resources": "Ressources",
     "subscribe": "S'abonner",
-    "navHelp": "Aide à la navigation"
+    "navHelp": "Aide à la navigation",
+    "guides": "Guides de conformité"
   },
   "navTips": {
     "label": "Comment naviguer sur ce site",
@@ -318,6 +319,101 @@
         "label": "Nom de l'entreprise",
         "error": "Le nom de l'entreprise est requis"
       }
+    }
+  },
+  "guides": {
+    "back": "← Retour au tracker mondial",
+    "col": {
+      "cap": "Plafond annuel",
+      "country": "Juridiction",
+      "failure": "Manquement",
+      "fine": "Amende",
+      "model": "Modèle",
+      "next": "Prochaine obligation datée",
+      "what": "Ce qui change"
+    },
+    "doc": {
+      "change": "← Changer de pays",
+      "convention": "Dans les cinq tuiles d'en-tête de chaque page, un statut décrit l'obligation d'ÉMETTRE une facture électronique. Lorsqu'une entreprise doit seulement pouvoir en RECEVOIR une, cela figure dans la ligne sous la tuile. NON CONFIRMÉ signifie que nous n'avons pas pu sourcer le fait, ce qui n'est pas la même chose qu'une absence d'obligation.",
+      "count": "{0} juridictions",
+      "emptyBack": "← Choisir des pays",
+      "emptyBody": "Aucun pays n'était nommé dans ce lien, il n'y a donc rien à produire. Choisissez les marchés voulus et nous créerons le guide.",
+      "emptyTitle": "Aucune sélection",
+      "eyebrow": "The E-Invoicing Compliance Corner",
+      "full": "Détail complet : {0}",
+      "generated": "Généré le {0}",
+      "lede": "{0} juridictions, issues des données de mandats suivies par ce site au {1}. Chaque pays occupe sa propre page. Les dates correspondent aux obligations publiées telles que nous les détenons ; le détail complet figure dans le deep dive de chaque pays.",
+      "print": "Imprimer / enregistrer en PDF",
+      "title": "Guide de conformité"
+    },
+    "facts": {
+      "more": "{0} lignes de détail supplémentaires figurent dans le deep dive complet.",
+      "moreOne": "1 ligne de détail supplémentaire figure dans le deep dive complet."
+    },
+    "gateBody": "L'abonnement est gratuit. Choisissez les marchés qui vous intéressent et nous produirons pour chacun une note d'une page — l'obligation en l'état, le calendrier daté, les sanctions, les faits essentiels et les prochaines étapes — prête à imprimer ou à enregistrer en PDF.",
+    "gateEyebrow": "Outil pour abonnés",
+    "gateSignedUp": "Déjà abonné ?",
+    "gateSubscribe": "S'abonner gratuitement",
+    "gateTitle": "Guides de conformité",
+    "hl": {
+      "active": "EN VIGUEUR",
+      "arch": {
+        "none": "AUCUNE OBLIGATION",
+        "varies": "VARIABLE"
+      },
+      "lbl": {
+        "archiving": "Archivage",
+        "b2b": "Facturation B2B",
+        "b2c": "Facturation B2C",
+        "b2g": "Facturation B2G",
+        "signature": "Signature numérique"
+      },
+      "none": "AUCUNE OBLIGATION",
+      "planned": "PRÉVU",
+      "sig": {
+        "conditional": "CONDITIONNELLE",
+        "not": "NON REQUISE",
+        "required": "REQUISE"
+      },
+      "unknown": "NON CONFIRMÉ",
+      "verified": "Faits vérifiés le {0}",
+      "voluntary": "VOLONTAIRE",
+      "yrs": "ans"
+    },
+    "lbl": {
+      "updated": "Mis à jour"
+    },
+    "pen": {
+      "capsAll": "Plafond annuel : {0}"
+    },
+    "pick": {
+      "all": "Tout sélectionner",
+      "build": "Créer mon guide",
+      "clear": "Effacer",
+      "countMany": "{0} pays sélectionnés",
+      "countNone": "Aucun pays sélectionné",
+      "countOne": "1 pays sélectionné",
+      "eyebrow": "Outil pour abonnés",
+      "lede": "Choisissez les marchés qui vous intéressent et nous produirons pour chacun une note d'une page : l'obligation en l'état, le calendrier daté, les sanctions, les faits essentiels et les prochaines étapes. Elle s'ouvre prête à imprimer ou à enregistrer en PDF.",
+      "savedNote": "Les pays que vous suivez sont déjà cochés et marqués d'une étoile. Ajoutez-en ou retirez-en à votre convenance.",
+      "title": "Guides de conformité"
+    },
+    "pill": {
+      "complex": "Complexe",
+      "eu": "UE",
+      "inforce": "En vigueur",
+      "nodate": "Aucune étape datée"
+    },
+    "sec": {
+      "facts": "Faits essentiels",
+      "news": "Extrait de la newsletter",
+      "penalties": "Sanctions",
+      "sources": "Où nous suivons cela",
+      "steps": "Que faire",
+      "timeline": "Calendrier de conformité"
+    },
+    "tl": {
+      "hidden": "{0} jalons antérieurs figurent dans le deep dive complet."
     }
   }
 }

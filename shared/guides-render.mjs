@@ -884,7 +884,7 @@ export function renderGuideDocument({ bundle, order, lang, strings, today, siteO
         return `<div class="kv"><h4>${esc(card.title)}</h4>${rws}${body}${note}</div>`;
       }).join("")}
       <p class="kv" data-more="${esc(t("facts.more", "{0} further detail rows are on the full deep dive."))}"
-         data-more-one="${esc(t("facts.more.one", "1 further detail row is on the full deep dive."))}"
+         data-more-one="${esc(t("facts.moreOne", "1 further detail row is on the full deep dive."))}"
          style="display:none;border:0;background:none;padding:0;color:#666;font-size:7.6pt"></p>
       </div>` : "";
 

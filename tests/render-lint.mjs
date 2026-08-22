@@ -230,6 +230,75 @@ if (!/(^|\n)\s*a\s*(,[^{\n]*)?\{[^}]*\bcolor\s*:/.test(styleCss)) {
 let parses = true;
 try { await import(`file://${FILE}`); } catch (e) { parses = false; bad.push([0, e.message]); }
 
+// ---- AND THE SAME TRAP IN EVERY OTHER SHARED TEMPLATE ------------------
+//
+// Everything above is anchored to roi-render.mjs by name and by landmark,
+// because that is the file it was written for after the trap fired there
+// four times. On 22 August it fired somewhere else: a CSS comment in
+// guides-picker.mjs's PICKER_STYLE said "the bare `label{}` rule", the
+// backtick ended the literal, and the module failed to parse with
+// "Unexpected identifier 'label'" -- the same illegible message, in a file
+// this lint had never heard of.
+//
+// GUIDE_STYLE had already been bitten by it the day before ("auto 1fr" in
+// a comment, reworded to avoid the backtick). Twice in two days in modules
+// this file does not read is the point at which the ITINERARY is the
+// defect, not the rule -- which is the note the ROI_STYLE and page-body
+// sections both make about themselves.
+//
+// So: every template literal assigned to a top-level const in a shared
+// module, found by shape rather than by name, and the same two rules.
+// Deliberately blunt about backticks -- a backtick has no legitimate place
+// in a stylesheet or a browser script this project generates -- and
+// deliberately quiet about ${, which is legitimate outside comments.
+const OTHER_MODULES = ["guides-render.mjs", "guides-picker.mjs"];
+const otherBad = [];
+let regionsChecked = 0;
+for (const name of OTHER_MODULES) {
+  const lines = readFileSync(join(REPO, "shared", name), "utf8").split("\n");
+  let open = -1;
+  for (let i = 0; i < lines.length; i++) {
+    if (open < 0) {
+      // `export const X = ` + backtick, or the same without export. The
+      // opening backtick must be the last character on the line, which is
+      // how every template in these modules is written and is what makes
+      // this findable without parsing JavaScript.
+      if (/^(export\s+)?const\s+[A-Za-z0-9_]+\s*=\s*`$/.test(lines[i])) open = i;
+      continue;
+    }
+    // A backtick inside the region either CLOSES it or is the bug. The
+    // difference is position: a closing backtick is the last thing on its
+    // line, give or take a semicolon. The first version of this only
+    // recognised a line that was nothing but a backtick, and PICKER_SCRIPT
+    // -- which ends `})();` and then the backtick -- was reported as an
+    // unterminated literal. Right rule, wrong shape.
+    if (/(^|[^\\])`/.test(lines[i])) {
+      if (/(^|[^\\])`;?\s*$/.test(lines[i])) {
+        regionsChecked++;
+        open = -1;
+      } else {
+        otherBad.push([`shared/${name}`, i + 1,
+          "unescaped backtick inside a template literal — this ends the "
+          + "literal and the parse error names neither this line nor this "
+          + "file: " + lines[i].trim().slice(0, 100)]);
+      }
+    }
+  }
+  if (open >= 0) {
+    otherBad.push([`shared/${name}`, open + 1,
+      "a template literal opened here and this lint could not find its end — "
+      + "silently passing would be worse than failing"]);
+  }
+  // Ground truth, as above: it actually parses.
+  try { await import(`file://${join(REPO, "shared", name)}`); }
+  catch (e) { otherBad.push([`shared/${name}`, 0, e.message]); }
+}
+if (otherBad.length) {
+  console.log(`  FAIL  shared templates (${otherBad.length} problem(s))`);
+  otherBad.forEach(([f, ln, msg]) => console.log(`        ${f}${ln ? `:${ln}` : ""}: ${msg}`));
+  process.exit(1);
+}
+
 if (bad.length) {
   console.log(`  FAIL  shared/roi-render.mjs (${bad.length} problem(s))`);
   bad.forEach(([ln, msg]) => console.log(`        ${ln ? `line ${ln}: ` : ""}${msg}`));
@@ -244,4 +313,6 @@ console.log(`  PASS  no backticks or \${ in HTML comments in the page body (line
 console.log("  PASS  no t() inside a single-quoted string (use tj there)");
 console.log("  PASS  ROI_STYLE styles bare links itself, so the public route needs no shell");
 console.log("  PASS  shared/roi-render.mjs parses");
-console.log(`\nRender lint: 6/6 passed${parses ? "" : ""}`);
+console.log(`  PASS  no backticks in ${regionsChecked} template literal(s) across `
+  + `${OTHER_MODULES.map((m) => "shared/" + m).join(", ")}`);
+console.log(`\nRender lint: 7/7 passed${parses ? "" : ""}`);

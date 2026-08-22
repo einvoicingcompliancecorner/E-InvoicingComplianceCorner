@@ -101,7 +101,8 @@
     "menu": "Menú",
     "resources": "Recursos",
     "subscribe": "Suscribirse",
-    "navHelp": "Ayuda de navegación"
+    "navHelp": "Ayuda de navegación",
+    "guides": "Guías de cumplimiento"
   },
   "navTips": {
     "label": "Cómo navegar por este sitio",
@@ -318,6 +319,101 @@
         "label": "Nombre de la empresa",
         "error": "El nombre de la empresa es obligatorio"
       }
+    }
+  },
+  "guides": {
+    "back": "← Volver al rastreador global",
+    "col": {
+      "cap": "Límite anual",
+      "country": "Jurisdicción",
+      "failure": "Incumplimiento",
+      "fine": "Multa",
+      "model": "Modelo",
+      "next": "Próxima obligación con fecha",
+      "what": "Qué cambia"
+    },
+    "doc": {
+      "change": "← Cambiar países",
+      "convention": "En las cinco casillas de cabecera de cada página, un estado describe la obligación de EMITIR una factura electrónica. Cuando la empresa solo debe poder RECIBIRLA, se indica en la línea bajo la casilla. NO CONFIRMADO significa que no pudimos documentar el dato, que no es lo mismo que no haber obligación.",
+      "count": "{0} jurisdicciones",
+      "emptyBack": "← Elegir países",
+      "emptyBody": "Ese enlace no nombraba ningún país, así que no hay nada que crear. Elija los mercados que quiera y haremos la guía.",
+      "emptyTitle": "Nada seleccionado",
+      "eyebrow": "The E-Invoicing Compliance Corner",
+      "full": "Detalle completo: {0}",
+      "generated": "Generado el {0}",
+      "lede": "{0} jurisdicciones, extraídas de los datos de mandatos que sigue este sitio a {1}. Cada país ocupa su propia página. Las fechas son las obligaciones publicadas según nuestros registros; el detalle completo está en el análisis a fondo de cada país.",
+      "print": "Imprimir / guardar en PDF",
+      "title": "Guía de cumplimiento"
+    },
+    "facts": {
+      "more": "{0} filas de detalle adicionales están en el análisis a fondo completo.",
+      "moreOne": "1 fila de detalle adicional está en el análisis a fondo completo."
+    },
+    "gateBody": "Suscribirse es gratis. Elija los mercados que le interesan y crearemos un informe de una página para cada uno — el mandato tal como está, el calendario con fechas, las sanciones, los datos clave y los próximos pasos — listo para imprimir o guardar en PDF.",
+    "gateEyebrow": "Herramienta para suscriptores",
+    "gateSignedUp": "¿Ya está suscrito?",
+    "gateSubscribe": "Suscribirse gratis",
+    "gateTitle": "Guías de cumplimiento",
+    "hl": {
+      "active": "VIGENTE",
+      "arch": {
+        "none": "SIN OBLIGACIÓN",
+        "varies": "VARIABLE"
+      },
+      "lbl": {
+        "archiving": "Archivado",
+        "b2b": "Factura-e B2B",
+        "b2c": "Factura-e B2C",
+        "b2g": "Factura-e B2G",
+        "signature": "Firma digital"
+      },
+      "none": "SIN MANDATO",
+      "planned": "PREVISTO",
+      "sig": {
+        "conditional": "CONDICIONAL",
+        "not": "NO OBLIGATORIA",
+        "required": "OBLIGATORIA"
+      },
+      "unknown": "NO CONFIRMADO",
+      "verified": "Datos verificados {0}",
+      "voluntary": "VOLUNTARIO",
+      "yrs": "años"
+    },
+    "lbl": {
+      "updated": "Actualizado"
+    },
+    "pen": {
+      "capsAll": "Límite anual: {0}"
+    },
+    "pick": {
+      "all": "Seleccionar todo",
+      "build": "Crear mi guía",
+      "clear": "Borrar",
+      "countMany": "{0} países seleccionados",
+      "countNone": "Ningún país seleccionado",
+      "countOne": "1 país seleccionado",
+      "eyebrow": "Herramienta para suscriptores",
+      "lede": "Elija los mercados que le interesan y crearemos un informe de una página para cada uno: el mandato tal como está, el calendario con fechas, las sanciones, los datos clave y los próximos pasos. Se abre listo para imprimir o guardar en PDF.",
+      "savedNote": "Los países que sigue ya están marcados y señalados con una estrella. Añada o quite los que quiera.",
+      "title": "Guías de cumplimiento"
+    },
+    "pill": {
+      "complex": "Complejo",
+      "eu": "UE",
+      "inforce": "En vigor",
+      "nodate": "Sin paso con fecha"
+    },
+    "sec": {
+      "facts": "Datos clave",
+      "news": "Del boletín",
+      "penalties": "Sanciones",
+      "sources": "Dónde lo seguimos",
+      "steps": "Qué hacer",
+      "timeline": "Calendario de cumplimiento"
+    },
+    "tl": {
+      "hidden": "{0} hitos anteriores están en el análisis a fondo completo."
     }
   }
 }
