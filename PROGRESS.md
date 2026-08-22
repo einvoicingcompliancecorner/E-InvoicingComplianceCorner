@@ -14859,7 +14859,7 @@ biggest and touches the email path.
 
 `npm test`: **20 suites**.
 
-### Every cited host has a grade (22 August 2026)
+### Every cited host has a grade (22 August 2026, deployed)
 
 The second recommendation from the outside review, and the one that
 turned an admission on `/methodology` into a column. That page said, in
