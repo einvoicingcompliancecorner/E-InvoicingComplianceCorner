@@ -366,7 +366,8 @@
         "b2b": "Facturation B2B",
         "b2c": "Facturation B2C",
         "b2g": "Facturation B2G",
-        "signature": "Signature numérique"
+        "signature": "Signature numérique",
+        "mandate": "Obligation de facturation"
       },
       "none": "AUCUNE OBLIGATION",
       "planned": "PRÉVU",
@@ -378,7 +379,12 @@
       "unknown": "NON CONFIRMÉ",
       "verified": "Faits vérifiés le {0}",
       "voluntary": "VOLONTAIRE",
-      "yrs": "ans"
+      "yrs": "ans",
+      "seg": {
+        "b2b": "B2B",
+        "b2c": "B2C",
+        "b2g": "B2G"
+      }
     },
     "lbl": {
       "updated": "Mis à jour"
@@ -413,7 +419,8 @@
       "timeline": "Calendrier de conformité"
     },
     "tl": {
-      "hidden": "{0} jalons antérieurs figurent dans le deep dive complet."
+      "hidden": "{0} jalons antérieurs figurent dans le deep dive complet.",
+      "hiddenOne": "1 jalon antérieur figure dans le deep dive complet."
     }
   }
 }

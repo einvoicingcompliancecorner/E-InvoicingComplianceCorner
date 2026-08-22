@@ -206,6 +206,41 @@ S = {
     },
 }
 
+# ---- round two, 22 August 2026 ------------------------------------------
+#
+# 609 IS DEPLOYED, SO IT IS NOT REGENERATED. apply_migrations records a
+# checksum per file; rewriting an applied migration is how a chain starts
+# lying about itself. New strings get a new file, and this dict is what
+# distinguishes them.
+#
+# These arrived with the headline strip becoming three cards instead of
+# five (Dan: "We can combine B2G, B2B and B2C into one card") -- the
+# combined card needs a title and the three segments need short labels --
+# and with the timeline's hidden-milestone note learning to count, which
+# needs a singular form. Migration 573 established that a count slotted
+# into a plural sentence is its own defect; "1 earlier milestones are on
+# the full deep dive" was printing on the Netherlands.
+#
+# NOT tl.hidden.one. The runtime reads these as a nested JSON tree, so a
+# key that is a prefix of another cannot exist: tl.hidden is already a
+# string, and tl.hidden.one would ask it to be an object too. The same
+# collision took facts.more.one to facts.moreOne on the 21st.
+S2 = {
+    "hl.lbl.mandate": {
+        "en": "E-invoicing mandate", "de": "E-Rechnungspflicht",
+        "fr": "Obligation de facturation", "es": "Mandato de factura-e",
+    },
+    "hl.seg.b2g": {"en": "B2G", "de": "B2G", "fr": "B2G", "es": "B2G"},
+    "hl.seg.b2b": {"en": "B2B", "de": "B2B", "fr": "B2B", "es": "B2B"},
+    "hl.seg.b2c": {"en": "B2C", "de": "B2C", "fr": "B2C", "es": "B2C"},
+    "tl.hiddenOne": {
+        "en": "1 earlier milestone is on the full deep dive.",
+        "de": "1 fr\u00fcherer Meilenstein steht im vollst\u00e4ndigen Deep Dive.",
+        "fr": "1 jalon ant\u00e9rieur figure dans le deep dive complet.",
+        "es": "1 hito anterior est\u00e1 en el an\u00e1lisis a fondo completo.",
+    },
+}
+
 MENU = {
     "en": "Compliance guides", "de": "Compliance-Leitfäden",
     "fr": "Guides de conformité", "es": "Guías de cumplimiento",
@@ -217,7 +252,7 @@ def check():
     '{0}' at the reader or, worse, silently loses the number. Migration
     573 found that shape in the planner; this refuses to emit it."""
     problems = []
-    for key, langs in S.items():
+    for key, langs in {**S, **S2}.items():
         missing = [l for l in LANGS if l not in langs]
         if missing:
             problems.append(f"{key}: missing {', '.join(missing)}")
@@ -303,12 +338,12 @@ def patch_i18n():
         with open(path, encoding="utf-8") as fh:
             doc = json.load(fh)
         guides = doc.get("guides") or {}
-        for key in sorted(S):
+        for key in sorted({**S, **S2}):
             node = guides
             parts = key.split(".")
             for part in parts[:-1]:
                 node = node.setdefault(part, {})
-            node[parts[-1]] = S[key][lang]
+            node[parts[-1]] = {**S, **S2}[key][lang]
         doc["guides"] = guides
         doc.setdefault("menu", {})["guides"] = MENU[lang]
         with open(path, "w", encoding="utf-8") as fh:
@@ -317,10 +352,47 @@ def patch_i18n():
         print(f"  i18n/{lang}.json: guides + menu.guides")
 
 
+HEADER2 = """-- ================================================================
+-- The strings the three-card headline strip needs.
+-- ================================================================
+--
+-- Dan, 22 August 2026: "from a section arrangement standard - we should
+-- only have 5 boxes / cards at the top of the page. We can combine B2G,
+-- B2B and B2C into one card."
+--
+-- The three business segments became rows inside one card, so the card
+-- needs a title and each row needs a short label. Plus a singular form
+-- for the timeline's hidden-milestone note, which now counts what is
+-- actually still hidden rather than what the window left out -- the
+-- fitter reveals earlier milestones one at a time.
+--
+-- A SEPARATE FILE BECAUSE 609 IS DEPLOYED. apply_migrations records a
+-- checksum per migration; editing an applied one makes the chain lie
+-- about what the database has seen. New strings, new file, every time."""
+
+
+def sql2():
+    lines = [HEADER2, "\n-- ---- the strings ----------------------------------------------------"]
+    for key in sorted(S2):
+        for lang in LANGS:
+            lines.append(
+                f"INSERT OR REPLACE INTO translations (namespace, key, lang, value)\n"
+                f"  VALUES ('tracker', {q('guides.' + key)}, '{lang}', {q(S2[key][lang])});")
+    n = (len(S) + len(S2)) * len(LANGS)
+    lines.append(f"""
+-- ---- what this migration claims it did ------------------------------
+-- ASSERT: SELECT count(*) FROM translations WHERE namespace = 'tracker' AND key LIKE 'guides.%' = {n}
+--
+-- The four-languages-or-none invariant declared in 609 covers these too,
+-- and is the reason this file cannot ship an English-only key.
+""")
+    return "\n".join(lines) + "\n"
+
+
 if __name__ == "__main__":
     check()
-    out = os.path.join(HERE, "609_guides_strings.sql")
+    out = os.path.join(HERE, "610_guides_strings_round2.sql")
     with open(out, "w", encoding="utf-8") as fh:
-        fh.write(sql())
-    print(f"{out}: {len(S)} keys x {len(LANGS)} languages")
+        fh.write(sql2())
+    print(f"{out}: {len(S2)} new keys x {len(LANGS)} languages")
     patch_i18n()

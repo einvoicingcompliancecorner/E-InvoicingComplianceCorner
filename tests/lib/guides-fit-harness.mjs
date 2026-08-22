@@ -26,17 +26,66 @@ const PAGE_PX = 1010;
 const m = await p.evaluate((PP) => [...document.querySelectorAll(".country")].map(el => ({
   n: (el.querySelector("h2")||{}).textContent, px: Math.round(el.getBoundingClientRect().height),
   zoom: el.style.zoom || "1",
-  tiles: el.querySelectorAll(".statstrip.hl > div").length,
+  cards: el.querySelectorAll(".statstrip.hl > .hcard").length,
+  // STRUCTURE, NOT JUST COUNTS. An unbalanced </div> inside one of these
+  // template literals does not throw and does not fail any other check --
+  // the browser silently reparents whatever came next. On 22 August a
+  // missing closer on the timeline block put the full-width newsletter
+  // band inside the two-column flow on all seventy pages, and the only
+  // way it was caught was looking at a screenshot. These say where the
+  // two full-width bands must sit.
+  // A TIMELINE OUT OF ORDER IS WORSE THAN A SHORT ONE. The earlier
+  // milestones the window leaves out used to render as a second list
+  // appended underneath, so eight countries printed forwards and then
+  // jumped backwards -- on the one component whose order carries its
+  // meaning, and where a reader scanning for "what next" reads the last
+  // row. Checked on the VISIBLE rows, because the fitter decides how many
+  // of the hidden ones to reveal.
+  tlDates: [...el.querySelectorAll(".tl li")]
+    .filter((li) => li.style.display !== "none")
+    .map((li) => li.querySelector(".d").textContent.trim()),
+  newsDirect: el.querySelector(".news") ? el.querySelector(".news").parentElement === el : true,
+  stripDirect: el.querySelector(".statstrip") ? el.querySelector(".statstrip").parentElement === el : true,
+  facts: el.querySelectorAll(".statstrip.hl .seg").length
+       + el.querySelectorAll(".statstrip.hl > .hcard").length - 1,
   pages: +(el.getBoundingClientRect().height / PP).toFixed(2) })), PAGE_PX);
 // THE FIVE TILES ARE NOT NEGOTIABLE, so the harness checks them rather than
 // printing them. Dan asked for the same five facts "consistently on each
 // country page"; a fitter that shed one to save 8px would satisfy the
 // one-page rule by breaking the thing the page is for. The fitter's ladder
 // deliberately has no rung that touches them -- this is what proves it.
-const shortTiles = m.filter(x => x.tiles !== 5);
-console.log(`headline tiles: ${m.length - shortTiles.length}/${m.length} countries show all five`);
+// THREE CARDS, FIVE FACTS. The strip was five cards until 22 August, when
+// Dan asked for the three business segments to be combined ("we should
+// only have 5 boxes / cards at the top of the page. We can combine B2G,
+// B2B and B2C into one card"). The card count changed; the number of
+// facts a reader gets did not, and that is the half worth asserting.
+const MONTHS_ORD = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const sortKey = (d) => {
+  const [mo, y] = d.split(" ");
+  return `${y}-${String(MONTHS_ORD.indexOf(mo) + 1).padStart(2, "0")}`;
+};
+const unordered = m.filter((x) => {
+  const keys = x.tlDates.map(sortKey);
+  return JSON.stringify(keys) !== JSON.stringify([...keys].sort());
+});
+console.log(`timelines: ${m.length - unordered.length}/${m.length} in chronological order`);
+if (unordered.length) {
+  console.log("OUT OF ORDER: " + unordered.map(x => `${x.n} (${x.tlDates.join(" | ")})`).join("; "));
+  process.exitCode = 1;
+}
+
+const misplaced = m.filter(x => !x.newsDirect || !x.stripDirect);
+console.log(`full-width bands: ${m.length - misplaced.length}/${m.length} countries have the strip and newsletter as direct children`);
+if (misplaced.length) {
+  console.log("REPARENTED: " + misplaced.map(x => x.n).join(", ")
+    + "  — an unbalanced </div> in a template literal has nested a full-width band inside .cols");
+  process.exitCode = 1;
+}
+
+const shortTiles = m.filter(x => x.cards !== 3 || x.facts !== 5);
+console.log(`headline strip: ${m.length - shortTiles.length}/${m.length} countries show 3 cards carrying all 5 facts`);
 if (shortTiles.length) {
-  console.log("MISSING TILES: " + shortTiles.map(x => `${x.n} (${x.tiles})`).join(", "));
+  console.log("MALFORMED STRIP: " + shortTiles.map(x => `${x.n} (${x.cards} cards, ${x.facts} facts)`).join(", "));
   process.exitCode = 1;
 }
 const zoomed = m.filter(x => x.zoom !== "1");
