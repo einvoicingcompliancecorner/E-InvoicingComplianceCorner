@@ -294,6 +294,59 @@ def test_live_batch_sql():
           A.check_live.__defaults__[-1])
 
 
+def test_runtime_table_claims_are_not_sent_to_production():
+    """A point-in-time count of a table the APPLICATION writes is not a
+    durable invariant, and must not be checked against production.
+
+    Dan ran --assert-only against the live database for the first time on
+    22 August 2026 and it failed on
+
+        594_auth_codes.sql:104  SELECT count(*) FROM auth_codes
+        expected = 0   actual: '1'
+
+    because somebody had signed in. The database was healthy; the
+    classifier was wrong. These pin the cases that separate the fix from
+    an over-correction."""
+    print("\nclaims about tables the application writes")
+
+    def mk(sql, always=False):
+        return A.Assertion(file="x.sql", line=1, sql=sql, op="=",
+                           expected="0", raw=sql, always=always)
+
+    # 1. The one that broke: a plain count of a runtime table's rows.
+    check("a plain count of auth_codes rows is not durable",
+          A.is_runtime_claim(mk("SELECT count(*) FROM auth_codes")))
+
+    # 2. The over-correction guard. This names auth_codes in a LITERAL and
+    #    asks whether the table exists -- exactly what a migration that
+    #    silently never ran would fail, so it must still be sent.
+    check("but a sqlite_master existence check naming it IS durable",
+          not A.is_runtime_claim(mk(
+              "SELECT count(*) FROM sqlite_master WHERE type = 'table' "
+              "AND name = 'auth_codes'")))
+
+    # 3. ALWAYS is the author saying "this holds forever". On a runtime
+    #    table that is the most valuable place to check it, because
+    #    production is the only thing that writes it.
+    check("an ASSERT ALWAYS on the same table is still durable",
+          not A.is_runtime_claim(mk(
+              "SELECT count(*) FROM auth_codes WHERE purpose "
+              "NOT IN ('signup','login')", always=True)))
+
+    # 4. A table the migrations own is unaffected.
+    check("a count of a migration-owned table is durable",
+          not A.is_runtime_claim(mk("SELECT count(*) FROM countries")))
+
+    # 5. And the real chain holds back exactly one thing, not more.
+    with contextlib.redirect_stdout(io.StringIO()) as buf:
+        A.validate_replay()
+    out = buf.getvalue()
+    check("the real chain reports exactly one runtime claim held back",
+          out.count("  runtime: ") == 1, out.count("  runtime: "))
+    check("and names the assertion that caused this fix",
+          "594_auth_codes.sql:104" in out)
+
+
 def test_real_chain():
     print("\nthe real migration chain")
     exited, out = replay(expect_exit=False)
@@ -312,6 +365,7 @@ if __name__ == "__main__":
     test_always_is_an_invariant()
     test_query_error_is_a_failure()
     test_live_batch_sql()
+    test_runtime_table_claims_are_not_sent_to_production()
     test_real_chain()
     print()
     if FAILURES:

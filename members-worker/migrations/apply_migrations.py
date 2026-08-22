@@ -317,6 +317,74 @@ def report_failures(failures, heading):
         print(f"    expected {a.op} {a.expected}   actual: {actual!r}")
 
 
+# ---- tables the APPLICATION writes, not the migrations ------------------
+#
+# 22 August 2026. Dan ran --assert-only against production for the first
+# time and it reported the live database "does not match what the
+# migrations claim":
+#
+#   594_auth_codes.sql:104  SELECT count(*) FROM auth_codes
+#   expected = 0   actual: '1'
+#
+# The database was fine. Somebody had signed in, and a sign-in code was
+# sitting in the table doing exactly its job.
+#
+# THE BUG IS IN THE CLASSIFIER. A plain ASSERT is a point-in-time claim --
+# "this was true when my migration ran". validate_replay() promotes any
+# such claim to "durable" if it still holds at the END of the replay
+# chain, and then checks it against production. For a table only
+# migrations ever write, that promotion is sound and valuable: it is what
+# catches a migration that never actually ran against the live database,
+# which is the drift bug migration 500 was written to repair.
+#
+# For a table the running site writes to, it is nonsense. Nothing in the
+# migration chain inserts an auth code, so the replay says zero forever,
+# and production says whatever is true this minute. The assertion was
+# never a statement about the schema; it was a statement about a brand new
+# empty table, and it stopped being interesting one second after 594 ran.
+#
+# WHY THIS MATTERS MORE THAN THE ONE ROW. A check that cries wolf gets
+# switched off -- this repository already says that out loud in
+# tests/render-lint.mjs, about a lint that flagged six correct lines. An
+# --assert-only that fails on a healthy database every time anyone logs in
+# would have taught us to stop running it, and it is the only check that
+# looks at production at all.
+#
+# ASSERT ALWAYS IS DELIBERATELY STILL SENT. 594's other two claims --
+# no auth_code has a purpose outside ('signup','login'), and a login code
+# never carries details -- are invariants about the SHAPE of what the
+# application writes, and production is the only place they can fail. They
+# are exactly what should be checked there. The rule is therefore about
+# who declared the claim durable, not about which table it names: a plain
+# ASSERT on a runtime table is a snapshot, an ASSERT ALWAYS on one is a
+# rule the application has to keep.
+#
+# Derived by grepping both Workers for writes rather than from memory:
+# INSERT/UPDATE/DELETE against D1 reach only these three. Subscriber
+# records are in a KV namespace, not in this database.
+RUNTIME_TABLES = {"auth_codes", "announcements", "feedback"}
+
+
+def is_runtime_claim(a):
+    """A point-in-time assertion naming a table the application writes.
+
+    ALWAYS assertions are never runtime claims by this definition -- see
+    the note above. Matched on word boundaries so a table whose name is a
+    substring of another cannot be caught by accident."""
+    if a.always:
+        return False
+    # MATCHED IN A FROM/JOIN POSITION, not anywhere in the string. The
+    # first version matched the bare name and so also excluded
+    # 594_auth_codes.sql:105 -- "SELECT count(*) FROM sqlite_master WHERE
+    # ... name = 'auth_codes'" -- which is a claim about whether the TABLE
+    # EXISTS. That one is worth checking against production precisely
+    # because it is the kind of thing a migration that silently never ran
+    # would fail. Reading a runtime table's rows is the problem; naming it
+    # in a literal is not.
+    return any(re.search(rf"\b(?:FROM|JOIN|INTO|UPDATE)\s+{t}\b", a.sql, re.I)
+               for t in RUNTIME_TABLES)
+
+
 def validate_replay(quiet=False):
     """Full-chain in-memory replay — abort on any NEW error, and on any
     assertion a migration makes about its own effect that does not hold.
@@ -367,10 +435,13 @@ def validate_replay(quiet=False):
     # Re-evaluate everything against the end of the chain. Still true =
     # a durable invariant worth checking against production. No longer
     # true = a later migration moved it on purpose.
-    durable, superseded, broken_invariants = [], [], []
+    durable, superseded, broken_invariants, runtime = [], [], [], []
     for a, actual, passed in check_sqlite(conn, checked):
         if passed:
-            durable.append(a)
+            if is_runtime_claim(a):
+                runtime.append(a)
+            else:
+                durable.append(a)
         elif a.always:
             broken_invariants.append((a, actual))
         else:
@@ -384,6 +455,13 @@ def validate_replay(quiet=False):
               "was added, and the thing that has to agree with it was not updated.\n"
               "Nothing has been applied to any database.")
         sys.exit(1)
+
+    if not quiet and runtime:
+        print(f"Not sent to production: {len(runtime)} point-in-time assertion(s) about "
+              f"a table the application writes at runtime "
+              f"({', '.join(sorted(RUNTIME_TABLES))}).")
+        for a in runtime:
+            print(f"  runtime: {a.file}:{a.line}  {a.sql} {a.op} {a.expected}")
 
     if not quiet:
         print(f"Replay validation OK ({len(migration_files())} files, "

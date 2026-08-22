@@ -515,6 +515,7 @@ h1,h2,h3,h4{font-family:'Big Shoulders Display','IBM Plex Sans',sans-serif;margi
   text-transform:uppercase;color:#555;text-align:right;line-height:1.5}
 .cover .conv{margin:0 0 10px;font-size:7.6pt;color:#666;line-height:1.4;border-left:2px solid #d6d6d6;padding-left:8px}
 .lede{color:#444;margin:0 0 12px;max-width:150mm;font-size:9pt}
+table.summary thead{display:table-header-group}
 table.summary{width:100%;border-collapse:collapse;font-size:8.4pt;color:#111;table-layout:fixed}
 table.summary col.a{width:23%} table.summary col.b{width:15%} table.summary col.c{width:34%} table.summary col.d{width:28%}
 table.summary th{font-family:'IBM Plex Mono',monospace;font-size:7.2pt;letter-spacing:.8px;
@@ -558,35 +559,61 @@ table.summary td.date{font-family:'IBM Plex Mono',monospace;white-space:nowrap;c
 .statstrip .v{font-family:'Big Shoulders Display',sans-serif;font-weight:700;font-size:14pt;color:#111;line-height:1}
 .statstrip .l{font-size:6.9pt;color:#555;line-height:1.25;margin-top:2px}
 
-/* THE FIVE HEADLINE TILES.
-   The status word is the tile, so it is set at the size the old free-form
-   value was and the label drops under it. Five words that mean different
-   things should not all print in the same grey -- the left rule carries
-   the state, which survives greyscale printing as four distinct weights
-   as well as it survives colour. */
+/* THE HEADLINE STRIP: THREE CARDS.
+   Mandate (holding B2G, B2B and B2C as rows), archiving, signature. The
+   mandate card takes three of the five columns so the three segments have
+   room to sit as a small table the reader compares down, rather than as
+   three identical boxes they compare across. */
+.statstrip.hl{grid-template-columns:repeat(5,1fr)}
+.statstrip.hl > .mand{grid-column:span 3}
 .statstrip.hl .v{font-size:11.5pt;letter-spacing:.2px}
-.statstrip.hl .v .dt{font-family:'IBM Plex Sans',sans-serif;font-weight:600;font-size:8.4pt;
+.statstrip.hl .dt{font-family:'IBM Plex Sans',sans-serif;font-weight:600;font-size:8.4pt;
   letter-spacing:0;color:#444;white-space:nowrap}
 .statstrip.hl .l{font-weight:600;color:#333;text-transform:uppercase;letter-spacing:.4px;font-size:6.4pt}
-/* The qualifier under the tile is where "no supplier issuing duty" and
-   "above TRY 3m turnover" live. Without it ACTIVE and NO MANDATE are
-   confident in a way the underlying law usually is not. */
-.statstrip.hl .n{font-size:6.4pt;color:#666;line-height:1.28;margin-top:3px;
+/* The qualifier is where "no supplier issuing duty" and "above TRY 3m
+   turnover" live. Without it ACTIVE and NO MANDATE are confident in a way
+   the underlying law usually is not. 7.2pt, not the 6.4pt it was: this is
+   the sentence that stops the status being misread, and it was the least
+   readable text on the page. */
+.statstrip.hl .n{font-size:7.2pt;color:#555;line-height:1.3;margin-top:3px;
   border-top:1px solid #e4e4e4;padding-top:3px}
-.statstrip.hl>div.on{border-left-color:#1f6b3f;background:#f4f9f5}
-.statstrip.hl>div.soon{border-left-color:#a8720d;background:#fdf8f0}
-.statstrip.hl>div.opt{border-left-color:#3a5f96;background:#f4f7fc}
-.statstrip.hl>div.off{border-left-color:#8a8a8a;background:#fafafa}
-/* Not-confirmed is deliberately the only dashed one. A reader skimming
-   seventy pages should be able to see at a glance that this tile is not
-   making a claim -- and it must never be mistaken for "no requirement",
-   which is the solid grey directly above it. */
-.statstrip.hl>div.unk{border-left-color:#8a8a8a;border-style:dashed;background:#fff}
-.statstrip.hl>div.unk .v{color:#767676;font-size:9.5pt}
-/* The demoted per-country stats. Same grid, quieter: they are context
-   now, not the headline. */
-.statstrip.alt>div{border-left-color:#b6b6b6}
-.statstrip.alt .v{font-size:11pt;color:#333}
+
+/* The mandate card's three rows. One grid so the three status words start
+   at the same x and can be read down as a column. */
+.statstrip.hl > .mand{display:grid;grid-template-columns:5.6em auto 1fr;
+  gap:1px 7px;align-content:start}
+.statstrip.hl > .mand > .l{grid-column:1/-1;margin:0 0 2px}
+.statstrip.hl .seg{display:contents}
+.statstrip.hl .seg .sl{font-family:'IBM Plex Mono',monospace;font-size:7.4pt;
+  letter-spacing:.6px;color:#555;padding-top:1.5px}
+.statstrip.hl .seg .sv{font-family:'Big Shoulders Display',sans-serif;font-weight:700;
+  font-size:10.5pt;color:#111;line-height:1.15;white-space:nowrap}
+.statstrip.hl .seg .sn{font-size:7pt;color:#555;line-height:1.3}
+/* THE STATE IS ON THE ROW, NOT ONLY IN A COLOUR.
+   A printed sheet may be monochrome, and the tints below are 2-3%
+   saturation -- they photocopy to identical white. The left rule on each
+   segment row survives as a distinct grey, and the four states are also
+   four different words, so nothing here depends on hue alone. */
+.statstrip.hl .seg .sl{border-left:3px solid #8a8a8a;padding-left:5px;margin-left:-1px}
+.statstrip.hl .seg.on .sl{border-left-color:#1f6b3f}
+.statstrip.hl .seg.soon .sl{border-left-color:#a8720d}
+.statstrip.hl .seg.opt .sl{border-left-color:#3a5f96}
+.statstrip.hl .seg.unk .sl{border-left-style:dashed}
+.statstrip.hl .seg.unk .sv{color:#767676;font-size:9pt}
+
+.statstrip.hl > .hcard.on{border-left-color:#1f6b3f;background:#f4f9f5}
+.statstrip.hl > .hcard.soon{border-left-color:#a8720d;background:#fdf8f0}
+.statstrip.hl > .hcard.opt{border-left-color:#3a5f96;background:#f4f7fc}
+.statstrip.hl > .hcard.off{border-left-color:#8a8a8a;background:#fafafa}
+/* A RETENTION PERIOD IS NOT A COMPLIANCE STATUS. "7 yrs" used to print in
+   the same green as ACTIVE two cards to its left, and "VARIES" in the
+   amber that means a deadline is coming. Neither is a state; both are
+   now neutral. */
+.statstrip.hl > .hcard.num{border-left-color:#6b7a95;background:#fafbfc}
+/* Not-confirmed is the only dashed card, and it must never be mistaken
+   for "no requirement" -- which is the solid grey one beside it. */
+.statstrip.hl > .hcard.unk{border-left-color:#8a8a8a;border-style:dashed;background:#fff}
+.statstrip.hl > .hcard.unk .v{color:#767676;font-size:9.5pt}
 
 /* THE COLUMNS FLOW, AND THE BIG BLOCK IS ALLOWED TO SPLIT.
    Germany's first render left a third of the page empty down the right and
@@ -613,10 +640,24 @@ table.summary td.date{font-family:'IBM Plex Mono',monospace;white-space:nowrap;c
    column break, and every tile is whole.
    Chrome costs about 18px a tile. The fitter pays for it. */
 .blk{margin:0 0 6px}
-.blk.keep{break-inside:avoid;border:1px solid #d3d3d3;background:#fbfcfd;padding:5px 7px 5px}
-.blk.bare > h3{margin-bottom:5px}
+/* A HEADING IS ALWAYS OUTSIDE THE THING IT NAMES.
+   Dan, 22 August 2026: "inconsistencies, such as header inside of tile,
+   vs outside of the tile."
+   He was right and it was structural, not cosmetic. Compliance timeline,
+   Penalties and What to do were .blk.keep -- a bordered box with the
+   heading INSIDE it. Key facts and Where this is tracked were
+   .blk.bare -- the same heading, at the same rank, sitting ABOVE a run
+   of separate boxes. So one heading style meant "this box" in three
+   places and "these several boxes" in two, and a reader arriving at the
+   top of the second column met a bordered card (Germany's "German CIUS
+   quirks") that looked exactly like a new top-level section and was in
+   fact the tail of Key facts.
+   Now every heading sits above its content and every box is content.
+   .bx carries what .blk.keep used to. */
+.bx{break-inside:avoid;border:1px solid #d3d3d3;background:#fbfcfd;padding:5px 7px}
 .blk > h3{font-family:'IBM Plex Mono',monospace;font-size:7.4pt;letter-spacing:1.2px;
   text-transform:uppercase;color:#7a5a20;margin:0 0 4px;break-after:avoid}
+.pnote{margin:3px 0 0;font-size:7.4pt;color:#666}
 .tl{list-style:none;margin:0;padding:0}
 .tl li{display:grid;grid-template-columns:14mm 1fr;gap:5px;padding:2.5px 0;
   border-bottom:1px solid #e2e2e2;break-inside:avoid}
@@ -631,7 +672,13 @@ table.pen th{font-family:'IBM Plex Mono',monospace;font-size:6.9pt;letter-spacin
   text-transform:uppercase;color:#555;text-align:left;padding:0 5px 3px 0;
   border-bottom:1px solid #999;font-weight:500}
 table.pen td{padding:3px 5px 3px 0;border-bottom:1px solid #e2e2e2;vertical-align:top;color:#222}
-.kv{margin:0 0 5px;break-inside:avoid;border:1px solid #d3d3d3;background:#fbfcfd;
+/* LIGHTER THAN A SECTION BOX, deliberately. These are items inside Key
+   facts, and while they carried the same 1px #d3d3d3 rule and the same
+   #fbfcfd fill as the section boxes, they read as peers of Penalties and
+   What to do rather than as members of a list. The 2px top rule is what
+   now says "one of several" -- it groups down the column the way a run
+   of cards should. */
+.kv{margin:0 0 5px;break-inside:avoid;border:1px solid #e0e0e0;background:#fcfcfc;
   border-top:2px solid #c8ccd2;padding:4px 7px 5px}
 .kv h4{font-size:9.2pt;font-weight:700;color:#111;margin:0 0 3px}
 /* ONE GRID PER CARD, NOT ONE PER ROW.
@@ -666,7 +713,12 @@ ol.steps span{color:#555}
 .news{margin-top:9px;border-top:1px solid #bbb;padding-top:6px;break-inside:avoid}
 .news > h3{font-family:'IBM Plex Mono',monospace;font-size:7.4pt;letter-spacing:1.2px;
   text-transform:uppercase;color:#7a5a20;margin:0 0 5px}
-.news .row{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.news .row{display:grid;grid-template-columns:repeat(auto-fit,minmax(0,1fr));gap:6px}
+/* auto-fit, not repeat(3,1fr). Eighteen countries have one
+   newsletter story and nine have two, and a fixed three-column
+   grid gave them a heading with a third or two-thirds of a
+   white rectangle under it -- which reads as content that
+   failed to load. One card now spans the band. */
 .news a{display:block;border:1px solid #c9c9c9;border-top:2px solid #7a5a20;
   padding:6px 8px;min-width:0}
 .news .d{font-family:'IBM Plex Mono',monospace;font-size:6.6pt;letter-spacing:.5px;color:#777}
@@ -684,6 +736,27 @@ ol.steps span{color:#555}
 `;
 
 const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+// A CUT MID-WORD READS AS BROKEN SOFTWARE, not as an abbreviation.
+//
+// The cover's Model column was a bare .slice(0, 64). On roughly half the
+// rows it landed inside a word -- Argentina ended "one of the worl",
+// Bahrain "with no dra", Costa Rica "Recepción de Comprobantes Electrón",
+// and several closed no parenthesis they had opened. That is the first
+// page a reader sees and the one they use to decide which country pages
+// matter; a fact that stops mid-syllable undermines every fact after it.
+//
+// Backs up to the last space and marks the cut, so the reader can tell a
+// shortened sentence from one that simply ends. If there is no space to
+// back up to, the hard cut stands -- a single 64-character word is not a
+// case worth more code.
+function clip(text, max) {
+  const str = String(text || "");
+  if (str.length <= max) return str;
+  const cut = str.slice(0, max);
+  const space = cut.lastIndexOf(" ");
+  return (space > max * 0.6 ? cut.slice(0, space) : cut).replace(/[ ,;:(]+$/, "") + "\u2026";
+}
+
 function shortDate(d) {
   if (!d) return "";
   const [y, m] = String(d).split("-");
@@ -725,44 +798,76 @@ const HL_SIGNATURE = {
 function headlineTiles(h, t) {
   if (!h) return "";
   const esc = escapeHtml;
-  const tile = (value, tone, label, note) =>
-    `<div class="${tone}"><div class="v">${value}</div><div class="l">${esc(label)}</div>${
-      note ? `<div class="n">${esc(note)}</div>` : ""}</div>`;
 
-  const segment = (status, date, label, note) => {
+  // ---- THREE CARDS, NOT FIVE ------------------------------------------
+  //
+  // Dan, 22 August 2026: "from a section arrangement standard - we should
+  // only have 5 boxes / cards at the top of the page. We can combine B2G,
+  // B2B and B2C into one card."
+  //
+  // He was counting ten. Nine countries were also showing the demoted
+  // per-country stats as a second strip directly underneath, in a
+  // different style, and on Brazil, Bahrain and Romania it restated the
+  // tiles above it -- Romania printed "5 yrs" in one strip and "10 yrs" in
+  // the other, 15mm apart, for the same fact. That strip is gone; see the
+  // renderer below.
+  //
+  // COMBINING THE THREE SEGMENTS IS A READABILITY FIX, not just a count.
+  // As three separate tiles they were three identical boxes: Kenya and
+  // Uruguay both printed ACTIVE / ACTIVE / ACTIVE across the top with
+  // nothing to tell them apart, because the qualifying lines are the first
+  // thing the fitter takes. Read as one card with three labelled rows,
+  // the segments are compared against each other -- which is the actual
+  // question, "does this apply to me" -- instead of against the same
+  // segment on another country's page.
+  const seg = (status, date, label, note) => {
     const [key, en, tone] = HL_STATUS[status] || HL_STATUS.unknown;
-    // The date rides WITH the word rather than replacing it, because
-    // "Jan 2027" alone does not say whether that is a start or a
-    // deadline, and "PLANNED" alone is the omission migration 600's
-    // CHECK constraint refuses to store.
+    // The date rides WITH the word rather than replacing it: "Jan 2027"
+    // alone does not say whether that is a start or a deadline, and
+    // "PLANNED" alone is the omission migration 600's CHECK refuses to
+    // store.
     const value = status === "planned" && date
       ? `${esc(t(key, en))} <span class="dt">${esc(shortDate(date))}</span>`
       : esc(t(key, en));
-    return tile(value, tone, label, note);
+    return `<div class="seg ${tone}"><span class="sl">${esc(label)}</span>
+      <span class="sv">${value}</span>
+      <span class="sn">${note ? esc(note) : ""}</span></div>`;
   };
+
+  const card = (value, tone, label, note) =>
+    `<div class="hcard ${tone}"><div class="v">${value}</div><div class="l">${esc(label)}</div>${
+      note ? `<div class="n">${esc(note)}</div>` : ""}</div>`;
 
   const arch = (() => {
     if (h.archiving_status === "years" && h.archiving_years != null) {
-      return tile(`${esc(String(h.archiving_years))} <span class="dt">${
-        esc(t("hl.yrs", "yrs"))}</span>`, "on", t("hl.lbl.archiving", "Archiving"), h.archiving_note);
+      // NOT the same green as an in-force mandate. A retention period is
+      // not a compliance status, and painting "7 yrs" the colour that
+      // means ACTIVE two cards to the left made the strip say something it
+      // did not mean. Neutral, because a number is just a number.
+      return card(`${esc(String(h.archiving_years))} <span class="dt">${
+        esc(t("hl.yrs", "yrs"))}</span>`, "num", t("hl.lbl.archiving", "Archiving"), h.archiving_note);
     }
     const map = {
-      varies:         ["hl.arch.varies", "VARIES",         "soon"],
+      // "VARIES" used to print in the amber that means "a deadline is
+      // coming" everywhere else on the page. It is not a warning.
+      varies:         ["hl.arch.varies", "VARIES",         "num"],
       no_requirement: ["hl.arch.none",   "NO REQUIREMENT", "off"],
       unknown:        ["hl.unknown",     "NOT CONFIRMED",  "unk"],
     };
     const [key, en, tone] = map[h.archiving_status] || map.unknown;
-    return tile(esc(t(key, en)), tone, t("hl.lbl.archiving", "Archiving"), h.archiving_note);
+    return card(esc(t(key, en)), tone, t("hl.lbl.archiving", "Archiving"), h.archiving_note);
   })();
 
   const [sk, sen, stone] = HL_SIGNATURE[h.signature_status] || HL_SIGNATURE.unknown;
 
   return `<div class="statstrip hl">
-    ${segment(h.b2g_status, h.b2g_date, t("hl.lbl.b2g", "B2G e-invoicing"), h.b2g_note)}
-    ${segment(h.b2b_status, h.b2b_date, t("hl.lbl.b2b", "B2B e-invoicing"), h.b2b_note)}
-    ${segment(h.b2c_status, h.b2c_date, t("hl.lbl.b2c", "B2C e-invoicing"), h.b2c_note)}
+    <div class="hcard mand"><div class="l">${esc(t("hl.lbl.mandate", "E-invoicing mandate"))}</div>
+      ${seg(h.b2g_status, h.b2g_date, t("hl.seg.b2g", "B2G"), h.b2g_note)}
+      ${seg(h.b2b_status, h.b2b_date, t("hl.seg.b2b", "B2B"), h.b2b_note)}
+      ${seg(h.b2c_status, h.b2c_date, t("hl.seg.b2c", "B2C"), h.b2c_note)}
+    </div>
     ${arch}
-    ${tile(esc(t(sk, sen)), stone, t("hl.lbl.signature", "Digital signature"), h.signature_note)}
+    ${card(esc(t(sk, sen)), stone, t("hl.lbl.signature", "Digital signature"), h.signature_note)}
   </div>`;
 }
 
@@ -796,14 +901,22 @@ export function renderGuideDocument({ bundle, order, lang, strings, today, siteO
   <p class="conv">${t("doc.convention", "In the five headline tiles on each page, a status describes the obligation to ISSUE an e-invoice. Where a business must only be able to RECEIVE one, that is said in the line under the tile. NOT CONFIRMED means we could not source the fact, which is not the same as no requirement.")}</p>
   <table class="summary">
     <colgroup><col class="a"><col class="b"><col class="c"><col class="d"></colgroup>
-    <tr><th>${t("col.country", "Jurisdiction")}</th><th>${t("col.next", "Next dated obligation")}</th>
-        <th>${t("col.what", "What changes")}</th><th>${t("col.model", "Model")}</th></tr>
+    <!-- A REAL thead, so the headers repeat on every printed sheet.
+         The summary table is about 3.6 pages long and the fitter only
+         ever runs on a .country section, so nothing shortens it. Written
+         as a bare tr, sheets two to four printed as an unheaded column of
+         dates and truncated model strings -- on screen you scroll back up
+         to see what they mean, on paper you cannot. -->
+    <thead><tr><th>${t("col.country", "Jurisdiction")}</th><th>${t("col.next", "Next dated obligation")}</th>
+        <th>${t("col.what", "What changes")}</th><th>${t("col.model", "Model")}</th></tr></thead>
+    <tbody>
     ${rows.map((r) => `<tr>
       <td>${esc(translateCountryName(lang, r.name))} ${r.euMember ? `<span class="pill eu">${t("pill.eu", "EU")}</span>` : ""}${r.complexity === "complex" ? ` <span class="pill cx">${t("pill.complex", "Complex")}</span>` : ""}</td>
       <td class="date">${r.nextDate ? esc(r.nextDate) : `<span class="pill">${r.inForceOnly ? t("pill.inforce", "In force") : t("pill.nodate", "No dated step")}</span>`}</td>
       <td>${esc(r.nextWhat || "—")}</td>
-      <td>${esc((r.model || "—").split(/[.;]/)[0].slice(0, 64))}</td>
+      <td>${esc(clip(String(r.model || "—").split(/[.;]/)[0], 64))}</td>
     </tr>`).join("")}
+    </tbody>
   </table>
 </section>`;
 
@@ -829,29 +942,57 @@ export function renderGuideDocument({ bundle, order, lang, strings, today, siteO
     // inconsistent one, and migration 608 makes the fallback unreachable
     // in production anyway.
     const headline = headlineTiles(c.headline, t);
+    // THE SECOND STRIP IS GONE, 22 August 2026.
+    //
+    // It was the old free-form per-country stats, demoted to an optional
+    // extra when the headline facts took the top of the page. Keeping them
+    // "in case there is room" looked like thrift and was not: on the nine
+    // countries where it appeared it gave the reader ten boxes in two
+    // different visual languages stacked on each other, and on three of
+    // them it restated the cards above it -- Romania printed 5 yrs in one
+    // and 10 yrs in the other for the same retention period, Bahrain
+    // printed NOT CONFIRMED above a box asserting the answer.
+    //
+    // A page cannot say a fact twice and be trusted about either copy.
+    // These stats are all still on the country's deep dive, which the
+    // footer links to by URL on every page.
     const legacy = c.stats.slice(0, 5).map((s) =>
       `<div><div class="v">${esc(s.stat_value)}</div><div class="l">${esc(s.stat_label)}</div></div>`).join("");
-    // The per-country stats are still worth printing -- they are just no
-    // longer the headline. Ranked last among the optional extras because
-    // history and sources both say something the page does not already
-    // say somewhere else, and several of these stats repeat a fact row.
-    const stats = headline
-      ? (legacy ? `<div class="statstrip alt" data-opt="stats" data-opt-rank="3" style="display:none">${legacy}</div>` : "")
-      : (legacy ? `<div class="statstrip">${legacy}</div>` : "");
+    // Only as a fallback, for a country with no stored headline facts.
+    // Migration 608 filled all 70, so this is unreachable in production --
+    // it exists so the fixtures and any future country render something
+    // rather than nothing.
+    const stats = headline ? "" : (legacy ? `<div class="statstrip">${legacy}</div>` : "");
 
-    const timeline = w.rows.length ? `<div class="blk keep"><h3>${t("sec.timeline", "Compliance timeline")}</h3>
-      <ul class="tl">${w.rows.map((m) => `<li class="${m.date < today ? "past" : ""}">
+    // ONE LIST, IN DATE ORDER. The older milestones the window leaves out
+    // used to be a SECOND ul appended under the first, so a section headed
+    // COMPLIANCE TIMELINE ran forwards and then jumped backwards:
+    // Azerbaijan printed Jan 2024, Jan 2026, then Apr 2017, Jan 2018, Jan
+    // 2020. On the one component whose order carries its meaning, that is
+    // not a cosmetic fault -- a reader scanning for "what happens next"
+    // reads the last row.
+    //
+    // They are now inline, in their correct place, hidden. The fitter
+    // reveals them oldest-first while there is room, which is also better
+    // than the old all-or-nothing: a page with space for two gets two.
+    const shownDates = new Set(w.rows.map((m) => m.date));
+    const allRows = [...w.rows, ...w.hidden].sort((a, b) => String(a.date).localeCompare(String(b.date)));
+    const timeline = allRows.length ? `<div class="blk"><h3>${t("sec.timeline", "Compliance timeline")}</h3><div class="bx">
+      <ul class="tl">${allRows.map((m) => {
+        const hidden = !shownDates.has(m.date) || w.hidden.includes(m);
+        return `<li class="${m.date < today ? "past" : ""}"${
+          hidden ? ` data-opt="history" data-opt-rank="1" style="display:none"` : ""}>
         <span class="d">${esc(shortDate(m.date))}</span>
-        <span><span class="s">${esc(m.system || "")}</span>${m.desc && !plan.drop.has("milestoneDescriptions") ? ` <span class="x">${esc(m.desc)}</span>` : ""}</span>
-      </li>`).join("")}</ul>
-      ${w.hiddenPast ? `<ul class="tl" data-opt="history" data-opt-rank="1" style="display:none">${
-        w.hidden.map((m) => `<li class="past">
-          <span class="d">${esc(shortDate(m.date))}</span>
-          <span><span class="s">${esc(m.system || "")}</span></span>
-        </li>`).join("")}</ul>
-        <p class="tlnote" data-optnote style="margin:3px 0 0;font-size:7.4pt;color:#777">${
-          fill(t("tl.hidden", "{0} earlier milestones are on the full deep dive."), w.hiddenPast)}</p>` : ""}
-    </div>` : "";
+        <span><span class="s">${esc(m.system || "")}</span>${
+          !hidden && m.desc && !plan.drop.has("milestoneDescriptions")
+            ? ` <span class="x">${esc(m.desc)}</span>` : ""}</span>
+      </li>`;
+      }).join("")}</ul>
+      ${w.hiddenPast ? `<p class="tlnote" data-optnote
+         data-hist="${esc(t("tl.hidden", "{0} earlier milestones are on the full deep dive."))}"
+         data-hist-one="${esc(t("tl.hiddenOne", "1 earlier milestone is on the full deep dive."))}"
+         style="margin:3px 0 0;font-size:7.4pt;color:#777"></p>` : ""}
+    </div></div>` : "";
 
     // A COLUMN THAT SAYS THE SAME THING ON EVERY ROW IS NOT A COLUMN.
     // Azerbaijan prints "No cap published" five times down the annual-cap
@@ -861,18 +1002,33 @@ export function renderGuideDocument({ bundle, order, lang, strings, today, siteO
     // reads better AND is the cheapest height this sheet has to give.
     const caps = c.penalties.map((r) => (r.annual_cap || "").trim());
     const capsAllSame = caps.length > 1 && caps.every((v) => v === caps[0]);
-    const penalties = c.penalties.length ? `<div class="blk keep"><h3>${t("sec.penalties", "Penalties")}</h3>
+    // A FOOTNOTE WHOSE ENTIRE CONTENT IS AN EM DASH, on nineteen countries.
+    //
+    // The collapse above fires whenever every row agrees -- including when
+    // every row is EMPTY, which is the common case. Belgium, Bulgaria,
+    // Croatia, Denmark, India, Italy, Poland, Spain, Turkey and ten others
+    // printed "Annual cap: —" under the table: a line that occupies space,
+    // draws the eye, and tells the reader nothing at all. Azerbaijan's "No
+    // cap published" and South Korea's real figure are the cases the
+    // collapse was written for, and they still print.
+    //
+    // Not a rendering nicety. The absence of a published cap is a real and
+    // useful fact about a penalty regime, and an em dash does not state
+    // it -- it looks like the value failed to load.
+    const capsFootnote = capsAllSame && caps[0]
+      ? `<p class="pnote">${fill(t("pen.capsAll", "Annual cap: {0}"), esc(caps[0]))}</p>`
+      : "";
+    const penalties = c.penalties.length ? `<div class="blk"><h3>${t("sec.penalties", "Penalties")}</h3><div class="bx">
       <table class="pen${capsAllSame ? " nocap" : ""}">
       <colgroup><col class="f"><col class="n">${capsAllSame ? "" : '<col class="c">'}</colgroup>
       <tr><th>${t("col.failure", "Failure")}</th><th>${t("col.fine", "Fine")}</th>${
         capsAllSame ? "" : `<th>${t("col.cap", "Annual cap")}</th>`}</tr>
       ${c.penalties.map((r) => `<tr><td>${esc(r.failure_description)}</td><td>${esc(r.fine_amount || "—")}</td>${
         capsAllSame ? "" : `<td>${esc(r.annual_cap || "—")}</td>`}</tr>`).join("")}
-      </table>${capsAllSame ? `<p style="margin:3px 0 0;font-size:7.4pt;color:#666">${
-        fill(t("pen.capsAll", "Annual cap: {0}"), esc(caps[0] || "—"))}</p>` : ""}</div>` : "";
+      </table>${capsFootnote}</div></div>` : "";
 
     let rowsLeft = plan.rowCap === undefined ? Infinity : plan.rowCap;
-    const facts = c.cards.length ? `<div class="blk bare"><h3>${t("sec.facts", "Key facts")}</h3>
+    const facts = c.cards.length ? `<div class="blk"><h3>${t("sec.facts", "Key facts")}</h3>
       ${c.cards.map((card) => {
         const take = (card.rows || []).slice(0, Math.max(0, rowsLeft));
         rowsLeft -= take.length;
@@ -888,9 +1044,9 @@ export function renderGuideDocument({ bundle, order, lang, strings, today, siteO
          style="display:none;border:0;background:none;padding:0;color:#666;font-size:7.6pt"></p>
       </div>` : "";
 
-    const steps = c.steps.length ? `<div class="blk keep"><h3>${t("sec.steps", "What to do")}</h3>
+    const steps = c.steps.length ? `<div class="blk"><h3>${t("sec.steps", "What to do")}</h3><div class="bx">
       <ol class="steps">${c.steps.map((s) => `<li><b>${esc(s.title)}</b>${
-        !plan.drop.has("stepDescriptions") && s.description ? ` <span>${esc(s.description)}</span>` : ""}</li>`).join("")}</ol></div>` : "";
+        !plan.drop.has("stepDescriptions") && s.description ? ` <span>${esc(s.description)}</span>` : ""}</li>`).join("")}</ol></div></div>` : "";
 
     // THE LINK IS REAL, AND IT HAS TO SURVIVE PAPER.
     //
@@ -904,7 +1060,7 @@ export function renderGuideDocument({ bundle, order, lang, strings, today, siteO
     // OPTIONAL, AND ONLY IF THERE IS ROOM. The portals are already named in
     // the footer; this spells out where each one lives, which is worth
     // having on a thin country and is the first thing to go on a full one.
-    const sourcesExtra = c.portals.length ? `<div class="blk bare" data-opt="sources" data-opt-rank="2" style="display:none">
+    const sourcesExtra = c.portals.length ? `<div class="blk" data-opt="sources" data-opt-rank="2" style="display:none">
       <h3>${t("sec.sources", "Where this is tracked")}</h3>
       ${c.portals.map((pt) => `<div class="kv"><h4>${esc(pt.label)}</h4>
         <p style="font-family:'IBM Plex Mono',monospace;font-size:7pt;overflow-wrap:anywhere;margin:1px 0 0">${
@@ -1126,12 +1282,32 @@ export const GUIDE_FIT_SCRIPT = `
     });
     for(var x = 0; x < extras.length; x++){
       extras[x].style.display = '';
-      var note = extras[x].parentNode.querySelector('[data-optnote]');
-      if(note) note.style.display = 'none';
       if(section.getBoundingClientRect().height > PAGE){
         extras[x].style.display = 'none';
-        if(note) note.style.display = '';
         break;
+      }
+    }
+    // THE NOTE COUNTS WHAT IS STILL HIDDEN, and is written after the loop
+    // rather than toggled inside it. History rows are now revealed one at
+    // a time in date order, so "all or nothing" stopped being true: a page
+    // with room for two of five earlier milestones shows two, and a note
+    // that said five would be wrong while a note that said nothing would
+    // hide three. Counting afterwards is the only version that is right in
+    // every case, including the one where everything fit.
+    var hist = section.querySelectorAll('[data-opt="history"]');
+    var stillHidden = 0;
+    for(var hI = 0; hI < hist.length; hI++){
+      if(hist[hI].style.display === 'none') stillHidden++;
+    }
+    var tnote = section.querySelector('[data-optnote]');
+    if(tnote){
+      if(stillHidden === 0){
+        tnote.style.display = 'none';
+      } else {
+        tnote.style.display = '';
+        tnote.textContent = stillHidden === 1
+          ? tnote.getAttribute('data-hist-one')
+          : tnote.getAttribute('data-hist').replace('{0}', String(stillHidden));
       }
     }
     if(hidden > 0){
@@ -1168,6 +1344,11 @@ export const GUIDE_FIT_SCRIPT = `
     //
     // Nothing is lost. A reader with a dense country gets every fact,
     // set tighter; a reader with a thin one sees no difference.
+    // STEPS OF 0.02, NOT 0.04. Argentina finished 3px over the page at
+    // full scale and so dropped a whole 4% step, printing at 92% fill with
+    // the difference as white space at the foot. Half the step is half the
+    // average overshoot, and costs one more measurement per page.
+    //
     // zoom, NOT font-size. Setting font-size on the section changes almost
     // nothing here: every rule in GUIDE_STYLE sets an absolute pt size, so
     // the children do not inherit it and the first version of this scaled
@@ -1177,7 +1358,7 @@ export const GUIDE_FIT_SCRIPT = `
     var z = 0.88;   // the document scale set in CSS; see .country
     function scaleTo(floor){
       while(section.getBoundingClientRect().height > PAGE && z > floor){
-        z = Math.round((z - 0.04) * 100) / 100;
+        z = Math.round((z - 0.02) * 100) / 100;
         section.style.zoom = z;
       }
     }
@@ -1185,14 +1366,45 @@ export const GUIDE_FIT_SCRIPT = `
     // the strip on every page that is merely a little over.
     scaleTo(0.84);
     // Only now, if scaling alone was not enough, does content go.
-    var nrung = 0;
+    var nrung = 0, newsUndo = [];
     while(section.getBoundingClientRect().height > PAGE && nrung < NEWS_LADDER.length){
       var nel = NEWS_LADDER[nrung](section);
       if(!nel){ nrung++; continue; }
+      newsUndo.push({ el: nel, parent: nel.parentNode, anchor: nel.nextSibling });
       nel.parentNode.removeChild(nel);
     }
     // And the hard floor for anything still standing.
     scaleTo(0.80);
+    // ---- AND THEN GIVE BACK WHATEVER IT NO LONGER NEEDS -------------
+    //
+    // The ladder above ran while the page was over. Once it is under, the
+    // page is usually under by a lot, and nothing was handing any of it
+    // back: nine countries -- Hungary, Kenya, Argentina, Philippines,
+    // Ecuador, Uruguay, Nigeria, Costa Rica, Colombia -- had shed their
+    // whole newsletter strip AND every headline qualifier, were printing
+    // at the smaller 0.84, and still finished with 12-16% of the sheet
+    // blank. They are the thinnest countries in the set and they came out
+    // looking the most starved, which is the exact inversion of what the
+    // fitter is for.
+    //
+    // CONTENT FIRST, THEN SIZE. A restored newsletter card is worth more
+    // than 4% of type scale, so the removals are offered back before the
+    // zoom is raised -- most recent removal first, since that is the one
+    // the ladder valued most.
+    for(var r = newsUndo.length - 1; r >= 0; r--){
+      var ri = newsUndo[r];
+      ri.parent.insertBefore(ri.el, ri.anchor && ri.anchor.parentNode === ri.parent ? ri.anchor : null);
+      if(section.getBoundingClientRect().height > PAGE){
+        ri.parent.removeChild(ri.el);       // genuinely does not fit
+      }
+    }
+    while(z < 0.88){
+      var up = Math.round((z + 0.02) * 100) / 100;
+      section.style.zoom = up;
+      if(section.getBoundingClientRect().height > PAGE){ section.style.zoom = z; break; }
+      z = up;
+    }
+    if(z >= 0.88) section.style.zoom = '';
     return section.getBoundingClientRect().height <= PAGE;
   }
   function run(){

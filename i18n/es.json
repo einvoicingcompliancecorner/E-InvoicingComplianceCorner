@@ -366,7 +366,8 @@
         "b2b": "Factura-e B2B",
         "b2c": "Factura-e B2C",
         "b2g": "Factura-e B2G",
-        "signature": "Firma digital"
+        "signature": "Firma digital",
+        "mandate": "Mandato de factura-e"
       },
       "none": "SIN MANDATO",
       "planned": "PREVISTO",
@@ -378,7 +379,12 @@
       "unknown": "NO CONFIRMADO",
       "verified": "Datos verificados {0}",
       "voluntary": "VOLUNTARIO",
-      "yrs": "años"
+      "yrs": "años",
+      "seg": {
+        "b2b": "B2B",
+        "b2c": "B2C",
+        "b2g": "B2G"
+      }
     },
     "lbl": {
       "updated": "Actualizado"
@@ -413,7 +419,8 @@
       "timeline": "Calendario de cumplimiento"
     },
     "tl": {
-      "hidden": "{0} hitos anteriores están en el análisis a fondo completo."
+      "hidden": "{0} hitos anteriores están en el análisis a fondo completo.",
+      "hiddenOne": "1 hito anterior está en el análisis a fondo completo."
     }
   }
 }

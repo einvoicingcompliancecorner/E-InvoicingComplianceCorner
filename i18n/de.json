@@ -366,7 +366,8 @@
         "b2b": "B2B-E-Rechnung",
         "b2c": "B2C-E-Rechnung",
         "b2g": "B2G-E-Rechnung",
-        "signature": "Digitale Signatur"
+        "signature": "Digitale Signatur",
+        "mandate": "E-Rechnungspflicht"
       },
       "none": "KEINE PFLICHT",
       "planned": "GEPLANT",
@@ -378,7 +379,12 @@
       "unknown": "NICHT BESTÄTIGT",
       "verified": "Fakten geprüft {0}",
       "voluntary": "FREIWILLIG",
-      "yrs": "J."
+      "yrs": "J.",
+      "seg": {
+        "b2b": "B2B",
+        "b2c": "B2C",
+        "b2g": "B2G"
+      }
     },
     "lbl": {
       "updated": "Aktualisiert"
@@ -413,7 +419,8 @@
       "timeline": "Compliance-Zeitleiste"
     },
     "tl": {
-      "hidden": "{0} frühere Meilensteine stehen im vollständigen Deep Dive."
+      "hidden": "{0} frühere Meilensteine stehen im vollständigen Deep Dive.",
+      "hiddenOne": "1 früherer Meilenstein steht im vollständigen Deep Dive."
     }
   }
 }
