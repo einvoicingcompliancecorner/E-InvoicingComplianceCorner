@@ -104,14 +104,32 @@
 -- if you genuinely cannot tell who runs it, 'unknown' with a note in
 -- the note column is a correct answer and always was.
 --
--- ---- WHY THE INSERTS ARE IN BLOCKS OF 25 -----------------------------
+-- ---- WHY THE VIEW IS BUILT IN THREES ---------------------------------
 --
--- D1 rejected the first version of this file with "too many terms in
--- compound SELECT". A multi-row INSERT ... VALUES is a compound SELECT
--- to SQLite, one term per row, and D1's limit is lower than the 500 the
--- local replay runs under -- so a file that replays clean offline can
--- still fail on the real database. 25 is comfortably under any plausible
--- limit and keeps each block readable. Nothing about the data changed.
+-- D1 rejected this file twice with "too many terms in compound SELECT".
+-- cited_sources naturally wants one nine-branch UNION ALL -- five tables,
+-- nine columns holding a URL -- and D1's SQLITE_LIMIT_COMPOUND_SELECT is
+-- lower than the local SQLite the replay runs on, so the file replayed
+-- clean offline and failed on the real database. Twice, because the first
+-- diagnosis was wrong: multi-row INSERT ... VALUES lists are EXEMPT from
+-- that limit (SF_MultiValue), so the 185-row insert was never the
+-- problem, and shrinking it to blocks of 25 fixed nothing.
+--
+-- THE EVIDENCE, since guessing a third time was not an option. Across 614
+-- migrations and both workers, the largest compound SELECT that has ever
+-- run against this database is THREE terms -- migration 173/175, and the
+-- three-arm UNION in members-worker/src/index.js. Nine was the only
+-- outlier in the entire history. So the view is assembled from three
+-- parts of three, and the top view unions the three: nothing anywhere
+-- exceeds a width production has already proven.
+--
+-- The split is arbitrary -- it is driven by a limit, not by meaning --
+-- which is why the parts are numbered rather than named after something
+-- that would imply they group by subject.
+--
+-- Also: the inserts are INSERT OR REPLACE. This file failed twice on a
+-- live database, and a migration that cannot be re-run after a partial
+-- failure turns a bad deploy into a manual repair.
 -- ================================================================
 
 CREATE TABLE IF NOT EXISTS source_hosts (
@@ -123,6 +141,35 @@ CREATE TABLE IF NOT EXISTS source_hosts (
 
 -- Every URL the site cites, with its host, in one place.
 --
+-- Three parts of three, then a union of the three. See the note above:
+-- nine branches in one statement is what D1 refuses.
+DROP VIEW IF EXISTS cited_sources_p1;
+CREATE VIEW cited_sources_p1 AS
+  SELECT 'milestone' AS kind, id AS row_id, source_url AS url
+    FROM milestones WHERE ifnull(source_url,'') <> ''
+  UNION ALL SELECT 'story' AS kind, id AS row_id, source_url AS url
+    FROM stories WHERE ifnull(source_url,'') <> ''
+  UNION ALL SELECT 'tracking_source' AS kind, id AS row_id, url AS url
+    FROM tracking_sources WHERE ifnull(url,'') <> '';
+
+DROP VIEW IF EXISTS cited_sources_p2;
+CREATE VIEW cited_sources_p2 AS
+  SELECT 'deep_dive_portal' AS kind, id AS row_id, url AS url
+    FROM deep_dive_portals WHERE ifnull(url,'') <> ''
+  UNION ALL SELECT 'headline_fact.b2g' AS kind, country_id AS row_id, b2g_source AS url
+    FROM country_headline_facts WHERE ifnull(b2g_source,'') <> ''
+  UNION ALL SELECT 'headline_fact.b2b' AS kind, country_id AS row_id, b2b_source AS url
+    FROM country_headline_facts WHERE ifnull(b2b_source,'') <> '';
+
+DROP VIEW IF EXISTS cited_sources_p3;
+CREATE VIEW cited_sources_p3 AS
+  SELECT 'headline_fact.b2c' AS kind, country_id AS row_id, b2c_source AS url
+    FROM country_headline_facts WHERE ifnull(b2c_source,'') <> ''
+  UNION ALL SELECT 'headline_fact.archiving' AS kind, country_id AS row_id, archiving_source AS url
+    FROM country_headline_facts WHERE ifnull(archiving_source,'') <> ''
+  UNION ALL SELECT 'headline_fact.signature' AS kind, country_id AS row_id, signature_source AS url
+    FROM country_headline_facts WHERE ifnull(signature_source,'') <> '';
+
 -- The host expression is deliberately literal rather than clever: strip
 -- the scheme, take everything up to the first slash, lowercase it, drop
 -- a leading www. and any :port. Every one of the 1,176 URLs in the
@@ -133,15 +180,9 @@ CREATE TABLE IF NOT EXISTS source_hosts (
 DROP VIEW IF EXISTS cited_sources;
 CREATE VIEW cited_sources AS
 WITH raw AS (
-            SELECT 'milestone'          AS kind, id         AS row_id, source_url       AS url FROM milestones            WHERE ifnull(source_url,'')       <> ''
-  UNION ALL SELECT 'story',                      id,                   source_url             FROM stories               WHERE ifnull(source_url,'')       <> ''
-  UNION ALL SELECT 'tracking_source',            id,                   url                    FROM tracking_sources      WHERE ifnull(url,'')              <> ''
-  UNION ALL SELECT 'deep_dive_portal',           id,                   url                    FROM deep_dive_portals     WHERE ifnull(url,'')              <> ''
-  UNION ALL SELECT 'headline_fact.b2g',          country_id,           b2g_source             FROM country_headline_facts WHERE ifnull(b2g_source,'')       <> ''
-  UNION ALL SELECT 'headline_fact.b2b',          country_id,           b2b_source             FROM country_headline_facts WHERE ifnull(b2b_source,'')       <> ''
-  UNION ALL SELECT 'headline_fact.b2c',          country_id,           b2c_source             FROM country_headline_facts WHERE ifnull(b2c_source,'')       <> ''
-  UNION ALL SELECT 'headline_fact.archiving',    country_id,           archiving_source       FROM country_headline_facts WHERE ifnull(archiving_source,'') <> ''
-  UNION ALL SELECT 'headline_fact.signature',    country_id,           signature_source       FROM country_headline_facts WHERE ifnull(signature_source,'') <> ''
+            SELECT kind, row_id, url FROM cited_sources_p1
+  UNION ALL SELECT kind, row_id, url FROM cited_sources_p2
+  UNION ALL SELECT kind, row_id, url FROM cited_sources_p3
 ), no_scheme AS (
   SELECT kind, row_id, url,
          lower(CASE WHEN instr(url,'://') > 0 THEN substr(url, instr(url,'://')+3) ELSE url END) AS rest
@@ -160,7 +201,7 @@ SELECT kind, row_id, url,
   FROM no_www;
 
 -- ---- primary (185 hosts, 577 citations) ---------------------------------
-INSERT INTO source_hosts (host, tier, note, classified_on) VALUES
+INSERT OR REPLACE INTO source_hosts (host, tier, note, classified_on) VALUES
   ('aade.gr', 'primary', 'Independent Authority for Public Revenue, Greece', '2026-08-22'),
   ('adilet.zan.kz', 'primary', 'official legal information system, Kazakhstan', '2026-08-22'),
   ('afip.gob.ar', 'primary', NULL, '2026-08-22'),
@@ -186,7 +227,7 @@ INSERT INTO source_hosts (host, tier, note, classified_on) VALUES
   ('chorus-pro.gouv.fr', 'primary', NULL, '2026-08-22'),
   ('collectivites-locales.gouv.fr', 'primary', NULL, '2026-08-22'),
   ('coretaxdjp.pajak.go.id', 'primary', NULL, '2026-08-22');
-INSERT INTO source_hosts (host, tier, note, classified_on) VALUES
+INSERT OR REPLACE INTO source_hosts (host, tier, note, classified_on) VALUES
   ('cpe.sunat.gob.pe', 'primary', NULL, '2026-08-22'),
   ('cwfwpt.ggj.gov.cn', 'primary', NULL, '2026-08-22'),
   ('dgii.gov.do', 'primary', NULL, '2026-08-22'),
@@ -212,7 +253,7 @@ INSERT INTO source_hosts (host, tier, note, classified_on) VALUES
   ('einvoice6.gst.gov.in', 'primary', NULL, '2026-08-22'),
   ('einvoicing.govt.nz', 'primary', NULL, '2026-08-22'),
   ('eis.bir.gov.ph', 'primary', NULL, '2026-08-22');
-INSERT INTO source_hosts (host, tier, note, classified_on) VALUES
+INSERT OR REPLACE INTO source_hosts (host, tier, note, classified_on) VALUES
   ('english.www.gov.cn', 'primary', NULL, '2026-08-22'),
   ('eotpremnica.efaktura.gov.rs', 'primary', NULL, '2026-08-22'),
   ('eracuni.ujp.gov.si', 'primary', NULL, '2026-08-22'),
@@ -238,7 +279,7 @@ INSERT INTO source_hosts (host, tier, note, classified_on) VALUES
   ('gob.ec', 'primary', NULL, '2026-08-22'),
   ('gob.pe', 'primary', NULL, '2026-08-22'),
   ('gov.br', 'primary', NULL, '2026-08-22');
-INSERT INTO source_hosts (host, tier, note, classified_on) VALUES
+INSERT OR REPLACE INTO source_hosts (host, tier, note, classified_on) VALUES
   ('gov.cn', 'primary', NULL, '2026-08-22'),
   ('gov.cy', 'primary', NULL, '2026-08-22'),
   ('gov.ie', 'primary', NULL, '2026-08-22'),
@@ -264,7 +305,7 @@ INSERT INTO source_hosts (host, tier, note, classified_on) VALUES
   ('ird.govt.nz', 'primary', NULL, '2026-08-22'),
   ('irs.gov', 'primary', NULL, '2026-08-22'),
   ('island.is', 'primary', 'Government of Iceland portal', '2026-08-22');
-INSERT INTO source_hosts (host, tier, note, classified_on) VALUES
+INSERT OR REPLACE INTO source_hosts (host, tier, note, classified_on) VALUES
   ('istd.gov.jo', 'primary', NULL, '2026-08-22'),
   ('itax.kra.go.ke', 'primary', NULL, '2026-08-22'),
   ('kenyalaw.org', 'primary', 'National Council for Law Reporting, a state corporation', '2026-08-22'),
@@ -290,7 +331,7 @@ INSERT INTO source_hosts (host, tier, note, classified_on) VALUES
   ('mof.gov.ae', 'primary', NULL, '2026-08-22'),
   ('mof.gov.cy', 'primary', NULL, '2026-08-22'),
   ('mof.gov.sg', 'primary', NULL, '2026-08-22');
-INSERT INTO source_hosts (host, tier, note, classified_on) VALUES
+INSERT OR REPLACE INTO source_hosts (host, tier, note, classified_on) VALUES
   ('mof.gov.tw', 'primary', NULL, '2026-08-22'),
   ('mtca.gov.mt', 'primary', NULL, '2026-08-22'),
   ('narodne-novine.nn.hr', 'primary', 'Narodne novine, Croatia', '2026-08-22'),
@@ -316,7 +357,7 @@ INSERT INTO source_hosts (host, tier, note, classified_on) VALUES
   ('pravno-informacioni-sistem.rs', 'primary', 'official legal information system, Serbia', '2026-08-22'),
   ('procurement.govt.nz', 'primary', NULL, '2026-08-22'),
   ('qanoon.om', 'primary', 'Oman legal portal, Ministry of Legal Affairs', '2026-08-22');
-INSERT INTO source_hosts (host, tier, note, classified_on) VALUES
+INSERT OR REPLACE INTO source_hosts (host, tier, note, classified_on) VALUES
   ('regjeringen.no', 'primary', 'Government of Norway', '2026-08-22'),
   ('retsinformation.dk', 'primary', 'official legal information, Denmark', '2026-08-22'),
   ('revenue.ie', 'primary', 'Revenue Commissioners, Ireland', '2026-08-22'),
@@ -342,7 +383,7 @@ INSERT INTO source_hosts (host, tier, note, classified_on) VALUES
   ('tpctax.gov.taipei', 'primary', NULL, '2026-08-22'),
   ('upphandlingsmyndigheten.se', 'primary', 'National Agency for Public Procurement, Sweden', '2026-08-22'),
   ('uradni-list.si', 'primary', 'Uradni list, Slovenia', '2026-08-22');
-INSERT INTO source_hosts (host, tier, note, classified_on) VALUES
+INSERT OR REPLACE INTO source_hosts (host, tier, note, classified_on) VALUES
   ('uscode.house.gov', 'primary', NULL, '2026-08-22'),
   ('usp.gv.at', 'primary', NULL, '2026-08-22'),
   ('ustr.gov', 'primary', NULL, '2026-08-22'),
@@ -355,7 +396,7 @@ INSERT INTO source_hosts (host, tier, note, classified_on) VALUES
   ('zhejiang.chinatax.gov.cn', 'primary', NULL, '2026-08-22');
 
 -- ---- institutional (11 hosts, 133 citations) ----------------------------
-INSERT INTO source_hosts (host, tier, note, classified_on) VALUES
+INSERT OR REPLACE INTO source_hosts (host, tier, note, classified_on) VALUES
   ('ciat.org', 'institutional', 'Inter-American Center of Tax Administrations', '2026-08-22'),
   ('dbnalliance.org', 'institutional', 'Digital Business Networks Alliance, US Peppol-equivalent body', '2026-08-22'),
   ('docs.peppol.eu', 'institutional', 'OpenPeppol', '2026-08-22'),
@@ -369,7 +410,7 @@ INSERT INTO source_hosts (host, tier, note, classified_on) VALUES
   ('vat-one-stop-shop.ec.europa.eu', 'institutional', 'European Commission', '2026-08-22');
 
 -- ---- secondary (140 hosts, 459 citations) -------------------------------
-INSERT INTO source_hosts (host, tier, note, classified_on) VALUES
+INSERT OR REPLACE INTO source_hosts (host, tier, note, classified_on) VALUES
   ('5percado.hu', 'secondary', NULL, '2026-08-22'),
   ('aaptaxlaw.com', 'secondary', NULL, '2026-08-22'),
   ('abk-korea.com', 'secondary', NULL, '2026-08-22'),
@@ -395,7 +436,7 @@ INSERT INTO source_hosts (host, tier, note, classified_on) VALUES
   ('cijuf.org.co', 'secondary', NULL, '2026-08-22'),
   ('cleartax.com', 'secondary', NULL, '2026-08-22'),
   ('clearvo.io', 'secondary', NULL, '2026-08-22');
-INSERT INTO source_hosts (host, tier, note, classified_on) VALUES
+INSERT OR REPLACE INTO source_hosts (host, tier, note, classified_on) VALUES
   ('comarch.com', 'secondary', NULL, '2026-08-22'),
   ('comparateur-efacturation.fr', 'secondary', NULL, '2026-08-22'),
   ('compta-online.com', 'secondary', NULL, '2026-08-22'),
@@ -421,7 +462,7 @@ INSERT INTO source_hosts (host, tier, note, classified_on) VALUES
   ('facturele.com', 'secondary', NULL, '2026-08-22'),
   ('fakturko.io', 'secondary', NULL, '2026-08-22'),
   ('fiscal-requirements.com', 'secondary', NULL, '2026-08-22');
-INSERT INTO source_hosts (host, tier, note, classified_on) VALUES
+INSERT OR REPLACE INTO source_hosts (host, tier, note, classified_on) VALUES
   ('fiskaly.com', 'secondary', NULL, '2026-08-22'),
   ('fonoa.com', 'secondary', NULL, '2026-08-22'),
   ('forvismazars.com', 'secondary', NULL, '2026-08-22'),
@@ -447,7 +488,7 @@ INSERT INTO source_hosts (host, tier, note, classified_on) VALUES
   ('kpmg.com', 'secondary', NULL, '2026-08-22'),
   ('law.cornell.edu', 'secondary', NULL, '2026-08-22'),
   ('law.esnai.cn', 'secondary', NULL, '2026-08-22');
-INSERT INTO source_hosts (host, tier, note, classified_on) VALUES
+INSERT OR REPLACE INTO source_hosts (host, tier, note, classified_on) VALUES
   ('lawphil.net', 'secondary', NULL, '2026-08-22'),
   ('lawspot.gr', 'secondary', NULL, '2026-08-22'),
   ('lexis.com.ec', 'secondary', NULL, '2026-08-22'),
@@ -473,7 +514,7 @@ INSERT INTO source_hosts (host, tier, note, classified_on) VALUES
   ('pwc.bg', 'secondary', NULL, '2026-08-22'),
   ('pwc.com', 'secondary', NULL, '2026-08-22'),
   ('pwc.no', 'secondary', NULL, '2026-08-22');
-INSERT INTO source_hosts (host, tier, note, classified_on) VALUES
+INSERT OR REPLACE INTO source_hosts (host, tier, note, classified_on) VALUES
   ('qoyod.com', 'secondary', NULL, '2026-08-22'),
   ('recommand.eu', 'secondary', NULL, '2026-08-22'),
   ('regfollower.com', 'secondary', NULL, '2026-08-22'),
@@ -499,7 +540,7 @@ INSERT INTO source_hosts (host, tier, note, classified_on) VALUES
   ('thelemabogados.pe', 'secondary', NULL, '2026-08-22'),
   ('thisdaylive.com', 'secondary', NULL, '2026-08-22'),
   ('thuvienphapluat.vn', 'secondary', NULL, '2026-08-22');
-INSERT INTO source_hosts (host, tier, note, classified_on) VALUES
+INSERT OR REPLACE INTO source_hosts (host, tier, note, classified_on) VALUES
   ('ticofactura.cr', 'secondary', NULL, '2026-08-22'),
   ('tmconsulting.co.rs', 'secondary', NULL, '2026-08-22'),
   ('universuljuridic.ro', 'secondary', NULL, '2026-08-22'),
@@ -517,7 +558,7 @@ INSERT INTO source_hosts (host, tier, note, classified_on) VALUES
   ('zakon.uchet.kz', 'secondary', NULL, '2026-08-22');
 
 -- ---- unknown (4 hosts, 7 citations) -------------------------------------
-INSERT INTO source_hosts (host, tier, note, classified_on) VALUES
+INSERT OR REPLACE INTO source_hosts (host, tier, note, classified_on) VALUES
   ('bj148.org', 'unknown', 'could not establish who operates this host', '2026-08-22'),
   ('ibac.uz', 'unknown', 'could not establish who operates this host', '2026-08-22'),
   ('plz.lv', 'unknown', 'could not establish who operates this host', '2026-08-22'),
