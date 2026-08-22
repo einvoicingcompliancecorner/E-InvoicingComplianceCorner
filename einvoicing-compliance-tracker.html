@@ -3499,6 +3499,33 @@ async function openMapPage(opts){
 // to manage, against complete style and script isolation and no change
 // at all to the planner.
 let roiPageOpen = false;
+// WHICH framed page is in the panel. Compliance guides joined the planner
+// on 22 August 2026 at Dan's request -- "Can you compliance guides link
+// launch in-frame, rather than stand alone like other pages" -- and it
+// reuses the planner's panel, iframe id and postMessage protocol rather
+// than growing a second set. There is only ever one framed page open, the
+// height and scroll relay below is written against #roiFrame, and a
+// second protocol would be a second thing for menu-routes.mjs to keep in
+// agreement with two files instead of one.
+let framedPageKind = null;
+const FRAMED_PAGES = {
+  roi: {
+    src: '/roi-calculator?frame=1',
+    url: '/roi-calculator',
+    title: 'E-Invoicing ROI &amp; Wave Planner',
+    // What the frame must contain for the load check below to consider it
+    // a real page rather than a 404 body.
+    marker: '.wrap',
+    unavailable: 'roiPanel.unavailable',
+  },
+  guides: {
+    src: '/compliance-guides?frame=1',
+    url: '/compliance-guides',
+    title: 'Compliance guides',
+    marker: '.wrap',
+    unavailable: 'roiPanel.unavailable',
+  },
+};
 async function openRoiPage(opts){
   opts = opts || {};
   const boardView = document.getElementById('boardView');
@@ -3506,6 +3533,8 @@ async function openRoiPage(opts){
   const topbarBrand = document.querySelector('.topbar-brand');
   const brandRow = document.querySelector('.brand-row');
   roiPageOpen = true;
+  framedPageKind = (opts.page && FRAMED_PAGES[opts.page]) ? opts.page : 'roi';
+  const cfg = FRAMED_PAGES[framedPageKind];
   if(currentDeepDiveSlug) closeDeepDive({ skipHistory: true });
   if(archiveOpen) closeArchive({ skipHistory: true });
   if(currentEducationPage) closeEducationPage({ skipHistory: true });
@@ -3528,7 +3557,7 @@ async function openRoiPage(opts){
   // should behave the same as one reached from here -- a page that
   // renders differently depending on how you arrived is a page nobody
 
-  const src = `/roi-calculator?frame=1&lang=${encodeURIComponent(lang)}`;
+  const src = `${cfg.src}&lang=${encodeURIComponent(lang)}`;
 
   // t(), NOT data-i18n. Every other panel does the same and the reason is
   // easy to miss: applyToDom() runs once, at init, over the document as it
@@ -3604,7 +3633,7 @@ async function openRoiPage(opts){
     +   `<a class="roi-back" id="roiCloseLink" href="/einvoicing-compliance-tracker.html">${backLabel}</a>`
     + '</div>'
     + '<div class="roi-frame-wrap">'
-    +   `<iframe id="roiFrame" title="E-Invoicing ROI &amp; Wave Planner" src="${src}" loading="lazy"></iframe>`
+    +   `<iframe id="roiFrame" title="${cfg.title}" src="${src}" loading="lazy"></iframe>`
     + '</div>';
 
   document.getElementById('roiCloseLink').addEventListener('click', (e)=>{
@@ -3633,26 +3662,28 @@ async function openRoiPage(opts){
     let looksRight = true;
     try {
       const doc = frameEl.contentDocument;
-      if(doc) looksRight = !!doc.querySelector('.wrap');
+      if(doc) looksRight = !!doc.querySelector(cfg.marker);
     } catch(err){ /* cross-origin: cannot tell, so do not claim a failure */ }
     if(looksRight) return;
-    console.error('ROI panel: /roi-calculator did not return the planner. '
-      + 'If this is production, check ROI_PUBLIC in site-worker/wrangler.toml.');
+    console.error('Framed panel: ' + cfg.url + ' did not return a page. '
+      + 'If this is production and the planner, check ROI_PUBLIC in '
+      + 'site-worker/wrangler.toml.');
     const wrap = document.querySelector('#roiView .roi-frame-wrap');
     if(wrap) wrap.innerHTML = '<p class="roi-frame-fail">'
-      + ((i18n && i18n.t('roiPanel.unavailable'))
+      + ((i18n && i18n.t(cfg.unavailable))
         || 'The planner could not be loaded just now. Please try again shortly.')
       + '</p>';
   });
 
   if(!opts.skipHistory){
-    history.pushState({ roi: true }, '', '/roi-calculator');
+    history.pushState({ roi: true, page: framedPageKind }, '', cfg.url);
   }
 }
 
 function closeRoiPage(opts){
   opts = opts || {};
   roiPageOpen = false;
+  framedPageKind = null;
   document.getElementById('boardView').style.display = '';
   const topbarBrand = document.querySelector('.topbar-brand');
   const brandRow = document.querySelector('.brand-row');
@@ -4858,6 +4889,22 @@ function wireDeepDiveInPagePanel(){
       return;
     }
 
+    // The Resources > Compliance guides link. Framed like the planner and
+    // for the same reason: the chooser is a tool the reader uses while
+    // looking at the board, and a full navigation loses the board.
+    //
+    // NOT the document behind it. /compliance-guides/guide is deliberately
+    // absent from this list -- the chooser's form targets _blank, so the
+    // printable guide opens in its own window with the reader's own print
+    // dialogue and nothing between them and the paper.
+    if(href === '/compliance-guides' || href === '/compliance-guides.html'){
+      e.preventDefault();
+      document.getElementById('sidebar')?.classList.remove('open');
+      document.getElementById('sidebarOverlay')?.classList.remove('open');
+      openRoiPage({ page: 'guides' });
+      return;
+    }
+
     // The Resources > Newsletter archive link -- opens the archive
     // list in the main frame instead of navigating away, same
     // treatment as a country Deep Dive link.
@@ -4938,6 +4985,8 @@ function wireDeepDiveInPagePanel(){
     const isInsightsUrl = window.location.pathname === '/insights' || window.location.pathname === '/insights.html';
     const isRoiUrl = ['/roi-calculator', '/roi-calculator.html', '/roi', '/roi.html']
       .includes(window.location.pathname);
+    const isGuidesUrl = ['/compliance-guides', '/compliance-guides.html']
+      .includes(window.location.pathname);
     if(isArchiveUrl){
       openArchive({ skipHistory: true });
     } else if(slug){
@@ -4956,6 +5005,8 @@ function wireDeepDiveInPagePanel(){
       openInsightsPage({ skipHistory: true });
     } else if(isRoiUrl){
       openRoiPage({ skipHistory: true });
+    } else if(isGuidesUrl){
+      openRoiPage({ page: 'guides', skipHistory: true });
     } else if(currentDeepDiveSlug){
       closeDeepDive({ skipHistory: true });
     } else if(archiveOpen){
@@ -4992,7 +5043,7 @@ function wireDeepDiveInPagePanel(){
     // The planner reads its language from the query parameter on the
     // frame src, so re-opening is what switches it -- there is nothing
     // to re-fetch on this side.
-    else if(roiPageOpen) openRoiPage({ skipHistory: true });
+    else if(roiPageOpen) openRoiPage({ page: framedPageKind, skipHistory: true });
   });
 
   // The subscribe panel's sample-issue modal needs a global Escape

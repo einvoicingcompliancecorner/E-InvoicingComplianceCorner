@@ -133,6 +133,64 @@ for (const [, setName] of gates) {
     missed.length ? `${missed.join(", ")} would full-navigate instead of opening in-page` : "");
 }
 
+// ---- a framed menu item must actually be intercepted -----------------
+//
+// The check above only reaches FLAG-GATED route sets, because when it was
+// written the planner was the only framed page and ROI_PUBLIC was how you
+// found it. Compliance guides is framed too since 22 August and has no
+// flag -- deliberately, since it answers a sign-up wall rather than a 404
+// -- so it fell outside that loop entirely.
+//
+// This is the gap the file already warns about in its own words: "if the
+// gate pattern in the worker is ever rewritten, this file finds nothing
+// and passes, which would look exactly like agreement." Same shape, one
+// level up. A framed page whose link is not intercepted still works -- it
+// just full-navigates away from the board, which is the opposite of what
+// framing it was for, and nothing would say so.
+{
+  const framedSets = ["GUIDES_PATHS"];
+  for (const setName of framedSets) {
+    const decl = WORKER.match(new RegExp(`const ${setName}\\s*=\\s*new Set\\(\\[([^\\]]*)\\]`));
+    t.check(`${setName} is declared in the worker`, !!decl);
+    if (!decl) continue;
+    const paths = [...decl[1].matchAll(/"([^"]+)"/g)].map((m) => m[1]);
+    // SINGLE QUOTES ONLY. The first version accepted either style, copied
+    // from the loop above, and so was satisfied by the menu item's own
+    // href="/compliance-guides" -- the very markup whose behaviour it was
+    // meant to be testing. It could never have failed. Every click handler
+    // in this file writes paths in single quotes and every href in double,
+    // so this asks whether any SCRIPT here knows the path.
+    //
+    // IT IS STILL A PROXY, and the negative test says so: deleting the
+    // click handler leaves FRAMED_PAGES.guides.url matching, and this
+    // passes. The check below is the one that cannot be satisfied by
+    // anything except the interception itself.
+    const missed = paths.filter((p) => !TRACKER.includes(`'${p}'`));
+    t.check(`the tracker intercepts every alias of ${setName}`,
+      missed.length === 0,
+      missed.length ? `${missed.join(", ")} would full-navigate instead of opening in-page` : "");
+  }
+  // THE HANDLER ITSELF, named. A path can appear in this file for several
+  // innocent reasons -- a config entry, a history URL, a comment -- and
+  // any of them satisfies the alias check above. Only one thing routes a
+  // click into the panel, so that is what gets asserted.
+  // THE CONDITION, not the call. A first version matched the call
+  // openRoiPage({ page: 'guides' ... and passed with the click handler
+  // deleted, because the popstate branch makes the same call for a reader
+  // arriving on the URL directly. Only the click handler tests the href.
+  t.check("a click on the guides link opens the framed panel",
+    /href === '\/compliance-guides'/.test(TRACKER),
+    "no interception routes /compliance-guides into the panel — the link "
+    + "would full-navigate and the reader would lose the board");
+
+  // AND THE DOCUMENT MUST NOT BE. It is printable and opens in its own
+  // window; intercepting it into the panel would put a print dialogue
+  // inside a content-sized iframe.
+  t.check("the printable guide route is NOT intercepted",
+    !TRACKER.includes("'/compliance-guides/guide'"),
+    "the document would open framed instead of in its own window");
+}
+
 // ---- the two halves of the frame protocol agree ----------------------
 //
 // The framed planner talks to the tracker over postMessage, and the

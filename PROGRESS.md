@@ -14580,3 +14580,134 @@ next translation job.
 The eleven aggregator-sourced rows want a primary source. The five
 judgement calls above want Dan. And the 60 tracker strings in `i18n/`
 not reproducible from D1 remain outstanding from earlier work.
+
+---
+
+## 22 August 2026 — the guide stops contradicting itself
+
+Deployed the same day: migrations 610 and 611, `site-worker` redeployed.
+
+### Two review agents, run over the rendered pages
+
+Dan asked for an independent assessment of readability and layout. Two
+agents with different lenses were given the rendered 70-page document and
+a screenshot helper, and told to look rather than read source. Both
+independently found the two things Dan had already noticed, which is the
+useful part of the result: the assessment was not being led.
+
+They also found things nobody had. The cover truncated its Model column
+mid-word on about half its rows — "one of the worl", "with no dra" — on
+the first page a reader sees. The cover table is 3.6 printed sheets with
+no `<thead>`, so sheets two to four had no column headers. Eight
+timelines ran forwards and then jumped backwards, because the earlier
+milestones the window leaves out were appended as a second list. Nineteen
+countries printed a footnote reading "Annual cap: —". And nine pages had
+shed their whole newsletter strip AND every headline qualifier, printed
+at the smaller scale, and still finished 12–16% blank — the ladder ran
+while the page was over and nothing gave anything back once it was under.
+
+### Three cards, not five, and headings outside their boxes
+
+Dan: *"we should only have 5 boxes / cards at the top of the page. We can
+combine B2G, B2B and B2C into one card"* and *"inconsistencies, such as
+header inside of tile, vs outside of the tile."*
+
+He was counting ten. Nine countries were also rendering the old
+per-country stats as a second strip underneath in a different visual
+language, and on three of them it contradicted the cards above it —
+**Romania printed 5 yrs in one strip and 10 yrs in the other for the same
+retention period.** A page cannot say a fact twice and be trusted about
+either copy. That strip is gone.
+
+The three segments became rows in one mandate card. Beyond the count it
+fixed something real: as separate tiles, Kenya and Uruguay printed
+ACTIVE / ACTIVE / ACTIVE with nothing to distinguish them, because the
+qualifying lines are the first thing the fitter takes.
+
+The heading inconsistency was structural rather than cosmetic. Timeline,
+Penalties and What to do were a bordered box with the heading inside;
+Key facts and Where this is tracked were the same heading above a run of
+separate boxes. One style meaning two things — so a reader reaching the
+top of the second column met a bordered card that looked like a new
+section and was the tail of Key facts.
+
+**A bug introduced mid-change, worth recording.** A missing `</div>` on
+the timeline block put the full-width newsletter band inside the
+two-column flow on all seventy pages. Nothing threw, no test failed, and
+it was caught only by looking at a screenshot — the browser silently
+reparents. The harness now asserts that both full-width bands are direct
+children of the section, and that every visible timeline is in date
+order.
+
+### The contradictions, and the check that now catches them
+
+Dan: *"A guide that contradicts itself in the same page, loses the site
+credibility immediately. Can you ensure this does not happen."*
+
+**Why it could happen at all** is the part worth carrying forward. A
+country page assembles four bodies of content written at different times
+from different sources: `country_headline_facts` (this month),
+`milestones` (also the tracker board), `deep_dive_cards` (written when
+the country was added) and the mandate summary. Nothing had ever put them
+side by side. The compliance guide is the first artefact in this project
+that prints all four on one sheet, and the moment it did, six
+disagreements became visible — every one of them already live.
+
+`tests/guides-consistency.mjs` compares all 2,194 assertions across the
+70 pages against the tiles above them, and is in `npm test`. It is
+lexical, so it is tuned for precision over recall — a check that cries
+wolf gets switched off, which this repository already says out loud in
+`render-lint.mjs`. Four suppressions each exist because a real page
+needed them: receipt-is-not-issuance (without it Ireland, Cyprus, Malta
+and the UK all fail), hedged proposals, negation, and a second segment
+token breaking the link. Two tiers: a page asserting a DUTY its tile
+denies fails the build; a page asserting something is OPTIONAL does not,
+because Greece's intra-EU carve-out is not a contradiction. A second rule
+needs no language at all — if the board carries an in-force dated
+milestone and the tile says "planned", the page prints a forthcoming
+mandate above a past date. Negative-tested by reintroducing Canada's.
+
+**Migration 611** repairs the six. Canada said VOLUNTARY above a card
+titled "Federal B2G (mandatory)"; Oman said PLANNED Feb 2027 above a
+dated entry saying Phase 1 began three weeks earlier, and NOT CONFIRMED
+for B2C above two cards stating the QR requirement; Singapore said
+PLANNED Apr 2028 above two in-force issuing milestones; Norway said NOT
+CONFIRMED while the board publishes 1 Jan 2027. Bulgaria is the one where
+the tile was right and the page was wrong — the milestone claimed B2G
+e-invoicing was mandatory where only receipt is, corrected in all four
+languages, **which changes the tracker board too**.
+
+**Canada is flagged, not settled.** Three of our artefacts said mandatory
+and one said voluntary, so it went with the board — but the milestone
+cites a secondary tracker and no PSPC page has been read directly. If the
+duty is on departments to receive, the row goes back and the milestone
+and card are what change.
+
+Three of the five judgement calls put to Dan on the 22nd resolved
+themselves here: whatever the right status is, a page cannot say
+forthcoming and in-force about the same obligation.
+
+### Also fixed in the assertion runner
+
+`--assert-only` failed against production on its first real use:
+
+    594_auth_codes.sql:104  SELECT count(*) FROM auth_codes
+    expected = 0   actual: '1'
+
+The database was healthy — somebody had signed in. `validate_replay()`
+promotes any point-in-time assertion that still holds at the end of the
+replay to "durable" and checks it against production, which is sound for
+tables only migrations write and nonsense for tables the running site
+writes. A plain `ASSERT` naming `auth_codes`, `announcements` or
+`feedback` in a FROM position is now held back; `ASSERT ALWAYS` on the
+same tables is still sent, because production is the only place a shape
+invariant about application writes can fail. **A check that fails on a
+healthy database every time anyone logs in teaches you to stop running
+it, and it is the only check that looks at production at all.**
+
+### Verified
+
+`npm test`: **18 suites**. Replay OK across **611 files — 494 assertions,
+140 standing invariants**. All 70 countries fit one page, median fill
+**97%**, 70/70 timelines in date order, 70/70 strips carrying three cards
+and five facts.

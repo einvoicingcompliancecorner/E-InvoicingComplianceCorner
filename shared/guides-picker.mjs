@@ -65,6 +65,11 @@ export const PICKER_STYLE = `
    and it is why the count is worth a script at all. */
 .gp-bar{position:sticky;bottom:0;background:var(--ink-2);border-top:1px solid var(--line);
   margin:24px -20px 0;padding:14px 20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+/* The framed render's top copy. Not sticky -- see the note in the
+   renderer: there is no scrollport inside a content-sized frame for it to
+   stick to, and pretending otherwise is what made one bar unreachable. */
+.gp-bar-top{position:static;margin:0 -20px 22px;border-top:0;border-bottom:1px solid var(--line)}
+body[data-framed] .gp-bar-bottom{position:static}
 .gp-count{font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:1px;
   text-transform:uppercase;color:var(--muted)}
 .gp-bar .sp{flex:1 1 auto}
@@ -88,7 +93,7 @@ export const PICKER_STYLE = `
  * countries: [{ code, name_en, region }]
  * saved:     array of country names the reader already follows
  */
-export function renderPickerBody({ countries, saved = [], lang, t, regionName = (r) => r, action = "/compliance-guides/guide" }) {
+export function renderPickerBody({ countries, saved = [], lang, t, framed = false, regionName = (r) => r, action = "/compliance-guides/guide" }) {
   const savedSet = new Set(saved.map((s) => String(s)));
 
   // GROUPED BY THE SAME REGIONS THE TRACKER USES, in the order they come
@@ -120,29 +125,64 @@ export function renderPickerBody({ countries, saved = [], lang, t, regionName = 
 </section>`;
   }).join("");
 
+  // ---- THE ACTION BAR, AND WHY THERE ARE TWO OF IT WHEN FRAMED --------
+  //
+  // Sticky-bottom is the right answer on the standalone page: the reader
+  // scrolls to Vietnam, ticks it, and the button is 1,400px back up.
+  //
+  // INSIDE THE PANEL IT IS DEAD. The tracker sizes the iframe to the
+  // frame's own full content height, so the frame never scrolls -- its
+  // viewport IS the document, and there is no scrollport for a sticky
+  // element to stick to. The PARENT scrolls. Nothing rendered in here can
+  // stay in a reader's view, and the bar would sit at the very bottom of a
+  // 2,000px page where it is only reachable by scrolling past all seventy
+  // countries.
+  //
+  // Nothing inside the frame can fix that, so the framed render gives the
+  // reader a second copy at the top instead: one where they arrive and
+  // one where they finish. Both are live, both count, either submits.
+  const bar = (where) => `<div class="gp-bar gp-bar-${where}">
+      <span class="gp-count" data-one="${esc(t("pick.countOne", "1 country selected"))}"
+        data-many="${esc(t("pick.countMany", "{0} countries selected"))}"
+        data-none="${esc(t("pick.countNone", "No countries selected"))}"></span>
+      <span class="sp"></span>
+      <button type="button" class="gp-lite gp-clear">${esc(t("pick.clear", "Clear"))}</button>
+      <button type="submit" class="gp-go">${esc(t("pick.build", "Build my guide"))}</button>
+    </div>`;
+
   const savedNote = saved.length
     ? `<p class="gp-note">${esc(t("pick.savedNote",
         "The countries you follow are ticked already and marked with a star. Add or remove any you like."))}</p>`
     : "";
 
+  // NO BACK LINK INSIDE THE FRAME. The tracker's panel supplies its own,
+  // in the bar above the iframe, because a frame is opaque to the page
+  // that mounts it and cannot be closed from within. Printing a second one
+  // here would give the reader two back links a centimetre apart that do
+  // different things -- this one would reload the whole tracker inside the
+  // frame, which is the shape the archive panel was caught by in August.
   return `<div class="wrap">
-  <a class="gp-back" href="/einvoicing-compliance-tracker.html">${esc(t("back", "← Back to global tracker"))}</a>
+  ${framed ? "" : `<a class="gp-back" href="/einvoicing-compliance-tracker.html">${
+    esc(t("back", "← Back to global tracker"))}</a>`}
   <p class="eyebrow">${esc(t("pick.eyebrow", "Subscriber tool"))}</p>
   <h1>${esc(t("pick.title", "Compliance guides"))}</h1>
   <p class="gp-note">${esc(t("pick.lede",
     "Pick the markets you care about and we will build a one-page briefing for each: the mandate as it stands, the dated timeline, the penalties, the key facts and what to do next. It opens ready to print or save as a PDF."))}</p>
   ${savedNote}
-  <form method="get" action="${esc(action)}" id="gpForm">
+  <!-- A NEW WINDOW, at Dan's request on 22 August 2026.
+       It is also the answer to the objection that kept this feature out of
+       a frame in the first place: the guide is a printable document, and
+       target=_blank means it is never the thing inside the iframe. The
+       reader chooses countries in the panel and meets the document
+       full-width, with their own print dialogue and nothing between them
+       and the paper.
+       rel=noopener because a window opened this way otherwise gets a live
+       window.opener handle back to the tracker. -->
+  <form method="get" action="${esc(action)}" id="gpForm" target="_blank" rel="noopener">
     <input type="hidden" name="lang" value="${esc(lang)}">
+    ${framed ? bar("top") : ""}
     ${regions}
-    <div class="gp-bar">
-      <span class="gp-count" id="gpCount" data-one="${esc(t("pick.countOne", "1 country selected"))}"
-        data-many="${esc(t("pick.countMany", "{0} countries selected"))}"
-        data-none="${esc(t("pick.countNone", "No countries selected"))}"></span>
-      <span class="sp"></span>
-      <button type="button" class="gp-lite" id="gpClear">${esc(t("pick.clear", "Clear"))}</button>
-      <button type="submit" class="gp-go" id="gpGo">${esc(t("pick.build", "Build my guide"))}</button>
-    </div>
+    ${bar("bottom")}
   </form>
 </div>`;
 }
@@ -155,21 +195,25 @@ export const PICKER_SCRIPT = `
 (function(){
   var form = document.getElementById('gpForm');
   if(!form) return;
-  var count = document.getElementById('gpCount');
-  var go = document.getElementById('gpGo');
+  // querySelectorAll, not getElementById: the framed render carries two
+  // bars and both have to stay truthful. An id would have silently driven
+  // only the first one.
+  var counts = form.querySelectorAll('.gp-count');
+  var gos = form.querySelectorAll('.gp-go');
   function boxes(){ return form.querySelectorAll('input[name="c"]'); }
   function update(){
     var n = 0, all = boxes();
     for(var i=0;i<all.length;i++) if(all[i].checked) n++;
-    if(count){
-      count.textContent = n === 0 ? count.getAttribute('data-none')
-        : n === 1 ? count.getAttribute('data-one')
-        : count.getAttribute('data-many').replace('{0}', String(n));
+    for(var ci = 0; ci < counts.length; ci++){
+      var el = counts[ci];
+      el.textContent = n === 0 ? el.getAttribute('data-none')
+        : n === 1 ? el.getAttribute('data-one')
+        : el.getAttribute('data-many').replace('{0}', String(n));
     }
     // AN EMPTY SUBMIT IS THE ONE THING WORTH PREVENTING. Without this the
     // reader lands on a guide of nothing at all and has to work out that
     // the page is not broken, it is empty -- which reads as broken.
-    if(go) go.disabled = n === 0;
+    for(var gi = 0; gi < gos.length; gi++) gos[gi].disabled = n === 0;
   }
   form.addEventListener('change', update);
   form.addEventListener('click', function(e){
@@ -186,8 +230,8 @@ export const PICKER_SCRIPT = `
       update();
     }
   });
-  var clear = document.getElementById('gpClear');
-  if(clear) clear.addEventListener('click', function(){
+  form.addEventListener('click', function(e){
+    if(!e.target || !e.target.classList || !e.target.classList.contains('gp-clear')) return;
     var all = boxes();
     for(var i=0;i<all.length;i++) all[i].checked = false;
     update();

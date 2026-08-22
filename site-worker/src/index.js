@@ -1166,8 +1166,8 @@ const renderRoiGate = (request, env, lang, framed) =>
     blurb: "Subscribing is free. The planner builds a board-ready business case from your own invoice volumes and country footprint, with a delivery wave plan back-planned from the real published deadlines this site tracks &mdash; and an evidence grade against every benchmark it uses.",
   });
 
-const renderGuidesGate = (request, env, lang) =>
-  renderSubscriberGate(request, env, lang, false, {
+const renderGuidesGate = (request, env, lang, framed) =>
+  renderSubscriberGate(request, env, lang, framed, {
     namespace: "guides",
     canonical: "/compliance-guides",
     docTitle: "Compliance guides",
@@ -1235,8 +1235,13 @@ function subtreeT(strings) {
 
 async function renderComplianceGuidesPicker(request, env) {
   const { lang } = resolveInsightsLang(request);
+  // frame=1, the same plain query parameter the planner uses. A referrer
+  // check would make a bookmarked ?frame=1 behave differently from one
+  // reached through the menu, and a page that renders differently
+  // depending on how you arrived is a page nobody can debug.
+  const framed = new URL(request.url).searchParams.get("frame") === "1";
   const signedInAs = await sessionEmail(request, env.SESSION_SECRET);
-  if (!signedInAs) return renderGuidesGate(request, env, lang);
+  if (!signedInAs) return renderGuidesGate(request, env, lang, framed);
 
   const [countries, saved, strings, regionNames] = await Promise.all([
     getGuideCountries(env.eicc_content),
@@ -1246,7 +1251,7 @@ async function renderComplianceGuidesPicker(request, env) {
   ]);
   const t = subtreeT(strings);
   const body = renderPickerBody({
-    countries, saved, lang, t,
+    countries, saved, lang, t, framed,
     regionName: (r) => (typeof regionNames[r] === "string" && regionNames[r]) || r,
   });
 
@@ -1257,7 +1262,9 @@ async function renderComplianceGuidesPicker(request, env) {
 <link rel="canonical" href="https://e-invoicingcompliancecorner.com/compliance-guides">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>${ROI_STYLE}${PICKER_STYLE}</style></head><body>${body}<script>${PICKER_SCRIPT}</script></body></html>`;
+<style>${ROI_STYLE}${framed ? FRAMED_ROI_STYLE : ""}${PICKER_STYLE}</style></head><body${
+    framed ? ' data-framed="1"' : ""}>${body}<script>${PICKER_SCRIPT}</script>${
+    framed ? `<script>${ROI_FRAME_REPORTER}</script>` : ""}</body></html>`;
 
   return new Response(html, { headers: {
     "content-type": "text/html; charset=utf-8",
@@ -1286,7 +1293,11 @@ async function renderComplianceGuideDocument(request, env) {
   const url = new URL(request.url);
   const { lang } = resolveInsightsLang(request);
   const signedInAs = await sessionEmail(request, env.SESSION_SECRET);
-  if (!signedInAs) return renderGuidesGate(request, env, lang);
+  // NEVER FRAMED, whatever the chooser was. The document opens in its own
+  // window (the chooser's form targets _blank) precisely so a reader meets
+  // it full-width with their own print dialogue and nothing between them
+  // and the paper.
+  if (!signedInAs) return renderGuidesGate(request, env, lang, false);
 
   const countries = await getGuideCountries(env.eicc_content);
   const byCode = new Map(countries.map((c) => [String(c.code).toUpperCase(), c.name_en]));
