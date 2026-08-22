@@ -837,6 +837,17 @@
      openWhitepaperPopout() below). The iframe src is set on open and
      cleared on close so the document isn't fetched until someone
      actually asks for it (7 Aug 2026, per Dan's request). -->
+<!-- Methodology, in the same dark doc-card the whitepapers use. An
+     iframe rather than injected markup: the page is a full document with
+     its own dark stylesheet, and an iframe needs no CSS scoping, cannot
+     leak styles into the tracker, and keeps one copy of the prose. -->
+<div class="modal-overlay" id="methodOverlay">
+  <div class="modal-card doc-card">
+    <button class="modal-close" id="methodModalClose" aria-label="Close">&times;</button>
+    <iframe id="methodFrame" title="Methodology"></iframe>
+  </div>
+</div>
+
 <div class="modal-overlay" id="whitepaperOverlay">
   <div class="modal-card doc-card">
     <button class="modal-close" id="whitepaperModalClose" aria-label="Close">&times;</button>
@@ -907,16 +918,6 @@
                goes back to being subscriber-only. -->
           <a class="dropdown-item" href="https://members.e-invoicingcompliancecorner.com/members/archive"><span class="dd-icon">📰</span><span data-i18n="menu.archive">Newsletter archive</span></a>
           <a class="dropdown-item" href="/sources"><span class="dd-icon">📡</span><span data-i18n="menu.sources">Tracking sources</span></a>
-          <!-- How we decide. Sits next to Tracking sources deliberately:
-               that page answers "what do you watch", this one answers
-               "how do you judge what you find", and a reader who opens
-               one usually wants the other.
-
-               A plain link, like /sources and /insights. It is the page
-               somebody cites when they disagree with a status, so it
-               needs a real indexable URL -- which is the whole reason it
-               is not a section of the About modal, which has none. -->
-          <a class="dropdown-item" href="/methodology"><span class="dd-icon">⚖️</span><span data-i18n="menu.methodology">Methodology</span></a>
           <!-- Blog posts, whitepapers, and (ungated) sponsored content
                -- public and SEO-indexable at /insights, same
                D1-rendered pattern as /sources and /map. Gated pieces
@@ -991,6 +992,20 @@
                the board has more room and the tips are still one
                click away. Same open/close mechanics as ddAbout. -->
           <button class="dropdown-item" id="ddNavHelp"><span class="dd-icon">🧭</span><span data-i18n="menu.navHelp">Navigation Help</span></button>
+          <!-- How we decide: the sourcing standard, what each status word
+               means, and where we are deliberately stricter than other
+               trackers. Dan, 22 August 2026: "This needs to go under the
+               menu - menu option and popout, like the About this site
+               link."
+
+               A pop-out like About, but its content is NOT inline markup
+               like About's. It loads /methodology in the doc-card overlay
+               the whitepapers already use, so the prose lives in D1 once
+               and is not copied into this file -- the same reason the
+               guides' strings are not in a SOURCES_UI-style constant.
+               /methodology stays a real indexable route, which is what
+               lets a reader be sent to it and another site cite it. -->
+          <button class="dropdown-item" id="ddMethodology"><span class="dd-icon">⚖️</span><span data-i18n="menu.methodology">Methodology</span></button>
           <!-- Newsletter archive used to be here too -- it now has its
                own live link under Resources, since it's open to
                everyone for free during a temporary promo; see
@@ -2917,6 +2932,49 @@ function wireActionsMenu(){
     close();
     document.getElementById('navHelpOverlay').classList.add('open');
   });
+  document.getElementById('ddMethodology').addEventListener('click', ()=>{
+    close();
+    openMethodology();
+  });
+}
+
+// ---------- methodology pop-out ----------
+//
+// LOADED WHEN OPENED, NOT ON EVERY PAGE LOAD. The src is set at click
+// time rather than in the markup, so a reader who never opens it never
+// fetches it -- an iframe with a src in the HTML is a second document
+// downloaded and parsed alongside the board, on every visit, for a page
+// most visitors will not look at.
+//
+// frame=1 drops the page's own back link and language row: the first
+// would navigate the IFRAME to the tracker, leaving a whole tracker
+// inside a dialog on top of the tracker, and the second competes with
+// the site's own language banner. It also marks the framed copy
+// noindex, so the crawlable one at /methodology stays the only one.
+function openMethodology(){
+  const overlay = document.getElementById('methodOverlay');
+  const frame = document.getElementById('methodFrame');
+  const lang = (window.EICC_I18N && window.EICC_I18N.currentLang) || 'en';
+  const src = `/methodology?frame=1&lang=${encodeURIComponent(lang)}`;
+  // Re-set only when the language moved, so reopening in the same
+  // language does not re-fetch.
+  if(frame.getAttribute('data-src') !== src){
+    frame.setAttribute('data-src', src);
+    frame.src = src;
+  }
+  overlay.classList.add('open');
+}
+
+function wireMethodologyModal(){
+  const overlay = document.getElementById('methodOverlay');
+  const closeBtn = document.getElementById('methodModalClose');
+  function close(){ overlay.classList.remove('open'); }
+  closeBtn.addEventListener('click', close);
+  overlay.addEventListener('click', (e)=>{ if(e.target===overlay) close(); });
+  // A SINGLETON LISTENER, not one per open. wireArchiveStoryModal()'s own
+  // comment records the version of this that added a fresh Escape handler
+  // every time a modal opened.
+  document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') close(); });
 }
 
 // ---------- about modal ----------
@@ -5093,6 +5151,7 @@ wireDeepDiveMenu();
 wireEducationMenu();
 wireActionsMenu();
 wireAboutModal();
+wireMethodologyModal();
 wireNavHelpModal();
 wireWhitepaperPopout();
 wireFeatureCarousel();

@@ -1264,6 +1264,12 @@ function subtreeT(strings) {
 async function renderMethodologyPage(request, env) {
   if (!env.eicc_content) return new Response("Missing D1 binding", { status: 500 });
   const { lang, shouldSetCookie } = resolveInsightsLang(request);
+  // frame=1, the same plain query parameter the planner and the guides
+  // use. The tracker opens this page in a modal, where its own back link
+  // would navigate the IFRAME to the tracker -- leaving a whole tracker
+  // inside a dialog on top of the tracker -- and its language row would
+  // compete with the site's own. The modal supplies a close button.
+  const framed = new URL(request.url).searchParams.get("frame") === "1";
   // TWO SUBTREES, and the second is the point of the section it feeds.
   // The five status words are defined on this page and PRINTED on every
   // country page and every guide, so they have to be the same strings --
@@ -1349,7 +1355,7 @@ async function renderMethodologyPage(request, env) {
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>${escHtml(t("title", "Methodology"))} — The E-Invoicing Compliance Corner</title>
 <meta name="description" content="${escHtml(t("intro", "What we require of a source, what our status words mean, and where we are stricter than other trackers."))}">
-<link rel="canonical" href="https://e-invoicingcompliancecorner.com/methodology">
+<link rel="canonical" href="https://e-invoicingcompliancecorner.com/methodology">${framed ? '\n<meta name="robots" content="noindex,nofollow">' : ""}
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -1367,6 +1373,8 @@ async function renderMethodologyPage(request, env) {
   body{background:var(--ink); color:var(--text-lo); font-family:'IBM Plex Sans',sans-serif; line-height:1.6;}
   .display{font-family:'Big Shoulders Display',sans-serif; font-weight:800;}
   .wrap{max-width:760px; margin:0 auto; padding:0 5vw 70px;}
+  body[data-framed] .wrap{padding-top:26px;}
+  body[data-framed] .eyebrow{margin-top:4px;}
   .top-bar{display:flex; justify-content:space-between; align-items:center; padding-top:20px;}
   .back-link{font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:var(--muted); text-decoration:none;}
   .back-link:hover{color:var(--paper);}
@@ -1392,14 +1400,14 @@ async function renderMethodologyPage(request, env) {
   @media(max-width:600px){ h1{font-size:30px;} .st{grid-template-columns:1fr; gap:2px;} }
 </style>
 </head>
-<body>
+<body${framed ? ' data-framed="1"' : ""}>
 <div class="wrap">
-  <div class="top-bar"><a class="back-link" href="/einvoicing-compliance-tracker.html">${
-    escHtml(t("back", "← Back to global tracker"))}</a></div>
+  ${framed ? "" : `<div class="top-bar"><a class="back-link" href="/einvoicing-compliance-tracker.html">${
+    escHtml(t("back", "← Back to global tracker"))}</a></div>`}
   <p class="eyebrow">${escHtml(t("eyebrow", "How we decide"))}</p>
   <h1 class="display">${escHtml(t("title", "Methodology"))}</h1>
   <p class="intro">${escHtml(t("intro", "What we require of a source, and what our status words mean."))}</p>
-  <p class="langs">${langLinks}</p>
+  ${framed ? "" : `<p class="langs">${langLinks}</p>`}
   ${body}
 </div>
 </body>
