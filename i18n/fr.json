@@ -498,7 +498,7 @@
     "hist": {
       "cta": "Voir ce qui a changé",
       "h": "Ce qu'un fait indiquait auparavant",
-      "p1": "Chaque modification des cinq statuts clés est consignée, avec ce qui était indiqué avant, la date et le motif — et les deux motifs restent distincts, car une obligation qui bouge et une erreur de notre part ne sont pas la même chose, et une seule nous est imputable. Un statut ne peut pas changer sans que le changement soit consigné : la compilation le refuse."
+      "p1": "Chaque modification des cinq statuts clés est consignée, avec ce qui était indiqué avant, la date et le motif — et une correction de notre part est enregistrée séparément d'une obligation qui a bougé, car le lecteur est en droit de savoir laquelle des deux il a sous les yeux. Un statut ne peut pas changer sans que le changement soit consigné : la compilation le refuse."
     }
   },
   "changes": {
@@ -514,7 +514,7 @@
     "eyebrow": "Le relevé",
     "intro": "Chaque modification des cinq faits clés que nous publions : ce qui était indiqué avant, quand cela a changé, et pourquoi.",
     "kind": {
-      "correction": "Nous nous étions trompés",
+      "correction": "Corrigé",
       "moved": "Le droit a évolué"
     },
     "lbl": {
@@ -529,6 +529,7 @@
     },
     "none": "Rien n'a changé depuis le début du relevé.",
     "title": "Ce qui a changé",
-    "watch": "{0} faits couvrant {1} juridictions sont au relevé. Un statut ne peut pas changer ici sans que le changement soit consigné : la compilation le refuse."
+    "watch": "{0} faits couvrant {1} juridictions sont au relevé. Un statut ne peut pas changer ici sans que le changement soit consigné : la compilation le refuse.",
+    "opened": "Toutes datent du jour où le relevé a été ouvert. Elles proviennent du rapprochement des tuiles de chaque pays avec sa propre chronologie — une vérification qui s'exécute désormais à chaque compilation — de sorte que chacune était une contradiction interne à nos données, et non un fait publié sur lequel quelqu'un se serait appuyé."
   }
 }

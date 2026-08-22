@@ -1413,6 +1413,16 @@ async function renderChangesPage(request, env) {
 
   const countKey = rows.length === 1 ? "count.one" : "count.other";
   const countEn = rows.length === 1 ? "{0} change on the record" : "{0} changes on the record";
+  // A LINE THAT RETIRES ITSELF. The changes seeded when the record opened
+  // came from reconciling every country's tiles against its own timeline,
+  // on a site nobody was reading -- worth saying, because "corrected"
+  // otherwise reads as a fact somebody had acted on. It is printed only
+  // while EVERY change on the page is still dated the day the record
+  // began; the first time a mandate genuinely moves, the sentence stops
+  // being true and stops appearing, rather than sitting there as a
+  // permanent excuse for entries it no longer describes.
+  const allFromOpening = rows.length > 0
+    && scope?.began && rows.every((r) => r.changed_on === scope.began);
   const body = rows.length
     ? rows.map(entry).join("")
     : `<p class="none">${escHtml(t("none", "Nothing has changed since the record began."))}</p>`;
@@ -1474,10 +1484,12 @@ async function renderChangesPage(request, env) {
   .chh .fld{font-size:14px; color:var(--muted);}
   .knd{font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:.12em;
        text-transform:uppercase; padding:2px 7px; border:1px solid var(--line); border-radius:2px;}
-  /* The two reasons read differently on purpose. Our own error is the
-     one a reader is entitled to notice, so it is not the quieter of the
-     two colours. */
-  .knd.corr{color:var(--stamp); border-color:var(--stamp);}
+  /* The two reasons read differently on purpose -- a reader is entitled
+     to know which of them they are looking at -- but "our correction" is
+     not an alarm. Amber, not the stamp red: 5.97:1 on this background
+     against the stamp's 3.17:1, which was under AA for 10.5px text. The
+     softer colour and the legible one turned out to be the same one. */
+  .knd.corr{color:var(--soon); border-color:var(--soon);}
   .knd.moved{color:var(--muted);}
   .mv{display:flex; flex-wrap:wrap; align-items:baseline; gap:10px;
       font-family:'IBM Plex Mono',monospace; font-size:12.5px; letter-spacing:.06em;}
@@ -1492,6 +1504,7 @@ async function renderChangesPage(request, env) {
   .src a{font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--muted);
          text-decoration:none; border-bottom:1px solid var(--line);}
   .src a:hover{color:var(--paper);}
+  .opened{color:var(--muted); font-size:14.5px; margin:-2px 0 22px;}
   .none{color:var(--muted);}
   .cta{margin:30px 0 0; display:flex; gap:22px; flex-wrap:wrap;}
   .cta a{color:var(--paper); font-weight:600; font-size:14.5px; text-decoration:none; border-bottom:1px solid var(--line);}
@@ -1512,6 +1525,8 @@ async function renderChangesPage(request, env) {
     scope?.facts ?? 0, scope?.countries ?? 0))}</p>
   <p class="fig">${escHtml(fillPlain(t("begins", "The record begins on {0}."), scope?.began || "—"))}</p>
   <h2 class="count display">${escHtml(fillPlain(t(countKey, countEn), rows.length))}</h2>
+  ${allFromOpening ? `<p class="opened">${escHtml(t("opened",
+    "All of these date from the day the record was opened."))}</p>` : ""}
   ${body}
   <p class="cta"><a href="/methodology" target="_top">${escHtml(t("link.method", "How we decide"))}</a>
      <a href="/feedback.html" target="_top">${escHtml(t("link.fix", "Send a correction"))}</a></p>

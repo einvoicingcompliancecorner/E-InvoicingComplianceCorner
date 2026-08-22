@@ -498,7 +498,7 @@
     "hist": {
       "cta": "Änderungen ansehen",
       "h": "Was eine Aussage früher besagte",
-      "p1": "Jede Änderung der fünf Kernstatus ist erfasst — mit dem vorherigen Wert, dem Zeitpunkt und der Begründung. Die beiden Gründe werden getrennt gehalten: Eine verschobene Pflicht und ein Fehler unsererseits sind nicht dasselbe, und nur eines davon haben wir zu verantworten. Ein Status kann sich nicht ändern, ohne dass die Änderung festgehalten wird — der Build verweigert es."
+      "p1": "Jede Änderung der fünf Kernstatus ist erfasst — mit dem vorherigen Wert, dem Zeitpunkt und der Begründung. Eine Korrektur unsererseits wird dabei getrennt von einer verschobenen Pflicht geführt, denn Lesende haben Anspruch darauf zu wissen, welches von beidem sie vor sich haben. Ein Status kann sich nicht ändern, ohne dass die Änderung festgehalten wird — der Build verweigert es."
     }
   },
   "changes": {
@@ -514,7 +514,7 @@
     "eyebrow": "Der Nachweis",
     "intro": "Jede Änderung an den fünf Kernaussagen, die wir veröffentlichen — was vorher galt, wann sie sich änderte und warum.",
     "kind": {
-      "correction": "Wir lagen falsch",
+      "correction": "Korrigiert",
       "moved": "Die Rechtslage änderte sich"
     },
     "lbl": {
@@ -529,6 +529,7 @@
     },
     "none": "Seit Beginn des Nachweises hat sich nichts geändert.",
     "title": "Was sich geändert hat",
-    "watch": "{0} Fakten aus {1} Jurisdiktionen sind erfasst. Ein Status kann sich hier nicht ändern, ohne dass die Änderung festgehalten wird — der Build verweigert es."
+    "watch": "{0} Fakten aus {1} Jurisdiktionen sind erfasst. Ein Status kann sich hier nicht ändern, ohne dass die Änderung festgehalten wird — der Build verweigert es.",
+    "opened": "Alle stammen vom Tag der Eröffnung des Nachweises. Sie ergaben sich aus dem Abgleich der Kacheln jedes Landes mit dessen eigener Zeitleiste — eine Prüfung, die inzwischen bei jedem Build läuft. Jede war damit ein Widerspruch innerhalb unserer eigenen Daten und keine veröffentlichte Aussage, nach der jemand gehandelt hätte."
   }
 }

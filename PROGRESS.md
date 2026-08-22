@@ -14979,7 +14979,7 @@ deploy into a manual repair.
 `npm test`: **20 suites**, 33 checks in `methodology` alone. Replay OK
 across **614 files**.
 
-### What a fact used to say (22 August 2026)
+### What a fact used to say (22 August 2026, deployed)
 
 The third of the outside review's recommendations, and the last thing
 `/methodology` admitted it could not do. That page has said since the hour
@@ -15052,3 +15052,51 @@ failed on a German quotation mark, which was a real finding about the
 test before it could hide a real one about the page.
 
 `npm test`: **21 suites**. Replay OK across **616 files**.
+
+### The change log stops calling itself incompetent (22 August 2026)
+
+Dan, an hour after it shipped: "Given that we currently have no
+subscribers, I'd like to avoid statements like 'We were wrong' in the
+change log. It makes the site look incompetent."
+
+He was right, and for a better reason than the one he gave. **"We were
+wrong" does not describe what those six entries are.** They were
+disagreements *inside our own data* — a tile saying one thing and the same
+page's own timeline saying another — found by `guides-consistency.mjs` on
+a site with no readers, days after the facts were written. Nobody acted on
+a wrong fact. Presenting them as errors published and then retracted
+overstates what happened, which is its own kind of inaccuracy on a page
+whose entire subject is accuracy.
+
+**What did not change is the distinction.** A correction on our side is
+still recorded and displayed separately from a mandate that moved.
+Collapsing those two would have been the edit that actually cost the page
+its reason to exist, and migration 617 carries a standing assertion
+against a later tidy-up doing it by accident:
+
+```
+-- ASSERT ALWAYS: the two kind labels are still two distinct strings
+```
+
+Only the register changed: **"Corrected"** rather than "We were wrong",
+in four languages, with the old phrasing asserted gone in all of them —
+the third stale-string assertion in a day, for the same reason as the
+other two.
+
+**A new line that retires itself.** `changes.opened` says where the six
+came from, and the renderer prints it *only while every change on the
+page is dated the day the record opened*. The first time a mandate
+genuinely moves, the sentence stops being true and stops appearing,
+rather than sitting there permanently as an excuse for entries it no
+longer describes. The suite proves both halves — it inserts a synthetic
+change dated 2027 and asserts the line goes — because an untested claim
+about a disappearing element is indistinguishable from one that never
+appears, or one that never leaves.
+
+**And the softer colour was the legible one.** The chip was stamp red at
+**3.17:1** on that background, under AA for 10.5px text. Amber is
+**5.97:1**. Toning it down and fixing the contrast turned out to be the
+same edit.
+
+`npm test`: **21 suites**, `changes` now 49 checks. Replay OK across
+**617 files**.

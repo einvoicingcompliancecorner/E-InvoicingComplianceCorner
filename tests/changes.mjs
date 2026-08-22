@@ -194,7 +194,7 @@ for (const lang of ["en", "es", "de", "fr"]) {
   walk(doc.changes, "");
   const want = ["title", "intro", "watch", "begins", "none", "count.one", "count.other",
     "kind.correction", "kind.moved", "lbl.was", "lbl.now", "lbl.why", "lbl.src",
-    "arch.years", "back", "link.method", "link.fix", "eyebrow"];
+    "arch.years", "back", "link.method", "link.fix", "eyebrow", "opened"];
   const gone = want.filter((k) => typeof flat[k] !== "string");
   t.check(`i18n/${lang}.json carries the changes strings`, gone.length === 0,
     `missing: ${gone.join(", ")}`);
@@ -259,6 +259,56 @@ for (const lang of ["en", "es", "de", "fr"]) {
     (framed.match(/<p class="cta">[\s\S]*?<\/p>/) || [""])[0]
       .split("<a ").slice(1).every((a) => a.includes('target="_top"')),
     "a link in the modal would load a tracker inside the dialog");
+}
+
+// ---- the register, and the line that retires itself ---------------------
+//
+// Dan, 22 August: "Given that we currently have no subscribers, I'd like
+// to avoid statements like 'We were wrong' in the change log."
+//
+// Two halves, and the second is the one that needs proving. Softening a
+// label is a string edit. Claiming a sentence "only appears while every
+// change is from the day the record opened" is a behaviour, and an
+// untested claim about a disappearing element is indistinguishable from
+// one that never appears — or one that never leaves.
+{
+  for (const lang of ["en", "de", "fr", "es"]) {
+    const doc = JSON.parse(readFileSync(join(REPO, "i18n", `${lang}.json`), "utf8"));
+    t.check(`i18n/${lang}.json: the correction label is not a confession`,
+      !/we were wrong|wir lagen falsch|trompés|nos equivocamos/i.test(doc.changes.kind.correction),
+      doc.changes.kind.correction);
+  }
+  // BUT STILL TWO CATEGORIES. Softening the label was the ask;
+  // collapsing our correction into "the law moved" was not, and it is
+  // the edit that would actually cost the page its reason to exist.
+  t.check("a correction is still labelled differently from a mandate moving",
+    en.changes.kind.correction !== en.changes.kind.moved,
+    "the two reasons a fact changes now read identically");
+
+  t.check("the opening note is shown while every change is from day one",
+    html.includes(en.changes.opened),
+    "the six read as corrections to facts someone relied on, with no "
+    + "indication they came from reconciling our own data before anyone read it");
+
+  // AND IT GOES. A change dated after the record opened makes the
+  // sentence false, so it has to stop being printed.
+  const began = (await q("SELECT min(changed_on) AS b FROM fact_history"))[0].b;
+  const victim = (await q(`
+    SELECT h.id, h.country_id, h.field, h.new_value FROM fact_history h
+     WHERE h.old_value IS NOT NULL ORDER BY h.id LIMIT 1`))[0];
+  await d1.prepare(`
+    INSERT INTO fact_history (country_id, field, old_value, new_value, changed_on, kind)
+    VALUES (?, ?, ?, ?, ?, 'moved')`)
+    .bind(victim.country_id, victim.field, victim.new_value, "voluntary", "2027-01-01").run();
+  const later = await (await get("/changes")).text();
+  t.check("and withdraws itself once something has genuinely moved",
+    !later.includes(en.changes.opened),
+    `a synthetic change dated 2027-01-01 (record began ${began}) left the `
+    + "opening note in place, where it now describes entries it does not cover");
+  t.check("the later change is listed",
+    (later.match(/<article class="ch">/g) || []).length === changes.length + 1);
+  t.check("and is labelled as the law moving, not as our correction",
+    later.includes(en.changes.kind.moved) && /class="knd moved"/.test(later));
 }
 
 process.exit(t.report() ? 0 : 1);
