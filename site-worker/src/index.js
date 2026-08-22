@@ -60,6 +60,17 @@ import {
   renderRoiPage,
   ROI_STYLE,
 } from "../../shared/roi-render.mjs";
+import {
+  getGuideBundle,
+  renderGuideDocument,
+  GUIDE_STYLE,
+  GUIDE_FIT_SCRIPT,
+} from "../../shared/guides-render.mjs";
+import {
+  renderPickerBody,
+  PICKER_STYLE,
+  PICKER_SCRIPT,
+} from "../../shared/guides-picker.mjs";
 
 const LANG_COOKIE = "eicc_lang";
 const LANG_COOKIE_TTL_SECONDS = 60 * 60 * 24 * 365; // 1 year
@@ -775,6 +786,23 @@ function mapPageBodyHtml() {
 
 const ROI_PATHS = new Set(["/roi-calculator", "/roi-calculator.html", "/roi", "/roi.html"]);
 
+// ---- compliance guides --------------------------------------------------
+//
+// Two routes, both gated, and the split is the point: /compliance-guides is
+// a web page a reader chooses on, /compliance-guides/guide is a printable
+// document. Same feature, opposite media, so they share no chrome at all.
+//
+// NO ENV FLAG ON THESE, unlike ROI_PUBLIC, and that is a deliberate
+// difference rather than an oversight. ROI_PUBLIC exists because the
+// planner spent ten days being road-tested while its route had to answer
+// 404 to the world. These routes answer a sign-up wall to anyone without a
+// session from their first deploy, so there is nothing a flag would hide
+// that the gate does not already hold back -- and menu-routes.mjs makes a
+// flagged, menu-linked route promise things (in-page interception, a frame
+// protocol) that a plain navigation link should not have to keep.
+const GUIDES_PATHS = new Set(["/compliance-guides", "/compliance-guides.html"]);
+const GUIDE_DOC_PATHS = new Set(["/compliance-guides/guide"]);
+
 // The members subdomain, written once. It appears in four other places
 // in this file as a literal; this is the first that is read by shared
 // code rather than emitted into markup here, so it gets a name.
@@ -1040,10 +1068,21 @@ const ROI_GATE_STYLE = `
 // reader subscribes or signs in with a 6-digit code, in place, without a
 // second window. On success the page reloads and the planner is simply
 // there.
-async function renderRoiGate(request, env, lang, framed) {
+// PARAMETERISED ON 22 AUGUST, when the compliance guides needed the same
+// wall. The alternative was a second copy of ninety lines whose only
+// differences were four strings and a canonical URL -- and "a second copy"
+// is the defect this project keeps meeting, most recently as the gate CSS
+// that sat dead in the tracker for two days after the markup it styled was
+// deleted. One wall, two callers.
+//
+// What is NOT parameterised: the buttons, the panel wiring, the noindex and
+// the fail-soft fallback to /subscribe.html. Those are the parts that were
+// argued about and got right, and a caller that could vary them would
+// eventually vary them.
+async function renderSubscriberGate(request, env, lang, framed, spec) {
   const [panel, gate] = await Promise.all([
     authStrings(env, lang, "auth"),
-    authStrings(env, lang, "roiPanel"),
+    authStrings(env, lang, spec.namespace),
   ]);
   // The file is the source; these are the fallbacks for a missing or
   // malformed language file, which authStrings answers with {}.
@@ -1051,9 +1090,9 @@ async function renderRoiGate(request, env, lang, framed) {
   const signIn = (typeof panel["signin.eyebrow"] === "string" && panel["signin.eyebrow"]) || "Sign in";
 
   const body = `<div class="wrap"><div class="roi-gate">
-<p class="roi-gate-eyebrow">${g("gateEyebrow", "Subscriber tool")}</p>
-<h1 class="roi-gate-title">${g("gateTitle", "ROI &amp; Wave Planner")}</h1>
-<p class="roi-gate-body">${g("gateBody", "Subscribing is free. The planner builds a board-ready business case from your own invoice volumes and country footprint, with a delivery wave plan back-planned from the real published deadlines this site tracks &mdash; and an evidence grade against every benchmark it uses.")}</p>
+<p class="roi-gate-eyebrow">${g("gateEyebrow", spec.eyebrow)}</p>
+<h1 class="roi-gate-title">${g("gateTitle", spec.title)}</h1>
+<p class="roi-gate-body">${g("gateBody", spec.blurb)}</p>
 <p class="roi-gate-actions"><button type="button" class="roi-gate-cta" id="roiGateSubscribe">${g("gateSubscribe", "Subscribe free")}</button></p>
 <p class="roi-gate-signin">${g("gateSignedUp", "Already subscribed?")} <button type="button" id="roiGateSignin">${escHtml(signIn)}</button></p>
 </div></div>`;
@@ -1090,9 +1129,9 @@ async function renderRoiGate(request, env, lang, framed) {
 
   const html = `<!DOCTYPE html><html lang="${escHtml(lang)}"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>E-Invoicing ROI &amp; Wave Planner — The E-Invoicing Compliance Corner</title>
+<title>${escHtml(spec.docTitle)} — The E-Invoicing Compliance Corner</title>
 <meta name="robots" content="noindex,nofollow">
-<link rel="canonical" href="https://e-invoicingcompliancecorner.com/roi-calculator">
+<link rel="canonical" href="https://e-invoicingcompliancecorner.com${escHtml(spec.canonical)}">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>${ROI_STYLE}${framed ? FRAMED_ROI_STYLE : ""}${ROI_GATE_STYLE}</style></head><body${framed ? ' data-framed="1"' : ""}>${body}<script>window.EICC_AUTH_STRINGS=${JSON.stringify(panel).replace(/<\//g, "<\\/")};</script><script src="/auth-overlay.js?v=3"></script><script>${script}</script>${framed ? `<script>${ROI_FRAME_REPORTER}</script>` : ""}</body></html>`;
@@ -1112,6 +1151,228 @@ async function renderRoiGate(request, env, lang, framed) {
     // because the very next request may carry a cookie and must not be
     // answered from here.
     "cache-control": "public, max-age=60",
+    vary: "Cookie",
+    "x-eicc-session": await sessionDiagnostic(request, env.SESSION_SECRET),
+  }});
+}
+
+const renderRoiGate = (request, env, lang, framed) =>
+  renderSubscriberGate(request, env, lang, framed, {
+    namespace: "roiPanel",
+    canonical: "/roi-calculator",
+    docTitle: "E-Invoicing ROI & Wave Planner",
+    eyebrow: "Subscriber tool",
+    title: "ROI &amp; Wave Planner",
+    blurb: "Subscribing is free. The planner builds a board-ready business case from your own invoice volumes and country footprint, with a delivery wave plan back-planned from the real published deadlines this site tracks &mdash; and an evidence grade against every benchmark it uses.",
+  });
+
+const renderGuidesGate = (request, env, lang) =>
+  renderSubscriberGate(request, env, lang, false, {
+    namespace: "guides",
+    canonical: "/compliance-guides",
+    docTitle: "Compliance guides",
+    eyebrow: "Subscriber tool",
+    title: "Compliance guides",
+    blurb: "Subscribing is free. Pick the markets you care about and we will build a one-page briefing for each &mdash; the mandate as it stands, the dated timeline, the penalties, the key facts and what to do next &mdash; ready to print or save as a PDF.",
+  });
+
+// ================================================================
+// COMPLIANCE GUIDES
+// ================================================================
+//
+// THE GATE IS THE ROUTE HERE TOO. Both handlers below check the session
+// before they touch D1, so a signed-out request never causes a bundle to
+// be built. That is the rule migration-era note in renderSubscriberGate
+// spells out, and it matters more on the document route than it did on
+// the planner: /compliance-guides/guide?c=... with seventy codes is six
+// queries over every country this site tracks, and an ungated version of
+// it would be the cheapest way anyone has ever had to make this Worker do
+// a lot of work.
+
+/**
+ * Which countries can be in a guide: those with a deep dive to build one
+ * from. The European Union is a bloc rather than a jurisdiction and has
+ * no page of its own here, the same exclusion the fit harness makes.
+ */
+async function getGuideCountries(db) {
+  const { results } = await db.prepare(
+    `SELECT c.code, c.name_en, c.region
+       FROM countries c
+       JOIN deep_dive_pages ddp ON ddp.country_id = c.id
+      WHERE c.code != 'EU'
+      ORDER BY c.region, c.name_en`).all();
+  return results || [];
+}
+
+/** Their followed countries, or nothing. Fails soft, like the planner's. */
+async function savedCountriesFor(request, env) {
+  if (!env.MEMBERS) return [];
+  try {
+    const r = await env.MEMBERS.fetch(new Request(
+      MEMBERS_ORIGIN + "/members/api/saved-countries",
+      { headers: { Cookie: request.headers.get("Cookie") || "" } }));
+    if (!r.ok) {
+      console.warn(`guides: saved countries answered ${r.status}`);
+      return [];
+    }
+    const body = await r.json();
+    return Array.isArray(body.countries) ? body.countries : [];
+  } catch (err) {
+    console.warn(`guides: saved countries failed — ${err && err.message}`);
+    return [];
+  }
+}
+
+/**
+ * Build a t() over one flattened i18n subtree, with the caller's English
+ * as the fallback. Same contract guides-render.mjs's makeT() has, so the
+ * picker and the document read strings identically.
+ */
+function subtreeT(strings) {
+  return (key, fallback) =>
+    (typeof strings[key] === "string" && strings[key]) || fallback;
+}
+
+async function renderComplianceGuidesPicker(request, env) {
+  const { lang } = resolveInsightsLang(request);
+  const signedInAs = await sessionEmail(request, env.SESSION_SECRET);
+  if (!signedInAs) return renderGuidesGate(request, env, lang);
+
+  const [countries, saved, strings, regionNames] = await Promise.all([
+    getGuideCountries(env.eicc_content),
+    savedCountriesFor(request, env),
+    authStrings(env, lang, "guides"),
+    authStrings(env, lang, "regionNames"),
+  ]);
+  const t = subtreeT(strings);
+  const body = renderPickerBody({
+    countries, saved, lang, t,
+    regionName: (r) => (typeof regionNames[r] === "string" && regionNames[r]) || r,
+  });
+
+  const html = `<!DOCTYPE html><html lang="${escHtml(lang)}"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>${escHtml(t("pick.title", "Compliance guides"))} — The E-Invoicing Compliance Corner</title>
+<meta name="robots" content="noindex,nofollow">
+<link rel="canonical" href="https://e-invoicingcompliancecorner.com/compliance-guides">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>${ROI_STYLE}${PICKER_STYLE}</style></head><body>${body}<script>${PICKER_SCRIPT}</script></body></html>`;
+
+  return new Response(html, { headers: {
+    "content-type": "text/html; charset=utf-8",
+    // PRIVATE, and this is the one place the guides differ from the gate.
+    // The picker is rendered per reader -- their followed countries are
+    // ticked -- so a shared cache holding it would hand one subscriber's
+    // footprint to the next. no-store rather than private, because the
+    // page is cheap and being wrong here is not.
+    "cache-control": "no-store",
+    vary: "Cookie",
+    "x-eicc-session": await sessionDiagnostic(request, env.SESSION_SECRET),
+  }});
+}
+
+// A GUIDE OF NOTHING IS NOT AN ERROR, and neither is a guide of seventy.
+//
+// The cap is the number of countries this site tracks, because that is
+// the largest honest request: "all of them" is a thing a reader will
+// legitimately ask for and the fitter has been calibrated on exactly that
+// document. What the cap stops is a hand-typed URL repeating the same
+// code four hundred times -- deduplicated first, so a reader who does
+// that gets their guide rather than a refusal.
+const GUIDE_MAX_COUNTRIES = 70;
+
+async function renderComplianceGuideDocument(request, env) {
+  const url = new URL(request.url);
+  const { lang } = resolveInsightsLang(request);
+  const signedInAs = await sessionEmail(request, env.SESSION_SECRET);
+  if (!signedInAs) return renderGuidesGate(request, env, lang);
+
+  const countries = await getGuideCountries(env.eicc_content);
+  const byCode = new Map(countries.map((c) => [String(c.code).toUpperCase(), c.name_en]));
+
+  // ?c=DE&c=FR and ?c=DE,FR both work. The form emits the first; a person
+  // sharing a link by hand writes the second, and refusing them would be
+  // a rule with no reason behind it.
+  const wanted = [];
+  const seen = new Set();
+  for (const raw of url.searchParams.getAll("c")) {
+    for (const part of String(raw).split(",")) {
+      const code = part.trim().toUpperCase();
+      if (!code || seen.has(code)) continue;
+      seen.add(code);
+      const name = byCode.get(code);
+      if (name) wanted.push(name);
+    }
+  }
+  // ORDERED AS THE SITE ORDERS THEM, not as the reader typed them. The
+  // cover page is a summary table of the same set, and a document whose
+  // table and whose pages disagree about order is one a reader has to
+  // cross-reference by eye.
+  const order = countries.map((c) => c.name_en).filter((n) => wanted.includes(n));
+  const chosen = order.slice(0, GUIDE_MAX_COUNTRIES);
+
+  const strings = await authStrings(env, lang, "guides");
+  const t = subtreeT(strings);
+
+  if (!chosen.length) {
+    // The picker's script prevents this; a typed URL does not. Say what
+    // happened and offer the way back, rather than printing an empty
+    // document that reads as a fault.
+    const html = `<!DOCTYPE html><html lang="${escHtml(lang)}"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>${escHtml(t("pick.title", "Compliance guides"))} — The E-Invoicing Compliance Corner</title>
+<meta name="robots" content="noindex,nofollow"><style>${ROI_STYLE}${PICKER_STYLE}</style></head>
+<body><div class="wrap"><p class="eyebrow">${escHtml(t("pick.eyebrow", "Subscriber tool"))}</p>
+<h1>${escHtml(t("doc.emptyTitle", "Nothing selected"))}</h1>
+<p class="gp-note">${escHtml(t("doc.emptyBody", "No countries were named in that link, so there is nothing to build. Choose the markets you want and we will make the guide."))}</p>
+<p><a class="gp-back" href="/compliance-guides">${escHtml(t("doc.emptyBack", "← Choose countries"))}</a></p>
+</div></body></html>`;
+    return new Response(html, { status: 400, headers: {
+      "content-type": "text/html; charset=utf-8", "cache-control": "no-store", vary: "Cookie" }});
+  }
+
+  const today = new Date().toISOString().slice(0, 10);
+  const bundle = await getGuideBundle(env.eicc_content, chosen, lang);
+  const { html: doc } = renderGuideDocument({
+    bundle, order: chosen, lang, strings, today,
+    siteOrigin: "https://e-invoicingcompliancecorner.com",
+    membersOrigin: MEMBERS_ORIGIN,
+  });
+
+  // THE TOOLBAR IS SCREEN-ONLY AND SAYS SO IN CSS, not in JavaScript.
+  // Dan's requirement is a printable document; a print button that
+  // printed itself onto page one would be a small joke at the reader's
+  // expense on every one of seventy pages.
+  const toolbar = `<div class="gp-tools">
+  <a href="/compliance-guides">${escHtml(t("doc.change", "← Change countries"))}</a>
+  <span class="sp"></span>
+  <button type="button" id="gpPrint">${escHtml(t("doc.print", "Print / save as PDF"))}</button>
+</div>`;
+
+  const html = `<!DOCTYPE html><html lang="${escHtml(lang)}"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>${escHtml(t("doc.title", "Compliance guide"))} — The E-Invoicing Compliance Corner</title>
+<meta name="robots" content="noindex,nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>${GUIDE_STYLE}
+.gp-tools{position:sticky;top:0;z-index:9;display:flex;align-items:center;gap:14px;
+  background:#111a29;color:#e9edf4;padding:10px 16px;font-family:'IBM Plex Sans',sans-serif;font-size:13px}
+.gp-tools .sp{flex:1 1 auto}
+.gp-tools a{color:#c8d2e4;text-decoration:none}
+.gp-tools a:hover{color:#fff;text-decoration:underline}
+.gp-tools button{background:#c98a3a;color:#1a1206;border:0;border-radius:6px;padding:8px 16px;
+  font-weight:700;cursor:pointer;font-size:13px}
+@media print{.gp-tools{display:none}}
+</style></head><body>${toolbar}${doc}
+<script>${GUIDE_FIT_SCRIPT}</script>
+<script>(function(){var b=document.getElementById('gpPrint');if(b)b.addEventListener('click',function(){window.print();});})();</script>
+</body></html>`;
+
+  return new Response(html, { headers: {
+    "content-type": "text/html; charset=utf-8",
+    "cache-control": "no-store",
     vary: "Cookie",
     "x-eicc-session": await sessionDiagnostic(request, env.SESSION_SECRET),
   }});
@@ -1748,6 +2009,16 @@ export default {
     if (ROI_PATHS.has(url.pathname)) {
       if (env.ROI_PUBLIC !== "true") return new Response("Not found", { status: 404 });
       return renderRoiCalculatorPage(request, env);
+    }
+
+    // Compliance guides — the chooser, then the printable document. Both
+    // gated on the session rather than on an env flag; see the note above
+    // GUIDES_PATHS for why this one differs from ROI_PUBLIC.
+    if (GUIDES_PATHS.has(url.pathname)) {
+      return renderComplianceGuidesPicker(request, env);
+    }
+    if (GUIDE_DOC_PATHS.has(url.pathname)) {
+      return renderComplianceGuideDocument(request, env);
     }
 
     // The Map — D1-rendered choropleth, no asset file behind it either.

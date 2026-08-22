@@ -101,7 +101,8 @@
     "menu": "Menu",
     "resources": "Resources",
     "subscribe": "Subscribe",
-    "navHelp": "Navigation Help"
+    "navHelp": "Navigation Help",
+    "guides": "Compliance guides"
   },
   "navTips": {
     "label": "Getting around this site",
@@ -318,6 +319,101 @@
         "label": "Company name",
         "error": "Company name is required"
       }
+    }
+  },
+  "guides": {
+    "back": "← Back to global tracker",
+    "col": {
+      "cap": "Annual cap",
+      "country": "Jurisdiction",
+      "failure": "Failure",
+      "fine": "Fine",
+      "model": "Model",
+      "next": "Next dated obligation",
+      "what": "What changes"
+    },
+    "doc": {
+      "change": "← Change countries",
+      "convention": "In the five headline tiles on each page, a status describes the obligation to ISSUE an e-invoice. Where a business must only be able to RECEIVE one, that is said in the line under the tile. NOT CONFIRMED means we could not source the fact, which is not the same as no requirement.",
+      "count": "{0} jurisdictions",
+      "emptyBack": "← Choose countries",
+      "emptyBody": "No countries were named in that link, so there is nothing to build. Choose the markets you want and we will make the guide.",
+      "emptyTitle": "Nothing selected",
+      "eyebrow": "The E-Invoicing Compliance Corner",
+      "full": "Full detail: {0}",
+      "generated": "Generated {0}",
+      "lede": "{0} jurisdictions, drawn from this site's tracked mandate data on {1}. Each country follows on its own page. Dates are the published obligations as we hold them; the full detail for every country is on its deep dive.",
+      "print": "Print / save as PDF",
+      "title": "Compliance guide"
+    },
+    "facts": {
+      "more": "{0} further detail rows are on the full deep dive.",
+      "moreOne": "1 further detail row is on the full deep dive."
+    },
+    "gateBody": "Subscribing is free. Pick the markets you care about and we will build a one-page briefing for each — the mandate as it stands, the dated timeline, the penalties, the key facts and what to do next — ready to print or save as a PDF.",
+    "gateEyebrow": "Subscriber tool",
+    "gateSignedUp": "Already subscribed?",
+    "gateSubscribe": "Subscribe free",
+    "gateTitle": "Compliance guides",
+    "hl": {
+      "active": "ACTIVE",
+      "arch": {
+        "none": "NO REQUIREMENT",
+        "varies": "VARIES"
+      },
+      "lbl": {
+        "archiving": "Archiving",
+        "b2b": "B2B e-invoicing",
+        "b2c": "B2C e-invoicing",
+        "b2g": "B2G e-invoicing",
+        "signature": "Digital signature"
+      },
+      "none": "NO MANDATE",
+      "planned": "PLANNED",
+      "sig": {
+        "conditional": "CONDITIONAL",
+        "not": "NOT REQUIRED",
+        "required": "REQUIRED"
+      },
+      "unknown": "NOT CONFIRMED",
+      "verified": "Facts verified {0}",
+      "voluntary": "VOLUNTARY",
+      "yrs": "yrs"
+    },
+    "lbl": {
+      "updated": "Updated"
+    },
+    "pen": {
+      "capsAll": "Annual cap: {0}"
+    },
+    "pick": {
+      "all": "Select all",
+      "build": "Build my guide",
+      "clear": "Clear",
+      "countMany": "{0} countries selected",
+      "countNone": "No countries selected",
+      "countOne": "1 country selected",
+      "eyebrow": "Subscriber tool",
+      "lede": "Pick the markets you care about and we will build a one-page briefing for each: the mandate as it stands, the dated timeline, the penalties, the key facts and what to do next. It opens ready to print or save as a PDF.",
+      "savedNote": "The countries you follow are ticked already and marked with a star. Add or remove any you like.",
+      "title": "Compliance guides"
+    },
+    "pill": {
+      "complex": "Complex",
+      "eu": "EU",
+      "inforce": "In force",
+      "nodate": "No dated step"
+    },
+    "sec": {
+      "facts": "Key facts",
+      "news": "From the newsletter",
+      "penalties": "Penalties",
+      "sources": "Where this is tracked",
+      "steps": "What to do",
+      "timeline": "Compliance timeline"
+    },
+    "tl": {
+      "hidden": "{0} earlier milestones are on the full deep dive."
     }
   }
 }

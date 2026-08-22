@@ -15,7 +15,7 @@ fatal rather than skipped. The synthetic chain in test_silent_noop() is
 a scale model of the 470/480/490 incident: SQL that runs perfectly and
 changes nothing.
 """
-import io, os, sys, tempfile, contextlib
+import io, os, re, sys, tempfile, contextlib
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import apply_migrations as A
@@ -268,8 +268,17 @@ def test_live_batch_sql():
     check("there are durable assertions to send", len(durable) > 20, len(durable))
 
     sql = A.batch_sql(durable)
+    # A SUBSTRING SEARCH FOR "UNION" WAS THE WRONG SHAPE, and migration 608
+    # is what proved it: its assertion excludes the EU bloc by name, so the
+    # batch contains the literal 'European Union' and this check failed on
+    # a query that has no compound SELECT anywhere in it.
+    #
+    # The proxy was standing in for a keyword, so match the keyword. A
+    # compound SELECT is UNION followed by SELECT (or UNION ALL SELECT) --
+    # nothing else in SQLite spells it, and no country name can.
     check("the batch is one row of columns, not a compound SELECT",
-          "UNION" not in sql.upper(), sql[:120])
+          re.search(r"\bUNION\b(\s+ALL)?\s+SELECT", sql, re.IGNORECASE) is None,
+          sql[:120])
 
     cur = conn.cursor()
     rows = cur.execute(sql).fetchall()
