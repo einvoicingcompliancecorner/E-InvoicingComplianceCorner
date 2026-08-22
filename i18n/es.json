@@ -437,7 +437,7 @@
     },
     "gap": {
       "h": "Qué no hacemos todavía",
-      "p1": "No publicamos una calificación para cada afirmación por país. Cada afirmación lleva su fuente y la fecha de comprobación, pero si esa fuente es una ley o un rastreador profesional aún no se registra de forma que podamos mostrárselo. Hasta entonces, esta página es la descripción honesta del criterio que aplicamos, no una garantía dato por dato.",
+      "p1": "La clasificación anterior corresponde al editor, no a la cita concreta. Una página en un dominio gubernamental se clasifica como primaria aunque allí sea una entrada de blog, y una ley reproducida literalmente por un despacho se clasifica como secundaria. Ninguna de nuestras citas ha necesitado todavía una excepción; cuando alguna la necesite, la tendrá.",
       "p2": "Tampoco podemos mostrarle todavía qué decía antes un dato. Las correcciones se hacen en un historial de migraciones versionado, así que nada se pierde, pero ese historial no puede leerse desde estas páginas."
     },
     "intro": "Este rastreador hace afirmaciones sobre las que las empresas actúan. Esta página expone qué exigimos a una fuente, qué significan nuestros estados, en qué somos deliberadamente más estrictos que otros rastreadores y qué todavía no hacemos.",
@@ -476,6 +476,23 @@
       "h": "«No confirmado» es una respuesta",
       "p1": "Cuando no hemos podido confirmar un dato, lo decimos y registramos por qué. No lo dejamos en blanco ni lo inferimos, porque un blanco se lee como «sin obligación»: una afirmación distinta, y la que acaba en multa."
     },
-    "verified": "Cubre {0} jurisdicciones. Última comprobación registrada el {1}."
+    "verified": "Cubre {0} jurisdicciones. Última comprobación registrada el {1}.",
+    "tier": {
+      "count": "{0} citas de {1} editores, todas clasificadas. Nada puede publicarse en este sitio citando a un editor sin clasificar: la compilación lo rechaza.",
+      "d": {
+        "institutional": "Oficial, pero no la autoridad de la propia jurisdicción: la Comisión Europea, OpenPeppol y las autoridades Peppol nacionales, los organismos de normalización. Autoridad sobre una especificación, no sobre una obligación nacional.",
+        "primary": "La voz de la propia jurisdicción: su administración tributaria, su ministerio, su boletín oficial o registro jurídico estatal, su propia plataforma de facturación electrónica.",
+        "secondary": "Todos los que informan sobre la ley sin hacerla: rastreadores profesionales, firmas contables y jurídicas, proveedores de software, colegios profesionales, la prensa y las bases de datos privadas que reproducen la norma. Útiles, a menudo los primeros, nunca suficientes por sí solos.",
+        "unknown": "No pudimos establecer quién opera el host. Se registra como sin clasificar, con el motivo, en lugar de mejorarla en silencio."
+      },
+      "h": "De dónde proceden nuestras citas",
+      "lead": "Cada fuente que citamos se clasifica según quién responde. La clasificación corresponde al editor, no a la página: el resumen de una ley sigue siendo un resumen, por bueno que sea.",
+      "w": {
+        "institutional": "INSTITUCIONAL",
+        "primary": "PRIMARIA",
+        "secondary": "SECUNDARIA",
+        "unknown": "SIN CLASIFICAR"
+      }
+    }
   }
 }

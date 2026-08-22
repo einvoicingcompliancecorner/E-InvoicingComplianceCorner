@@ -1338,10 +1338,36 @@ async function renderMethodologyPage(request, env) {
   const facts = row?.facts ?? 0;
   const unknowns = row?.unknowns ?? 0;
 
+  // THE SOURCE GRADE, COUNTED RATHER THAN CLAIMED. cited_sources is the
+  // view migration 613 installed over every URL this site holds -- nine
+  // columns across five tables -- and source_hosts is the grade for the
+  // host each one resolves to. An INNER JOIN is safe here only because
+  // 613's standing assertion says every cited host has a row; if that
+  // ever stops being true the replay fails long before this query
+  // silently drops a citation out of the totals.
+  const tierRows = (await env.eicc_content.prepare(`
+    SELECT sh.tier AS tier, count(*) AS n
+      FROM cited_sources cs JOIN source_hosts sh ON sh.host = cs.host
+     GROUP BY sh.tier`).all()).results || [];
+  const hostRow = await env.eicc_content.prepare(
+    "SELECT count(*) AS n FROM source_hosts").first();
+  const tierCount = Object.fromEntries(tierRows.map((r) => [r.tier, r.n]));
+  const citations = tierRows.reduce((a, r) => a + r.n, 0);
+
   const p = (key, en) => `<p>${escHtml(t(key, en))}</p>`;
   const h = (key, en) => `<h2>${escHtml(t(key, en))}</h2>`;
   const status = (word, key, en) =>
     `<div class="st"><span class="w">${escHtml(word)}</span><span>${escHtml(t(key, en))}</span></div>`;
+  // A tier row prints its own share. ONE DECIMAL, ALWAYS: the ungraded
+  // tier is 0.6% today and rounding it to 0% would read as "none", which
+  // is the opposite of what that row is on the page to admit.
+  const tierRow = (tier, wEn, dEn) => {
+    const n = tierCount[tier] || 0;
+    const pct = citations ? (n * 100 / citations).toFixed(1) : "0.0";
+    return `<div class="st tr"><span class="w">${escHtml(t(`tier.w.${tier}`, wEn))}</span>`
+      + `<span>${escHtml(t(`tier.d.${tier}`, dEn))}</span>`
+      + `<span class="n">${n} · ${pct}%</span></div>`;
+  };
 
   const body = `
   ${h("src.h", "What counts as a source")}
@@ -1373,6 +1399,18 @@ async function renderMethodologyPage(request, env) {
   ${h("strict.h", "Where we are deliberately stricter")}
   ${p("strict.p1", "A draft bill is not a plan.")}
   ${p("strict.p2", "The effect is that we sometimes publish a less exciting answer than the market does.")}
+
+  ${h("tier.h", "Where our citations come from")}
+  ${p("tier.lead", "Every source we cite is graded on who is answering.")}
+  <div class="sts">
+    ${tierRow("primary", "PRIMARY", "The jurisdiction's own voice.")}
+    ${tierRow("institutional", "INSTITUTIONAL", "Official, but not the jurisdiction's own authority.")}
+    ${tierRow("secondary", "SECONDARY", "Everyone reporting on the law rather than making it.")}
+    ${tierRow("unknown", "UNGRADED", "We could not establish who operates the host.")}
+  </div>
+  <p class="fig">${escHtml(fillPlain(t("tier.count",
+    "{0} citations across {1} publishers, every one of them graded."),
+    citations, hostRow?.n ?? 0))}</p>
 
   ${h("ev.h", "Graded evidence, where we have it")}
   ${p("ev.p1", "The ROI planner grades every benchmark it uses from A to D.")}
@@ -1445,10 +1483,19 @@ async function renderMethodologyPage(request, env) {
   .st .w{font-family:'IBM Plex Mono',monospace; font-size:11.5px; letter-spacing:.12em;
          color:var(--paper); padding-top:2px;}
   .st span:last-child{font-size:14.5px; color:#dfe4ee;}
+  /* The tier rows carry a third column. The count is monospace and hard
+     right so four figures of different widths line up as a column
+     rather than trailing off each definition. */
+  .st.tr{grid-template-columns:11.5em 1fr 8em;}
+  .st.tr .n{font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:var(--muted);
+            text-align:right; white-space:nowrap; padding-top:3px;}
   .cta{margin:18px 0 0; display:flex; gap:22px; flex-wrap:wrap;}
   .cta a{color:var(--paper); font-weight:600; font-size:14.5px; text-decoration:none; border-bottom:1px solid var(--line);}
   .cta a:hover{color:var(--stamp); border-color:var(--stamp);}
-  @media(max-width:600px){ h1{font-size:30px;} .st{grid-template-columns:1fr; gap:2px;} }
+  /* .st.tr beats a bare .st on specificity, so the narrow rule has to
+     name it too or the three-column grid survives on a phone. */
+  @media(max-width:600px){ h1{font-size:30px;} .st,.st.tr{grid-template-columns:1fr; gap:2px;}
+                           .st.tr .n{text-align:left; padding-top:1px;} }
 </style>
 </head>
 <body${framed ? ' data-framed="1"' : ""}>

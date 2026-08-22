@@ -14814,3 +14814,141 @@ part of what /methodology now says out loud.
 ### Verified
 
 `npm test`: **19 suites**. Replay OK across **612 files**.
+
+### Structured data (22 August 2026, deployed)
+
+The first of the outside review's recommendations, and the one it was
+unambiguously right about. `shared/structured-data.mjs` now emits
+Organization and WebSite once on the tracker, referenced by `@id`
+elsewhere; a Dataset on `/sources`; WebPage plus BreadcrumbList on all 70
+country pages with their real `last_updated`; Article on the insights
+pieces; AboutPage on `/methodology`.
+
+`Organization.publishingPrinciples` points at `/methodology` — the
+property schema.org defines for exactly that, and the machine-readable
+half of the page written the same day.
+
+**The rule the module is written against is that markup may only say what
+the page says.** Three claims are refused rather than made: no FAQPage
+(the pages are cards and a timeline, not questions and answers, and FAQ
+markup without matching visible Q&A is what search engines penalise); no
+Article on a country page (that asserts a byline and a publication date a
+continuously revised reference does not have); and the Dataset only
+claims to be one because `/map-data.json` is a real endpoint behind it,
+which the suite fetches rather than trusting.
+
+`tests/structured-data.mjs` caught a real defect on its first run: the
+Dataset described 71 jurisdictions where every other surface says 70,
+because `/sources` builds its map from `tracking_sources` and the
+European Union has monitored pages without having a tax authority. The
+same off-by-one `jurisdiction-count.mjs` already exists for.
+
+It also checks escaping. A `</` inside a JSON string closes the script
+block and drops the rest of the document into the page as text —
+`JSON.stringify` will not escape it, because it is valid JSON and the
+HTML parser is the one that cares, and country names and card titles go
+into these nodes.
+
+**Still open from that review**, in the order recommended: publish where
+we differ from other trackers (17 of 70 B2B statuses, 12 of them because
+we are stricter — the cheapest authority content available and the data
+is already in D1); `source_tier` plus a backfill, which would let
+`/methodology` drop its caveat and settle Canada properly; a change-history
+table; and turning the weekly content monitor outward, which is the
+biggest and touches the email path.
+
+`npm test`: **20 suites**.
+
+### Every cited host has a grade (22 August 2026)
+
+The second recommendation from the outside review, and the one that
+turned an admission on `/methodology` into a column. That page said, in
+its own words, that it could not show you whether a claim was verified
+against a statute or a professional tracker. Now it can.
+
+**A host table, not a `source_tier` column.** The obvious shape was a
+tier beside every `source_url`: one on `milestones`, one on `stories`,
+five on `country_headline_facts`, one each on `tracking_sources` and
+`deep_dive_portals`. That is 1,176 values to write and keep true, and
+they would not stay true — a tier is not a property of a citation, it is
+a property of who is answering, and the 1,176 citations come from **340
+hosts**. Migration 613 grades the 340, and a view (`cited_sources`)
+resolves every URL the site holds to one of them. Deciding `revenue.ie`
+is the Irish Revenue Commissioners now happens once instead of twelve
+times.
+
+The cost is written into the migration rather than designed around: a
+citation cannot be graded below its host, so a blog post on a government
+domain grades primary. No citation we hold has needed the exception yet.
+
+**The standing assertion is the point of the whole exercise.**
+
+```
+-- ASSERT ALWAYS: SELECT count(*) FROM cited_sources
+--   WHERE host NOT IN (SELECT host FROM source_hosts) = 0
+```
+
+Add a milestone, a story, a portal or a headline fact citing a host
+nobody has graded and the replay fails. "We grade our sources" stopped
+being a sentence on a page and became something a build refuses. Negative
+tested: a citation to an invented host fails at `613_source_tiers.sql`.
+
+**What a pattern-only classifier gets wrong is national agencies.**
+Matching `.gov`, `.gob`, `.gouv`, `.go.xx` and friends graded
+`revenue.ie`, `sii.cl`, `erhvervsstyrelsen.dk`, `canada.ca`,
+`valtiokonttori.fi`, `aade.gr`, `vmi.lt`, `digg.se`, `logius.nl`,
+`skatteetaten.no`, `belastingdienst.nl`, `skatturinn.is` and twenty more
+the same as a vendor blog — roughly one citation in eight. Those are
+named individually in `grade_source_hosts.py`, which is kept runnable so
+the next ungraded host is a two-minute job: it reports what is new,
+grades what the rules cover, prints the INSERT, and refuses to guess at
+the rest.
+
+**Two calls stated out loud in the migration**, because both could
+reasonably go the other way. Professional bodies and chambers are
+*secondary* even where they are statutory public-law corporations
+(`wko.at`, `occ.pt`, `icas.com`) — they comment on the law, they do not
+make it. Private legal databases are *secondary* even when the text is
+verbatim statute (`lawphil.net`, `dejure.org`, `brocardi.it`) — the text
+may be right, the publisher is not the one who can be held to it.
+
+**Four hosts survived unidentified** (7 citations) and are stored as
+`unknown` with the reason, exactly as an unsourceable headline fact is.
+Two were rescued by reading the URL rather than the host:
+`fjs.atlassian.net` is Fjársýsla ríkisins, the Icelandic Financial
+Management Authority, keeping its e-invoicing guidance on a hosted wiki.
+
+**Where we actually stand.** Primary 577 (49.1%), secondary 459 (39.0%),
+institutional 133 (11.3%), ungraded 7 (0.6%). `/methodology` prints those
+four figures from a live query, one decimal — rounding 0.6% to 0% would
+read as "none", which is the opposite of what that row is there to admit.
+
+**And `method.gap.p1` was rewritten in all four languages.** The old
+paragraph said the grade did not exist. Leaving it one section below a
+table of exactly that grade would have been the guides defect again — a
+page contradicting itself on one screen — on the page whose whole subject
+is being careful. Migration 614 replaces it with the limitation that
+genuinely remains, and asserts the old wording is gone in German, French
+and Spanish too, not just the English somebody would notice.
+
+**What it settles, and what it does not.** Canada was the one country
+resolved on the balance of our own artefacts rather than a source. Its
+five headline facts now read: B2B, B2C, archiving and signature all on
+`canada.ca`; **B2G — the one in dispute — on `recommand.eu`, a secondary
+tracker.** The grade does not answer the question, but it names the weak
+link instead of leaving it buried in a URL.
+
+The same query gives a work queue: **ten countries whose entire
+headline-fact set is secondary or ungraded** — Cyprus, Egypt, Indonesia,
+Jordan, Latvia, Malta, Serbia, South Korea, Uzbekistan, Vietnam.
+Milestones are the weakest surface overall (207 of 412 secondary);
+`tracking_sources` and `deep_dive_portals` are the strongest (99 of 140
+and 102 of 119 primary).
+
+**Still open** from the review: publish where we differ from other
+trackers (**15** of 70 B2B statuses after migration 611's corrections,
+not the 17 recorded in the previous entry); a change-history table; and
+turning the weekly content monitor outward.
+
+`npm test`: **20 suites**, 33 checks in `methodology` alone. Replay OK
+across **614 files**.

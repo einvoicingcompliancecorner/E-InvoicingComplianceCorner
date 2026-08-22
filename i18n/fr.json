@@ -437,7 +437,7 @@
     },
     "gap": {
       "h": "Ce que nous ne faisons pas encore",
-      "p1": "Nous ne publions pas de note pour chaque affirmation pays. Chaque affirmation porte sa source et la date de vérification, mais le fait que cette source soit un texte de loi ou un tracker professionnel n'est pas encore consigné sous une forme que nous puissions vous montrer. D'ici là, cette page est la description honnête de la norme que nous appliquons, non une garantie fait par fait.",
+      "p1": "Le classement ci-dessus porte sur l'éditeur, pas sur la citation individuelle. Une page sur un domaine gouvernemental est classée primaire même s'il s'agit d'un billet de blog, et un texte de loi reproduit mot pour mot par un cabinet est classé secondaire. Aucune de nos citations n'a encore eu besoin d'une exception ; le jour où l'une en aura besoin, elle l'aura.",
       "p2": "Nous ne pouvons pas non plus vous montrer ce qu'un fait indiquait auparavant. Les corrections sont faites dans un historique de migrations versionné, rien n'est donc perdu, mais cet historique n'est pas consultable depuis ces pages."
     },
     "intro": "Ce tracker formule des affirmations sur lesquelles des entreprises s'appuient. Cette page expose ce que nous exigeons d'une source, ce que signifient nos statuts, les points sur lesquels nous sommes délibérément plus stricts que d'autres trackers, et ce que nous ne faisons pas encore.",
@@ -476,6 +476,23 @@
       "h": "« Non confirmé » est une réponse",
       "p1": "Lorsque nous n'avons pas pu confirmer un fait, nous le disons et consignons pourquoi. Nous ne laissons pas de vide et nous ne le déduisons pas, car un vide se lit comme « aucune obligation » — une affirmation différente, et celle qui vaut une amende."
     },
-    "verified": "Couvre {0} juridictions. Dernière vérification enregistrée le {1}."
+    "verified": "Couvre {0} juridictions. Dernière vérification enregistrée le {1}.",
+    "tier": {
+      "count": "{0} citations issues de {1} éditeurs, toutes classées. Rien ne peut être publié sur ce site en citant un éditeur non classé : la compilation le refuse.",
+      "d": {
+        "institutional": "Officielle, mais pas l'autorité de la juridiction elle-même : la Commission européenne, OpenPeppol et les autorités Peppol nationales, les organismes de normalisation. Fait autorité sur une spécification, pas sur une obligation nationale.",
+        "primary": "La voix de la juridiction elle-même — son administration fiscale, son ministère, son journal officiel ou registre juridique d'État, sa propre plateforme de facturation électronique.",
+        "secondary": "Tous ceux qui rendent compte du droit sans le faire — trackers professionnels, cabinets comptables et juridiques, éditeurs de logiciels, ordres professionnels, presse, et bases de données privées qui reproduisent les textes. Utiles, souvent les premiers, jamais suffisants à eux seuls.",
+        "unknown": "Nous n'avons pas pu établir qui exploite l'hôte. Consignée comme non classée, avec le motif, plutôt que discrètement surclassée."
+      },
+      "h": "D'où viennent nos citations",
+      "lead": "Chaque source que nous citons est classée selon qui répond. Le classement porte sur l'éditeur, pas sur la page : le résumé d'une loi reste le résumé d'une loi, aussi bon soit-il.",
+      "w": {
+        "institutional": "INSTITUTIONNELLE",
+        "primary": "PRIMAIRE",
+        "secondary": "SECONDAIRE",
+        "unknown": "NON CLASSÉE"
+      }
+    }
   }
 }

@@ -437,7 +437,7 @@
     },
     "gap": {
       "h": "Was wir noch nicht tun",
-      "p1": "Wir veröffentlichen keine Note zu jeder Länderaussage. Jede Aussage trägt ihre Quelle und das Prüfdatum, doch ob diese Quelle ein Gesetz oder ein Fachtracker ist, wird noch nicht in einer für Sie darstellbaren Form erfasst. Bis dahin ist diese Seite die ehrliche Beschreibung des von uns angelegten Maßstabs und keine Garantie pro Einzelfakt.",
+      "p1": "Die obige Bewertung gilt dem Herausgeber, nicht dem einzelnen Beleg. Eine Seite auf einer Behördendomain gilt als primär, selbst wenn sie dort ein Blogbeitrag ist, und ein von einer Kanzlei wortgleich wiedergegebenes Gesetz gilt als sekundär. Bisher brauchte kein Beleg eine Ausnahme; sobald einer sie braucht, bekommt er sie.",
       "p2": "Ebenso können wir Ihnen noch nicht zeigen, was ein Sachverhalt früher aussagte. Korrekturen erfolgen in einer versionierten Migrationshistorie, es geht also nichts verloren, doch diese Historie ist von diesen Seiten aus nicht lesbar."
     },
     "intro": "Dieser Tracker trifft Aussagen, nach denen Unternehmen handeln. Diese Seite legt dar, was wir von einer Quelle verlangen, was unsere Statusangaben bedeuten, wo wir bewusst strenger sind als andere Tracker und was wir noch nicht leisten.",
@@ -476,6 +476,23 @@
       "h": "„Nicht bestätigt\" ist eine Antwort",
       "p1": "Konnten wir einen Sachverhalt nicht bestätigen, sagen wir das und halten fest, warum. Wir lassen ihn nicht leer und leiten ihn nicht ab, denn eine Leerstelle liest sich als „keine Pflicht\" — eine andere Aussage, und diejenige, die zu einem Bußgeld führt."
     },
-    "verified": "Umfasst {0} Rechtsordnungen. Letzte erfasste Faktenprüfung {1}."
+    "verified": "Umfasst {0} Rechtsordnungen. Letzte erfasste Faktenprüfung {1}.",
+    "tier": {
+      "count": "{0} Belege von {1} Herausgebern, jeder einzelne bewertet. Auf dieser Website kann nichts veröffentlicht werden, das einen unbewerteten Herausgeber zitiert — der Build verweigert es.",
+      "d": {
+        "institutional": "Amtlich, aber nicht die Behörde der Jurisdiktion selbst: die Europäische Kommission, OpenPeppol und die nationalen Peppol-Behörden, Normungsgremien. Maßgeblich für eine Spezifikation, nicht für eine nationale Pflicht.",
+        "primary": "Die Stimme der Jurisdiktion selbst — ihre Steuerbehörde, ihr Ministerium, ihr Amtsblatt oder staatliches Rechtsregister, ihre eigene E-Invoicing-Plattform.",
+        "secondary": "Alle, die über das Recht berichten, statt es zu setzen — Fachtracker, Wirtschaftsprüfer und Kanzleien, Softwareanbieter, Berufsverbände, die Presse und private Datenbanken, die Gesetzestexte wiedergeben. Nützlich, oft zuerst da, allein nie ausreichend.",
+        "unknown": "Wir konnten nicht feststellen, wer den Host betreibt. Als unbewertet mit Begründung erfasst, statt stillschweigend besser eingestuft zu werden."
+      },
+      "h": "Woher unsere Belege stammen",
+      "lead": "Jede von uns zitierte Quelle wird danach bewertet, wer antwortet. Die Bewertung gilt dem Herausgeber, nicht der einzelnen Seite: Eine Zusammenfassung eines Gesetzes bleibt eine Zusammenfassung, wie gut sie auch sein mag.",
+      "w": {
+        "institutional": "INSTITUTIONELL",
+        "primary": "PRIMÄR",
+        "secondary": "SEKUNDÄR",
+        "unknown": "UNBEWERTET"
+      }
+    }
   }
 }
