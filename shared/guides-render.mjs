@@ -212,9 +212,46 @@ export async function getGuideBundle(db, names, lang) {
     WHERE c.name_en IN (${p}) AND s.published = 1
     ORDER BY c.name_en, s.date DESC`, args);
 
+  // THE FIVE FACTS THAT ARE THE SAME FIVE ON EVERY PAGE.
+  //
+  // Dan, 21 August 2026: "Could we state 1. B2G, B2B and B2C requirement
+  // for eInvoicing such as mandate, no mandate or scheduled for <date>.
+  // The Archiving requirement, The Digital Signature requirement in the
+  // headline boxes consistently on each country page."
+  //
+  // These come from country_headline_facts (migrations 600-608), which
+  // exists precisely because they could NOT be derived: B2G would have
+  // printed "no mandate" against twelve EU member states, and B2C was not
+  // in the data in any form. The long version is in migration 600.
+  //
+  // A LEFT JOIN, not a JOIN. Migration 608 filled the last seven and
+  // asserts that all 70 now have a row, so in production this never
+  // misses -- but the harness runs against fixtures, a future country
+  // arrives before its facts do, and an inner join would silently drop
+  // the whole country page rather than one strip. The renderer handles
+  // null by falling back to the country's own free-form stats.
+  const headline = await all(db, `
+    SELECT c.name_en, f.b2g_status, f.b2g_date, f.b2b_status, f.b2b_date,
+           f.b2c_status, f.b2c_date, f.archiving_years, f.archiving_status,
+           f.signature_status, f.last_verified,
+           COALESCE(ht.b2g_note, ht_en.b2g_note)             AS b2g_note,
+           COALESCE(ht.b2b_note, ht_en.b2b_note)             AS b2b_note,
+           COALESCE(ht.b2c_note, ht_en.b2c_note)             AS b2c_note,
+           COALESCE(ht.archiving_note, ht_en.archiving_note) AS archiving_note,
+           COALESCE(ht.signature_note, ht_en.signature_note) AS signature_note
+    FROM country_headline_facts f
+    JOIN countries c ON c.id = f.country_id
+    LEFT JOIN country_headline_fact_translations ht    ON ht.country_id = f.country_id AND ht.lang = ?1
+    LEFT JOIN country_headline_fact_translations ht_en ON ht_en.country_id = f.country_id AND ht_en.lang = 'en'
+    WHERE c.name_en IN (${p})`, args);
+
   const out = new Map();
   for (const row of pages) {
-    out.set(row.name_en, { ...row, stats: [], cards: [], steps: [], penalties: [], milestones: [], portals: [], stories: [] });
+    out.set(row.name_en, { ...row, headline: null, stats: [], cards: [], steps: [], penalties: [], milestones: [], portals: [], stories: [] });
+  }
+  for (const r of headline) {
+    const c = out.get(r.name_en);
+    if (c) c.headline = r;
   }
   const push = (rows, key, map) => {
     for (const r of rows) {
@@ -476,7 +513,8 @@ h1,h2,h3,h4{font-family:'Big Shoulders Display','IBM Plex Sans',sans-serif;margi
   line-height:.95;color:#111;margin:0}
 .cover .who{font-family:'IBM Plex Mono',monospace;font-size:7.2pt;letter-spacing:.7px;
   text-transform:uppercase;color:#555;text-align:right;line-height:1.5}
-.cover .lede{color:#444;margin:0 0 12px;max-width:150mm;font-size:9pt}
+.cover .conv{margin:0 0 10px;font-size:7.6pt;color:#666;line-height:1.4;border-left:2px solid #d6d6d6;padding-left:8px}
+.lede{color:#444;margin:0 0 12px;max-width:150mm;font-size:9pt}
 table.summary{width:100%;border-collapse:collapse;font-size:8.4pt;color:#111;table-layout:fixed}
 table.summary col.a{width:23%} table.summary col.b{width:15%} table.summary col.c{width:34%} table.summary col.d{width:28%}
 table.summary th{font-family:'IBM Plex Mono',monospace;font-size:7.2pt;letter-spacing:.8px;
@@ -511,9 +549,44 @@ table.summary td.date{font-family:'IBM Plex Mono',monospace;white-space:nowrap;c
   letter-spacing:.6px;text-transform:uppercase;color:#555;text-align:right;line-height:1.5}
 .summ{margin:0 0 7px;color:#333;font-size:8.8pt}
 .statstrip{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin:0 0 8px}
-.statstrip div{border:1px solid #c9c9c9;border-left:3px solid #6b7a95;padding:5px 7px;min-width:0}
+/* > div, not div. The descendant form also matched .v and .l, so every
+   value and every label was drawing its own box inside the tile's box --
+   three nested borders per tile, five tiles across the top of seventy
+   pages. Nobody wrote that; it is what "style the boxes" turns into when
+   the boxes contain divs. */
+.statstrip>div{border:1px solid #c9c9c9;border-left:3px solid #6b7a95;padding:5px 7px;min-width:0}
 .statstrip .v{font-family:'Big Shoulders Display',sans-serif;font-weight:700;font-size:14pt;color:#111;line-height:1}
 .statstrip .l{font-size:6.9pt;color:#555;line-height:1.25;margin-top:2px}
+
+/* THE FIVE HEADLINE TILES.
+   The status word is the tile, so it is set at the size the old free-form
+   value was and the label drops under it. Five words that mean different
+   things should not all print in the same grey -- the left rule carries
+   the state, which survives greyscale printing as four distinct weights
+   as well as it survives colour. */
+.statstrip.hl .v{font-size:11.5pt;letter-spacing:.2px}
+.statstrip.hl .v .dt{font-family:'IBM Plex Sans',sans-serif;font-weight:600;font-size:8.4pt;
+  letter-spacing:0;color:#444;white-space:nowrap}
+.statstrip.hl .l{font-weight:600;color:#333;text-transform:uppercase;letter-spacing:.4px;font-size:6.4pt}
+/* The qualifier under the tile is where "no supplier issuing duty" and
+   "above TRY 3m turnover" live. Without it ACTIVE and NO MANDATE are
+   confident in a way the underlying law usually is not. */
+.statstrip.hl .n{font-size:6.4pt;color:#666;line-height:1.28;margin-top:3px;
+  border-top:1px solid #e4e4e4;padding-top:3px}
+.statstrip.hl>div.on{border-left-color:#1f6b3f;background:#f4f9f5}
+.statstrip.hl>div.soon{border-left-color:#a8720d;background:#fdf8f0}
+.statstrip.hl>div.opt{border-left-color:#3a5f96;background:#f4f7fc}
+.statstrip.hl>div.off{border-left-color:#8a8a8a;background:#fafafa}
+/* Not-confirmed is deliberately the only dashed one. A reader skimming
+   seventy pages should be able to see at a glance that this tile is not
+   making a claim -- and it must never be mistaken for "no requirement",
+   which is the solid grey directly above it. */
+.statstrip.hl>div.unk{border-left-color:#8a8a8a;border-style:dashed;background:#fff}
+.statstrip.hl>div.unk .v{color:#767676;font-size:9.5pt}
+/* The demoted per-country stats. Same grid, quieter: they are context
+   now, not the headline. */
+.statstrip.alt>div{border-left-color:#b6b6b6}
+.statstrip.alt .v{font-size:11pt;color:#333}
 
 /* THE COLUMNS FLOW, AND THE BIG BLOCK IS ALLOWED TO SPLIT.
    Germany's first render left a third of the page empty down the right and
@@ -617,6 +690,82 @@ function shortDate(d) {
   return `${MONTHS[parseInt(m, 10) - 1] || ""} ${y}`;
 }
 
+// ---- the five headline tiles -----------------------------------------
+//
+// THE POINT OF THESE IS THAT THEY ARE THE SAME FIVE EVERY TIME.
+//
+// What they replace was five free-form value/label pairs chosen per
+// country: Germany offered "2 formats / No CTC / 8 yrs / EUR 5,000 /
+// 2028", Azerbaijan offered a launch date and a VAT rate. Interesting,
+// and not comparable -- a reader with eleven markets could not line
+// eleven pages up against each other, which was Dan's complaint.
+//
+// Those per-country stats are not thrown away; they move to an optional
+// second strip that a page shows only if it has room (see the renderer).
+//
+// AN UNKNOWN PRINTS AS "NOT CONFIRMED" AND NEVER AS BLANK. 18 of the 350
+// stored facts are unknown, each with a recorded reason. A blank tile
+// would read as "no requirement", which is a different claim and the one
+// that gets somebody fined. This is the whole argument for the enum
+// carrying 'unknown' as a value rather than using NULL.
+const HL_STATUS = {
+  active:     ["hl.active",     "ACTIVE",       "on"],
+  planned:    ["hl.planned",    "PLANNED",      "soon"],
+  voluntary:  ["hl.voluntary",  "VOLUNTARY",    "opt"],
+  no_mandate: ["hl.none",       "NO MANDATE",   "off"],
+  unknown:    ["hl.unknown",    "NOT CONFIRMED", "unk"],
+};
+const HL_SIGNATURE = {
+  required:     ["hl.sig.required",    "REQUIRED",     "on"],
+  conditional:  ["hl.sig.conditional", "CONDITIONAL",  "soon"],
+  not_required: ["hl.sig.not",         "NOT REQUIRED", "off"],
+  unknown:      ["hl.unknown",         "NOT CONFIRMED", "unk"],
+};
+
+function headlineTiles(h, t) {
+  if (!h) return "";
+  const esc = escapeHtml;
+  const tile = (value, tone, label, note) =>
+    `<div class="${tone}"><div class="v">${value}</div><div class="l">${esc(label)}</div>${
+      note ? `<div class="n">${esc(note)}</div>` : ""}</div>`;
+
+  const segment = (status, date, label, note) => {
+    const [key, en, tone] = HL_STATUS[status] || HL_STATUS.unknown;
+    // The date rides WITH the word rather than replacing it, because
+    // "Jan 2027" alone does not say whether that is a start or a
+    // deadline, and "PLANNED" alone is the omission migration 600's
+    // CHECK constraint refuses to store.
+    const value = status === "planned" && date
+      ? `${esc(t(key, en))} <span class="dt">${esc(shortDate(date))}</span>`
+      : esc(t(key, en));
+    return tile(value, tone, label, note);
+  };
+
+  const arch = (() => {
+    if (h.archiving_status === "years" && h.archiving_years != null) {
+      return tile(`${esc(String(h.archiving_years))} <span class="dt">${
+        esc(t("hl.yrs", "yrs"))}</span>`, "on", t("hl.lbl.archiving", "Archiving"), h.archiving_note);
+    }
+    const map = {
+      varies:         ["hl.arch.varies", "VARIES",         "soon"],
+      no_requirement: ["hl.arch.none",   "NO REQUIREMENT", "off"],
+      unknown:        ["hl.unknown",     "NOT CONFIRMED",  "unk"],
+    };
+    const [key, en, tone] = map[h.archiving_status] || map.unknown;
+    return tile(esc(t(key, en)), tone, t("hl.lbl.archiving", "Archiving"), h.archiving_note);
+  })();
+
+  const [sk, sen, stone] = HL_SIGNATURE[h.signature_status] || HL_SIGNATURE.unknown;
+
+  return `<div class="statstrip hl">
+    ${segment(h.b2g_status, h.b2g_date, t("hl.lbl.b2g", "B2G e-invoicing"), h.b2g_note)}
+    ${segment(h.b2b_status, h.b2b_date, t("hl.lbl.b2b", "B2B e-invoicing"), h.b2b_note)}
+    ${segment(h.b2c_status, h.b2c_date, t("hl.lbl.b2c", "B2C e-invoicing"), h.b2c_note)}
+    ${arch}
+    ${tile(esc(t(sk, sen)), stone, t("hl.lbl.signature", "Digital signature"), h.signature_note)}
+  </div>`;
+}
+
 /**
  * The whole pack: a summary page then one page per country.
  * Returns { html, condensed } — condensed names every country that had to
@@ -637,6 +786,14 @@ export function renderGuideDocument({ bundle, order, lang, strings, today, siteO
     <div class="who">${fill(t("doc.generated", "Generated {0}"), esc(today))}<br>${fill(t("doc.count", "{0} jurisdictions"), rows.length)}</div>
   </div>
   <p class="lede">${fill(t("doc.lede", "{0} jurisdictions, drawn from this site's tracked mandate data on {1}. Each country follows on its own page. Dates are the published obligations as we hold them; the full detail for every country is on its deep dive."), rows.length, esc(today))}</p>
+  <!-- ONE SENTENCE, ON ONE PAGE, INSTEAD OF SEVENTY TIMES.
+       This started life under the tile strip on every country page, where
+       it cost two lines at 6.6pt on all seventy -- and it was the same two
+       lines every time, because it describes a convention of the document
+       rather than a fact about the country. Eleven countries were losing
+       their newsletter strip to pay for it. A rule that applies everywhere
+       is stated where the reader meets the document. -->
+  <p class="conv">${t("doc.convention", "In the five headline tiles on each page, a status describes the obligation to ISSUE an e-invoice. Where a business must only be able to RECEIVE one, that is said in the line under the tile. NOT CONFIRMED means we could not source the fact, which is not the same as no requirement.")}</p>
   <table class="summary">
     <colgroup><col class="a"><col class="b"><col class="c"><col class="d"></colgroup>
     <tr><th>${t("col.country", "Jurisdiction")}</th><th>${t("col.next", "Next dated obligation")}</th>
@@ -666,15 +823,28 @@ export function renderGuideDocument({ bundle, order, lang, strings, today, siteO
     const w = windowMilestones(c.milestones, today);
     const slug = String(name).toLowerCase().replace(/[^a-z]+/g, "-").replace(/^-|-$/g, "");
 
-    const stats = c.stats.slice(0, 5).map((s) =>
+    // The five consistent tiles. When a country has no stored facts the
+    // strip falls back to its own free-form stats in the old position --
+    // a page with nothing across the top would be worse than an
+    // inconsistent one, and migration 608 makes the fallback unreachable
+    // in production anyway.
+    const headline = headlineTiles(c.headline, t);
+    const legacy = c.stats.slice(0, 5).map((s) =>
       `<div><div class="v">${esc(s.stat_value)}</div><div class="l">${esc(s.stat_label)}</div></div>`).join("");
+    // The per-country stats are still worth printing -- they are just no
+    // longer the headline. Ranked last among the optional extras because
+    // history and sources both say something the page does not already
+    // say somewhere else, and several of these stats repeat a fact row.
+    const stats = headline
+      ? (legacy ? `<div class="statstrip alt" data-opt="stats" data-opt-rank="3" style="display:none">${legacy}</div>` : "")
+      : (legacy ? `<div class="statstrip">${legacy}</div>` : "");
 
     const timeline = w.rows.length ? `<div class="blk keep"><h3>${t("sec.timeline", "Compliance timeline")}</h3>
       <ul class="tl">${w.rows.map((m) => `<li class="${m.date < today ? "past" : ""}">
         <span class="d">${esc(shortDate(m.date))}</span>
         <span><span class="s">${esc(m.system || "")}</span>${m.desc && !plan.drop.has("milestoneDescriptions") ? ` <span class="x">${esc(m.desc)}</span>` : ""}</span>
       </li>`).join("")}</ul>
-      ${w.hiddenPast ? `<ul class="tl" data-opt="history" style="display:none">${
+      ${w.hiddenPast ? `<ul class="tl" data-opt="history" data-opt-rank="1" style="display:none">${
         w.hidden.map((m) => `<li class="past">
           <span class="d">${esc(shortDate(m.date))}</span>
           <span><span class="s">${esc(m.system || "")}</span></span>
@@ -734,7 +904,7 @@ export function renderGuideDocument({ bundle, order, lang, strings, today, siteO
     // OPTIONAL, AND ONLY IF THERE IS ROOM. The portals are already named in
     // the footer; this spells out where each one lives, which is worth
     // having on a thin country and is the first thing to go on a full one.
-    const sourcesExtra = c.portals.length ? `<div class="blk bare" data-opt="sources" style="display:none">
+    const sourcesExtra = c.portals.length ? `<div class="blk bare" data-opt="sources" data-opt-rank="2" style="display:none">
       <h3>${t("sec.sources", "Where this is tracked")}</h3>
       ${c.portals.map((pt) => `<div class="kv"><h4>${esc(pt.label)}</h4>
         <p style="font-family:'IBM Plex Mono',monospace;font-size:7pt;overflow-wrap:anywhere;margin:1px 0 0">${
@@ -755,10 +925,12 @@ export function renderGuideDocument({ bundle, order, lang, strings, today, siteO
   <div class="chead">
     <span class="flag">${deriveFlagFromCode(c.code)}</span>
     <h2>${esc(translateCountryName(lang, name))}</h2>
-    <div class="meta">${esc(c.region || "")}${c.last_updated ? `<br>${t("lbl.updated", "Updated")} ${esc(c.last_updated)}` : ""}</div>
+    <div class="meta">${esc(c.region || "")}${c.last_updated ? `<br>${t("lbl.updated", "Updated")} ${esc(c.last_updated)}` : ""}${
+      c.headline && c.headline.last_verified ? `<br>${fill(t("hl.verified", "Facts verified {0}"), esc(c.headline.last_verified))}` : ""}</div>
   </div>
   ${c.mandate_summary ? `<p class="summ">${esc(c.mandate_summary)}</p>` : ""}
-  ${stats ? `<div class="statstrip">${stats}</div>` : ""}
+  ${headline}
+  ${stats}
   <div class="cols">${timeline}${penalties}${facts}${steps}${sourcesExtra}</div>
   ${news}
   <div class="cfoot">
@@ -835,6 +1007,18 @@ export const GUIDE_FIT_SCRIPT = `
   // that loses nothing: shrink, then scale, and only sacrifice the strip if
   // a page cannot be saved by either. So these run after the zoom step.
   var NEWS_LADDER = [
+    // THE TILE QUALIFIERS GO BEFORE THE NEWSLETTER STRIP, AND AFTER SCALING.
+    //
+    // These are the small grey lines under the five headline tiles --
+    // "no supplier issuing duty", "above TRY 3m turnover". Losing them
+    // costs a nuance; losing a newsletter card costs something Dan asked
+    // for by name. Both are worth less than printing a little smaller,
+    // which is why the whole ladder sits after the first zoom step.
+    //
+    // The status words themselves are never a rung. They are the reason
+    // the tiles exist, and a page that dropped them to fit would be
+    // solving the layout problem by deleting the answer.
+    function(s){ var n = s.querySelectorAll('.statstrip.hl .n'); return n.length ? n[n.length-1] : null; },
     function(s){ var n = s.querySelectorAll('.news a'); return n.length > 1 ? n[n.length-1] : null; },
     function(s){ return s.querySelector('.news'); }
   ];
@@ -927,7 +1111,19 @@ export const GUIDE_FIT_SCRIPT = `
     // Optional extras, in the order they are worth having. Each is rendered
     // hidden and revealed only if the page can carry it -- so a sparse
     // country gains history and sources, and a dense one never sees them.
-    var extras = section.querySelectorAll('[data-opt]');
+    //
+    // ORDER IS BY RANK, NOT BY POSITION ON THE PAGE. querySelectorAll
+    // returns document order, which was fine while the only two extras
+    // sat at the bottom in the order they were worth having. The demoted
+    // per-country stats strip sits near the TOP of the page and is worth
+    // the least, so document order would have handed it first refusal and
+    // the loop below breaks at the first thing that does not fit -- the
+    // strip would have crowded out history and sources on every page that
+    // had room for exactly one of them.
+    var extras = [].slice.call(section.querySelectorAll('[data-opt]'));
+    extras.sort(function(a, b){
+      return (+(a.getAttribute('data-opt-rank') || 1)) - (+(b.getAttribute('data-opt-rank') || 1));
+    });
     for(var x = 0; x < extras.length; x++){
       extras[x].style.display = '';
       var note = extras[x].parentNode.querySelector('[data-optnote]');
