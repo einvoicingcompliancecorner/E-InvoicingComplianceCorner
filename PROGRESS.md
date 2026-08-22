@@ -14950,17 +14950,31 @@ trackers (**15** of 70 B2B statuses after migration 611's corrections,
 not the 17 recorded in the previous entry); a change-history table; and
 turning the weekly content monitor outward.
 
-**A limit the replay is structurally blind to.** 613 replayed clean
-offline and D1 refused it: `too many terms in compound SELECT`. A
-multi-row `INSERT ... VALUES` is a compound SELECT to SQLite — one term
-per row — and D1 is built with a lower ceiling than the library the
-replay runs on, so the strongest signal this project has cannot see this
-class of failure at all. The inserts are now blocks of 25, and
-`test_assertions.py` caps every migration's `VALUES` list at 50: the
-largest that has ever deployed successfully is 28 (migration 548), so the
-cap sits above everything that works and far below the 185 that did not.
-The negative side is tested too — a 55-tuple list must count as 55, or
-the guard is another check that cannot fail.
+**A limit the replay is structurally blind to, and a wrong diagnosis
+that cost a deploy.** D1 refused 613 twice with `too many terms in
+compound SELECT`. The replay runs on the local SQLite library, D1 is
+built with a lower ceiling, and this is the one class of failure the
+replay cannot see — it only shows up on deploy.
+
+The first diagnosis was the obvious one and it was wrong. A 185-row
+`INSERT … VALUES` *is* a compound SELECT to SQLite, so it looked like the
+culprit; it is also **exempt** from this particular limit
+(`SF_MultiValue`), so shrinking it to blocks of 25 changed nothing and
+burned a second deploy. The real culprit was `cited_sources` — a
+nine-branch `UNION ALL` over five tables.
+
+The fix came from evidence rather than a third guess: across all 614
+migrations and both workers, the widest compound SELECT that has ever run
+against this database is **three** terms. Nine was the only outlier in the
+entire history. The view is now three parts of three, unioned by a fourth
+of three, so nothing exceeds a width production has already proven.
+`test_assertions.py` caps migrations at 4 compound terms and — because
+this is exactly where the mistake was made — asserts that a multi-row
+`VALUES` list is *not* counted.
+
+The inserts are now `INSERT OR REPLACE`. A migration that failed twice on
+a live database and cannot be re-run after a partial failure turns a bad
+deploy into a manual repair.
 
 `npm test`: **20 suites**, 33 checks in `methodology` alone. Replay OK
 across **614 files**.

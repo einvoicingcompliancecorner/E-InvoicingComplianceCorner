@@ -349,51 +349,67 @@ def test_runtime_table_claims_are_not_sent_to_production():
 
 # ---- the limit the replay cannot see -----------------------------------
 #
-# 22 August 2026. Migration 613 replayed clean offline and D1 refused it:
-# "too many terms in compound SELECT". A multi-row INSERT ... VALUES is a
-# compound SELECT to SQLite, one term per row, and D1 is built with a
-# lower ceiling than the local library the replay runs on. So the replay
-# -- which is otherwise the strongest signal this project has -- is
-# structurally blind to this one class of failure, and the only place it
-# shows up is a deploy.
+# 22 August 2026. Migration 613 replayed clean offline and D1 refused it
+# twice: "too many terms in compound SELECT". The replay runs on the
+# local SQLite library, D1 is built with a lower ceiling, and this is the
+# one class of failure the replay is structurally blind to -- the only
+# place it shows up is a deploy.
 #
-# THE LIMIT IS NOT PUBLISHED, so this does not guess at it. It caps the
-# tuple count well below anything plausible and leaves the reason in the
-# message, which is the difference between a rule and a superstition.
-MAX_VALUES_TUPLES = 50
+# THE FIRST DIAGNOSIS WAS WRONG AND COST THE SECOND DEPLOY. A 185-row
+# INSERT ... VALUES looked like the obvious culprit, because a multi-row
+# VALUES list IS a compound SELECT to SQLite. It is also EXEMPT from this
+# particular limit (SF_MultiValue in parserDoubleLinkSelect), so
+# shrinking it changed nothing. The real culprit was a nine-branch
+# UNION ALL in a view.
+#
+# THE CEILING IS NOT PUBLISHED, so this does not guess at it. It uses the
+# only evidence there is: across the whole migration history and both
+# workers, the widest compound SELECT that has ever run on this database
+# is THREE terms. Four is therefore already beyond anything proven, and
+# is where the line sits.
+MAX_COMPOUND_TERMS = 4
 
-VALUES_RE = re.compile(r"\bVALUES\b(.*?);", re.S | re.I)
+COMPOUND_RE = re.compile(r"\bUNION\b|\bINTERSECT\b|\bEXCEPT\b", re.I)
 
 
-def test_no_oversized_value_lists():
-    print("\nmulti-row INSERTs stay under D1's compound-SELECT ceiling")
+def compound_terms(sql):
+    """Terms in the widest compound SELECT in one statement.
+
+    A multi-row VALUES list is not counted: SQLite exempts it, which is
+    the mistake this whole check exists to stop anyone repeating.
+    """
+    return len(COMPOUND_RE.findall(sql)) + 1
+
+
+def test_no_oversized_compound_selects():
+    print("\ncompound SELECTs stay inside D1's ceiling")
     worst = []
     for name in A.migration_files():
         text = open(os.path.join(A.MIGRATIONS_DIR, name), encoding="utf-8").read()
-        # Comments can contain anything, including the word VALUES and a
-        # semicolon. Strip them before counting or a header describing
-        # this very rule trips it.
+        # Comments can say anything, including the word UNION -- and the
+        # header of 613 says it several times explaining this very rule.
         body = re.sub(r"--[^\n]*", "", text)
-        for m in VALUES_RE.finditer(body):
-            tuples = m.group(1).count("),") + 1
-            if tuples > MAX_VALUES_TUPLES:
-                worst.append(f"{name}: {tuples} rows in one INSERT")
-    check(f"no migration exceeds {MAX_VALUES_TUPLES} rows in one VALUES list",
+        for stmt in body.split(";"):
+            n = compound_terms(stmt) if COMPOUND_RE.search(stmt) else 0
+            if n > MAX_COMPOUND_TERMS:
+                worst.append(f"{name}: {n} terms")
+    check(f"no migration statement exceeds {MAX_COMPOUND_TERMS} compound terms",
           not worst,
-          "; ".join(worst[:5]) + "  -- split into blocks; D1 rejects a "
-          "compound SELECT the local replay accepts")
+          "; ".join(worst[:5]) + "  -- split it across views or statements; "
+          "D1 rejects a compound SELECT the local replay accepts")
 
 
-def test_the_oversized_check_can_fail():
+def test_the_compound_check_can_fail():
     # The defect this project keeps rediscovering is a check that cannot
-    # fail. Prove this one counts by handing it a list that is over.
+    # fail. Prove this one counts, on the exact statement D1 refused.
     print("\nand that check counts rather than always passing")
-    fake = "INSERT INTO t (a) VALUES\n" + ",\n".join(
-        f"  ('{i}')" for i in range(MAX_VALUES_TUPLES + 5)) + ";"
-    m = VALUES_RE.search(re.sub(r"--[^\n]*", "", fake))
-    check("a list of 55 tuples counts as 55",
-          m and m.group(1).count("),") + 1 == MAX_VALUES_TUPLES + 5,
-          f"counted {m and m.group(1).count('),') + 1}")
+    nine = " UNION ALL ".join(f"SELECT {i}" for i in range(9))
+    check("the nine-branch view that D1 refused counts as 9",
+          compound_terms(nine) == 9, f"counted {compound_terms(nine)}")
+    check("and a multi-row VALUES list is not counted as compound",
+          compound_terms("INSERT INTO t VALUES (1),(2),(3)") == 1,
+          "VALUES lists are exempt from this limit; counting them sent "
+          "this project down the wrong path once already")
 
 
 def test_real_chain():
@@ -415,8 +431,8 @@ if __name__ == "__main__":
     test_query_error_is_a_failure()
     test_live_batch_sql()
     test_runtime_table_claims_are_not_sent_to_production()
-    test_no_oversized_value_lists()
-    test_the_oversized_check_can_fail()
+    test_no_oversized_compound_selects()
+    test_the_compound_check_can_fail()
     test_real_chain()
     print()
     if FAILURES:
