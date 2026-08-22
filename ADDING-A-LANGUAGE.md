@@ -10,12 +10,25 @@
 > Everything below was verified against the replayed migration chain and
 > a rendered page on the date above. Where a number appears, it was
 > counted, not remembered.
+>
+> **Updated 22 August 2026** for the compliance guides (Phase 5c), which
+> added 72 chrome strings and 350 per-country note cells, and for the
+> second copy of the country names that lives in code rather than in D1
+> (Phase 3). Both were re-counted against the chain on that date. The
+> planner sections are unchanged and were already accurate.
 
 The failure mode this document guards against is **not errors**. A
 missing translation renders in English and looks fine. A half-loaded
 language renders a working page that mixes two languages inside one field
 group. Nothing warns, because falling back to English is correct
 behaviour for the reader and useless behaviour for you.
+
+The planner is the one place with a real defence — `resolveRoiLang()`
+refuses to serve a partial language at all. **Nothing else on the site
+has that**, and the compliance guides deliberately do not: they fall back
+key by key, so a 60%-translated guides namespace prints a
+60%-translated document that looks finished. Where a phase below says a
+job has no test behind it, that is the sentence it is repeating.
 
 ---
 
@@ -56,13 +69,21 @@ Four D1 tables and one code constant. Nothing else.
 | `translations`, namespace `roi` | every string on the planner | **430 keys** |
 | `roi_benchmark_translations` | benchmark `label`, `hint`, `citation` | **31 rows × 3 = 93 cells** |
 | `roi_phase_translations` | phase `name`, `note` | **7 rows × 2 = 14 cells** |
+| `translations`, namespace `tracker`, `guides.*` | the compliance guides — chooser, wall and printed document | **72 keys** |
+| `country_headline_fact_translations` | the qualifying line under each headline fact | **70 rows × 5 = 350 cells** |
 | `country_translations` | jurisdiction display names | **71 rows** |
+| `COUNTRY_NAME_TRANSLATIONS` (code) | the same names again, for the deep dives and the guides | see Phase 3 |
 | `SUPPORTED_LANGS` (code) | which codes the routers accept | 1 declaration |
 
 The planner's own coverage figure — what `tests/roi-coverage.mjs`
 reports — is the first three: **537 cells**. Country names are counted
 separately because they are shared with the rest of the site and are
 already done for `de`, `es` and `fr`.
+
+**The compliance guides are the two rows after the planner, and the
+second of them is the largest single job on this page.** 350 note cells,
+and they are English-only in every language today — see Phase 5c. No
+coverage test reports them, which is exactly why they are in this table.
 
 **Do not retype those totals from this table.** They moved by fifteen
 cells in three days and this document was wrong about them until it was
@@ -284,6 +305,31 @@ not:
 The `European Union` row is not in `countries` — it is a page string,
 `country.eu`, in the `roi` namespace.
 
+### And there is a SECOND copy of these names, in code
+
+`country_translations` is what the tracker, the subscribe picker and the
+planner read, through `generate_files.py`. The **deep-dive pages and the
+compliance guides do not read it at all** — they call
+`translateCountryName()` in `shared/deep-dive-render.mjs`, which looks up
+a hardcoded `COUNTRY_NAME_TRANSLATIONS` constant:
+
+```js
+export function translateCountryName(lang, name) {
+  return COUNTRY_NAME_TRANSLATIONS[lang]?.[name] || name;
+}
+```
+
+Two sources for one fact, and the failure is silent in the direction you
+will hit it: fill in D1 and not the constant, and the tracker is
+translated while seventy guide pages and every deep dive print English
+country names in an otherwise translated document. `|| name` is a good
+fallback and it is also what hides the omission.
+
+This is worth knowing rather than fixing in passing. Collapsing the two
+means the deep-dive renderer taking a D1 dependency it currently does
+not have, which is a larger change than adding a language and should not
+be smuggled into one.
+
 ---
 
 ## Phase 4 — plurals
@@ -338,13 +384,24 @@ currently at four-language parity:
 | `edu-preparing-for-mandate` | 102 |
 | `edu-impact-of-mandate` | 100 |
 | `edu-mandate-types` | 81 |
-| `tracker` | 76 + **67 `auth.*`** |
+| `tracker` | 76 + **67 `auth.*`** + **72 `guides.*`** + `menu.guides` = 216 |
 | `edu-certified-providers` | 50 |
 | `subscribe` | 50 |
 | `feedback` | 20 |
 | `regions` | 4 |
 
-That is **653 rows per language**. Plus the per-country content tables —
+That is **726 rows per language** as at 22 August 2026, up from 653 when
+this was written — the compliance guides put 73 of their strings inside
+`tracker`, which is why that row is now a third of the table. Recount
+rather than quoting this; the sentence above the first table in this file
+applies to every number in it.
+
+```sql
+SELECT namespace, count(*) FROM translations WHERE lang = 'en'
+ GROUP BY namespace ORDER BY 2 DESC;
+```
+
+Plus the per-country content tables —
 `milestone_translations` (412 rows in each language),
 `story_translations`, and the eight
 `deep_dive_*_translations` tables — which are a much larger job and are
@@ -511,13 +568,135 @@ first, and the layout survived it.
 
 ---
 
+## Phase 5c — the compliance guides
+
+Added 22 August 2026, and the reason it is its own phase rather than a
+line in Phase 5 is the fallback. **The planner is all-or-nothing; the
+guides are not.**
+
+`resolveRoiLang()` refuses to serve a half-translated planner at all (see
+Phase 0). The guides have no equivalent gate: `makeT()` in
+`shared/guides-render.mjs` and `subtreeT()` in the site-worker both fall
+back **per key**, so a `guides` namespace that is 60% done ships a
+document that is 60% translated, renders cleanly, and looks finished.
+Nobody sees a fault. That is the same shape as the drift bugs this
+project keeps meeting, and here it is the DESIGNED behaviour — correct at
+runtime, because a missing key must never take the page down, and exactly
+why the finishing has to be driven from this runbook instead of from
+something going visibly wrong.
+
+### What there is
+
+| Where | What | Size |
+| --- | --- | --- |
+| `translations`, `tracker`, `guides.*` | the chooser, the sign-up wall, and every heading, column and status word in the printed document | **72 keys** |
+| `translations`, `tracker`, `menu.guides` | the Resources menu entry | 1 key |
+| `translations`, namespace `regions` | the picker's region headings | 4 keys, already parity |
+| `country_headline_fact_translations` | the qualifying line under each of the five headline facts, per country | **350 cells** |
+
+`guides.*` lives inside `tracker`, not in a namespace of its own, for the
+same reason `auth.*` does — `generate_files.py` rebuilds `tracker` into
+`i18n/<lang>.json`, which is the file both guides routes read through
+`authStrings()`. A new namespace would have meant a new file, a new fetch
+and a new failure mode for sixty-odd strings that are site chrome like
+everything else in there.
+
+### The status words are the ones to get right
+
+Fifteen of the 72 are the words printed in the headline cards — ACTIVE,
+PLANNED, NO MANDATE, NOT CONFIRMED, REQUIRED, VARIES and the rest. They
+are set at 11.5pt across a third of a page and they are what a reader
+skimming eleven countries actually reads.
+
+**Length is a correctness constraint here, not taste.** The German for
+"not confirmed" was chosen as `NICHT BESTÄTIGT` over `NICHT VERIFIZIERT`
+because the second wraps to three lines in the narrowest card and pushes
+the strip taller on every German page — which the fitter then pays for by
+trimming something else. Set the language, run the fit harness, and read
+the result:
+
+```bash
+node tests/lib/guides-fit-harness.mjs
+```
+
+It prints how many of the seventy fit one page, how many had to be
+scaled, and the median fill. If a language costs more than a point or two
+of median fill, shorten the status words rather than letting seventy
+pages shrink.
+
+### The 350 note cells, which are English in every language today
+
+`country_headline_fact_translations` holds five short sentences per
+country — "no supplier issuing duty", "above TRY 3m turnover", "Phase 1
+(100 largest) live since Aug 2026". Only `en` exists.
+
+**These are not decoration.** They are the clause that stops a status
+being misread: NO MANDATE against the United Kingdom's B2G means
+something quite different once "contracting authorities must accept and
+process compliant e-invoices" is under it. A German reader currently gets
+German labels, German status words and English qualifiers.
+
+They are also the one part of this job with no test behind it. Nothing
+counts them, nothing fails, and the guide renders perfectly without them.
+Query the gap directly:
+
+```sql
+SELECT lang, count(*) FROM country_headline_fact_translations GROUP BY lang;
+```
+
+Seventy rows per language is complete. Anything less is a partial
+translation that will not announce itself.
+
+### Country names come from CODE here, not from D1
+
+A trap worth one line before it costs an afternoon. The tracker's country
+names come from `country_translations` through `generate_files.py`. The
+**deep dives and the compliance guides do not** — they call
+`translateCountryName()` in `shared/deep-dive-render.mjs`, which reads a
+hardcoded `COUNTRY_NAME_TRANSLATIONS` constant. Adding a language to D1
+and not to that constant gives you a chooser and seventy guide pages
+with English country names in an otherwise translated document, and no
+error anywhere. See Phase 3.
+
+### Verify
+
+```bash
+node tests/guides-routes.mjs          # asserts the guides strings exist per language
+node tests/lib/guides-fit-harness.mjs # the one-page rule survives the new language
+```
+
+`guides-routes.mjs` checks a named subset of keys in all four
+`i18n/*.json` files. It is a smoke test, not a coverage report — it will
+not tell you the namespace is complete, only that it is not empty. The
+standing invariant in migration 609 is the one that refuses an
+English-only key in D1, and it is worth reading before you write the
+migration:
+
+```
+-- ASSERT ALWAYS: ... GROUP BY key HAVING count(DISTINCT lang) != 4 = 0
+```
+
+**That number is four.** A fifth language makes it wrong, and it is
+deliberately a standing invariant so it fails loudly rather than
+silently admitting a partial row. Update it in the same migration that
+adds the language.
+
+---
+
 ## Phase 6 — verify
 
 ```bash
-node tests/roi-coverage.mjs        # per-language, all three ROI tables
-node tests/auth-code.mjs           # the sign-up panel's 67 strings
-npm test                           # every suite
+node tests/roi-coverage.mjs             # per-language, all three ROI tables
+node tests/auth-code.mjs                # the sign-up panel's 67 strings
+node tests/guides-routes.mjs            # the guides strings exist in all four files
+node tests/lib/guides-fit-harness.mjs   # the one-page rule survives the new language
+npm test                                # every suite
 ```
+
+The fit harness is not in `npm test` and is the one to run by hand. A
+language with longer status words does not fail anything — it makes
+seventy pages print a little smaller, which no assertion notices and a
+reader does. It prints the median fill; compare it against English.
 
 **The suite count is not written down here on purpose.** It was "10
 suites" in this file while the repository had fifteen, which is the same
@@ -712,3 +891,15 @@ python3 members-worker/migrations/apply_migrations.py --remote
 | Turkish | `toLocaleUpperCase` fix | none | data, plus one line |
 | Chinese, Japanese, Korean | fonts, tracking, truncation | none | days |
 | Arabic, Hebrew, Farsi | RTL throughout, chart mirroring, fonts | four per noun | days, mostly the chart |
+
+Whatever the language, the work splits three ways:
+
+| Part | Size | Guarded by |
+| --- | --- | --- |
+| The planner | 537 cells | `roi-coverage.mjs`, and a gate that refuses a partial language |
+| The rest of the site chrome | 726 rows, 73 of them the guides | `tracker-i18n.mjs` parity, `guides-routes.mjs` smoke test |
+| The headline-fact notes | **350 cells** | **nothing** — see Phase 5c |
+
+The third column is the one to read. The last row is the largest single
+job and the only one where finishing is a decision rather than a green
+test, which is why it is still English in `de`, `es` and `fr` today.

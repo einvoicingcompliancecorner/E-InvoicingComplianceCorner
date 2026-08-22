@@ -14711,3 +14711,18 @@ it, and it is the only check that looks at production at all.**
 140 standing invariants**. All 70 countries fit one page, median fill
 **97%**, 70/70 timelines in date order, 70/70 strips carrying three cards
 and five facts.
+
+### A bundle rule, learned twice
+
+Two bundles in this project have failed on Dan's machine with
+`Repository lacks these prerequisite commits` — the ROI gate one on 21
+August, and the framing one on 22 August. Same cause both times: a bundle
+was based on the previous bundle rather than on a commit Dan had actually
+pulled. Sending a bundle and Dan having it are different events, and the
+gap between them is invisible from inside this sandbox.
+
+**Base every bundle on the last commit Dan has confirmed deploying**, not
+on whatever went out most recently. An older base costs a few kilobytes;
+a wrong one costs a round trip. `git bundle verify` prints the required
+ref — read it and check it against what he last confirmed, rather than
+against what was last sent.
