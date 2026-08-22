@@ -14400,3 +14400,183 @@ test whose control is not controlled is worse than no test.
 
 `npm test`: **14 suites**. ROI regression **344 checks**. Replay OK
 across **593 files — 417 assertions, 123 standing invariants**.
+
+---
+
+## 21–22 August 2026 — the compliance guides, and five facts for every country
+
+Dan: *"I'd like to create a new page under Resources menu option. The
+page should be called - compliance guides. Effectively this page lets the
+user select the countries they are interested in, and download a PDF
+guide for each country, which would be based on content from the
+deep-dives. This should be a gated page."*
+
+Deployed 22 August: migrations 600–609 applied via
+`apply_migrations.py --remote`, `site-worker` redeployed.
+
+### The document, and the one-page rule
+
+`shared/guides-render.mjs` builds a cover page plus exactly one page per
+country. That constraint came from Dan on the first mock-up and it is the
+whole reason the module is shaped the way it is.
+
+**Three attempts at predicting page height from content all failed.** A
+character count was wrong because key/value rows dominate. A least-squares
+fit over the real corpus landed a mean error of 130px and a nonsensical
+negative coefficient on step count. Aiming conservatively left the median
+page 79% full, which meets the rule by wasting a fifth of every sheet.
+
+The way out was not a better predictor. **The server cannot measure a
+page, so it stopped pretending to** — `GUIDE_FIT_SCRIPT` runs in the
+reader's browser, removes one element at a time and re-measures. Every
+removal is provisional: if the page did not actually get shorter, the
+element goes straight back. That mattered on Azerbaijan, where a penalty
+table in the right column set the height and the first version of the
+ladder dutifully deleted rows from the left, gutting the page while the
+height never moved.
+
+Median fill is now **97%**, and all 70 countries fit one page.
+
+Two smaller things worth keeping. **`zoom`, not `font-size`** — every
+rule in `GUIDE_STYLE` sets an absolute pt size, so children never inherit
+a font-size set on the section, and the first version scaled the two or
+three elements that happened to be unstyled. And **an emptied card goes
+with its rows**: stripping a card's last row left five bare headings on
+Germany, which reads as a rendering fault rather than a deliberate
+summary.
+
+### Five facts, the same five, on every page (migrations 600–608)
+
+Dan: *"Could we state 1. B2G, B2B and B2C requirement for eInvoicing such
+as mandate, no mandate or scheduled for <date>. The Archiving
+requirement, The Digital Signature requirement in the headline boxes
+consistently on each country page."*
+
+The strip had been five free-form value/label pairs chosen per country —
+Germany offered "2 formats / No CTC / 8 yrs / EUR 5,000 / 2028",
+Azerbaijan a launch date and a VAT rate. Interesting, and not comparable,
+which was the complaint.
+
+**Checking first showed the facts were not in the data.** B2B was
+derivable from `milestones.mandate_scope` for 54 of 70. B2G was not:
+only 19 countries carry a `b2g_only` milestone and 12 EU member states
+carry none at all, so a tile built from that would have printed "no
+mandate" against twelve countries that plainly have one. B2C was absent
+in any form. Archiving appeared in card rows for 36 of 70 under five
+different key names; signature for 20 of 70.
+
+So `country_headline_facts` is a stored table, not a query — **the same
+rule migration 510 learned when the planner inferred country complexity
+by regex over a prose field and nine countries were silently rated
+zero.** A value that drives a customer-facing claim must be stored.
+
+Research filled all 70 across nine batches, 350 facts, each with its own
+source. Three rules in that table are load-bearing:
+
+- **A status describes the obligation to ISSUE.** A duty only to receive
+  goes in the note. This one rule corrected Germany, Australia, Denmark,
+  Czech Republic, Bulgaria, Ireland and Hungary, and later kept Cyprus,
+  Malta and the UK from being recorded wrong.
+- **The vocabulary is Dan's.** `active` / `planned` / `no_mandate`, not
+  the first draft's mandatory / scheduled / none. Two vocabularies for
+  one state survives code review because both halves are individually
+  correct. A standing invariant guards the enum.
+- **`unknown` is a first-class answer**, with a reason. 18 of the 350
+  facts are unknown. A blank tile would read as "no requirement", which
+  is a different claim and the one that gets somebody fined — so the tile
+  prints NOT CONFIRMED in a dashed box, and migration 608 adds a standing
+  invariant refusing any unknown fact without a stored reason.
+
+**Migration 608 is sourced to a weaker standard and says so at the top.**
+The session exhausted its web-search budget at 200/200 before reaching
+the last seven countries, so those were researched by fetching the
+comparison site Dan nominated plus, where it named a primary instrument
+unambiguously, that instrument. The eleven rows still resting on the
+aggregator alone are named in the file for re-verification.
+
+### Cross-checked against e-invoice.app
+
+Dan: *"Maybe you can validate your results against this site when
+complete."* 53 of 70 agree on B2B status. **None of the 17 differences is
+a factual contradiction** — every one is definitional, and twelve are our
+rule being deliberately stricter (they mark Luxembourg, the Netherlands
+and Qatar as "planned" where no instrument exists; they mark Canada and
+Bahrain "voluntary" where the only fact is the absence of a ban).
+
+Five are genuinely unsettled and are Dan's call, not more research:
+**Taiwan** (our headline says voluntary, our own deep dive says universal
+mandate, they say mandatory since 2021 — two sources against our stored
+value), **Norway and Spain** (enacted, undated, recorded `unknown`
+because the schema refuses `planned` without a date), and **Singapore and
+Oman** (threshold rollouts our own convention arguably says should
+already read ACTIVE, as India does above ₹5 crore).
+
+Full write-up in the project docs as `headline-facts-validation.md`.
+
+### The routes (migration 609)
+
+`/compliance-guides` is the chooser; `/compliance-guides/guide?c=DE,FR`
+is the document. Both gated, and **the gate is the route** — the rule
+migration 591/592 arrived at for the planner. `tests/guides-routes.mjs`
+proves it by **counting D1 queries**, not by reading HTML: a signed-out
+request runs zero. A page that queried and threw the result away looks
+identical in the response, so no other check could tell the difference.
+
+Neither route has an env flag, unlike `ROI_PUBLIC`. That flag exists
+because the planner spent ten days road-tested behind a 404; these
+answer a real sign-up wall from their first deploy, and a flagged,
+menu-linked route makes promises to `menu-routes.mjs` (in-page
+interception, a frame protocol) that a plain navigation link should not
+have to keep.
+
+The wall itself is `renderRoiGate` parameterised, not copied — ninety
+lines whose only differences were four strings and a canonical URL.
+
+67 strings × 4 languages, generated by `gen_guides_strings.py` so the
+English is written once and the four languages sit beside it. The
+generator refuses to emit if a `{0}` placeholder was dropped in
+translation, and a standing invariant refuses any key that does not have
+all four languages — **the gap that ships unnoticed is every page
+rendering, in English, in four languages, with nothing looking broken.**
+
+### Three bugs found on the way past
+
+**`.statstrip div` also matched `.v` and `.l`**, so every value and every
+label drew its own box inside the tile's box — three nested borders per
+tile, five tiles across the top of seventy pages. Nobody wrote that; it
+is what "style the boxes" becomes when the boxes contain divs.
+
+**ROI_STYLE's bare `label{}` rule** — monospace, letter-spaced,
+UPPERCASE — is right for "ANNUAL INVOICE VOLUME" and turned the German
+chooser into DOMINIKANISCHE REPUBL…, a country clipped at the point that
+distinguishes it.
+
+**The batched-assertion shape check searched for the substring "UNION"**
+and so failed on migration 608's `'European Union'` literal. It was
+standing in for a keyword; it now matches the keyword.
+
+### render-lint's itinerary was the defect
+
+The backtick-in-a-comment trap fired in `GUIDE_STYLE` on the 21st and
+`PICKER_STYLE` on the 22nd — twice in two days, in modules the lint had
+never heard of. Same shape as the ROI_STYLE and page-body gaps the file
+already documents about itself: **the rule was right and its itinerary
+was short.** It now reads every template literal in the guides modules,
+found by shape rather than by name.
+
+### Verified
+
+`npm test`: **17 suites**, all green. Replay OK across **609 files — 486
+assertions, 139 standing invariants**. All **70 of 70** countries fit one
+page with all five headline tiles, checked in a real browser.
+
+### Still open
+
+Non-English notes for `country_headline_fact_translations` — only `en`
+exists, so a German reader gets German labels and status words with
+English qualifying clauses. Degradation, not breakage, and the obvious
+next translation job.
+
+The eleven aggregator-sourced rows want a primary source. The five
+judgement calls above want Dan. And the 60 tracker strings in `i18n/`
+not reproducible from D1 remain outstanding from earlier work.
