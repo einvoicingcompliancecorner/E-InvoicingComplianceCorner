@@ -14814,3 +14814,47 @@ part of what /methodology now says out loud.
 ### Verified
 
 `npm test`: **19 suites**. Replay OK across **612 files**.
+
+### Structured data (22 August 2026, deployed)
+
+The first of the outside review's recommendations, and the one it was
+unambiguously right about. `shared/structured-data.mjs` now emits
+Organization and WebSite once on the tracker, referenced by `@id`
+elsewhere; a Dataset on `/sources`; WebPage plus BreadcrumbList on all 70
+country pages with their real `last_updated`; Article on the insights
+pieces; AboutPage on `/methodology`.
+
+`Organization.publishingPrinciples` points at `/methodology` — the
+property schema.org defines for exactly that, and the machine-readable
+half of the page written the same day.
+
+**The rule the module is written against is that markup may only say what
+the page says.** Three claims are refused rather than made: no FAQPage
+(the pages are cards and a timeline, not questions and answers, and FAQ
+markup without matching visible Q&A is what search engines penalise); no
+Article on a country page (that asserts a byline and a publication date a
+continuously revised reference does not have); and the Dataset only
+claims to be one because `/map-data.json` is a real endpoint behind it,
+which the suite fetches rather than trusting.
+
+`tests/structured-data.mjs` caught a real defect on its first run: the
+Dataset described 71 jurisdictions where every other surface says 70,
+because `/sources` builds its map from `tracking_sources` and the
+European Union has monitored pages without having a tax authority. The
+same off-by-one `jurisdiction-count.mjs` already exists for.
+
+It also checks escaping. A `</` inside a JSON string closes the script
+block and drops the rest of the document into the page as text —
+`JSON.stringify` will not escape it, because it is valid JSON and the
+HTML parser is the one that cares, and country names and card titles go
+into these nodes.
+
+**Still open from that review**, in the order recommended: publish where
+we differ from other trackers (17 of 70 B2B statuses, 12 of them because
+we are stricter — the cheapest authority content available and the data
+is already in D1); `source_tier` plus a backfill, which would let
+`/methodology` drop its caveat and settle Canada properly; a change-history
+table; and turning the weekly content monitor outward, which is the
+biggest and touches the email path.
+
+`npm test`: **20 suites**.
