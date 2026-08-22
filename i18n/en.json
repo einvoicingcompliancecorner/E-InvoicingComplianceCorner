@@ -437,7 +437,7 @@
     },
     "gap": {
       "h": "What we do not do yet",
-      "p1": "We do not publish a grade against each country claim. Every claim carries its source and the date it was checked, but whether that source is a statute or a professional tracker is not yet recorded in a form we can show you. Until it is, this page is the honest description of the standard we apply rather than a per-fact guarantee that it was met.",
+      "p1": "The grade above belongs to the publisher, not to the individual citation. A page on a government domain is graded primary even if it is a blog post there, and a statute reproduced verbatim by a law firm is graded secondary. No citation we hold has needed an exception yet; when one does, it will get one.",
       "p2": "We also cannot yet show you what a fact used to say. Corrections are made in a versioned migration history, so nothing is lost, but that history is not readable from these pages."
     },
     "intro": "This tracker makes claims that businesses act on. This page sets out what we require of a source, what our status words mean, where we are deliberately stricter than other trackers, and what we do not yet do.",
@@ -476,6 +476,23 @@
       "h": "\"Not confirmed\" is an answer",
       "p1": "Where we could not confirm a fact, we say so and record why. We do not leave it blank and we do not infer it, because a blank reads as \"no requirement\" — a different claim, and the one that gets somebody fined."
     },
-    "verified": "Covering {0} jurisdictions. Last fact-check recorded {1}."
+    "verified": "Covering {0} jurisdictions. Last fact-check recorded {1}.",
+    "tier": {
+      "count": "{0} citations across {1} publishers, every one of them graded. Nothing can be published on this site citing a publisher that has not been graded — the build refuses it.",
+      "d": {
+        "institutional": "Official, but not the jurisdiction's own authority: the European Commission, OpenPeppol and the national Peppol authorities, standards bodies. Authoritative about a specification, not about a national obligation.",
+        "primary": "The jurisdiction's own voice — its tax authority, its ministry, its official gazette or state legal register, its own e-invoicing platform.",
+        "secondary": "Everyone reporting on the law rather than making it — professional trackers, accountancy and law firms, software vendors, professional bodies, the press, and the private databases that reproduce statute. Useful, often first, never sufficient on its own.",
+        "unknown": "We could not establish who operates the host. Recorded as ungraded, with the reason, rather than quietly rounded up to something better."
+      },
+      "h": "Where our citations come from",
+      "lead": "Every source we cite is graded on who is answering. The grade belongs to the publisher, not to the page: a summary of a law is a summary of a law, however good it is.",
+      "w": {
+        "institutional": "INSTITUTIONAL",
+        "primary": "PRIMARY",
+        "secondary": "SECONDARY",
+        "unknown": "UNGRADED"
+      }
+    }
   }
 }
