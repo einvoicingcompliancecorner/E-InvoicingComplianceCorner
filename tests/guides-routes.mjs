@@ -106,7 +106,7 @@ for (const [label, cookie] of [
   t.check("the chooser is a real GET form with a real action",
     /<form method="get" action="\/compliance-guides\/guide"/.test(html));
   t.check("and a real submit button",
-    /<button type="submit"[^>]*id="gpGo"/.test(html));
+    /<button type="submit" class="gp-go"/.test(html));
 
   const boxes = [...html.matchAll(/<input type="checkbox" name="c" value="([^"]+)"/g)].map((m) => m[1]);
   t.check("every tracked jurisdiction with a deep dive is offered",
@@ -144,6 +144,69 @@ for (const [label, cookie] of [
   t.check("the print toolbar is screen-only",
     /@mediaprint\{\.gp-tools\{display:none\}\}/.test(html.replace(/\s+/g, "")),
     "the toolbar would print onto page one");
+}
+
+// ---- framed, at Dan's request 22 August ---------------------------------
+//
+// The chooser opens inside the tracker's panel now, the same way the
+// planner does. Three things have to be true of the framed render, and
+// each was a real bug in one panel or another on this site first.
+{
+  const cookie = await session();
+  const framed = await (await get("/compliance-guides?frame=1", cookie)).text();
+  const plain = await (await get("/compliance-guides", cookie)).text();
+
+  t.check("framed: the page reports its own height to the parent",
+    framed.includes("eicc:roi-height"),
+    "no reporter — the iframe would keep whatever height the parent guessed");
+  t.check("framed: the body is marked so the outer padding can go",
+    /<body data-framed="1"/.test(framed));
+
+  // ONE BACK LINK, NOT TWO. The tracker's panel supplies its own above the
+  // iframe, because a frame cannot be closed from inside it. A second one
+  // in the fetched page would reload the whole tracker INSIDE the frame.
+  t.check("framed: the page does not print its own back link",
+    !framed.includes('class="gp-back"'),
+    "two back links a centimetre apart, doing different things");
+  t.check("standalone: it still does",
+    plain.includes('class="gp-back"'),
+    "the standalone page has no other way out");
+
+  // THE DOCUMENT IS NEVER THE THING IN THE FRAME. It is printable, and a
+  // print dialogue inside a content-sized iframe is the experience this
+  // whole feature exists to avoid.
+  t.check("the chooser sends the guide to a new window",
+    /<form[^>]*id="gpForm"[^>]*target="_blank"/.test(framed)
+    || /<form[^>]*target="_blank"[^>]*id="gpForm"/.test(framed));
+
+  // A STICKY BAR IS DEAD IN A CONTENT-SIZED FRAME, because the parent does
+  // the scrolling and the frame has no scrollport. The framed render
+  // therefore carries a second, non-sticky copy at the top -- otherwise
+  // the only way to reach Build my guide is to scroll past all seventy
+  // countries in the parent window.
+  const barsFramed = (framed.match(/class="gp-bar /g) || []).length;
+  const barsPlain = (plain.match(/class="gp-bar /g) || []).length;
+  t.check("framed: the action bar is reachable without scrolling to the end",
+    barsFramed === 2, `${barsFramed} bars`);
+  t.check("standalone: one bar, because sticky works there",
+    barsPlain === 1, `${barsPlain} bars`);
+}
+
+// ---- the wall is framed too ---------------------------------------------
+//
+// Dan: "When not subscribed, can the subscribe now page launch in-frame,
+// similar to the roi-calculator behaviour." The subscribe panel is the
+// auth overlay, so what makes it open in-frame is the WALL being framed --
+// the overlay then mounts inside the frame instead of the reader being
+// sent to another page.
+{
+  const framedGate = await (await get("/compliance-guides?frame=1")).text();
+  t.check("signed out and framed: the wall reports its height too",
+    framedGate.includes("eicc:roi-height"));
+  t.check("signed out and framed: the sign-up panel loads inside the frame",
+    /auth-overlay\.js\?v=\d+/.test(framedGate) && framedGate.includes("EICC_AUTH_STRINGS"));
+  t.check("signed out and framed: still no chooser and no guide",
+    !framedGate.includes('id="gpForm"') && !framedGate.includes('class="country"'));
 }
 
 // ---- the same set, however it is written --------------------------------
