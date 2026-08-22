@@ -14726,3 +14726,91 @@ on whatever went out most recently. An older base costs a few kilobytes;
 a wrong one costs a round trip. `git bundle verify` prints the required
 ref — read it and check it against what he last confirmed, rather than
 against what was last sent.
+
+## 22 August 2026 (cont'd) — /methodology, and a review of an outside strategy paper
+
+### The editorial standards are now a page
+
+Dan asked where to document "our strategy around grading sources, and our
+stance on obligation status", offering About this site or Tracking
+sources. Neither on its own: About is a `<button>` opening a dialog with
+no URL, so a reader who disagrees with a status cannot be sent to it and
+no other publication can cite it; `/sources` answers "what do you watch"
+rather than "how do you judge what you find".
+
+`/methodology` is a real indexable route in four languages —
+migration 612, 34 strings under `tracker`/`method.*` — reached from a
+pop-out under the Menu dropdown, beside About this site, at Dan's
+request. Both halves matter: the modal keeps a reader on the board, and
+the route is what makes the standard citable.
+
+**Two things about it are worth carrying forward.**
+
+Its figures are queried, not written. "15 of the 350 headline facts are
+recorded as not confirmed" and "covering 70 jurisdictions" come from D1
+at request time, because a page arguing this site is careful with numbers
+cannot print a stale one about itself — and this project has form, having
+had the jurisdiction count stuck at 62 across thirty-odd files for two
+days.
+
+And it reads the five status words from the GUIDES subtree rather than
+restating them, so the page defining ACTIVE and the tile printing it
+cannot diverge. `tests/methodology.mjs` asserts every word the tiles use
+appears on the page.
+
+**What it deliberately does not claim** is that every country claim
+carries a graded source. It does not: `source_tier` is not a column. The
+page says so in its own "what we do not do yet" section and the test
+asserts that section is still present, because opening a page about
+evidence standards with a promise the database cannot keep would be the
+worst possible first paragraph.
+
+The modal loads the route in an iframe rather than duplicating the prose
+inline the way About does — a second copy of the same words is the trap
+this week's runbook update documents for country names. `frame=1` drops
+the page's own back link (inside the iframe it loads a whole tracker into
+a dialog on top of the tracker), drops the language row, and marks the
+framed copy noindex.
+
+### An outside SEO and productisation paper, reviewed
+
+Dan shared a strategy document from another tool. Written up in the
+project as `review-seo-productisation-strategy.md`; the short version:
+
+Its headline recommendation — "build a compliance intelligence database"
+— describes the existing architecture. Every attribute on its list is
+already in the forty-one tables, and its own next sentence, that the
+database should be the single source generating country pages,
+comparisons and dashboards, is how the site already works. Its Month 1
+"define data model" is the largest time sink in it.
+
+Two of its recommendations are genuinely valuable and unbuilt.
+**Structured data**: there is no JSON-LD anywhere on the site, zero
+files, which for a site whose whole asset is structured regulatory data
+is a straightforward omission. **A reader-facing change monitor**: one
+exists, weekly across 117 official sources, and `CONTENT-MONITORING.md`
+says in terms that it never sends anything to subscribers. The machinery
+for its flagship feature is built and pointed inward.
+
+Two to discount. A **proprietary risk score** "proprietary enough to
+create differentiation" is the opposite of this site's actual
+differentiator, which is grading benchmarks A–D and publishing that three
+circulating savings figures do not survive checking. And the
+**monetisation ladder** does not engage with either of this project's own
+findings: that The Invoicing Hub charges readers nothing and monetises
+through vendor sponsorship, or that the earlier $10/year tier was
+uneconomic on Lemon Squeezy's fees.
+
+One trap: **"Countries using clearance" cannot be generated from
+`compliance_model`**, which is free-text prose. Building it by regex over
+that field is exactly what migration 510 had to undo.
+
+**What it misses** is the clearest differentiation asset available: our
+data disagrees with e-invoice.app on seventeen of seventy B2B statuses,
+and in twelve we are stricter. "Here is where the other trackers are
+wrong, and why" is publishable, defensible, and already done — which is
+part of what /methodology now says out loud.
+
+### Verified
+
+`npm test`: **19 suites**. Replay OK across **612 files**.
