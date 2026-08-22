@@ -23,6 +23,8 @@
 // Cloudflare projects together.
 // ================================================================
 
+import { ldScript, countryPageLd, breadcrumbLd } from "./structured-data.mjs";
+
 export const SUPPORTED_LANGS = ["en", "es", "de", "fr"];
 
 // Maps a country's canonical English name to its deep-dive page slug.
@@ -446,6 +448,21 @@ export async function renderFullDeepDivePage(countryName, flag, code, region, co
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>${escapeHtml(translateCountryName(lang, countryName))} E-Invoicing Requirements — The E-Invoicing Compliance Corner</title>
 <link rel="canonical" href="https://e-invoicingcompliancecorner.com/${COUNTRY_DEEP_DIVE_SLUGS[countryName] || ""}">
+${ldScript([
+  countryPageLd({
+    countryName,
+    displayName: translateCountryName(lang, countryName),
+    slug: COUNTRY_DEEP_DIVE_SLUGS[countryName] || "",
+    lang,
+    lastUpdated: content.last_updated,
+  }),
+  breadcrumbLd([
+    { name: "The E-Invoicing Compliance Corner", url: "https://e-invoicingcompliancecorner.com/" },
+    { name: region || "Jurisdictions", url: "https://e-invoicingcompliancecorner.com/map" },
+    { name: translateCountryName(lang, countryName),
+      url: `https://e-invoicingcompliancecorner.com/${COUNTRY_DEEP_DIVE_SLUGS[countryName] || ""}` },
+  ]),
+])}
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">

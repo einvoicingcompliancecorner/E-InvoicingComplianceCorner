@@ -71,6 +71,15 @@ import {
   PICKER_STYLE,
   PICKER_SCRIPT,
 } from "../../shared/guides-picker.mjs";
+import {
+  ldScript,
+  organizationLd,
+  webSiteLd,
+  datasetLd,
+  breadcrumbLd,
+  articleLd,
+  methodologyLd,
+} from "../../shared/structured-data.mjs";
 
 const LANG_COOKIE = "eicc_lang";
 const LANG_COOKIE_TTL_SECONDS = 60 * 60 * 24 * 365; // 1 year
@@ -369,7 +378,7 @@ function resolveInsightsLang(request) {
   return { lang, shouldSetCookie, cookieDuplicated };
 }
 
-function insightsPageShell({ titleTag, metaDescription, bodyHtml, lang, backHref }) {
+function insightsPageShell({ titleTag, metaDescription, bodyHtml, lang, backHref, ld }) {
   return `<!DOCTYPE html>
 <html lang="${escHtml(lang)}">
 <head>
@@ -377,6 +386,7 @@ function insightsPageShell({ titleTag, metaDescription, bodyHtml, lang, backHref
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>${escHtml(titleTag)} — The E-Invoicing Compliance Corner</title>
 <meta name="description" content="${escHtml(metaDescription)}">
+${ld ? ldScript(ld) : ""}
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -466,6 +476,24 @@ async function renderInsightsArticle(request, env, slug) {
 
   const html = insightsPageShell({
     titleTag: article.title, metaDescription: article.dek, bodyHtml, lang,
+    // ARTICLE HERE AND WebPage ON THE COUNTRY PAGES, and the difference
+    // is not pedantry: an Article asserts a publication date, and these
+    // pieces genuinely have one and already display it. A deep dive is a
+    // continuously revised reference with no publication date to state.
+    //
+    // isAccessibleForFree carries the real gate. A locked piece marked
+    // free is a promise the wall breaks on the next click.
+    ld: [
+      articleLd({
+        slug, headline: article.title, description: article.dek,
+        published: article.published_at, lang, isFree: !locked,
+      }),
+      breadcrumbLd([
+        { name: "The E-Invoicing Compliance Corner", url: "https://e-invoicingcompliancecorner.com/" },
+        { name: "Insights & Whitepapers", url: "https://e-invoicingcompliancecorner.com/insights" },
+        { name: article.title, url: `https://e-invoicingcompliancecorner.com/insights/${slug}` },
+      ]),
+    ],
     backHref: "/insights",
   });
 
@@ -536,6 +564,22 @@ async function renderSourcesPage(request, env) {
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>${escHtml(ui.title)} \u2014 The E-Invoicing Compliance Corner</title>
 <meta name="description" content="${escHtml(ui.intro)}">
+${ldScript([
+  // NOT byRegion's size. That map is built from tracking_sources, which
+  // the European Union has -- it is a bloc with real monitored pages and
+  // no tax authority of its own. Counting it made the Dataset claim 71
+  // jurisdictions while every other surface on the site says 70, which
+  // is the same one-off this project has already been caught by and the
+  // reason tests/jurisdiction-count.mjs exists.
+  datasetLd({
+    countryCount: new Set(results.filter((r) => r.code !== "EU").map((r) => r.name_en)).size,
+    lang,
+  }),
+  breadcrumbLd([
+    { name: "The E-Invoicing Compliance Corner", url: "https://e-invoicingcompliancecorner.com/" },
+    { name: ui.title, url: "https://e-invoicingcompliancecorner.com/sources" },
+  ]),
+])}
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -1355,7 +1399,14 @@ async function renderMethodologyPage(request, env) {
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>${escHtml(t("title", "Methodology"))} — The E-Invoicing Compliance Corner</title>
 <meta name="description" content="${escHtml(t("intro", "What we require of a source, what our status words mean, and where we are stricter than other trackers."))}">
-<link rel="canonical" href="https://e-invoicingcompliancecorner.com/methodology">${framed ? '\n<meta name="robots" content="noindex,nofollow">' : ""}
+<link rel="canonical" href="https://e-invoicingcompliancecorner.com/methodology">${framed ? '\n<meta name="robots" content="noindex,nofollow">' : ""}${
+  // NOT ON THE FRAMED COPY. It is noindex, and two nodes sharing an @id
+  // while describing the same URL is the one way this markup can
+  // actively mislead rather than merely under-describe.
+  framed ? "" : "\n" + ldScript([methodologyLd(lang), breadcrumbLd([
+    { name: "The E-Invoicing Compliance Corner", url: "https://e-invoicingcompliancecorner.com/" },
+    { name: "Methodology", url: "https://e-invoicingcompliancecorner.com/methodology" },
+  ])])}
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
