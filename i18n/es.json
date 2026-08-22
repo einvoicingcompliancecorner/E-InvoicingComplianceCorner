@@ -102,7 +102,8 @@
     "resources": "Recursos",
     "subscribe": "Suscribirse",
     "navHelp": "Ayuda de navegación",
-    "guides": "Guías de cumplimiento"
+    "guides": "Guías de cumplimiento",
+    "methodology": "Metodología"
   },
   "navTips": {
     "label": "Cómo navegar por este sitio",
@@ -422,5 +423,59 @@
       "hidden": "{0} hitos anteriores están en el análisis a fondo completo.",
       "hiddenOne": "1 hito anterior está en el análisis a fondo completo."
     }
+  },
+  "method": {
+    "ev": {
+      "h": "Evidencia calificada, donde la tenemos",
+      "p1": "El planificador de ROI califica de A a D cada referencia que utiliza y muestra la nota junto a la cifra, porque la evidencia publicada sobre los ahorros de la factura electrónica es mucho más débil de lo que sugieren las cifras en circulación. Nuestra revisión de 47 fuentes no encontró en ningún lugar del mundo un estudio medido del coste de cuentas por pagar tras la entrada en vigor de una obligación."
+    },
+    "eyebrow": "Cómo decidimos",
+    "fix": {
+      "cta": "Enviar una corrección",
+      "h": "Díganos cuándo nos equivocamos",
+      "p1": "Los mandatos cambian y a veces nos equivocamos. Si un dato de este sitio no coincide con lo que le dicen localmente, preferimos saberlo — una corrección con su fuente es lo más útil que alguien puede enviarnos."
+    },
+    "gap": {
+      "h": "Qué no hacemos todavía",
+      "p1": "No publicamos una calificación para cada afirmación por país. Cada afirmación lleva su fuente y la fecha de comprobación, pero si esa fuente es una ley o un rastreador profesional aún no se registra de forma que podamos mostrárselo. Hasta entonces, esta página es la descripción honesta del criterio que aplicamos, no una garantía dato por dato.",
+      "p2": "Tampoco podemos mostrarle todavía qué decía antes un dato. Las correcciones se hacen en un historial de migraciones versionado, así que nada se pierde, pero ese historial no puede leerse desde estas páginas."
+    },
+    "intro": "Este rastreador hace afirmaciones sobre las que las empresas actúan. Esta página expone qué exigimos a una fuente, qué significan nuestros estados, en qué somos deliberadamente más estrictos que otros rastreadores y qué todavía no hacemos.",
+    "iss": {
+      "h": "Un estado describe la obligación de emitir",
+      "p1": "Es la regla que con más frecuencia nos hace discrepar de otros rastreadores. Estar obligado a recibir una factura electrónica no es lo mismo que estar obligado a emitirla, y solo lo segundo cambia lo que una empresa debe construir.",
+      "p2": "Así, cuando los organismos públicos deben aceptar facturas electrónicas pero los proveedores aún pueden enviar papel, registramos sin obligación y lo explicamos debajo. Irlanda, Chipre, Malta y el Reino Unido se leen así. Cuando los proveedores del sector público deben emitir electrónicamente — Alemania, Dinamarca, Suecia — registramos una obligación en vigor.",
+      "p3": "La obligación de recibir nunca se omite. Se indica en la línea bajo el estado, porque una empresa que solo debe recibir también tiene algo que preparar."
+    },
+    "link": {
+      "sources": "Las fuentes que supervisamos"
+    },
+    "src": {
+      "h": "Qué cuenta como fuente",
+      "p1": "Una cita debe sustentar la afirmación concreta a la que se adjunta, no el tema en general. La página de inicio de una autoridad fiscal no es fuente de una fecha, un umbral o una sanción; lo es el aviso, la resolución o la ley que los establecen.",
+      "p2": "Preferimos el texto oficial o normativo antes que cualquier resumen de él. Cuando la única fuente accesible es un rastreador profesional o una firma asesora, la afirmación conserva esa fuente en lugar de otra de mejor apariencia, y la tratamos como evidencia más débil.",
+      "p3": "Este criterio se escribió tras auditar nuestras propias citas y comprobar que la mayoría no lo cumplía. Se corrigieron 121 fuentes de hitos y 99 fuentes de artículos."
+    },
+    "st": {
+      "active": "En vigor para el segmento indicado.",
+      "h": "Qué significa un estado",
+      "lead": "Cada jurisdicción que seguimos lleva los mismos cinco datos: la obligación de factura electrónica en operaciones con el sector público, entre empresas y con consumidores, el período de archivo, y si se exige firma digital.",
+      "none": "Sin obligación y sin régimen voluntario operativo.",
+      "planned": "Aprobado y con fecha, aún no en vigor. No lo usamos sin fecha.",
+      "unknown": "Investigado sin poder confirmarse, o aún no investigado. Nunca una suposición.",
+      "voluntary": "Un régimen real, operativo y opcional — no la mera ausencia de prohibición."
+    },
+    "strict": {
+      "h": "Dónde somos deliberadamente más estrictos",
+      "p1": "Un proyecto de ley no es un plan. Registramos una obligación programada solo cuando se ha aprobado un instrumento y fijado una fecha — por eso un país con una propuesta en su parlamento figura aquí sin obligación y como «previsto» en algunos otros rastreadores.",
+      "p2": "El efecto es que a veces publicamos una respuesta menos llamativa que el mercado. Esa es la idea. Una ficha de cumplimiento que exagera una obligación cuesta al lector presupuesto y atención que no necesitaba gastar."
+    },
+    "title": "Metodología",
+    "unk": {
+      "count": "Actualmente, {0} de los {1} datos principales que publicamos están registrados como no confirmados.",
+      "h": "«No confirmado» es una respuesta",
+      "p1": "Cuando no hemos podido confirmar un dato, lo decimos y registramos por qué. No lo dejamos en blanco ni lo inferimos, porque un blanco se lee como «sin obligación»: una afirmación distinta, y la que acaba en multa."
+    },
+    "verified": "Cubre {0} jurisdicciones. Última comprobación registrada el {1}."
   }
 }

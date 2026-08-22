@@ -102,7 +102,8 @@
     "resources": "Resources",
     "subscribe": "Subscribe",
     "navHelp": "Navigation Help",
-    "guides": "Compliance guides"
+    "guides": "Compliance guides",
+    "methodology": "Methodology"
   },
   "navTips": {
     "label": "Getting around this site",
@@ -422,5 +423,59 @@
       "hidden": "{0} earlier milestones are on the full deep dive.",
       "hiddenOne": "1 earlier milestone is on the full deep dive."
     }
+  },
+  "method": {
+    "ev": {
+      "h": "Graded evidence, where we have it",
+      "p1": "The ROI planner grades every benchmark it uses from A to D and shows the grade beside the number, because the published evidence for e-invoicing savings is much weaker than the figures in circulation suggest. Our own review of 47 sources found no measured post-mandate study of accounts-payable cost anywhere in the world."
+    },
+    "eyebrow": "How we decide",
+    "fix": {
+      "cta": "Send a correction",
+      "h": "Tell us when we are wrong",
+      "p1": "Mandates move and we get things wrong. If a fact on this site does not match what you are being told locally, we would rather hear it than not — a correction with a source attached is the most useful thing anyone sends us."
+    },
+    "gap": {
+      "h": "What we do not do yet",
+      "p1": "We do not publish a grade against each country claim. Every claim carries its source and the date it was checked, but whether that source is a statute or a professional tracker is not yet recorded in a form we can show you. Until it is, this page is the honest description of the standard we apply rather than a per-fact guarantee that it was met.",
+      "p2": "We also cannot yet show you what a fact used to say. Corrections are made in a versioned migration history, so nothing is lost, but that history is not readable from these pages."
+    },
+    "intro": "This tracker makes claims that businesses act on. This page sets out what we require of a source, what our status words mean, where we are deliberately stricter than other trackers, and what we do not yet do.",
+    "iss": {
+      "h": "A status describes the duty to issue",
+      "p1": "This is the single rule that most often makes us disagree with other trackers. Being obliged to receive an e-invoice is not the same as being obliged to send one, and only the second changes what a business has to build.",
+      "p2": "So where public bodies must accept e-invoices but suppliers may still send paper, we record no mandate and say why underneath. Ireland, Cyprus, Malta and the United Kingdom are all read this way. Where suppliers to government must issue electronically — Germany, Denmark, Sweden — we record an active mandate.",
+      "p3": "The duty to receive is never dropped. It is stated in the line under the status, because a business that can only receive still has something to prepare for."
+    },
+    "link": {
+      "sources": "The sources we monitor"
+    },
+    "src": {
+      "h": "What counts as a source",
+      "p1": "A citation has to substantiate the specific claim it is attached to, not the general topic. A country's tax-authority homepage is not a source for a date, a threshold or a penalty; the notice, resolution or statute that sets them is.",
+      "p2": "We prefer the government or authority text over anyone's summary of it. Where the only reachable source is a professional tracker or an advisory firm, the claim still carries that source rather than a better-looking one, and we treat it as weaker evidence.",
+      "p3": "This standard was written after auditing our own citations and finding that most did not meet it. 121 milestone sources and 99 story sources were corrected as a result."
+    },
+    "st": {
+      "active": "In force now for the segment named.",
+      "h": "What a status means",
+      "lead": "Every jurisdiction we track carries the same five facts: the e-invoicing obligation for business-to-government, business-to-business and business-to-consumer transactions, the archiving period, and whether a digital signature is required.",
+      "none": "No obligation and no operating voluntary scheme.",
+      "planned": "Enacted and dated, not yet in force. We do not use it without a date.",
+      "unknown": "Researched and unconfirmable, or not yet researched. Never a guess.",
+      "voluntary": "A real, operating, optional scheme — not merely the absence of a ban."
+    },
+    "strict": {
+      "h": "Where we are deliberately stricter",
+      "p1": "A draft bill is not a plan. We record a scheduled mandate only where an instrument has been adopted and a date set — so a country with a proposal before its parliament reads as having no mandate here and as \"planned\" on some other trackers.",
+      "p2": "The effect is that we sometimes publish a less exciting answer than the market does. That is the point. A compliance sheet that overstates an obligation costs a reader budget and attention they did not need to spend."
+    },
+    "title": "Methodology",
+    "unk": {
+      "count": "Right now {0} of the {1} headline facts we publish are recorded as not confirmed.",
+      "h": "\"Not confirmed\" is an answer",
+      "p1": "Where we could not confirm a fact, we say so and record why. We do not leave it blank and we do not infer it, because a blank reads as \"no requirement\" — a different claim, and the one that gets somebody fined."
+    },
+    "verified": "Covering {0} jurisdictions. Last fact-check recorded {1}."
   }
 }

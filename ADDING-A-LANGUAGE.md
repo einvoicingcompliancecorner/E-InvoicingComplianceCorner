@@ -70,6 +70,7 @@ Four D1 tables and one code constant. Nothing else.
 | `roi_benchmark_translations` | benchmark `label`, `hint`, `citation` | **31 rows × 3 = 93 cells** |
 | `roi_phase_translations` | phase `name`, `note` | **7 rows × 2 = 14 cells** |
 | `translations`, namespace `tracker`, `guides.*` | the compliance guides — chooser, wall and printed document | **72 keys** |
+| `translations`, namespace `tracker`, `method.*` | the /methodology page | **34 keys** |
 | `country_headline_fact_translations` | the qualifying line under each headline fact | **70 rows × 5 = 350 cells** |
 | `country_translations` | jurisdiction display names | **71 rows** |
 | `COUNTRY_NAME_TRANSLATIONS` (code) | the same names again, for the deep dives and the guides | see Phase 3 |
@@ -384,15 +385,16 @@ currently at four-language parity:
 | `edu-preparing-for-mandate` | 102 |
 | `edu-impact-of-mandate` | 100 |
 | `edu-mandate-types` | 81 |
-| `tracker` | 76 + **67 `auth.*`** + **72 `guides.*`** + `menu.guides` = 216 |
+| `tracker` | 76 + **67 `auth.*`** + **72 `guides.*`** + **34 `method.*`** + 2 menu labels = 251 |
 | `edu-certified-providers` | 50 |
 | `subscribe` | 50 |
 | `feedback` | 20 |
 | `regions` | 4 |
 
-That is **726 rows per language** as at 22 August 2026, up from 653 when
-this was written — the compliance guides put 73 of their strings inside
-`tracker`, which is why that row is now a third of the table. Recount
+That is **761 rows per language** as at 22 August 2026, up from 653 when
+this was written — the compliance guides and the methodology page put 108
+of their strings inside `tracker`, which is why that row is now a third
+of the table. Recount
 rather than quoting this; the sentence above the first table in this file
 applies to every number in it.
 
@@ -658,10 +660,31 @@ and not to that constant gives you a chooser and seventy guide pages
 with English country names in an otherwise translated document, and no
 error anywhere. See Phase 3.
 
+### The methodology page is in the same namespace, and says the same words
+
+`/methodology` (34 keys under `method.*`, added 22 August) explains the
+five status words to readers. It **reads them from the `guides` subtree
+rather than restating them**, so a language that translates
+`hl.active` changes the tiles and the page that defines them together.
+Translating one and not the other is not possible, which is deliberate:
+a page explaining ACTIVE while the tile prints AKTIV would be worse than
+no page. `tests/methodology.mjs` asserts every status word the tiles use
+appears on the page.
+
+Its two figures — how many facts are unconfirmed, how many jurisdictions
+are covered — are queried at request time and need no translation.
+
+**One sentence on that page must survive translation intact**: the
+section saying we do not publish a per-claim source grade. It is true
+because `source_tier` is not a column. If that ever changes, the page
+changes with it; until then, softening it in any language makes a promise
+the database cannot keep.
+
 ### Verify
 
 ```bash
 node tests/guides-routes.mjs          # asserts the guides strings exist per language
+node tests/methodology.mjs            # and the methodology page's, in all four
 node tests/lib/guides-fit-harness.mjs # the one-page rule survives the new language
 ```
 
@@ -897,7 +920,7 @@ Whatever the language, the work splits three ways:
 | Part | Size | Guarded by |
 | --- | --- | --- |
 | The planner | 537 cells | `roi-coverage.mjs`, and a gate that refuses a partial language |
-| The rest of the site chrome | 726 rows, 73 of them the guides | `tracker-i18n.mjs` parity, `guides-routes.mjs` smoke test |
+| The rest of the site chrome | 761 rows, 108 of them the guides and methodology | `tracker-i18n.mjs` parity, `guides-routes.mjs` and `methodology.mjs` |
 | The headline-fact notes | **350 cells** | **nothing** — see Phase 5c |
 
 The third column is the one to read. The last row is the largest single
