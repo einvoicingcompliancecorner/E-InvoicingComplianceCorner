@@ -347,6 +347,55 @@ def test_runtime_table_claims_are_not_sent_to_production():
           "594_auth_codes.sql:104" in out)
 
 
+# ---- the limit the replay cannot see -----------------------------------
+#
+# 22 August 2026. Migration 613 replayed clean offline and D1 refused it:
+# "too many terms in compound SELECT". A multi-row INSERT ... VALUES is a
+# compound SELECT to SQLite, one term per row, and D1 is built with a
+# lower ceiling than the local library the replay runs on. So the replay
+# -- which is otherwise the strongest signal this project has -- is
+# structurally blind to this one class of failure, and the only place it
+# shows up is a deploy.
+#
+# THE LIMIT IS NOT PUBLISHED, so this does not guess at it. It caps the
+# tuple count well below anything plausible and leaves the reason in the
+# message, which is the difference between a rule and a superstition.
+MAX_VALUES_TUPLES = 50
+
+VALUES_RE = re.compile(r"\bVALUES\b(.*?);", re.S | re.I)
+
+
+def test_no_oversized_value_lists():
+    print("\nmulti-row INSERTs stay under D1's compound-SELECT ceiling")
+    worst = []
+    for name in A.migration_files():
+        text = open(os.path.join(A.MIGRATIONS_DIR, name), encoding="utf-8").read()
+        # Comments can contain anything, including the word VALUES and a
+        # semicolon. Strip them before counting or a header describing
+        # this very rule trips it.
+        body = re.sub(r"--[^\n]*", "", text)
+        for m in VALUES_RE.finditer(body):
+            tuples = m.group(1).count("),") + 1
+            if tuples > MAX_VALUES_TUPLES:
+                worst.append(f"{name}: {tuples} rows in one INSERT")
+    check(f"no migration exceeds {MAX_VALUES_TUPLES} rows in one VALUES list",
+          not worst,
+          "; ".join(worst[:5]) + "  -- split into blocks; D1 rejects a "
+          "compound SELECT the local replay accepts")
+
+
+def test_the_oversized_check_can_fail():
+    # The defect this project keeps rediscovering is a check that cannot
+    # fail. Prove this one counts by handing it a list that is over.
+    print("\nand that check counts rather than always passing")
+    fake = "INSERT INTO t (a) VALUES\n" + ",\n".join(
+        f"  ('{i}')" for i in range(MAX_VALUES_TUPLES + 5)) + ";"
+    m = VALUES_RE.search(re.sub(r"--[^\n]*", "", fake))
+    check("a list of 55 tuples counts as 55",
+          m and m.group(1).count("),") + 1 == MAX_VALUES_TUPLES + 5,
+          f"counted {m and m.group(1).count('),') + 1}")
+
+
 def test_real_chain():
     print("\nthe real migration chain")
     exited, out = replay(expect_exit=False)
@@ -366,6 +415,8 @@ if __name__ == "__main__":
     test_query_error_is_a_failure()
     test_live_batch_sql()
     test_runtime_table_claims_are_not_sent_to_production()
+    test_no_oversized_value_lists()
+    test_the_oversized_check_can_fail()
     test_real_chain()
     print()
     if FAILURES:

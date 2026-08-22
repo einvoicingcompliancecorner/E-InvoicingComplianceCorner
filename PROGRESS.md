@@ -14950,5 +14950,17 @@ trackers (**15** of 70 B2B statuses after migration 611's corrections,
 not the 17 recorded in the previous entry); a change-history table; and
 turning the weekly content monitor outward.
 
+**A limit the replay is structurally blind to.** 613 replayed clean
+offline and D1 refused it: `too many terms in compound SELECT`. A
+multi-row `INSERT ... VALUES` is a compound SELECT to SQLite — one term
+per row — and D1 is built with a lower ceiling than the library the
+replay runs on, so the strongest signal this project has cannot see this
+class of failure at all. The inserts are now blocks of 25, and
+`test_assertions.py` caps every migration's `VALUES` list at 50: the
+largest that has ever deployed successfully is 28 (migration 548), so the
+cap sits above everything that works and far below the 185 that did not.
+The negative side is tested too — a 55-tuple list must count as 55, or
+the guard is another check that cannot fail.
+
 `npm test`: **20 suites**, 33 checks in `methodology` alone. Replay OK
 across **614 files**.
