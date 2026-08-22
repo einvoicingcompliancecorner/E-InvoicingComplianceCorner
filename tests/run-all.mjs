@@ -54,6 +54,7 @@ const SUITES = [
   { name: "compliance guides routes", cmd: "node", args: [join(HERE, "guides-routes.mjs")], cwd: REPO },
   { name: "guides consistency", cmd: "node", args: [join(HERE, "guides-consistency.mjs")], cwd: REPO },
   { name: "methodology", cmd: "node", args: [join(HERE, "methodology.mjs")], cwd: REPO },
+  { name: "changes", cmd: "node", args: [join(HERE, "changes.mjs")], cwd: REPO },
   { name: "structured data", cmd: "node", args: [join(HERE, "structured-data.mjs")], cwd: REPO },
   { name: "ROI regression", cmd: "node", args: [join(HERE, "roi-regression.mjs")], cwd: REPO },
   { name: "ROI i18n", cmd: "node", args: [join(HERE, "roi-i18n.mjs")], cwd: REPO },

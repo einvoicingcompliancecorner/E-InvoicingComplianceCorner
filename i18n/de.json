@@ -103,7 +103,8 @@
     "subscribe": "Abonnieren",
     "navHelp": "Navigationshilfe",
     "guides": "Compliance-Leitfäden",
-    "methodology": "Methodik"
+    "methodology": "Methodik",
+    "changes": "Was sich geändert hat"
   },
   "navTips": {
     "label": "So funktioniert diese Seite",
@@ -438,7 +439,7 @@
     "gap": {
       "h": "Was wir noch nicht tun",
       "p1": "Die obige Bewertung gilt dem Herausgeber, nicht dem einzelnen Beleg. Eine Seite auf einer Behördendomain gilt als primär, selbst wenn sie dort ein Blogbeitrag ist, und ein von einer Kanzlei wortgleich wiedergegebenes Gesetz gilt als sekundär. Bisher brauchte kein Beleg eine Ausnahme; sobald einer sie braucht, bekommt er sie.",
-      "p2": "Ebenso können wir Ihnen noch nicht zeigen, was ein Sachverhalt früher aussagte. Korrekturen erfolgen in einer versionierten Migrationshistorie, es geht also nichts verloren, doch diese Historie ist von diesen Seiten aus nicht lesbar."
+      "p2": "Der Nachweis erfasst die fünf Kernstatus und sonst nichts. Meilensteine, die Anmerkungen unter jedem Status und der Text auf den Länderkarten ändern sich ebenfalls, und diese Änderungen werden noch nicht festgehalten — sie liegen allein in der versionierten Migrationshistorie, in der nichts verloren geht, aber auch nichts lesbar ist."
     },
     "intro": "Dieser Tracker trifft Aussagen, nach denen Unternehmen handeln. Diese Seite legt dar, was wir von einer Quelle verlangen, was unsere Statusangaben bedeuten, wo wir bewusst strenger sind als andere Tracker und was wir noch nicht leisten.",
     "iss": {
@@ -493,6 +494,41 @@
         "secondary": "SEKUNDÄR",
         "unknown": "UNBEWERTET"
       }
+    },
+    "hist": {
+      "cta": "Änderungen ansehen",
+      "h": "Was eine Aussage früher besagte",
+      "p1": "Jede Änderung der fünf Kernstatus ist erfasst — mit dem vorherigen Wert, dem Zeitpunkt und der Begründung. Die beiden Gründe werden getrennt gehalten: Eine verschobene Pflicht und ein Fehler unsererseits sind nicht dasselbe, und nur eines davon haben wir zu verantworten. Ein Status kann sich nicht ändern, ohne dass die Änderung festgehalten wird — der Build verweigert es."
     }
+  },
+  "changes": {
+    "arch": {
+      "years": "FESTE FRIST"
+    },
+    "back": "← Zurück zum globalen Tracker",
+    "begins": "Der Nachweis beginnt am {0}. Er zeigt, was eine Aussage seit diesem Datum besagt, nicht seit ihrer Erstveröffentlichung — diese Fakten entstanden über die Tage davor, und eine genauere Datierung wäre erfundene Genauigkeit. Frühere Korrekturen liegen in der versionierten Migrationshistorie und sind von hier nicht lesbar.",
+    "count": {
+      "one": "{0} Änderung erfasst",
+      "other": "{0} Änderungen erfasst"
+    },
+    "eyebrow": "Der Nachweis",
+    "intro": "Jede Änderung an den fünf Kernaussagen, die wir veröffentlichen — was vorher galt, wann sie sich änderte und warum.",
+    "kind": {
+      "correction": "Wir lagen falsch",
+      "moved": "Die Rechtslage änderte sich"
+    },
+    "lbl": {
+      "now": "jetzt",
+      "src": "Quelle",
+      "was": "vorher",
+      "why": "Warum"
+    },
+    "link": {
+      "fix": "Korrektur melden",
+      "method": "Wie wir entscheiden"
+    },
+    "none": "Seit Beginn des Nachweises hat sich nichts geändert.",
+    "title": "Was sich geändert hat",
+    "watch": "{0} Fakten aus {1} Jurisdiktionen sind erfasst. Ein Status kann sich hier nicht ändern, ohne dass die Änderung festgehalten wird — der Build verweigert es."
   }
 }

@@ -30,6 +30,7 @@ import {
   getDeepDiveContent,
   getMilestonesForCountry,
   renderFullDeepDivePage,
+  translateCountryName,
 } from "../../shared/deep-dive-render.mjs";
 import {
   getMapCountries,
@@ -79,6 +80,7 @@ import {
   breadcrumbLd,
   articleLd,
   methodologyLd,
+  changesLd,
 } from "../../shared/structured-data.mjs";
 
 const LANG_COOKIE = "eicc_lang";
@@ -853,6 +855,7 @@ const GUIDES_PATHS = new Set(["/compliance-guides", "/compliance-guides.html"]);
 // publication would cite -- neither of which works behind a wall or
 // inside the About modal, which has no URL at all.
 const METHOD_PATHS = new Set(["/methodology", "/methodology.html"]);
+const CHANGES_PATHS = new Set(["/changes", "/changes.html"]);
 const GUIDE_DOC_PATHS = new Set(["/compliance-guides/guide"]);
 
 // The members subdomain, written once. It appears in four other places
@@ -1305,6 +1308,227 @@ function subtreeT(strings) {
 // So "18 of 350 facts are recorded as not confirmed" is counted at
 // request time. If somebody researches Bahrain tomorrow, the sentence
 // changes by itself.
+/**
+ * /changes -- what a fact used to say.
+ *
+ * The reader-facing half of migration 615. /methodology promised this
+ * page from the day it went up ("we also cannot yet show you what a fact
+ * used to say") and 616 rewrote that promise into a link.
+ *
+ * IT LISTS CHANGES, NOT FACTS. 350 facts are on the record and 344 of
+ * them have said one thing since the record began; a page printing 350
+ * rows of "unchanged" would bury the six that matter. So the query asks
+ * only for rows with something before them, and the counts above the list
+ * say how much is being watched to produce them.
+ *
+ * THE VOCABULARY IS BORROWED. Every status word comes from the `guides`
+ * subtree -- the same strings the tiles print -- because a page saying a
+ * country "was VOLUNTARY, now ACTIVE" has to use the two words the tile
+ * uses or the reader is comparing our prose against our data.
+ */
+async function renderChangesPage(request, env) {
+  if (!env.eicc_content) return new Response("Missing D1 binding", { status: 500 });
+  const { lang, shouldSetCookie } = resolveInsightsLang(request);
+  const framed = new URL(request.url).searchParams.get("frame") === "1";
+  const [strings, guideStrings] = await Promise.all([
+    authStrings(env, lang, "changes"),
+    authStrings(env, lang, "guides"),
+  ]);
+  const t = subtreeT(strings);
+  const g = subtreeT(guideStrings);
+
+  const rows = (await env.eicc_content.prepare(`
+    SELECT h.id, h.field, h.old_value, h.new_value, h.changed_on, h.kind, h.source_url,
+           c.name_en AS country,
+           COALESCE(n.note, n_en.note) AS note
+      FROM fact_history h
+      JOIN countries c ON c.id = h.country_id
+      LEFT JOIN fact_history_notes n    ON n.history_id = h.id AND n.lang = ?
+      LEFT JOIN fact_history_notes n_en ON n_en.history_id = h.id AND n_en.lang = 'en'
+     WHERE h.old_value IS NOT NULL
+     ORDER BY h.changed_on DESC, c.name_en, h.field`).bind(lang).all()).results || [];
+
+  const scope = await env.eicc_content.prepare(`
+    SELECT count(*) AS facts, count(DISTINCT country_id) AS countries,
+           min(changed_on) AS began, max(changed_on) AS latest
+      FROM fact_history`).first();
+
+  // THE FIVE STATUS VOCABULARIES ARE NOT INTERCHANGEABLE. b2g/b2b/b2c
+  // share one set of words; archiving and signature each have their own,
+  // and 'unknown' is the only value common to all three. Mapping by field
+  // rather than by value is what stops an archiving row rendering as
+  // "NO MANDATE".
+  const MANDATE = {
+    active: ["hl.active", "ACTIVE"], planned: ["hl.planned", "PLANNED"],
+    voluntary: ["hl.voluntary", "VOLUNTARY"], no_mandate: ["hl.none", "NO MANDATE"],
+    unknown: ["hl.unknown", "NOT CONFIRMED"],
+  };
+  const ARCHIVING = {
+    varies: ["hl.arch.varies", "VARIES"], no_requirement: ["hl.arch.none", "NO REQUIREMENT"],
+    unknown: ["hl.unknown", "NOT CONFIRMED"],
+  };
+  const SIGNATURE = {
+    required: ["hl.sig.required", "REQUIRED"], conditional: ["hl.sig.conditional", "CONDITIONAL"],
+    not_required: ["hl.sig.not", "NOT REQUIRED"], unknown: ["hl.unknown", "NOT CONFIRMED"],
+  };
+  const FIELD_LABEL = {
+    b2g_status: ["hl.lbl.b2g", "B2G e-invoicing"],
+    b2b_status: ["hl.lbl.b2b", "B2B e-invoicing"],
+    b2c_status: ["hl.lbl.b2c", "B2C e-invoicing"],
+    archiving_status: ["hl.lbl.archiving", "Archiving"],
+    signature_status: ["hl.lbl.signature", "Digital signature"],
+  };
+  const word = (field, value) => {
+    // "years" is the one status the tiles render as a number, so this
+    // page needs a name for it that the guides subtree does not carry.
+    if (field === "archiving_status" && value === "years") return t("arch.years", "A FIXED PERIOD");
+    const table = field === "archiving_status" ? ARCHIVING
+      : field === "signature_status" ? SIGNATURE : MANDATE;
+    const pair = table[value];
+    // An unmapped value prints itself rather than an empty span. A blank
+    // where a status should be is the one rendering this page must not do.
+    return pair ? g(pair[0], pair[1]) : String(value || "").toUpperCase();
+  };
+
+  const entry = (r) => {
+    const kindKey = r.kind === "moved" ? "kind.moved" : "kind.correction";
+    const kindEn = r.kind === "moved" ? "The law moved" : "We were wrong";
+    return `<article class="ch">
+      <div class="chh">
+        <span class="dt">${escHtml(r.changed_on)}</span>
+        <span class="cty">${escHtml(translateCountryName(lang, r.country))}</span>
+        <span class="fld">${escHtml(g(...FIELD_LABEL[r.field] || ["", r.field]))}</span>
+        <span class="knd ${r.kind === "moved" ? "moved" : "corr"}">${escHtml(t(kindKey, kindEn))}</span>
+      </div>
+      <div class="mv">
+        <span class="was"><em>${escHtml(t("lbl.was", "was"))}</em> ${escHtml(word(r.field, r.old_value))}</span>
+        <span class="arr">→</span>
+        <span class="now"><em>${escHtml(t("lbl.now", "now"))}</em> ${escHtml(word(r.field, r.new_value))}</span>
+      </div>
+      ${r.note ? `<p class="why">${escHtml(r.note)}</p>` : ""}
+      ${r.source_url ? `<p class="src"><a href="${escHtml(r.source_url)}" rel="nofollow noopener"
+         target="_blank">${escHtml(t("lbl.src", "Source"))}</a></p>` : ""}
+    </article>`;
+  };
+
+  const countKey = rows.length === 1 ? "count.one" : "count.other";
+  const countEn = rows.length === 1 ? "{0} change on the record" : "{0} changes on the record";
+  const body = rows.length
+    ? rows.map(entry).join("")
+    : `<p class="none">${escHtml(t("none", "Nothing has changed since the record began."))}</p>`;
+
+  const langLinks = SUPPORTED_LANGS.map((l) =>
+    l === lang ? `<span class="lang-current">${l.toUpperCase()}</span>`
+      : `<a href="/changes?lang=${l}">${l.toUpperCase()}</a>`).join(" · ");
+
+  const html = `<!DOCTYPE html>
+<html lang="${escHtml(lang)}">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>${escHtml(t("title", "What changed"))} — The E-Invoicing Compliance Corner</title>
+<meta name="description" content="${escHtml(t("intro", "Every change to the five headline facts we publish."))}">
+<link rel="canonical" href="https://e-invoicingcompliancecorner.com/changes">${framed ? '\n<meta name="robots" content="noindex,nofollow">' : ""}${
+  framed ? "" : "\n" + ldScript([changesLd({ lang, modified: scope?.latest }), breadcrumbLd([
+    { name: "The E-Invoicing Compliance Corner", url: "https://e-invoicingcompliancecorner.com/" },
+    { name: "What changed", url: "https://e-invoicingcompliancecorner.com/changes" },
+  ])])}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  /* The same structural contract as /methodology and /sources: one style
+     block with :root{ and body{, everything inside .wrap, .top-bar
+     first, .langs stripped in-page. */
+  :root{
+    --ink:#0f1a2b; --ink-2:#152238; --line:#2b3c5a;
+    --paper:#efe9db; --text-lo:#f2f0e8; --muted:#93a3c0;
+    --stamp:#b5432f; --live:#3f7d5c; --soon:#c98a3a;
+  }
+  *{box-sizing:border-box;} html,body{margin:0;padding:0;}
+  body{background:var(--ink); color:var(--text-lo); font-family:'IBM Plex Sans',sans-serif; line-height:1.6;}
+  .display{font-family:'Big Shoulders Display',sans-serif; font-weight:800;}
+  .wrap{max-width:760px; margin:0 auto; padding:0 5vw 70px;}
+  body[data-framed] .wrap{padding-top:26px;}
+  body[data-framed] .eyebrow{margin-top:4px;}
+  .top-bar{display:flex; justify-content:space-between; align-items:center; padding-top:20px;}
+  .back-link{font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:var(--muted); text-decoration:none;}
+  .back-link:hover{color:var(--paper);}
+  .eyebrow{font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.22em; text-transform:uppercase; color:var(--stamp); margin:30px 0 6px;}
+  h1{font-size:42px; letter-spacing:0.04em; margin:0 0 12px;}
+  p{font-size:15.5px; color:#dfe4ee; margin:0 0 13px;}
+  .intro{font-size:16.5px; color:var(--muted); margin:0 0 8px;}
+  .langs{font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--muted); margin:14px 0 8px;}
+  .langs a{color:var(--muted); text-decoration:none;} .langs a:hover{color:var(--paper);}
+  .lang-current{color:var(--stamp); font-weight:600;}
+  .fig{font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:var(--muted);
+       border-left:2px solid var(--line); padding-left:12px; margin:16px 0 0;}
+  .count{font-family:'Big Shoulders Display',sans-serif; font-weight:700; font-size:23px;
+         letter-spacing:.03em; text-transform:uppercase; margin:34px 0 12px;
+         padding-bottom:7px; border-bottom:1px solid var(--line);}
+  .ch{border-left:2px solid var(--line); padding:2px 0 2px 14px; margin:0 0 24px;}
+  .chh{display:flex; flex-wrap:wrap; align-items:baseline; gap:10px; margin-bottom:6px;}
+  .chh .dt{font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--muted);}
+  .chh .cty{font-family:'Big Shoulders Display',sans-serif; font-weight:700; font-size:21px;
+            letter-spacing:.03em; text-transform:uppercase; color:var(--paper);}
+  .chh .fld{font-size:14px; color:var(--muted);}
+  .knd{font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:.12em;
+       text-transform:uppercase; padding:2px 7px; border:1px solid var(--line); border-radius:2px;}
+  /* The two reasons read differently on purpose. Our own error is the
+     one a reader is entitled to notice, so it is not the quieter of the
+     two colours. */
+  .knd.corr{color:var(--stamp); border-color:var(--stamp);}
+  .knd.moved{color:var(--muted);}
+  .mv{display:flex; flex-wrap:wrap; align-items:baseline; gap:10px;
+      font-family:'IBM Plex Mono',monospace; font-size:12.5px; letter-spacing:.06em;}
+  .mv em{font-style:normal; font-family:'IBM Plex Sans',sans-serif; letter-spacing:0;
+         font-size:13px; color:var(--muted); margin-right:5px;}
+  .mv .was{color:var(--muted); text-decoration:line-through; text-decoration-color:var(--line);}
+  .mv .was em{text-decoration:none;}
+  .mv .now{color:var(--paper);}
+  .mv .arr{color:var(--line);}
+  .why{font-size:14.5px; color:#dfe4ee; margin:9px 0 0;}
+  .src{margin:6px 0 0;}
+  .src a{font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--muted);
+         text-decoration:none; border-bottom:1px solid var(--line);}
+  .src a:hover{color:var(--paper);}
+  .none{color:var(--muted);}
+  .cta{margin:30px 0 0; display:flex; gap:22px; flex-wrap:wrap;}
+  .cta a{color:var(--paper); font-weight:600; font-size:14.5px; text-decoration:none; border-bottom:1px solid var(--line);}
+  .cta a:hover{color:var(--stamp); border-color:var(--stamp);}
+  @media(max-width:600px){ h1{font-size:30px;} .chh .cty{font-size:18px;} }
+</style>
+</head>
+<body${framed ? ' data-framed="1"' : ""}>
+<div class="wrap">
+  ${framed ? "" : `<div class="top-bar"><a class="back-link" href="/einvoicing-compliance-tracker.html">${
+    escHtml(t("back", "← Back to global tracker"))}</a></div>`}
+  <p class="eyebrow">${escHtml(t("eyebrow", "The record"))}</p>
+  <h1 class="display">${escHtml(t("title", "What changed"))}</h1>
+  <p class="intro">${escHtml(t("intro", "Every change to the five headline facts we publish."))}</p>
+  ${framed ? "" : `<p class="langs">${langLinks}</p>`}
+  <p class="fig">${escHtml(fillPlain(t("watch",
+    "{0} facts across {1} jurisdictions are on the record."),
+    scope?.facts ?? 0, scope?.countries ?? 0))}</p>
+  <p class="fig">${escHtml(fillPlain(t("begins", "The record begins on {0}."), scope?.began || "—"))}</p>
+  <h2 class="count display">${escHtml(fillPlain(t(countKey, countEn), rows.length))}</h2>
+  ${body}
+  <p class="cta"><a href="/methodology" target="_top">${escHtml(t("link.method", "How we decide"))}</a>
+     <a href="/feedback.html" target="_top">${escHtml(t("link.fix", "Send a correction"))}</a></p>
+</div>
+</body>
+</html>`;
+
+  const headers = new Headers({
+    "Content-Type": "text/html; charset=UTF-8",
+    "Cache-Control": "public, max-age=600",
+  });
+  if (shouldSetCookie) {
+    headers.append("Set-Cookie", `${LANG_COOKIE}=${lang}; Domain=.e-invoicingcompliancecorner.com; Path=/; Max-Age=${LANG_COOKIE_TTL_SECONDS}; SameSite=Lax`);
+  }
+  return new Response(html, { headers });
+}
+
 async function renderMethodologyPage(request, env) {
   if (!env.eicc_content) return new Response("Missing D1 binding", { status: 500 });
   const { lang, shouldSetCookie } = resolveInsightsLang(request);
@@ -1414,6 +1638,10 @@ async function renderMethodologyPage(request, env) {
 
   ${h("ev.h", "Graded evidence, where we have it")}
   ${p("ev.p1", "The ROI planner grades every benchmark it uses from A to D.")}
+
+  ${h("hist.h", "What a fact used to say")}
+  ${p("hist.p1", "Every change to the five headline statuses is on the record.")}
+  <p class="cta"><a href="/changes">${escHtml(t("hist.cta", "See what changed"))}</a></p>
 
   ${h("gap.h", "What we do not do yet")}
   ${p("gap.p1", "We do not publish a grade against each country claim.")}
@@ -2315,6 +2543,9 @@ export default {
     // Compliance guides — the chooser, then the printable document. Both
     // gated on the session rather than on an env flag; see the note above
     // GUIDES_PATHS for why this one differs from ROI_PUBLIC.
+    if (CHANGES_PATHS.has(url.pathname)) {
+      return renderChangesPage(request, env);
+    }
     if (METHOD_PATHS.has(url.pathname)) {
       return renderMethodologyPage(request, env);
     }

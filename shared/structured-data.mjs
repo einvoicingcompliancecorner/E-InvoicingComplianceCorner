@@ -217,6 +217,36 @@ export function articleLd({ slug, headline, description, published, lang, isFree
   return node;
 }
 
+/**
+ * The change record.
+ *
+ * A WebPage, not a Dataset and not an ItemList. It is a page listing
+ * corrections; claiming it is a dataset would be the same overreach the
+ * header of this file refuses on /sources, where the claim is honest only
+ * because a real distribution stands behind it. There is no endpoint here.
+ */
+export function changesLd({ lang = "en", modified } = {}) {
+  const node = {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "@id": `${ORIGIN}/changes#webpage`,
+    url: `${ORIGIN}/changes`,
+    name: "What changed",
+    description: "Every change to the five headline facts this site publishes — "
+      + "what each said before, when it changed, and why.",
+    inLanguage: lang,
+    isPartOf: { "@id": `${ORIGIN}/#website` },
+    publisher: { "@id": `${ORIGIN}/#organization` },
+    publishingPrinciples: `${ORIGIN}/methodology`,
+  };
+  // The newest recorded change, not today. A page about being accurate
+  // with dates cannot stamp itself with one it has not earned.
+  if (modified && /^\d{4}-\d{2}-\d{2}$/.test(String(modified))) {
+    node.dateModified = String(modified);
+  }
+  return node;
+}
+
 /** The methodology page itself. */
 export function methodologyLd(lang = "en") {
   return {

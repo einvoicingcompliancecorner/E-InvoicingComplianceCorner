@@ -103,7 +103,8 @@
     "subscribe": "Suscribirse",
     "navHelp": "Ayuda de navegación",
     "guides": "Guías de cumplimiento",
-    "methodology": "Metodología"
+    "methodology": "Metodología",
+    "changes": "Qué ha cambiado"
   },
   "navTips": {
     "label": "Cómo navegar por este sitio",
@@ -438,7 +439,7 @@
     "gap": {
       "h": "Qué no hacemos todavía",
       "p1": "La clasificación anterior corresponde al editor, no a la cita concreta. Una página en un dominio gubernamental se clasifica como primaria aunque allí sea una entrada de blog, y una ley reproducida literalmente por un despacho se clasifica como secundaria. Ninguna de nuestras citas ha necesitado todavía una excepción; cuando alguna la necesite, la tendrá.",
-      "p2": "Tampoco podemos mostrarle todavía qué decía antes un dato. Las correcciones se hacen en un historial de migraciones versionado, así que nada se pierde, pero ese historial no puede leerse desde estas páginas."
+      "p2": "El registro cubre los cinco estados principales y nada más. Los hitos, las notas bajo cada estado y el texto de las fichas de cada país también cambian, y esos cambios aún no se conservan: solo están en el historial de migraciones versionado, donde nada se pierde pero tampoco nada puede leerse."
     },
     "intro": "Este rastreador hace afirmaciones sobre las que las empresas actúan. Esta página expone qué exigimos a una fuente, qué significan nuestros estados, en qué somos deliberadamente más estrictos que otros rastreadores y qué todavía no hacemos.",
     "iss": {
@@ -493,6 +494,41 @@
         "secondary": "SECUNDARIA",
         "unknown": "SIN CLASIFICAR"
       }
+    },
+    "hist": {
+      "cta": "Ver qué ha cambiado",
+      "h": "Qué decía antes un dato",
+      "p1": "Cada cambio en los cinco estados principales queda registrado, con lo que decía antes, cuándo cambió y por qué, y los dos motivos se mantienen separados: que una obligación se mueva y que nos hayamos equivocado no son lo mismo, y solo uno es culpa nuestra. Un estado no puede cambiar sin que el cambio quede registrado: la compilación lo rechaza."
     }
+  },
+  "changes": {
+    "arch": {
+      "years": "PLAZO FIJO"
+    },
+    "back": "← Volver al rastreador global",
+    "begins": "El registro comienza el {0}. Indica lo que un dato afirma desde esa fecha, no desde su primera publicación: estos datos se redactaron a lo largo de los días anteriores, y fecharlos con más precisión sería inventar exactitud. Las correcciones anteriores están en el historial de migraciones versionado y no pueden consultarse aquí.",
+    "count": {
+      "one": "{0} cambio registrado",
+      "other": "{0} cambios registrados"
+    },
+    "eyebrow": "El registro",
+    "intro": "Cada cambio en los cinco datos principales que publicamos: qué decía antes, cuándo cambió y por qué.",
+    "kind": {
+      "correction": "Nos equivocamos",
+      "moved": "La norma cambió"
+    },
+    "lbl": {
+      "now": "ahora",
+      "src": "Fuente",
+      "was": "antes",
+      "why": "Por qué"
+    },
+    "link": {
+      "fix": "Enviar una corrección",
+      "method": "Cómo decidimos"
+    },
+    "none": "Nada ha cambiado desde que empezó el registro.",
+    "title": "Qué ha cambiado",
+    "watch": "{0} datos de {1} jurisdicciones están registrados. Un estado no puede cambiar aquí sin que el cambio quede registrado: la compilación lo rechaza."
   }
 }
