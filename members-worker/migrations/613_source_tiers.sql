@@ -103,6 +103,15 @@
 -- table. If you hit it, add the host to source_hosts with a tier -- and
 -- if you genuinely cannot tell who runs it, 'unknown' with a note in
 -- the note column is a correct answer and always was.
+--
+-- ---- WHY THE INSERTS ARE IN BLOCKS OF 25 -----------------------------
+--
+-- D1 rejected the first version of this file with "too many terms in
+-- compound SELECT". A multi-row INSERT ... VALUES is a compound SELECT
+-- to SQLite, one term per row, and D1's limit is lower than the 500 the
+-- local replay runs under -- so a file that replays clean offline can
+-- still fail on the real database. 25 is comfortably under any plausible
+-- limit and keeps each block readable. Nothing about the data changed.
 -- ================================================================
 
 CREATE TABLE IF NOT EXISTS source_hosts (
@@ -176,7 +185,8 @@ INSERT INTO source_hosts (host, tier, note, classified_on) VALUES
   ('chinatax.gov.cn', 'primary', NULL, '2026-08-22'),
   ('chorus-pro.gouv.fr', 'primary', NULL, '2026-08-22'),
   ('collectivites-locales.gouv.fr', 'primary', NULL, '2026-08-22'),
-  ('coretaxdjp.pajak.go.id', 'primary', NULL, '2026-08-22'),
+  ('coretaxdjp.pajak.go.id', 'primary', NULL, '2026-08-22');
+INSERT INTO source_hosts (host, tier, note, classified_on) VALUES
   ('cpe.sunat.gob.pe', 'primary', NULL, '2026-08-22'),
   ('cwfwpt.ggj.gov.cn', 'primary', NULL, '2026-08-22'),
   ('dgii.gov.do', 'primary', NULL, '2026-08-22'),
@@ -201,7 +211,8 @@ INSERT INTO source_hosts (host, tier, note, classified_on) VALUES
   ('einvoice1.gst.gov.in', 'primary', NULL, '2026-08-22'),
   ('einvoice6.gst.gov.in', 'primary', NULL, '2026-08-22'),
   ('einvoicing.govt.nz', 'primary', NULL, '2026-08-22'),
-  ('eis.bir.gov.ph', 'primary', NULL, '2026-08-22'),
+  ('eis.bir.gov.ph', 'primary', NULL, '2026-08-22');
+INSERT INTO source_hosts (host, tier, note, classified_on) VALUES
   ('english.www.gov.cn', 'primary', NULL, '2026-08-22'),
   ('eotpremnica.efaktura.gov.rs', 'primary', NULL, '2026-08-22'),
   ('eracuni.ujp.gov.si', 'primary', NULL, '2026-08-22'),
@@ -226,7 +237,8 @@ INSERT INTO source_hosts (host, tier, note, classified_on) VALUES
   ('gib.gov.tr', 'primary', NULL, '2026-08-22'),
   ('gob.ec', 'primary', NULL, '2026-08-22'),
   ('gob.pe', 'primary', NULL, '2026-08-22'),
-  ('gov.br', 'primary', NULL, '2026-08-22'),
+  ('gov.br', 'primary', NULL, '2026-08-22');
+INSERT INTO source_hosts (host, tier, note, classified_on) VALUES
   ('gov.cn', 'primary', NULL, '2026-08-22'),
   ('gov.cy', 'primary', NULL, '2026-08-22'),
   ('gov.ie', 'primary', NULL, '2026-08-22'),
@@ -251,7 +263,8 @@ INSERT INTO source_hosts (host, tier, note, classified_on) VALUES
   ('iras.gov.sg', 'primary', NULL, '2026-08-22'),
   ('ird.govt.nz', 'primary', NULL, '2026-08-22'),
   ('irs.gov', 'primary', NULL, '2026-08-22'),
-  ('island.is', 'primary', 'Government of Iceland portal', '2026-08-22'),
+  ('island.is', 'primary', 'Government of Iceland portal', '2026-08-22');
+INSERT INTO source_hosts (host, tier, note, classified_on) VALUES
   ('istd.gov.jo', 'primary', NULL, '2026-08-22'),
   ('itax.kra.go.ke', 'primary', NULL, '2026-08-22'),
   ('kenyalaw.org', 'primary', 'National Council for Law Reporting, a state corporation', '2026-08-22'),
@@ -276,7 +289,8 @@ INSERT INTO source_hosts (host, tier, note, classified_on) VALUES
   ('micrositios.dian.gov.co', 'primary', NULL, '2026-08-22'),
   ('mof.gov.ae', 'primary', NULL, '2026-08-22'),
   ('mof.gov.cy', 'primary', NULL, '2026-08-22'),
-  ('mof.gov.sg', 'primary', NULL, '2026-08-22'),
+  ('mof.gov.sg', 'primary', NULL, '2026-08-22');
+INSERT INTO source_hosts (host, tier, note, classified_on) VALUES
   ('mof.gov.tw', 'primary', NULL, '2026-08-22'),
   ('mtca.gov.mt', 'primary', NULL, '2026-08-22'),
   ('narodne-novine.nn.hr', 'primary', 'Narodne novine, Croatia', '2026-08-22'),
@@ -301,7 +315,8 @@ INSERT INTO source_hosts (host, tier, note, classified_on) VALUES
   ('portalsped.fazenda.mg.gov.br', 'primary', NULL, '2026-08-22'),
   ('pravno-informacioni-sistem.rs', 'primary', 'official legal information system, Serbia', '2026-08-22'),
   ('procurement.govt.nz', 'primary', NULL, '2026-08-22'),
-  ('qanoon.om', 'primary', 'Oman legal portal, Ministry of Legal Affairs', '2026-08-22'),
+  ('qanoon.om', 'primary', 'Oman legal portal, Ministry of Legal Affairs', '2026-08-22');
+INSERT INTO source_hosts (host, tier, note, classified_on) VALUES
   ('regjeringen.no', 'primary', 'Government of Norway', '2026-08-22'),
   ('retsinformation.dk', 'primary', 'official legal information, Denmark', '2026-08-22'),
   ('revenue.ie', 'primary', 'Revenue Commissioners, Ireland', '2026-08-22'),
@@ -326,7 +341,8 @@ INSERT INTO source_hosts (host, tier, note, classified_on) VALUES
   ('tms.taxoman.gov.om', 'primary', NULL, '2026-08-22'),
   ('tpctax.gov.taipei', 'primary', NULL, '2026-08-22'),
   ('upphandlingsmyndigheten.se', 'primary', 'National Agency for Public Procurement, Sweden', '2026-08-22'),
-  ('uradni-list.si', 'primary', 'Uradni list, Slovenia', '2026-08-22'),
+  ('uradni-list.si', 'primary', 'Uradni list, Slovenia', '2026-08-22');
+INSERT INTO source_hosts (host, tier, note, classified_on) VALUES
   ('uscode.house.gov', 'primary', NULL, '2026-08-22'),
   ('usp.gv.at', 'primary', NULL, '2026-08-22'),
   ('ustr.gov', 'primary', NULL, '2026-08-22'),
@@ -378,7 +394,8 @@ INSERT INTO source_hosts (host, tier, note, classified_on) VALUES
   ('china-briefing.com', 'secondary', NULL, '2026-08-22'),
   ('cijuf.org.co', 'secondary', NULL, '2026-08-22'),
   ('cleartax.com', 'secondary', NULL, '2026-08-22'),
-  ('clearvo.io', 'secondary', NULL, '2026-08-22'),
+  ('clearvo.io', 'secondary', NULL, '2026-08-22');
+INSERT INTO source_hosts (host, tier, note, classified_on) VALUES
   ('comarch.com', 'secondary', NULL, '2026-08-22'),
   ('comparateur-efacturation.fr', 'secondary', NULL, '2026-08-22'),
   ('compta-online.com', 'secondary', NULL, '2026-08-22'),
@@ -403,7 +420,8 @@ INSERT INTO source_hosts (host, tier, note, classified_on) VALUES
   ('ey.com', 'secondary', NULL, '2026-08-22'),
   ('facturele.com', 'secondary', NULL, '2026-08-22'),
   ('fakturko.io', 'secondary', NULL, '2026-08-22'),
-  ('fiscal-requirements.com', 'secondary', NULL, '2026-08-22'),
+  ('fiscal-requirements.com', 'secondary', NULL, '2026-08-22');
+INSERT INTO source_hosts (host, tier, note, classified_on) VALUES
   ('fiskaly.com', 'secondary', NULL, '2026-08-22'),
   ('fonoa.com', 'secondary', NULL, '2026-08-22'),
   ('forvismazars.com', 'secondary', NULL, '2026-08-22'),
@@ -428,7 +446,8 @@ INSERT INTO source_hosts (host, tier, note, classified_on) VALUES
   ('jusline.at', 'secondary', NULL, '2026-08-22'),
   ('kpmg.com', 'secondary', NULL, '2026-08-22'),
   ('law.cornell.edu', 'secondary', NULL, '2026-08-22'),
-  ('law.esnai.cn', 'secondary', NULL, '2026-08-22'),
+  ('law.esnai.cn', 'secondary', NULL, '2026-08-22');
+INSERT INTO source_hosts (host, tier, note, classified_on) VALUES
   ('lawphil.net', 'secondary', NULL, '2026-08-22'),
   ('lawspot.gr', 'secondary', NULL, '2026-08-22'),
   ('lexis.com.ec', 'secondary', NULL, '2026-08-22'),
@@ -453,7 +472,8 @@ INSERT INTO source_hosts (host, tier, note, classified_on) VALUES
   ('pro1c.kz', 'secondary', NULL, '2026-08-22'),
   ('pwc.bg', 'secondary', NULL, '2026-08-22'),
   ('pwc.com', 'secondary', NULL, '2026-08-22'),
-  ('pwc.no', 'secondary', NULL, '2026-08-22'),
+  ('pwc.no', 'secondary', NULL, '2026-08-22');
+INSERT INTO source_hosts (host, tier, note, classified_on) VALUES
   ('qoyod.com', 'secondary', NULL, '2026-08-22'),
   ('recommand.eu', 'secondary', NULL, '2026-08-22'),
   ('regfollower.com', 'secondary', NULL, '2026-08-22'),
@@ -478,7 +498,8 @@ INSERT INTO source_hosts (host, tier, note, classified_on) VALUES
   ('theinvoicinghub.com', 'secondary', NULL, '2026-08-22'),
   ('thelemabogados.pe', 'secondary', NULL, '2026-08-22'),
   ('thisdaylive.com', 'secondary', NULL, '2026-08-22'),
-  ('thuvienphapluat.vn', 'secondary', NULL, '2026-08-22'),
+  ('thuvienphapluat.vn', 'secondary', NULL, '2026-08-22');
+INSERT INTO source_hosts (host, tier, note, classified_on) VALUES
   ('ticofactura.cr', 'secondary', NULL, '2026-08-22'),
   ('tmconsulting.co.rs', 'secondary', NULL, '2026-08-22'),
   ('universuljuridic.ro', 'secondary', NULL, '2026-08-22'),
