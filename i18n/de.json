@@ -102,7 +102,8 @@
     "resources": "Ressourcen",
     "subscribe": "Abonnieren",
     "navHelp": "Navigationshilfe",
-    "guides": "Compliance-Leitfäden"
+    "guides": "Compliance-Leitfäden",
+    "methodology": "Methodik"
   },
   "navTips": {
     "label": "So funktioniert diese Seite",
@@ -422,5 +423,59 @@
       "hidden": "{0} frühere Meilensteine stehen im vollständigen Deep Dive.",
       "hiddenOne": "1 früherer Meilenstein steht im vollständigen Deep Dive."
     }
+  },
+  "method": {
+    "ev": {
+      "h": "Bewertete Belege, wo vorhanden",
+      "p1": "Der ROI-Planer bewertet jeden verwendeten Benchmark von A bis D und zeigt die Note neben der Zahl, denn die veröffentlichte Evidenz für Einsparungen durch E-Rechnungen ist weit schwächer, als die kursierenden Zahlen nahelegen. Unsere Prüfung von 47 Quellen fand weltweit keine gemessene Studie zu Kreditorenkosten nach Einführung einer Pflicht."
+    },
+    "eyebrow": "Wie wir entscheiden",
+    "fix": {
+      "cta": "Korrektur senden",
+      "h": "Sagen Sie uns, wenn wir falsch liegen",
+      "p1": "Pflichten verschieben sich, und wir liegen mitunter falsch. Wenn eine Angabe auf dieser Website nicht dem entspricht, was Ihnen vor Ort gesagt wird, hören wir davon lieber als nicht — eine Korrektur mit Quellenangabe ist das Nützlichste, was uns jemand schickt."
+    },
+    "gap": {
+      "h": "Was wir noch nicht tun",
+      "p1": "Wir veröffentlichen keine Note zu jeder Länderaussage. Jede Aussage trägt ihre Quelle und das Prüfdatum, doch ob diese Quelle ein Gesetz oder ein Fachtracker ist, wird noch nicht in einer für Sie darstellbaren Form erfasst. Bis dahin ist diese Seite die ehrliche Beschreibung des von uns angelegten Maßstabs und keine Garantie pro Einzelfakt.",
+      "p2": "Ebenso können wir Ihnen noch nicht zeigen, was ein Sachverhalt früher aussagte. Korrekturen erfolgen in einer versionierten Migrationshistorie, es geht also nichts verloren, doch diese Historie ist von diesen Seiten aus nicht lesbar."
+    },
+    "intro": "Dieser Tracker trifft Aussagen, nach denen Unternehmen handeln. Diese Seite legt dar, was wir von einer Quelle verlangen, was unsere Statusangaben bedeuten, wo wir bewusst strenger sind als andere Tracker und was wir noch nicht leisten.",
+    "iss": {
+      "h": "Ein Status beschreibt die Pflicht zum Ausstellen",
+      "p1": "Das ist die eine Regel, die uns am häufigsten von anderen Trackern abweichen lässt. Verpflichtet zu sein, eine E-Rechnung zu empfangen, ist nicht dasselbe wie verpflichtet zu sein, eine auszustellen — und nur Letzteres ändert, was ein Unternehmen aufbauen muss.",
+      "p2": "Wo also öffentliche Stellen E-Rechnungen annehmen müssen, Lieferanten aber weiter Papier senden dürfen, erfassen wir keine Pflicht und begründen es darunter. Irland, Zypern, Malta und das Vereinigte Königreich werden so gelesen. Wo Lieferanten der öffentlichen Hand elektronisch ausstellen müssen — Deutschland, Dänemark, Schweden — erfassen wir eine aktive Pflicht.",
+      "p3": "Die Empfangspflicht entfällt nie. Sie steht in der Zeile unter dem Status, denn auch ein Unternehmen, das nur empfangen muss, hat etwas vorzubereiten."
+    },
+    "link": {
+      "sources": "Die von uns überwachten Quellen"
+    },
+    "src": {
+      "h": "Was als Quelle gilt",
+      "p1": "Ein Beleg muss die konkrete Aussage stützen, an der er hängt, nicht das allgemeine Thema. Die Startseite einer Steuerbehörde ist keine Quelle für ein Datum, eine Schwelle oder eine Sanktion; die Bekanntmachung, Verordnung oder das Gesetz, die sie festlegen, ist es.",
+      "p2": "Wir bevorzugen den Behörden- oder Gesetzestext gegenüber jeder Zusammenfassung davon. Ist die einzig erreichbare Quelle ein Fachtracker oder eine Beratungsgesellschaft, trägt die Aussage weiterhin diese Quelle statt einer besser aussehenden, und wir behandeln sie als schwächeren Beleg.",
+      "p3": "Dieser Maßstab entstand, nachdem wir unsere eigenen Belege geprüft und festgestellt hatten, dass die meisten ihm nicht genügten. 121 Meilenstein-Quellen und 99 Beitragsquellen wurden daraufhin korrigiert."
+    },
+    "st": {
+      "active": "Derzeit in Kraft für das genannte Segment.",
+      "h": "Was ein Status bedeutet",
+      "lead": "Jede von uns erfasste Rechtsordnung trägt dieselben fünf Angaben: die E-Rechnungspflicht für Geschäfte mit der öffentlichen Hand, zwischen Unternehmen und gegenüber Verbrauchern, die Aufbewahrungsfrist und ob eine digitale Signatur erforderlich ist.",
+      "none": "Keine Pflicht und kein betriebenes freiwilliges System.",
+      "planned": "Verabschiedet und datiert, noch nicht in Kraft. Ohne Datum verwenden wir ihn nicht.",
+      "unknown": "Recherchiert und nicht bestätigbar oder noch nicht recherchiert. Nie geraten.",
+      "voluntary": "Ein tatsächlich betriebenes, freiwilliges System — nicht bloß das Fehlen eines Verbots."
+    },
+    "strict": {
+      "h": "Wo wir bewusst strenger sind",
+      "p1": "Ein Gesetzentwurf ist kein Plan. Wir erfassen eine terminierte Pflicht nur dort, wo ein Rechtsakt verabschiedet und ein Datum festgelegt wurde — ein Land mit einem Vorschlag im Parlament erscheint hier daher ohne Pflicht und auf manchen anderen Trackern als „geplant\".",
+      "p2": "Das führt dazu, dass wir mitunter eine weniger aufregende Antwort veröffentlichen als der Markt. Genau darum geht es. Ein Compliance-Blatt, das eine Pflicht überzeichnet, kostet Leser Budget und Aufmerksamkeit, die sie nicht hätten aufwenden müssen."
+    },
+    "title": "Methodik",
+    "unk": {
+      "count": "Derzeit sind {0} der {1} von uns veröffentlichten Kennzahlen als nicht bestätigt erfasst.",
+      "h": "„Nicht bestätigt\" ist eine Antwort",
+      "p1": "Konnten wir einen Sachverhalt nicht bestätigen, sagen wir das und halten fest, warum. Wir lassen ihn nicht leer und leiten ihn nicht ab, denn eine Leerstelle liest sich als „keine Pflicht\" — eine andere Aussage, und diejenige, die zu einem Bußgeld führt."
+    },
+    "verified": "Umfasst {0} Rechtsordnungen. Letzte erfasste Faktenprüfung {1}."
   }
 }

@@ -102,7 +102,8 @@
     "resources": "Ressources",
     "subscribe": "S'abonner",
     "navHelp": "Aide à la navigation",
-    "guides": "Guides de conformité"
+    "guides": "Guides de conformité",
+    "methodology": "Méthodologie"
   },
   "navTips": {
     "label": "Comment naviguer sur ce site",
@@ -422,5 +423,59 @@
       "hidden": "{0} jalons antérieurs figurent dans le deep dive complet.",
       "hiddenOne": "1 jalon antérieur figure dans le deep dive complet."
     }
+  },
+  "method": {
+    "ev": {
+      "h": "Preuves notées, là où nous en avons",
+      "p1": "Le planificateur de ROI note de A à D chaque référence qu'il utilise et affiche la note à côté du chiffre, car les preuves publiées sur les économies liées à la facturation électronique sont bien plus faibles que ne le laissent croire les chiffres en circulation. Notre examen de 47 sources n'a trouvé, nulle part au monde, aucune étude mesurée du coût des comptes fournisseurs après l'entrée en vigueur d'une obligation."
+    },
+    "eyebrow": "Comment nous décidons",
+    "fix": {
+      "cta": "Envoyer une correction",
+      "h": "Signalez-nous nos erreurs",
+      "p1": "Les obligations évoluent et il nous arrive de nous tromper. Si un fait présenté ici ne correspond pas à ce qu'on vous dit localement, nous préférons le savoir — une correction accompagnée d'une source est ce que l'on peut nous envoyer de plus utile."
+    },
+    "gap": {
+      "h": "Ce que nous ne faisons pas encore",
+      "p1": "Nous ne publions pas de note pour chaque affirmation pays. Chaque affirmation porte sa source et la date de vérification, mais le fait que cette source soit un texte de loi ou un tracker professionnel n'est pas encore consigné sous une forme que nous puissions vous montrer. D'ici là, cette page est la description honnête de la norme que nous appliquons, non une garantie fait par fait.",
+      "p2": "Nous ne pouvons pas non plus vous montrer ce qu'un fait indiquait auparavant. Les corrections sont faites dans un historique de migrations versionné, rien n'est donc perdu, mais cet historique n'est pas consultable depuis ces pages."
+    },
+    "intro": "Ce tracker formule des affirmations sur lesquelles des entreprises s'appuient. Cette page expose ce que nous exigeons d'une source, ce que signifient nos statuts, les points sur lesquels nous sommes délibérément plus stricts que d'autres trackers, et ce que nous ne faisons pas encore.",
+    "iss": {
+      "h": "Un statut décrit l'obligation d'émettre",
+      "p1": "C'est la règle qui nous fait le plus souvent diverger des autres trackers. Être tenu de recevoir une facture électronique n'équivaut pas à être tenu d'en émettre une, et seul le second cas change ce qu'une entreprise doit mettre en place.",
+      "p2": "Ainsi, lorsque les organismes publics doivent accepter les factures électroniques mais que les fournisseurs peuvent encore envoyer du papier, nous indiquons aucune obligation et l'expliquons en dessous. L'Irlande, Chypre, Malte et le Royaume-Uni sont lus ainsi. Lorsque les fournisseurs du secteur public doivent émettre par voie électronique — Allemagne, Danemark, Suède — nous indiquons une obligation en vigueur.",
+      "p3": "L'obligation de réception n'est jamais omise. Elle figure dans la ligne sous le statut, car une entreprise qui doit seulement recevoir a malgré tout quelque chose à préparer."
+    },
+    "link": {
+      "sources": "Les sources que nous surveillons"
+    },
+    "src": {
+      "h": "Ce qui compte comme source",
+      "p1": "Une citation doit étayer l'affirmation précise à laquelle elle est rattachée, et non le sujet en général. La page d'accueil d'une administration fiscale n'est pas une source pour une date, un seuil ou une sanction ; l'avis, la résolution ou le texte qui les fixent l'est.",
+      "p2": "Nous privilégions le texte officiel ou réglementaire sur tout résumé qui en est fait. Lorsque la seule source accessible est un tracker professionnel ou un cabinet de conseil, l'affirmation conserve cette source plutôt qu'une plus flatteuse, et nous la traitons comme une preuve plus faible.",
+      "p3": "Cette exigence a été écrite après avoir audité nos propres citations et constaté que la plupart ne la respectaient pas. 121 sources de jalons et 99 sources d'articles ont été corrigées en conséquence."
+    },
+    "st": {
+      "active": "En vigueur pour le segment indiqué.",
+      "h": "Ce que signifie un statut",
+      "lead": "Chaque juridiction que nous suivons porte les mêmes cinq éléments : l'obligation de facturation électronique pour les transactions avec le secteur public, entre entreprises et vers les consommateurs, la durée d'archivage, et l'exigence ou non d'une signature numérique.",
+      "none": "Aucune obligation et aucun dispositif facultatif en service.",
+      "planned": "Adopté et daté, pas encore en vigueur. Nous ne l'utilisons pas sans date.",
+      "unknown": "Recherché sans confirmation possible, ou pas encore recherché. Jamais une supposition.",
+      "voluntary": "Un dispositif réel, en service et facultatif — pas simplement l'absence d'interdiction."
+    },
+    "strict": {
+      "h": "Où nous sommes délibérément plus stricts",
+      "p1": "Un projet de loi n'est pas un calendrier. Nous n'indiquons une obligation programmée que lorsqu'un texte a été adopté et une date fixée — un pays dont le parlement examine une proposition apparaît donc ici sans obligation, et « prévu » sur certains autres trackers.",
+      "p2": "Il en résulte que nous publions parfois une réponse moins spectaculaire que le marché. C'est précisément l'objectif. Une fiche de conformité qui exagère une obligation coûte au lecteur un budget et une attention qu'il n'avait pas à dépenser."
+    },
+    "title": "Méthodologie",
+    "unk": {
+      "count": "Actuellement, {0} des {1} faits clés que nous publions sont enregistrés comme non confirmés.",
+      "h": "« Non confirmé » est une réponse",
+      "p1": "Lorsque nous n'avons pas pu confirmer un fait, nous le disons et consignons pourquoi. Nous ne laissons pas de vide et nous ne le déduisons pas, car un vide se lit comme « aucune obligation » — une affirmation différente, et celle qui vaut une amende."
+    },
+    "verified": "Couvre {0} juridictions. Dernière vérification enregistrée le {1}."
   }
 }

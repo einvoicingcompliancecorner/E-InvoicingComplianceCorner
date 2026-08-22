@@ -801,6 +801,14 @@ const ROI_PATHS = new Set(["/roi-calculator", "/roi-calculator.html", "/roi", "/
 // flagged, menu-linked route promise things (in-page interception, a frame
 // protocol) that a plain navigation link should not have to keep.
 const GUIDES_PATHS = new Set(["/compliance-guides", "/compliance-guides.html"]);
+
+// ---- methodology --------------------------------------------------------
+//
+// Public, indexable, and deliberately not gated. It is the page a reader
+// goes to when they want to argue with a status, and the one another
+// publication would cite -- neither of which works behind a wall or
+// inside the About modal, which has no URL at all.
+const METHOD_PATHS = new Set(["/methodology", "/methodology.html"]);
 const GUIDE_DOC_PATHS = new Set(["/compliance-guides/guide"]);
 
 // The members subdomain, written once. It appears in four other places
@@ -1228,9 +1236,185 @@ async function savedCountriesFor(request, env) {
  * as the fallback. Same contract guides-render.mjs's makeT() has, so the
  * picker and the document read strings identically.
  */
+// {0}/{1} substitution for text that is escaped afterwards. Named apart
+// from the guides' fill() because that one is used inside HTML templates
+// where the arguments are already escaped; here the whole result goes
+// through escHtml, so this must NOT escape or the page prints &amp;.
+function fillPlain(template, ...args) {
+  return String(template).replace(/\{(\d+)\}/g, (m, i) =>
+    args[Number(i)] === undefined ? m : String(args[Number(i)]));
+}
+
 function subtreeT(strings) {
   return (key, fallback) =>
     (typeof strings[key] === "string" && strings[key]) || fallback;
+}
+
+// THE NUMBERS ON THIS PAGE ARE QUERIED, NOT WRITTEN.
+//
+// A page about evidence standards that prints a stale figure about
+// itself is an argument against itself. This site has also been bitten
+// by exactly that: the jurisdiction count sat at 62 across thirty-odd
+// files for two days in August because it was hand-swept, and
+// tests/jurisdiction-count.mjs exists because of it.
+//
+// So "18 of 350 facts are recorded as not confirmed" is counted at
+// request time. If somebody researches Bahrain tomorrow, the sentence
+// changes by itself.
+async function renderMethodologyPage(request, env) {
+  if (!env.eicc_content) return new Response("Missing D1 binding", { status: 500 });
+  const { lang, shouldSetCookie } = resolveInsightsLang(request);
+  // TWO SUBTREES, and the second is the point of the section it feeds.
+  // The five status words are defined on this page and PRINTED on every
+  // country page and every guide, so they have to be the same strings --
+  // if the page explaining ACTIVE says a different word from the tile
+  // saying ACTIVE, the explanation is worse than none. They live in the
+  // guides subtree because that is where the tiles read them from.
+  const [strings, guideStrings] = await Promise.all([
+    authStrings(env, lang, "method"),
+    authStrings(env, lang, "guides"),
+  ]);
+  const t = subtreeT(strings);
+  const g = subtreeT(guideStrings);
+
+  const row = await env.eicc_content.prepare(`
+    SELECT count(*) AS countries,
+           count(*) * 5 AS facts,
+           sum((b2g_status = 'unknown') + (b2b_status = 'unknown') + (b2c_status = 'unknown')
+             + (archiving_status = 'unknown') + (signature_status = 'unknown')) AS unknowns,
+           max(last_verified) AS latest
+      FROM country_headline_facts`).first();
+  const countries = row?.countries ?? 0;
+  const facts = row?.facts ?? 0;
+  const unknowns = row?.unknowns ?? 0;
+
+  const p = (key, en) => `<p>${escHtml(t(key, en))}</p>`;
+  const h = (key, en) => `<h2>${escHtml(t(key, en))}</h2>`;
+  const status = (word, key, en) =>
+    `<div class="st"><span class="w">${escHtml(word)}</span><span>${escHtml(t(key, en))}</span></div>`;
+
+  const body = `
+  ${h("src.h", "What counts as a source")}
+  ${p("src.p1", "A citation has to substantiate the specific claim it is attached to, not the general topic.")}
+  ${p("src.p2", "We prefer the government or authority text over anyone's summary of it.")}
+  ${p("src.p3", "This standard was written after auditing our own citations.")}
+
+  ${h("unk.h", "“Not confirmed” is an answer")}
+  ${p("unk.p1", "Where we could not confirm a fact, we say so and record why.")}
+  <p class="fig">${escHtml(fillPlain(t("unk.count",
+    "Right now {0} of the {1} headline facts we publish are recorded as not confirmed."),
+    unknowns, facts))}</p>
+
+  ${h("st.h", "What a status means")}
+  ${p("st.lead", "Every jurisdiction we track carries the same five facts.")}
+  <div class="sts">
+    ${status(g("hl.active", "ACTIVE"), "st.active", "In force now for the segment named.")}
+    ${status(g("hl.planned", "PLANNED"), "st.planned", "Enacted and dated, not yet in force.")}
+    ${status(g("hl.voluntary", "VOLUNTARY"), "st.voluntary", "A real, operating, optional scheme.")}
+    ${status(g("hl.none", "NO MANDATE"), "st.none", "No obligation and no operating voluntary scheme.")}
+    ${status(g("hl.unknown", "NOT CONFIRMED"), "st.unknown", "Researched and unconfirmable, or not yet researched.")}
+  </div>
+
+  ${h("iss.h", "A status describes the duty to issue")}
+  ${p("iss.p1", "Being obliged to receive an e-invoice is not the same as being obliged to send one.")}
+  ${p("iss.p2", "Where public bodies must accept but suppliers may still send paper, we record no mandate.")}
+  ${p("iss.p3", "The duty to receive is never dropped.")}
+
+  ${h("strict.h", "Where we are deliberately stricter")}
+  ${p("strict.p1", "A draft bill is not a plan.")}
+  ${p("strict.p2", "The effect is that we sometimes publish a less exciting answer than the market does.")}
+
+  ${h("ev.h", "Graded evidence, where we have it")}
+  ${p("ev.p1", "The ROI planner grades every benchmark it uses from A to D.")}
+
+  ${h("gap.h", "What we do not do yet")}
+  ${p("gap.p1", "We do not publish a grade against each country claim.")}
+  ${p("gap.p2", "We also cannot yet show you what a fact used to say.")}
+
+  ${h("fix.h", "Tell us when we are wrong")}
+  ${p("fix.p1", "Mandates move and we get things wrong.")}
+  <p class="cta"><a href="/feedback.html">${escHtml(t("fix.cta", "Send a correction"))}</a>
+     <a href="/sources">${escHtml(t("link.sources", "The sources we monitor"))}</a></p>
+  <p class="fig">${escHtml(fillPlain(t("verified",
+    "Covering {0} jurisdictions. Last fact-check recorded {1}."), countries, row?.latest || "—"))}</p>`;
+
+  const langLinks = SUPPORTED_LANGS.map((l) =>
+    l === lang ? `<span class="lang-current">${l.toUpperCase()}</span>`
+      : `<a href="/methodology?lang=${l}">${l.toUpperCase()}</a>`).join(" · ");
+
+  const html = `<!DOCTYPE html>
+<html lang="${escHtml(lang)}">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>${escHtml(t("title", "Methodology"))} — The E-Invoicing Compliance Corner</title>
+<meta name="description" content="${escHtml(t("intro", "What we require of a source, what our status words mean, and where we are stricter than other trackers."))}">
+<link rel="canonical" href="https://e-invoicingcompliancecorner.com/methodology">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  /* The same structural contract as /sources: one style block with
+     :root{ and body{ (the tracker's in-page injector rewrites both to
+     :host{), everything inside .wrap, .top-bar first, .langs stripped
+     in-page. */
+  :root{
+    --ink:#0f1a2b; --ink-2:#152238; --line:#2b3c5a;
+    --paper:#efe9db; --text-lo:#f2f0e8; --muted:#93a3c0;
+    --stamp:#b5432f; --live:#3f7d5c; --soon:#c98a3a; --upcoming:#6b7a95;
+  }
+  *{box-sizing:border-box;} html,body{margin:0;padding:0;}
+  body{background:var(--ink); color:var(--text-lo); font-family:'IBM Plex Sans',sans-serif; line-height:1.6;}
+  .display{font-family:'Big Shoulders Display',sans-serif; font-weight:800;}
+  .wrap{max-width:760px; margin:0 auto; padding:0 5vw 70px;}
+  .top-bar{display:flex; justify-content:space-between; align-items:center; padding-top:20px;}
+  .back-link{font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:var(--muted); text-decoration:none;}
+  .back-link:hover{color:var(--paper);}
+  .eyebrow{font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.22em; text-transform:uppercase; color:var(--stamp); margin:30px 0 6px;}
+  h1{font-size:42px; letter-spacing:0.04em; margin:0 0 12px;}
+  h2{font-family:'Big Shoulders Display',sans-serif; font-weight:700; font-size:23px; letter-spacing:.03em;
+     text-transform:uppercase; margin:38px 0 10px; padding-bottom:7px; border-bottom:1px solid var(--line);}
+  p{font-size:15.5px; color:#dfe4ee; margin:0 0 13px;}
+  .intro{font-size:16.5px; color:var(--muted); margin:0 0 8px;}
+  .langs{font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--muted); margin:14px 0 8px;}
+  .langs a{color:var(--muted); text-decoration:none;} .langs a:hover{color:var(--paper);}
+  .lang-current{color:var(--stamp); font-weight:600;}
+  .fig{font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:var(--muted);
+       border-left:2px solid var(--line); padding-left:12px; margin:16px 0 0;}
+  .sts{margin:14px 0 0;}
+  .st{display:grid; grid-template-columns:11.5em 1fr; gap:12px; padding:9px 0; border-bottom:1px solid var(--line);}
+  .st .w{font-family:'IBM Plex Mono',monospace; font-size:11.5px; letter-spacing:.12em;
+         color:var(--paper); padding-top:2px;}
+  .st span:last-child{font-size:14.5px; color:#dfe4ee;}
+  .cta{margin:18px 0 0; display:flex; gap:22px; flex-wrap:wrap;}
+  .cta a{color:var(--paper); font-weight:600; font-size:14.5px; text-decoration:none; border-bottom:1px solid var(--line);}
+  .cta a:hover{color:var(--stamp); border-color:var(--stamp);}
+  @media(max-width:600px){ h1{font-size:30px;} .st{grid-template-columns:1fr; gap:2px;} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top-bar"><a class="back-link" href="/einvoicing-compliance-tracker.html">${
+    escHtml(t("back", "← Back to global tracker"))}</a></div>
+  <p class="eyebrow">${escHtml(t("eyebrow", "How we decide"))}</p>
+  <h1 class="display">${escHtml(t("title", "Methodology"))}</h1>
+  <p class="intro">${escHtml(t("intro", "What we require of a source, and what our status words mean."))}</p>
+  <p class="langs">${langLinks}</p>
+  ${body}
+</div>
+</body>
+</html>`;
+
+  const headers = new Headers({
+    "Content-Type": "text/html; charset=UTF-8",
+    // Indexable and identical for everyone in a language, so it caches
+    // properly -- unlike the guides, there is nothing per-reader here.
+    "Cache-Control": "public, max-age=600",
+  });
+  if (shouldSetCookie) {
+    headers.append("Set-Cookie", `${LANG_COOKIE}=${lang}; Domain=.e-invoicingcompliancecorner.com; Path=/; Max-Age=${LANG_COOKIE_TTL_SECONDS}; SameSite=Lax`);
+  }
+  return new Response(html, { headers });
 }
 
 async function renderComplianceGuidesPicker(request, env) {
@@ -2025,6 +2209,10 @@ export default {
     // Compliance guides — the chooser, then the printable document. Both
     // gated on the session rather than on an env flag; see the note above
     // GUIDES_PATHS for why this one differs from ROI_PUBLIC.
+    if (METHOD_PATHS.has(url.pathname)) {
+      return renderMethodologyPage(request, env);
+    }
+
     if (GUIDES_PATHS.has(url.pathname)) {
       return renderComplianceGuidesPicker(request, env);
     }
