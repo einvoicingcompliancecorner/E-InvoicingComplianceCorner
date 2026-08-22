@@ -14859,7 +14859,7 @@ biggest and touches the email path.
 
 `npm test`: **20 suites**.
 
-### Every cited host has a grade (22 August 2026)
+### Every cited host has a grade (22 August 2026, deployed)
 
 The second recommendation from the outside review, and the one that
 turned an admission on `/methodology` into a column. That page said, in
@@ -14978,3 +14978,77 @@ deploy into a manual repair.
 
 `npm test`: **20 suites**, 33 checks in `methodology` alone. Replay OK
 across **614 files**.
+
+### What a fact used to say (22 August 2026)
+
+The third of the outside review's recommendations, and the last thing
+`/methodology` admitted it could not do. That page has said since the hour
+it went up: "We also cannot yet show you what a fact used to say."
+
+**A record, not a log.** Migration 615 puts the five headline statuses —
+B2G, B2B, B2C, archiving, signature — under `fact_history`, and three
+standing assertions make it structural rather than a courtesy somebody
+remembers:
+
+```
+-- the current value of every fact must equal the newest history row for it
+-- each row's old_value must equal the previous row's new_value
+-- a row that is not the first on record must carry a reason, in four languages
+```
+
+So the record is a **chain**, not a pile of claims, and changing a status
+without recording the change fails the replay. Negative tested three
+ways: mutating a status alone fails the first; inserting a history row
+alone fails all three.
+
+**The seed is real.** 344 facts get one row saying what they say now with
+a NULL `old_value` — nothing earlier is on record. Six get two, because
+six are genuine: migration 611's corrections, the self-contradictions
+`guides-consistency.mjs` found where a country page asserted one thing in
+a tile and the opposite in its own timeline. Canada, Norway, Oman ×3,
+Singapore. The page ships with content instead of an empty table and a
+promise.
+
+**Every `first_recorded` row is dated 22 August 2026, and that date means
+"the day the record begins".** Not the day the fact was first published.
+Those dates could be dug out of migrations 600–608, and they would be
+precise to the day a batch was written rather than to the day anything
+was true. Inventing precision on a page about being careful with claims
+is the wrong trade, and the page tells the reader the same thing.
+
+**`/changes`** — four languages, indexable, in the sitemap, a pop-out
+under Menu beside Methodology. It lists changes, not facts: 350 rows of
+"unchanged" would bury the six that matter, so the query asks only for
+rows with something before them and the figures above the list say how
+much is being watched to produce them. Every status word comes from the
+`guides` subtree — the same strings the tiles print — because a page
+saying "was VOLUNTARY, now ACTIVE" has to use the tile's two words or the
+reader is comparing our prose against our data.
+
+**The two reasons are kept apart and styled apart.** "We were wrong" is
+not "the law moved", only one of them is our fault, and the one that is
+gets the stamp colour rather than the quieter one. All six on the record
+today are ours.
+
+**And `/methodology` had to catch up again** — the second time in one
+day. `method.gap.p2` said we cannot show a fact's past; that became false
+the moment 615 landed, and leaving it one section from the section
+disproving it is the guides defect on the page about being careful.
+Migration 616 rewrites it to the gap that genuinely remains — the record
+covers the five statuses and not milestones, notes or card prose — and
+asserts the old wording is gone in German, French and Spanish too.
+
+**`openMethodology()` became `openDocPopout()`.** There are two of these
+now and a third is plausible; the alternative was a copied-and-renamed
+function, which is how the don't-refetch-unless-the-language-moved rule
+ends up fixed in one pop-out and not the other.
+
+`tests/changes.mjs`, 40 checks, caught two things worth keeping. It
+checks **every value the five status columns can hold** has a word to
+print, not just the three the current six changes exercise — the other
+eleven would render blank and nobody would find out until the change that
+used one. And its own first version compared note text unescaped and
+failed on a German quotation mark, which was a real finding about the
+test before it could hide a real one about the page.
+
+`npm test`: **21 suites**. Replay OK across **616 files**.

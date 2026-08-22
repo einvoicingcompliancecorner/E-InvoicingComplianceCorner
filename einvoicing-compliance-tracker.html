@@ -863,6 +863,14 @@
   </div>
 </div>
 
+<!-- What changed, in the same doc-card, for the same reasons. -->
+<div class="modal-overlay" id="changesOverlay">
+  <div class="modal-card doc-card">
+    <button class="modal-close" id="changesModalClose" aria-label="Close">&times;</button>
+    <iframe id="changesFrame" title="What changed"></iframe>
+  </div>
+</div>
+
 <div class="modal-overlay" id="whitepaperOverlay">
   <div class="modal-card doc-card">
     <button class="modal-close" id="whitepaperModalClose" aria-label="Close">&times;</button>
@@ -1021,6 +1029,7 @@
                /methodology stays a real indexable route, which is what
                lets a reader be sent to it and another site cite it. -->
           <button class="dropdown-item" id="ddMethodology"><span class="dd-icon">⚖️</span><span data-i18n="menu.methodology">Methodology</span></button>
+          <button class="dropdown-item" id="ddChanges"><span class="dd-icon">🕰️</span><span data-i18n="menu.changes">What changed</span></button>
           <!-- Newsletter archive used to be here too -- it now has its
                own live link under Resources, since it's open to
                everyone for free during a temporary promo; see
@@ -2951,6 +2960,10 @@ function wireActionsMenu(){
     close();
     openMethodology();
   });
+  document.getElementById('ddChanges').addEventListener('click', ()=>{
+    close();
+    openChanges();
+  });
 }
 
 // ---------- methodology pop-out ----------
@@ -2966,11 +2979,15 @@ function wireActionsMenu(){
 // inside a dialog on top of the tracker, and the second competes with
 // the site's own language banner. It also marks the framed copy
 // noindex, so the crawlable one at /methodology stays the only one.
-function openMethodology(){
-  const overlay = document.getElementById('methodOverlay');
-  const frame = document.getElementById('methodFrame');
+// ONE FUNCTION FOR BOTH, because there are now two of these and a third
+// is plausible. The version before this was copied and renamed, which is
+// how the language-reset rule ends up fixed in one pop-out and not the
+// other.
+function openDocPopout(overlayId, frameId, route){
+  const overlay = document.getElementById(overlayId);
+  const frame = document.getElementById(frameId);
   const lang = (window.EICC_I18N && window.EICC_I18N.currentLang) || 'en';
-  const src = `/methodology?frame=1&lang=${encodeURIComponent(lang)}`;
+  const src = `${route}?frame=1&lang=${encodeURIComponent(lang)}`;
   // Re-set only when the language moved, so reopening in the same
   // language does not re-fetch.
   if(frame.getAttribute('data-src') !== src){
@@ -2980,9 +2997,12 @@ function openMethodology(){
   overlay.classList.add('open');
 }
 
-function wireMethodologyModal(){
-  const overlay = document.getElementById('methodOverlay');
-  const closeBtn = document.getElementById('methodModalClose');
+function openMethodology(){ openDocPopout('methodOverlay','methodFrame','/methodology'); }
+function openChanges(){ openDocPopout('changesOverlay','changesFrame','/changes'); }
+
+function wireDocPopout(overlayId, closeId){
+  const overlay = document.getElementById(overlayId);
+  const closeBtn = document.getElementById(closeId);
   function close(){ overlay.classList.remove('open'); }
   closeBtn.addEventListener('click', close);
   overlay.addEventListener('click', (e)=>{ if(e.target===overlay) close(); });
@@ -2990,6 +3010,11 @@ function wireMethodologyModal(){
   // comment records the version of this that added a fresh Escape handler
   // every time a modal opened.
   document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') close(); });
+}
+
+function wireMethodologyModal(){
+  wireDocPopout('methodOverlay','methodModalClose');
+  wireDocPopout('changesOverlay','changesModalClose');
 }
 
 // ---------- about modal ----------

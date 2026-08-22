@@ -103,7 +103,8 @@
     "subscribe": "Subscribe",
     "navHelp": "Navigation Help",
     "guides": "Compliance guides",
-    "methodology": "Methodology"
+    "methodology": "Methodology",
+    "changes": "What changed"
   },
   "navTips": {
     "label": "Getting around this site",
@@ -438,7 +439,7 @@
     "gap": {
       "h": "What we do not do yet",
       "p1": "The grade above belongs to the publisher, not to the individual citation. A page on a government domain is graded primary even if it is a blog post there, and a statute reproduced verbatim by a law firm is graded secondary. No citation we hold has needed an exception yet; when one does, it will get one.",
-      "p2": "We also cannot yet show you what a fact used to say. Corrections are made in a versioned migration history, so nothing is lost, but that history is not readable from these pages."
+      "p2": "The record covers the five headline statuses and nothing else. Milestones, the notes under each status and the prose on a country's cards change too, and those changes are not yet kept — they live only in the versioned migration history, where nothing is lost but nothing is readable either."
     },
     "intro": "This tracker makes claims that businesses act on. This page sets out what we require of a source, what our status words mean, where we are deliberately stricter than other trackers, and what we do not yet do.",
     "iss": {
@@ -493,6 +494,41 @@
         "secondary": "SECONDARY",
         "unknown": "UNGRADED"
       }
+    },
+    "hist": {
+      "cta": "See what changed",
+      "h": "What a fact used to say",
+      "p1": "Every change to the five headline statuses is on the record, with what it said before, when it changed and why — and the two reasons are kept apart, because a mandate moving and us having been wrong are not the same thing and only one of them is our fault. A status cannot change without the change being recorded: the build refuses it."
     }
+  },
+  "changes": {
+    "arch": {
+      "years": "A FIXED PERIOD"
+    },
+    "back": "← Back to global tracker",
+    "begins": "The record begins on {0}. It says what a fact has said since that date, not since the fact was first published — these facts were written across the days before, and dating them more precisely than that would be inventing precision. Earlier corrections are in the versioned migration history and are not readable from here.",
+    "count": {
+      "one": "{0} change on the record",
+      "other": "{0} changes on the record"
+    },
+    "eyebrow": "The record",
+    "intro": "Every change to the five headline facts we publish — what it said before, when it changed, and why.",
+    "kind": {
+      "correction": "We were wrong",
+      "moved": "The law moved"
+    },
+    "lbl": {
+      "now": "now",
+      "src": "Source",
+      "was": "was",
+      "why": "Why"
+    },
+    "link": {
+      "fix": "Send a correction",
+      "method": "How we decide"
+    },
+    "none": "Nothing has changed since the record began.",
+    "title": "What changed",
+    "watch": "{0} facts across {1} jurisdictions are on the record. A status cannot change here without the change being recorded — the build refuses it."
   }
 }

@@ -103,7 +103,8 @@
     "subscribe": "S'abonner",
     "navHelp": "Aide à la navigation",
     "guides": "Guides de conformité",
-    "methodology": "Méthodologie"
+    "methodology": "Méthodologie",
+    "changes": "Ce qui a changé"
   },
   "navTips": {
     "label": "Comment naviguer sur ce site",
@@ -438,7 +439,7 @@
     "gap": {
       "h": "Ce que nous ne faisons pas encore",
       "p1": "Le classement ci-dessus porte sur l'éditeur, pas sur la citation individuelle. Une page sur un domaine gouvernemental est classée primaire même s'il s'agit d'un billet de blog, et un texte de loi reproduit mot pour mot par un cabinet est classé secondaire. Aucune de nos citations n'a encore eu besoin d'une exception ; le jour où l'une en aura besoin, elle l'aura.",
-      "p2": "Nous ne pouvons pas non plus vous montrer ce qu'un fait indiquait auparavant. Les corrections sont faites dans un historique de migrations versionné, rien n'est donc perdu, mais cet historique n'est pas consultable depuis ces pages."
+      "p2": "Le relevé couvre les cinq statuts clés et rien d'autre. Les jalons, les notes sous chaque statut et le texte des fiches pays évoluent également, et ces évolutions ne sont pas encore consignées : elles ne figurent que dans l'historique de migrations versionné, où rien n'est perdu mais rien n'est lisible non plus."
     },
     "intro": "Ce tracker formule des affirmations sur lesquelles des entreprises s'appuient. Cette page expose ce que nous exigeons d'une source, ce que signifient nos statuts, les points sur lesquels nous sommes délibérément plus stricts que d'autres trackers, et ce que nous ne faisons pas encore.",
     "iss": {
@@ -493,6 +494,41 @@
         "secondary": "SECONDAIRE",
         "unknown": "NON CLASSÉE"
       }
+    },
+    "hist": {
+      "cta": "Voir ce qui a changé",
+      "h": "Ce qu'un fait indiquait auparavant",
+      "p1": "Chaque modification des cinq statuts clés est consignée, avec ce qui était indiqué avant, la date et le motif — et les deux motifs restent distincts, car une obligation qui bouge et une erreur de notre part ne sont pas la même chose, et une seule nous est imputable. Un statut ne peut pas changer sans que le changement soit consigné : la compilation le refuse."
     }
+  },
+  "changes": {
+    "arch": {
+      "years": "DURÉE FIXE"
+    },
+    "back": "← Retour au tracker mondial",
+    "begins": "Le relevé commence le {0}. Il indique ce qu'un fait énonce depuis cette date, et non depuis sa première publication : ces faits ont été rédigés au cours des jours précédents, et les dater plus précisément reviendrait à inventer une précision. Les corrections antérieures figurent dans l'historique de migrations versionné et ne sont pas consultables ici.",
+    "count": {
+      "one": "{0} modification au relevé",
+      "other": "{0} modifications au relevé"
+    },
+    "eyebrow": "Le relevé",
+    "intro": "Chaque modification des cinq faits clés que nous publions : ce qui était indiqué avant, quand cela a changé, et pourquoi.",
+    "kind": {
+      "correction": "Nous nous étions trompés",
+      "moved": "Le droit a évolué"
+    },
+    "lbl": {
+      "now": "désormais",
+      "src": "Source",
+      "was": "avant",
+      "why": "Pourquoi"
+    },
+    "link": {
+      "fix": "Signaler une correction",
+      "method": "Comment nous décidons"
+    },
+    "none": "Rien n'a changé depuis le début du relevé.",
+    "title": "Ce qui a changé",
+    "watch": "{0} faits couvrant {1} juridictions sont au relevé. Un statut ne peut pas changer ici sans que le changement soit consigné : la compilation le refuse."
   }
 }

@@ -168,8 +168,16 @@ t.check("the Menu dropdown carries a Methodology button",
   /<button class="dropdown-item" id="ddMethodology"/.test(tracker));
 t.check("it opens the pop-out rather than navigating",
   tracker.includes("openMethodology()") && tracker.includes('id="methodOverlay"'));
-t.check("the pop-out loads the framed route",
-  tracker.includes("/methodology?frame=1"),
+// THE ROUTE AND THE ?frame=1 ARE NOW ASSEMBLED SEPARATELY, because there
+// are two of these pop-outs and openDocPopout builds the src for both.
+// So both halves are checked: the caller names the right route, and the
+// shared builder frames it. Checking only the concatenated literal would
+// have started passing vacuously the moment it stopped existing.
+t.check("the pop-out names the methodology route",
+  /openDocPopout\('methodOverlay','methodFrame','\/methodology'\)/.test(tracker),
+  "the modal would load some other page");
+t.check("and the shared builder asks for the framed copy",
+  /openDocPopout\([^)]*\)\{[\s\S]{0,400}?\?frame=1&lang=/.test(tracker),
   "the modal would load the standalone page, whose own back link "
   + "navigates the iframe to a whole tracker inside a dialog");
 t.check("the iframe is not fetched until it is opened",
