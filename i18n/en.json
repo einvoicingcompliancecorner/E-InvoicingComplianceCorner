@@ -369,7 +369,8 @@
         "b2c": "B2C e-invoicing",
         "b2g": "B2G e-invoicing",
         "signature": "Digital signature",
-        "mandate": "E-invoicing mandate"
+        "mandate": "E-invoicing mandate",
+        "ereporting": "E-reporting"
       },
       "none": "NO MANDATE",
       "planned": "PLANNED",
@@ -386,6 +387,20 @@
         "b2b": "B2B",
         "b2c": "B2C",
         "b2g": "B2G"
+      },
+      "er": {
+        "none": "NO MANDATE",
+        "planned": "PLANNED"
+      },
+      "freq": {
+        "annual": "ANNUAL",
+        "daily": "DAILY",
+        "monthly": "MONTHLY",
+        "near_real_time": "NEAR REAL-TIME",
+        "on_request": "ON REQUEST",
+        "quarterly": "QUARTERLY",
+        "real_time": "REAL-TIME",
+        "varies": "VARIES"
       }
     },
     "lbl": {

@@ -49,10 +49,11 @@ const m = await p.evaluate((PP) => [...document.querySelectorAll(".country")].ma
   facts: el.querySelectorAll(".statstrip.hl .seg").length
        + el.querySelectorAll(".statstrip.hl > .hcard").length - 1,
   pages: +(el.getBoundingClientRect().height / PP).toFixed(2) })), PAGE_PX);
-// THE FIVE TILES ARE NOT NEGOTIABLE, so the harness checks them rather than
-// printing them. Dan asked for the same five facts "consistently on each
+// THE SIX TILES ARE NOT NEGOTIABLE, so the harness checks them rather than
+// printing them. Dan asked for the same facts "consistently on each
 // country page"; a fitter that shed one to save 8px would satisfy the
-// one-page rule by breaking the thing the page is for. The fitter's ladder
+// one-page rule by breaking the thing the page is for. Six since
+// 23 August, when e-Reporting joined the strip. The fitter's ladder
 // deliberately has no rung that touches them -- this is what proves it.
 // THREE CARDS, FIVE FACTS. The strip was five cards until 22 August, when
 // Dan asked for the three business segments to be combined ("we should
@@ -82,8 +83,8 @@ if (misplaced.length) {
   process.exitCode = 1;
 }
 
-const shortTiles = m.filter(x => x.cards !== 3 || x.facts !== 5);
-console.log(`headline strip: ${m.length - shortTiles.length}/${m.length} countries show 3 cards carrying all 5 facts`);
+const shortTiles = m.filter(x => x.cards !== 4 || x.facts !== 6);
+console.log(`headline strip: ${m.length - shortTiles.length}/${m.length} countries show 4 cards carrying all 6 facts`);
 if (shortTiles.length) {
   console.log("MALFORMED STRIP: " + shortTiles.map(x => `${x.n} (${x.cards} cards, ${x.facts} facts)`).join(", "));
   process.exitCode = 1;

@@ -369,7 +369,8 @@
         "b2c": "Facturation B2C",
         "b2g": "Facturation B2G",
         "signature": "Signature numérique",
-        "mandate": "Obligation de facturation"
+        "mandate": "Obligation de facturation",
+        "ereporting": "E-reporting"
       },
       "none": "AUCUNE OBLIGATION",
       "planned": "PRÉVU",
@@ -386,6 +387,20 @@
         "b2b": "B2B",
         "b2c": "B2C",
         "b2g": "B2G"
+      },
+      "er": {
+        "none": "AUCUNE OBLIGATION",
+        "planned": "PRÉVU"
+      },
+      "freq": {
+        "annual": "ANNUEL",
+        "daily": "QUOTIDIEN",
+        "monthly": "MENSUEL",
+        "near_real_time": "QUASI TEMPS RÉEL",
+        "on_request": "SUR DEMANDE",
+        "quarterly": "TRIMESTRIEL",
+        "real_time": "TEMPS RÉEL",
+        "varies": "VARIABLE"
       }
     },
     "lbl": {

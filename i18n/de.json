@@ -369,7 +369,8 @@
         "b2c": "B2C-E-Rechnung",
         "b2g": "B2G-E-Rechnung",
         "signature": "Digitale Signatur",
-        "mandate": "E-Rechnungspflicht"
+        "mandate": "E-Rechnungspflicht",
+        "ereporting": "E-Reporting"
       },
       "none": "KEINE PFLICHT",
       "planned": "GEPLANT",
@@ -386,6 +387,20 @@
         "b2b": "B2B",
         "b2c": "B2C",
         "b2g": "B2G"
+      },
+      "er": {
+        "none": "KEINE PFLICHT",
+        "planned": "GEPLANT"
+      },
+      "freq": {
+        "annual": "JÄHRLICH",
+        "daily": "TÄGLICH",
+        "monthly": "MONATLICH",
+        "near_real_time": "NAHEZU ECHTZEIT",
+        "on_request": "AUF ANFRAGE",
+        "quarterly": "QUARTALSWEISE",
+        "real_time": "ECHTZEIT",
+        "varies": "UNTERSCHIEDLICH"
       }
     },
     "lbl": {
