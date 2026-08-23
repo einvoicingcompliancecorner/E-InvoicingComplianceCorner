@@ -15272,7 +15272,7 @@ entry a person adds by hand. The map is now exported and imported.
 `npm test`: **23 suites**, `feature announcement` at 41 checks. Replay OK
 across **619 files**.
 
-### Resetting an announcement (23 August 2026)
+### Resetting an announcement (23 August 2026, deployed)
 
 Dan: "how can I reset the announcement, as its been flagged as sent".
 
@@ -15298,3 +15298,30 @@ only ever touch feature rows, and the suite plants a story row and
 asserts it survives.
 
 `npm test`: **23 suites**, `feature announcement` at 52 checks.
+
+### What ships where — three silent half-deploys in one day
+
+Three times on 22–23 August a change was applied and looked like it had
+not worked, and every time the cause was the same shape: **one artefact
+changed, and the thing that actually serves it was not redeployed.**
+None of the three failed loudly. Each cost a round trip.
+
+| Change | Needs |
+|---|---|
+| A `tracker` / `guides` / `method` / `changes` **string** | migration → D1, **and** `site-worker` deploy (the routes read `i18n/<lang>.json` as a **static asset**, not from D1) |
+| A **renderer's English fallback** | the worker that renders it — a fallback is what a reader gets whenever the i18n lookup comes up empty |
+| **`FEATURE_LINKS`**, the announcement email | `members-worker` deploy |
+| The tracker's **`?view=` routing** | `site-worker` deploy (the tracker is a static asset) |
+| **`features` / `announcements`** rows | migration only — no deploy |
+
+The general rule, which is worth keeping in mind ahead of the specifics:
+**data lives in D1, but almost every string a reader sees is served from a
+deployed asset or from worker code.** Applying a migration alone changes
+what the database holds and, very often, nothing a reader can see.
+
+The costly instance: the announcement email's links were fixed in
+`members-worker`, only `site-worker` was deployed, and the corrected email
+went out twice with the original links before anyone noticed. The
+`?preview=html` route is the cheap check — it renders from the deployed
+worker, so if the preview still shows the old links, the deploy did not
+land and there is no point sending.
