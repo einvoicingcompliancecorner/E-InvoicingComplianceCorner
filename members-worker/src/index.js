@@ -69,6 +69,7 @@ import {
   evaluateCode,
   countsAsAttempt,
 } from "../../shared/auth-code.mjs";
+import { walkSubscribers } from "../../shared/subscriber-walk.mjs";
 
 // Imported, not redeclared. site-worker now reads the same cookie, and a
 // second copy of the name is a second thing to keep in step -- the exact
@@ -607,6 +608,11 @@ export default {
         // waiting for the actual cron schedule — see README for how to call
         // this safely (it's not linked from anywhere in the UI).
         return handleManualNotificationTrigger(request, env);
+      } else if (url.pathname === "/admin/announce-features") {
+        // GET and POST both accepted: a preview is something you open in
+        // a browser, and requiring a POST to LOOK at the email would
+        // push people towards the send path to see it.
+        return handleAnnounceFeaturesTrigger(request, env);
       } else if (request.method === "POST" && url.pathname === "/admin/run-content-monitor") {
         return handleManualContentMonitorTrigger(request, env, ctx);
       } else {
@@ -1439,105 +1445,63 @@ async function sendMonthlyNotifications(env, opts) {
     return;
   }
 
-  // Resume from where a previous truncated run stopped, so the tail of
-  // the subscriber list is not silently skipped.
-  const savedCursor = await env.CONTENT_MONITOR.get(monthlyStateKey(monthKey, "cursor"));
-  let cursor = savedCursor || undefined;
-  let sent = parseInt(await env.CONTENT_MONITOR.get(monthlyStateKey(monthKey, "sent")) || "0", 10) || 0;
-  const sentAtStart = sent;
-  let failed = 0;
-  let ranOutOfTime = false;
-  const runStart = Date.now();
-  if (savedCursor) console.log(`Monthly notification for ${monthKey}: resuming a previous run (${sent} already sent).`);
+  // THE WALK ITSELF LIVES IN shared/subscriber-walk.mjs, and did not
+  // always: a second job needing the same loop (the feature
+  // announcement, 23 August) was the moment to extract it rather than
+  // copy it. The page-boundary budget rule that keeps this from
+  // double-sending is documented there and driven by
+  // tests/subscriber-walk.mjs, which proves it against a deliberately
+  // broken loop as well as this one.
+  const result = await walkSubscribers({
+    list: env.SUBSCRIBERS,
+    getSubscriber: (email) => getSubscriber(env, email),
+    state: env.CONTENT_MONITOR,
+    sleep,
+    log: (msg) => console.log(`Monthly notification for ${monthKey}: ${msg}`),
+  }, {
+    stateKey: (suffix) => monthlyStateKey(monthKey, suffix),
+    timeBudgetMs,
+    pageSize: MONTHLY_LIST_PAGE_SIZE,
+    spacingMs: MONTHLY_SEND_SPACING_MS,
+    send: async (email, sub) => {
+      const followed = sub.countries || [];
+      const matched = followed.length
+        ? monthStories.filter((st) => st.countries.some((c) => followed.includes(c)))
+        : [];
 
-  // The budget is checked at PAGE BOUNDARIES ONLY, never mid-page, and
-  // this is not a rounding convenience — it is a correctness
-  // requirement. A KV list cursor points at the start of a page, so
-  // stopping halfway through one and saving `cursor` would resume at
-  // the top of that same page and re-email everyone already reached in
-  // it. (Caught by a control-flow harness before this shipped: an
-  // earlier draft did exactly that and double-sent 120 of 160
-  // deliveries.) Pages are deliberately small so a boundary comes round
-  // often enough for the checkpoint to be meaningful.
-  do {
-    const list = await env.SUBSCRIBERS.list({ cursor, limit: MONTHLY_LIST_PAGE_SIZE });
-    for (const key of list.keys) {
-      const email = key.name;
-      try {
-        const sub = await getSubscriber(env, email);
-        if (!sub || !sub.active) continue;
-        if (sub.plan === "onetime" && sub.expiresAt && Date.now() > sub.expiresAt) continue;
-        if (sub.notificationsEnabled === false) continue; // explicit opt-out only — default is enabled
-
-        const followed = sub.countries || [];
-        const matched = followed.length
-          ? monthStories.filter((s) => s.countries.some((c) => followed.includes(c)))
-          : [];
-
-        // The genuine upgrade over the old blob-per-month model: this can
-        // now name the actual matching story headlines and link straight
-        // to each, rather than a vague "yes/no, your countries came up."
-        let storiesToShow;
-        let introText;
-        if (followed.length === 0) {
-          storiesToShow = monthStories;
-          introText = "Here's everything published this month:";
-        } else if (matched.length > 0) {
-          storiesToShow = matched;
-          introText = "Here's what came up in your countries this month:";
-        } else {
-          storiesToShow = monthStories;
-          introText = "None of your followed countries came up this month, but here's everything that was published:";
-        }
-
-        const unsubToken = await signToken(env.SESSION_SECRET, { email, purpose: "unsub-notifications" }, 60 * 60 * 24 * 365 * 5); // 5-year effective validity — this link should still work whenever someone gets around to clicking it
-        // Same convenience-link treatment as the welcome email's archive
-        // button (see CONVENIENCE_LINK_TTL_SECONDS): logs the subscriber
-        // in and lands them on the archive, rather than a bare URL that
-        // only works today because of the temporary ARCHIVE_PUBLIC promo.
-        const archiveToken = await signToken(env.SESSION_SECRET, { email, purpose: "login" }, CONVENIENCE_LINK_TTL_SECONDS);
-        const archiveLink = `${env.SITE_URL}/members/verify?token=${encodeURIComponent(archiveToken)}&next=${encodeURIComponent("/members/archive")}`;
-        const ok = await sendMonthlyNotificationEmail(env, email, monthKey, introText, storiesToShow, unsubToken, archiveLink);
-        if (ok === false) failed++; else sent++;
-        // Pace the loop so a large list cannot trip Resend's 10/s cap.
-        await sleep(MONTHLY_SEND_SPACING_MS);
-      } catch (err) {
-        failed++;
-        console.error(`Failed to notify ${email}:`, err);
-        // Deliberately continue to the next subscriber rather than aborting
-        // the whole run over one failure.
+      // The genuine upgrade over the old blob-per-month model: this can
+      // name the actual matching story headlines and link straight to
+      // each, rather than a vague "yes/no, your countries came up."
+      let storiesToShow;
+      let introText;
+      if (followed.length === 0) {
+        storiesToShow = monthStories;
+        introText = "Here's everything published this month:";
+      } else if (matched.length > 0) {
+        storiesToShow = matched;
+        introText = "Here's what came up in your countries this month:";
+      } else {
+        storiesToShow = monthStories;
+        introText = "None of your followed countries came up this month, but here's everything that was published:";
       }
-    }
-    cursor = list.list_complete ? undefined : list.cursor;
-    // Checkpoint every page, not only when stopping — if the run is
-    // hard-killed rather than stopping cleanly, the next one still
-    // resumes from the last completed page instead of the beginning.
-    if (cursor) {
-      await env.CONTENT_MONITOR.put(monthlyStateKey(monthKey, "cursor"), cursor);
-      await env.CONTENT_MONITOR.put(monthlyStateKey(monthKey, "sent"), String(sent));
-      if (Date.now() - runStart > timeBudgetMs) {
-        ranOutOfTime = true;
-        break;
-      }
-    }
-  } while (cursor);
 
-  const completed = !ranOutOfTime;
+      const unsubToken = await signToken(env.SESSION_SECRET, { email, purpose: "unsub-notifications" }, 60 * 60 * 24 * 365 * 5); // 5-year effective validity — this link should still work whenever someone gets around to clicking it
+      // Same convenience-link treatment as the welcome email's archive
+      // button (see CONVENIENCE_LINK_TTL_SECONDS): logs the subscriber
+      // in and lands them on the archive, rather than a bare URL that
+      // only works today because of the temporary ARCHIVE_PUBLIC promo.
+      const archiveToken = await signToken(env.SESSION_SECRET, { email, purpose: "login" }, CONVENIENCE_LINK_TTL_SECONDS);
+      const archiveLink = `${env.SITE_URL}/members/verify?token=${encodeURIComponent(archiveToken)}&next=${encodeURIComponent("/members/archive")}`;
+      return await sendMonthlyNotificationEmail(env, email, monthKey, introText, storiesToShow, unsubToken, archiveLink);
+    },
+  });
+  const { sent, failed, completed } = result;
 
   if (completed) {
-    await env.CONTENT_MONITOR.delete(monthlyStateKey(monthKey, "cursor"));
-    await env.CONTENT_MONITOR.delete(monthlyStateKey(monthKey, "sent"));
     // 70-day TTL: long enough that a re-trigger inside the same month is
     // still blocked, short enough that these markers do not accumulate.
     await env.CONTENT_MONITOR.put(monthlyStateKey(monthKey, "done"), new Date().toISOString(), { expirationTtl: 60 * 60 * 24 * 70 });
     console.log(`Monthly notification run for ${monthKey} COMPLETE — ${sent} sent, ${failed} failed.`);
-  } else {
-    // Persist progress so the next invocation resumes rather than
-    // starting over (which would double-send) or giving up (which would
-    // silently skip the tail of the list).
-    await env.CONTENT_MONITOR.put(monthlyStateKey(monthKey, "cursor"), cursor || "");
-    await env.CONTENT_MONITOR.put(monthlyStateKey(monthKey, "sent"), String(sent));
-    console.log(`Monthly notification run for ${monthKey} TRUNCATED by the ${Math.round(timeBudgetMs / 1000)}s budget — ${sent} sent so far (${sent - sentAtStart} this pass), ${failed} failed. Cursor saved; re-trigger to continue.`);
   }
 
   // Record what subscribers were actually told about, so the weekly
@@ -1554,6 +1518,277 @@ async function sendMonthlyNotifications(env, opts) {
   if (completed && sent > 0) {
     await recordAnnouncements(env, "story", monthStories.map((s) => s.id), "newsletter", `monthly notification, ${monthKey}, ${sent} recipient(s)`);
   }
+}
+
+// ================================================================
+// FEATURE ANNOUNCEMENTS — telling subscribers what has been built
+// ================================================================
+//
+// Dan, 22 August 2026: "I'd like to add an email alert for new content
+// and functionality, which has not been announced to subscribers."
+//
+// The bookkeeping already existed and had never been used: `features`
+// lists what shipped, `announcements` records what has been said and
+// where, and the weekly digest has always had a "published, not yet
+// announced" section nagging about it. This is the job that acts on it.
+//
+// ---- IT DECIDES NOTHING ABOUT WHAT IS NEW ---------------------------
+//
+// The set of things to announce is a query, not a list somebody keeps:
+// every feature with no row in `announcements` for this channel. So
+// shipping a feature and adding its row is the whole of the work, and
+// this job stays correct without being edited. Run it again next month
+// and it announces whatever has appeared since, or sends nothing.
+//
+// ---- AND IT WILL NOT SEND BY ACCIDENT -------------------------------
+//
+// There is no cron for this and there deliberately is not going to be
+// one. A monthly digest firing itself is fine because its content is
+// this month's stories either way; an announcement email is a piece of
+// writing somebody should read before it reaches a subscriber list.
+// So: the admin route dry-runs by DEFAULT and needs an explicit
+// confirm=SEND to do anything, and ?to= exists so the first real send
+// can go to one address that belongs to us.
+const ANNOUNCE_CHANNEL = "newsletter";
+const ANNOUNCE_TIME_BUDGET_MS = 600000;
+const ANNOUNCE_MANUAL_BUDGET_MS = 20000;
+
+// Same reasoning as monthlyStateKey: NOT in the SUBSCRIBERS namespace,
+// whose every key name is treated as an email address by the walk.
+const announceStateKey = (batch, suffix) => `announce:${batch}:${suffix}`;
+
+/**
+ * Everything shipped that subscribers have not been told about.
+ *
+ * Ordered oldest first, so the email reads as a chronology rather than
+ * an unranked dump — and so the reader meets the thing they have been
+ * missing longest at the top.
+ */
+async function getUnannouncedFeatures(env, channel = ANNOUNCE_CHANNEL) {
+  return d1All(env, `
+    SELECT f.id, f.slug, f.title, f.description, f.shipped_at
+      FROM features f
+     WHERE NOT EXISTS (
+       SELECT 1 FROM announcements a
+        WHERE a.item_type = 'feature'
+          AND a.item_id = CAST(f.id AS TEXT)
+          AND a.channel = ?1)
+     ORDER BY f.shipped_at ASC, f.id ASC`, channel);
+}
+
+const FEATURE_LINKS = {
+  "the-map": "/map",
+  "archive-country-filter": "/members/archive",
+  "insights-and-whitepapers": "/insights",
+  "tracker-due-soon-default": "/einvoicing-compliance-tracker.html",
+  "roi-wave-planner": "/roi-calculator",
+  "compliance-guides": "/compliance-guides",
+  "methodology": "/methodology",
+  "change-record": "/changes",
+};
+
+function announcementSubject(features) {
+  if (features.length === 1) return `New on The E-Invoicing Compliance Corner: ${stripTags(features[0].title)}`;
+  return `${features.length} things we have added to The E-Invoicing Compliance Corner`;
+}
+
+function stripTags(s) {
+  return String(s == null ? "" : s).replace(/<[^>]*>/g, "");
+}
+
+/**
+ * The email. One block per feature: what it is, when it shipped, and a
+ * link straight to it.
+ *
+ * EVERY VALUE IS ESCAPED, and migration 618 exists because one of them
+ * was already stored pre-escaped and would have gone out reading
+ * "ROI &amp;amp; Wave Planner". Data holds text; this escapes it.
+ */
+function buildFeatureAnnouncementHtml(features, unsubLink) {
+  const site = "https://e-invoicingcompliancecorner.com";
+
+  const blocks = features.map((f) => {
+    const path = FEATURE_LINKS[f.slug];
+    // DAY PRECISION, NOT MONTH. Everything in the first send shipped in
+    // the same month, and eight repetitions of "AUGUST 2026" is a column
+    // of identical text carrying no information. The day tells a reader
+    // which of these is newest, which is the only thing the date is
+    // there to do.
+    const shipped = new Date(f.shipped_at + "T00:00:00Z")
+      .toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
+    const link = path
+      ? `<p style="margin:8px 0 0;"><a href="${escapeHtml(site + path)}" style="color:#b5432f; font-family:'Courier New',Courier,monospace; font-size:12.5px; text-decoration:underline;">Open it →</a></p>`
+      : "";
+    return `
+      <tr>
+        <td style="padding:0 0 20px;">
+          <p style="margin:0 0 3px; font-family:'Courier New',Courier,monospace; font-size:10.5px; letter-spacing:1px; text-transform:uppercase; color:#8a7d5a;">${escapeHtml(shipped)}</p>
+          <h2 style="margin:0 0 6px; font-size:17px; line-height:1.3; color:#241d10; font-family:Georgia,'Times New Roman',serif;">${escapeHtml(stripTags(f.title))}</h2>
+          <p style="margin:0; font-size:14px; line-height:1.55; color:#4a4030;">${escapeHtml(stripTags(f.description))}</p>
+          ${link}
+        </td>
+      </tr>`;
+  }).join("");
+
+  const lede = features.length === 1
+    ? "Something new on the site since you last heard from us:"
+    : "A few things have been added to the site since you last heard from us:";
+
+  const body = `
+    <p style="margin:0 0 6px; font-family:'Courier New',Courier,monospace; font-size:11px; text-transform:uppercase; letter-spacing:1px; color:#c98a3a;">What we have built</p>
+    <h1 style="margin:0 0 16px; font-size:21px; line-height:1.3; color:#241d10; font-family:Georgia,'Times New Roman',serif;">${escapeHtml(lede)}</h1>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0">${blocks}</table>
+    <table role="presentation" cellpadding="0" cellspacing="0" style="margin-top:6px;">
+      <tr>
+        <td style="background-color:#b5432f; border-radius:6px;">
+          <a href="${escapeHtml(site + "/einvoicing-compliance-tracker.html")}" style="display:inline-block; padding:12px 22px; font-family:'Courier New',Courier,monospace; font-size:13px; font-weight:bold; color:#ffffff; text-decoration:none;">Go to the tracker →</a>
+        </td>
+      </tr>
+    </table>`;
+
+  const footer = `
+    <p style="margin:0; font-size:11.5px; color:#8a7d5a; line-height:1.5;">
+      You're receiving this because you have an active subscription to The E-Invoicing Compliance Corner.
+      <a href="${unsubLink}" style="color:#8a7d5a;">Stop these notification emails</a> — this won't cancel your subscription, and you'll still be able to log in and read every issue any time.
+    </p>`;
+
+  return buildEmailShell(body, footer, buildBoldMastheadHtml());
+}
+
+/**
+ * Send it. Separate from the builder above so ?preview=html renders the
+ * REAL email rather than a second copy of it written for looking at --
+ * a preview of something else is worse than no preview.
+ */
+async function sendFeatureAnnouncementEmail(env, email, features, unsubToken) {
+  const unsubLink = `${env.SITE_URL}/members/unsubscribe-notifications?token=${encodeURIComponent(unsubToken)}`;
+  return await sendViaResend(env, {
+    from: env.FROM_EMAIL,
+    to: email,
+    subject: announcementSubject(features),
+    html: buildFeatureAnnouncementHtml(features, unsubLink),
+  });
+}
+
+/**
+ * The run.
+ *
+ * @param {object} opts
+ * @param {boolean} opts.dryRun   render and count, send nothing. DEFAULT.
+ * @param {string}  opts.onlyTo   send one copy to this address and record
+ *                                nothing — the way a first send is checked.
+ */
+async function sendFeatureAnnouncements(env, opts = {}) {
+  const features = await getUnannouncedFeatures(env);
+  if (features.length === 0) {
+    return { features: [], sent: 0, failed: 0, completed: true,
+      note: "Nothing to announce — every feature already has an announcement on this channel." };
+  }
+  // The batch key is the set of features being announced, so a resumed
+  // run continues the SAME send and a different set starts its own.
+  const batch = features.map((f) => f.id).join("-");
+
+  if (opts.dryRun) {
+    return { features, sent: 0, failed: 0, completed: false, dryRun: true,
+      note: "Dry run — nothing was sent." };
+  }
+
+  if (opts.onlyTo) {
+    const token = await signToken(env.SESSION_SECRET, { email: opts.onlyTo, purpose: "unsub-notifications" }, 60 * 60 * 24 * 365 * 5);
+    const ok = await sendFeatureAnnouncementEmail(env, opts.onlyTo, features, token);
+    // NOT RECORDED. A test send is not an announcement, and recording it
+    // would mark the whole list as told because one of us read it.
+    return { features, sent: ok ? 1 : 0, failed: ok ? 0 : 1, completed: false, testOnly: true,
+      note: `Test send to ${opts.onlyTo}. Nothing recorded — the features are still unannounced.` };
+  }
+
+  const done = await env.CONTENT_MONITOR.get(announceStateKey(batch, "done"));
+  if (done && !opts.force) {
+    return { features, sent: 0, failed: 0, completed: true,
+      note: `This exact set was already announced on ${done}. Pass force=1 to send it again.` };
+  }
+
+  const result = await walkSubscribers({
+    list: env.SUBSCRIBERS,
+    getSubscriber: (email) => getSubscriber(env, email),
+    state: env.CONTENT_MONITOR,
+    sleep,
+    log: (msg) => console.log(`Feature announcement ${batch}: ${msg}`),
+  }, {
+    stateKey: (suffix) => announceStateKey(batch, suffix),
+    timeBudgetMs: opts.timeBudgetMs || ANNOUNCE_TIME_BUDGET_MS,
+    pageSize: MONTHLY_LIST_PAGE_SIZE,
+    spacingMs: MONTHLY_SEND_SPACING_MS,
+    send: async (email) => {
+      const token = await signToken(env.SESSION_SECRET, { email, purpose: "unsub-notifications" }, 60 * 60 * 24 * 365 * 5);
+      return await sendFeatureAnnouncementEmail(env, email, features, token);
+    },
+  });
+
+  // RECORDED ONLY ON A COMPLETED RUN, and only if somebody actually
+  // received it. Same reasoning the monthly job carries: a truncated run
+  // that marked everything announced would leave most of the list never
+  // told and nothing to say so. Under-recording re-sends; over-recording
+  // is a silent gap.
+  if (result.completed && result.sent > 0) {
+    await env.CONTENT_MONITOR.put(announceStateKey(batch, "done"), new Date().toISOString(),
+      { expirationTtl: 60 * 60 * 24 * 400 });
+    await recordAnnouncements(env, "feature", features.map((f) => f.id), ANNOUNCE_CHANNEL,
+      `feature announcement, ${result.sent} recipient(s)`);
+  }
+  return { features, ...result };
+}
+
+async function handleAnnounceFeaturesTrigger(request, env) {
+  const provided = request.headers.get("X-Admin-Secret");
+  if (!provided || provided !== env.SESSION_SECRET) {
+    return new Response("Unauthorized", { status: 401 });
+  }
+  const url = new URL(request.url);
+  const onlyTo = url.searchParams.get("to") || "";
+  // DRY BY DEFAULT. Reaching a subscriber list is not undoable, so the
+  // easy thing this route does is describe what it would do.
+  const confirmed = url.searchParams.get("confirm") === "SEND";
+  const preview = url.searchParams.get("preview") === "html";
+
+  const features = await getUnannouncedFeatures(env);
+
+  if (preview) {
+    if (features.length === 0) {
+      return new Response("Nothing to announce — every feature already has an announcement on this channel.",
+        { headers: { "Content-Type": "text/plain; charset=UTF-8" } });
+    }
+    // THE REAL EMAIL, from the same builder the send uses. The
+    // unsubscribe link is deliberately a dead "#": a preview URL that
+    // could sign somebody out if it were forwarded is a preview with a
+    // side effect.
+    return new Response(
+      `<!-- subject: ${escapeHtml(announcementSubject(features))} -->\n`
+      + buildFeatureAnnouncementHtml(features, "#"),
+      { headers: { "Content-Type": "text/html; charset=UTF-8" } });
+  }
+
+  const result = await sendFeatureAnnouncements(env, {
+    dryRun: !confirmed && !onlyTo,
+    onlyTo: confirmed ? "" : onlyTo,
+    timeBudgetMs: ANNOUNCE_MANUAL_BUDGET_MS,
+    force: url.searchParams.get("force") === "1",
+  });
+
+  const list = result.features.map((f) => `  - [${f.shipped_at}] ${stripTags(f.title)}`).join("\n");
+  const lines = [
+    `Unannounced features: ${result.features.length}`,
+    list,
+    "",
+    result.note || `sent ${result.sent}, failed ${result.failed}, completed ${result.completed}`,
+    "",
+    "  ?preview=html     render the email in your browser, send nothing",
+    "  ?to=you@x.com     send one real copy to that address, record nothing",
+    "  ?confirm=SEND     send to every active subscriber and record it",
+    "",
+    "A manual run sends a ~20 second slice and saves a cursor; call it again to continue.",
+  ];
+  return new Response(lines.join("\n"), { status: 200, headers: { "Content-Type": "text/plain; charset=UTF-8" } });
 }
 
 function currentMonthKey() {
