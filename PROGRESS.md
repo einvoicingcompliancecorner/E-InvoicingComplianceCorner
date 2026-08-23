@@ -15053,7 +15053,7 @@ test before it could hide a real one about the page.
 
 `npm test`: **21 suites**. Replay OK across **616 files**.
 
-### The change log stops calling itself incompetent (22 August 2026)
+### The change log stops calling itself incompetent (22 August 2026, deployed)
 
 Dan, an hour after it shipped: "Given that we currently have no
 subscribers, I'd like to avoid statements like 'We were wrong' in the
@@ -15098,5 +15098,18 @@ appears, or one that never leaves.
 **5.97:1**. Toning it down and fixing the contrast turned out to be the
 same edit.
 
-`npm test`: **21 suites**, `changes` now 49 checks. Replay OK across
+**And the fallback still said it.** The label changed in D1 and in
+`i18n/*.json`; the renderer's own hardcoded English default did not, so it
+still read "We were wrong" — and a fallback is what a reader gets whenever
+the i18n lookup comes up empty, which is exactly the moment nobody is
+watching. Every other fallback on that page is a shortened form of its
+translation, which is fine; one that *contradicts* its translation is not.
+`tests/changes.mjs` now refuses the phrase anywhere outside a comment in
+the worker or the tracker, negative-tested by putting it back.
+
+Worth carrying forward: **a string change is not one edit, it is three** —
+the migration, `i18n/*.json`, and any hardcoded fallback in the renderer —
+and only the third is invisible to every other check.
+
+`npm test`: **21 suites**, `changes` now 50 checks. Replay OK across
 **617 files**.
