@@ -15326,7 +15326,7 @@ went out twice with the original links before anyone noticed. The
 worker, so if the preview still shows the old links, the deploy did not
 land and there is no point sending.
 
-### The ten weak-sourced countries (23 August 2026)
+### The ten weak-sourced countries (23 August 2026, deployed)
 
 Dan: "Please can you address the 10 weak-sourced countries."
 
