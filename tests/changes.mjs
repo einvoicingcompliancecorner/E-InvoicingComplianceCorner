@@ -153,8 +153,14 @@ t.check("no change is on the page without a reason", unexplained.length === 0,
 // failed on a German note containing a quotation mark — which was a real
 // finding about the test, and would have hidden a real finding about the
 // page the day one mattered.
+// MIRRORS site-worker's escHtml EXACTLY, apostrophes included: it does
+// NOT escape them, and an earlier version of this helper did. A note
+// containing both an apostrophe and a quotation mark then matched
+// neither the raw nor the escaped form, and the check failed on a
+// correctly rendered page. A test's model of the escaper has to be the
+// escaper.
 const esc = (x) => String(x).replace(/&/g, "&amp;").replace(/</g, "&lt;")
-  .replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 const shows = (page, text) => page.includes(text) || page.includes(esc(text));
 {
   const notes = await q("SELECT note FROM fact_history_notes WHERE lang = 'en'");

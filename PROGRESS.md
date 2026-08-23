@@ -15326,7 +15326,7 @@ went out twice with the original links before anyone noticed. The
 worker, so if the preview still shows the old links, the deploy did not
 land and there is no point sending.
 
-### The ten weak-sourced countries (23 August 2026)
+### The ten weak-sourced countries (23 August 2026, deployed)
 
 Dan: "Please can you address the 10 weak-sourced countries."
 
@@ -15414,3 +15414,60 @@ testing the fixture, so it now computes the same condition the renderer
 does.
 
 `npm test`: **23 suites**. Replay OK across **620 files**.
+
+### Canada: a channel is not a mandate, and 611 counted instead of reading (23 Aug 2026)
+
+Dan, having opened the primary source himself: "CanadaBuys is a public
+procurement portal, based on SAP Ariba. This seems different from a B2G
+mandate for invoicing. I would say that this is voluntary... There is
+very little information under the invoicing instructions for CanadaBuys,
+which also makes me think its optional."
+
+Right — and **the evidence was on our own page the whole time.**
+
+**What migration 611 actually got wrong is the method.** It moved
+Canada's B2G from `voluntary` to `active` on the reasoning "three of our
+own artefacts said the mandate was in force ... three artefacts against
+one." That is counting, not reading. Open the three and they say the
+opposite:
+
+> "What CRA actually requires — Format: **any readable format** — paper,
+> PDF, or EDI"
+> "For federal government suppliers — **Preferred** standards: Peppol BIS
+> or UBL-XML"
+> "No penalties, no format law"
+
+A page that accepts paper, calls a format *preferred*, and records no
+penalty is not describing a mandate. Only a milestone **headline** and a
+card **title** said otherwise, and those were the two artefacts that
+needed fixing rather than deferring to.
+
+**The lesson is bigger than the fix.** A self-contradiction check that
+resolves ties by weight of artefacts will confidently pick the wrong side
+whenever the error is in a heading. `guides-consistency.mjs` can find a
+disagreement; it cannot referee one. This is the evidence that a human
+must — and the human who settled it did so by reading a page our fetcher
+is blocked from, which is a *stronger* provenance than most rows here,
+not a weaker one.
+
+Migration 621 reverts the status, drops the date (1 Apr 2022 was the
+CanadaBuys launch — a portal opening, not a duty starting), and corrects
+the milestone and the card in all four languages, with standing
+assertions that neither can claim a mandate again. The correction of the
+correction is on `/changes`, which is exactly what that page is for.
+
+**Canada now rests entirely on Canadian government sources** — the last
+headline fact anywhere outside Korea and Vietnam that cited a tracker.
+Site-wide primary citations: 620 → 622.
+
+**The compliance guide needed no separate change.** It renders from D1,
+so the tile, the note, the milestone and the card all followed on their
+own — checked by rendering Canada's guide bundle after the migration.
+
+One test was corrected: `changes.mjs` modelled the escaper with
+apostrophe escaping that `escHtml` does not do, so a note containing both
+an apostrophe and a quotation mark matched neither the raw nor the
+escaped form and failed on a correctly rendered page. A test's model of
+the escaper has to be the escaper.
+
+`npm test`: **23 suites**. Replay OK across **621 files**.
