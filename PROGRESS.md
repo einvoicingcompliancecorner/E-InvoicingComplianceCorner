@@ -15655,7 +15655,7 @@ partial apply is `apply_migrations.py --remote --assert-only`, which
 re-runs the standing invariants — including 624's four-languages-or-none
 — against the live database.
 
-### "we seem to show united states as active B2G also. is this correct?" (23 Aug 2026)
+### "we seem to show united states as active B2G also. is this correct?" (23 Aug 2026, deployed)
 
 Yes — and checking why found that the front-page map and the guide tiles
 had been running on two different definitions of "mandate" for six
@@ -15771,3 +15771,11 @@ it *still disagrees*, so a stale exemption fails rather than quietly
 excusing the next real defect.
 
 `npm test`: **25 suites**. Replay OK across **625 files**, 575 assertions.
+
+**Migration-apply only.** The map computes its status from D1 at request
+time in `shared/map-data.mjs`, so the nine colour changes needed no
+`wrangler deploy` — which also means the front page changed the moment
+the migration landed, without any asset being republished. Worth a look
+at the map itself: this is the largest single change to what it shows
+since it was built, and nothing about a colour being wrong would fail a
+test that the tiles now agree with it.
