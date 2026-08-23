@@ -15654,3 +15654,120 @@ in an asset or in worker code. The post-deploy check that would catch a
 partial apply is `apply_migrations.py --remote --assert-only`, which
 re-runs the standing invariants — including 624's four-languages-or-none
 — against the live database.
+
+### "we seem to show united states as active B2G also. is this correct?" (23 Aug 2026)
+
+Yes — and checking why found that the front-page map and the guide tiles
+had been running on two different definitions of "mandate" for six
+months.
+
+**The answer first.** ACTIVE stands. The US duty is real, statutory and
+old: 10 U.S.C. 4601 (enacted as 2227 on 30 October 2000) directs the
+Secretary of Defense to require electronic claims, and DFARS clause
+252.232-7003 — created by the interim rule at 68 FR 8455, effective
+1 March 2003 — puts it in the contract: *the Contractor shall submit
+payment requests in electronic form*. The 2018 revision hardened the
+channel to WAWF only, with facsimile, email and scans expressly
+unacceptable. DoD is ~59% of federal contract obligations; Treasury, VA
+and EPA each did the same for themselves; GSA pointedly did not.
+
+**This is nothing like Canada.** Canada had a portal that obliged nobody.
+The US has a clause that says *shall*, backed by a statute. It is partial
+— agency by agency, no FAR-wide rule — but partial B2G actives are
+already the house convention: Germany is federal-only, the Netherlands
+central-only, Norway and Greece and India above a threshold.
+
+**But the page's own account of it was wrong.** Every other US artefact
+told an IPP story. The board carried `us-federal-b2g`, dated 2018,
+sourced to OMB Memorandum M-15-19 — which directs *agencies* to be able
+to invoice electronically and imposes nothing on a supplier. The card
+said "if you sell to a federal agency, you're dealing with IPP"; IPP is a
+platform, and Treasury's own pages describe availability, never
+compulsion. DFARS, the instrument the tile is actually sourced to,
+appeared nowhere on the page.
+
+So **the tile and the milestone agreed, and the agreement was a
+coincidence** — one was right about a duty the other had never heard of.
+`guides-consistency.mjs` is built to find disagreement and is therefore
+blind to two artefacts being wrong in a way that happens to match.
+
+#### The larger finding: two vocabularies
+
+The map paints the US "No mandate confirmed" while its own tile says
+ACTIVE. Checking the other sixty-nine found four more, and the cause is
+not sloppy rows. **Migration 254 defines `mandate_scope`'s `'b2b'` as
+covering a mandate "requiring structured e-invoicing between businesses
+(issuing and/or receiving)".** Migrations 600–601, six months later,
+established the rule the whole headline-fact table rests on — a status
+describes the duty to ISSUE. Nobody went back to 254.
+
+The result was on the front page: the map's legend says "In force — real,
+binding B2B mandate today", and **Germany was coloured that way on the
+strength of a milestone titled "Mandatory receipt of structured
+e-invoices".** Germany's issuing mandate starts in 2027.
+
+Migration 625 adopts the issuing rule for `mandate_scope`, moves sixteen
+board rows, and changes nine countries' colour:
+
+| | was | now | why |
+| --- | --- | --- | --- |
+| Germany | in force | upcoming | receipt 2025, issuing 2027 |
+| Denmark | in force | B2G only | Bookkeeping Act is a capability rule |
+| Estonia | in force | B2G only | a buyer may demand; a seller need not offer |
+| Australia | B2G only | no mandate | agencies receive; suppliers need not send |
+| Bulgaria | B2G only | no mandate | ditto |
+| Cyprus | B2G only | no mandate | ditto |
+| Malta | B2G only | no mandate | ditto |
+| New Zealand | B2G only | no mandate | ditto — until 1 Jan 2027 |
+| United States | no mandate | B2G only | DFARS, since 2003 |
+
+New Zealand shows the model working: `nz-largesupplier` is a genuine
+supplier issuing duty dated 1 January 2027, so it turns B2G-only again on
+that date with no migration at all.
+
+`on_tracker = 0` rows are deliberately left on the old vocabulary. 255's
+own header records that only board rows were ever individually reviewed,
+nothing reads the others, and re-auditing 300 context entries is a
+separate job with separate risks.
+
+#### Iceland did not survive the same check
+
+Applying the rule to Iceland found an ACTIVE B2G tile whose note cited
+`reglugerð 44/2019` — which, read directly, obliges nobody to issue. Its
+1. gr. states the aim is *"að tryggja að opinberir aðilar taki við
+rafrænum reikningi"* (that public bodies **receive**), and 4. gr. binds
+*kaupendur* — buyers. Iceland did not go beyond Directive 2014/55/EU, and
+the tile's only source was a vendor blog.
+
+**The duty is real and it is somewhere else.** The State's general terms
+of business, which a supplier *"telst hafa undirgengist"* — is deemed to
+have accepted — on taking a state order unless otherwise agreed, require
+TS-236 through a message broker and say *"Reikningi á pappír verður
+hafnað"*: a paper invoice will be refused. A PDF is not an electronic
+invoice. So the status stands and the reasoning changes — the same shape
+as the US, and still not Canada. The date stays 1 January 2020 because
+that is when Fjársýslan began returning paper, which the note now says.
+
+#### A lexical invariant was drafted and deliberately removed
+
+625 first asserted that no board milestone scoped `b2b` or `b2g_only` may
+say "must receive" in its title. It failed on three rows and only one was
+a defect: Ireland's *"large corporates must issue e-invoices; all
+businesses must receive"* is a correct title for a real mandate, and
+Slovenia's was a bad title over correct data (fixed by rewriting the
+title). **One catch in three is the ratio that gets a check switched
+off** — the argument render-lint.mjs already makes in this repository.
+
+`tests/map-tiles-agree.mjs` is the structural half and reads no prose at
+all: it computes the map status for all seventy and asks whether it can
+be true alongside the tiles. It cannot be fooled by phrasing, and it
+catches the failure that actually happens — `mandate_scope` defaults to
+`'b2b'` in the schema, so a new milestone inherits that silently. Both
+failure paths were negative-tested.
+
+Spain and Taiwan still disagree and are **named in the file** with their
+reasons, not silently skipped — and each carries its own assertion that
+it *still disagrees*, so a stale exemption fails rather than quietly
+excusing the next real defect.
+
+`npm test`: **25 suites**. Replay OK across **625 files**, 575 assertions.

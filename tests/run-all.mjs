@@ -53,6 +53,10 @@ const SUITES = [
   { name: "ROI gate", cmd: "node", args: [join(HERE, "roi-gate.mjs")], cwd: REPO },
   { name: "compliance guides routes", cmd: "node", args: [join(HERE, "guides-routes.mjs")], cwd: REPO },
   { name: "guides consistency", cmd: "node", args: [join(HERE, "guides-consistency.mjs")], cwd: REPO },
+  // The front-page map against the same tiles. guides-consistency asks
+  // whether a country PAGE contradicts itself; this asks whether the map
+  // and the page contradict each other, which nothing did until 625.
+  { name: "map and tiles agree", cmd: "node", args: [join(HERE, "map-tiles-agree.mjs")], cwd: REPO },
   // The same page in the three languages guides-consistency cannot read.
   // Migration 624 put 1,050 sentences in the headline strip that every
   // other lexical check in this directory is blind to.
