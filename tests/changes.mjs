@@ -305,14 +305,26 @@ for (const lang of ["en", "es", "de", "fr"]) {
     en.changes.kind.correction !== en.changes.kind.moved,
     "the two reasons a fact changes now read identically");
 
-  t.check("the opening note is shown while every change is from day one",
-    html.includes(en.changes.opened),
-    "the six read as corrections to facts someone relied on, with no "
-    + "indication they came from reconciling our own data before anyone read it");
+  // THE RULE, NOT YESTERDAY'S DATA. This first read "the opening note is
+  // shown", which was true only while every change on the record came
+  // from the day it opened. Migration 620 added four dated later and the
+  // check failed — correctly, because the line had withdrawn itself
+  // exactly as designed. A test that has to be edited every time the
+  // feature works is testing the fixture, so it now computes the same
+  // condition the renderer does.
+  const opened = (await q("SELECT min(changed_on) AS b FROM fact_history"))[0].b;
+  const allFromOpening = changes.length > 0 && changes.every((c) => c.changed_on === opened);
+  t.check(`the opening note follows the rule (all from ${opened}: ${allFromOpening})`,
+    html.includes(en.changes.opened) === allFromOpening,
+    allFromOpening
+      ? "every change is from the day the record opened and the note is missing — "
+        + "they read as corrections to facts someone relied on"
+      : "changes now exist from after the record opened, so the note describes "
+        + "entries it no longer covers and must not be printed");
 
   // AND IT GOES. A change dated after the record opened makes the
   // sentence false, so it has to stop being printed.
-  const began = (await q("SELECT min(changed_on) AS b FROM fact_history"))[0].b;
+  const recordStart = (await q("SELECT min(changed_on) AS b FROM fact_history"))[0].b;
   const victim = (await q(`
     SELECT h.id, h.country_id, h.field, h.new_value FROM fact_history h
      WHERE h.old_value IS NOT NULL ORDER BY h.id LIMIT 1`))[0];
@@ -323,7 +335,7 @@ for (const lang of ["en", "es", "de", "fr"]) {
   const later = await (await get("/changes")).text();
   t.check("and withdraws itself once something has genuinely moved",
     !later.includes(en.changes.opened),
-    `a synthetic change dated 2027-01-01 (record began ${began}) left the `
+    `a synthetic change dated 2027-01-01 (record began ${recordStart}) left the `
     + "opening note in place, where it now describes entries it does not cover");
   t.check("the later change is listed",
     (later.match(/<article class="ch">/g) || []).length === changes.length + 1);
