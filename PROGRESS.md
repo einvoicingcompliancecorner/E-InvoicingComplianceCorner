@@ -15553,3 +15553,96 @@ REQUIRED as its prerequisite.** That commit is provably in his repo,
 because the pull he confirmed would have failed without it. It is
 recoverable at any time with `git bundle verify`, and it never depends on
 remembering what happened after a pull.
+
+### The headline strip finally speaks the reader's language (23 Aug 2026)
+
+Dan: *"please go ahead with this fix. try to be concise with
+translations, and ensure we still meet our 1-page per country rule."*
+
+Every part of a compliance guide already existed in four languages except
+the box at the top of it. `country_headline_fact_translations` held
+seventy English rows and nothing else, so a German reader got a German
+page with five English sentences in the first thing they look at.
+
+**Nothing was broken and nothing was blank**, which is why this survived
+four languages of everything else: `shared/guides-render.mjs` COALESCEs
+the reader's language onto English. Missing data that has a fallback is
+indistinguishable from working software until somebody reads the page —
+and this was found by diffing a German guide bundle against an English
+one field by field, not by reading the code, because the code was right.
+
+**Migration 623 came first, and was the more interesting half.** Before
+translating anything, the corpus was measured: 350 notes, median 78
+characters, p90 118, max 190. Thirty ran past the p90, and *twenty-nine
+of the thirty had been written that same day* in 620, 621 and 622. The
+research sweep produced better sourcing and worse prose. All thirty were
+rewritten to ≤125 characters with nothing dropped that a reader acts on —
+every date, instrument number and live caveat survives, including the two
+"this may prove to be conditional" flags on Korea and Vietnam.
+
+That mattered because **the one-page rule is enforced in the reader's
+browser**. `GUIDE_FIT_SCRIPT` shrinks a country page until it fits, so a
+long note never overflows — it quietly shrinks every other line on that
+page. Translating an over-long note multiplies the problem by four.
+
+**Migration 624** then wrote 1,050 strings: seventy countries × five
+notes × de/fr/es, generated from `notes_translations_de_fr_es.json` by
+`gen_note_translations.py`, which refuses to emit SQL if any string is
+over 130 characters, if any English note lacks a translation, or if any
+digit-run in the English is missing from one — dates, thresholds,
+instrument numbers and article numbers all survive that check
+mechanically. The semantic half (hedges, negations, issue-versus-receive)
+no check can do and was held to by review.
+
+#### Two new guards, because 1,050 sentences arrived that nothing read
+
+`tests/headline-notes-langs.mjs` reads all of them: structure, figures,
+and the issue-versus-receive distinction per language against the tile's
+own status. It deliberately does **not** try to be `guides-consistency`
+in four languages — that suite's precision comes from four suppressions
+tuned against real English pages, and reproducing that tuning three more
+times would produce a check that cries wolf and gets switched off.
+
+It also asserts **its own patterns still fire**. The duty regex matches
+53 of 630 segment notes overall and zero after the status, receive and
+negation filters — but zero contradictions is exactly what a dead pattern
+looks like, so each language's pattern must match at least three real
+notes or the suite fails.
+
+624 carries the invariants: **four languages or none** (a country row in
+one language and not the others fails `apply_migrations.py`, as does an
+`en` note whose translation is NULL), and a standing 150-character cap in
+any language including English.
+
+#### The fit result, and what the number to read actually is
+
+`tests/lib/guides-fit-langs.mjs` prints all seventy countries per
+language and measures them.
+
+| | over a page | scaled | smallest | median fill |
+| --- | --- | --- | --- | --- |
+| en | 0 | 25/70 | 84% | 97% |
+| de | 0 | 40/70 | 80% | 98% |
+| fr | 0 | 37/70 | 80% | 98% |
+| es | 0 | 38/70 | 80% | 97% |
+
+**"Over a page" is always zero and always will be** — the fitter
+guarantees it by shrinking. The number that carries information is how
+far it had to shrink, so the harness names the countries sitting on the
+0.80 floor. Six do in German, six in French, four in Spanish, and they
+are the same thin countries the fitter's own comment names: Colombia,
+Costa Rica, Uruguay, Argentina, Kenya, Ecuador, Nigeria. That is the
+fitter working as designed — it keeps the newsletter card at 80% rather
+than dropping it at 88%.
+
+Twenty-five translated notes on six of those countries were tightened by
+15-20% anyway (Costa Rica's German B2G ran 115 characters against a
+78-character English original). It bought headroom rather than a rung:
+these pages are a step function, not a slider.
+
+`ADDING-A-LANGUAGE.md` Phase 5c was rewritten — it said these cells were
+"English in every language today" and "guarded by **nothing**", both of
+which stopped being true with 624.
+
+`npm test`: **24 suites**. Replay OK across **624 files**, 565 assertions
+(168 standing invariants).

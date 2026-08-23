@@ -53,6 +53,10 @@ const SUITES = [
   { name: "ROI gate", cmd: "node", args: [join(HERE, "roi-gate.mjs")], cwd: REPO },
   { name: "compliance guides routes", cmd: "node", args: [join(HERE, "guides-routes.mjs")], cwd: REPO },
   { name: "guides consistency", cmd: "node", args: [join(HERE, "guides-consistency.mjs")], cwd: REPO },
+  // The same page in the three languages guides-consistency cannot read.
+  // Migration 624 put 1,050 sentences in the headline strip that every
+  // other lexical check in this directory is blind to.
+  { name: "headline notes de/fr/es", cmd: "node", args: [join(HERE, "headline-notes-langs.mjs")], cwd: REPO },
   { name: "methodology", cmd: "node", args: [join(HERE, "methodology.mjs")], cwd: REPO },
   { name: "changes", cmd: "node", args: [join(HERE, "changes.mjs")], cwd: REPO },
   { name: "subscriber walk", cmd: "node", args: [join(HERE, "subscriber-walk.mjs")], cwd: REPO },

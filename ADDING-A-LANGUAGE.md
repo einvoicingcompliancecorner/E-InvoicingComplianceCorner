@@ -82,9 +82,11 @@ separately because they are shared with the rest of the site and are
 already done for `de`, `es` and `fr`.
 
 **The compliance guides are the two rows after the planner, and the
-second of them is the largest single job on this page.** 350 note cells,
-and they are English-only in every language today — see Phase 5c. No
-coverage test reports them, which is exactly why they are in this table.
+second of them is the largest single job on this page.** 350 note cells.
+They were English-only in every language until 23 August 2026, when
+migration 624 filled `de`, `fr` and `es` — see Phase 5c for what that
+took and for the invariant that now stops a fourth language landing
+half-done.
 
 **Do not retype those totals from this table.** They moved by fifteen
 cells in three days and this document was wrong about them until it was
@@ -618,36 +620,63 @@ trimming something else. Set the language, run the fit harness, and read
 the result:
 
 ```bash
-node tests/lib/guides-fit-harness.mjs
+node tests/lib/guides-fit-langs.mjs en de fr es
 ```
 
-It prints how many of the seventy fit one page, how many had to be
-scaled, and the median fill. If a language costs more than a point or two
-of median fill, shorten the status words rather than letting seventy
-pages shrink.
+It prints, per language, how many of the seventy fit one page, how many
+had to be scaled, how far the worst one shrank, and which countries are
+sitting on the fitter's 0.80 floor. (`guides-fit-harness.mjs` does the
+same for English alone plus a set of structural checks.)
 
-### The 350 note cells, which are English in every language today
+**Read the floor line, not the "over one page" line.** Nothing is ever
+over a page — the fitter guarantees that by shrinking — so the number
+that carries information is how hard it had to shrink. English stops at
+84%; `de`, `fr` and `es` reach 80% on the same handful of thin countries
+(Colombia, Costa Rica, Uruguay, Argentina, Kenya). That is the fitter
+working as designed: it keeps the newsletter card at 80% rather than
+dropping it at 88%. If a new language pushes a country *below* that, the
+answer is shorter status words and shorter notes, not a lower floor.
+
+### The 350 note cells, and why they used to be the trap on this page
 
 `country_headline_fact_translations` holds five short sentences per
 country — "no supplier issuing duty", "above TRY 3m turnover", "Phase 1
-(100 largest) live since Aug 2026". Only `en` exists.
+(100 largest) live since Aug 2026".
 
 **These are not decoration.** They are the clause that stops a status
 being misread: NO MANDATE against the United Kingdom's B2G means
 something quite different once "contracting authorities must accept and
-process compliant e-invoices" is under it. A German reader currently gets
-German labels, German status words and English qualifiers.
+process compliant e-invoices" is under it.
 
-They are also the one part of this job with no test behind it. Nothing
-counts them, nothing fails, and the guide renders perfectly without them.
-Query the gap directly:
+Until 23 August 2026 only `en` existed, and a German reader got German
+labels, German status words and English qualifiers — in the box at the
+top of the page, which is the first thing anyone looks at. Nothing
+failed, because `shared/guides-render.mjs` COALESCEs the reader's
+language onto English. **Missing data that has a fallback is
+indistinguishable from working software until somebody reads the page**,
+and that is how this survived four languages of everything else.
+
+Migration 624 filled `de`, `fr` and `es`, and left three things behind so
+the next language cannot repeat it:
+
+* **four languages or none**, as a standing invariant in 624. A country
+  row that exists in one language and not the others fails
+  `apply_migrations.py`, as does an `en` note whose translation is NULL.
+  A new language therefore has to arrive complete or not at all;
+* **`tests/headline-notes-langs.mjs`**, which reads all 1,050 translated
+  notes — structure, every figure carried over from the English, and the
+  issue-versus-receive distinction per language;
+* **a length cap**. 130 characters when a migration writes them, 150 as
+  the standing line. See the fit note below: this is the one field where
+  a long translation costs the whole page rather than overflowing.
+
+Query the state directly at any time:
 
 ```sql
 SELECT lang, count(*) FROM country_headline_fact_translations GROUP BY lang;
 ```
 
-Seventy rows per language is complete. Anything less is a partial
-translation that will not announce itself.
+Seventy rows per language is complete.
 
 ### Country names come from CODE here, not from D1
 
@@ -921,8 +950,10 @@ Whatever the language, the work splits three ways:
 | --- | --- | --- |
 | The planner | 537 cells | `roi-coverage.mjs`, and a gate that refuses a partial language |
 | The rest of the site chrome | 761 rows, 108 of them the guides and methodology | `tracker-i18n.mjs` parity, `guides-routes.mjs` and `methodology.mjs` |
-| The headline-fact notes | **350 cells** | **nothing** — see Phase 5c |
+| The headline-fact notes | **350 cells** | 624's four-languages-or-none invariant, and `headline-notes-langs.mjs` |
 
 The third column is the one to read. The last row is the largest single
-job and the only one where finishing is a decision rather than a green
-test, which is why it is still English in `de`, `es` and `fr` today.
+job, and until 23 August 2026 it was the only one where finishing was a
+decision rather than a green test — which is exactly why it stayed
+English in `de`, `es` and `fr` for as long as it did. It is now guarded
+like the rest.
