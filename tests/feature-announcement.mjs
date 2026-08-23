@@ -358,5 +358,75 @@ t.check("including the two Dan named",
     "every link now says sign in, including the ones that do not need it");
 }
 
+// ---- resetting, so a corrected email can go out --------------------------
+//
+// Dan, 23 August: "how can I reset the announcement, as its been flagged
+// as sent". Two things flag it — the rows in `announcements` and the KV
+// marker for the batch — and both have to go or the next confirmed send
+// quietly does nothing.
+//
+// The route exists rather than an instruction to run SQL because the
+// hand-written version is one dropped WHERE clause from deleting the 148
+// rows recording every newsletter story ever announced.
+{
+  outbox = [];
+  const env = makeEnv({ "a@x.com": ACTIVE, "b@x.com": ACTIVE });
+
+  // Send for real first, so there is something to reset.
+  await d1.prepare("DELETE FROM announcements WHERE item_type='feature'").bind().run();
+  await call(env, "/admin/announce-features?confirm=SEND");
+  const afterSend = await q("SELECT count(*) n FROM announcements WHERE item_type='feature'");
+  t.check("something is recorded to reset", afterSend[0].n > 0);
+  const markers = [...env.CONTENT_MONITOR.map.keys()].filter((k) => k.startsWith("announce:"));
+  t.check("and a send marker exists", markers.length > 0, markers.join(", "));
+
+  // A STORY ROW THAT MUST SURVIVE. This is the whole reason the reset is
+  // a route: the obvious DELETE would take these with it.
+  await d1.prepare(`INSERT OR IGNORE INTO announcements (item_type, item_id, channel, announced_at)
+                    VALUES ('story', 'canary-story', 'newsletter', '2026-08-01')`).bind().run();
+
+  outbox = [];
+  const body = await (await call(env, "/admin/announce-features?reset=CONFIRM")).text();
+  t.check("the reset sends nothing", outbox.length === 0,
+    `${outbox.length} email(s) sent by a reset`);
+  t.check("and says so", /NOTHING WAS SENT/.test(body), body.slice(0, 200));
+
+  const stories = await q("SELECT count(*) n FROM announcements WHERE item_type='story'");
+  t.check("story announcements are untouched", stories[0].n > 0,
+    "the reset deleted newsletter history along with the feature rows");
+  const featureRows = await q("SELECT count(*) n FROM announcements WHERE item_type='feature'");
+  t.check("feature announcements are gone", featureRows[0].n === 0, `${featureRows[0].n} left`);
+  t.check("and the send markers with them",
+    [...env.CONTENT_MONITOR.map.keys()].filter((k) => k.startsWith("announce:")).length === 0,
+    "a stale marker would make the next confirmed send do nothing");
+
+  // AND THE POINT OF ALL THAT: a send works again.
+  outbox = [];
+  await call(env, "/admin/announce-features?confirm=SEND");
+  t.check(`the corrected email can now go out (${outbox.length})`, outbox.length === 2,
+    "the reset cleared the record but the send is still blocked");
+}
+
+// ---- a scoped reset touches only what it names --------------------------
+{
+  const env = makeEnv({ "a@x.com": ACTIVE });
+  const before = await q("SELECT count(*) n FROM announcements WHERE item_type='feature'");
+  t.check("everything is announced going in", before[0].n === features.length);
+
+  await call(env, "/admin/announce-features?reset=CONFIRM&only=compliance-guides");
+  const left = await q(`SELECT count(*) n FROM announcements a
+     JOIN features f ON CAST(f.id AS TEXT)=a.item_id
+     WHERE a.item_type='feature'`);
+  t.check("only the named feature is un-announced",
+    left[0].n === before[0].n - 1, `${left[0].n} of ${before[0].n} left`);
+
+  const now = await q(`SELECT f.slug FROM features f WHERE NOT EXISTS (
+      SELECT 1 FROM announcements a WHERE a.item_type='feature'
+        AND a.item_id=CAST(f.id AS TEXT) AND a.channel='newsletter')`);
+  t.check("and it is the one that would be announced next",
+    now.length === 1 && now[0].slug === "compliance-guides",
+    now.map((r) => r.slug).join(", "));
+}
+
 globalThis.fetch = originalFetch;
 process.exit(t.report() ? 0 : 1);

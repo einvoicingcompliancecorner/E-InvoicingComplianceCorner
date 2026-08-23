@@ -15271,3 +15271,30 @@ entry a person adds by hand. The map is now exported and imported.
 
 `npm test`: **23 suites**, `feature announcement` at 41 checks. Replay OK
 across **619 files**.
+
+### Resetting an announcement (23 August 2026)
+
+Dan: "how can I reset the announcement, as its been flagged as sent".
+
+Two things mark a send as done and **both** have to go, which is the part
+that catches people: the rows in `announcements`, which is what
+`getUnannouncedFeatures()` reads, and the KV marker keyed by the exact set
+of feature ids, which is what stops a re-trigger repeating a completed
+run. Clear only the first and the next confirmed send reports success and
+emails nobody.
+
+`?reset=CONFIRM` does both, reports what it cleared, and sends nothing —
+making a send *possible* again is a different act from making one happen,
+and stays a separate confirmed one. `&only=slug,slug` scopes it, so
+re-announcing one corrected feature does not re-announce seven that were
+fine.
+
+**It is a route rather than an instruction to run SQL for one reason.**
+The obvious hand-written version is `DELETE FROM announcements WHERE
+item_type = 'feature'` — one dropped WHERE clause from deleting the 148
+rows recording every newsletter story ever announced, which is the table
+the weekly digest reads to know what still needs saying. The route can
+only ever touch feature rows, and the suite plants a story row and
+asserts it survives.
+
+`npm test`: **23 suites**, `feature announcement` at 52 checks.
