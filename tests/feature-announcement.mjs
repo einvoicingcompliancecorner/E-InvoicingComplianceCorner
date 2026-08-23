@@ -27,7 +27,9 @@ import { openReplayDb } from "./lib/replay-db.mjs";
 
 const REPO = dirname(dirname(fileURLToPath(import.meta.url)));
 const t = suite("feature announcement");
-const worker = (await import(join(REPO, "members-worker", "src", "index.js"))).default;
+const membersModule = await import(join(REPO, "members-worker", "src", "index.js"));
+const worker = membersModule.default;
+const { FEATURE_LINKS } = membersModule;
 const { d1 } = await openReplayDb();
 const q = async (sql, ...p) => (await d1.prepare(sql).bind(...p).all()).results;
 
@@ -259,15 +261,101 @@ t.check("including the two Dan named",
     `${outbox.length} sent, ${recorded[0].n} recorded — a partial run must record nothing`);
 }
 
-// ---- the links go somewhere ---------------------------------------------
+// ---- the links, which were wrong in the first real send -----------------
+//
+// Dan, 23 August, after it went out: "The links in the email are
+// incorrect though. Mainly they lead to the standalone version of the
+// form, rather than in-frame. The newsletter archive link is incorrect
+// and points to e-invoicingcompliancecorner.com/members/archive instead
+// of members.e-invoicingcompliancecorner.com/members/archive."
+//
+// Two faults with one cause: every URL was built from one hardcoded
+// public origin, and the paths were the pages' own rather than the
+// tracker's. Both are checked here now, because the first send had a
+// test suite and it checked that every feature HAD a link — not that
+// any of them worked.
 {
-  const src = readFileSync(join(REPO, "members-worker", "src", "index.js"), "utf8");
-  const block = src.slice(src.indexOf("const FEATURE_LINKS"), src.indexOf("function announcementSubject"));
-  const slugs = [...block.matchAll(/"([a-z0-9-]+)":\s*"(\/[^"]*)"/g)].map((m) => m[1]);
+  // The real map, imported. An earlier version of this parsed the source
+  // with a regex and silently missed the one entry written as a bare
+  // identifier rather than a string — a check blind to precisely the
+  // kind of entry somebody adds by hand.
+  const links = FEATURE_LINKS;
   const all = await q("SELECT slug FROM features");
-  const unlinked = all.map((f) => f.slug).filter((s) => !slugs.includes(s));
+  const unlinked = all.map((f) => f.slug).filter((x) => !links[x]);
   t.check("every feature has a link in the email", unlinked.length === 0,
     `${unlinked.join(", ")} would appear with no way to go and see it`);
+
+  // NO CROSS-HOST PATHS. The archive lives on the members host; the
+  // email is built against the public one. A /members/ path here is the
+  // exact 404 that shipped.
+  const crossHost = Object.entries(links).filter(([, p]) => p.startsWith("/members"));
+  t.check("no link points at a path that only exists on the members host",
+    crossHost.length === 0,
+    crossHost.map(([k, p]) => `${k} -> ${p}`).join(", "));
+
+  // AND THE PAGES THAT EXIST TO BE EMBEDDED ARE REACHED THROUGH THE
+  // THING THAT EMBEDS THEM. A cold load of /roi-calculator or
+  // /compliance-guides is the bare page — correct for a crawler, wrong
+  // for someone arriving from an email.
+  const embedded = ["roi-wave-planner", "compliance-guides", "methodology", "change-record"];
+  const bare = embedded.filter((k) => !/einvoicing-compliance-tracker\.html\?view=/.test(links[k] || ""));
+  t.check("the embedded pages are linked through the tracker",
+    bare.length === 0,
+    `${bare.join(", ")} would open standalone, not in the panel`);
+
+  // THE TRACKER HAS TO ANSWER EVERY ?view= THE EMAIL SENDS. A link to a
+  // view nobody routes lands on the board with nothing open, which looks
+  // exactly like a link that did nothing.
+  const tracker = readFileSync(join(REPO, "einvoicing-compliance-tracker.html"), "utf8");
+  const routed = tracker.slice(tracker.indexOf("const VIEW_ROUTES"), tracker.indexOf("const wanted"));
+  const wanted = Object.values(links)
+    .map((p) => (p.match(/\?view=([a-z]+)/) || [])[1]).filter(Boolean);
+  const unrouted = [...new Set(wanted)].filter((v) => !new RegExp(`\\b${v}:`).test(routed));
+  t.check(`the tracker routes every view the email links to (${[...new Set(wanted)].join(", ")})`,
+    unrouted.length === 0,
+    `${unrouted.join(", ")} — the link would open the board with nothing on it`);
+}
+
+// ---- and it says which ones will stop you at the door -------------------
+//
+// "Some other features hidden behind the subscription wall show the sign
+// in page, which probably needs clarifying in the email."
+{
+  const walled = await q("SELECT slug FROM features WHERE requires_signin = 1");
+  t.check(`some features are marked as needing a sign-in (${walled.length})`, walled.length > 0);
+
+  // THE MARK HAS TO MATCH THE ROUTES THAT ACTUALLY GATE. site-worker
+  // returns renderRoiGate / renderGuidesGate before touching D1 for
+  // exactly two routes; if a third is ever gated, this fails rather than
+  // the email quietly under-warning.
+  const site = readFileSync(join(REPO, "site-worker", "src", "index.js"), "utf8");
+  const gates = new Set();
+  if (/return renderRoiGate\(/.test(site)) gates.add("roi-wave-planner");
+  if (/return renderGuidesGate\(/.test(site)) gates.add("compliance-guides");
+  const marked = new Set(walled.map((w) => w.slug));
+  t.check("the marked set matches the routes that gate",
+    marked.size === gates.size && [...gates].every((g) => marked.has(g)),
+    `marked: ${[...marked].join(", ")} | gated: ${[...gates].join(", ")}`);
+
+  // The archive is open right now under a promo, and both insights
+  // pieces are ungated. Warning about a wall that is not there is its
+  // own small dishonesty.
+  t.check("the archive is not marked while ARCHIVE_PUBLIC is on",
+    !marked.has("archive-country-filter")
+    || !/ARCHIVE_PUBLIC = "true"/.test(readFileSync(join(REPO, "members-worker", "wrangler.toml"), "utf8")),
+    "the email warns about a login wall the promo has taken down");
+
+  outbox = [];
+  const env = makeEnv({ "a@x.com": ACTIVE });
+  await d1.prepare("DELETE FROM announcements WHERE item_type='feature'").bind().run();
+  const html = await (await call(env, "/admin/announce-features?preview=html", "GET")).text();
+  t.check("the email says so at the top", /ask you to sign in first/.test(html),
+    "a reader meets the login form before the word 'sign in'");
+  t.check("and on the link itself", /Sign in and open it/.test(html));
+  const opens = (html.match(/Open it →/g) || []).length;
+  t.check(`the open links stay plain for the ungated ones (${opens})`,
+    opens === features.length - walled.length,
+    "every link now says sign in, including the ones that do not need it");
 }
 
 globalThis.fetch = originalFetch;
