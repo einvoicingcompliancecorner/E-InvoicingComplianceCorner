@@ -15218,3 +15218,56 @@ chased; noted here so a third is recognised as a pattern rather than
 investigated from scratch.
 
 `npm test`: **23 suites**. Replay OK across **618 files**.
+
+### The first send's links were wrong, and why the suite missed it (23 Aug 2026)
+
+Dan, after the announcement email went out: "The links in the email are
+incorrect though. Mainly they lead to the standalone version of the form,
+rather than in-frame. The newsletter archive link is incorrect and points
+to `e-invoicingcompliancecorner.com/members/archive` instead of
+`members.e-invoicingcompliancecorner.com/members/archive`. Some other
+features hidden behind the subscription wall show the sign in page, which
+probably needs clarifying in the email."
+
+**Three faults, and the test suite had checked the wrong thing.** It
+asserted every feature *had* a link. It never asked whether any of them
+worked — which is the difference between a test and a tally.
+
+**One hardcoded origin.** Every URL was built from
+`https://e-invoicingcompliancecorner.com`, and `/members/archive` only
+exists on the members host. Rather than teach the builder two origins and
+hope the right one gets picked, `featureLinkPath()` now **refuses to emit
+a `/members/` path at all** — the link is dropped and logged rather than
+sent broken. The fault is unrepresentable instead of merely fixed.
+
+**The embedded pages were linked bare.** `/roi-calculator` and
+`/compliance-guides` exist to be *embedded*; a cold load serves the
+standalone page — correct for a crawler, wrong for a reader arriving from
+an email who lands somewhere that looks nothing like the site they
+subscribed to. Every link now goes to the tracker with `?view=`, which
+already existed for `?view=archive` and is now a table of eight routes
+mapping to functions that were already wired to menu items. The archive
+fault disappears with it: there is no second host left to get wrong.
+
+**And it now says when a door is locked.** Migration 619 adds
+`features.requires_signin`, set for the ROI planner and the compliance
+guides — the two routes that return `renderSubscriberGate` before they
+touch D1. The email says so once at the top and marks those links "Sign
+in and open it" rather than "Open it", because otherwise the reader
+clicked *Open it* and got a login form, which reads as a broken link
+rather than as a door.
+
+**Only those two, deliberately.** The newsletter archive is open under
+`ARCHIVE_PUBLIC = "true"` and both insights pieces carry `gated = 0`.
+Warning about a wall that is not there is its own small dishonesty, so a
+test asserts the marked set matches the routes that actually gate, and
+that the archive stays unmarked while the promo is on.
+
+**A test that parsed source, and was blind in exactly the wrong place.**
+The new link checks first read `FEATURE_LINKS` with a regex over the
+worker source — and silently missed the one entry written as a bare
+identifier rather than a string literal, which is precisely the kind of
+entry a person adds by hand. The map is now exported and imported.
+
+`npm test`: **23 suites**, `feature announcement` at 41 checks. Replay OK
+across **619 files**.

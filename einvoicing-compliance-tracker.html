@@ -5165,14 +5165,35 @@ function wireDeepDiveInPagePanel(){
     if(sampleModal && sampleModal.classList.contains('open')) sampleModal.classList.remove('open');
   });
 
-  // A direct/bookmarked/shared load of ?view=archive should open the
-  // panel immediately, the same way a direct load of a country's own
-  // URL renders that country's real standalone page (progressive
+  // A direct/bookmarked/shared load of ?view=... should open that panel
+  // immediately, the same way a direct load of a country's own URL
+  // renders that country's real standalone page (progressive
   // enhancement's in-page counterpart for a link with no dedicated
   // tracker-side URL of its own).
-  if(new URLSearchParams(window.location.search).get('view') === 'archive'){
-    openArchive({ skipHistory: true });
-  }
+  //
+  // WHY THIS GREW BEYOND ?view=archive. The feature-announcement email
+  // (23 August) linked straight to /roi-calculator and
+  // /compliance-guides, and a cold load of either is served as the bare
+  // standalone page -- correct for a crawler, wrong for a reader who
+  // clicked from an email and lands somewhere that looks nothing like
+  // the site they subscribed to. Those pages exist to be EMBEDDED; this
+  // is the address that embeds them.
+  //
+  // Every entry here is a function that already exists and is already
+  // wired to a menu item. This routes to them; it does not add a second
+  // way for a panel to open.
+  const VIEW_ROUTES = {
+    archive:     () => openArchive({ skipHistory: true }),
+    roi:         () => openRoiPage({ skipHistory: true }),
+    guides:      () => openRoiPage({ page: 'guides', skipHistory: true }),
+    map:         () => openMapPage({ skipHistory: true }),
+    insights:    () => openInsightsPage({ skipHistory: true }),
+    sources:     () => openSourcesPage({ skipHistory: true }),
+    methodology: () => openMethodology(),
+    changes:     () => openChanges(),
+  };
+  const wanted = new URLSearchParams(window.location.search).get('view');
+  if(wanted && VIEW_ROUTES[wanted]) VIEW_ROUTES[wanted]();
 }
 
 // ---------- init ----------

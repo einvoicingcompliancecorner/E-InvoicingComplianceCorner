@@ -1566,7 +1566,7 @@ const announceStateKey = (batch, suffix) => `announce:${batch}:${suffix}`;
  */
 async function getUnannouncedFeatures(env, channel = ANNOUNCE_CHANNEL) {
   return d1All(env, `
-    SELECT f.id, f.slug, f.title, f.description, f.shipped_at
+    SELECT f.id, f.slug, f.title, f.description, f.shipped_at, f.requires_signin
       FROM features f
      WHERE NOT EXISTS (
        SELECT 1 FROM announcements a
@@ -1576,16 +1576,64 @@ async function getUnannouncedFeatures(env, channel = ANNOUNCE_CHANNEL) {
      ORDER BY f.shipped_at ASC, f.id ASC`, channel);
 }
 
-const FEATURE_LINKS = {
-  "the-map": "/map",
-  "archive-country-filter": "/members/archive",
-  "insights-and-whitepapers": "/insights",
-  "tracker-due-soon-default": "/einvoicing-compliance-tracker.html",
-  "roi-wave-planner": "/roi-calculator",
-  "compliance-guides": "/compliance-guides",
-  "methodology": "/methodology",
-  "change-record": "/changes",
+// EVERY LINK GOES THROUGH THE TRACKER, and that is the fix for two
+// separate faults from the first send.
+//
+// /roi-calculator and /compliance-guides exist to be EMBEDDED. A cold
+// load of either is served as the bare standalone page -- right for a
+// crawler, wrong for a reader who clicked from an email and lands
+// somewhere that looks nothing like the site they subscribed to.
+// ?view= is the tracker's own address for opening a panel, and it
+// already existed for ?view=archive.
+//
+// It also removes the cross-host link that was wrong in the first send.
+// The archive lives on members.e-invoicingcompliancecorner.com and the
+// email built every URL from one hardcoded origin, so it pointed at a
+// path that does not exist on the public host. Routing through the
+// tracker means there is no second host to get right -- a better fix
+// than remembering which paths need which origin, and the guard below
+// makes the old mistake unrepresentable.
+const TRACKER = "/einvoicing-compliance-tracker.html";
+// Exported so tests/feature-announcement.mjs can check the real map
+// rather than a regex over this file. The first version of that check
+// parsed the source and quietly failed to see the one entry written
+// as a bare identifier -- a test blind to exactly the sort of entry a
+// person adds by hand.
+export const FEATURE_LINKS = {
+  "the-map": `${TRACKER}?view=map`,
+  "archive-country-filter": `${TRACKER}?view=archive`,
+  "insights-and-whitepapers": `${TRACKER}?view=insights`,
+  "tracker-due-soon-default": TRACKER,
+  "roi-wave-planner": `${TRACKER}?view=roi`,
+  "compliance-guides": `${TRACKER}?view=guides`,
+  "methodology": `${TRACKER}?view=methodology`,
+  "change-record": `${TRACKER}?view=changes`,
 };
+
+/**
+ * The path for a feature, or "" if it has none.
+ *
+ * THE GUARD IS THE POINT. The first send built every URL from one
+ * hardcoded public origin and emitted "/members/archive" against it — a
+ * path that only exists on the members host, so the link 404'd. Rather
+ * than teach the builder two origins and hope the right one is picked,
+ * this refuses to emit a members path at all: every feature is reachable
+ * through the tracker, and anything that genuinely is not can appear
+ * with no link rather than with a wrong one.
+ */
+function featureLinkPath(slug) {
+  const path = FEATURE_LINKS[slug] || "";
+  if (/^\/members(\/|$)/.test(path)) {
+    console.error(`featureLinkPath: ${slug} points at ${path}, which is not on the public host — dropping the link rather than sending a broken one.`);
+    return "";
+  }
+  return path;
+}
+
+// A sentence does not open with a numeral. Only the small ones, because
+// beyond nine the digit reads better than the word anyway.
+const SMALL_NUMBERS = { 2: "Two", 3: "Three", 4: "Four", 5: "Five",
+  6: "Six", 7: "Seven", 8: "Eight", 9: "Nine" };
 
 function announcementSubject(features) {
   if (features.length === 1) return `New on The E-Invoicing Compliance Corner: ${stripTags(features[0].title)}`;
@@ -1608,7 +1656,7 @@ function buildFeatureAnnouncementHtml(features, unsubLink) {
   const site = "https://e-invoicingcompliancecorner.com";
 
   const blocks = features.map((f) => {
-    const path = FEATURE_LINKS[f.slug];
+    const path = featureLinkPath(f.slug);
     // DAY PRECISION, NOT MONTH. Everything in the first send shipped in
     // the same month, and eight repetitions of "AUGUST 2026" is a column
     // of identical text carrying no information. The day tells a reader
@@ -1616,8 +1664,13 @@ function buildFeatureAnnouncementHtml(features, unsubLink) {
     // there to do.
     const shipped = new Date(f.shipped_at + "T00:00:00Z")
       .toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
+    // "Sign in and open it" where the route answers a signed-out reader
+    // with the subscriber wall — two features do today (migration 619).
+    // Without it the link reads as broken rather than as a door: the
+    // reader clicked "Open it" and got a login form.
+    const label = f.requires_signin ? "Sign in and open it →" : "Open it →";
     const link = path
-      ? `<p style="margin:8px 0 0;"><a href="${escapeHtml(site + path)}" style="color:#b5432f; font-family:'Courier New',Courier,monospace; font-size:12.5px; text-decoration:underline;">Open it →</a></p>`
+      ? `<p style="margin:8px 0 0;"><a href="${escapeHtml(site + path)}" style="color:#b5432f; font-family:'Courier New',Courier,monospace; font-size:12.5px; text-decoration:underline;">${escapeHtml(label)}</a></p>`
       : "";
     return `
       <tr>
@@ -1633,10 +1686,21 @@ function buildFeatureAnnouncementHtml(features, unsubLink) {
   const lede = features.length === 1
     ? "Something new on the site since you last heard from us:"
     : "A few things have been added to the site since you last heard from us:";
+  // SAID ONCE AT THE TOP as well as marked on each link. A reader who
+  // skims the list and clicks the interesting one should have met the
+  // words "sign in" before the login form does the telling.
+  const walled = features.filter((f) => f.requires_signin).length;
+  const wallNote = walled
+    ? `<p style="margin:0 0 18px; font-size:13.5px; line-height:1.5; color:#8a7d5a;">${
+        walled === 1 ? "One of these is a subscriber tool and will ask you to sign in first"
+                     : `${SMALL_NUMBERS[walled] || walled} of these are subscriber tools and will ask you to sign in first`
+      } — at the address this email arrived at, with no password to remember.</p>`
+    : "";
 
   const body = `
     <p style="margin:0 0 6px; font-family:'Courier New',Courier,monospace; font-size:11px; text-transform:uppercase; letter-spacing:1px; color:#c98a3a;">What we have built</p>
-    <h1 style="margin:0 0 16px; font-size:21px; line-height:1.3; color:#241d10; font-family:Georgia,'Times New Roman',serif;">${escapeHtml(lede)}</h1>
+    <h1 style="margin:0 0 12px; font-size:21px; line-height:1.3; color:#241d10; font-family:Georgia,'Times New Roman',serif;">${escapeHtml(lede)}</h1>
+    ${wallNote}
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0">${blocks}</table>
     <table role="presentation" cellpadding="0" cellspacing="0" style="margin-top:6px;">
       <tr>
