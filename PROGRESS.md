@@ -15415,7 +15415,7 @@ does.
 
 `npm test`: **23 suites**. Replay OK across **620 files**.
 
-### Canada: a channel is not a mandate, and 611 counted instead of reading (23 Aug 2026)
+### Canada: a channel is not a mandate, and 611 counted instead of reading (23 Aug 2026, deployed)
 
 Dan, having opened the primary source himself: "CanadaBuys is a public
 procurement portal, based on SAP Ariba. This seems different from a B2G
