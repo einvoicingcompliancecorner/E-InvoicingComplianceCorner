@@ -15471,3 +15471,66 @@ escaped form and failed on a correctly rendered page. A test's model of
 the escaper has to be the escaper.
 
 `npm test`: **23 suites**. Replay OK across **621 files**.
+
+### Canada's deep dive, and two checkers that could not see it (23 Aug 2026)
+
+Dan: "does canada deep dive need looking at?"
+
+It did — and it carried the strongest statement of the error anywhere on
+the site, in its most-read paragraph: *"The one real, existing obligation
+is federal B2G — suppliers to the Government of Canada **must** invoice
+electronically via SAP Ariba."* In four languages. Migration 621 had
+corrected the tile, the milestone and the card; the compliance guide
+followed on its own because it is generated. The page prose did not.
+
+**`guides-consistency.mjs` had four defects, all found by pointing it at
+this page:**
+
+- It read **no page prose at all** — only cards and milestones, never the
+  paragraphs above them. It now reads `mandate_summary`, `scope_intro`,
+  `penalties_intro` and `compliance_model`.
+- Its duty pattern was `must issue`, which does not match **`must
+  invoice`** — the exact words Canada used.
+- Its negation guard listed `not|never|no|nor`, and a word boundary kept
+  "no" from matching inside **"nothing"**. Canada's own penalties intro —
+  a sentence whose entire point is that nothing is required — therefore
+  read as an assertion that something is.
+- Austria's *"Voluntary B2B (Peppol/ebInterface) — mandatory B2G since
+  2014"* attached "mandatory" to the **B2B** token because B2B came first
+  in the string. It now also looks at the words **following** a claim
+  before deciding whose it is.
+
+**What it still cannot catch, written down so nobody mistakes a green
+build for a guarantee:** `scope_intro` said "a mandated federal channel",
+which is wrong the same way and names no segment — there is no B2G, B2B
+or B2C token for a lexical check to attach to. A person found that one.
+
+### The compliance guides appeared under the deep dive
+
+Dan, same session: "one screen is still displayed beneath another when
+launch in-frame."
+
+**Every panel opener hid `boardView` and showed its own panel. Not one
+hid the *other* panels.** Open a deep dive, then Menu → Compliance
+guides, and the guides render on top of a deep dive that never went away.
+Nine openers, nine instances of the same omission — and one of them had
+already worked around it by hiding `countryDeepDiveView` by hand, which
+is the shape of this class of bug: fixed once, in the one place somebody
+noticed, for the one pair they happened to try.
+
+`hideOtherPanels(keepId)` now runs in all nine, and `page-scripts.mjs`
+asserts three things: that `PANEL_IDS` covers every `id="…View"` in the
+markup, that every opener calls it, and that the helper keeps the panel
+it was asked to show. Negative-tested by deleting one call.
+
+The `?view=` links in the announcement email made this much easier to
+hit, which is probably why it surfaced now rather than months ago.
+
+**The flaky suite is `session`, and it is not what I guessed.** Third
+occurrence. It uses no browser, no replay subprocess and no network, and
+`run-all.mjs` runs suites **sequentially** — so contention was the wrong
+theory. It passes standalone every time, and three consecutive full runs
+were clean. Recorded rather than chased; the next occurrence starts from
+these facts instead of from scratch.
+
+`npm test`: **23 suites**. Replay OK across **622 files**.

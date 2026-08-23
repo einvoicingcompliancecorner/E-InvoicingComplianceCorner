@@ -193,4 +193,46 @@ t.check("sign-out is a form POST, not a link",
     || /\/members\/logout[\s\S]{0,200}method="POST"/.test(i18nSrc),
   "the greeting must submit sign-out, not link to it");
 
+// ---- one panel at a time -------------------------------------------------
+//
+// Dan, 23 August: "the compliance guides screen appears under the
+// deep-dive page in the same frame. It's almost as if one screen is
+// still displayed beneath another."
+//
+// It was. Every panel opener hid boardView and showed its own panel, and
+// none of them hid the OTHER panels — so opening a second left the first
+// underneath. One opener had worked around it by hiding
+// countryDeepDiveView by hand, which is the shape of this bug: fixed
+// once, in the one place somebody noticed, for the one pair they tried.
+{
+  const tracker = readFileSync(join(REPO, "einvoicing-compliance-tracker.html"), "utf8");
+
+  // The list the helper walks has to be the list the markup contains, or
+  // a panel added later is one nothing hides.
+  const inMarkup = [...tracker.matchAll(/id="([a-zA-Z]+View)"/g)]
+    .map((m) => m[1]).filter((id) => id !== "boardView");
+  const declared = (tracker.match(/const PANEL_IDS = \[([\s\S]*?)\]/) || [, ""])[1];
+  const missing = [...new Set(inMarkup)].filter((id) => !declared.includes(`'${id}'`));
+  t.check(`PANEL_IDS covers every panel in the markup (${new Set(inMarkup).size})`,
+    missing.length === 0,
+    `${missing.join(", ")} — opening another panel would leave these showing underneath`);
+
+  // And every opener calls it. Checked on the line that marks an opener:
+  // hiding the board is what they all do.
+  const openers = tracker.split("\n");
+  const unguarded = [];
+  openers.forEach((line, i) => {
+    if (!line.includes("boardView.style.display = 'none'")) return;
+    const next = openers.slice(i + 1, i + 3).join(" ");
+    if (!next.includes("hideOtherPanels(")) unguarded.push(i + 1);
+  });
+  t.check(`every panel opener hides the others (${openers.filter((l) => l.includes("boardView.style.display = 'none'")).length} openers)`,
+    unguarded.length === 0,
+    `line(s) ${unguarded.join(", ")} show a panel without hiding the rest`);
+
+  t.check("and the helper keeps the one being opened",
+    /function hideOtherPanels\(keepId\)\{[\s\S]{0,200}id === keepId\) continue/.test(tracker),
+    "hideOtherPanels would hide the panel it was asked to show");
+}
+
 process.exit(t.report() ? 0 : 1);

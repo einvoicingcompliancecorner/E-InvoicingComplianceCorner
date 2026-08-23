@@ -67,13 +67,21 @@ const all = async (sql, ...args) =>
 
 const SEG = { b2g: "B2G", b2b: "B2B", b2c: "B2C" };
 const WINDOW = 60;
-const NEGATED = /\b(not|never|no|nor)\b[^.;]{0,20}$/i;
+// "nothing mandatory to fail to adopt" is a denial, not a duty. The first
+// version listed only not/never/no/nor, and \b kept "no" from matching
+// inside "nothing" — so Canada's penalties intro, a sentence whose whole
+// point is that nothing is required, read as an assertion that something
+// is.
+const NEGATED = /\b(not|never|no|nor|none|nothing|neither|without)\b[^.;]{0,24}$|n't\b[^.;]{0,24}$/i;
 const HEDGE = /\b(propos\w*|draft\w*|consultation|discussed|planned|expected|recommend\w*|would|may |never enacted|not yet|request)/i;
 const RECEIPT = /\breceiv|\breceipt\b|\baccept/i;
 
 // A claim, the statuses it can live with, and whether disagreeing is fatal.
 const CLAIMS = [
-  { label: "asserts a duty", re: /mandator(?:y|ily)|must issue|required to issue/i,
+  // "must issue" alone missed "must invoice", which is how Canada's
+  // mandate summary phrased the duty it turned out not to have.
+  { label: "asserts a duty",
+    re: /mandator(?:y|ily)|must\s+(?:issue|invoice|send|submit|transmit)|required to (?:issue|invoice)/i,
     ok: new Set(["active", "planned"]), fatal: true },
   { label: "asserts optional", re: /voluntar(?:y|ily)|optional/i,
     ok: new Set(["voluntary", "no_mandate", "planned"]), fatal: false },
@@ -98,6 +106,12 @@ const miles = await all(`
     LEFT JOIN milestone_translations mt ON mt.milestone_id = m.id AND mt.lang = 'en'
    WHERE m.on_tracker = 1`);
 
+const pages = await all(`
+  SELECT c.name_en AS name, pt.mandate_summary, pt.scope_intro,
+         pt.penalties_intro, pt.compliance_model
+    FROM deep_dive_page_translations pt JOIN countries c ON c.id = pt.country_id
+   WHERE pt.lang = 'en'`);
+
 const byCountry = new Map(facts.map((f) => [f.name, []]));
 const add = (name, kind, text) => {
   if (!text || !byCountry.has(name)) return;
@@ -111,6 +125,20 @@ for (const c of cards) {
   } catch { /* a malformed rows_json is the render lint's problem, not this one */ }
 }
 for (const m of miles) add(m.name, "milestone", m.system);
+
+// AND THE DEEP DIVE'S OWN PROSE, added 23 August after Canada showed the
+// gap. The checker compared tiles against cards and milestones and never
+// against the paragraphs above them — so when Canada's B2G went back to
+// voluntary, its mandate_summary went on saying "suppliers to the
+// Government of Canada MUST invoice electronically via SAP Ariba", in
+// four languages, and nothing complained. That summary is the most-read
+// paragraph on the page.
+for (const p of pages) {
+  add(p.name, "mandate summary", p.mandate_summary);
+  add(p.name, "scope intro", p.scope_intro);
+  add(p.name, "penalties intro", p.penalties_intro);
+  add(p.name, "compliance model", p.compliance_model);
+}
 
 const fatal = [];
 const soft = [];
@@ -131,6 +159,13 @@ for (const f of facts) {
             if (NEGATED.test(near.slice(0, cm.index))) continue;
             const [lo, hi] = [sm.index - from, cm.index].sort((a, b) => a - b);
             if (others.some((o) => new RegExp(o, "i").test(near.slice(lo, hi)))) continue;
+            // AND WHAT THE CLAIM IS ABOUT MAY SIT AFTER IT. "Voluntary
+            // B2B — mandatory B2G since 2014" attached "mandatory" to the
+            // B2B token simply because B2B came first in the string. If
+            // another segment's name follows the claim within a few
+            // words, the claim is that segment's, not this one's.
+            const after = near.slice(cm.index + cm[0].length, cm.index + cm[0].length + 12);
+            if (others.some((o) => new RegExp(o, "i").test(after))) continue;
             if (claim.ok.has(status[seg])) continue;
             const key = `${f.name}|${seg}|${text}`;
             if (seen.has(key)) continue;
