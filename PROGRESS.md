@@ -15053,7 +15053,7 @@ test before it could hide a real one about the page.
 
 `npm test`: **21 suites**. Replay OK across **616 files**.
 
-### The change log stops calling itself incompetent (22 August 2026)
+### The change log stops calling itself incompetent (22 August 2026, deployed)
 
 Dan, an hour after it shipped: "Given that we currently have no
 subscribers, I'd like to avoid statements like 'We were wrong' in the
@@ -15098,5 +15098,123 @@ appears, or one that never leaves.
 **5.97:1**. Toning it down and fixing the contrast turned out to be the
 same edit.
 
-`npm test`: **21 suites**, `changes` now 49 checks. Replay OK across
+**And the fallback still said it.** The label changed in D1 and in
+`i18n/*.json`; the renderer's own hardcoded English default did not, so it
+still read "We were wrong" — and a fallback is what a reader gets whenever
+the i18n lookup comes up empty, which is exactly the moment nobody is
+watching. Every other fallback on that page is a shortened form of its
+translation, which is fine; one that *contradicts* its translation is not.
+`tests/changes.mjs` now refuses the phrase anywhere outside a comment in
+the worker or the tracker, negative-tested by putting it back.
+
+Worth carrying forward: **a string change is not one edit, it is three** —
+the migration, `i18n/*.json`, and any hardcoded fallback in the renderer —
+and only the third is invisible to every other check.
+
+`npm test`: **21 suites**, `changes` now 50 checks. Replay OK across
 **617 files**.
+
+### Not doing: "where we differ from other trackers" (22 August 2026)
+
+Dan: "I don't think there is any other action for the activity 'Where we
+differ from other trackers'. As long as we are clear what our stance is in
+terms of what a status means, which is documented in the methodology
+page."
+
+**Declined, and recorded here so it does not get re-proposed.** The
+outside review ranked this as the cheapest authority content available,
+and the fifteen differences against e-invoice.app are real. But what made
+them interesting was never the disagreement — it was the rule underneath:
+a duty to *receive* is not a duty to *issue*, and a draft bill is not a
+plan. `/methodology` now publishes both rules, in four languages, at a
+citable URL, with the five status words read from the same strings the
+tiles print. A reader who finds us disagreeing with another tracker can
+already discover exactly why.
+
+Publishing the comparison adds the disagreement without adding the
+reasoning, which is the weaker half of it. It also names a competitor as
+wrong on what is an editorial choice rather than a fact, and invites an
+argument the site gains nothing from winning. Same instinct that took "We
+were wrong" out of the change log: state the standard, let the data
+demonstrate it, do not narrate.
+
+**What is kept is the QA, not the content.** Those fifteen are the only
+genuinely independent second opinion this project has — the consistency
+checker can only find places where we disagree with ourselves. So the
+list stays a to-check queue. Three entries are already on one: Canada B2G
+(resting on a secondary tracker), Taiwan (needs a Chinese reader), Spain
+(enacted, undated).
+
+### Telling subscribers what has been built (23 August 2026)
+
+Dan: "I'd like to add an email alert for new content and functionality,
+which has not been announced to subscribers. This should include the
+roi-calculator and the compliance guides."
+
+**The bookkeeping already existed and had never been used.** `features`
+lists what shipped, `announcements` records what has been said and where,
+and the weekly digest has carried a "published, not yet announced"
+section since migration 503. It said nothing had ever been announced on
+any channel — and it did not know about three of the things worth
+announcing, because nobody added the row when they shipped.
+
+Migration 618 adds the compliance guides, `/methodology` and the change
+record, and fixes two things in the existing data before anything is sent
+from it:
+
+**The planner's date was the day it was built, not the day it went live.**
+`features.shipped_at` is documented as "the day it went live"; the row
+said 11 August. `ROI_PUBLIC` went true on the **19th**, and until then the
+route answered 404 by design. Left alone the email would have told
+subscribers a tool had been available since a date on which it
+deliberately was not.
+
+**And its title was stored as markup** — `E-Invoicing ROI &amp; Wave
+Planner`, HTML-escaped in the *database*, which reads correctly only in a
+consumer that forgets to escape. The email escapes, so it would have gone
+out saying `ROI &amp;amp; Wave Planner` to every subscriber. Data holds
+text, the renderer escapes, and an `ASSERT ALWAYS` now says so.
+
+**The job decides nothing about what is new.** The set to announce is a
+query — every feature with no `announcements` row on this channel — so
+shipping a feature and adding its row is the whole of the work. Run it
+next month and it announces whatever appeared since, or sends nothing.
+
+**There is no cron and there is not going to be one.** A monthly digest
+firing itself is fine; its content is this month's stories either way. An
+announcement email is a piece of writing somebody should read before it
+reaches a subscriber list. So `/admin/announce-features` **dry-runs by
+default**, `?preview=html` renders the real email from the same builder
+the send uses, `?to=` sends one copy and records nothing, and only
+`?confirm=SEND` reaches the list.
+
+**The subscriber walk moved to `shared/subscriber-walk.mjs` rather than
+being copied.** The monthly job's own comment records what a careless
+version costs — an earlier draft saved its cursor mid-page, resumed at the
+top of that page, and double-sent 120 of 160 deliveries. A second copy
+would have been correct on the day it was written and wrong the first
+time either was touched, with only one of the two ever fixed.
+`tests/subscriber-walk.mjs` drives it with a fake clock through
+truncation and resume, and — because a check that cannot fail is the
+defect this project keeps rediscovering — proves its duplicate detection
+against a loop that genuinely double-sends.
+
+`tests/feature-announcement.mjs` runs entirely against a fake Resend, and
+its most important assertions are negative: for every path except a
+confirmed send, the number of emails handed to the provider must be zero.
+It also checks that a test send records nothing, that a second confirmed
+run sends nothing, that a truncated run records nothing, and that every
+recipient gets their own unsubscribe token rather than a shared one.
+
+One test was edited rather than satisfied: `test_assertions.py` pinned
+the number of held-back runtime claims at exactly one. 618 legitimately
+adds a second (nothing has been announced *yet*, which stops being true
+of production the moment somebody sends). It now checks the property —
+every held-back claim names a runtime table — instead of the tally.
+
+**Two flaky suite failures this session** (`session`, then one
+unidentified) that passed on re-run and passed three times since. Not
+chased; noted here so a third is recognised as a pattern rather than
+investigated from scratch.
+
+`npm test`: **23 suites**. Replay OK across **618 files**.

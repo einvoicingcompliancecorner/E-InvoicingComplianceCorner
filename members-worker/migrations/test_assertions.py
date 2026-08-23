@@ -337,14 +337,28 @@ def test_runtime_table_claims_are_not_sent_to_production():
     check("a count of a migration-owned table is durable",
           not A.is_runtime_claim(mk("SELECT count(*) FROM countries")))
 
-    # 5. And the real chain holds back exactly one thing, not more.
+    # 5. And on the real chain, every held-back claim is held back for the
+    #    stated reason -- it names a table the application writes at
+    #    runtime -- rather than because the classifier is over-eager.
+    #
+    #    THIS USED TO PIN THE COUNT AT ONE, which was a check that had to
+    #    be edited every time a legitimate second one appeared. It did,
+    #    on 23 August: migration 618 asserts that no feature has been
+    #    announced yet, which is true of the replay and stops being true
+    #    of production the moment somebody sends the announcement. That
+    #    is exactly the case this mechanism exists for, so the test now
+    #    checks the PROPERTY rather than the tally.
     with contextlib.redirect_stdout(io.StringIO()) as buf:
         A.validate_replay()
     out = buf.getvalue()
-    check("the real chain reports exactly one runtime claim held back",
-          out.count("  runtime: ") == 1, out.count("  runtime: "))
-    check("and names the assertion that caused this fix",
-          "594_auth_codes.sql:104" in out)
+    held = [l for l in out.splitlines() if l.startswith("  runtime: ")]
+    check("the real chain holds some runtime claims back", len(held) >= 1, out)
+    stray = [l for l in held
+             if not any(re.search(rf"\b{tbl}\b", l, re.I) for tbl in A.RUNTIME_TABLES)]
+    check("and every one of them names a runtime table",
+          not stray, "; ".join(stray))
+    check("including the assertion that caused this mechanism to exist",
+          any("594_auth_codes.sql:104" in l for l in held))
 
 
 # ---- the limit the replay cannot see -----------------------------------
