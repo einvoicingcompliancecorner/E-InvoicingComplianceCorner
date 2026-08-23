@@ -15113,3 +15113,34 @@ and only the third is invisible to every other check.
 
 `npm test`: **21 suites**, `changes` now 50 checks. Replay OK across
 **617 files**.
+
+### Not doing: "where we differ from other trackers" (22 August 2026)
+
+Dan: "I don't think there is any other action for the activity 'Where we
+differ from other trackers'. As long as we are clear what our stance is in
+terms of what a status means, which is documented in the methodology
+page."
+
+**Declined, and recorded here so it does not get re-proposed.** The
+outside review ranked this as the cheapest authority content available,
+and the fifteen differences against e-invoice.app are real. But what made
+them interesting was never the disagreement — it was the rule underneath:
+a duty to *receive* is not a duty to *issue*, and a draft bill is not a
+plan. `/methodology` now publishes both rules, in four languages, at a
+citable URL, with the five status words read from the same strings the
+tiles print. A reader who finds us disagreeing with another tracker can
+already discover exactly why.
+
+Publishing the comparison adds the disagreement without adding the
+reasoning, which is the weaker half of it. It also names a competitor as
+wrong on what is an editorial choice rather than a fact, and invites an
+argument the site gains nothing from winning. Same instinct that took "We
+were wrong" out of the change log: state the standard, let the data
+demonstrate it, do not narrate.
+
+**What is kept is the QA, not the content.** Those fifteen are the only
+genuinely independent second opinion this project has — the consistency
+checker can only find places where we disagree with ourselves. So the
+list stays a to-check queue. Three entries are already on one: Canada B2G
+(resting on a secondary tracker), Taiwan (needs a Chinese reader), Spain
+(enacted, undated).
