@@ -15472,7 +15472,7 @@ the escaper has to be the escaper.
 
 `npm test`: **23 suites**. Replay OK across **621 files**.
 
-### Canada's deep dive, and two checkers that could not see it (23 Aug 2026)
+### Canada's deep dive, and two checkers that could not see it (23 Aug 2026, deployed)
 
 Dan: "does canada deep dive need looking at?"
 
@@ -15505,7 +15505,7 @@ build for a guarantee:** `scope_intro` said "a mandated federal channel",
 which is wrong the same way and names no segment — there is no B2G, B2B
 or B2C token for a lexical check to attach to. A person found that one.
 
-### The compliance guides appeared under the deep dive
+### The compliance guides appeared under the deep dive (deployed)
 
 Dan, same session: "one screen is still displayed beneath another when
 launch in-frame."
