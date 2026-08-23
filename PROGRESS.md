@@ -15554,7 +15554,7 @@ because the pull he confirmed would have failed without it. It is
 recoverable at any time with `git bundle verify`, and it never depends on
 remembering what happened after a pull.
 
-### The headline strip finally speaks the reader's language (23 Aug 2026)
+### The headline strip finally speaks the reader's language (23 Aug 2026, deployed)
 
 Dan: *"please go ahead with this fix. try to be concise with
 translations, and ensure we still meet our 1-page per country rule."*
@@ -15646,3 +15646,11 @@ which stopped being true with 624.
 
 `npm test`: **24 suites**. Replay OK across **624 files**, 565 assertions
 (168 standing invariants).
+
+**Migration-apply only — no `wrangler deploy` in this one.** Worth stating
+because the opposite has bitten three times this week: the notes live in
+D1 and `shared/guides-render.mjs` already read them, so nothing shipped
+in an asset or in worker code. The post-deploy check that would catch a
+partial apply is `apply_migrations.py --remote --assert-only`, which
+re-runs the standing invariants — including 624's four-languages-or-none
+— against the live database.
