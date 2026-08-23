@@ -1803,6 +1803,65 @@ async function sendFeatureAnnouncements(env, opts = {}) {
   return { features, ...result };
 }
 
+/**
+ * Un-announce features, so a corrected email can go out.
+ *
+ * TWO THINGS MARK A SEND AS DONE and both have to go: the rows in
+ * `announcements`, which is what getUnannouncedFeatures() reads, and the
+ * KV marker keyed by the exact set of feature ids, which is what stops a
+ * re-trigger repeating a completed run.
+ *
+ * WHY THIS IS A ROUTE AND NOT AN INSTRUCTION TO RUN SQL. The obvious
+ * hand-written version is
+ *
+ *     DELETE FROM announcements WHERE item_type = 'feature'
+ *
+ * which is one dropped WHERE clause away from deleting the 148 rows
+ * recording every newsletter story ever announced -- the table the
+ * weekly digest reads to know what still needs saying. This can only
+ * ever touch feature rows, and says exactly what it removed.
+ *
+ * It sends nothing. It makes a send POSSIBLE again, which is a different
+ * act and stays a separate, confirmed one.
+ */
+async function resetFeatureAnnouncements(env, onlySlugs) {
+  const scoped = (onlySlugs || []).filter(Boolean);
+  let rows;
+  if (scoped.length) {
+    const marks = scoped.map((_, i) => `?${i + 2}`).join(", ");
+    rows = await d1All(env, `
+      SELECT a.id, f.slug FROM announcements a
+        JOIN features f ON CAST(f.id AS TEXT) = a.item_id
+       WHERE a.item_type = 'feature' AND a.channel = ?1 AND f.slug IN (${marks})`,
+      ANNOUNCE_CHANNEL, ...scoped);
+  } else {
+    rows = await d1All(env, `
+      SELECT a.id, f.slug FROM announcements a
+        JOIN features f ON CAST(f.id AS TEXT) = a.item_id
+       WHERE a.item_type = 'feature' AND a.channel = ?1`, ANNOUNCE_CHANNEL);
+  }
+  for (const r of rows) {
+    await env.eicc_content.prepare("DELETE FROM announcements WHERE id = ?1").bind(r.id).run();
+  }
+
+  // AND THE MARKERS. Every announce:* key, not only the batch that
+  // matches today's feature set: a partial reset changes which ids are
+  // unannounced, so the NEXT batch key is different from the one just
+  // cleared and an old marker for it could still be sitting there.
+  const cleared = [];
+  let cursor;
+  do {
+    const page = await env.CONTENT_MONITOR.list({ prefix: "announce:", cursor });
+    for (const k of page.keys) {
+      await env.CONTENT_MONITOR.delete(k.name);
+      cleared.push(k.name);
+    }
+    cursor = page.list_complete ? undefined : page.cursor;
+  } while (cursor);
+
+  return { unannounced: rows.map((r) => r.slug), markersCleared: cleared };
+}
+
 async function handleAnnounceFeaturesTrigger(request, env) {
   const provided = request.headers.get("X-Admin-Secret");
   if (!provided || provided !== env.SESSION_SECRET) {
@@ -1814,6 +1873,26 @@ async function handleAnnounceFeaturesTrigger(request, env) {
   // easy thing this route does is describe what it would do.
   const confirmed = url.searchParams.get("confirm") === "SEND";
   const preview = url.searchParams.get("preview") === "html";
+
+  // RESET BEFORE ANYTHING ELSE READS THE FEATURE LIST, so the report
+  // below describes the state this call leaves behind rather than the
+  // one it found.
+  if (url.searchParams.get("reset") === "CONFIRM") {
+    const only = (url.searchParams.get("only") || "").split(",").map((x) => x.trim()).filter(Boolean);
+    const { unannounced, markersCleared } = await resetFeatureAnnouncements(env, only);
+    const now = await getUnannouncedFeatures(env);
+    return new Response([
+      `Un-announced ${unannounced.length} feature(s): ${unannounced.join(", ") || "(none were recorded)"}`,
+      `Cleared ${markersCleared.length} send marker(s).`,
+      "",
+      `${now.length} feature(s) would now be announced:`,
+      ...now.map((f) => `  - [${f.shipped_at}] ${stripTags(f.title)}`),
+      "",
+      "NOTHING WAS SENT. Preview it, then send:",
+      "  ?preview=html     read the email first",
+      "  ?confirm=SEND     send to every active subscriber",
+    ].join("\n"), { status: 200, headers: { "Content-Type": "text/plain; charset=UTF-8" } });
+  }
 
   const features = await getUnannouncedFeatures(env);
 
@@ -1849,6 +1928,8 @@ async function handleAnnounceFeaturesTrigger(request, env) {
     "  ?preview=html     render the email in your browser, send nothing",
     "  ?to=you@x.com     send one real copy to that address, record nothing",
     "  ?confirm=SEND     send to every active subscriber and record it",
+    "  ?reset=CONFIRM    un-announce them so a corrected email can go out",
+    "                    (add &only=slug,slug to reset just those)",
     "",
     "A manual run sends a ~20 second slice and saves a cursor; call it again to continue.",
   ];

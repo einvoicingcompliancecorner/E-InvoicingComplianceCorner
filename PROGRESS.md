@@ -15271,3 +15271,146 @@ entry a person adds by hand. The map is now exported and imported.
 
 `npm test`: **23 suites**, `feature announcement` at 41 checks. Replay OK
 across **619 files**.
+
+### Resetting an announcement (23 August 2026, deployed)
+
+Dan: "how can I reset the announcement, as its been flagged as sent".
+
+Two things mark a send as done and **both** have to go, which is the part
+that catches people: the rows in `announcements`, which is what
+`getUnannouncedFeatures()` reads, and the KV marker keyed by the exact set
+of feature ids, which is what stops a re-trigger repeating a completed
+run. Clear only the first and the next confirmed send reports success and
+emails nobody.
+
+`?reset=CONFIRM` does both, reports what it cleared, and sends nothing —
+making a send *possible* again is a different act from making one happen,
+and stays a separate confirmed one. `&only=slug,slug` scopes it, so
+re-announcing one corrected feature does not re-announce seven that were
+fine.
+
+**It is a route rather than an instruction to run SQL for one reason.**
+The obvious hand-written version is `DELETE FROM announcements WHERE
+item_type = 'feature'` — one dropped WHERE clause from deleting the 148
+rows recording every newsletter story ever announced, which is the table
+the weekly digest reads to know what still needs saying. The route can
+only ever touch feature rows, and the suite plants a story row and
+asserts it survives.
+
+`npm test`: **23 suites**, `feature announcement` at 52 checks.
+
+### What ships where — three silent half-deploys in one day
+
+Three times on 22–23 August a change was applied and looked like it had
+not worked, and every time the cause was the same shape: **one artefact
+changed, and the thing that actually serves it was not redeployed.**
+None of the three failed loudly. Each cost a round trip.
+
+| Change | Needs |
+|---|---|
+| A `tracker` / `guides` / `method` / `changes` **string** | migration → D1, **and** `site-worker` deploy (the routes read `i18n/<lang>.json` as a **static asset**, not from D1) |
+| A **renderer's English fallback** | the worker that renders it — a fallback is what a reader gets whenever the i18n lookup comes up empty |
+| **`FEATURE_LINKS`**, the announcement email | `members-worker` deploy |
+| The tracker's **`?view=` routing** | `site-worker` deploy (the tracker is a static asset) |
+| **`features` / `announcements`** rows | migration only — no deploy |
+
+The general rule, which is worth keeping in mind ahead of the specifics:
+**data lives in D1, but almost every string a reader sees is served from a
+deployed asset or from worker code.** Applying a migration alone changes
+what the database holds and, very often, nothing a reader can see.
+
+The costly instance: the announcement email's links were fixed in
+`members-worker`, only `site-worker` was deployed, and the corrected email
+went out twice with the original links before anyone noticed. The
+`?preview=html` route is the cheap check — it renders from the deployed
+worker, so if the preview still shows the old links, the deploy did not
+land and there is no point sending.
+
+### The ten weak-sourced countries (23 August 2026)
+
+Dan: "Please can you address the 10 weak-sourced countries."
+
+They were a **query, not a memory** — which is the return on migration
+613. Ten jurisdictions where all five headline facts cited someone
+reporting on the law rather than making it: Cyprus, Egypt, Indonesia,
+Jordan, Latvia, Malta, Serbia, South Korea, Uzbekistan, Vietnam.
+
+Ten researchers, one per country, told to find the jurisdiction's own
+text and to apply this site's own rules — a status is the duty to
+**issue**, a plan needs an enacted instrument **and** a date, unknown with
+a reason beats a guess. They were told in terms that "we could not source
+this" is a useful answer. Four of them used it, and that is the part
+worth reading.
+
+**Headline facts across the whole site: primary 177 → 220, secondary 146
+→ 101.** No country anywhere is entirely secondary any more — the query
+that produced this list now returns nothing.
+
+**Four published statuses were wrong.**
+
+*Egypt, signature: required → conditional.* E-invoices must carry the
+issuer's e-seal; ETA's own e-receipt FAQ answers the question directly —
+"the receipt does not require an electronic signature". One word covered
+the invoice system and misstated the receipt system beside it.
+
+*Latvia, archiving: varies → 5 years.* "Varies" was a hedge the statute
+does not need. Accounting Law s.28 puts invoices in "other source
+documents" at not less than five years; the ten- and seventy-five-year
+periods in the same section are registers and payroll.
+
+*Uzbekistan, B2C: no mandate → active.* We recorded no consumer mandate on
+the strength of an accounting portal. Cabinet Resolution 522's own
+regulation says the opposite at paragraph 18: the seller's e-invoice to a
+private individual is confirmed one-sidedly with its own digital
+signature. The carve-out is narrow — cash sales evidenced by a fiscal
+receipt.
+
+*Uzbekistan, archiving: 5 years → not confirmed.* A deliberate downgrade.
+The figure rested on `ibac.uz` — **the one host in the entire corpus that
+source grading could not attribute to anybody**, and the only ungraded
+source behind a published fact on this site. The e-invoicing regulation
+imposes ten years on the *platform operator* and is silent on the
+taxpayer.
+
+**And four published dates were wrong.** Egypt's B2G and B2B both moved to
+15 Nov 2020, when ETA decree 386/2020 first bound anybody; the dates we
+had described something else — a cabinet decision about
+government-as-seller, and a VAT-deduction rule on the buyer. Jordan's B2C
+loses its date entirely: no official source gives one and the 1 Apr 2025
+we published was a vendor's inference.
+
+**The rule applied when research and publication disagreed**, and it is
+the judgement worth recording: a value changed only where a primary
+source **contradicted** it, or where it turned out to be derived from
+something that does not support it. Where a source simply could not be
+reached, the value stands with its old citation and its note records the
+attempt. Downgrading a probably-true fact to "unknown" because our
+fetcher was blocked would be a different kind of dishonesty, not a
+smaller one. That is why Uzbekistan's retention went to unknown and
+Vietnam's did not: one had a source we could not attribute, the other has
+a publisher we can name.
+
+**Two could not be finished and the migration says so.** Every Korean
+state host — nts.go.kr, law.go.kr, hometax.go.kr — failed at robots.txt;
+only the NTS call-centre FAQ answered, which settles three facts and not
+the retention period. Vietnam's tax department returns 403 to
+non-Vietnamese traffic, and the Official Gazette publishes Decree
+123/2020's metadata while serving its text from a CDN that refuses us — so
+we can cite the state for "this decree, in force this date" but not yet
+for the article creating the duty. Four facts keep secondary citations,
+named in the migration header rather than rounded up.
+
+**Two live doubts are published rather than hidden**, in the Canada
+manner: Korea's signature may be conditional once the Enforcement
+Decree's ARS and agent channels are read, and Vietnam's may be too, since
+Decree 123 art.10 lists invoices needing no signature.
+
+**A test had to be corrected rather than satisfied.** `changes.mjs`
+asserted the opening note on `/changes` *is* shown — true only while every
+recorded change came from the day the record opened. Four changes dated
+later, and the check failed because the line had withdrawn itself exactly
+as designed. A test that must be edited every time the feature works is
+testing the fixture, so it now computes the same condition the renderer
+does.
+
+`npm test`: **23 suites**. Replay OK across **620 files**.
