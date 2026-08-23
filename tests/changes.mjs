@@ -278,6 +278,26 @@ for (const lang of ["en", "es", "de", "fr"]) {
       !/we were wrong|wir lagen falsch|trompés|nos equivocamos/i.test(doc.changes.kind.correction),
       doc.changes.kind.correction);
   }
+  // AND NOWHERE A PAGE CAN RENDER IT. The i18n value was changed and the
+  // renderer's own English fallback was not, so it still read "We were
+  // wrong" — and a fallback is what a reader gets whenever the i18n
+  // lookup comes up empty, which is precisely the moment nobody is
+  // watching. Every other fallback on this page is a shortened form of
+  // its translation, which is fine; one that CONTRADICTS its translation
+  // is not, and this is the cheap check that says so.
+  {
+    const sources = ["site-worker/src/index.js", "einvoicing-compliance-tracker.html"]
+      .map((f) => [f, readFileSync(join(REPO, f), "utf8")]);
+    const guilty = sources.filter(([, text]) =>
+      // Comments are allowed to name the retired phrase — 617's header
+      // and this file's own do. Code is not.
+      text.split("\n").some((line) =>
+        /we were wrong/i.test(line) && !/^\s*(\/\/|\*|<!--)/.test(line)));
+    t.check("the retired phrase is not left in any renderable string",
+      guilty.length === 0,
+      guilty.map(([f]) => f).join(", ") + " still carries it outside a comment");
+  }
+
   // BUT STILL TWO CATEGORIES. Softening the label was the ask;
   // collapsing our correction into "the law moved" was not, and it is
   // the edit that would actually cost the page its reason to exist.

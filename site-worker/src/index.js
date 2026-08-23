@@ -1392,7 +1392,14 @@ async function renderChangesPage(request, env) {
 
   const entry = (r) => {
     const kindKey = r.kind === "moved" ? "kind.moved" : "kind.correction";
-    const kindEn = r.kind === "moved" ? "The law moved" : "We were wrong";
+    // THE FALLBACK IS THE LABEL, so it may not contradict the string it
+    // stands in for. Every other fallback on this page is a shortened
+    // version of its translation and that is fine; this one was left
+    // reading "We were wrong" after 617 changed the label to
+    // "Corrected", so any reader whose i18n lookup came up empty saw
+    // exactly the wording that had just been retired. tests/changes.mjs
+    // now refuses the phrase anywhere a page can render it.
+    const kindEn = r.kind === "moved" ? "The law moved" : "Corrected";
     return `<article class="ch">
       <div class="chh">
         <span class="dt">${escHtml(r.changed_on)}</span>
