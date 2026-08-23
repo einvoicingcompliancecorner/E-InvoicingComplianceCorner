@@ -15534,3 +15534,22 @@ were clean. Recorded rather than chased; the next occurrence starts from
 these facts instead of from scratch.
 
 `npm test`: **23 suites**. Replay OK across **622 files**.
+
+### The bundle prerequisite rule, restated because I broke it again
+
+Third time in this project, and the cause is always the same shape but
+this time it had a specific trigger worth naming: **I marked the previous
+work "deployed" in PROGRESS *after* Dan pulled, then based the next
+bundle on that commit.** He had never seen it, so the pull failed on a
+prerequisite that exists only here.
+
+The old rule — "base every bundle on the last confirmed deploy" — is not
+precise enough, because a PROGRESS commit made in response to "this is
+deployed" *feels* like the last confirmed deploy and is in fact one
+commit past it.
+
+**The precise rule: base the bundle on the commit the LAST BUNDLE
+REQUIRED as its prerequisite.** That commit is provably in his repo,
+because the pull he confirmed would have failed without it. It is
+recoverable at any time with `git bundle verify`, and it never depends on
+remembering what happened after a pull.
