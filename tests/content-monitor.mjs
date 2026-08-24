@@ -64,17 +64,36 @@ function extractFn(name) {
   const m = SRC.match(re);
   return m ? m[0] : null;
 }
-const LABELLERS = ["cmSourceHeading", "cmSourceGroup"];
-const bodies = LABELLERS.map(extractFn);
-t.check("the digest's label functions are still extractable from the worker",
-  bodies.every(Boolean),
-  LABELLERS.filter((n, i) => !bodies[i]).join(", ") + " not found — renamed?");
+// The same, for a one-line `const NAME = …;` declaration — including
+// the two that declare three colours apiece.
+function extractConst(name) {
+  const re = new RegExp(`^const ${name}[ ,=][^\\n]*?;$`, "m");
+  const m = SRC.match(re);
+  return m ? m[0] : null;
+}
 
-let cmSourceHeading = null, cmSourceGroup = null;
-if (bodies.every(Boolean)) {
+// Everything buildDigestHtml touches, so the digest can be RENDERED
+// here rather than pattern-matched. Reading the email is the only way
+// to check what it says; a regex over the source checks what it was
+// written to say, which is a weaker claim and the one that has been
+// wrong twice.
+const FNS = ["escapeHtmlCM", "cmHost", "cmPath", "cmSourceHeading", "cmSourceGroup",
+  "cmSourceCard", "humanizeFetchError", "buildDigestHtml"];
+const CONSTS = ["CM_HEADING", "CM_AMBER", "CM_ITEM_TYPE_LABELS", "CM_CHANNEL_LABELS",
+  "CONTENT_MONITOR_KNOWN_BLOCKER_RUNS"];
+const fnBodies = FNS.map(extractFn);
+const constBodies = CONSTS.map(extractConst);
+t.check("the digest and its helpers are still extractable from the worker",
+  fnBodies.every(Boolean) && constBodies.every(Boolean),
+  [...FNS.filter((n, i) => !fnBodies[i]), ...CONSTS.filter((n, i) => !constBodies[i])]
+    .join(", ") + " not found — renamed?");
+
+let cmSourceHeading = null, cmSourceGroup = null, buildDigestHtml = null;
+if (fnBodies.every(Boolean) && constBodies.every(Boolean)) {
   // eslint-disable-next-line no-new-func
-  ({ cmSourceHeading, cmSourceGroup } = new Function(
-    `${bodies.join("\n")}\nreturn { cmSourceHeading, cmSourceGroup };`)());
+  ({ cmSourceHeading, cmSourceGroup, buildDigestHtml } = new Function(
+    `${constBodies.join("\n")}\n${fnBodies.join("\n")}\n`
+    + "return { cmSourceHeading, cmSourceGroup, buildDigestHtml };")());
 }
 
 // And the query, taken from the worker rather than retyped. This is the
@@ -152,6 +171,15 @@ if (cmSourceHeading && cmSourceGroup) {
   t.check("the group label collapses the list rather than echoing it",
     groups.size < watched.length / 3,
     `${groups.size} groups across ${watched.length} sources`);
+
+  // AND THE HEADING IS NOT THE URL. The card prints the URL on its own
+  // line directly beneath the heading, so a heading that falls back to
+  // the URL renders it twice — invisible in the source, obvious the
+  // first time the email was actually rendered and read.
+  const echoed = watched.filter((s) => cmSourceHeading(s) === s.url);
+  t.check("no card heading is just the URL printed a second time",
+    echoed.length === 0,
+    `${echoed.length} of ${watched.length}\n        ` + echoed.slice(0, 5).map((s) => s.url).join("\n        "));
 }
 
 // ---- 2. honesty about the cycle ----------------------------------------
@@ -172,23 +200,85 @@ const ua = (SRC.match(/const CONTENT_MONITOR_USER_AGENT = "([^"]+)"/) || [])[1] 
 t.check("the user-agent tells the sites we fetch the real cadence",
   /daily check/i.test(ua) && !/weekly/i.test(ua), ua);
 
-const digest = (SRC.match(/function buildDigestHtml\([\s\S]*?^\}/m) || [""])[0];
-t.check("the digest heading says daily, not weekly",
-  /Daily check — \$\{dateStr\}/.test(digest) && !/Weekly check/.test(digest));
-t.check("and no line of the digest still talks in weeks",
-  !/this week|next week|each week|every week/i.test(digest),
-  (digest.match(/.{0,50}(this week|next week|each week|every week).{0,50}/i) || [])[0] || "");
+const digestSrc = (SRC.match(/function buildDigestHtml\([\s\S]*?^\}/m) || [""])[0];
+t.check("no line of the digest still talks in weeks",
+  !/this week|next week|each week|every week/i.test(digestSrc),
+  (digestSrc.match(/.{0,50}(this week|next week|each week|every week).{0,50}/i) || [])[0] || "");
 
-// THE ONE THAT MATTERS. A partial sweep is now the normal outcome — 758
-// sources at ~1.75s each cannot fit in one run and are not meant to. So
-// "270 of 758 checked" is a true sentence that, printed every morning
-// with nothing beside it, teaches the reader that the monitor is behind
-// rather than that it is working as designed. The digest divides and
-// says the answer in days.
-t.check("the digest computes the cycle it is achieving, in days",
-  /Math\.ceil\(totalSources \/ results\.length\)/.test(digest)
-  && /every \$\{sweepDays\} days/.test(digest),
-  "the summary line must state the achieved cycle, not only the fraction");
+// ---- 2a. the digest, rendered -------------------------------------------
+//
+// Three runs the job really has, put through the real function. What
+// this email SAYS is the whole product here — it is the only output the
+// monitor has — and both of its historical failures were sentences, not
+// numbers. So they are read, not grepped.
+const fakeSource = (i, fact) => ({
+  url: `https://example.gov/page-${i}`,
+  is_fact_source: fact ? 1 : 0,
+  is_curated: 0,
+  citations: fact ? 2 : 1,
+  fact_countries: fact ? "Poland" : null,
+  fact_fields: fact ? "b2b" : null,
+  last_verified: fact ? "2026-08-21" : null,
+});
+const fakeRun = (n) => Array.from({ length: n }, (_, i) =>
+  ({ status: "unchanged", source: fakeSource(i, false) }));
+
+if (buildDigestHtml) {
+  const TOTAL = 758;
+  // A normal night: a slice checked, the rest queued.
+  const nightly = buildDigestHtml(fakeRun(270), TOTAL,
+    Array.from({ length: 488 }, (_, i) => fakeSource(i + 270, false)), [], []);
+  t.check("a nightly run calls itself a daily check",
+    /Daily check/.test(nightly) && !/Weekly check|Manual check/.test(nightly));
+  // THE ONE THAT MATTERS. "270 of 758" is true and, printed every
+  // morning with nothing beside it, teaches the reader the monitor is
+  // behind when it is working exactly as designed.
+  t.check("and states the cycle it is achieving, in days",
+    /every 3 days/.test(nightly),
+    (nightly.match(/[^<>]*at this rate[^<>]*/) || ["no cadence sentence found"])[0]);
+
+  // A MANUAL RUN MUST NOT PROJECT A CADENCE FROM ITSELF. It is capped
+  // at ~20 seconds, so the same arithmetic would print "about every 60
+  // days" — arithmetically true, false as a statement about the job,
+  // and the first thing anyone testing a deploy sees.
+  const manual = buildDigestHtml(fakeRun(12), TOTAL,
+    Array.from({ length: 746 }, (_, i) => fakeSource(i + 12, false)), [], [], { manual: true });
+  t.check("a manual slice calls itself a manual check",
+    /Manual check/.test(manual) && !/Daily check/.test(manual));
+  t.check("and refuses to project a cadence from twenty seconds",
+    !/at this rate/.test(manual) && /not the nightly rate/.test(manual),
+    (manual.match(/[^<>]*manual slice[^<>]*/) || ["no manual sentence found"])[0]);
+
+  // A sweep that did finish inside one run says so plainly, with no
+  // cadence arithmetic at all — "every 1 days" would be a bug.
+  const complete = buildDigestHtml(fakeRun(TOTAL), TOTAL, [], [], []);
+  t.check("a completed sweep says so without projecting anything",
+    /All 758 sources checked/.test(complete) && !/at this rate|days/.test(complete));
+
+  // And the line that turns an errand into a task: a changed page that
+  // backs a published fact, named by country and field, with the date
+  // that fact was last verified.
+  const changed = buildDigestHtml(
+    [{ status: "changed", source: fakeSource(1, true), diff: { before: "old text", after: "new text" } }],
+    TOTAL, [], [], []);
+  t.check("a changed fact source is separated out and dated",
+    /Behind a published fact/.test(changed)
+    && /Poland/.test(changed) && /b2b/.test(changed)
+    && /last verified 2026-08-21/.test(changed),
+    "the last_verified date is the only thing distinguishing movement from a problem");
+  t.check("and a changed non-fact source is not filed under it",
+    !/Behind a published fact/.test(buildDigestHtml(
+      [{ status: "changed", source: fakeSource(2, false), diff: { before: "a", after: "b" } }],
+      TOTAL, [], [], [])));
+}
+
+// The manual trigger has to actually declare itself, or every check
+// above passes while the deployed email still projects 60 days.
+t.check("the manual trigger tells the digest which caller it is",
+  /runContentMonitor\(env, \{ timeBudgetMs: CONTENT_MONITOR_MANUAL_BUDGET_MS, manual: true \}\)/.test(SRC));
+t.check("and the subject line carries the cadence too",
+  /manual run.*daily check|daily check.*manual run/s.test(SRC) && !/week of \$\{/.test(SRC),
+  "a subject line is the part most often read without the body");
 
 // And the arithmetic behind that is checked here rather than assumed,
 // because it is the reason the job is daily at all. If the list ever

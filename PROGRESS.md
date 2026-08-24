@@ -16266,3 +16266,31 @@ countries: undefined"* every morning — nothing thrown, nothing logged.
 **Migration-apply and a members-worker deploy**, and `wrangler.toml`'s
 `crons` now carries `0 8 * * *` — the schedule lives in the platform, not
 in the constant that names it.
+
+#### Postscript, same day: the manual run was about to lie in the new way
+
+Dan asked how to test the deploy. The answer is
+`POST /admin/run-content-monitor` — and walking through it found that
+the first thing he would have seen was the *new* cadence sentence
+computed from a twenty-second slice: **"at this rate every source is
+seen about every 60 days."** Arithmetically true, false as a statement
+about the job, and the same defect the morning's work existed to correct.
+
+`runContentMonitor` now takes an explicit `manual: true` rather than
+inferring it from the budget — a future third caller has to state its
+case — and that digest is headed **Manual check**, says it is a slice
+and not the nightly rate, and promises the queue to "the next run"
+rather than to "tomorrow". The subject line carries the cadence too; it
+had said "week of" since June.
+
+**And then the email was actually rendered and read**, which found a
+defect no reading of the source had: `cmSourceHeading` fell back to the
+URL, and the card prints the URL on its own line directly beneath it, so
+every non-fact citation showed the same long URL twice. A citation with
+no country now takes its publisher's host; a known blocker is named by
+path, which is the part that says *which* page is dark. The test now
+extracts `buildDigestHtml` and renders four real runs — nightly,
+manual, complete sweep, changed fact source — instead of grepping the
+source for what it was written to say.
+
+`npm test`: 27 suites, **29 checks in the monitor suite**.

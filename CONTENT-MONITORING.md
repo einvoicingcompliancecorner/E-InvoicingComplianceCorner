@@ -699,6 +699,30 @@ changes is how this email becomes something skimmed. Changes are split:
 The `last_verified` line is the only thing in the email that
 distinguishes movement from a problem.
 
+### Testing a deploy, and what the manual run says
+
+`POST /admin/run-content-monitor` (same `X-Admin-Secret` header as the
+monthly job) is the end-to-end test. It runs under `waitUntil()` after
+the response, so it is capped at ~20 seconds and reaches a dozen or so
+sources, advancing the same cursor.
+
+**A manual run does not project a cadence from itself.** The same
+arithmetic that honestly reports "every 3 days" for a nightly sweep
+would report "about every 60 days" for a 20-second slice —
+arithmetically true, false as a statement about the job, and the first
+thing anyone testing a deploy would see. `runContentMonitor` takes an
+explicit `manual: true` rather than inferring it from the budget, and
+the digest headed **Manual check** says it is a slice and not the
+nightly rate. The test asserts both, in both directions.
+
+One defect only the rendered email could show: a card whose heading fell
+back to the URL printed it twice, since the card prints the URL on its
+own line directly beneath. A citation with no country now takes its
+publisher's host as a heading, and a known blocker is named by path.
+That is why `tests/content-monitor.mjs` extracts `buildDigestHtml` and
+RENDERS it rather than pattern-matching the source: this email is the
+job's only output, and both of its historical failures were sentences.
+
 ### KV keys moved with the list
 
 Baselines were keyed on `tracking_sources.id`, which the derived list has

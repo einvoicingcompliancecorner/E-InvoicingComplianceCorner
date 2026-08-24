@@ -1194,11 +1194,36 @@ function cmSourceHeading(source) {
   if (source.description) return `${source.country || source.curated_country} — ${source.description}`;
   const countries = (source.fact_countries || "").split(",").filter(Boolean);
   const fields = [...new Set((source.fact_fields || "").split(",").filter(Boolean))];
-  if (!countries.length) return source.curated_country || source.country || source.url;
+  // THE HOST, NOT THE URL. The card prints the full URL on its own line
+  // immediately below this heading, so falling back to the URL renders
+  // it twice — which is what the first rendered sample of this email
+  // showed, and what no amount of reading the source had. A milestone
+  // or portal citation belongs to nobody in particular; its publisher
+  // is the most useful thing that can honestly be said about it.
+  if (!countries.length) return source.curated_country || source.country || cmHost(source.url);
   const where = countries.length > 3
     ? `${countries.slice(0, 3).join(", ")} +${countries.length - 3} more`
     : countries.join(", ");
   return fields.length ? `${where} — ${fields.join(", ")}` : where;
+}
+
+/** Publisher of a URL, for when nothing better is known about it. */
+function cmHost(url) {
+  try {
+    return new URL(url).hostname.replace(/^www\./, "");
+  } catch {
+    return String(url || "").slice(0, 40);
+  }
+}
+
+/** The part of a URL that distinguishes it from others on the same host. */
+function cmPath(url) {
+  try {
+    const p = new URL(url).pathname.replace(/\/$/, "");
+    return p && p !== "/" ? p : cmHost(url);
+  } catch {
+    return String(url || "").slice(0, 60);
+  }
 }
 
 /**
@@ -1221,11 +1246,7 @@ function cmSourceGroup(source) {
   const first = (source.fact_countries || "").split(",").filter(Boolean)[0];
   if (source.curated_country) return source.curated_country;
   if (first) return first;
-  try {
-    return new URL(source.url).hostname.replace(/^www\./, "");
-  } catch {
-    return String(source.url || "").slice(0, 40);
-  }
+  return cmHost(source.url);
 }
 
 function cmSourceCard(source, accentColor, bodyHtml) {
@@ -1251,7 +1272,8 @@ const CM_CHANNEL_LABELS = { newsletter: "newsletter", linkedin: "LinkedIn" };
 // small. Before 10 Aug 2026 it opened with a four-up stat grid where
 // three of the four numbers were shortfalls, which made a completely
 // healthy week read like a list of failures.
-function buildDigestHtml(results, totalSources, skipped, unannounced, cxDrift) {
+function buildDigestHtml(results, totalSources, skipped, unannounced, cxDrift, opts) {
+  const manual = Boolean(opts && opts.manual);
   skipped = skipped || [];
   unannounced = unannounced || [];
   cxDrift = cxDrift || [];
@@ -1285,18 +1307,27 @@ function buildDigestHtml(results, totalSources, skipped, unannounced, cxDrift) {
   // answer in days — the one number that says whether the monitor is
   // keeping up.
   const sweepDays = results.length > 0 ? Math.ceil(totalSources / results.length) : 0;
-  const cadence = fullSweep
-    ? `All ${totalSources} sources checked.`
-    : `${results.length} of ${totalSources} checked today${
-        sweepDays > 1 ? ` — at this rate every source is seen about every ${sweepDays} days` : ""
-      }; the rest are first in the queue tomorrow.`;
+  // A MANUAL RUN MUST NOT PROJECT A CADENCE FROM ITSELF. It is capped
+  // at ~20 seconds because it runs under waitUntil() after a response,
+  // so it reaches a dozen or so sources — and "at this rate every
+  // source is seen about every 60 days" would be arithmetically true
+  // and completely false as a statement about the job. That is this
+  // email's oldest failure wearing the fix's own clothes, and the first
+  // thing anyone testing a deploy would see.
+  const cadence = manual
+    ? `${results.length} of ${totalSources} checked in a manual slice — capped at ~20 seconds, so this is not the nightly rate. It advances the same cursor, so tonight's run continues from here.`
+    : fullSweep
+      ? `All ${totalSources} sources checked.`
+      : `${results.length} of ${totalSources} checked today${
+          sweepDays > 1 ? ` — at this rate every source is seen about every ${sweepDays} days` : ""
+        }; the rest are first in the queue tomorrow.`;
 
   let html = `
     <p style="margin:0 0 4px; font-family:'Courier New',Courier,monospace; font-size:11px; letter-spacing:1.5px; text-transform:uppercase; color:${CM_AMBER};">Content Monitor</p>
-    <h1 style="margin:0 0 6px; font-family:Georgia,serif; font-size:20px; color:${CM_HEADING};">Daily check — ${dateStr}</h1>
+    <h1 style="margin:0 0 6px; font-family:Georgia,serif; font-size:20px; color:${CM_HEADING};">${manual ? "Manual check" : "Daily check"} — ${dateStr}</h1>
     <p style="margin:0 0 18px; font-size:13px; color:${CM_BODY};">${
       needsAttention === 0
-        ? `Nothing needs you today. ${cadence} No changes found.`
+        ? `Nothing needs you ${manual ? "from this slice" : "today"}. ${cadence} No changes found.`
         : `<strong>${needsAttention} item${needsAttention === 1 ? "" : "s"} for you below.</strong> ${cadence}`
     }</p>`;
 
@@ -1396,9 +1427,12 @@ function buildDigestHtml(results, totalSources, skipped, unannounced, cxDrift) {
     // sources — Israel currently has two, and "Israel (9 runs), Israel
     // (9 runs)" tells the reader nothing about which pages are dark.
     const names = knownBlockers.map((r) => {
+      // The PATH, not the whole URL: the group label already named the
+      // host, so repeating it costs the 60 characters that would have
+      // said which page on that host is dark.
       const label = r.source.description
         ? String(r.source.description).split(/\s+[—-]\s+/).pop()
-        : cmSourceHeading(r.source);
+        : cmPath(r.source.url);
       return `${escapeHtmlCM(cmSourceGroup(r.source))} — ${escapeHtmlCM(String(label).slice(0, 60))} (${r.consecutiveFailures} runs)`;
     });
     notes.push(`<strong>${knownBlockers.length} known blocker${knownBlockers.length === 1 ? "" : "s"}</strong>, unchanged: ${names.join(", ")}. These sites refuse automated visits as a matter of policy, so they're listed rather than re-explained every run — they still need occasional manual checking, and they'd move back up into "newly unreachable" if they ever started working and then broke again.`);
@@ -1423,7 +1457,7 @@ function buildDigestHtml(results, totalSources, skipped, unannounced, cxDrift) {
     // Grouped, not one entry per source — a country with three cited
     // pages used to print "Latvia, Latvia, Latvia" and read like a bug.
     const groups = [...new Set(skipped.map(cmSourceGroup))];
-    notes.push(`${skipped.length} source${skipped.length === 1 ? "" : "s"} across ${groups.length} ${groups.length === 1 ? "country or publisher" : "countries and publishers"} are still queued from this sweep and go first tomorrow: ${groups.slice(0, 6).map(escapeHtmlCM).join(", ")}${groups.length > 6 ? `, +${groups.length - 6} more` : ""}.`);
+    notes.push(`${skipped.length} source${skipped.length === 1 ? "" : "s"} across ${groups.length} ${groups.length === 1 ? "country or publisher" : "countries and publishers"} are still queued from this sweep and go first ${manual ? "on the next run" : "tomorrow"}: ${groups.slice(0, 6).map(escapeHtmlCM).join(", ")}${groups.length > 6 ? `, +${groups.length - 6} more` : ""}.`);
   }
   if (notes.length) {
     html += `<div style="margin:22px 0 0; padding:12px 14px; background-color:#f5f0e2; border-radius:4px;">
@@ -1442,6 +1476,12 @@ async function runContentMonitor(env, opts) {
   // trigger runs under waitUntil() after a response and gets far less.
   // See CONTENT_MONITOR_MANUAL_BUDGET_MS.
   const timeBudgetMs = (opts && opts.timeBudgetMs) || CONTENT_MONITOR_TIME_BUDGET_MS;
+  // The digest needs to know WHICH caller it is reporting on, not just
+  // how long it had: a manual slice describes itself differently
+  // because a cadence projected from twenty seconds is a lie about a
+  // nightly job. Derived from an explicit flag rather than inferred
+  // from the budget, so a future third caller has to state its case.
+  const manual = Boolean(opts && opts.manual);
   const allSources = await getMonitoredSources(env);
   if (allSources.length === 0) {
     console.log("Content monitor: nothing cited to check.");
@@ -1520,16 +1560,20 @@ async function runContentMonitor(env, opts) {
   // as a tally of problems ("0 changed, 2 failed, 107 deferred") even
   // on a healthy week, which is exactly backwards for an inbox.
   const attention = changed + unannounced.length + cxDrift.length;
+  // "week of" until 24 August, on a job that has not been weekly since
+  // that morning. A subject line is the part of this email most likely
+  // to be read without the body, so it carries the cadence too.
+  const when = `${manual ? "manual run" : "daily check"}, ${new Date().toISOString().slice(0, 10)}`;
   const subject = attention === 0
-    ? `[Content Monitor] All quiet — week of ${new Date().toISOString().slice(0, 10)}`
-    : `[Content Monitor] ${[changed ? `${changed} changed` : null, unannounced.length ? `${unannounced.length} to announce` : null, cxDrift.length ? `${cxDrift.length} to reclassify` : null].filter(Boolean).join(", ")} — week of ${new Date().toISOString().slice(0, 10)}`;
+    ? `[Content Monitor] All quiet — ${when}`
+    : `[Content Monitor] ${[changed ? `${changed} changed` : null, unannounced.length ? `${unannounced.length} to announce` : null, cxDrift.length ? `${cxDrift.length} to reclassify` : null].filter(Boolean).join(", ")} — ${when}`;
 
   const footerHtml = `<p style="margin:0; font-family:'Courier New',Courier,monospace; font-size:10.5px; color:${CM_MUTED};">Internal monitoring only — never sent to subscribers. Sources: <a href="https://e-invoicingcompliancecorner.com/sources" style="color:${CM_MUTED};">the tracking sources page</a>.</p>`;
   await sendViaResend(env, {
     from: env.FROM_EMAIL,
     to: env.CONTENT_MONITOR_EMAIL,
     subject,
-    html: buildEmailShell(buildDigestHtml(results, allSources.length, skipped, unannounced, cxDrift), footerHtml, CM_HEADER_HTML),
+    html: buildEmailShell(buildDigestHtml(results, allSources.length, skipped, unannounced, cxDrift, { manual }), footerHtml, CM_HEADER_HTML),
   });
 }
 
@@ -1559,7 +1603,7 @@ async function handleManualContentMonitorTrigger(request, env, ctx) {
   // 20s to 8 minutes — the change fixed the scheduled path and silently
   // broke this one. Worth remembering that these two callers have
   // genuinely different lifetimes and always did.)
-  ctx.waitUntil(runContentMonitor(env, { timeBudgetMs: CONTENT_MONITOR_MANUAL_BUDGET_MS }));
+  ctx.waitUntil(runContentMonitor(env, { timeBudgetMs: CONTENT_MONITOR_MANUAL_BUDGET_MS, manual: true }));
   return new Response(
     "Content monitor run started in the background. NOTE: a manual run deliberately checks only a slice of the sources (~20 seconds' worth), because this path runs after the HTTP response and doesn't get the full time budget the nightly cron does. It advances the same cursor, so the next run picks up where this one stopped. Watch `wrangler tail` for progress; a digest email is sent when the slice completes.",
     { status: 202 }
