@@ -16796,3 +16796,9 @@ across **642 files**.
 
 **Needs a deploy of both Workers and the assets** — `i18n/*.json`,
 `i18n/i18n.js` and eleven static pages all changed.
+
+**Deployed and confirmed, 24 August 2026.** A German cookie on
+`/germany` now returns `<html lang="en">` — the URL decides, and the
+cache-correctness bug that let a shared cache serve the German copy to
+an English reader is closed after as long as the site has had
+translations.
