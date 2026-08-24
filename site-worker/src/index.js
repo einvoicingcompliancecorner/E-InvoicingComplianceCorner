@@ -1631,6 +1631,13 @@ async function renderChangesPage(request, env) {
 async function renderSpecRegisterPage(request, env) {
   if (!env.eicc_content) return new Response("Missing D1 binding", { status: 500 });
   const { lang, shouldSetCookie } = resolveInsightsLang(request);
+  // frame=1 means the tracker is showing this page inside its panel, and
+  // the WHOLE top bar goes -- not just the language row. The panel draws
+  // its own "← Back to global tracker" above the iframe, so a page that
+  // keeps its own renders the same link twice, one above the other.
+  // /changes and /methodology have always dropped the bar entirely for
+  // this reason; this page kept it for a day because it stripped only
+  // the languages, which is the visible half of the same contract.
   const framed = new URL(request.url).searchParams.get("frame") === "1";
 
   // THE GATE IS THE ROUTE. Before any D1 query, so a signed-out request
@@ -1829,10 +1836,10 @@ async function renderSpecRegisterPage(request, env) {
 </head>
 <body>
 <div class="wrap">
-  <div class="top-bar">
-    <a href="/einvoicing-compliance-tracker.html" target="_top">${escHtml(t("back", "← Back to global tracker"))}</a>
-    ${framed ? "" : `<span class="langs">${langLinks}</span>`}
-  </div>
+  ${framed ? "" : `<div class="top-bar">
+    <a class="back-link" href="/einvoicing-compliance-tracker.html" target="_top">${escHtml(t("back", "← Back to global tracker"))}</a>
+    <span class="langs">${langLinks}</span>
+  </div>`}
   <p class="eyebrow">${escHtml(t("eyebrow", "The specification register"))}</p>
   <h1>${escHtml(t("title", "What each country actually mandates, and where the file is"))}</h1>
   <p class="intro">${escHtml(t("intro", "The format, the version, the authoritative file, the licence, and the date a version becomes obligatory."))}</p>

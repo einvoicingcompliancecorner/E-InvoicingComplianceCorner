@@ -16537,3 +16537,29 @@ either moved into this menu.
 
 `npm test`: 28 suites, **38 checks** in the register suite. Replay OK
 across **641 files**.
+
+#### The register drew a back link the panel had already drawn
+
+Dan, 24 August 2026: *"within the specification register, there are two
+headline links which are labelled '← Back to the global tracker'."*
+
+He was seeing the page inside the tracker's framed panel, which draws
+its own back link above the iframe. `/changes` and `/methodology` have
+always dropped their whole top bar when `frame=1`, for exactly this
+reason. The register stripped only the language row — the visible half
+of the same contract — so it kept its own back link and rendered the
+same words twice, one above the other.
+
+**An inherited pattern that had not been inherited completely**, which
+is the quiet version of failure class B: the page was consistent with
+itself and inconsistent with the three pages it was modelled on.
+
+Fixed by dropping the bar, and checked in both directions — framed has
+none, standalone has exactly one. Dropping it in both states would be
+the opposite defect and would look identical from inside the panel.
+
+Every framed page was then swept for the same shape: guides, planner,
+changes, methodology and the register all now report 0 back links framed
+and at most 1 plain. The register was the only one that had it.
+
+`npm test`: 28 suites, **40 checks** in the register suite.
