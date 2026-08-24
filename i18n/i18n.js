@@ -318,11 +318,110 @@ const EICC_I18N = {
     this.persistLanguage(code);
     await this.loadLanguage(code);
     this.applyToDom();
+    this.applyHead();
     this.renderBanner();
     document.dispatchEvent(new CustomEvent("eicc:languageChanged", { detail: { lang: code } }));
   },
 
+  // ================================================================
+  // THE HEAD, WHICH THIS LOADER NEVER TOUCHED
+  // ================================================================
+  //
+  // Until 24 August 2026 a German reader of any static page got German
+  // body copy inside a document still declaring `<html lang="en">`, an
+  // English <title> and an English meta description — the three things
+  // a search engine reads before it reads a word of the page. The body
+  // was translated and everything describing it was not.
+  //
+  // The canonical is rewritten too, so a ?lang= variant claims itself
+  // rather than the English URL. The static pages carry their hreflang
+  // cluster in the markup; only the canonical has to move, because only
+  // it depends on which language is showing.
+  applyHead() {
+    const doc = document.documentElement;
+    if (doc.getAttribute("lang") !== this.currentLang) doc.setAttribute("lang", this.currentLang);
+    // Keyed by the page's own declared name, because one i18n file
+    // serves every page on the site — there is no "this page's title"
+    // without the page saying which one it is. A page with no
+    // data-page simply keeps the title its author wrote.
+    const key = document.body && document.body.getAttribute("data-page");
+    const head = key && this.strings && this.strings.pages && this.strings.pages[key];
+    if (head) {
+      if (head.title) document.title = head.title;
+      const desc = document.querySelector('meta[name="description"]');
+      if (desc && head.description) desc.setAttribute("content", head.description);
+      // og and twitter follow the same words, so a share in German is
+      // not a share of the English summary.
+      for (const sel of ['meta[property="og:title"]', 'meta[name="twitter:title"]']) {
+        const el = document.querySelector(sel);
+        if (el && head.title) el.setAttribute("content", head.title);
+      }
+      for (const sel of ['meta[property="og:description"]', 'meta[name="twitter:description"]']) {
+        const el = document.querySelector(sel);
+        if (el && head.description) el.setAttribute("content", head.description);
+      }
+    }
+    // FILES, NOT QUERY PARAMS. The CTC whitepaper ships as four separate
+    // documents with their own reciprocal hreflang cluster, so its
+    // canonical is already right and appending ?lang= to it would point
+    // the German file at itself-in-German-again.
+    const byFile = document.body && document.body.getAttribute("data-lang-mode") === "files";
+    const canonical = byFile ? null : document.querySelector('link[rel="canonical"]');
+    if (canonical) {
+      try {
+        const href = new URL(canonical.getAttribute("href"), window.location.href);
+        href.searchParams.delete("lang");
+        if (this.currentLang !== DEFAULT_LANGUAGE) href.searchParams.set("lang", this.currentLang);
+        canonical.setAttribute("href", href.toString());
+        const ogUrl = document.querySelector('meta[property="og:url"]');
+        if (ogUrl) ogUrl.setAttribute("content", href.toString());
+      } catch (e) { /* a malformed canonical is not worth throwing over */ }
+    }
+  },
+
+  // ================================================================
+  // RESTORING A READER'S LANGUAGE WITHOUT LYING TO A CRAWLER
+  // ================================================================
+  //
+  // The Workers stopped reading the cookie on 24 August: one URL now
+  // returns one language, so a bare URL is English for everyone and the
+  // canonical can be self-referential. That is right for caches and for
+  // search, and on its own it would mean a reader who chose German last
+  // week lands on English every time they arrive from a bookmark.
+  //
+  // So the preference is restored HERE, on the client, and only when
+  // there is a cookie to restore from. GOOGLEBOT SENDS NO COOKIES, so
+  // this never fires for a crawler — it sees English at the English URL,
+  // exactly as the canonical claims. A person gets what they picked.
+  //
+  // location.replace, not assign: the reader did not ask to navigate, so
+  // this must not leave a back-button trap on the English URL that
+  // immediately bounces them forward again.
+  redirectToPreferredLanguage() {
+    const params = new URLSearchParams(window.location.search);
+    // Only ever on a URL with NO opinion of its own. A ?lang= URL is a
+    // deliberate choice — someone's shared link, or a switch just made —
+    // and overriding it from a cookie would make shared links unreliable
+    // and could bounce between two languages forever.
+    if (params.has("lang")) return false;
+    // And never on a page whose languages are separate files — the
+    // reader's German lives at a different URL, not at this one with a
+    // parameter bolted on.
+    if (document.body && document.body.getAttribute("data-lang-mode") === "files") return false;
+    const cookie = readCookie(COOKIE_NAME);
+    if (!cookie || cookie === DEFAULT_LANGUAGE) return false;
+    if (!SUPPORTED_LANGUAGES.some((l) => l.code === cookie)) return false;
+    const url = new URL(window.location.href);
+    url.searchParams.set("lang", cookie);
+    window.location.replace(url.toString());
+    return true;
+  },
+
   async init() {
+    // Before anything renders: if this reader has a language and the URL
+    // does not, hand them their own. Returns true when the page is on
+    // its way elsewhere, in which case there is nothing to translate.
+    if (this.redirectToPreferredLanguage()) return;
     const lang = this.detectLanguage();
     // Migrate a legacy localStorage-only preference (or a fresh ?lang=
     // URL visit) into the shared cookie, so the very next page — on
@@ -330,6 +429,7 @@ const EICC_I18N = {
     this.persistLanguage(lang);
     await this.loadLanguage(lang);
     this.applyToDom();
+    this.applyHead();
     this.renderBanner();
     // Dispatch the same event used for manual switches, so any page-specific
     // code that renders dynamic content (cards, boards, sidebars) in the

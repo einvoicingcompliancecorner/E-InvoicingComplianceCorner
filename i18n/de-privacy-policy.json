@@ -1,5 +1,8 @@
 {
-  "_meta": { "language": "de", "reviewed": true },
+  "_meta": {
+    "language": "de",
+    "reviewed": true
+  },
   "backLink": "← Zurück zur Übersicht",
   "header": {
     "eyebrow": "Rechtliches",
@@ -79,5 +82,11 @@
   },
   "footer": {
     "note": "Diese Seite ist eine allgemeine Vorlage und stellt keine Rechtsberatung dar. Datenschutzpflichten variieren je nach Rechtsordnung und den spezifischen Anbietern und Prozessen, die Sie nutzen — lassen Sie diese bitte von einer qualifizierten Fachperson prüfen, bevor Sie sich für einen echten, zahlenden Kundenstamm darauf verlassen."
+  },
+  "pages": {
+    "privacy": {
+      "title": "Datenschutzerklärung — The E-Invoicing Compliance Corner",
+      "description": "Wie The E-Invoicing Compliance Corner Ihre Daten erhebt, nutzt und schützt — einschließlich Abonnentendaten und Website-Analyse."
+    }
   }
 }

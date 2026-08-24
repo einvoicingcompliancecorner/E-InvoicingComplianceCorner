@@ -143,5 +143,11 @@
   },
   "footer": {
     "text": "Los nombres de empresas en esta página son únicamente ejemplos ilustrativos, incluidos para hacer concreta cada categoría — no son avales, clasificaciones ni un mapa completo del mercado, y su inclusión no implica ninguna relación con este sitio. La investigación de analistas mencionada arriba se enlaza solo con fines informativos generales; los informes completos pueden requerir una suscripción de pago o acceso proporcionado por el proveedor, y cualquier posicionamiento de proveedores en ellos refleja la propia metodología y opiniones de esa firma, no las nuestras. Verifique directamente la acreditación actual y la idoneidad de cualquier proveedor concreto para sus necesidades antes de contratarlo."
+  },
+  "pages": {
+    "types-of-provider": {
+      "title": "Tipos de proveedor de facturación electrónica — ERP, solución, fiscal y consultoría",
+      "description": "Las cinco categorías de proveedor explicadas — ERP, proveedor de solución, cumplimiento fiscal, tecnología y consultoría — con una comparativa directa."
+    }
   }
 }

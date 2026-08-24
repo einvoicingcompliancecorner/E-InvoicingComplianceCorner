@@ -16694,3 +16694,105 @@ on the stripped form while the replace did nothing. Same shape as the
 
 **Needs a migration-apply and a deploy of both Workers** — `i18n/*.json`
 and the tracker shell are assets.
+
+**Deployed and confirmed, 24 August 2026.** 70 crawlable country anchors
+on the live tracker, verified by counting occurrences rather than lines —
+`grep -c` returns 1 because the index is injected as a single line, which
+is the third verification command in a row this session that could not
+distinguish the case it was written to test. The others were
+`wrangler deployments list` (proves a worker shipped, not what) and
+`grep -c 'class="back-link"'` (returns 6 on a correct tree and a broken
+one). **The rule that keeps falling over: a verification command is not
+finished until you know what it prints when the thing is BROKEN.**
+
+---
+
+### 24 August 2026 — the URL decides the language
+
+The largest item from the SEO audit, and the one that needed a decision
+first. Dan chose the query parameter with the URL alone deciding, over
+path prefixes, and asked for the static pages in the same pass.
+
+#### What was wrong
+
+`resolveInsightsLang` read the query parameter, then the cookie, then
+`Accept-Language` — so **one URL returned four different documents**, on
+responses marked `public, max-age=300` **with no `Vary` header**. Three
+consequences, and the first is not an SEO problem at all:
+
+- A shared cache was entitled to hand the German copy to the next
+  English reader. That has been live for as long as the site has had
+  translations.
+- Google indexed one URL per country. `/germany?lang=de` rendered
+  German, declared `inLanguage: "de"` in its own JSON-LD, and pointed
+  its canonical at the English URL — **a page arguing against itself
+  inside a single response**, on seventy countries in three languages.
+- So four languages of content earned search presence in one.
+
+Four copies of the cascade existed — the shared resolver plus three
+renderers with their own — which is why the cookie kept deciding the
+language in places a reader of `resolveInsightsLang` would not look.
+
+#### What it is now
+
+`?lang=de` and nothing else. A bare URL is English for everyone, so every
+response at a URL is byte-identical and cacheable, canonicals are
+self-referential per variant, and hreflang names real URLs. `Set-Cookie`
+is gone from every public page; the cookie is written client-side and
+only remembers a preference.
+
+`Accept-Language` was dropped deliberately rather than overlooked: a
+header that varies per reader cannot decide the content of a cached
+canonical URL without reintroducing the bug above.
+
+**The reader keeps their preference.** `redirectToPreferredLanguage()`
+fires only when a language cookie exists and the URL carries no `?lang`.
+**Googlebot sends no cookies, so it never fires** — a crawler always sees
+English at the English URL, exactly as the canonical claims, while a
+person gets what they picked. `location.replace`, not `assign`, so there
+is no back-button trap.
+
+Verified in a real browser across five cases: no cookie (no redirect),
+cookie=de on a bare URL (one redirect, no loop), cookie=de on `?lang=fr`
+(no redirect — a shared link wins over a cookie), cookie=en (no
+redirect), and the file-per-language whitepaper (untouched).
+
+#### The static pages
+
+Eleven pages had fully translated bodies — 64 `data-i18n` keys on one
+explainer — inside documents declaring `<html lang="en">` with English
+titles and descriptions. `applyHead()` now rewrites the lang attribute,
+title, description, og and twitter tags and the canonical.
+
+**The subtlety that cost the first attempt:** `i18n.js` loads
+`i18n/<lang>-<namespace>.json` when a page declares one, and eight of
+the nine do. Writing all the page meta into the main file produced a
+German page with a German `lang` attribute and an English title, because
+`applyHead()` was reading a file the page had never loaded. **Nothing
+failed. The words simply did not change.**
+
+**And a defect this generator introduced and then removed.** Its first
+run gave `index.html` and the ROI whitepaper an hreflang cluster — but
+neither loads the i18n loader, so all four advertised URLs serve the
+same English document. That is worse than saying nothing: it invites a
+crawler to index four addresses for one page. `unwire_pages()` takes it
+back off, and the suite now fails any page that advertises `?lang=`
+variants it cannot deliver.
+
+The CTC whitepaper is exempt throughout — it ships as four real files
+with correct reciprocal hreflang and was the one thing on the site
+always doing this properly. Its pages carry `data-lang-mode="files"`.
+
+#### The sitemap
+
+One entry per page with `xhtml:link` alternates naming every language
+**including itself**, which is the part most implementations omit and
+the reason a cluster gets ignored. Built from the same `langUrls` helper
+the pages use, so head and sitemap cannot disagree about which URLs
+exist.
+
+`npm test`: **29 suites**, 29 checks in the crawlability suite. Replay OK
+across **642 files**.
+
+**Needs a deploy of both Workers and the assets** — `i18n/*.json`,
+`i18n/i18n.js` and eleven static pages all changed.

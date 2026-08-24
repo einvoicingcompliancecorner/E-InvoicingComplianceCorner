@@ -648,5 +648,51 @@
   "index": {
     "heading": "Alle Jurisdiktionen",
     "intro": "Jedes Land dieses Trackers mit dem nächsten datierten Meilenstein. Jeder Eintrag führt zu einem vollständigen Briefing: Zeitplan, Format, Registrierung und Sanktionen."
+  },
+  "pages": {
+    "certified-providers": {
+      "title": "Staatlich zertifizierte E-Invoicing-Anbieter — amtliche Register nach Ländern",
+      "description": "Direkte Links zu amtlichen Registern akkreditierter E-Invoicing-Dienstleister — ASP, PAC, OSE, GSP und Peppol Access Points — Land für Land geprüft."
+    },
+    "feedback": {
+      "title": "Feedback — The E-Invoicing Compliance Corner",
+      "description": "Eine Lücke, ein veraltetes Datum oder einen defekten Link entdeckt? Sagen Sie uns Bescheid."
+    },
+    "home": {
+      "title": "The E-Invoicing Compliance Corner",
+      "description": "E-Invoicing-Pflichten und Compliance-Fristen in 70 Ländern verfolgen, monatlich aktualisiert."
+    },
+    "impact-of-mandate": {
+      "title": "Auswirkungen einer E-Invoicing-Pflicht — technisch, finanziell, organisatorisch",
+      "description": "Was eine E-Invoicing-Pflicht tatsächlich verändert: technische Integration, Datenresidenz, finanzielle Folgen und die organisatorische Bereitschaft, die die meisten Teams unterschätzen."
+    },
+    "mandate-types": {
+      "title": "Mandatstypen — die 7 E-Invoicing-Compliance-Modelle erklärt",
+      "description": "Die sieben E-Invoicing-Compliance-Modelle erklärt: Post-Audit, Echtzeitmeldung, Clearing, zentrale Plattformen und Peppol-Netze — und woran Sie erkennen, welches für Sie gilt."
+    },
+    "preparing-for-mandate": {
+      "title": "Vorbereitung auf eine E-Invoicing-Pflicht — Zeitplan und Anbieterauswahl",
+      "description": "So bereiten Sie sich auf eine neue E-Invoicing-Pflicht vor: wen Sie einbinden, ein realistischer Zeitplan über 12–18 Monate und ein schrittweiser Auswahlprozess für Anbieter."
+    },
+    "privacy": {
+      "title": "Datenschutzerklärung — The E-Invoicing Compliance Corner",
+      "description": "Wie The E-Invoicing Compliance Corner Ihre Daten erhebt, nutzt und schützt — einschließlich Abonnentendaten und Website-Analyse."
+    },
+    "subscribe": {
+      "title": "Abonnieren — The E-Invoicing Compliance Corner",
+      "description": "Werden Sie benachrichtigt, wenn ein Staat seine E-Invoicing-Regeln ändert. Monatliche Compliance-Updates aus 70 Ländern, zugeschnitten auf Ihre Märkte."
+    },
+    "tracker": {
+      "title": "The E-Invoicing Compliance Corner",
+      "description": "E-Invoicing-Pflichten und Compliance-Fristen in 70 Ländern verfolgen, monatlich aktualisiert."
+    },
+    "types-of-provider": {
+      "title": "Anbietertypen im E-Invoicing — ERP, Lösung, Steuern und Beratung im Vergleich",
+      "description": "Die fünf Kategorien von E-Invoicing-Anbietern erklärt — ERP, Lösungsanbieter, Steuer-Compliance, Technologie und Beratung — mit direktem Vergleich."
+    },
+    "whitepaper-roi": {
+      "title": "Was E-Invoicing wirklich spart — die veröffentlichte Evidenz für Käufer und Lieferanten",
+      "description": "Eine Prüfung der veröffentlichten Belege zu Einsparungen durch E-Invoicing: was jede Studie wirklich gemessen hat, welche verbreiteten Zahlen der Prüfung nicht standhalten und was bleibt."
+    }
   }
 }

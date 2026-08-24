@@ -94,5 +94,11 @@
   },
   "footer": {
     "text": "Cette page renvoie directement vers des sources gouvernementales et officielles vérifiées à la date indiquée ci-dessus, à titre purement informatif — elle ne constitue l'approbation d'aucun prestataire en particulier, et la présence sur une liste gouvernementale ne garantit pas son adéquation à vos besoins spécifiques. Vérifiez toujours directement le statut d'agrément actuel d'un prestataire sur la page officielle liée avant de signer un accord."
+  },
+  "pages": {
+    "certified-providers": {
+      "title": "Prestataires e-invoicing certifiés — registres officiels par pays",
+      "description": "Liens directs vers les registres officiels de prestataires accrédités — ASP, PAC, OSE, GSP et points d'accès Peppol — vérifiés pays par pays."
+    }
   }
 }

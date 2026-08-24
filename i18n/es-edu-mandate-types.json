@@ -1,5 +1,8 @@
 {
-  "_meta": { "language": "es", "reviewed": true },
+  "_meta": {
+    "language": "es",
+    "reviewed": true
+  },
   "backLink": "← Volver al panel general",
   "header": {
     "eyebrow": "Educación",
@@ -15,50 +18,126 @@
   "sec1": {
     "heading": "La única pregunta que lo explica todo",
     "intro": "Antes de comparar formatos y plazos, ayuda hacerse una sola pregunta sobre el régimen de cualquier país: <strong style=\"color:var(--text-lo);\">¿ve la autoridad fiscal la factura, y si es así, antes o después de que llegue al comprador?</strong>",
-    "card1": { "title": "Nunca (o solo bajo solicitud)", "body": "La autoridad fiscal no ve las facturas individuales de forma rutinaria — revisa los registros más tarde, durante una auditoría. Este es el modelo menos intervencionista.", "note": "Ejemplos: Reino Unido, Canadá, Estados Unidos (voluntario)." },
-    "card2": { "title": "Después, casi en tiempo real", "body": "La factura llega directamente al comprador, pero una copia o resumen de los datos de la transacción se reporta a la autoridad fiscal poco después — a menudo en días, a veces al instante.", "note": "Ejemplos: la capa de e-reporting de Francia, el SII de España, el RTIR de Hungría." },
-    "card3": { "title": "Antes de la entrega — compensación", "body": "La factura debe ser validada (y a menudo sellada digitalmente) por la autoridad fiscal, o un intermediario acreditado en su nombre, antes de que pueda llegar legalmente al comprador.", "note": "Ejemplos: el SDI de Italia, el KSeF de Polonia, el CFDI de México, el ZATCA de Arabia Saudita." }
+    "card1": {
+      "title": "Nunca (o solo bajo solicitud)",
+      "body": "La autoridad fiscal no ve las facturas individuales de forma rutinaria — revisa los registros más tarde, durante una auditoría. Este es el modelo menos intervencionista.",
+      "note": "Ejemplos: Reino Unido, Canadá, Estados Unidos (voluntario)."
+    },
+    "card2": {
+      "title": "Después, casi en tiempo real",
+      "body": "La factura llega directamente al comprador, pero una copia o resumen de los datos de la transacción se reporta a la autoridad fiscal poco después — a menudo en días, a veces al instante.",
+      "note": "Ejemplos: la capa de e-reporting de Francia, el SII de España, el RTIR de Hungría."
+    },
+    "card3": {
+      "title": "Antes de la entrega — compensación",
+      "body": "La factura debe ser validada (y a menudo sellada digitalmente) por la autoridad fiscal, o un intermediario acreditado en su nombre, antes de que pueda llegar legalmente al comprador.",
+      "note": "Ejemplos: el SDI de Italia, el KSeF de Polonia, el CFDI de México, el ZATCA de Arabia Saudita."
+    }
   },
   "sec2": {
     "heading": "Los siete modelos en la práctica",
     "intro": "En la práctica, estas preguntas se combinan en siete arquitecturas reconocibles — la mayoría de los países de este seguimiento encajan claramente en una de ellas.",
-    "card1": { "title": "1. Post-auditoría", "body": "Las empresas intercambian facturas libremente, en el formato que acuerden. La autoridad fiscal revisa los registros después de los hechos, durante una auditoría, en lugar de verificar las transacciones a medida que ocurren." },
-    "card2": { "title": "2. Reporte en tiempo real (CTC)", "body": "Las facturas se intercambian directamente entre empresas, pero los datos de la transacción — a veces la factura completa, a veces un resumen — también se reportan a la autoridad fiscal casi en tiempo real, junto con la entrega en lugar de sustituirla." },
-    "card3": { "title": "3. Compensación (CTC)", "body": "El modelo más estricto: una factura no tiene efecto legal hasta que la autoridad fiscal (o su delegado) la ha validado y ha devuelto una referencia de compensación. Solo entonces puede entregarse al comprador." },
-    "card4": { "title": "4. Plataforma centralizada", "body": "Un único sistema gestionado por el gobierno maneja tanto la validación como la entrega — comprador y vendedor interactúan con la misma plataforma central en lugar de utilizar el proveedor de su elección." },
-    "card5": { "title": "5. Intercambio descentralizado — red obligatoria (Peppol)", "body": "No hay plataforma gubernamental, pero la ley prescribe <em>una red específica</em>. Las empresas se conectan una vez a un Punto de Acceso acreditado, y las facturas se enrutan de igual a igual usando un formato común — el modelo de \"4 esquinas\" — porque el propio mandato designa a Peppol como el canal requerido." },
-    "card6": { "title": "6. Mandato de formato únicamente — sin canal prescrito", "body": "Un patrón genuinamente más ligero, fácil de confundir con el modelo 5 pero significativamente distinto: la ley exige un formato estructurado, pero no prescribe <em>cómo</em> debe entregarse la factura — correo electrónico, cualquier red, cualquier acuerdo bilateral es válido, siempre que el contenido esté correctamente estructurado. Sin compensación, sin capa de reporte obligatoria, sin red requerida.", "note": "Dinamarca es una variante aún más ligera — su ley exige la <em>capacidad</em> de enviar/recibir facturas estructuradas, no que cada factura se intercambie realmente de esa forma." },
-    "card7": { "title": "7. Intercambio descentralizado + reporte (5 esquinas)", "body": "La red de 4 esquinas de Peppol con un quinto participante añadido: la autoridad fiscal, que recibe los datos de la transacción automáticamente como subproducto del intercambio normal, en lugar de una declaración por separado." }
+    "card1": {
+      "title": "1. Post-auditoría",
+      "body": "Las empresas intercambian facturas libremente, en el formato que acuerden. La autoridad fiscal revisa los registros después de los hechos, durante una auditoría, en lugar de verificar las transacciones a medida que ocurren."
+    },
+    "card2": {
+      "title": "2. Reporte en tiempo real (CTC)",
+      "body": "Las facturas se intercambian directamente entre empresas, pero los datos de la transacción — a veces la factura completa, a veces un resumen — también se reportan a la autoridad fiscal casi en tiempo real, junto con la entrega en lugar de sustituirla."
+    },
+    "card3": {
+      "title": "3. Compensación (CTC)",
+      "body": "El modelo más estricto: una factura no tiene efecto legal hasta que la autoridad fiscal (o su delegado) la ha validado y ha devuelto una referencia de compensación. Solo entonces puede entregarse al comprador."
+    },
+    "card4": {
+      "title": "4. Plataforma centralizada",
+      "body": "Un único sistema gestionado por el gobierno maneja tanto la validación como la entrega — comprador y vendedor interactúan con la misma plataforma central en lugar de utilizar el proveedor de su elección."
+    },
+    "card5": {
+      "title": "5. Intercambio descentralizado — red obligatoria (Peppol)",
+      "body": "No hay plataforma gubernamental, pero la ley prescribe <em>una red específica</em>. Las empresas se conectan una vez a un Punto de Acceso acreditado, y las facturas se enrutan de igual a igual usando un formato común — el modelo de \"4 esquinas\" — porque el propio mandato designa a Peppol como el canal requerido."
+    },
+    "card6": {
+      "title": "6. Mandato de formato únicamente — sin canal prescrito",
+      "body": "Un patrón genuinamente más ligero, fácil de confundir con el modelo 5 pero significativamente distinto: la ley exige un formato estructurado, pero no prescribe <em>cómo</em> debe entregarse la factura — correo electrónico, cualquier red, cualquier acuerdo bilateral es válido, siempre que el contenido esté correctamente estructurado. Sin compensación, sin capa de reporte obligatoria, sin red requerida.",
+      "note": "Dinamarca es una variante aún más ligera — su ley exige la <em>capacidad</em> de enviar/recibir facturas estructuradas, no que cada factura se intercambie realmente de esa forma."
+    },
+    "card7": {
+      "title": "7. Intercambio descentralizado + reporte (5 esquinas)",
+      "body": "La red de 4 esquinas de Peppol con un quinto participante añadido: la autoridad fiscal, que recibe los datos de la transacción automáticamente como subproducto del intercambio normal, en lugar de una declaración por separado."
+    }
   },
   "sec3": {
     "heading": "El \"CTC\" es una familia, no una sola cosa",
     "intro": "Los Controles Continuos de Transacciones (CTC) son un término general que abarca los modelos 2 y 3 anteriores — ambos dan a la autoridad fiscal visibilidad casi en tiempo real, pero difieren en un punto que importa enormemente en la práctica: ¿ve el gobierno la factura antes o después de que sea legalmente válida?",
     "table": {
-      "h1": "Pregunta", "h2": "CTC — Reporte", "h3": "CTC — Compensación",
-      "r1k": "¿Quién ve primero la factura?", "r1v1": "El comprador — el reporte ocurre junto con la entrega o poco después", "r1v2": "La autoridad fiscal — nada se entrega hasta que se compensa",
-      "r2k": "Validez legal", "r2v1": "La factura es válida tal como se emite; el reporte es una obligación paralela", "r2v2": "La factura no tiene efecto legal hasta que se compensa",
-      "r3k": "Modo de fallo", "r3v1": "Un reporte tardío o faltante es un incumplimiento, pero la venta se mantiene", "r3v2": "Una factura rechazada bloquea la transacción — las mercancías no pueden enviarse legalmente",
-      "r4k": "Latencia típica", "r4v1": "Horas a unos días", "r4v2": "Segundos a minutos",
-      "r5k": "Ejemplo", "r5v1": "El e-reporting de Francia para ventas B2C/transfronterizas", "r5v2": "El SDI de Italia, el KSeF de Polonia"
+      "h1": "Pregunta",
+      "h2": "CTC — Reporte",
+      "h3": "CTC — Compensación",
+      "r1k": "¿Quién ve primero la factura?",
+      "r1v1": "El comprador — el reporte ocurre junto con la entrega o poco después",
+      "r1v2": "La autoridad fiscal — nada se entrega hasta que se compensa",
+      "r2k": "Validez legal",
+      "r2v1": "La factura es válida tal como se emite; el reporte es una obligación paralela",
+      "r2v2": "La factura no tiene efecto legal hasta que se compensa",
+      "r3k": "Modo de fallo",
+      "r3v1": "Un reporte tardío o faltante es un incumplimiento, pero la venta se mantiene",
+      "r3v2": "Una factura rechazada bloquea la transacción — las mercancías no pueden enviarse legalmente",
+      "r4k": "Latencia típica",
+      "r4v1": "Horas a unos días",
+      "r4v2": "Segundos a minutos",
+      "r5k": "Ejemplo",
+      "r5v1": "El e-reporting de Francia para ventas B2C/transfronterizas",
+      "r5v2": "El SDI de Italia, el KSeF de Polonia"
     }
   },
   "sec4": {
     "heading": "Dónde encaja Peppol en todo esto",
     "intro": "Peppol es fácil de ubicar mal en este panorama — no es un modelo de mandato en sí mismo, es una pieza de infraestructura compartida sobre la que se construyen varios modelos distintos.",
-    "card1": { "title": "Qué es Peppol en realidad", "body": "Una red y formato de mensajería estandarizados (Peppol BIS) que permite a dos empresas conectadas intercambiar facturas estructuradas sin una integración bilateral — se conecta una vez a un Punto de Acceso, no una vez por cada socio comercial." },
-    "card2": { "title": "Pura infraestructura, no una política", "body": "Bélgica y Australia usan ambas Peppol, pero solo una de ellas lo exige por ley hoy. La red es la misma; lo que un gobierno decide añadirle (un mandato, un requisito de reporte, nada en absoluto) es una decisión aparte." },
-    "card3": { "title": "La evolución de 4 esquinas → 5 esquinas", "body": "Añada una quinta esquina — la autoridad fiscal — y la misma red empieza a alimentar automáticamente los datos de transacción al gobierno. Singapur, los EAU y Eslovaquia están construyendo hacia esto." },
-    "flow1": "Proveedor", "flow2": "PA del proveedor", "flow3": "PA del comprador", "flow4": "Comprador"
+    "card1": {
+      "title": "Qué es Peppol en realidad",
+      "body": "Una red y formato de mensajería estandarizados (Peppol BIS) que permite a dos empresas conectadas intercambiar facturas estructuradas sin una integración bilateral — se conecta una vez a un Punto de Acceso, no una vez por cada socio comercial."
+    },
+    "card2": {
+      "title": "Pura infraestructura, no una política",
+      "body": "Bélgica y Australia usan ambas Peppol, pero solo una de ellas lo exige por ley hoy. La red es la misma; lo que un gobierno decide añadirle (un mandato, un requisito de reporte, nada en absoluto) es una decisión aparte."
+    },
+    "card3": {
+      "title": "La evolución de 4 esquinas → 5 esquinas",
+      "body": "Añada una quinta esquina — la autoridad fiscal — y la misma red empieza a alimentar automáticamente los datos de transacción al gobierno. Singapur, los EAU y Eslovaquia están construyendo hacia esto."
+    },
+    "flow1": "Proveedor",
+    "flow2": "PA del proveedor",
+    "flow3": "PA del comprador",
+    "flow4": "Comprador"
   },
   "sec5": {
     "heading": "A dónde ir después",
     "intro": "Esta página es deliberadamente el \"mapa\" — para el detalle fino de un país concreto, los análisis por país son donde viven los detalles.",
-    "card1": { "title": "🌍 Consulte el modelo de un país concreto", "body": "Cada análisis del menú \"Deep Dives\" indica su modelo de cumplimiento de entrada, en los mismos términos usados en esta página — busque la línea \"Compliance model\" bajo el nombre del país." },
-    "card2": { "title": "🏗️ Vea qué significa esto para su negocio", "body": "\"Impacto del mandato\" (también en Educación) cubre el impacto técnico, de procesos, financiero y organizativo que estos modelos tienen en la práctica." },
-    "card3": { "title": "📖 Próximamente más páginas educativas", "body": "Análisis más profundos de los subtipos de CTC, un mapa completo de países conectados a Peppol, y una visión general de los proveedores de servicios en este espacio son adiciones planificadas a este menú." },
-    "card4": { "title": "🔔 Reciba una notificación cuando se publiquen", "body": "Los suscriptores obtienen acceso prioritario al nuevo contenido educativo en cuanto se publica, junto con el resumen mensual de cumplimiento." }
+    "card1": {
+      "title": "🌍 Consulte el modelo de un país concreto",
+      "body": "Cada análisis del menú \"Deep Dives\" indica su modelo de cumplimiento de entrada, en los mismos términos usados en esta página — busque la línea \"Compliance model\" bajo el nombre del país."
+    },
+    "card2": {
+      "title": "🏗️ Vea qué significa esto para su negocio",
+      "body": "\"Impacto del mandato\" (también en Educación) cubre el impacto técnico, de procesos, financiero y organizativo que estos modelos tienen en la práctica."
+    },
+    "card3": {
+      "title": "📖 Próximamente más páginas educativas",
+      "body": "Análisis más profundos de los subtipos de CTC, un mapa completo de países conectados a Peppol, y una visión general de los proveedores de servicios en este espacio son adiciones planificadas a este menú."
+    },
+    "card4": {
+      "title": "🔔 Reciba una notificación cuando se publiquen",
+      "body": "Los suscriptores obtienen acceso prioritario al nuevo contenido educativo en cuanto se publica, junto con el resumen mensual de cumplimiento."
+    }
   },
   "footer": {
     "text": "Esta página ofrece contexto educativo general y no constituye asesoramiento legal ni fiscal. Los modelos de cumplimiento pueden evolucionar y de hecho lo hacen — el análisis propio de cada país es la fuente autorizada de sus requisitos específicos actuales."
+  },
+  "pages": {
+    "mandate-types": {
+      "title": "Tipos de mandato — los 7 modelos de cumplimiento de facturación electrónica",
+      "description": "Los siete modelos de cumplimiento explicados: post-auditoría, declaración en tiempo real, clearance, plataformas centralizadas y redes Peppol, y cómo saber cuál le aplica."
+    }
   }
 }

@@ -143,5 +143,11 @@
   },
   "footer": {
     "text": "Company names in this page are illustrative examples only, included to make each category concrete — they are not endorsements, rankings, or a complete market map, and their inclusion does not imply any relationship with this site. Analyst research referenced above is linked for general awareness only; full reports may require a paid subscription or vendor-provided access, and any vendor positioning within them reflects that firm's own methodology and views, not ours. Verify any specific provider's current accreditation and fit for your needs directly before engaging them."
+  },
+  "pages": {
+    "types-of-provider": {
+      "title": "Types of E-Invoicing Provider — ERP, Solution, Tax & Consultancy Compared",
+      "description": "The five categories of e-invoicing provider explained — ERP, Solution Provider, Tax Compliance, Technology and Consultancy — with a side-by-side comparison."
+    }
   }
 }

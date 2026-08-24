@@ -123,5 +123,11 @@
     "Qatar": "Catar",
     "Uzbekistan": "Uzbekistán",
     "Azerbaijan": "Azerbaiyán"
+  },
+  "pages": {
+    "subscribe": {
+      "title": "Suscribirse — The E-Invoicing Compliance Corner",
+      "description": "Reciba aviso cuando un país cambie sus normas de facturación electrónica. Novedades mensuales sobre 70 países, ajustadas a sus jurisdicciones."
+    }
   }
 }

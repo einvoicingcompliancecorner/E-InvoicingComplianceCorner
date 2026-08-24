@@ -176,5 +176,11 @@
   },
   "footer": {
     "text": "Cette page fournit un contexte pédagogique général pour aider à cadrer la planification interne et ne constitue pas un conseil juridique, fiscal ou de mise en œuvre technique. Les exigences précises varient selon le pays ainsi que vos propres systèmes et structure de groupe — consultez l'analyse du pays concerné et un conseiller qualifié avant de prendre des décisions de mise en œuvre."
+  },
+  "pages": {
+    "impact-of-mandate": {
+      "title": "Impact d'un mandat de facturation électronique — technique, financier et organisationnel",
+      "description": "Ce qu'un mandat change réellement : intégration technique, résidence des données, impact financier et la préparation organisationnelle que la plupart des équipes sous-estiment."
+    }
   }
 }

@@ -178,5 +178,11 @@
   },
   "footer": {
     "text": "Cette page fournit des indications pédagogiques générales fondées sur des schémas courants observés dans les programmes de préparation aux obligations, et ne constitue pas un conseil juridique, fiscal ou en matière d'achats. Les calendriers et exigences précis varient selon le pays ainsi que vos propres systèmes et organisation — consultez l'analyse du pays concerné et des conseillers appropriés avant de vous engager sur un plan."
+  },
+  "pages": {
+    "preparing-for-mandate": {
+      "title": "Se préparer à un mandat de facturation électronique — calendrier et choix du prestataire",
+      "description": "Comment se préparer à un nouveau mandat : qui impliquer, un calendrier réaliste de 12 à 18 mois et un processus de sélection du prestataire étape par étape."
+    }
   }
 }

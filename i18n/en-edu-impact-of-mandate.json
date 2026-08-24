@@ -176,5 +176,11 @@
   },
   "footer": {
     "text": "This page provides general educational context to help scope internal planning and is not legal, tax, or technical implementation advice. Specific requirements vary by country and by your own systems and group structure — consult the relevant country deep dive and a qualified advisor before making implementation decisions."
+  },
+  "pages": {
+    "impact-of-mandate": {
+      "title": "Impact of an E-Invoicing Mandate — Technical, Financial & Organisational",
+      "description": "What an e-invoicing mandate actually changes: technical integration, data residency, financial impact, and the organisational readiness most compliance teams underestimate."
+    }
   }
 }

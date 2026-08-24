@@ -123,5 +123,11 @@
     "Qatar": "Qatar",
     "Uzbekistan": "Uzbekistan",
     "Azerbaijan": "Azerbaijan"
+  },
+  "pages": {
+    "subscribe": {
+      "title": "Subscribe — The E-Invoicing Compliance Corner",
+      "description": "Get notified when a government changes its e-invoicing rules. Monthly compliance updates across 70 countries, tailored to the jurisdictions you actually operate in."
+    }
   }
 }

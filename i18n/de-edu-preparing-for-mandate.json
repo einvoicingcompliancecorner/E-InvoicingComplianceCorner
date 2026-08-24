@@ -178,5 +178,11 @@
   },
   "footer": {
     "text": "Diese Seite bietet allgemeine Bildungshinweise auf Basis gängiger Muster in Programmen zur Vorgabenvorbereitung und stellt keine Rechts-, Steuer- oder Beschaffungsberatung dar. Konkrete Zeitpläne und Anforderungen variieren je nach Land sowie Ihren eigenen Systemen und Ihrer Organisation — konsultieren Sie die jeweilige Länderanalyse und geeignete Berater, bevor Sie sich auf einen Plan festlegen."
+  },
+  "pages": {
+    "preparing-for-mandate": {
+      "title": "Vorbereitung auf eine E-Invoicing-Pflicht — Zeitplan und Anbieterauswahl",
+      "description": "So bereiten Sie sich auf eine neue E-Invoicing-Pflicht vor: wen Sie einbinden, ein realistischer Zeitplan über 12–18 Monate und ein schrittweiser Auswahlprozess für Anbieter."
+    }
   }
 }

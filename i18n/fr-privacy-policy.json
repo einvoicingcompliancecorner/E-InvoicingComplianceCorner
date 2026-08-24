@@ -1,5 +1,8 @@
 {
-  "_meta": { "language": "fr", "reviewed": true },
+  "_meta": {
+    "language": "fr",
+    "reviewed": true
+  },
   "backLink": "← Retour au suivi global",
   "header": {
     "eyebrow": "Juridique",
@@ -79,5 +82,11 @@
   },
   "footer": {
     "note": "Cette page est un modèle général et ne constitue pas un conseil juridique. Les obligations en matière de protection des données varient selon la juridiction et selon les prestataires et processus spécifiques que vous utilisez — veuillez la faire examiner par un professionnel qualifié avant de vous y fier pour une base de clients réelle et payante."
+  },
+  "pages": {
+    "privacy": {
+      "title": "Politique de confidentialité — The E-Invoicing Compliance Corner",
+      "description": "Comment The E-Invoicing Compliance Corner collecte, utilise et protège vos données, y compris les informations d'abonné et les statistiques du site."
+    }
   }
 }
