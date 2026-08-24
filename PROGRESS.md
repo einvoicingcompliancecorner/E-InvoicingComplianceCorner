@@ -16017,7 +16017,7 @@ because the commit stat said `PROGRESS.md | 2 +-` where forty-odd lines
 were expected — the same way the tracker outage was caught, by a number
 being smaller than it should have been.
 
-### The subscribe copy catches up with the product (24 Aug 2026)
+### The subscribe copy catches up with the product (24 Aug 2026, deployed)
 
 Dan asked for the carousel's subscribe card to name the ROI planner and
 the compliance guides, and for the "Subscribers also get" panel at the
