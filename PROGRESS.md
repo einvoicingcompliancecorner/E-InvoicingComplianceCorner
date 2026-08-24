@@ -16081,7 +16081,7 @@ Resources menu.
 
 **Needs both a migration apply and a site-worker deploy.**
 
-### The design review becomes a taxonomy, and gains a checklist (24 Aug 2026)
+### The design review becomes a taxonomy, and gains a checklist (24 Aug 2026, deployed)
 
 Dan: *"Could these have been avoided with a more thorough design
 document. If so, could you update the design review document, so that it
