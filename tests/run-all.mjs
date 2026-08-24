@@ -65,6 +65,11 @@ const SUITES = [
   // Migration 624 put 1,050 sentences in the headline strip that every
   // other lexical check in this directory is blind to.
   { name: "headline notes de/fr/es", cmd: "node", args: [join(HERE, "headline-notes-langs.mjs")], cwd: REPO },
+  // The job with the most reach and, until 24 August, no check at all:
+  // what the content monitor watches, and whether its digest describes
+  // the cadence it is actually achieving. Both of its historical
+  // failures were true numbers beside a false word.
+  { name: "content monitor", cmd: "node", args: [join(HERE, "content-monitor.mjs")], cwd: REPO },
   { name: "methodology", cmd: "node", args: [join(HERE, "methodology.mjs")], cwd: REPO },
   { name: "changes", cmd: "node", args: [join(HERE, "changes.mjs")], cwd: REPO },
   { name: "subscriber walk", cmd: "node", args: [join(HERE, "subscriber-walk.mjs")], cwd: REPO },

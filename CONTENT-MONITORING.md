@@ -110,6 +110,12 @@ specifically so they don't have to monitor raw government pages
 themselves.
 
 ### Cadence
+> **Superseded 24 August 2026 — the job now runs daily and checks a
+> slice each night.** The reasoning below was sound for a 40-URL list.
+> It stopped being sound when the list became 758. See *The monitor
+> turned outward* at the end of this document; the current cadence is
+> stated there and nowhere else.
+
 **Weekly, not daily.** Based on what we've actually seen across 29
 countries over the life of this project, meaningful regulatory changes
 happen on the order of once a month per country at most, often far less.
@@ -137,7 +143,8 @@ tier.
 
 This is where it stays exactly as collaborative as it is today:
 
-1. Weekly digest arrives, listing which official pages changed.
+1. The digest arrives (daily since 24 August 2026), listing which
+   official pages changed.
 2. In a working session, go through the flagged pages together — same as
    reviewing any other update. Read what actually changed, decide whether
    it's substantive.
@@ -182,7 +189,7 @@ to look.
   research task.
 - Does not touch `DATA`, a deep-dive page, or a newsletter issue directly.
   Its only output is a list of things to go look at.
-- Does not send anything to subscribers, ever. The weekly digest is an
+- Does not send anything to subscribers, ever. The digest is an
   internal operator email only.
 
 ---
@@ -209,7 +216,9 @@ existing Worker rather than a separate one (per the "whichever is
 simpler" note above) — reuses its D1 binding, its `sendViaResend`
 helper, and its Cron Trigger config with a second schedule string.
 
-**What shipped, matching this design exactly:**
+**What shipped, matching this design exactly** (the watch list and the
+cron in the first two bullets were both replaced on 24 August 2026 — see
+*The monitor turned outward* below; everything else here still stands):
 - Watch list: `tracking_sources WHERE active = 1` (migration 214) —
   the same table backing the public `/sources` page. This is a better
   foundation than the original "~40 URLs embedded in DATA" plan this
@@ -583,3 +592,143 @@ followed by a partial sweep would otherwise look like the old bug.
 callers can hide the fact that they have different constraints. This
 one was small enough to be safe for both, so nothing surfaced the
 difference until it was raised for one of them.
+
+---
+
+## The monitor turned outward (24 August 2026)
+
+Dan asked what the content monitor was actually watching. The answer was
+140 URLs. The site cites **849**.
+
+### The gap, measured before anything was changed
+
+| | |
+|---|---|
+| Distinct URLs cited anywhere on the site | 849 |
+| Watched by the monitor (`tracking_sources WHERE active = 1`) | 140 |
+| Distinct pages cited as the source for a **headline fact** | 371 |
+| …of those, watched by nothing at all | **352 (95%)** |
+
+The last row is the one that mattered. A headline fact is the six-card
+strip at the top of every country guide — the B2G, B2B, B2C, archiving,
+signature and e-Reporting statuses, the most-read assertion the site
+makes about any jurisdiction. Each of those cards cites a specific
+official page. Ninety-five per cent of those pages could change and
+nothing would notice.
+
+The curated list was not wrong. It was a hand-maintained list doing
+exactly what a hand-maintained list does: it recorded the sources
+somebody remembered to add, and the *facts* had been sourced separately,
+by a different process, into a different table. **This is failure class
+C from the design review — a monitor cannot see what was never declared
+to it** — and it is the same shape as `features`, where shipped work was
+invisible to the announcement digest because nobody had told the table
+about it.
+
+The fix is to stop maintaining a second list. The watch list is now
+DERIVED from what the site actually cites.
+
+### migration 635 — two views
+
+`monitored_sources` is one row per distinct cited URL, carrying whether
+it backs a headline fact, whether it is also on the curated list, and
+how many times it is cited. `fact_source_map` joins each headline-fact
+citation to its country, its field, and that fact's `last_verified`
+date.
+
+Neither view invents anything: they are `cited_sources` regrouped. That
+is deliberate — a derived list cannot drift from the thing it is derived
+from, which is the entire failure being corrected. Adding a country now
+adds its sources to monitoring by the act of citing them.
+
+**Story citations are excluded** (91 URLs, Dan's call). A newsletter
+story cites a press release that was news on the day and will never
+change again; watching them adds noise and a fourth day to every sweep.
+The exclusion is a `WHERE kind <> 'story'` in the view and a standing
+invariant asserting no story-only URL leaks in.
+
+### Daily, because 758 does not fit in one run
+
+758 sources at ~1.75s apiece is about 22 minutes — past Cloudflare's
+15-minute ceiling for a scheduled handler, let alone this job's own
+8-minute budget. Two options:
+
+- **Keep it weekly and rotate.** Each page checked roughly every three
+  weeks, by a job called weekly. That is precisely the defect corrected
+  on 10 August, reintroduced at five times the scale.
+- **Run nightly and continue from the cursor.** ~270 sources a night,
+  **a full sweep every three days.** Better coverage *and* better
+  freshness than the weekly run it replaces, with the time budget
+  untouched.
+
+The cron is now `0 8 * * *` in both `wrangler.toml` and
+`CONTENT_MONITOR_CRON`, and the tests assert the two agree — the
+constant only *names* the schedule, the platform reads the toml, and the
+`scheduled()` handler's `if (event.cron === …)` branches on the constant.
+A silent mismatch there runs the wrong job.
+
+### The digest states the cycle it is achieving
+
+A partial sweep is now the **normal** outcome rather than a shortfall,
+and that changes what the digest has to say. "270 of 758 checked",
+printed every morning with nothing beside it, teaches a reader that the
+monitor is behind — when it is working exactly as designed.
+
+So the summary line does the division and gives the answer in days: *"at
+this rate every source is seen about every 3 days."* The heading says
+**Daily check**, the queue note describes the remainder of a sweep in
+progress rather than work that failed to happen, and the user-agent
+shown to the sites being fetched says `daily check` too, so a webmaster
+reading their logs is told the same thing as the operator.
+
+This is the 10 August lesson generalised. That digest was honest in
+every number it printed and misleading in the word beside them. **The
+numbers are not the claim; the sentence is.**
+
+### What the reader is asked to do first
+
+The watch list is five times longer, so an undifferentiated list of
+changes is how this email becomes something skimmed. Changes are split:
+
+- **Behind a published fact** — with the countries, the fields, and the
+  date that fact was last verified. If the page changed after that date,
+  what the site publishes may be wrong *today*.
+- **Other sources changed** — a milestone citation, a portal link.
+  Worth reading, rarely urgent.
+
+The `last_verified` line is the only thing in the email that
+distinguishes movement from a problem.
+
+### KV keys moved with the list
+
+Baselines were keyed on `tracking_sources.id`, which the derived list has
+no equivalent of. They are now keyed on a hash of the URL
+(`hash:u:<sha256-prefix>`), failure counters on `fail:u:<…>`, and the
+cursor holds a **URL** under its own key `cursor:next-url`.
+
+The renames are load-bearing. An old id-shaped cursor read as a URL
+would resolve `findIndex(s => s.url >= "37")` to the first element of
+the list — every night, silently, with a digest that looked perfect. The
+140 old `hash:<id>` entries are orphaned, so every page re-baselines once
+as the sweep first reaches it; the digest says so rather than letting a
+wall of first-time checks look like an unexplained quiet week.
+
+### And it has a test now
+
+`tests/content-monitor.mjs`, added in the same change. This is the piece
+of the system with the most reach and, until now, the least supervision:
+nothing in `tests/` had ever looked at it. It asks the two questions the
+migration's own assertions cannot —
+
+1. **Coverage.** Running the worker's *own* query (extracted from the
+   source, not retyped), is every page behind a published fact actually
+   in the list it returns? That check would have caught the 352.
+2. **Honesty.** Do the cron, the toml, the user-agent, the digest
+   heading and this document all state the same cadence — and does the
+   digest compute the cycle it achieves rather than only print a
+   fraction?
+
+It also asserts the arithmetic that makes the job daily in the first
+place, in both directions: a sweep that needed only one run, or one that
+stretched past five days, both fail and both mean the cadence needs
+rethinking.

@@ -16169,3 +16169,100 @@ registration table.
 
 **Migration-apply and a members-worker deploy** — `FEATURE_LINKS` ships
 in the worker.
+
+---
+
+### 24 August 2026 — the content monitor turned outward
+
+Dan asked what the content monitor was watching. It was watching 140
+URLs. The site cites **849**.
+
+The number that mattered was narrower: of the **371 distinct pages cited
+as the source for a headline fact** — the six-card strip at the top of
+every country guide, the most-read assertion this site makes — **352
+(95%) were watched by nothing at all.** Any of them could have changed
+and nothing would have noticed.
+
+The curated list was not wrong; it was hand-maintained, and it recorded
+the sources somebody remembered to add. The facts had been sourced
+separately, by a different process, into a different table. **Class C —
+a monitor cannot see what was never declared to it** — the third
+instance in as many days.
+
+#### The fix is to stop maintaining a second list
+
+Migration 635 adds two views. `monitored_sources` is one row per distinct
+cited URL, carrying whether it backs a headline fact, whether it is also
+curated, and its citation count. `fact_source_map` joins each
+headline-fact citation to its country, its field, and that fact's
+`last_verified` date. Neither invents anything — they are `cited_sources`
+regrouped, so the watch list cannot drift from what the site actually
+cites. Adding a country now adds its sources to monitoring by the act of
+citing them.
+
+Story citations are excluded, 91 of them, on Dan's call: a story cites a
+press release that was news on the day and will never change again.
+
+#### Daily, because 758 does not fit in one run
+
+758 sources at ~1.75s apiece is ~22 minutes, past Cloudflare's 15-minute
+ceiling. Keeping it weekly and rotating would have meant each page
+checked every three weeks by a job called weekly — the 10 August defect
+at five times the scale. It runs nightly and continues from a cursor
+instead: ~270 a night, **a full sweep every three days.** Better coverage
+*and* better freshness, with the time budget untouched.
+
+#### The digest states the cycle it is achieving
+
+A partial sweep is now the normal outcome rather than a shortfall, so
+"270 of 758 checked" printed every morning would teach the reader the
+monitor is behind when it is working as designed. The summary line does
+the division and answers in days. The heading says **Daily check**, the
+queue note describes a sweep in progress rather than work that failed to
+happen, and the user-agent shown to the sites being fetched says `daily
+check` too — a webmaster reading their logs is told the same thing as
+the operator.
+
+**The numbers are not the claim; the sentence is.** That is the 10
+August lesson generalised.
+
+Changes are split by whether the page backs a published fact, with the
+countries, the fields, and the fact's `last_verified` date. If the page
+changed after that date, what the site publishes may be wrong today —
+the only line in the email that distinguishes movement from a problem.
+
+#### KV keys moved with the list
+
+Baselines are keyed on a hash of the URL (`hash:u:`), failure counters on
+`fail:u:`, and the cursor holds a URL under `cursor:next-url`. The
+renames are load-bearing: an old id-shaped cursor read as a URL resolves
+`findIndex(s => s.url >= "37")` to the first element — every night,
+silently, with a digest that looks perfect. The 140 old `hash:<id>`
+entries orphan, so every page re-baselines once as the sweep reaches it;
+the digest says so.
+
+#### And it has a test now — the first one it has ever had
+
+`tests/content-monitor.mjs`. Nothing in `tests/` had ever looked at this
+job, which has the most reach of anything in the system. It runs the
+worker's **own** query, extracted from the source rather than retyped,
+and asks whether every page behind a published fact is in what it
+returns — the check that would have caught the 352. Then it asks whether
+the cron, the toml, the user-agent, the digest heading and
+`CONTENT-MONITORING.md` all state the same cadence, and whether the
+digest computes the cycle it achieves rather than only printing a
+fraction. It also asserts the arithmetic in both directions: a sweep
+needing only one run, or stretching past five days, both fail, because
+both mean the cadence needs rethinking.
+
+It caught one real defect while being written. `cmSourceGroup` did not
+exist; the housekeeping note grouped by `source.country`, a column the
+derived rows do not have. The queue note would have read *"across 1
+countries: undefined"* every morning — nothing thrown, nothing logged.
+
+`npm test`: **27 suites**, all passing. Replay OK across **635 files**,
+630 assertions, 195 standing invariants.
+
+**Migration-apply and a members-worker deploy**, and `wrangler.toml`'s
+`crons` now carries `0 8 * * *` — the schedule lives in the platform, not
+in the constant that names it.
