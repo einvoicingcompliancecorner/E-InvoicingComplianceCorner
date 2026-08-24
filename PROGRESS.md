@@ -16694,3 +16694,13 @@ on the stripped form while the replace did nothing. Same shape as the
 
 **Needs a migration-apply and a deploy of both Workers** — `i18n/*.json`
 and the tracker shell are assets.
+
+**Deployed and confirmed, 24 August 2026.** 70 crawlable country anchors
+on the live tracker, verified by counting occurrences rather than lines —
+`grep -c` returns 1 because the index is injected as a single line, which
+is the third verification command in a row this session that could not
+distinguish the case it was written to test. The others were
+`wrangler deployments list` (proves a worker shipped, not what) and
+`grep -c 'class="back-link"'` (returns 6 on a correct tree and a broken
+one). **The rule that keeps falling over: a verification command is not
+finished until you know what it prints when the thing is BROKEN.**
