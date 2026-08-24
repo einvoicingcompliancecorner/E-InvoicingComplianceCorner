@@ -141,7 +141,9 @@
     "dueWithin90Days": "Vencen en 90 días",
     "furtherOut": "Más adelante",
     "jurisdictionsTracked": "Jurisdicciones seguidas",
-    "milestonesTracked": "Hitos seguidos"
+    "milestonesTracked": "Hitos seguidos",
+    "cachedBody": "los datos en vivo no están disponibles temporalmente, así que este panel es una copia guardada del {0} y las cifras de abajo se ocultan en lugar de mostrarse desactualizadas.",
+    "cachedTitle": "Mostrando una copia en caché"
   },
   "who": {
     "signedInAs": "Sesión iniciada como",

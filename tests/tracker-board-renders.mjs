@@ -35,9 +35,9 @@
 // check that drifts from the code it guards is still worth more than no
 // check at all. The shape below is asserted against the real file so the
 // drift cannot go unnoticed.
-import { readFileSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { suite } from "./lib/browser.mjs";
+import { suite, loadPlaywright } from "./lib/browser.mjs";
 import { openReplayDb, REPO } from "./lib/replay-db.mjs";
 
 const t = suite("tracker board renders");
@@ -135,6 +135,70 @@ t.check("buildTrackerData still reads actions and portals as JSON",
   "if this fails, the copy of the query above has drifted from the worker");
 t.check("and renderTracker still falls back rather than erroring",
   /serving static fallback/.test(worker));
+
+// ---- and the page is honest about which it is showing -----------------
+//
+// Dan, 24 August 2026: "Is there a more graceful way to fail, rather than
+// displaying incorrect counts?"
+//
+// The shell declares DATA_SNAPSHOT_DATE beside its frozen array and the
+// worker clears it on a successful injection, so THE DEFAULT IS THE SAFE
+// ONE. Everything above proves the live path; this proves the other one,
+// by rendering both in a real browser — because the failure being
+// guarded is precisely a page that looks fine while telling the reader
+// something untrue, and no amount of reading source establishes that.
+t.check("the shell declares a snapshot date the worker can clear",
+  /const DATA_SNAPSHOT_DATE = '\d{4}-\d{2}-\d{2}';/.test(shell));
+t.check("the worker clears it and refuses to serve a half-injected page",
+  /const DATA_SNAPSHOT_DATE = null;/.test(worker) && /snapshotFlag=\$\{clearedSnapshot\}/.test(worker));
+
+const { chromium } = await loadPlaywright();
+const browser = await chromium.launch({ executablePath: "/opt/pw-browsers/chromium" });
+const render = async (html, label) => {
+  const file = `/tmp/tracker-state-${label}.html`;
+  writeFileSync(file, html);
+  const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+  await page.goto(`file://${file}`, { waitUntil: "load" });
+  await page.waitForTimeout(2500);
+  const r = await page.evaluate(() => ({
+    nums: [...document.querySelectorAll("#stats .num")].map((e) => e.textContent.trim()),
+    bannerShown: !(document.getElementById("snapshotNote") || {}).hidden,
+    banner: ((document.getElementById("snapshotNote") || {}).textContent || "").trim(),
+    published: window.EICC_JURISDICTION_COUNT,
+  }));
+  await page.close();
+  return r;
+};
+
+// The fallback path is the static shell served untouched — exactly what
+// renderTracker's catch block returns.
+const cached = await render(shell, "cached");
+t.check("on the snapshot, every count is withheld",
+  cached.nums.length === 5 && cached.nums.every((n) => n === "—"),
+  `stats read: ${cached.nums.join(" | ")}`);
+t.check("on the snapshot, the banner appears and dates the copy",
+  cached.bannerShown && /\d{4}/.test(cached.banner), cached.banner.slice(0, 120));
+// The sign-up panel says "N jurisdictions tracked" from this global. On
+// the snapshot N is 31, so an outage would have understated the site by
+// half in the one place trying to persuade someone to subscribe.
+t.check("and no jurisdiction count is published to the sign-up panel",
+  cached.published === undefined || !cached.published,
+  `published: ${String(cached.published)}`);
+
+// And the live path, which must show the opposite of all three.
+const injected = shell
+  .replace(/const DATA = \[[\s\S]*?\n\];/, "const DATA = [" +
+    '{id:"t1",country:"Poland",flag:"PL",code:"PL",region:"Europe",system:"KSeF",date:"2026-02-01",actions:[],portals:[]},' +
+    '{id:"t2",country:"Germany",flag:"DE",code:"DE",region:"Europe",system:"X",date:"2027-01-01",actions:[],portals:[]},' +
+    '{id:"t3",country:"European Union",flag:"EU",code:"EU",region:"Europe",system:"ViDA",date:"2030-01-01",actions:[],portals:[]}' + "];")
+  .replace(/const DATA_SNAPSHOT_DATE = '[^']*';/, "const DATA_SNAPSHOT_DATE = null;");
+const live = await render(injected, "live");
+t.check("on live data, the counts print and the banner stays hidden",
+  !live.bannerShown && live.nums[0] === "2" && live.nums[1] === "3",
+  `banner=${live.bannerShown} stats=${live.nums.join(" | ")}`);
+t.check("and the jurisdiction count is published again, EU excluded",
+  live.published === 2, `published: ${String(live.published)}`);
+await browser.close();
 
 console.log(`  note  ${rows.length} board milestones across ${onBoard.size} jurisdictions; `
   + `${allLangs.length} translation rows parsed`);

@@ -233,13 +233,25 @@ async function renderTracker(request, env) {
     // for that substring afterwards would always "find" it. (Caught by
     // the golden test suite: the original guard did exactly that and
     // would have made every request fall back to static.)
-    let replacedData = false, replacedDeepDives = false;
+    let replacedData = false, replacedDeepDives = false, clearedSnapshot = false;
     let out = html.replace(/const DATA = \[[\s\S]*?\n\];/, () => { replacedData = true; return `const DATA = ${safe(data)};`; });
     out = out.replace(/const DEEP_DIVES = \{[\s\S]*?\n\};/, () => { replacedDeepDives = true; return `const DEEP_DIVES = ${safe(deepDives)};`; });
-    // Both replacements must have actually landed — if the static page's
-    // shape ever changes such that a regex no longer matches, fall back
-    // loudly rather than serving a half-injected page.
-    if (!replacedData || !replacedDeepDives) throw new Error("tracker data blob not replaced");
+    // AND THE PAGE IS TOLD IT IS LIVE.
+    //
+    // The shell declares DATA_SNAPSHOT_DATE as the date its frozen array
+    // was last refreshed; clearing it here is what tells renderStats the
+    // numbers are safe to print. The default is the SAFE one — a page
+    // that never reaches this line describes itself as cached, which is
+    // exactly what should happen when the injection fails.
+    out = out.replace(/const DATA_SNAPSHOT_DATE = '[^']*';/, () => { clearedSnapshot = true; return "const DATA_SNAPSHOT_DATE = null;"; });
+    // All three replacements must have actually landed — if the static
+    // page's shape ever changes such that a regex no longer matches,
+    // fall back loudly rather than serving a half-injected page. The
+    // snapshot flag is in this guard rather than treated as optional
+    // because live rows under a "cached" banner is its own kind of lie.
+    if (!replacedData || !replacedDeepDives || !clearedSnapshot) {
+      throw new Error(`tracker blob not replaced (data=${replacedData} deepDives=${replacedDeepDives} snapshotFlag=${clearedSnapshot})`);
+    }
     return new Response(out, {
       headers: {
         "Content-Type": "text/html; charset=UTF-8",
