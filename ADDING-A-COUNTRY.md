@@ -1,5 +1,15 @@
 # Adding a New Country to the Site — Runbook
 
+> **Where this fits.** This is a *procedure* — it answers "what do I do".
+> `PROGRESS.md` is the *record* and answers "why is it like this".
+> `claude/design-architecture-review.html` is the *map*: the architecture,
+> the editorial vocabulary, the failure classes and the release checklist.
+> A fact that is a procedure step belongs here; a decision belongs in the
+> design review; a change belongs in PROGRESS. **Counts are deliberately
+> not restated in this file** — they drift, and a number with no
+> connection to the thing it counts is how the "48 countries" bug lasted
+> two days.
+
 > Rewritten 2 August 2026, superseding the original static-era runbook
 > and its accumulated correction notes. Three architecture changes made
 > the old version materially wrong: **Stage 4** (deep-dive pages render
@@ -657,3 +667,31 @@ shared slug map because routing is synchronous by design, and the i18n
 one at least regenerates from D1 rather than being independently
 authored. Collapsing any further means changing those design choices,
 not just deleting a duplicate.
+
+---
+
+## Registration steps that nothing will remind you about
+
+Added 24 August 2026, after a shipped feature never reached the
+notification system because nobody wrote it into the table that drives it.
+
+**A monitor cannot see what was never declared to it.** These are the
+registrations a new country needs. Each one, if skipped, produces no
+error, no failing test and no visible symptom — the system reports
+success, because as far as it can see there is nothing there.
+
+| Register | Skipping it means | Caught by |
+| --- | --- | --- |
+| `tracking_sources` | the country's official pages are **watched by nothing**, and the weekly monitor reports a clean sweep | nothing — this is the live exposure |
+| `country_headline_facts` + its translations | the guide falls back to the country's free-form stats, which renders cleanly and looks finished | `guides-consistency.mjs` compares what exists, not what is absent |
+| `*_source` on every headline fact | the citation is invisible to `cited_sources`, so the site's own "how much is primary" figure silently excludes it | 613's standing invariant, **only once the row exists** |
+| a `source_hosts` grade for any new host | the standing "every cited host is graded" invariant fails — this one **does** catch you | `apply_migrations.py` |
+| `countries.slug` | no deep dive, and the country is excluded from the jurisdiction count | `jurisdiction-count.mjs` |
+
+The pattern is worth carrying beyond this list: **an unperformed
+registration is indistinguishable from a clean result.** Where a check
+exists it compares two registers against each other, which catches one
+being updated without the other — but nothing can catch a thing written
+into neither. That is what the release checklist in the design review is
+for, and it is the one place in this project where the answer is a person
+with a list rather than an assertion.

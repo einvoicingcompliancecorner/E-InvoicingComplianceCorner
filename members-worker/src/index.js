@@ -1608,6 +1608,10 @@ export const FEATURE_LINKS = {
   "compliance-guides": `${TRACKER}?view=guides`,
   "methodology": `${TRACKER}?view=methodology`,
   "change-record": `${TRACKER}?view=changes`,
+  // The e-Reporting card lives inside the compliance guides, so it
+  // shares their route. Added 24 Aug with migration 634, a day after the
+  // feature shipped -- see that file for why the omission was invisible.
+  "ereporting-card": `${TRACKER}?view=guides`,
 };
 
 /**

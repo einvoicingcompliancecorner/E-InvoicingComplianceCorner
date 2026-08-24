@@ -94,6 +94,32 @@ const features = await q(`
      WHERE a.item_type='feature' AND a.item_id=CAST(f.id AS TEXT) AND a.channel='newsletter')
    ORDER BY f.shipped_at, f.id`);
 t.check(`there are unannounced features to announce (${features.length})`, features.length > 0);
+
+// ---- the two registers agree, in both directions ----------------------
+//
+// Added 24 August, after the e-Reporting card shipped and was never
+// written into `features` at all. The weekly digest exists to say "this
+// shipped and nobody was told" — and it reads this table, so a feature
+// that was never registered is indistinguishable from no feature at all.
+// A MONITOR CANNOT SEE WHAT WAS NEVER DECLARED TO IT, which is migration
+// 628's finding a day earlier in a different table.
+//
+// Nothing can catch "you shipped something and wrote it down nowhere" —
+// that needs a human with a checklist, and the design review says so.
+// What IS catchable is the more likely half: one register updated and
+// the other forgotten, which would send an announcement with no link or
+// leave a link pointing at a feature nobody is told about.
+const allFeatures = await q("SELECT slug FROM features ORDER BY slug");
+const inDb = new Set(allFeatures.map((f) => f.slug));
+const inCode = new Set(Object.keys(FEATURE_LINKS));
+const missingLink = [...inDb].filter((s) => !inCode.has(s));
+const orphanLink = [...inCode].filter((s) => !inDb.has(s));
+t.check("every feature in the database has a link in FEATURE_LINKS",
+  missingLink.length === 0,
+  missingLink.length ? `no link for: ${missingLink.join(", ")}` : `${inDb.size} features`);
+t.check("and every FEATURE_LINKS entry is a feature that exists",
+  orphanLink.length === 0,
+  orphanLink.length ? `no features row for: ${orphanLink.join(", ")}` : `${inCode.size} links`);
 t.check("including the two Dan named",
   features.some((f) => f.slug === "roi-wave-planner")
   && features.some((f) => f.slug === "compliance-guides"),
@@ -326,12 +352,27 @@ t.check("including the two Dan named",
 
   // THE MARK HAS TO MATCH THE ROUTES THAT ACTUALLY GATE. site-worker
   // returns renderRoiGate / renderGuidesGate before touching D1 for
-  // exactly two routes; if a third is ever gated, this fails rather than
+  // exactly two VIEWS; if a third is ever gated, this fails rather than
   // the email quietly under-warning.
+  //
+  // DERIVED FROM THE ROUTE, NOT FROM A LIST OF SLUGS. The first version
+  // mapped each gate to one hardcoded slug, which quietly assumed one
+  // feature per gated route. That held until 24 August, when the
+  // e-Reporting card shipped inside the compliance guides and became the
+  // second feature behind ?view=guides — it is genuinely gated, it is
+  // correctly marked, and the check failed anyway because its model of
+  // the world had no room for two. A test that encodes a one-to-one it
+  // was never promised is the same defect class as the rest of this
+  // suite guards against, so it now asks the actual question: does this
+  // feature's link land on a view that gates?
   const site = readFileSync(join(REPO, "site-worker", "src", "index.js"), "utf8");
-  const gates = new Set();
-  if (/return renderRoiGate\(/.test(site)) gates.add("roi-wave-planner");
-  if (/return renderGuidesGate\(/.test(site)) gates.add("compliance-guides");
+  const gatedViews = new Set();
+  if (/return renderRoiGate\(/.test(site)) gatedViews.add("roi");
+  if (/return renderGuidesGate\(/.test(site)) gatedViews.add("guides");
+  const viewOf = (slug) => ((FEATURE_LINKS[slug] || "").match(/\?view=([a-z]+)/) || [])[1];
+  const gates = new Set(
+    (await q("SELECT slug FROM features")).map((f) => f.slug)
+      .filter((slug) => gatedViews.has(viewOf(slug))));
   const marked = new Set(walled.map((w) => w.slug));
   t.check("the marked set matches the routes that gate",
     marked.size === gates.size && [...gates].every((g) => marked.has(g)),
