@@ -162,7 +162,7 @@ export function renderPickerBody({ countries, saved = [], lang, t, framed = fals
   // different things -- this one would reload the whole tracker inside the
   // frame, which is the shape the archive panel was caught by in August.
   return `<div class="wrap">
-  ${framed ? "" : `<a class="gp-back" href="/einvoicing-compliance-tracker.html">${
+  ${framed ? "" : `<a class="gp-back" href="/">${
     esc(t("back", "← Back to global tracker"))}</a>`}
   <p class="eyebrow">${esc(t("pick.eyebrow", "Subscriber tool"))}</p>
   <h1>${esc(t("pick.title", "Compliance guides"))}</h1>

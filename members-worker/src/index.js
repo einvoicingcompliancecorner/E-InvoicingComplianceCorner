@@ -21,6 +21,7 @@ import {
   renderDeepDiveStyleMilestones as sharedRenderDeepDiveStyleMilestones,
   getDeepDiveContent as sharedGetDeepDiveContent,
   renderFullDeepDivePage as sharedRenderFullDeepDivePage,
+  getRelatedJurisdictions as sharedGetRelatedJurisdictions,
   deriveFlagFromCode,
   SUPPORTED_LANGS,
 } from "../../shared/deep-dive-render.mjs";
@@ -122,7 +123,7 @@ const CONVENIENCE_LINK_TTL_SECONDS = 60 * 60 * 24 * 7;
 // sends; it must not be able to carry someone somewhere of the sender's
 // choosing.
 const VERIFY_RETURN = {
-  tracker: "https://e-invoicingcompliancecorner.com/einvoicing-compliance-tracker.html",
+  tracker: "https://e-invoicingcompliancecorner.com/",
 };
 
 /** A next= value that may be kept and round-tripped — either a named
@@ -1892,7 +1893,12 @@ async function getUnannouncedFeatures(env, channel = ANNOUNCE_CHANNEL) {
 // tracker means there is no second host to get right -- a better fix
 // than remembering which paths need which origin, and the guard below
 // makes the old mistake unrepresentable.
-const TRACKER = "/einvoicing-compliance-tracker.html";
+// THE ROOT, from 25 August 2026: site-worker serves the tracker at "/"
+// and canonicalises the two /einvoicing-compliance-tracker forms into
+// it. Those still work, so nothing here was broken -- but an email is
+// the one link a reader keeps, and it should carry the address the
+// site actually claims as its own.
+const TRACKER = "/";
 // Exported so tests/feature-announcement.mjs can check the real map
 // rather than a regex over this file. The first version of that check
 // parsed the source and quietly failed to see the one entry written
@@ -2009,7 +2015,7 @@ function buildFeatureAnnouncementHtml(features, unsubLink) {
     <table role="presentation" cellpadding="0" cellspacing="0" style="margin-top:6px;">
       <tr>
         <td style="background-color:#b5432f; border-radius:6px;">
-          <a href="${escapeHtml(site + "/einvoicing-compliance-tracker.html")}" style="display:inline-block; padding:12px 22px; font-family:'Courier New',Courier,monospace; font-size:13px; font-weight:bold; color:#ffffff; text-decoration:none;">Go to the tracker →</a>
+          <a href="${escapeHtml(site + TRACKER)}" style="display:inline-block; padding:12px 22px; font-family:'Courier New',Courier,monospace; font-size:13px; font-weight:bold; color:#ffffff; text-decoration:none;">Go to the tracker →</a>
         </td>
       </tr>
     </table>`;
@@ -2998,7 +3004,7 @@ async function createSubscriberFromPending(env, email, detailsJson) {
 // handed is an open redirect, and a sign-out link is the single most
 // forwarded, most clicked-without-looking control on any site.
 const LOGOUT_RETURN = {
-  tracker: "https://e-invoicingcompliancecorner.com/einvoicing-compliance-tracker.html",
+  tracker: "https://e-invoicingcompliancecorner.com/",
 };
 
 async function handleLogout(request) {
@@ -3293,9 +3299,20 @@ async function handleDeepDivePreview(request, env, lang) {
   // the page (e.g. this route's ?country=) via a small inline script --
   // this replaced the bespoke switcherBar this preview route used to
   // build by hand for exactly that reason.
+  // THE PREVIEW SHOWS WHAT THE READER GETS, related block included.
+  // This route exists so an editor can check a page before it is live;
+  // a preview missing a whole section is a preview that agrees with the
+  // real page right up until the part you were checking.
+  let related = [];
+  try {
+    related = await sharedGetRelatedJurisdictions(env.eicc_content, countryRow.region, countryName);
+  } catch (err) {
+    console.error("preview: related jurisdictions failed:", err && err.message);
+  }
+
   const html = await sharedRenderFullDeepDivePage(
     countryName, flag, countryRow.code, countryRow.region, content, milestones, lang,
-    "https://e-invoicingcompliancecorner.com/einvoicing-compliance-tracker.html"
+    "https://e-invoicingcompliancecorner.com/", related
   );
   return htmlResponse(html);
 }
@@ -3535,7 +3552,7 @@ async function sendViaResend(env, payload) {
 // matching the existing magic-link and monthly-notification emails --
 // none of this site's transactional email is localized yet.
 const WELCOME_LINKS = {
-  tracker: "https://e-invoicingcompliancecorner.com/einvoicing-compliance-tracker.html",
+  tracker: "https://e-invoicingcompliancecorner.com/",
   sources: "https://e-invoicingcompliancecorner.com/sources",
   education: {
     "Types of Mandate": "https://e-invoicingcompliancecorner.com/education-mandate-types.html",
@@ -3962,7 +3979,7 @@ function renderLoginPage(error, lang, next) {
   const safeNext = isAllowedNext(next) ? next : "";
   const body = `
   <div class="wrap">
-    <a class="back-link" href="https://e-invoicingcompliancecorner.com/einvoicing-compliance-tracker.html" style="margin:0;">${t(lang, "backToTracker")}</a>
+    <a class="back-link" href="https://e-invoicingcompliancecorner.com/" style="margin:0;">${t(lang, "backToTracker")}</a>
     <div class="card" style="margin-top:16px;">
       <p class="eyebrow">${t(lang, "login.eyebrow")}</p>
       <h1 class="title">${t(lang, "login.title")}</h1>
@@ -3987,7 +4004,7 @@ function renderCheckEmailPage(lang) {
   lang = lang || "en";
   const body = `
   <div class="wrap">
-    <a class="back-link" href="https://e-invoicingcompliancecorner.com/einvoicing-compliance-tracker.html">${t(lang, "backToTracker")}</a>
+    <a class="back-link" href="https://e-invoicingcompliancecorner.com/">${t(lang, "backToTracker")}</a>
     <div class="card">
       <p class="eyebrow">${t(lang, "checkEmail.eyebrow")}</p>
       <h1 class="title">${t(lang, "checkEmail.title")}</h1>
@@ -4001,7 +4018,7 @@ function renderTrialAlreadyUsedPage(lang) {
   lang = lang || "en";
   const body = `
   <div class="wrap">
-    <a class="back-link" href="https://e-invoicingcompliancecorner.com/einvoicing-compliance-tracker.html">${t(lang, "backToTracker")}</a>
+    <a class="back-link" href="https://e-invoicingcompliancecorner.com/">${t(lang, "backToTracker")}</a>
     <div class="card">
       <p class="eyebrow">${t(lang, "trialAlreadyUsed.eyebrow")}</p>
       <h1 class="title">${t(lang, "trialAlreadyUsed.title")}</h1>
@@ -4097,7 +4114,7 @@ function renderArchiveList(stories, regionByCountryName, englishNameByDisplayNam
 
   const body = `
   <div class="topbar topbar-wide">
-    <a class="back-link" href="https://e-invoicingcompliancecorner.com/einvoicing-compliance-tracker.html" style="margin:0;">${t(lang, "backToTracker")}</a>
+    <a class="back-link" href="https://e-invoicingcompliancecorner.com/" style="margin:0;">${t(lang, "backToTracker")}</a>
     ${isAnonymous ? "" : `<form method="POST" action="/members/logout"><button type="submit" class="logout-btn">${t(lang, "logout")}</button></form>`}
   </div>
   <div class="archive-wrap">

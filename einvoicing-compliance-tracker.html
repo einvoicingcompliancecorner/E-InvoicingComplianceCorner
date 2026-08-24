@@ -3,6 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- SITE VERIFICATION -->
+<!-- ^ DO NOT REMOVE OR REWORD THE COMMENT ABOVE. site-worker's
+     renderTracker injects the Google and Bing ownership tags directly
+     after it, reading the tokens from GOOGLE_SITE_VERIFICATION and
+     BING_SITE_VERIFICATION in site-worker/wrangler.toml. Nothing is
+     emitted while those are empty, and a missing marker logs rather
+     than throwing. This page is served at "/", which is the URL a
+     Search Console URL-prefix property checks for the tag. -->
 <title>Global E-Invoicing Mandate Tracker — The E-Invoicing Compliance Corner</title>
 <!-- ORGANIZATION AND WEBSITE, ONCE, HERE.
      Every other page references these two by @id rather than repeating
@@ -19,16 +27,29 @@
      in this file (see renderTracker), and nothing here depends on the
      database. -->
 <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://e-invoicingcompliancecorner.com/#organization","name":"The E-Invoicing Compliance Corner","url":"https://e-invoicingcompliancecorner.com","description":"Independent tracking of e-invoicing mandates, legislation and deadlines across global jurisdictions.","publishingPrinciples":"https://e-invoicingcompliancecorner.com/methodology","founder":{"@id":"https://e-invoicingcompliancecorner.com/#founder"}},{"@type":"Person","@id":"https://e-invoicingcompliancecorner.com/#founder","name":"Dan Young","description":"25 years in financial software transformation, focused on invoice digitisation and Accounts Payable automation.","image":"https://e-invoicingcompliancecorner.com/images/dan-young.png","sameAs":["https://www.linkedin.com/in/danielyoung76/"],"worksFor":{"@id":"https://e-invoicingcompliancecorner.com/#organization"}},{"@type":"WebSite","@id":"https://e-invoicingcompliancecorner.com/#website","name":"The E-Invoicing Compliance Corner","url":"https://e-invoicingcompliancecorner.com","inLanguage":"en","publisher":{"@id":"https://e-invoicingcompliancecorner.com/#organization"}}]}</script>
-<link rel="canonical" href="https://e-invoicingcompliancecorner.com/einvoicing-compliance-tracker.html">
-<link rel="alternate" hreflang="en" href="https://e-invoicingcompliancecorner.com/einvoicing-compliance-tracker.html">
-<link rel="alternate" hreflang="de" href="https://e-invoicingcompliancecorner.com/einvoicing-compliance-tracker.html?lang=de">
-<link rel="alternate" hreflang="fr" href="https://e-invoicingcompliancecorner.com/einvoicing-compliance-tracker.html?lang=fr">
-<link rel="alternate" hreflang="es" href="https://e-invoicingcompliancecorner.com/einvoicing-compliance-tracker.html?lang=es">
-<link rel="alternate" hreflang="x-default" href="https://e-invoicingcompliancecorner.com/einvoicing-compliance-tracker.html">
+<!-- CANONICAL IS THE ROOT, from 25 August 2026.
+     This page is served at three addresses — /, /einvoicing-compliance-
+     tracker.html and the extensionless form — because 89 internal links
+     and every link ever shared point at the long ones and must keep
+     working. All three send this same block, which names / as the one
+     address, and that is what consolidates them.
+
+     It used to name the .html form, while / was a meta-refresh stub
+     whose own canonical pointed here. The site's strongest URL was
+     therefore a redirect notice that disclaimed itself, and the
+     Organization node's `url` asserted content at an address that had
+     none. See the HOME_PATH comment in site-worker/src/index.js. -->
+<link rel="canonical" href="https://e-invoicingcompliancecorner.com/">
+<link rel="alternate" hreflang="en" href="https://e-invoicingcompliancecorner.com/">
+<link rel="alternate" hreflang="de" href="https://e-invoicingcompliancecorner.com/?lang=de">
+<link rel="alternate" hreflang="fr" href="https://e-invoicingcompliancecorner.com/?lang=fr">
+<link rel="alternate" hreflang="es" href="https://e-invoicingcompliancecorner.com/?lang=es">
+<link rel="alternate" hreflang="x-default" href="https://e-invoicingcompliancecorner.com/">
 <meta name="description" content="Track e-invoicing mandates, deadlines, and clearance requirements across 70 countries — Poland's KSeF, France, Italy's SDI, Saudi Arabia's ZATCA, and more — updated monthly, with links to every official government source.">
-<!-- og:url intentionally omitted until a stable custom domain is in place — update this whole block once the site has a permanent address. -->
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://e-invoicingcompliancecorner.com/einvoicing-compliance-tracker.html">
+<!-- Matches the canonical. A share card pointing at a URL that is not
+     the canonical one splits the counts between two addresses. -->
+<meta property="og:url" content="https://e-invoicingcompliancecorner.com/">
 <meta property="og:title" content="Global E-Invoicing Mandate Tracker">
 <meta property="og:description" content="Every e-invoicing mandate, deadline, and compliance requirement across 70 countries, tracked in one place and updated monthly.">
 <meta name="twitter:card" content="summary">
@@ -3334,7 +3355,7 @@ async function openDeepDive(slug, opts){
   shadow.innerHTML = `
     <style>${scopedCss}</style>
     <div class="wrap">
-      <div class="top-bar"><a class="back-link" id="deepDiveCloseLink" href="/einvoicing-compliance-tracker.html">${closeLabel}</a></div>
+      <div class="top-bar"><a class="back-link" id="deepDiveCloseLink" href="/">${closeLabel}</a></div>
       ${wrap ? wrap.innerHTML : '<p>Could not load this page.</p>'}
     </div>`;
   shadow.getElementById('deepDiveCloseLink').addEventListener('click', (e)=>{
@@ -3430,7 +3451,7 @@ async function openSourcesPage(opts){
   shadow.innerHTML = `
     <style>${scopedCss}</style>
     <div class="wrap">
-      <div class="top-bar"><a class="back-link" id="sourcesCloseLink" href="/einvoicing-compliance-tracker.html">${closeLabel}</a></div>
+      <div class="top-bar"><a class="back-link" id="sourcesCloseLink" href="/">${closeLabel}</a></div>
       ${wrap ? wrap.innerHTML : '<p>Could not load this page.</p>'}
     </div>`;
   shadow.getElementById('sourcesCloseLink').addEventListener('click', (e)=>{
@@ -3528,7 +3549,7 @@ async function openInsightsPage(opts){
   shadow.innerHTML = `
     <style>${scopedCss}</style>
     <div class="wrap">
-      <div class="top-bar"><a class="back-link" id="insightsCloseLink" href="/einvoicing-compliance-tracker.html">${closeLabel}</a></div>
+      <div class="top-bar"><a class="back-link" id="insightsCloseLink" href="/">${closeLabel}</a></div>
       ${wrap ? wrap.innerHTML : '<p>Could not load this page.</p>'}
     </div>`;
   shadow.getElementById('insightsCloseLink').addEventListener('click', (e)=>{
@@ -3919,7 +3940,7 @@ async function openRoiPage(opts){
   // link, which is the difference Dan is pointing at.
   panel.innerHTML = ''
     + '<div class="roi-frame-note">'
-    +   `<a class="roi-back" id="roiCloseLink" href="/einvoicing-compliance-tracker.html">${backLabel}</a>`
+    +   `<a class="roi-back" id="roiCloseLink" href="/">${backLabel}</a>`
     + '</div>'
     + '<div class="roi-frame-wrap">'
     +   `<iframe id="roiFrame" title="${cfg.title}" src="${src}" loading="lazy"></iframe>`
@@ -4382,7 +4403,7 @@ async function openArchive(opts){
   const closeLabel = (window.EICC_I18N && window.EICC_I18N.t('backLink')) || '← Back to global tracker';
   shadow.innerHTML = `
     <style>${scopedCss}</style>
-    <div class="topbar topbar-wide"><a class="back-link" id="archiveCloseLink" href="/einvoicing-compliance-tracker.html">${closeLabel}</a></div>
+    <div class="topbar topbar-wide"><a class="back-link" id="archiveCloseLink" href="/">${closeLabel}</a></div>
     ${wrap.outerHTML}`;
   shadow.getElementById('archiveCloseLink').addEventListener('click', (e)=>{
     e.preventDefault();
@@ -4649,7 +4670,7 @@ async function openEducationPage(pageKey, opts){
   shadow.innerHTML = `
     <style>${scopedCss}</style>
     <div class="wrap">
-      <a class="back-link" id="educationCloseLink" href="/einvoicing-compliance-tracker.html">${closeLabel}</a>
+      <a class="back-link" id="educationCloseLink" href="/">${closeLabel}</a>
       ${wrap ? wrap.innerHTML : '<p>Could not load this page.</p>'}
     </div>`;
   shadow.getElementById('educationCloseLink').addEventListener('click', (e)=>{
@@ -4839,7 +4860,7 @@ async function openFeedbackPage(opts){
   shadow.innerHTML = `
     <style>${scopedCss}</style>
     <div class="wrap">
-      <a class="back-link" id="feedbackCloseLink" href="/einvoicing-compliance-tracker.html">${closeLabel}</a>
+      <a class="back-link" id="feedbackCloseLink" href="/">${closeLabel}</a>
       ${wrap ? wrap.innerHTML : '<p>Could not load this page.</p>'}
     </div>`;
   shadow.getElementById('feedbackCloseLink').addEventListener('click', (e)=>{
@@ -5080,7 +5101,7 @@ async function openSubscribePage(opts){
   shadow.innerHTML = `
     <style>${scopedCss}</style>
     <div class="wrap">
-      <a class="back-link" id="subscribeCloseLink" href="/einvoicing-compliance-tracker.html">${closeLabel}</a>
+      <a class="back-link" id="subscribeCloseLink" href="/">${closeLabel}</a>
       ${wrap ? wrap.innerHTML : '<p>Could not load this page.</p>'}
     </div>`;
   shadow.getElementById('subscribeCloseLink').addEventListener('click', (e)=>{

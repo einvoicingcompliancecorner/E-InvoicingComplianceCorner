@@ -288,7 +288,15 @@ def hreflang_block(file_name):
     target at all. So every one of these pages was canonicalising to an
     address search engines are told to treat as provisional.
     """
-    base = f"{ORIGIN}/{file_name}".replace(".html", "")
+    # THE TRACKER IS SERVED AT THE ROOT (25 August 2026) and canonicalises
+    # to it, so its cluster is `/`, `/?lang=de` and so on -- not the
+    # extensionless slug this function derives for everything else. Named
+    # here rather than left to the caller because this function is the
+    # only thing that knows what a cluster looks like, and the version it
+    # would otherwise emit contradicts the canonical two lines above it in
+    # the file it writes into.
+    base = ORIGIN + "/" if file_name == "einvoicing-compliance-tracker.html" \
+        else f"{ORIGIN}/{file_name}".replace(".html", "")
     lines = [f'<link rel="alternate" hreflang="{l}" href="{base}{"" if l == "en" else f"?lang={l}"}">'
              for l in LANGS]
     lines.append(f'<link rel="alternate" hreflang="x-default" href="{base}">')

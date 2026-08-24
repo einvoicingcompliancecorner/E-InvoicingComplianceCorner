@@ -283,6 +283,60 @@ export function changesLd({ lang = "en", modified } = {}) {
   return node;
 }
 
+/**
+ * The insights hub: a CollectionPage whose ItemList is the pieces it
+ * actually lists, in the order it lists them.
+ *
+ * WHY IT HAD NOTHING UNTIL NOW. insightsPageShell has always accepted an
+ * `ld` argument and every caller passed one except this one — the hub was
+ * the single page on this site with a slot for structured data and
+ * nothing in it. The 25 August audit found it by counting callers rather
+ * than by reading pages, which is the only way it would have been found.
+ *
+ * ItemList AND NOT ItemList-of-Articles. Each entry is a `url` and a
+ * `name`, not a nested Article node. The full Article — author, dates,
+ * isAccessibleForFree — is published on the piece's own page by
+ * articleLd(), and restating a partial copy here would create a second,
+ * thinner description of the same thing for a consumer to reconcile.
+ * The list says what is on the shelf; each page says what it is.
+ *
+ * POSITION IS THE DISPLAYED ORDER, which is published_at DESC. That is a
+ * real fact about the page, so it is safe to assert; a list re-sorted for
+ * the markup would not be.
+ */
+export function collectionPageLd({ articles = [], lang = "en", title, description }) {
+  const node = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    "@id": `${ORIGIN}/insights#webpage`,
+    url: `${ORIGIN}/insights`,
+    name: title || "Insights",
+    inLanguage: lang,
+    isPartOf: { "@id": `${ORIGIN}/#website` },
+    publisher: { "@id": `${ORIGIN}/#organization` },
+    publishingPrinciples: `${ORIGIN}/methodology`,
+  };
+  if (description) node.description = description;
+  // An empty hub gets no mainEntity rather than an ItemList of nothing.
+  // "Nothing published yet" is what the page says; an ItemList with
+  // numberOfItems: 0 is a machine-readable way of saying the same thing
+  // less clearly, and schema consumers treat empty lists inconsistently.
+  if (articles.length) {
+    node.mainEntity = {
+      "@type": "ItemList",
+      numberOfItems: articles.length,
+      itemListOrder: "https://schema.org/ItemListOrderDescending",
+      itemListElement: articles.map((a, i) => ({
+        "@type": "ListItem",
+        position: i + 1,
+        name: a.title,
+        url: `${ORIGIN}/insights/${a.slug}`,
+      })),
+    };
+  }
+  return node;
+}
+
 /** The methodology page itself. */
 export function methodologyLd(lang = "en") {
   return {

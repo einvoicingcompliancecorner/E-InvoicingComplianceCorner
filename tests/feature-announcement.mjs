@@ -323,8 +323,19 @@ t.check("including the two Dan named",
   // THING THAT EMBEDS THEM. A cold load of /roi-calculator or
   // /compliance-guides is the bare page — correct for a crawler, wrong
   // for someone arriving from an email.
+  //
+  // WHAT MAKES A LINK "THROUGH THE TRACKER" IS THE ?view=, NOT THE PATH.
+  // This matched the literal `einvoicing-compliance-tracker.html?view=`
+  // until 25 August, when the tracker moved to "/" and all four of these
+  // became `/?view=...`. The check then failed on four links that were
+  // still exactly right — it was pinned to an address rather than to the
+  // contract, which is: land on the page that owns the panel, and tell
+  // it which view to open. The tracker answers at all three of its
+  // addresses, so the path half is not the part worth asserting, and the
+  // block immediately below already proves the tracker routes every
+  // ?view= value this map sends.
   const embedded = ["roi-wave-planner", "compliance-guides", "methodology", "change-record"];
-  const bare = embedded.filter((k) => !/einvoicing-compliance-tracker\.html\?view=/.test(links[k] || ""));
+  const bare = embedded.filter((k) => !/^\/(einvoicing-compliance-tracker(\.html)?)?\?view=/.test(links[k] || ""));
   t.check("the embedded pages are linked through the tracker",
     bare.length === 0,
     `${bare.join(", ")} would open standalone, not in the panel`);

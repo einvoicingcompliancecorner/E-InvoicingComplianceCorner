@@ -380,14 +380,28 @@ t.check("there is a register to check", rows.length >= 15, `${rows.length} count
   // this page stripped only the language row, which is the visible half
   // of the same contract, so the defect was one line of an inherited
   // pattern that had not been inherited completely.
+  // COUNTED BY WHAT THE ELEMENT IS, NOT BY WHERE IT POINTS.
+  //
+  // Both of these matched the literal `einvoicing-compliance-tracker.html`
+  // until 25 August, when the tracker moved to "/" and the href changed.
+  // The check then reported ZERO back links on a page that had exactly
+  // one — a green-to-red flip caused by a URL edit that this check has no
+  // opinion about. `class="back-link"` is the thing the contract is
+  // actually about: one bar standalone, none inside the panel that
+  // already draws its own.
+  // Counted with match() on a fresh literal each time rather than a
+  // shared /g regex: `.test()` on a global regex advances lastIndex, so
+  // sharing one object between the two assertions below would make the
+  // second depend on whether the first matched.
+  const countBackLinks = (s) => (s.match(/class="back-link"/g) || []).length;
   t.check("and its own back link, which the panel already draws",
-    !/einvoicing-compliance-tracker\.html/.test(body),
+    countBackLinks(body) === 0,
     "the frame would show two 'back to tracker' links, one above the other");
   // The standalone page must still have exactly one. Dropping the bar in
   // both states would be the opposite defect and would look identical to
   // this fix from inside the panel.
   const plain = (await (await get("/spec-register", cookie)).text()).split("</style>").pop();
-  const backs = (plain.match(/einvoicing-compliance-tracker\.html/g) || []).length;
+  const backs = countBackLinks(plain);
   t.check("while the standalone page keeps exactly one",
     backs === 1, `${backs} back link(s) outside the frame`);
   t.check("and still carries the marker the panel checks for",

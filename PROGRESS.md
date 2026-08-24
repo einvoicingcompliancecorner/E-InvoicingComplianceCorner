@@ -16833,3 +16833,125 @@ matched `subscribe\.html$`, when the question it exists to ask is whether
 a route to subscribing is offered at all.
 
 `npm test`: **29 suites**, 42 checks in the crawlability suite.
+
+### The front door, the neighbours, and the first honest measurement (25 August 2026)
+
+Three items Dan picked off the "what is left" list. The first turned out
+to be a bigger finding than the item that named it.
+
+#### The home page was not a page
+
+The item was "the homepage has no structured data". It has no structured
+data because it has no content: `/` served `index.html`, twenty lines
+containing a `<meta http-equiv="refresh">`, a `location.replace()`, and a
+canonical pointing away at `/einvoicing-compliance-tracker.html`.
+
+Three things were wrong at once. A meta refresh is a client-side redirect
+and has never been the instruction a 301 is. The root URL — what people
+type, what gets linked from outside, the first crumb in every breadcrumb
+this site publishes — arrived at a stub. And the `Organization` and
+`WebSite` nodes on the tracker both assert
+`url: "https://e-invoicingcompliancecorner.com"`, which was a claim about
+a page with nothing on it. Adding JSON-LD to that stub would have put a
+`WebSite` node on a page Google is told to ignore.
+
+Dan chose the full fix. **`/` now renders the tracker and `/` is the
+canonical.** The two `einvoicing-compliance-tracker` forms still serve the
+same page — 89 internal links and every link ever shared point at them —
+but they name `/` as canonical, which is what consolidates three
+addresses into one. 34 internal links moved to `/`, the sitemap lists the
+root and no longer lists the duplicates, and `og:url` follows the
+canonical so shares are not counted at two addresses.
+
+**The line the whole thing rests on is in `wrangler.toml`.** Without `/`
+in `run_worker_first`, the asset layer answers the root with `index.html`
+and the Worker never runs — no error, no log, the front door silently
+reverting. `index.html` is kept as the one thing standing between a lost
+config line and a blank front door, which is exactly why its refresh
+target is the `.html` form and **not** `/`: in the only situation where
+that file is ever read, `/` is what failed, and pointing it at `/` would
+be a refresh loop on the home page.
+
+The `/insights` hub got the second half of the item. `insightsPageShell`
+has always accepted an `ld` argument and every caller passed one except
+the hub — the single page on this site with a slot for structured data
+and nothing in it. It now publishes a `CollectionPage` whose `ItemList`
+is the same array the page renders, in the same order.
+
+#### Country pages link sideways
+
+Every one of the seventy deep dives linked **up** to the tracker and
+nowhere else. No path from Germany to France, from Saudi Arabia to the
+UAE, though the clusters are in the data as `region` and a reader working
+one GCC mandate is usually working the others. A crawler reaching any
+country page found exactly one link out of it, so all seventy hung off
+the sitemap and one index rather than off each other.
+
+Each page now ends with its regional neighbours as chips carrying the
+**next** dated milestone — the filter is `date >= date('now')` before
+`MIN` sees it, because the country index shipped on 24 August printing
+each country's *earliest* milestone under a heading promising its next,
+and listed the United States as March 2003.
+
+**No cap.** Europe is 31 chips and that is four rows. A "top 8 related"
+would be a silent truncation of the exact thing the block exists to
+provide. Country names and the region in the heading are translated
+server-side — this page is rendered per language and has no excuse for
+the "Weitere Jurisdiktionen — Middle East / Africa" half-sentence this
+project has shipped twice.
+
+#### Search Console — the ceiling on everything above
+
+There has never been a verification tag anywhere in this repository.
+Which means Google has never reported a single impression, query,
+coverage error or rejected structured-data block back to this project,
+and **every claim made about this site's search performance in the last
+month, including a month of audits, was inferred from markup and never
+once observed.** The specific question it answers: forty-two country
+pages were unreachable until last week, and whether they are now indexed
+is the entire premise of that work.
+
+The mechanism is built. `GOOGLE_SITE_VERIFICATION` and
+`BING_SITE_VERIFICATION` are empty vars in `site-worker/wrangler.toml`;
+`renderTracker` injects the tags at a marker in the tracker's head,
+**before** the try block, so an outage costs the board and not the
+Search Console account. Empty emits nothing, because
+`<meta content="">` is worse than no tag — the engine reads it, fails,
+and records the property as claimed-but-invalid.
+
+**Do the DNS method if the choice is offered.** A TXT record on the apex
+verifies every subdomain at once (the members host included), survives
+every deploy, and cannot be dropped by an edit to the tracker markup —
+which the meta tag can. Cloudflare hosts this zone, so it is a dashboard
+change. The vars exist because Search Console offers the HTML tag first
+and claiming the property should not require a code change.
+
+Then, in Search Console: submit `https://e-invoicingcompliancecorner.com/sitemap.xml`,
+and use **URL Inspection → Request indexing** on `/` — the canonical has
+moved and that is the fastest way to tell Google. Bing Webmaster Tools
+alongside it, because Bing's index is what several assistant products
+query when they search.
+
+#### Three checks that could not fail
+
+All three found by deliberately breaking the thing and watching the
+check stay green.
+
+`jurisdiction-count` anchored on `index.html`'s meta description, which
+is gone because the stub no longer describes anything — removed from the
+register with the reason, not silenced. `spec-register` counted back
+links by matching the literal tracker URL, so moving the tracker made it
+report **zero** back links on a page that had exactly one; it now counts
+`class="back-link"`. `feature-announcement` required the literal
+`einvoicing-compliance-tracker.html?view=`, when the contract it exists
+to guard is "land on the page that owns the panel and tell it which view
+to open".
+
+And one of my own, caught the same way: the new check that
+`run_worker_first` contains `/` read the first quoted string on every
+line — and the comment explaining why `/` is in that list contains the
+characters `"/"`. **It passed with the entry deleted**, which is the
+precise failure it exists to catch. Comment lines are stripped now, and
+the fix was verified by deleting the entry and watching it go red.
+
+`npm test`: **29 suites**, 61 checks in the crawlability suite.

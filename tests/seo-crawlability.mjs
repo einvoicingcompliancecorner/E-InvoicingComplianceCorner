@@ -461,6 +461,149 @@ t.check("the sitemap is served and well-formed",
     `graph holds: ${ids.join(", ")}`);
 }
 
+// ---- 7. the home page is the tracker ------------------------------------
+//
+// Until 25 August `/` served index.html: a meta refresh, a
+// location.replace(), and a canonical pointing away at the tracker. The
+// site's strongest URL held a redirect notice that disclaimed itself.
+// Four things must stay true for the fix to hold, and three of them live
+// in files no other suite reads.
+{
+  const home = await get("/");
+  const homeHtml = await home.text();
+  t.check("the root serves the tracker, not a redirect stub",
+    home.status === 200 && /countryIndexList/.test(homeHtml),
+    `status ${home.status}`);
+
+  // THE CONFIG LINE THE WHOLE THING RESTS ON. Without "/" in
+  // run_worker_first the asset layer answers the root with index.html and
+  // the Worker never runs — no error, no log, the front door silently
+  // reverting to what it was. This harness stubs ASSETS and would
+  // therefore go on passing while production was broken, so this reads
+  // the real file rather than trusting the check above.
+  const toml = readFileSync(join(REPO, "site-worker", "wrangler.toml"), "utf8");
+  //
+  // COMMENT LINES DROPPED FIRST, and that is not tidiness. The first
+  // version of this parser took the first quoted string on every line —
+  // and the comment block explaining why "/" is in this list contains the
+  // characters `"/"`. So the check passed with the entry deleted, which
+  // is the precise failure it exists to catch. Verified by deleting the
+  // entry and watching this line go red.
+  const rwf = (toml.match(/run_worker_first\s*=\s*\[([\s\S]*?)\]/) || [, ""])[1]
+    .split("\n")
+    .filter((l) => !/^\s*#/.test(l))
+    .map((l) => (l.match(/"([^"]+)"/) || [])[1]).filter(Boolean);
+  t.check("wrangler.toml routes the root to the Worker",
+    rwf.includes("/"), `run_worker_first: ${rwf.join(", ") || "(none)"}`);
+
+  // ONE ADDRESS. Three URLs serve this page; all three send this same
+  // head, and it must name the root or they compete instead of
+  // consolidating.
+  const trackerAsset = readFileSync(join(REPO, "einvoicing-compliance-tracker.html"), "utf8");
+  const canonical = (trackerAsset.match(/<link rel="canonical" href="([^"]+)"/) || [])[1];
+  t.check("and the tracker canonicalises to the root",
+    canonical === "https://e-invoicingcompliancecorner.com/", String(canonical));
+  const ogUrl = (trackerAsset.match(/<meta property="og:url" content="([^"]+)"/) || [])[1];
+  t.check("with og:url agreeing, so shares are not counted at two addresses",
+    ogUrl === canonical, `og:url ${ogUrl} vs canonical ${canonical}`);
+  const alts = [...trackerAsset.matchAll(/<link rel="alternate" hreflang="[^"]+" href="([^"]+)"/g)].map((m) => m[1]);
+  t.check("and every hreflang variant hangs off the root",
+    alts.length >= 5
+      && alts.every((u) => /^https:\/\/e-invoicingcompliancecorner\.com\/(\?lang=[a-z]{2})?$/.test(u)),
+    alts.join(" "));
+
+  // THE SITEMAP OFFERS THE CANONICAL AND NOT ITS DUPLICATES. Listing a
+  // URL that canonicalises elsewhere asks Google to crawl a page in order
+  // to be told to go somewhere else.
+  t.check("the sitemap lists the root", locs.includes("/"), locs.slice(0, 3).join(", "));
+  t.check("and not the two addresses that now canonicalise into it",
+    !locs.some((l) => /einvoicing-compliance-tracker/.test(l)),
+    locs.filter((l) => /einvoicing-compliance-tracker/.test(l)).join(", "));
+
+  // THE FALLBACK STUB MUST NOT POINT AT ITSELF. index.html is only ever
+  // served if the run_worker_first entry above is lost — which is to say,
+  // in the one situation where "/" is what failed. A refresh aimed at "/"
+  // would then be a loop on the site's own front door.
+  const stub = readFileSync(join(REPO, "index.html"), "utf8");
+  const refresh = (stub.match(/http-equiv="refresh" content="[^"]*url=([^"]+)"/) || [])[1];
+  t.check("the fallback stub forwards to an address that does not depend on the Worker",
+    refresh === "/einvoicing-compliance-tracker.html", String(refresh));
+  t.check("and is not itself indexable",
+    /<meta name="robots" content="noindex">/.test(stub));
+}
+
+// ---- 8. country pages link sideways -------------------------------------
+//
+// Every deep dive linked UP to the tracker and nowhere else: no path from
+// Germany to France, from Saudi Arabia to the UAE. A crawler reaching any
+// country page found exactly one link out of it, so all seventy hung off
+// the sitemap and one index rather than off each other.
+{
+  const de = await (await get("/germany")).text();
+  const body = de.replace(/<script[\s\S]*?<\/script>/gi, " ").split("</style>").pop();
+  const chips = [...body.matchAll(/class="rj-chip" href="\/([a-z0-9-]+)"/g)].map((m) => m[1]);
+  t.check("a country page links to its regional neighbours",
+    chips.length >= 5, `${chips.length} related links on /germany`);
+  t.check("and every one of them is a country this site actually serves",
+    chips.every((s) => tracked.some((c) => c.slug === s)),
+    chips.filter((s) => !tracked.some((c) => c.slug === s)).join(", "));
+  t.check("but never to itself", !chips.includes("germany"), "Germany links to Germany");
+
+  // TRANSLATED, INCLUDING THE REGION IN THE HEADING. The tracker's country
+  // index server-renders English and translates after load because it has
+  // no language in hand; this page is rendered per language and has no
+  // such excuse. A heading reading "Weitere Jurisdiktionen — Middle East /
+  // Africa" is the half-translated sentence this project has shipped
+  // twice already.
+  const deDe = (await (await get("/germany?lang=de")).text()).split("</style>").pop();
+  t.check("the related block is translated on a translated page",
+    /Weitere Jurisdiktionen/.test(deDe) && /Frankreich/.test(deDe),
+    "heading or country names still English");
+  t.check("and its links carry the language forward",
+    /class="rj-chip" href="\/france\?lang=de"/.test(deDe));
+}
+
+// ---- 9. the insights hub, and the verification tag ----------------------
+{
+  // insightsPageShell has always accepted an `ld` argument and every
+  // caller passed one except the hub — the one page on this site with a
+  // slot for structured data and nothing in it.
+  const hub = await (await get("/insights")).text();
+  const nodes = [...hub.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)]
+    .map((m) => JSON.parse(m[1].replace(/\\u003c/g, "<").replace(/\\u003e/g, ">").replace(/\\u0026/g, "&")))
+    .flatMap((b) => b["@graph"] || [b]);
+  const collection = nodes.find((n) => n["@type"] === "CollectionPage");
+  t.check("the insights hub publishes a CollectionPage",
+    !!collection, `types: ${nodes.map((n) => n["@type"]).join(", ") || "(none)"}`);
+  t.check("whose ItemList counts the pieces the page actually lists",
+    !collection?.mainEntity
+      || collection.mainEntity.numberOfItems === collection.mainEntity.itemListElement.length,
+    JSON.stringify(collection?.mainEntity?.numberOfItems));
+
+  // THE VERIFICATION MARKER. Empty tokens emit nothing by design, so the
+  // only way to catch a lost marker is to check the asset for it AND
+  // prove the injection lands when a token is actually set.
+  const asset = readFileSync(join(REPO, "einvoicing-compliance-tracker.html"), "utf8");
+  t.check("the tracker carries the verification marker",
+    asset.includes("<!-- SITE VERIFICATION -->"));
+  const verified = await (await worker.fetch(
+    new Request("https://e-invoicingcompliancecorner.com/"),
+    { ...env, GOOGLE_SITE_VERIFICATION: "abc123", BING_SITE_VERIFICATION: "def456" },
+    { waitUntil() {} })).text();
+  t.check("and a token set in config reaches the served home page",
+    /<meta name="google-site-verification" content="abc123">/.test(verified)
+      && /<meta name="msvalidate\.01" content="def456">/.test(verified),
+    "the tag did not land");
+  // AN EMPTY VAR MUST EMIT NOTHING. `<meta content="">` is worse than no
+  // tag: the engine reads it, fails the check, and records the property
+  // as claimed-but-invalid rather than as unclaimed.
+  const blank = await (await worker.fetch(
+    new Request("https://e-invoicingcompliancecorner.com/"),
+    { ...env, GOOGLE_SITE_VERIFICATION: "  " }, { waitUntil() {} })).text();
+  t.check("while an empty one emits no tag at all",
+    !/google-site-verification/.test(blank));
+}
+
 console.log(`  note  ${tracked.length} countries linked from the tracker and listed in `
   + `${locs.length} sitemap URLs`);
 
