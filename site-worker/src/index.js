@@ -207,6 +207,167 @@ async function buildDeepDives(db) {
   return Object.fromEntries(results.map((r) => [r.name_en, "/" + r.slug]));
 }
 
+/**
+ * The crawlable country index -- seventy real anchors.
+ *
+ * WHY IT EXISTS. The board is built by renderBoard() from a JavaScript
+ * array, and DEEP_DIVES is injected as a JS object literal, so every
+ * country link on this page only exists after JavaScript runs. A
+ * crawler that does not render saw the site's primary page as 718 words
+ * with no link to any of the seventy country pages -- and 42 of those
+ * pages were in neither the sitemap nor any anchor anywhere on the
+ * site. They were, to anything that reads HTML, not on the internet.
+ *
+ * Googlebot renders and would find them eventually. Bing's non-render
+ * path, social scrapers, link auditors and the AI crawlers -- whose
+ * traffic is the fastest-growing segment hitting this site -- do not.
+ *
+ * ONE LIST, NOT A <noscript> COPY. A noscript block is a second copy of
+ * the country list that no reader ever sees, so nothing notices when it
+ * rots. This renders for everyone, reads as an A-Z any human can scan,
+ * and is the same query the board already runs.
+ *
+ * ENGLISH NAMES, deliberately. The tracker is one URL serving four
+ * languages by cookie with no Vary header, so anything server-rendered
+ * here may be cached and shown to a reader of another language. The
+ * canonical is the English URL; the index matches it, and the client
+ * translates the labels after load (see wireCountryIndex in the shell).
+ */
+function buildCountryIndexHtml(data, deepDives) {
+  // THE NEXT milestone per country, which is not the earliest one.
+  //
+  // The first version of this took the minimum date and printed it
+  // beside a label promising "its next dated milestone" -- so the
+  // United States showed 2003-03-01 and Denmark 2005-01-01, both true
+  // and both the opposite of what the sentence above them claimed. A
+  // country whose dates are all in the past gets no date rather than a
+  // historical one dressed as a deadline.
+  const today = new Date().toISOString().slice(0, 10);
+  const next = new Map();
+  for (const e of data) {
+    if (!e.country || !e.date || e.date < today) continue;
+    const prev = next.get(e.country);
+    if (!prev || e.date < prev) next.set(e.country, e.date);
+  }
+  const names = Object.keys(deepDives).sort((a, b) => a.localeCompare(b, "en"));
+  return names.map((name) => {
+    const href = deepDives[name];
+    const date = next.get(name);
+    return `<li><a href="${escHtml(href)}" data-country="${escHtml(name)}">${escHtml(name)}</a>`
+      + (date ? ` <span class="ci-date">${escHtml(date)}</span>` : "")
+      + `</li>`;
+  }).join("");
+}
+
+// ================================================================
+// THE SITEMAP, BUILT FROM THE DATABASE
+// ================================================================
+//
+// It used to be a hand-maintained file, and the 24 August SEO audit
+// found what hand-maintained means in practice: the router answered 70
+// country slugs and sitemap.xml listed 28. FORTY-TWO COUNTRY PAGES were
+// in neither the sitemap nor any crawlable anchor on the site -- each
+// carrying about a thousand words of sourced prose that nothing could
+// reach. The file's own comment block admitted the convention "was
+// written when the hub was built but never actually followed".
+//
+// A list that must be updated by hand every time a country ships is a
+// list that will be wrong, and this one was wrong by 60%. So the
+// countries come from the same table the router resolves slugs against,
+// and `lastmod` comes from each page's own last_updated rather than a
+// date somebody typed once.
+//
+// STATIC ENTRIES ARE STILL A LIST, and deliberately: the education
+// pages, the whitepapers and the legal pages are files, not rows, and
+// inventing a table for six URLs would be worse than writing them down.
+// They are here rather than in an asset so that ONE place answers the
+// question "what does this site want indexed".
+//
+// GATED PAGES ARE ABSENT ON PURPOSE. /roi-calculator, /compliance-guides
+// and /spec-register all answer a sign-up wall and all emit
+// noindex,nofollow; listing them would ask Google to index a page that
+// tells it not to.
+const SITEMAP_STATIC = [
+  // The home page and the tracker. Both, because / is a redirect to the
+  // tracker and the audit found neither of them declared anywhere.
+  { loc: "/", priority: "1.0", changefreq: "daily" },
+  { loc: "/einvoicing-compliance-tracker.html", priority: "1.0", changefreq: "daily" },
+  // D1-rendered public pages. /sources was missing from the old file
+  // and is the page carrying the Dataset structured data -- the most
+  // citable object the site publishes.
+  { loc: "/map", priority: "0.9", changefreq: "weekly" },
+  { loc: "/sources", priority: "0.8", changefreq: "weekly" },
+  { loc: "/insights", priority: "0.8", changefreq: "weekly" },
+  { loc: "/methodology", priority: "0.7", changefreq: "monthly" },
+  { loc: "/changes", priority: "0.7", changefreq: "daily" },
+  // Static explainers.
+  { loc: "/education-mandate-types.html", priority: "0.6", changefreq: "monthly" },
+  { loc: "/education-impact-of-mandate.html", priority: "0.6", changefreq: "monthly" },
+  { loc: "/education-preparing-for-mandate.html", priority: "0.6", changefreq: "monthly" },
+  { loc: "/education-types-of-provider.html", priority: "0.6", changefreq: "monthly" },
+  { loc: "/education-certified-providers.html", priority: "0.6", changefreq: "monthly" },
+  // The whitepapers, in every language they exist in. The three
+  // translated CTC files are real, indexable URLs carrying correct
+  // reciprocal hreflang, and the old sitemap listed only the English
+  // one -- so three complete translations were undeclared.
+  { loc: "/whitepaper-ctc-rollouts-compared.html", priority: "0.7", changefreq: "monthly" },
+  { loc: "/whitepaper-ctc-rollouts-compared-de.html", priority: "0.6", changefreq: "monthly" },
+  { loc: "/whitepaper-ctc-rollouts-compared-fr.html", priority: "0.6", changefreq: "monthly" },
+  { loc: "/whitepaper-ctc-rollouts-compared-es.html", priority: "0.6", changefreq: "monthly" },
+  { loc: "/whitepaper-einvoicing-roi-evidence.html", priority: "0.7", changefreq: "monthly" },
+  { loc: "/subscribe.html", priority: "0.6", changefreq: "monthly" },
+  { loc: "/feedback.html", priority: "0.4", changefreq: "yearly" },
+  { loc: "/privacy-policy.html", priority: "0.3", changefreq: "yearly" },
+];
+
+function sitemapXml(entries) {
+  const el = (e) => "  <url>\n"
+    + `    <loc>https://e-invoicingcompliancecorner.com${escHtml(e.loc)}</loc>\n`
+    + (e.lastmod ? `    <lastmod>${escHtml(e.lastmod)}</lastmod>\n` : "")
+    + (e.changefreq ? `    <changefreq>${escHtml(e.changefreq)}</changefreq>\n` : "")
+    + `    <priority>${escHtml(e.priority)}</priority>\n`
+    + "  </url>";
+  return '<?xml version="1.0" encoding="UTF-8"?>\n'
+    + '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+    + entries.map(el).join("\n") + "\n</urlset>\n";
+}
+
+async function renderSitemap(request, env) {
+  if (!env.eicc_content) return new Response("Missing D1 binding", { status: 500 });
+  // Countries the ROUTER can actually serve -- slug IS NOT NULL is the
+  // same condition renderCountryDeepDive resolves against, so the
+  // sitemap cannot claim a URL that 404s or omit one that works.
+  const countries = (await env.eicc_content.prepare(`
+    SELECT c.slug, ddp.last_updated
+      FROM countries c
+      LEFT JOIN deep_dive_pages ddp ON ddp.country_id = c.id
+     WHERE c.slug IS NOT NULL AND c.code != 'EU'
+     ORDER BY c.slug`).all()).results || [];
+
+  // Published insight articles. The old file listed two by hand; the
+  // route 404s when the row is missing, so a hand-typed slug here is a
+  // sitemap entry that can rot into a 404 without anyone noticing.
+  const articles = (await env.eicc_content.prepare(`
+    SELECT slug, COALESCE(published_at, created_at) AS d
+      FROM articles WHERE published = 1 ORDER BY slug`).all()).results || [];
+
+  const entries = [
+    ...SITEMAP_STATIC,
+    ...articles.map((a) => ({ loc: `/insights/${a.slug}`, lastmod: a.d, priority: "0.7", changefreq: "monthly" })),
+    ...countries.map((c) => ({ loc: `/${c.slug}`, lastmod: c.last_updated || undefined, priority: "0.8", changefreq: "weekly" })),
+  ];
+
+  return new Response(sitemapXml(entries), {
+    headers: {
+      "Content-Type": "application/xml; charset=UTF-8",
+      // An hour. Long enough that crawlers are not rebuilding it on
+      // every hit, short enough that a country shipped today is
+      // declared today.
+      "Cache-Control": "public, max-age=3600",
+    },
+  });
+}
+
 async function renderTracker(request, env) {
   // Always fetch the static asset first — it's both the shell we inject
   // into and the complete fallback if anything below throws. Fetch via
@@ -252,6 +413,26 @@ async function renderTracker(request, env) {
     if (!replacedData || !replacedDeepDives || !clearedSnapshot) {
       throw new Error(`tracker blob not replaced (data=${replacedData} deepDives=${replacedDeepDives} snapshotFlag=${clearedSnapshot})`);
     }
+    // THE COUNTRY INDEX, AND IT IS DELIBERATELY NOT IN THE GUARD ABOVE.
+    //
+    // The three blobs above are all-or-nothing because a half-injected
+    // board is a page that lies about its own contents. The index is
+    // different: if its marker ever stops matching, the honest outcome
+    // is a page missing a navigation aid, NOT the whole tracker falling
+    // back to a frozen snapshot -- which is precisely the failure that
+    // took this page down for a day on 23 August, and adding a fourth
+    // way to trigger it would be a poor trade for a list of links.
+    //
+    // So it fails soft here and LOUDLY in the suite: seo-crawlability
+    // .mjs asserts the marker exists and that seventy anchors come out
+    // of it, so a shape change is caught before it ships rather than
+    // silently emptying the index in production.
+    let indexed = false;
+    out = out.replace(/<ul id="countryIndexList">[\s\S]*?<\/ul>/, () => {
+      indexed = true;
+      return `<ul id="countryIndexList">${buildCountryIndexHtml(data, deepDives)}</ul>`;
+    });
+    if (!indexed) console.log("Tracker: country index marker not found — serving the page without it.");
     return new Response(out, {
       headers: {
         "Content-Type": "text/html; charset=UTF-8",
@@ -2889,6 +3070,14 @@ export default {
     }
     if (SPEC_PATHS.has(url.pathname)) {
       return renderSpecRegisterPage(request, env);
+    }
+    // BEFORE THE ASSET FALLBACK, which is what makes this win over the
+    // old static sitemap.xml. That file has been deleted rather than
+    // left in place: an unreachable copy of a list this route now
+    // generates is precisely the second home that let the original
+    // drift to 60% wrong.
+    if (url.pathname === "/sitemap.xml") {
+      return renderSitemap(request, env);
     }
     if (METHOD_PATHS.has(url.pathname)) {
       return renderMethodologyPage(request, env);

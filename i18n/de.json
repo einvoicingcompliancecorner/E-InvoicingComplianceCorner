@@ -644,5 +644,9 @@
     "gateEyebrow": "Referenz für Abonnenten",
     "gateTitle": "Das Spezifikationsregister",
     "gateBody": "Das Abonnement ist kostenlos. Das Register nennt für zwanzig Jurisdiktionen das vorgeschriebene Format, die aktuelle Version, die maßgebliche Datei und deren Lizenz – und was die Artefakte auslassen."
+  },
+  "index": {
+    "heading": "Alle Jurisdiktionen",
+    "intro": "Jedes Land dieses Trackers mit dem nächsten datierten Meilenstein. Jeder Eintrag führt zu einem vollständigen Briefing: Zeitplan, Format, Registrierung und Sanktionen."
   }
 }

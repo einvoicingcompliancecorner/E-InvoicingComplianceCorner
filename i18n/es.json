@@ -644,5 +644,9 @@
     "gateEyebrow": "Referencia para suscriptores",
     "gateTitle": "El registro de especificaciones",
     "gateBody": "Suscribirse es gratis. El registro indica, para veinte jurisdicciones, el formato exigido, su versión actual, el archivo de referencia y su licencia, y qué omiten los artefactos publicados."
+  },
+  "index": {
+    "heading": "Todas las jurisdicciones",
+    "intro": "Todos los países que cubre este rastreador, con su próximo hito con fecha. Cada enlace lleva a un informe completo: calendario, formato, registro y sanciones."
   }
 }

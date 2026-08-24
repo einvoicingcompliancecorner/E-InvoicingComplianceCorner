@@ -431,6 +431,37 @@ export function renderLangBanner(lang) {
 // language banner itself is no longer a caller-supplied parameter —
 // see renderLangBanner() above — since both runtimes now render the
 // exact same shared banner.
+// Locale codes for og:locale. Not the same thing as our language codes,
+// and Facebook/LinkedIn ignore a bare "en" — so the mapping is explicit
+// rather than derived, and en is en_GB because this site is written in
+// British English and spells it that way throughout.
+const OG_LOCALE = { en: "en_GB", de: "de_DE", fr: "fr_FR", es: "es_ES" };
+
+/**
+ * A meta description, cut from the country's own mandate summary.
+ *
+ * WHY THIS SOURCE AND NOT A TEMPLATE. Every one of the 70 countries has
+ * a `mandate_summary` in all four languages -- reviewed prose that
+ * already says what the mandate is, and that the reader sees at the top
+ * of the page. A generated sentence ("E-invoicing requirements for X")
+ * would be unique-ish, accurate and worthless; this is the sentence a
+ * human wrote about that jurisdiction.
+ *
+ * CUT AT A WORD BOUNDARY, near 155 characters. Search engines truncate
+ * around there and a description severed mid-word reads as broken --
+ * the ellipsis says the sentence continues on the page, which it does.
+ */
+export function deepDiveDescription(summary, cap = 155) {
+  const text = String(summary || "").replace(/\s+/g, " ").trim();
+  if (!text) return "";
+  if (text.length <= cap) return text;
+  const cut = text.slice(0, cap);
+  const lastSpace = cut.lastIndexOf(" ");
+  // A summary with no space inside the cap is not a sentence we should
+  // be guessing at; hard-cut rather than return the whole thing.
+  return (lastSpace > 60 ? cut.slice(0, lastSpace) : cut).replace(/[,;:.\u2014-]+$/, "") + "\u2026";
+}
+
 export async function renderFullDeepDivePage(countryName, flag, code, region, content, milestones, lang, backLinkHref) {
   const timelineHtml = renderDeepDiveStyleMilestones(milestones, lang);
   const statsHtml = content.stats.map((s) => `<div class="stat"><div class="num display">${escapeHtml(s.stat_value)}</div><div class="lbl">${escapeHtml(s.stat_label)}</div></div>`).join("");
@@ -441,13 +472,40 @@ export async function renderFullDeepDivePage(countryName, flag, code, region, co
     <div class="step"><div class="step-num"></div><div class="step-body"><h4>${escapeHtml(s.title)}</h4><p>${escapeHtml(s.description)}</p></div></div>`).join("");
   const portalsHtml = content.portals.map((p) => `<a class="portal-btn" href="${escapeHtml(p.url)}" target="_blank" rel="noopener">${escapeHtml(p.label)}</a>`).join("");
 
+  const slug = COUNTRY_DEEP_DIVE_SLUGS[countryName] || "";
+  const canonicalUrl = `https://e-invoicingcompliancecorner.com/${slug}`;
+  const pageTitle = `${translateCountryName(lang, countryName)} E-Invoicing Requirements — The E-Invoicing Compliance Corner`;
+  // Translated with the page. The description is cut from the same
+  // COALESCEd mandate_summary the reader sees, so a German page gets a
+  // German description -- which matters more here than it looks, since
+  // the description is the one piece of page text a search engine may
+  // show without the reader ever loading the page.
+  const description = deepDiveDescription(content.mandate_summary);
+
   return `<!DOCTYPE html>
 <html lang="${lang}">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>${escapeHtml(translateCountryName(lang, countryName))} E-Invoicing Requirements — The E-Invoicing Compliance Corner</title>
-<link rel="canonical" href="https://e-invoicingcompliancecorner.com/${COUNTRY_DEEP_DIVE_SLUGS[countryName] || ""}">
+<title>${escapeHtml(pageTitle)}</title>
+<meta name="description" content="${escapeHtml(description)}">
+<link rel="canonical" href="${escapeHtml(canonicalUrl)}">
+<!-- Social cards. Until now a shared country page rendered as a bare
+     URL with no title, description or site name -- on LinkedIn, which
+     is where this site's readers actually pass links to each other.
+     No og:image: the site has no per-country artwork and a single
+     generic image on 70 pages is worse than none, because it makes
+     every share look identical. summary rather than summary_large_image
+     for the same reason. -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="The E-Invoicing Compliance Corner">
+<meta property="og:title" content="${escapeHtml(pageTitle)}">
+<meta property="og:description" content="${escapeHtml(description)}">
+<meta property="og:url" content="${escapeHtml(canonicalUrl)}">
+<meta property="og:locale" content="${escapeHtml(OG_LOCALE[lang] || OG_LOCALE.en)}">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="${escapeHtml(pageTitle)}">
+<meta name="twitter:description" content="${escapeHtml(description)}">
 ${ldScript([
   countryPageLd({
     countryName,

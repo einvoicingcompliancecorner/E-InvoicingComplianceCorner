@@ -185,7 +185,11 @@ t.check("the iframe is not fetched until it is opened",
   "a src in the markup downloads the page on every visit to the board");
 t.check("the menu label is translatable",
   tracker.includes('data-i18n="menu.methodology"'));
-const sitemap = readFileSync(join(REPO, "sitemap.xml"), "utf8");
+// THE SITEMAP IS A ROUTE NOW, not a file — generated from D1 since 24
+// August, because the hand-maintained file had drifted to listing 28 of
+// the site's 70 country pages. Reading the response rather than a
+// checked-in copy is what keeps this check honest.
+const sitemap = await (await get("/sitemap.xml")).text();
 t.check("it is in the sitemap", sitemap.includes("/methodology"),
   "a citable page absent from the sitemap");
 

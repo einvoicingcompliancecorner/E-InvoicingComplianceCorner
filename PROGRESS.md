@@ -16563,3 +16563,134 @@ changes, methodology and the register all now report 0 back links framed
 and at most 1 plain. The register was the only one that had it.
 
 `npm test`: 28 suites, **40 checks** in the register suite.
+
+**Deployed and confirmed, 24 August 2026** — but it took four exchanges
+to land, and none of them were about the code.
+
+The fix was correct when it was written. What went wrong is that it was
+never in Dan's tree: the bundle download had collided with an earlier
+one the browser had renamed `_1`, so the pull ran against a stale file
+and reported success. Every subsequent check I proposed was consistent
+with the fix being live, because each one measured the wrong thing:
+
+- `wrangler deployments list` showed a deploy 20 minutes old. **A
+  deployment list proves a worker shipped, never WHAT shipped.** I read a
+  recent timestamp as evidence the code was live.
+- I sent him `| head -20` on a list that is oldest-first, so the first
+  answer showed deployments from that morning.
+- And the grep I finally asked for was `class="back-link"`, which appears
+  six times across site-worker — /changes, /methodology and the guides
+  all use it. **It returns 6 on a correct tree and 6 on a broken one.**
+
+What settled it in one line was `git log --oneline -3`: the commit
+simply was not there. Three rules out of it, all cheap:
+
+1. **Verify the tree, not the deployment.** A commit hash in the log
+   beats any amount of deployment metadata.
+2. **A verification grep must be unique to the change.** If the string
+   also matches code that was already there, the check cannot fail.
+3. **Bundles need collision-proof filenames.** A browser silently
+   appending `_1` to a repeat download is enough to make `git pull`
+   succeed against yesterday's work.
+
+The one diagnostic that did earn its keep was asking what COLOUR the
+link was. Orange is `--amber`, which is the register page's own link
+style and not the panel's — that single word ruled out the entire
+panel-chrome theory I had been building on for two exchanges.
+
+---
+
+### 24 August 2026 — the first three SEO fixes
+
+From the audit earlier the same day. Dan picked the three simple ones.
+
+#### 1 · Seventy country pages became reachable without JavaScript
+
+The audit's headline finding: the tracker served **718 words of indexable
+HTML and no link to any country page**, because the board is built by
+`renderBoard()` from a JS array and `DEEP_DIVES` is injected as a JS
+object literal. Forty-two of the seventy deep dives were in neither the
+sitemap nor any anchor anywhere on the site — a thousand words of sourced
+prose each, unreachable by anything that reads HTML rather than executing
+it.
+
+There is now a **country index** above the footer: seventy real anchors,
+server-rendered from the same D1 rows the board already queries, each
+with the country's next dated milestone.
+
+**A `<noscript>` block was the other option and is worse.** It is a second
+copy of the country list that no reader ever sees, so nothing notices
+when it rots. This is one list, always present, and it reads as an A–Z a
+person can scan.
+
+**The injection deliberately fails soft.** The three existing blobs are
+all-or-nothing because a half-injected board lies about its contents; a
+missing index must *not* send the whole tracker back to its frozen
+snapshot, which is exactly the failure that took this page down on 23
+August. Adding a fourth way to trigger that would be a poor trade for a
+list of links. So it degrades quietly in production and fails loudly in
+the suite.
+
+#### 2 · The sitemap is generated from D1
+
+It listed 28 of 70 countries. The file's own comment admitted the
+convention "was written when the hub was built but never actually
+followed" — a list that must be hand-updated whenever a country ships is
+a list that will be wrong, and this one was wrong by 60%.
+
+`/sitemap.xml` is now a route. Countries come from the same
+`slug IS NOT NULL` condition the router resolves against, `lastmod` from
+each page's own `last_updated`, and insight articles from the `articles`
+table rather than two hand-typed slugs that could rot into 404s. **The
+static file was deleted**, not left in place — an unreachable copy of a
+generated list is precisely the second home that let the first one drift.
+
+92 URLs, up from 45. `/` and `/sources` were both missing entirely, and
+`/sources` is the page carrying the `Dataset` structured data. The three
+translated CTC whitepapers were undeclared too.
+
+#### 3 · Every country page has a description and social tags
+
+All seventy had none, so every share rendered as a bare URL — on
+LinkedIn, which is where this site's readers actually pass links around.
+
+The description is **cut from the country's own `mandate_summary`**,
+which exists for all 71 rows in all four languages: reviewed prose a
+human wrote about that jurisdiction, trimmed at a word boundary near 155
+characters. A generated "E-invoicing requirements for X" would have been
+unique, accurate and worthless. It translates with the page, so a German
+search result gets a German description.
+
+**No `og:image`.** The site has no per-country artwork, and one generic
+image across seventy pages makes every share look identical — worse than
+none. `summary` rather than `summary_large_image` for the same reason.
+
+#### What looking at it caught
+
+Two defects the tests passed straight through, both found by rendering
+the page and reading it:
+
+- **The index printed each country's EARLIEST milestone** under a heading
+  promising its *next* one, so the United States advertised 2003-03-01 as
+  something to prepare for and Denmark 2005-01-01. Label and data were
+  each individually true. Now: next future milestone, or no date at all —
+  33 of 70 have one.
+- **The markup's English fallback still said "with its mandate status"**
+  while the migration and the JSON said "with its next dated milestone" —
+  the three-edit rule with the third edit missed, which is the one no
+  other check can see.
+
+A third was caught by the assertion runner: `... AND code != 'EU' >= 50`
+parses as a query ending `!= 'EU'` compared against 50, because the
+runner splits on the **last** operator. The parenthesised subquery form
+leaves exactly one operator outside the SQL.
+
+And one by a test of my own that could not fail: the script updating
+`methodology.mjs` asserted `old in s or old.strip() in s`, which passed
+on the stripped form while the replace did nothing. Same shape as the
+`class="back-link"` grep that returned 6 either way.
+
+`npm test`: **29 suites**. Replay OK across **642 files**.
+
+**Needs a migration-apply and a deploy of both Workers** — `i18n/*.json`
+and the tracker shell are assets.
