@@ -36,7 +36,7 @@
     "newsDesc": "Explore el archivo completo del boletín — cada anuncio anterior, con búsqueda.",
     "subscribeEyebrow": "Manténgase al tanto",
     "subscribeTitle": "Suscribirse",
-    "subscribeDesc": "Reciba un resumen mensual en el momento en que cambie un mandato o una fecha límite.",
+    "subscribeDesc": "Reciba un resumen mensual en el momento en que cambie un mandato o una fecha límite. Calcule el ROI de su proyecto y planifique la implantación frente a los mandatos. Descargue las guías de cumplimiento por país.",
     "featuredEyebrow": "Análisis",
     "featuredTitle": "Análisis e Informes Técnicos",
     "featuredDesc": "Análisis originales e informes técnicos — empezando por nuestra comparación de los despliegues de CTC en 60 jurisdicciones.",
@@ -125,8 +125,8 @@
     "heading": "Los suscriptores también reciben",
     "item1": "Un resumen mensual por correo electrónico — cada nuevo mandato o cambio de fecha límite, resumido",
     "item2": "Acceso completo al archivo del boletín, no solo al número de este mes",
-    "item3": "Acceso prioritario a los nuevos análisis por país en cuanto se publican",
-    "item4": "Resúmenes en lenguaje sencillo sobre \"qué significa esto para su equipo\", no solo texto legal"
+    "item3": "El planificador de ROI — construya el caso de negocio de su programa, con el cálculo a la vista tras cada cifra",
+    "item4": "Guías de cumplimiento por país — un informe de una página listo para imprimir para cada mercado elegido"
   },
   "roiPanel": {
     "unavailable": "El planificador no se ha podido cargar en este momento. Vuelva a intentarlo en unos minutos.",

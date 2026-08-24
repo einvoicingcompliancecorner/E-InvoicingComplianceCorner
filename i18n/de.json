@@ -36,7 +36,7 @@
     "newsDesc": "Durchsuchen Sie das vollständige Newsletter-Archiv — jede frühere Meldung, durchsuchbar.",
     "subscribeEyebrow": "Immer informiert",
     "subscribeTitle": "Abonnieren",
-    "subscribeDesc": "Erhalten Sie eine monatliche Zusammenfassung, sobald sich eine Vorgabe oder Frist ändert.",
+    "subscribeDesc": "Erhalten Sie eine monatliche Zusammenfassung, sobald sich eine Vorgabe oder Frist ändert. Berechnen Sie den ROI Ihres Projekts und planen Sie die Umsetzung entlang der Vorgaben. Laden Sie Länder-Compliance-Leitfäden herunter.",
     "featuredEyebrow": "Analysen",
     "featuredTitle": "Analysen & Whitepapers",
     "featuredDesc": "Eigene Analysen und Whitepapers — den Anfang macht unser Vergleich der CTC-Einführungen in 60 Ländern weltweit.",
@@ -125,8 +125,8 @@
     "heading": "Abonnenten erhalten außerdem",
     "item1": "Einen monatlichen E-Mail-Digest — jede neue Vorgabe oder Friständerung, zusammengefasst",
     "item2": "Vollen Zugriff auf das Newsletter-Archiv, nicht nur die aktuelle Ausgabe",
-    "item3": "Bevorzugten Zugang zu neuen Länder-Deep-Dives, sobald sie veröffentlicht werden",
-    "item4": "Verständliche Zusammenfassungen, was das für Ihr Team bedeutet — nicht nur Gesetzestext"
+    "item3": "Der ROI-Planer — untermauern Sie den Business Case für Ihr Programm, mit offengelegter Herleitung hinter jeder Zahl",
+    "item4": "Länder-Compliance-Leitfäden — ein druckfertiges einseitiges Briefing für jeden gewählten Markt"
   },
   "roiPanel": {
     "unavailable": "Der Planer konnte gerade nicht geladen werden. Bitte versuchen Sie es in Kürze erneut.",
