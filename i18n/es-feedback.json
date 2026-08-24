@@ -25,5 +25,11 @@
     "ifNeeded": "si es necesario.",
     "backToTracker": "Volver al seguimiento",
     "sendAnother": "Enviar otro"
+  },
+  "pages": {
+    "feedback": {
+      "title": "Comentarios — The E-Invoicing Compliance Corner",
+      "description": "¿Ha detectado una laguna, una fecha desfasada o un enlace roto? Díganoslo."
+    }
   }
 }

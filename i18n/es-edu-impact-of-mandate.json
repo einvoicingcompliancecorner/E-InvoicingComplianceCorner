@@ -176,5 +176,11 @@
   },
   "footer": {
     "text": "Esta página ofrece contexto educativo general para ayudar a dimensionar la planificación interna y no constituye asesoramiento legal, fiscal ni de implementación técnica. Los requisitos específicos varían según el país y sus propios sistemas y estructura de grupo — consulte el análisis del país correspondiente y a un asesor cualificado antes de tomar decisiones de implementación."
+  },
+  "pages": {
+    "impact-of-mandate": {
+      "title": "Impacto de un mandato de facturación electrónica — técnico, financiero y organizativo",
+      "description": "Lo que un mandato cambia realmente: integración técnica, residencia de datos, impacto financiero y la preparación organizativa que casi todos los equipos subestiman."
+    }
   }
 }

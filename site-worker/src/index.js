@@ -320,16 +320,43 @@ const SITEMAP_STATIC = [
   { loc: "/privacy-policy.html", priority: "0.3", changefreq: "yearly" },
 ];
 
+// ONE ENTRY PER PAGE, WITH ITS LANGUAGES DECLARED INSIDE IT.
+//
+// The alternative is four entries per page — /germany, /germany?lang=de,
+// and so on — which quadruples the file and states the relationship
+// nowhere. xhtml:link alternates are the form Google documents for this:
+// each <url> names every language of that page, INCLUDING ITSELF, which
+// is the part most implementations get wrong and the reason a cluster
+// gets ignored.
+//
+// Pages whose languages are separate files (the CTC whitepaper) are not
+// given a cluster here: they carry their own reciprocal hreflang in
+// their markup, and inventing ?lang= URLs for them would advertise four
+// addresses that serve the English file.
 function sitemapXml(entries) {
+  const alt = (e) => (e.langs || [])
+    .map((l) => `    <xhtml:link rel="alternate" hreflang="${escHtml(l.lang)}" href="${escHtml(l.href)}"/>\n`)
+    .join("");
   const el = (e) => "  <url>\n"
     + `    <loc>https://e-invoicingcompliancecorner.com${escHtml(e.loc)}</loc>\n`
+    + alt(e)
     + (e.lastmod ? `    <lastmod>${escHtml(e.lastmod)}</lastmod>\n` : "")
     + (e.changefreq ? `    <changefreq>${escHtml(e.changefreq)}</changefreq>\n` : "")
     + `    <priority>${escHtml(e.priority)}</priority>\n`
     + "  </url>";
   return '<?xml version="1.0" encoding="UTF-8"?>\n'
-    + '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+    + '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"'
+    + ' xmlns:xhtml="http://www.w3.org/1999/xhtml">\n'
     + entries.map(el).join("\n") + "\n</urlset>\n";
+}
+
+// The four variants of one path, plus x-default, in the shape the
+// sitemap wants. Built from langUrls so a page cannot be described one
+// way in its own <head> and another way here.
+function sitemapLangs(path) {
+  const { forLang } = langUrls(path, "en");
+  return SUPPORTED_LANGS.map((l) => ({ lang: l, href: forLang(l) }))
+    .concat([{ lang: "x-default", href: forLang("en") }]);
 }
 
 async function renderSitemap(request, env) {
@@ -351,10 +378,14 @@ async function renderSitemap(request, env) {
     SELECT slug, COALESCE(published_at, created_at) AS d
       FROM articles WHERE published = 1 ORDER BY slug`).all()).results || [];
 
+  // The CTC whitepaper's four files are their own URLs and carry their
+  // own hreflang; everything else on this site is one URL serving four
+  // languages by ?lang=, so everything else gets a cluster.
+  const filePerLanguage = /whitepaper-ctc-rollouts-compared/;
   const entries = [
-    ...SITEMAP_STATIC,
-    ...articles.map((a) => ({ loc: `/insights/${a.slug}`, lastmod: a.d, priority: "0.7", changefreq: "monthly" })),
-    ...countries.map((c) => ({ loc: `/${c.slug}`, lastmod: c.last_updated || undefined, priority: "0.8", changefreq: "weekly" })),
+    ...SITEMAP_STATIC.map((e) => (filePerLanguage.test(e.loc) ? e : { ...e, langs: sitemapLangs(e.loc) })),
+    ...articles.map((a) => ({ loc: `/insights/${a.slug}`, lastmod: a.d, priority: "0.7", changefreq: "monthly", langs: sitemapLangs(`/insights/${a.slug}`) })),
+    ...countries.map((c) => ({ loc: `/${c.slug}`, lastmod: c.last_updated || undefined, priority: "0.8", changefreq: "weekly", langs: sitemapLangs(`/${c.slug}`) })),
   ];
 
   return new Response(sitemapXml(entries), {
@@ -585,22 +616,70 @@ const INSIGHTS_UI = {
         back: "← Retour au tracker mondial" },
 };
 
+// ================================================================
+// THE URL DECIDES THE LANGUAGE. THE COOKIE ONLY REMEMBERS.
+// ================================================================
+//
+// Until 24 August 2026 this read the cookie and Accept-Language too, so
+// ONE URL returned four different documents depending on who asked —
+// on responses marked `public, max-age=300` with no Vary header. Three
+// consequences, and the first is not an SEO problem at all:
+//
+//   * A shared cache was entitled to hand the German copy to the next
+//     English reader. That is a correctness bug and it has been live
+//     for as long as the site has had translations.
+//   * Google indexed one URL per country. The German page declared
+//     `inLanguage: "de"` in its own JSON-LD while its canonical pointed
+//     at the English URL — the page arguing against itself inside a
+//     single response.
+//   * So four languages of content, every country, every page, earned
+//     no search presence in three of them.
+//
+// Now: `?lang=de` and nothing else. A bare URL is English for everyone,
+// including a reader with a German cookie — which means every response
+// at a given URL is byte-identical and cacheable, the canonical can be
+// self-referential per variant, and hreflang can name real URLs.
+//
+// THE READER DOES NOT LOSE THEIR PREFERENCE. i18n.js redirects on the
+// client when a language cookie exists and the URL carries no ?lang.
+// Googlebot sends no cookies, so it never fires and always sees English
+// at the canonical URL — the preference is restored for people and
+// invisible to crawlers. See applyStoredLanguage() in i18n/i18n.js.
+//
+// Accept-Language is gone deliberately rather than by oversight: a
+// header that varies per reader cannot decide the content of a cached,
+// canonical URL without reintroducing exactly the bug above.
 function resolveInsightsLang(request) {
-  const url = new URL(request.url);
-  let lang = url.searchParams.get("lang");
-  let shouldSetCookie = false;
-  const { value: cookieLang, duplicated: cookieDuplicated } = getCookie(request, LANG_COOKIE);
-  if (lang && SUPPORTED_LANGS.includes(lang)) {
-    shouldSetCookie = true;
-  } else if (cookieLang && SUPPORTED_LANGS.includes(cookieLang)) {
-    lang = cookieLang;
-  } else {
-    lang = pickBestSupportedLanguage(request.headers.get("Accept-Language")) || "en";
-  }
-  return { lang, shouldSetCookie, cookieDuplicated };
+  const lang = new URL(request.url).searchParams.get("lang");
+  return { lang: SUPPORTED_LANGS.includes(lang) ? lang : "en" };
 }
 
-function insightsPageShell({ titleTag, metaDescription, bodyHtml, lang, backHref, ld }) {
+/**
+ * The canonical URL for a page in a given language, and the hreflang
+ * cluster naming every variant of it.
+ *
+ * ENGLISH IS THE BARE URL and is x-default. Every other language is the
+ * same path with ?lang=. Both halves are emitted from one function so a
+ * page cannot declare a canonical the hreflang set does not contain —
+ * which is the most common way an hreflang cluster is silently ignored.
+ */
+function langUrls(path, lang) {
+  const base = `https://e-invoicingcompliancecorner.com${path}`;
+  const forLang = (l) => (l === "en" ? base : `${base}?lang=${l}`);
+  const alternates = SUPPORTED_LANGS.map(
+    (l) => `<link rel="alternate" hreflang="${escHtml(l)}" href="${escHtml(forLang(l))}">`)
+    .concat([`<link rel="alternate" hreflang="x-default" href="${escHtml(base)}">`])
+    .join("\n");
+  return { canonical: forLang(lang), alternates, forLang };
+}
+
+function insightsPageShell({ titleTag, metaDescription, bodyHtml, lang, backHref, ld, path }) {
+  // path is the page's own route, so the shell can declare a canonical
+  // and an hreflang cluster. Both /insights and /insights/{slug} were
+  // served with NEITHER before 24 August, so the four ?lang= variants
+  // each linked from the page were four independently indexable URLs
+  // with nothing saying they were the same document.
+  const urls = path ? langUrls(path, lang) : null;
   return `<!DOCTYPE html>
 <html lang="${escHtml(lang)}">
 <head>
@@ -608,6 +687,7 @@ function insightsPageShell({ titleTag, metaDescription, bodyHtml, lang, backHref
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>${escHtml(titleTag)} — The E-Invoicing Compliance Corner</title>
 <meta name="description" content="${escHtml(metaDescription)}">
+${urls ? `<link rel="canonical" href="${escHtml(urls.canonical)}">\n${urls.alternates}` : ""}
 ${ld ? ldScript(ld) : ""}
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -647,7 +727,7 @@ ${ld ? ldScript(ld) : ""}
 
 async function renderInsightsHub(request, env) {
   if (!env.eicc_content) return new Response("Missing D1 binding", { status: 500 });
-  const { lang, shouldSetCookie, cookieDuplicated } = resolveInsightsLang(request);
+  const { lang } = resolveInsightsLang(request);
   const ui = INSIGHTS_UI[lang] || INSIGHTS_UI.en;
   const articles = await getPublishedArticles(env.eicc_content, lang);
 
@@ -668,18 +748,17 @@ async function renderInsightsHub(request, env) {
 
   const html = insightsPageShell({
     titleTag: ui.title, metaDescription: ui.intro, bodyHtml, lang,
+    path: "/insights",
     backHref: "/einvoicing-compliance-tracker.html",
   });
 
   const headers = new Headers({ "Content-Type": "text/html; charset=UTF-8", "Cache-Control": "public, max-age=300" });
-  if (shouldSetCookie) headers.append("Set-Cookie", `${LANG_COOKIE}=${lang}; Domain=.e-invoicingcompliancecorner.com; Path=/; Max-Age=${LANG_COOKIE_TTL_SECONDS}; SameSite=Lax`);
-  if (cookieDuplicated) headers.append("Set-Cookie", `${LANG_COOKIE}=; Path=/; Max-Age=0; SameSite=Lax`);
   return new Response(html, { headers });
 }
 
 async function renderInsightsArticle(request, env, slug) {
   if (!env.eicc_content) return new Response("Missing D1 binding", { status: 500 });
-  const { lang, shouldSetCookie, cookieDuplicated } = resolveInsightsLang(request);
+  const { lang } = resolveInsightsLang(request);
   const article = await getArticleBySlug(env.eicc_content, slug, lang);
   if (!article) return new Response("Not found", { status: 404 });
 
@@ -698,6 +777,7 @@ async function renderInsightsArticle(request, env, slug) {
 
   const html = insightsPageShell({
     titleTag: article.title, metaDescription: article.dek, bodyHtml, lang,
+    path: `/insights/${slug}`,
     // ARTICLE HERE AND WebPage ON THE COUNTRY PAGES, and the difference
     // is not pedantry: an Article asserts a publication date, and these
     // pieces genuinely have one and already display it. A deep dive is a
@@ -720,24 +800,13 @@ async function renderInsightsArticle(request, env, slug) {
   });
 
   const headers = new Headers({ "Content-Type": "text/html; charset=UTF-8", "Cache-Control": "public, max-age=300" });
-  if (shouldSetCookie) headers.append("Set-Cookie", `${LANG_COOKIE}=${lang}; Domain=.e-invoicingcompliancecorner.com; Path=/; Max-Age=${LANG_COOKIE_TTL_SECONDS}; SameSite=Lax`);
-  if (cookieDuplicated) headers.append("Set-Cookie", `${LANG_COOKIE}=; Path=/; Max-Age=0; SameSite=Lax`);
   return new Response(html, { headers });
 }
 
 async function renderSourcesPage(request, env) {
   if (!env.eicc_content) return new Response("Missing D1 binding", { status: 500 });
   const url = new URL(request.url);
-  let lang = url.searchParams.get("lang");
-  let shouldSetCookie = false;
-  const { value: cookieLang, duplicated: cookieDuplicated } = getCookie(request, LANG_COOKIE);
-  if (lang && SUPPORTED_LANGS.includes(lang)) {
-    shouldSetCookie = true;
-  } else if (cookieLang && SUPPORTED_LANGS.includes(cookieLang)) {
-    lang = cookieLang;
-  } else {
-    lang = pickBestSupportedLanguage(request.headers.get("Accept-Language")) || "en";
-  }
+  const { lang } = resolveInsightsLang(request);
   const ui = SOURCES_UI[lang] || SOURCES_UI.en;
 
   const { results } = await env.eicc_content.prepare(`
@@ -786,6 +855,8 @@ async function renderSourcesPage(request, env) {
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>${escHtml(ui.title)} \u2014 The E-Invoicing Compliance Corner</title>
 <meta name="description" content="${escHtml(ui.intro)}">
+<link rel="canonical" href="${escHtml(langUrls("/sources", lang).canonical)}">
+${langUrls("/sources", lang).alternates}
 ${ldScript([
   // NOT byRegion's size. That map is built from tracking_sources, which
   // the European Union has -- it is a bloc with real monitored pages and
@@ -860,12 +931,6 @@ ${ldScript([
     "Content-Type": "text/html; charset=UTF-8",
     "Cache-Control": "public, max-age=300",
   });
-  if (shouldSetCookie) {
-    headers.append("Set-Cookie", `${LANG_COOKIE}=${lang}; Domain=.e-invoicingcompliancecorner.com; Path=/; Max-Age=${LANG_COOKIE_TTL_SECONDS}; SameSite=Lax`);
-  }
-  if (cookieDuplicated) {
-    headers.append("Set-Cookie", `${LANG_COOKIE}=; Path=/; Max-Age=0; SameSite=Lax`);
-  }
   return new Response(html, { headers });
 }
 
@@ -1567,7 +1632,7 @@ function subtreeT(strings) {
  */
 async function renderChangesPage(request, env) {
   if (!env.eicc_content) return new Response("Missing D1 binding", { status: 500 });
-  const { lang, shouldSetCookie } = resolveInsightsLang(request);
+  const { lang } = resolveInsightsLang(request);
   const framed = new URL(request.url).searchParams.get("frame") === "1";
   const [strings, guideStrings] = await Promise.all([
     authStrings(env, lang, "changes"),
@@ -1684,7 +1749,7 @@ async function renderChangesPage(request, env) {
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>${escHtml(t("title", "What changed"))} — The E-Invoicing Compliance Corner</title>
 <meta name="description" content="${escHtml(t("intro", "Every change to the five headline facts we publish."))}">
-<link rel="canonical" href="https://e-invoicingcompliancecorner.com/changes">${framed ? '\n<meta name="robots" content="noindex,nofollow">' : ""}${
+<link rel="canonical" href="${escHtml(langUrls("/changes", lang).canonical)}">${framed ? "" : "\n" + langUrls("/changes", lang).alternates}${framed ? '\n<meta name="robots" content="noindex,nofollow">' : ""}${
   framed ? "" : "\n" + ldScript([changesLd({ lang, modified: scope?.latest }), breadcrumbLd([
     { name: "The E-Invoicing Compliance Corner", url: "https://e-invoicingcompliancecorner.com/" },
     { name: "What changed", url: "https://e-invoicingcompliancecorner.com/changes" },
@@ -1784,9 +1849,6 @@ async function renderChangesPage(request, env) {
     "Content-Type": "text/html; charset=UTF-8",
     "Cache-Control": "public, max-age=600",
   });
-  if (shouldSetCookie) {
-    headers.append("Set-Cookie", `${LANG_COOKIE}=${lang}; Domain=.e-invoicingcompliancecorner.com; Path=/; Max-Age=${LANG_COOKIE_TTL_SECONDS}; SameSite=Lax`);
-  }
   return new Response(html, { headers });
 }
 
@@ -1811,7 +1873,7 @@ async function renderChangesPage(request, env) {
 // artefacts leave out is the part that took the research.
 async function renderSpecRegisterPage(request, env) {
   if (!env.eicc_content) return new Response("Missing D1 binding", { status: 500 });
-  const { lang, shouldSetCookie } = resolveInsightsLang(request);
+  const { lang } = resolveInsightsLang(request);
   // frame=1 means the tracker is showing this page inside its panel, and
   // the WHOLE top bar goes -- not just the language row. The panel draws
   // its own "← Back to global tracker" above the iframe, so a page that
@@ -2045,15 +2107,12 @@ async function renderSpecRegisterPage(request, env) {
     "Cache-Control": "private, max-age=60",
     "Vary": "Cookie",
   });
-  if (shouldSetCookie) {
-    headers.append("Set-Cookie", `${LANG_COOKIE}=${lang}; Domain=.e-invoicingcompliancecorner.com; Path=/; Max-Age=${LANG_COOKIE_TTL_SECONDS}; SameSite=Lax`);
-  }
   return new Response(html, { headers });
 }
 
 async function renderMethodologyPage(request, env) {
   if (!env.eicc_content) return new Response("Missing D1 binding", { status: 500 });
-  const { lang, shouldSetCookie } = resolveInsightsLang(request);
+  const { lang } = resolveInsightsLang(request);
   // frame=1, the same plain query parameter the planner and the guides
   // use. The tracker opens this page in a modal, where its own back link
   // would navigate the IFRAME to the tracker -- leaving a whole tracker
@@ -2187,7 +2246,7 @@ async function renderMethodologyPage(request, env) {
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>${escHtml(t("title", "Methodology"))} — The E-Invoicing Compliance Corner</title>
 <meta name="description" content="${escHtml(t("intro", "What we require of a source, what our status words mean, and where we are stricter than other trackers."))}">
-<link rel="canonical" href="https://e-invoicingcompliancecorner.com/methodology">${framed ? '\n<meta name="robots" content="noindex,nofollow">' : ""}${
+<link rel="canonical" href="${escHtml(langUrls("/methodology", lang).canonical)}">${framed ? "" : "\n" + langUrls("/methodology", lang).alternates}${framed ? '\n<meta name="robots" content="noindex,nofollow">' : ""}${
   // NOT ON THE FRAMED COPY. It is noindex, and two nodes sharing an @id
   // while describing the same URL is the one way this markup can
   // actively mislead rather than merely under-describe.
@@ -2267,9 +2326,6 @@ async function renderMethodologyPage(request, env) {
     // properly -- unlike the guides, there is nothing per-reader here.
     "Cache-Control": "public, max-age=600",
   });
-  if (shouldSetCookie) {
-    headers.append("Set-Cookie", `${LANG_COOKIE}=${lang}; Domain=.e-invoicingcompliancecorner.com; Path=/; Max-Age=${LANG_COOKIE_TTL_SECONDS}; SameSite=Lax`);
-  }
   return new Response(html, { headers });
 }
 
@@ -2562,13 +2618,10 @@ async function renderRoiCalculatorPage(request, env) {
   if (!env.eicc_content) return new Response("Missing D1 binding", { status: 500 });
   const url = new URL(request.url);
   const framed = url.searchParams.get("frame") === "1";
-  let lang = url.searchParams.get("lang");
-  const { value: cookieLang } = getCookie(request, LANG_COOKIE);
-  if (!(lang && SUPPORTED_LANGS.includes(lang))) {
-    lang = (cookieLang && SUPPORTED_LANGS.includes(cookieLang))
-      ? cookieLang
-      : (pickBestSupportedLanguage(request.headers.get("Accept-Language")) || "en");
-  }
+  // The same one rule as every other route, even though this page is
+  // gated and noindex: two ways of deciding a language in one file is
+  // how the last four copies of this cascade got out of step.
+  const { lang } = resolveInsightsLang(request);
 
   // COMPLETE OR ENGLISH, and this route was missed when the rule was
   // written. Migration 589 built resolveRoiLang() and wired it into the
@@ -2803,16 +2856,7 @@ async function renderRoiCalculatorPage(request, env) {
 async function renderMapPage(request, env) {
   if (!env.eicc_content) return new Response("Missing D1 binding", { status: 500 });
   const url = new URL(request.url);
-  let lang = url.searchParams.get("lang");
-  let shouldSetCookie = false;
-  const { value: cookieLang, duplicated: cookieDuplicated } = getCookie(request, LANG_COOKIE);
-  if (lang && SUPPORTED_LANGS.includes(lang)) {
-    shouldSetCookie = true;
-  } else if (cookieLang && SUPPORTED_LANGS.includes(cookieLang)) {
-    lang = cookieLang;
-  } else {
-    lang = pickBestSupportedLanguage(request.headers.get("Accept-Language")) || "en";
-  }
+  const { lang } = resolveInsightsLang(request);
   const ui = MAP_UI[lang] || MAP_UI.en;
   // Both fetched regardless of whether this request is a direct visit to
   // the standalone page or the tracker's in-page panel fetching this same
@@ -2834,6 +2878,8 @@ async function renderMapPage(request, env) {
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>${escHtml(ui.eyebrow)} — The E-Invoicing Compliance Corner</title>
 <meta name="description" content="${escHtml(ui.subtitle)}">
+<link rel="canonical" href="${escHtml(langUrls("/map", lang).canonical)}">
+${langUrls("/map", lang).alternates}
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -2896,12 +2942,6 @@ async function renderMapPage(request, env) {
     "Content-Type": "text/html; charset=UTF-8",
     "Cache-Control": "public, max-age=300",
   });
-  if (shouldSetCookie) {
-    headers.append("Set-Cookie", `${LANG_COOKIE}=${lang}; Domain=.e-invoicingcompliancecorner.com; Path=/; Max-Age=${LANG_COOKIE_TTL_SECONDS}; SameSite=Lax`);
-  }
-  if (cookieDuplicated) {
-    headers.append("Set-Cookie", `${LANG_COOKIE}=; Path=/; Max-Age=0; SameSite=Lax`);
-  }
   return new Response(html, { headers });
 }
 
@@ -2926,18 +2966,11 @@ async function renderCountryDeepDive(request, env, slug) {
   const url = new URL(request.url);
   const countryName = SLUG_TO_COUNTRY[slug];
 
-  let lang = url.searchParams.get("lang");
-  let shouldSetCookie = false;
-  const { value: cookieLang, duplicated: cookieDuplicated } = getCookie(request, LANG_COOKIE);
-  if (lang && SUPPORTED_LANGS.includes(lang)) {
-    shouldSetCookie = true;
-  } else {
-    if (cookieLang && SUPPORTED_LANGS.includes(cookieLang)) {
-      lang = cookieLang;
-    } else {
-      lang = pickBestSupportedLanguage(request.headers.get("Accept-Language")) || "en";
-    }
-  }
+  // One resolver, not four. These three renderers each carried their
+  // own copy of the cascade, which is why the cookie kept deciding the
+  // language in places a reader of resolveInsightsLang would not think
+  // to look.
+  const { lang } = resolveInsightsLang(request);
 
   const countryRow = await db.prepare(`SELECT code, region FROM countries WHERE name_en = ?`).bind(countryName).first();
   if (!countryRow) return new Response("Not found", { status: 404 });
@@ -2960,22 +2993,6 @@ async function renderCountryDeepDive(request, env, slug) {
     // a content update.
     "Cache-Control": "public, max-age=300",
   });
-  if (shouldSetCookie) {
-    // Domain=.e-invoicingcompliancecorner.com (not host-only) is what
-    // makes the shared language banner actually shared — this same
-    // cookie is then visible to members.e-invoicingcompliancecorner.com
-    // too, and vice versa (see members-worker/src/index.js's
-    // withLangCookie and i18n.js's writeCookie).
-    headers.append("Set-Cookie", `${LANG_COOKIE}=${lang}; Domain=.e-invoicingcompliancecorner.com; Path=/; Max-Age=${LANG_COOKIE_TTL_SECONDS}; SameSite=Lax`);
-  }
-  if (cookieDuplicated) {
-    // Self-heal: the visitor is carrying both a stale host-only
-    // "eicc_lang" cookie (from before Domain scoping existed) and the
-    // current domain-scoped one. getCookie() already reads the correct
-    // (newer) value regardless, but clear the stale host-only one here
-    // too so the browser stops sending two of them on every request.
-    headers.append("Set-Cookie", `${LANG_COOKIE}=; Path=/; Max-Age=0; SameSite=Lax`);
-  }
   return new Response(html, { headers });
 }
 

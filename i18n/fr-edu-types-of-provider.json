@@ -143,5 +143,11 @@
   },
   "footer": {
     "text": "Les noms d'entreprises mentionnés sur cette page sont des exemples purement illustratifs, inclus pour rendre chaque catégorie concrète — ce ne sont ni des recommandations, ni des classements, ni une cartographie complète du marché, et leur mention n'implique aucune relation avec ce site. Les recherches d'analystes mentionnées ci-dessus sont liées à titre purement informatif ; les rapports complets peuvent nécessiter un abonnement payant ou un accès fourni par un prestataire, et tout positionnement de prestataire qui y figure reflète la propre méthodologie et les opinions de ce cabinet, pas les nôtres. Vérifiez directement l'accréditation actuelle et l'adéquation de tout prestataire précis à vos besoins avant de le solliciter."
+  },
+  "pages": {
+    "types-of-provider": {
+      "title": "Types de prestataires e-invoicing — ERP, solution, fiscalité et conseil comparés",
+      "description": "Les cinq catégories de prestataires expliquées — ERP, éditeur de solution, conformité fiscale, technologie et conseil — avec un comparatif côte à côte."
+    }
   }
 }

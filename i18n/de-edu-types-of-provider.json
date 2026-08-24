@@ -143,5 +143,11 @@
   },
   "footer": {
     "text": "Firmennamen auf dieser Seite sind rein illustrative Beispiele, um jede Kategorie greifbar zu machen — sie sind keine Empfehlungen, Ranglisten oder eine vollständige Marktübersicht, und ihre Nennung impliziert keine Beziehung zu dieser Website. Die oben genannte Analystenforschung wird nur zur allgemeinen Information verlinkt; vollständige Berichte können ein kostenpflichtiges Abonnement oder anbieterseitigen Zugang erfordern, und jede darin enthaltene Anbieterpositionierung spiegelt die eigene Methodik und Ansichten dieses Hauses wider, nicht unsere. Prüfen Sie die aktuelle Akkreditierung und Eignung eines bestimmten Anbieters für Ihre Bedürfnisse direkt, bevor Sie ihn beauftragen."
+  },
+  "pages": {
+    "types-of-provider": {
+      "title": "Anbietertypen im E-Invoicing — ERP, Lösung, Steuern und Beratung im Vergleich",
+      "description": "Die fünf Kategorien von E-Invoicing-Anbietern erklärt — ERP, Lösungsanbieter, Steuer-Compliance, Technologie und Beratung — mit direktem Vergleich."
+    }
   }
 }

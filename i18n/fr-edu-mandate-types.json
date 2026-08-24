@@ -1,5 +1,8 @@
 {
-  "_meta": { "language": "fr", "reviewed": true },
+  "_meta": {
+    "language": "fr",
+    "reviewed": true
+  },
   "backLink": "← Retour au suivi global",
   "header": {
     "eyebrow": "Ressources",
@@ -15,50 +18,126 @@
   "sec1": {
     "heading": "La seule question qui explique tout",
     "intro": "Avant de comparer formats et échéances, il est utile de se poser une seule question sur le régime de n'importe quel pays : <strong style=\"color:var(--text-lo);\">l'administration fiscale voit-elle la facture, et si oui, avant ou après qu'elle atteigne l'acheteur ?</strong>",
-    "card1": { "title": "Jamais (ou seulement sur demande)", "body": "L'administration fiscale ne voit pas les factures individuelles de façon systématique — elle examine les registres plus tard, lors d'un contrôle. C'est le modèle le moins contraignant.", "note": "Exemples : le Royaume-Uni, le Canada, les États-Unis (volontaire)." },
-    "card2": { "title": "Après coup, quasiment en temps réel", "body": "La facture parvient directement à l'acheteur, mais une copie ou un résumé des données de la transaction est déclaré à l'administration fiscale peu après — souvent en quelques jours, parfois instantanément.", "note": "Exemples : la couche d'e-reporting de la France, le SII espagnol, le RTIR hongrois." },
-    "card3": { "title": "Avant livraison — contrôle", "body": "La facture doit être validée (et souvent estampillée numériquement) par l'administration fiscale, ou un intermédiaire agréé agissant en son nom, avant de pouvoir légalement parvenir à l'acheteur.", "note": "Exemples : le SDI italien, le KSeF polonais, le CFDI mexicain, le ZATCA saoudien." }
+    "card1": {
+      "title": "Jamais (ou seulement sur demande)",
+      "body": "L'administration fiscale ne voit pas les factures individuelles de façon systématique — elle examine les registres plus tard, lors d'un contrôle. C'est le modèle le moins contraignant.",
+      "note": "Exemples : le Royaume-Uni, le Canada, les États-Unis (volontaire)."
+    },
+    "card2": {
+      "title": "Après coup, quasiment en temps réel",
+      "body": "La facture parvient directement à l'acheteur, mais une copie ou un résumé des données de la transaction est déclaré à l'administration fiscale peu après — souvent en quelques jours, parfois instantanément.",
+      "note": "Exemples : la couche d'e-reporting de la France, le SII espagnol, le RTIR hongrois."
+    },
+    "card3": {
+      "title": "Avant livraison — contrôle",
+      "body": "La facture doit être validée (et souvent estampillée numériquement) par l'administration fiscale, ou un intermédiaire agréé agissant en son nom, avant de pouvoir légalement parvenir à l'acheteur.",
+      "note": "Exemples : le SDI italien, le KSeF polonais, le CFDI mexicain, le ZATCA saoudien."
+    }
   },
   "sec2": {
     "heading": "Les sept modèles en pratique",
     "intro": "En pratique, ces questions se combinent en sept architectures reconnaissables — la plupart des pays de ce suivi correspondent nettement à l'une d'elles.",
-    "card1": { "title": "1. Post-contrôle", "body": "Les entreprises échangent librement leurs factures, dans le format qu'elles conviennent. L'administration fiscale examine les registres après coup, lors d'un contrôle, plutôt que de vérifier les transactions au fil de l'eau." },
-    "card2": { "title": "2. Déclaration en temps réel (CTC)", "body": "Les factures sont échangées directement entre entreprises, mais les données de transaction — parfois la facture complète, parfois un résumé — sont également déclarées à l'administration fiscale quasiment en temps réel, en parallèle de la livraison plutôt qu'à sa place." },
-    "card3": { "title": "3. Contrôle (CTC)", "body": "Le modèle le plus strict : une facture n'a aucun effet légal tant que l'administration fiscale (ou son délégué) ne l'a pas validée et n'a pas renvoyé une référence de contrôle. Ce n'est qu'alors qu'elle peut être livrée à l'acheteur." },
-    "card4": { "title": "4. Plateforme centralisée", "body": "Un système unique géré par l'État assure à la fois la validation et la livraison — acheteur et vendeur interagissent tous deux avec la même plateforme centrale plutôt que de passer par le prestataire de leur choix." },
-    "card5": { "title": "5. Échange décentralisé — réseau imposé (Peppol)", "body": "Pas de plateforme étatique, mais un réseau spécifique <em>est</em> prescrit par la loi. Les entreprises se connectent une fois à un Access Point agréé, et les factures circulent de pair à pair selon un format commun — le modèle « à 4 coins » — car l'obligation elle-même désigne Peppol comme canal requis." },
-    "card6": { "title": "6. Obligation de format uniquement — aucun canal prescrit", "body": "Un schéma véritablement plus léger, facile à confondre avec le modèle 5 mais réellement différent : la loi impose un format structuré, mais ne prescrit pas <em>comment</em> la facture doit être livrée — e-mail, tout réseau, tout accord bilatéral convient, dès lors que le contenu est correctement structuré. Aucun contrôle, aucune couche de déclaration imposée, aucun réseau requis.", "note": "Le Danemark est une variante encore plus légère — sa loi impose la <em>capacité</em> à envoyer/recevoir des factures structurées, pas que chaque facture soit effectivement échangée ainsi." },
-    "card7": { "title": "7. Échange décentralisé + déclaration (5 coins)", "body": "Le réseau à 4 coins de Peppol avec un cinquième participant : l'administration fiscale, qui reçoit automatiquement les données de transaction comme sous-produit de l'échange normal plutôt que via une déclaration distincte." }
+    "card1": {
+      "title": "1. Post-contrôle",
+      "body": "Les entreprises échangent librement leurs factures, dans le format qu'elles conviennent. L'administration fiscale examine les registres après coup, lors d'un contrôle, plutôt que de vérifier les transactions au fil de l'eau."
+    },
+    "card2": {
+      "title": "2. Déclaration en temps réel (CTC)",
+      "body": "Les factures sont échangées directement entre entreprises, mais les données de transaction — parfois la facture complète, parfois un résumé — sont également déclarées à l'administration fiscale quasiment en temps réel, en parallèle de la livraison plutôt qu'à sa place."
+    },
+    "card3": {
+      "title": "3. Contrôle (CTC)",
+      "body": "Le modèle le plus strict : une facture n'a aucun effet légal tant que l'administration fiscale (ou son délégué) ne l'a pas validée et n'a pas renvoyé une référence de contrôle. Ce n'est qu'alors qu'elle peut être livrée à l'acheteur."
+    },
+    "card4": {
+      "title": "4. Plateforme centralisée",
+      "body": "Un système unique géré par l'État assure à la fois la validation et la livraison — acheteur et vendeur interagissent tous deux avec la même plateforme centrale plutôt que de passer par le prestataire de leur choix."
+    },
+    "card5": {
+      "title": "5. Échange décentralisé — réseau imposé (Peppol)",
+      "body": "Pas de plateforme étatique, mais un réseau spécifique <em>est</em> prescrit par la loi. Les entreprises se connectent une fois à un Access Point agréé, et les factures circulent de pair à pair selon un format commun — le modèle « à 4 coins » — car l'obligation elle-même désigne Peppol comme canal requis."
+    },
+    "card6": {
+      "title": "6. Obligation de format uniquement — aucun canal prescrit",
+      "body": "Un schéma véritablement plus léger, facile à confondre avec le modèle 5 mais réellement différent : la loi impose un format structuré, mais ne prescrit pas <em>comment</em> la facture doit être livrée — e-mail, tout réseau, tout accord bilatéral convient, dès lors que le contenu est correctement structuré. Aucun contrôle, aucune couche de déclaration imposée, aucun réseau requis.",
+      "note": "Le Danemark est une variante encore plus légère — sa loi impose la <em>capacité</em> à envoyer/recevoir des factures structurées, pas que chaque facture soit effectivement échangée ainsi."
+    },
+    "card7": {
+      "title": "7. Échange décentralisé + déclaration (5 coins)",
+      "body": "Le réseau à 4 coins de Peppol avec un cinquième participant : l'administration fiscale, qui reçoit automatiquement les données de transaction comme sous-produit de l'échange normal plutôt que via une déclaration distincte."
+    }
   },
   "sec3": {
     "heading": "Le « CTC » est une famille, pas une chose unique",
     "intro": "Les Continuous Transaction Controls (CTC) sont un terme générique couvrant les modèles 2 et 3 ci-dessus — tous deux donnent à l'administration fiscale une visibilité quasi en temps réel, mais diffèrent sur un point qui compte énormément en pratique : l'État voit-il la facture avant ou après qu'elle devienne légalement valide ?",
     "table": {
-      "h1": "Question", "h2": "CTC — Déclaration", "h3": "CTC — Contrôle",
-      "r1k": "Qui voit la facture en premier ?", "r1v1": "L'acheteur — la déclaration a lieu en parallèle ou peu après", "r1v2": "L'administration fiscale — rien n'est livré tant que ce n'est pas contrôlé",
-      "r2k": "Validité légale", "r2v1": "La facture est valide dès son émission ; la déclaration est une obligation parallèle", "r2v2": "La facture n'a aucun effet légal tant qu'elle n'est pas contrôlée",
-      "r3k": "Mode de défaillance", "r3v1": "Une déclaration tardive ou manquante est un manquement, mais la vente reste valable", "r3v2": "Une facture rejetée bloque la transaction — les marchandises ne peuvent pas légalement être expédiées",
-      "r4k": "Latence typique", "r4v1": "De quelques heures à quelques jours", "r4v2": "De quelques secondes à quelques minutes",
-      "r5k": "Exemple", "r5v1": "L'e-reporting français pour les ventes B2C/transfrontalières", "r5v2": "Le SDI italien, le KSeF polonais"
+      "h1": "Question",
+      "h2": "CTC — Déclaration",
+      "h3": "CTC — Contrôle",
+      "r1k": "Qui voit la facture en premier ?",
+      "r1v1": "L'acheteur — la déclaration a lieu en parallèle ou peu après",
+      "r1v2": "L'administration fiscale — rien n'est livré tant que ce n'est pas contrôlé",
+      "r2k": "Validité légale",
+      "r2v1": "La facture est valide dès son émission ; la déclaration est une obligation parallèle",
+      "r2v2": "La facture n'a aucun effet légal tant qu'elle n'est pas contrôlée",
+      "r3k": "Mode de défaillance",
+      "r3v1": "Une déclaration tardive ou manquante est un manquement, mais la vente reste valable",
+      "r3v2": "Une facture rejetée bloque la transaction — les marchandises ne peuvent pas légalement être expédiées",
+      "r4k": "Latence typique",
+      "r4v1": "De quelques heures à quelques jours",
+      "r4v2": "De quelques secondes à quelques minutes",
+      "r5k": "Exemple",
+      "r5v1": "L'e-reporting français pour les ventes B2C/transfrontalières",
+      "r5v2": "Le SDI italien, le KSeF polonais"
     }
   },
   "sec4": {
     "heading": "Où Peppol s'inscrit dans tout cela",
     "intro": "Peppol est facile à mal situer dans ce panorama — ce n'est pas un modèle d'obligation en soi, mais un élément d'infrastructure partagée sur lequel plusieurs modèles différents s'appuient.",
-    "card1": { "title": "Ce qu'est réellement Peppol", "body": "Un réseau et un format de message standardisés (Peppol BIS) qui permettent à deux entreprises connectées d'échanger des factures structurées sans intégration bilatérale — vous vous connectez une fois à un Access Point, pas une fois par partenaire commercial." },
-    "card2": { "title": "De l'infrastructure pure, pas une politique", "body": "La Belgique et l'Australie utilisent toutes deux Peppol, mais une seule des deux l'impose légalement aujourd'hui. Le réseau est le même ; ce qu'un État choisit d'y ajouter (une obligation, une exigence de déclaration, rien du tout) est une décision distincte." },
-    "card3": { "title": "L'évolution de 4 coins vers 5 coins", "body": "Ajoutez un cinquième coin — l'administration fiscale — et le même réseau commence à alimenter automatiquement les données de transaction vers l'État. Singapour, les Émirats arabes unis et la Slovaquie s'orientent tous vers cela." },
-    "flow1": "Fournisseur", "flow2": "AP du fournisseur", "flow3": "AP de l'acheteur", "flow4": "Acheteur"
+    "card1": {
+      "title": "Ce qu'est réellement Peppol",
+      "body": "Un réseau et un format de message standardisés (Peppol BIS) qui permettent à deux entreprises connectées d'échanger des factures structurées sans intégration bilatérale — vous vous connectez une fois à un Access Point, pas une fois par partenaire commercial."
+    },
+    "card2": {
+      "title": "De l'infrastructure pure, pas une politique",
+      "body": "La Belgique et l'Australie utilisent toutes deux Peppol, mais une seule des deux l'impose légalement aujourd'hui. Le réseau est le même ; ce qu'un État choisit d'y ajouter (une obligation, une exigence de déclaration, rien du tout) est une décision distincte."
+    },
+    "card3": {
+      "title": "L'évolution de 4 coins vers 5 coins",
+      "body": "Ajoutez un cinquième coin — l'administration fiscale — et le même réseau commence à alimenter automatiquement les données de transaction vers l'État. Singapour, les Émirats arabes unis et la Slovaquie s'orientent tous vers cela."
+    },
+    "flow1": "Fournisseur",
+    "flow2": "AP du fournisseur",
+    "flow3": "AP de l'acheteur",
+    "flow4": "Acheteur"
   },
   "sec5": {
     "heading": "Pour aller plus loin",
     "intro": "Cette page est délibérément la « carte » — pour le détail fin sur un pays donné, les analyses par pays sont là où vivent les spécificités.",
-    "card1": { "title": "🌍 Consultez le modèle d'un pays précis", "body": "Chaque analyse du menu « Deep Dives » indique son modèle de conformité d'entrée de jeu, dans les mêmes termes que sur cette page — cherchez la ligne « Compliance model » sous le nom du pays." },
-    "card2": { "title": "🏗️ Voyez ce que cela signifie pour votre entreprise", "body": "« Impact de l'obligation » (également sous Ressources) couvre l'impact technique, procédural, financier et organisationnel de ces modèles en pratique." },
-    "card3": { "title": "📖 D'autres pages pédagogiques à venir", "body": "Des analyses plus poussées des sous-types de CTC, une carte complète des pays connectés à Peppol, et un panorama des prestataires de services dans ce domaine sont des ajouts prévus à ce menu." },
-    "card4": { "title": "🔔 Soyez averti dès leur publication", "body": "Les abonnés bénéficient d'un accès prioritaire aux nouveaux contenus pédagogiques dès leur publication, en plus de la synthèse mensuelle de conformité." }
+    "card1": {
+      "title": "🌍 Consultez le modèle d'un pays précis",
+      "body": "Chaque analyse du menu « Deep Dives » indique son modèle de conformité d'entrée de jeu, dans les mêmes termes que sur cette page — cherchez la ligne « Compliance model » sous le nom du pays."
+    },
+    "card2": {
+      "title": "🏗️ Voyez ce que cela signifie pour votre entreprise",
+      "body": "« Impact de l'obligation » (également sous Ressources) couvre l'impact technique, procédural, financier et organisationnel de ces modèles en pratique."
+    },
+    "card3": {
+      "title": "📖 D'autres pages pédagogiques à venir",
+      "body": "Des analyses plus poussées des sous-types de CTC, une carte complète des pays connectés à Peppol, et un panorama des prestataires de services dans ce domaine sont des ajouts prévus à ce menu."
+    },
+    "card4": {
+      "title": "🔔 Soyez averti dès leur publication",
+      "body": "Les abonnés bénéficient d'un accès prioritaire aux nouveaux contenus pédagogiques dès leur publication, en plus de la synthèse mensuelle de conformité."
+    }
   },
   "footer": {
     "text": "Cette page fournit un contexte pédagogique général et ne constitue pas un conseil juridique ou fiscal. Les modèles de conformité peuvent évoluer et évoluent effectivement — l'analyse propre à chaque pays reste la source faisant autorité pour ses exigences spécifiques actuelles."
+  },
+  "pages": {
+    "mandate-types": {
+      "title": "Types de mandat — les 7 modèles de conformité e-invoicing expliqués",
+      "description": "Les sept modèles de conformité expliqués : post-audit, déclaration en temps réel, clearance, plateformes centralisées et réseaux Peppol — et comment savoir lequel vous concerne."
+    }
   }
 }

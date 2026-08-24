@@ -473,7 +473,20 @@ export async function renderFullDeepDivePage(countryName, flag, code, region, co
   const portalsHtml = content.portals.map((p) => `<a class="portal-btn" href="${escapeHtml(p.url)}" target="_blank" rel="noopener">${escapeHtml(p.label)}</a>`).join("");
 
   const slug = COUNTRY_DEEP_DIVE_SLUGS[countryName] || "";
-  const canonicalUrl = `https://e-invoicingcompliancecorner.com/${slug}`;
+  // SELF-REFERENTIAL PER LANGUAGE, since 24 August 2026. This was hard-
+  // coded to the bare slug, so /germany?lang=de rendered German, declared
+  // inLanguage "de" in its own JSON-LD, and told Google to index the
+  // English URL instead — a page arguing against itself inside one
+  // response, on all seventy countries in three languages.
+  const base = `https://e-invoicingcompliancecorner.com/${slug}`;
+  const forLang = (l) => (l === "en" ? base : `${base}?lang=${l}`);
+  const canonicalUrl = forLang(lang);
+  // English is x-default: it is the bare URL, the one the sitemap lists
+  // and the one a crawler without a language preference should land on.
+  const hreflang = SUPPORTED_LANGS
+    .map((l) => `<link rel="alternate" hreflang="${escapeHtml(l)}" href="${escapeHtml(forLang(l))}">`)
+    .concat([`<link rel="alternate" hreflang="x-default" href="${escapeHtml(base)}">`])
+    .join("\n");
   const pageTitle = `${translateCountryName(lang, countryName)} E-Invoicing Requirements — The E-Invoicing Compliance Corner`;
   // Translated with the page. The description is cut from the same
   // COALESCEd mandate_summary the reader sees, so a German page gets a
@@ -490,6 +503,7 @@ export async function renderFullDeepDivePage(countryName, flag, code, region, co
 <title>${escapeHtml(pageTitle)}</title>
 <meta name="description" content="${escapeHtml(description)}">
 <link rel="canonical" href="${escapeHtml(canonicalUrl)}">
+${hreflang}
 <!-- Social cards. Until now a shared country page rendered as a bare
      URL with no title, description or site name -- on LinkedIn, which
      is where this site's readers actually pass links to each other.

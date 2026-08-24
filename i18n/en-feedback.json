@@ -25,5 +25,11 @@
     "ifNeeded": "if needed.",
     "backToTracker": "Back to tracker",
     "sendAnother": "Send another"
+  },
+  "pages": {
+    "feedback": {
+      "title": "Feedback — The E-Invoicing Compliance Corner",
+      "description": "Spot a gap, an outdated date or a broken link on The E-Invoicing Compliance Corner? Let us know."
+    }
   }
 }

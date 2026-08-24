@@ -178,5 +178,11 @@
   },
   "footer": {
     "text": "Esta página ofrece orientación educativa general basada en patrones comunes de los programas de preparación ante mandatos, y no constituye asesoramiento legal, fiscal ni de compras. Los plazos y requisitos concretos varían según el país y sus propios sistemas y organización — consulte el análisis del país correspondiente y a los asesores adecuados antes de comprometerse con un plan."
+  },
+  "pages": {
+    "preparing-for-mandate": {
+      "title": "Prepararse para un mandato de facturación electrónica — calendario y elección de proveedor",
+      "description": "Cómo prepararse para un nuevo mandato: a quién implicar, un calendario realista de 12 a 18 meses y un proceso paso a paso para elegir proveedor."
+    }
   }
 }

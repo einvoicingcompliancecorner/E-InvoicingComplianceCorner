@@ -1,5 +1,8 @@
 {
-  "_meta": { "language": "de", "reviewed": true },
+  "_meta": {
+    "language": "de",
+    "reviewed": true
+  },
   "backLink": "← Zurück zur Übersicht",
   "header": {
     "eyebrow": "Wissen",
@@ -15,50 +18,126 @@
   "sec1": {
     "heading": "Die eine Frage, die alles erklärt",
     "intro": "Bevor Sie Formate und Fristen vergleichen, hilft es, sich zu jedem Länderregime eine einzige Frage zu stellen: <strong style=\"color:var(--text-lo);\">Sieht die Steuerbehörde die Rechnung, und wenn ja, bevor oder nachdem sie den Käufer erreicht?</strong>",
-    "card1": { "title": "Nie (oder nur auf Anfrage)", "body": "Die Steuerbehörde sieht einzelne Rechnungen nicht routinemäßig — sie prüft Aufzeichnungen später, im Rahmen einer Prüfung. Dies ist das am wenigsten eingreifende Modell.", "note": "Beispiele: Vereinigtes Königreich, Kanada, Vereinigte Staaten (freiwillig)." },
-    "card2": { "title": "Danach, nahezu in Echtzeit", "body": "Die Rechnung erreicht den Käufer direkt, aber eine Kopie oder Zusammenfassung der Transaktionsdaten wird der Steuerbehörde kurz danach gemeldet — oft innerhalb von Tagen, manchmal sofort.", "note": "Beispiele: Frankreichs E-Reporting-Schicht, Spaniens SII, Ungarns RTIR." },
-    "card3": { "title": "Vor der Zustellung — Freigabe", "body": "Die Rechnung muss von der Steuerbehörde oder einem in ihrem Auftrag handelnden akkreditierten Vermittler validiert (und oft digital gestempelt) werden, bevor sie den Käufer überhaupt rechtmäßig erreichen darf.", "note": "Beispiele: Italiens SDI, Polens KSeF, Mexikos CFDI, Saudi-Arabiens ZATCA." }
+    "card1": {
+      "title": "Nie (oder nur auf Anfrage)",
+      "body": "Die Steuerbehörde sieht einzelne Rechnungen nicht routinemäßig — sie prüft Aufzeichnungen später, im Rahmen einer Prüfung. Dies ist das am wenigsten eingreifende Modell.",
+      "note": "Beispiele: Vereinigtes Königreich, Kanada, Vereinigte Staaten (freiwillig)."
+    },
+    "card2": {
+      "title": "Danach, nahezu in Echtzeit",
+      "body": "Die Rechnung erreicht den Käufer direkt, aber eine Kopie oder Zusammenfassung der Transaktionsdaten wird der Steuerbehörde kurz danach gemeldet — oft innerhalb von Tagen, manchmal sofort.",
+      "note": "Beispiele: Frankreichs E-Reporting-Schicht, Spaniens SII, Ungarns RTIR."
+    },
+    "card3": {
+      "title": "Vor der Zustellung — Freigabe",
+      "body": "Die Rechnung muss von der Steuerbehörde oder einem in ihrem Auftrag handelnden akkreditierten Vermittler validiert (und oft digital gestempelt) werden, bevor sie den Käufer überhaupt rechtmäßig erreichen darf.",
+      "note": "Beispiele: Italiens SDI, Polens KSeF, Mexikos CFDI, Saudi-Arabiens ZATCA."
+    }
   },
   "sec2": {
     "heading": "Die sieben Modelle in der Praxis",
     "intro": "In der Praxis verbinden sich diese Fragen zu sieben erkennbaren Architekturen — die meisten Länder in diesem Tracker passen eindeutig zu einer davon.",
-    "card1": { "title": "1. Post-Audit", "body": "Unternehmen tauschen Rechnungen frei aus, in welchem Format sie auch vereinbaren. Die Steuerbehörde prüft Aufzeichnungen im Nachhinein, im Rahmen einer Prüfung, statt Transaktionen bei ihrem Auftreten zu kontrollieren." },
-    "card2": { "title": "2. Echtzeit-Meldung (CTC)", "body": "Rechnungen werden direkt zwischen Unternehmen ausgetauscht, aber Transaktionsdaten — manchmal die vollständige Rechnung, manchmal eine Zusammenfassung — werden zusätzlich nahezu in Echtzeit an die Steuerbehörde gemeldet, parallel zur Zustellung, nicht anstelle davon." },
-    "card3": { "title": "3. Freigabe (CTC)", "body": "Das strengste Modell: Eine Rechnung hat keine Rechtswirkung, bis die Steuerbehörde (oder ihr Beauftragter) sie validiert und eine Freigabereferenz zurückgegeben hat. Erst dann kann sie an den Käufer geliefert werden." },
-    "card4": { "title": "4. Zentralisierte Plattform", "body": "Ein einziges staatlich betriebenes System übernimmt sowohl Validierung als auch Zustellung — Käufer und Verkäufer interagieren beide mit derselben zentralen Plattform, statt über einen Anbieter ihrer Wahl zu gehen." },
-    "card5": { "title": "5. Dezentraler Austausch — Netzwerk vorgeschrieben (Peppol)", "body": "Keine staatliche Plattform, aber ein bestimmtes Netzwerk <em>ist</em> gesetzlich vorgeschrieben. Unternehmen verbinden sich einmal mit einem akkreditierten Access Point, und Rechnungen werden Peer-to-Peer in einem gemeinsamen Format geleitet — das \"4-Corner\"-Modell — weil die Vorgabe selbst Peppol als erforderlichen Kanal benennt." },
-    "card6": { "title": "6. Reine Formatvorgabe — kein vorgeschriebener Kanal", "body": "Ein wirklich leichteres Muster, das sich leicht mit Modell 5 verwechseln lässt, sich aber deutlich unterscheidet: Das Gesetz schreibt ein strukturiertes Format vor, legt aber nicht fest, <em>wie</em> die Rechnung zugestellt werden muss — E-Mail, jedes Netzwerk, jede bilaterale Vereinbarung ist zulässig, solange der Inhalt korrekt strukturiert ist. Keine Freigabe, keine vorgeschriebene Meldeebene, kein erforderliches Netzwerk.", "note": "Dänemark ist eine noch leichtere Variante — sein Gesetz schreibt die <em>Fähigkeit</em> vor, strukturierte Rechnungen zu senden/empfangen, nicht dass jede Rechnung tatsächlich so ausgetauscht wird." },
-    "card7": { "title": "7. Dezentraler Austausch + Meldung (5-Corner)", "body": "Peppols 4-Corner-Netzwerk mit einem fünften Teilnehmer: der Steuerbehörde, die Transaktionsdaten automatisch als Nebenprodukt des normalen Austauschs erhält, statt einer separaten Meldung." }
+    "card1": {
+      "title": "1. Post-Audit",
+      "body": "Unternehmen tauschen Rechnungen frei aus, in welchem Format sie auch vereinbaren. Die Steuerbehörde prüft Aufzeichnungen im Nachhinein, im Rahmen einer Prüfung, statt Transaktionen bei ihrem Auftreten zu kontrollieren."
+    },
+    "card2": {
+      "title": "2. Echtzeit-Meldung (CTC)",
+      "body": "Rechnungen werden direkt zwischen Unternehmen ausgetauscht, aber Transaktionsdaten — manchmal die vollständige Rechnung, manchmal eine Zusammenfassung — werden zusätzlich nahezu in Echtzeit an die Steuerbehörde gemeldet, parallel zur Zustellung, nicht anstelle davon."
+    },
+    "card3": {
+      "title": "3. Freigabe (CTC)",
+      "body": "Das strengste Modell: Eine Rechnung hat keine Rechtswirkung, bis die Steuerbehörde (oder ihr Beauftragter) sie validiert und eine Freigabereferenz zurückgegeben hat. Erst dann kann sie an den Käufer geliefert werden."
+    },
+    "card4": {
+      "title": "4. Zentralisierte Plattform",
+      "body": "Ein einziges staatlich betriebenes System übernimmt sowohl Validierung als auch Zustellung — Käufer und Verkäufer interagieren beide mit derselben zentralen Plattform, statt über einen Anbieter ihrer Wahl zu gehen."
+    },
+    "card5": {
+      "title": "5. Dezentraler Austausch — Netzwerk vorgeschrieben (Peppol)",
+      "body": "Keine staatliche Plattform, aber ein bestimmtes Netzwerk <em>ist</em> gesetzlich vorgeschrieben. Unternehmen verbinden sich einmal mit einem akkreditierten Access Point, und Rechnungen werden Peer-to-Peer in einem gemeinsamen Format geleitet — das \"4-Corner\"-Modell — weil die Vorgabe selbst Peppol als erforderlichen Kanal benennt."
+    },
+    "card6": {
+      "title": "6. Reine Formatvorgabe — kein vorgeschriebener Kanal",
+      "body": "Ein wirklich leichteres Muster, das sich leicht mit Modell 5 verwechseln lässt, sich aber deutlich unterscheidet: Das Gesetz schreibt ein strukturiertes Format vor, legt aber nicht fest, <em>wie</em> die Rechnung zugestellt werden muss — E-Mail, jedes Netzwerk, jede bilaterale Vereinbarung ist zulässig, solange der Inhalt korrekt strukturiert ist. Keine Freigabe, keine vorgeschriebene Meldeebene, kein erforderliches Netzwerk.",
+      "note": "Dänemark ist eine noch leichtere Variante — sein Gesetz schreibt die <em>Fähigkeit</em> vor, strukturierte Rechnungen zu senden/empfangen, nicht dass jede Rechnung tatsächlich so ausgetauscht wird."
+    },
+    "card7": {
+      "title": "7. Dezentraler Austausch + Meldung (5-Corner)",
+      "body": "Peppols 4-Corner-Netzwerk mit einem fünften Teilnehmer: der Steuerbehörde, die Transaktionsdaten automatisch als Nebenprodukt des normalen Austauschs erhält, statt einer separaten Meldung."
+    }
   },
   "sec3": {
     "heading": "\"CTC\" ist eine Familie, keine einzelne Sache",
     "intro": "Continuous Transaction Controls (CTC) ist ein Oberbegriff, der die Modelle 2 und 3 oben umfasst — beide geben der Steuerbehörde nahezu Echtzeit-Einblick, unterscheiden sich aber in einem in der Praxis enorm wichtigen Punkt: Sieht die Regierung die Rechnung, bevor oder nachdem sie rechtsgültig wird?",
     "table": {
-      "h1": "Frage", "h2": "CTC — Meldung", "h3": "CTC — Freigabe",
-      "r1k": "Wer sieht die Rechnung zuerst?", "r1v1": "Der Käufer — die Meldung erfolgt parallel oder kurz danach", "r1v2": "Die Steuerbehörde — nichts wird zugestellt, bis es freigegeben ist",
-      "r2k": "Rechtsgültigkeit", "r2v1": "Die Rechnung ist ab Ausstellung gültig; die Meldung ist eine parallele Pflicht", "r2v2": "Die Rechnung hat keine Rechtswirkung, bis sie freigegeben ist",
-      "r3k": "Fehlerfall", "r3v1": "Eine verspätete oder fehlende Meldung ist ein Compliance-Verstoß, der Verkauf bleibt aber bestehen", "r3v2": "Eine abgelehnte Rechnung blockiert die Transaktion — Waren dürfen rechtlich nicht versendet werden",
-      "r4k": "Typische Latenz", "r4v1": "Stunden bis wenige Tage", "r4v2": "Sekunden bis Minuten",
-      "r5k": "Beispiel", "r5v1": "Frankreichs E-Reporting für B2C-/grenzüberschreitende Verkäufe", "r5v2": "Italiens SDI, Polens KSeF"
+      "h1": "Frage",
+      "h2": "CTC — Meldung",
+      "h3": "CTC — Freigabe",
+      "r1k": "Wer sieht die Rechnung zuerst?",
+      "r1v1": "Der Käufer — die Meldung erfolgt parallel oder kurz danach",
+      "r1v2": "Die Steuerbehörde — nichts wird zugestellt, bis es freigegeben ist",
+      "r2k": "Rechtsgültigkeit",
+      "r2v1": "Die Rechnung ist ab Ausstellung gültig; die Meldung ist eine parallele Pflicht",
+      "r2v2": "Die Rechnung hat keine Rechtswirkung, bis sie freigegeben ist",
+      "r3k": "Fehlerfall",
+      "r3v1": "Eine verspätete oder fehlende Meldung ist ein Compliance-Verstoß, der Verkauf bleibt aber bestehen",
+      "r3v2": "Eine abgelehnte Rechnung blockiert die Transaktion — Waren dürfen rechtlich nicht versendet werden",
+      "r4k": "Typische Latenz",
+      "r4v1": "Stunden bis wenige Tage",
+      "r4v2": "Sekunden bis Minuten",
+      "r5k": "Beispiel",
+      "r5v1": "Frankreichs E-Reporting für B2C-/grenzüberschreitende Verkäufe",
+      "r5v2": "Italiens SDI, Polens KSeF"
     }
   },
   "sec4": {
     "heading": "Wo Peppol in dieses Bild passt",
     "intro": "Peppol wird in diesem Bild leicht falsch eingeordnet — es ist selbst kein Vorgabemodell, sondern ein Stück gemeinsamer Infrastruktur, auf dem mehrere unterschiedliche Modelle aufbauen.",
-    "card1": { "title": "Was Peppol tatsächlich ist", "body": "Ein standardisiertes Netzwerk- und Nachrichtenformat (Peppol BIS), das zwei verbundenen Unternehmen den Austausch strukturierter Rechnungen ohne bilaterale Integration ermöglicht — Sie verbinden sich einmal mit einem Access Point, nicht einmal pro Handelspartner." },
-    "card2": { "title": "Reine Infrastruktur, keine Politik", "body": "Belgien und Australien nutzen beide Peppol, aber nur eines von beiden schreibt es heute gesetzlich vor. Das Netzwerk ist dasselbe; was eine Regierung darauf aufsetzt (eine Vorgabe, eine Meldepflicht, gar nichts), ist eine separate Entscheidung." },
-    "card3": { "title": "Die Entwicklung von 4-Corner zu 5-Corner", "body": "Fügen Sie eine fünfte Ecke hinzu — die Steuerbehörde — und dasselbe Netzwerk beginnt, Transaktionsdaten automatisch an die Regierung zu liefern. Singapur, die VAE und die Slowakei arbeiten alle darauf hin." },
-    "flow1": "Lieferant", "flow2": "Access Point des Lieferanten", "flow3": "Access Point des Käufers", "flow4": "Käufer"
+    "card1": {
+      "title": "Was Peppol tatsächlich ist",
+      "body": "Ein standardisiertes Netzwerk- und Nachrichtenformat (Peppol BIS), das zwei verbundenen Unternehmen den Austausch strukturierter Rechnungen ohne bilaterale Integration ermöglicht — Sie verbinden sich einmal mit einem Access Point, nicht einmal pro Handelspartner."
+    },
+    "card2": {
+      "title": "Reine Infrastruktur, keine Politik",
+      "body": "Belgien und Australien nutzen beide Peppol, aber nur eines von beiden schreibt es heute gesetzlich vor. Das Netzwerk ist dasselbe; was eine Regierung darauf aufsetzt (eine Vorgabe, eine Meldepflicht, gar nichts), ist eine separate Entscheidung."
+    },
+    "card3": {
+      "title": "Die Entwicklung von 4-Corner zu 5-Corner",
+      "body": "Fügen Sie eine fünfte Ecke hinzu — die Steuerbehörde — und dasselbe Netzwerk beginnt, Transaktionsdaten automatisch an die Regierung zu liefern. Singapur, die VAE und die Slowakei arbeiten alle darauf hin."
+    },
+    "flow1": "Lieferant",
+    "flow2": "Access Point des Lieferanten",
+    "flow3": "Access Point des Käufers",
+    "flow4": "Käufer"
   },
   "sec5": {
     "heading": "Wie es weitergeht",
     "intro": "Diese Seite ist bewusst die \"Landkarte\" — für Details zu einem bestimmten Land finden Sie die Einzelheiten in den Länderanalysen.",
-    "card1": { "title": "🌍 Prüfen Sie das Modell eines bestimmten Landes", "body": "Jede Länderanalyse im Menü \"Deep Dives\" nennt ihr Compliance-Modell gleich zu Beginn, in denselben Begriffen wie auf dieser Seite — achten Sie auf die Zeile \"Compliance model\" unter dem Ländernamen." },
-    "card2": { "title": "🏗️ Sehen Sie, was das für Ihr Unternehmen bedeutet", "body": "\"Auswirkungen der Vorgabe\" (ebenfalls unter Wissen) behandelt die technischen, prozessualen, finanziellen und organisatorischen Auswirkungen dieser Modelle in der Praxis." },
-    "card3": { "title": "📖 Weitere Wissensseiten in Vorbereitung", "body": "Tiefere Einblicke in CTC-Untertypen, eine vollständige Karte Peppol-verbundener Länder und ein Überblick über Dienstleister in diesem Bereich sind geplante Ergänzungen dieses Menüs." },
-    "card4": { "title": "🔔 Benachrichtigt werden, sobald sie erscheinen", "body": "Abonnenten erhalten bevorzugten Zugang zu neuen Wissensinhalten, sobald sie veröffentlicht werden, zusätzlich zum monatlichen Compliance-Digest." }
+    "card1": {
+      "title": "🌍 Prüfen Sie das Modell eines bestimmten Landes",
+      "body": "Jede Länderanalyse im Menü \"Deep Dives\" nennt ihr Compliance-Modell gleich zu Beginn, in denselben Begriffen wie auf dieser Seite — achten Sie auf die Zeile \"Compliance model\" unter dem Ländernamen."
+    },
+    "card2": {
+      "title": "🏗️ Sehen Sie, was das für Ihr Unternehmen bedeutet",
+      "body": "\"Auswirkungen der Vorgabe\" (ebenfalls unter Wissen) behandelt die technischen, prozessualen, finanziellen und organisatorischen Auswirkungen dieser Modelle in der Praxis."
+    },
+    "card3": {
+      "title": "📖 Weitere Wissensseiten in Vorbereitung",
+      "body": "Tiefere Einblicke in CTC-Untertypen, eine vollständige Karte Peppol-verbundener Länder und ein Überblick über Dienstleister in diesem Bereich sind geplante Ergänzungen dieses Menüs."
+    },
+    "card4": {
+      "title": "🔔 Benachrichtigt werden, sobald sie erscheinen",
+      "body": "Abonnenten erhalten bevorzugten Zugang zu neuen Wissensinhalten, sobald sie veröffentlicht werden, zusätzlich zum monatlichen Compliance-Digest."
+    }
   },
   "footer": {
     "text": "Diese Seite bietet allgemeinen Bildungskontext und stellt keine Rechts- oder Steuerberatung dar. Compliance-Modelle können sich ändern und tun dies auch — die jeweilige Länderanalyse ist die maßgebliche Quelle für ihre aktuellen spezifischen Anforderungen."
+  },
+  "pages": {
+    "mandate-types": {
+      "title": "Mandatstypen — die 7 E-Invoicing-Compliance-Modelle erklärt",
+      "description": "Die sieben E-Invoicing-Compliance-Modelle erklärt: Post-Audit, Echtzeitmeldung, Clearing, zentrale Plattformen und Peppol-Netze — und woran Sie erkennen, welches für Sie gilt."
+    }
   }
 }

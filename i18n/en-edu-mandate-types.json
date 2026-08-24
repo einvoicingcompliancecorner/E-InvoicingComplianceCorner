@@ -1,5 +1,8 @@
 {
-  "_meta": { "language": "en", "reviewed": true },
+  "_meta": {
+    "language": "en",
+    "reviewed": true
+  },
   "backLink": "← Back to global tracker",
   "header": {
     "eyebrow": "Education",
@@ -15,50 +18,126 @@
   "sec1": {
     "heading": "The one question that explains everything",
     "intro": "Before comparing formats and deadlines, it helps to ask a single question about any country's regime: <strong style=\"color:var(--text-lo);\">does the tax authority see the invoice, and if so, before or after it reaches the buyer?</strong>",
-    "card1": { "title": "Never (or only on request)", "body": "The tax authority doesn't see individual invoices as a matter of course — it reviews records later, during an audit. This is the lightest-touch model.", "note": "Examples: the United Kingdom, Canada, the United States (voluntary)." },
-    "card2": { "title": "Afterwards, close to real time", "body": "The invoice reaches the buyer directly, but a copy or summary of the transaction data is reported to the tax authority shortly after — often within days, sometimes instantly.", "note": "Examples: France's e-reporting layer, Spain's SII, Hungary's RTIR." },
-    "card3": { "title": "Before delivery — clearance", "body": "The invoice must be validated (and often digitally stamped) by the tax authority, or an accredited intermediary acting on its behalf, before it's legally allowed to reach the buyer at all.", "note": "Examples: Italy's SDI, Poland's KSeF, Mexico's CFDI, Saudi Arabia's ZATCA." }
+    "card1": {
+      "title": "Never (or only on request)",
+      "body": "The tax authority doesn't see individual invoices as a matter of course — it reviews records later, during an audit. This is the lightest-touch model.",
+      "note": "Examples: the United Kingdom, Canada, the United States (voluntary)."
+    },
+    "card2": {
+      "title": "Afterwards, close to real time",
+      "body": "The invoice reaches the buyer directly, but a copy or summary of the transaction data is reported to the tax authority shortly after — often within days, sometimes instantly.",
+      "note": "Examples: France's e-reporting layer, Spain's SII, Hungary's RTIR."
+    },
+    "card3": {
+      "title": "Before delivery — clearance",
+      "body": "The invoice must be validated (and often digitally stamped) by the tax authority, or an accredited intermediary acting on its behalf, before it's legally allowed to reach the buyer at all.",
+      "note": "Examples: Italy's SDI, Poland's KSeF, Mexico's CFDI, Saudi Arabia's ZATCA."
+    }
   },
   "sec2": {
     "heading": "The seven models in practice",
     "intro": "In practice, these questions combine into seven recognisable architectures — most countries in this tracker are a clean fit for one of them.",
-    "card1": { "title": "1. Post-audit", "body": "Businesses exchange invoices freely, in whatever format they agree on. The tax authority reviews records after the fact, during an audit, rather than checking transactions as they happen." },
-    "card2": { "title": "2. Real-time reporting (CTC)", "body": "Invoices are exchanged directly between businesses, but transaction data — sometimes the full invoice, sometimes a summary — is also reported to the tax authority in near-real time, alongside delivery rather than instead of it." },
-    "card3": { "title": "3. Clearance (CTC)", "body": "The strictest model: an invoice has no legal effect until the tax authority (or its delegate) has validated it and returned a clearance reference. Only then can it be delivered to the buyer." },
-    "card4": { "title": "4. Centralised platform", "body": "A single government-run system handles both validation and delivery — buyer and seller both interact with the same central platform rather than routing through their own choice of provider." },
-    "card5": { "title": "5. Decentralised exchange — network mandated (Peppol)", "body": "No government platform, but a specific network <em>is</em> prescribed by law. Businesses connect once to an accredited Access Point, and invoices route peer-to-peer using a common format — the \"4-corner\" model — because the mandate itself names Peppol as the required channel." },
-    "card6": { "title": "6. Format-only mandate — no prescribed channel", "body": "A genuinely lighter-touch pattern, easy to conflate with model 5 but meaningfully different: the law mandates a structured format, but doesn't prescribe <em>how</em> the invoice has to be delivered — email, any network, any bilateral arrangement is fine, as long as the content is structured correctly. No clearance, no mandated reporting layer, no required network.", "note": "Denmark is an even lighter variant again — its law mandates the <em>capability</em> to send/receive structured invoices, not that every invoice actually be exchanged that way." },
-    "card7": { "title": "7. Decentralised exchange + reporting (5-corner)", "body": "Peppol's 4-corner network with a fifth participant added: the tax authority, receiving transaction data automatically as a byproduct of normal exchange rather than a separate filing." }
+    "card1": {
+      "title": "1. Post-audit",
+      "body": "Businesses exchange invoices freely, in whatever format they agree on. The tax authority reviews records after the fact, during an audit, rather than checking transactions as they happen."
+    },
+    "card2": {
+      "title": "2. Real-time reporting (CTC)",
+      "body": "Invoices are exchanged directly between businesses, but transaction data — sometimes the full invoice, sometimes a summary — is also reported to the tax authority in near-real time, alongside delivery rather than instead of it."
+    },
+    "card3": {
+      "title": "3. Clearance (CTC)",
+      "body": "The strictest model: an invoice has no legal effect until the tax authority (or its delegate) has validated it and returned a clearance reference. Only then can it be delivered to the buyer."
+    },
+    "card4": {
+      "title": "4. Centralised platform",
+      "body": "A single government-run system handles both validation and delivery — buyer and seller both interact with the same central platform rather than routing through their own choice of provider."
+    },
+    "card5": {
+      "title": "5. Decentralised exchange — network mandated (Peppol)",
+      "body": "No government platform, but a specific network <em>is</em> prescribed by law. Businesses connect once to an accredited Access Point, and invoices route peer-to-peer using a common format — the \"4-corner\" model — because the mandate itself names Peppol as the required channel."
+    },
+    "card6": {
+      "title": "6. Format-only mandate — no prescribed channel",
+      "body": "A genuinely lighter-touch pattern, easy to conflate with model 5 but meaningfully different: the law mandates a structured format, but doesn't prescribe <em>how</em> the invoice has to be delivered — email, any network, any bilateral arrangement is fine, as long as the content is structured correctly. No clearance, no mandated reporting layer, no required network.",
+      "note": "Denmark is an even lighter variant again — its law mandates the <em>capability</em> to send/receive structured invoices, not that every invoice actually be exchanged that way."
+    },
+    "card7": {
+      "title": "7. Decentralised exchange + reporting (5-corner)",
+      "body": "Peppol's 4-corner network with a fifth participant added: the tax authority, receiving transaction data automatically as a byproduct of normal exchange rather than a separate filing."
+    }
   },
   "sec3": {
     "heading": "\"CTC\" is a family, not one thing",
     "intro": "Continuous Transaction Controls (CTC) is an umbrella term covering models 2 and 3 above — both give the tax authority near-real-time visibility, but they differ on a point that matters enormously in practice: does the government see the invoice before or after it becomes legally valid?",
     "table": {
-      "h1": "Question", "h2": "CTC — Reporting", "h3": "CTC — Clearance",
-      "r1k": "Who sees the invoice first?", "r1v1": "The buyer — reporting happens alongside or shortly after", "r1v2": "The tax authority — nothing is delivered until it clears",
-      "r2k": "Legal validity", "r2v1": "The invoice is valid as issued; reporting is a parallel obligation", "r2v2": "The invoice has no legal effect until cleared",
-      "r3k": "Failure mode", "r3v1": "A late or missing report is a compliance breach, but the sale stands", "r3v2": "A rejected invoice blocks the transaction — goods can't legally ship",
-      "r4k": "Typical latency", "r4v1": "Hours to a few days", "r4v2": "Seconds to minutes",
-      "r5k": "Example", "r5v1": "France's e-reporting for B2C/cross-border sales", "r5v2": "Italy's SDI, Poland's KSeF"
+      "h1": "Question",
+      "h2": "CTC — Reporting",
+      "h3": "CTC — Clearance",
+      "r1k": "Who sees the invoice first?",
+      "r1v1": "The buyer — reporting happens alongside or shortly after",
+      "r1v2": "The tax authority — nothing is delivered until it clears",
+      "r2k": "Legal validity",
+      "r2v1": "The invoice is valid as issued; reporting is a parallel obligation",
+      "r2v2": "The invoice has no legal effect until cleared",
+      "r3k": "Failure mode",
+      "r3v1": "A late or missing report is a compliance breach, but the sale stands",
+      "r3v2": "A rejected invoice blocks the transaction — goods can't legally ship",
+      "r4k": "Typical latency",
+      "r4v1": "Hours to a few days",
+      "r4v2": "Seconds to minutes",
+      "r5k": "Example",
+      "r5v1": "France's e-reporting for B2C/cross-border sales",
+      "r5v2": "Italy's SDI, Poland's KSeF"
     }
   },
   "sec4": {
     "heading": "Where Peppol fits into all this",
     "intro": "Peppol is easy to misplace in this picture — it's not a mandate model itself, it's a piece of shared infrastructure that several different models are built on top of.",
-    "card1": { "title": "What Peppol actually is", "body": "A standardised network and message format (Peppol BIS) that lets any two connected businesses exchange structured invoices without a bilateral integration — you connect once to an Access Point, not once per trading partner." },
-    "card2": { "title": "Pure infrastructure, not a policy", "body": "Belgium and Australia both use Peppol, but only one of them requires it by law today. The network is the same; what a government chooses to bolt onto it (a mandate, a reporting requirement, nothing at all) is a separate decision." },
-    "card3": { "title": "The 4-corner → 5-corner evolution", "body": "Add a fifth corner — the tax authority — and the same network starts feeding transaction data to government automatically. Singapore, the UAE, and Slovakia are all building toward this." },
-    "flow1": "Supplier", "flow2": "Supplier's AP", "flow3": "Buyer's AP", "flow4": "Buyer"
+    "card1": {
+      "title": "What Peppol actually is",
+      "body": "A standardised network and message format (Peppol BIS) that lets any two connected businesses exchange structured invoices without a bilateral integration — you connect once to an Access Point, not once per trading partner."
+    },
+    "card2": {
+      "title": "Pure infrastructure, not a policy",
+      "body": "Belgium and Australia both use Peppol, but only one of them requires it by law today. The network is the same; what a government chooses to bolt onto it (a mandate, a reporting requirement, nothing at all) is a separate decision."
+    },
+    "card3": {
+      "title": "The 4-corner → 5-corner evolution",
+      "body": "Add a fifth corner — the tax authority — and the same network starts feeding transaction data to government automatically. Singapore, the UAE, and Slovakia are all building toward this."
+    },
+    "flow1": "Supplier",
+    "flow2": "Supplier's AP",
+    "flow3": "Buyer's AP",
+    "flow4": "Buyer"
   },
   "sec5": {
     "heading": "Where to go next",
     "intro": "This page is deliberately the \"map\" — for the fine detail on any one country, the country deep dives are where the specifics live.",
-    "card1": { "title": "🌍 Check a specific country's model", "body": "Every deep dive in the \"Deep Dives\" menu states its compliance model up front, in the same terms used on this page — look for the \"Compliance model\" line under the country name." },
-    "card2": { "title": "🏗️ See what this means for your business", "body": "\"Impact of Mandate\" (also under Education) covers the technical, process, financial, and organisational impact these models have in practice." },
-    "card3": { "title": "📖 More education pages coming", "body": "Deeper dives into CTC sub-types, a full map of Peppol-connected countries, and an overview of service providers operating in this space are all planned additions to this menu." },
-    "card4": { "title": "🔔 Get notified when they land", "body": "Subscribers get priority access to new education content as it's published, alongside the monthly compliance digest itself." }
+    "card1": {
+      "title": "🌍 Check a specific country's model",
+      "body": "Every deep dive in the \"Deep Dives\" menu states its compliance model up front, in the same terms used on this page — look for the \"Compliance model\" line under the country name."
+    },
+    "card2": {
+      "title": "🏗️ See what this means for your business",
+      "body": "\"Impact of Mandate\" (also under Education) covers the technical, process, financial, and organisational impact these models have in practice."
+    },
+    "card3": {
+      "title": "📖 More education pages coming",
+      "body": "Deeper dives into CTC sub-types, a full map of Peppol-connected countries, and an overview of service providers operating in this space are all planned additions to this menu."
+    },
+    "card4": {
+      "title": "🔔 Get notified when they land",
+      "body": "Subscribers get priority access to new education content as it's published, alongside the monthly compliance digest itself."
+    }
   },
   "footer": {
     "text": "This page provides general educational context and is not legal or tax advice. Compliance models can and do evolve — a country's own deep dive is the authoritative source for its current specific requirements."
+  },
+  "pages": {
+    "mandate-types": {
+      "title": "Types of Mandate — 7 E-Invoicing Compliance Models Explained",
+      "description": "The seven e-invoicing compliance models explained: post-audit, real-time reporting, clearance, centralised platforms and Peppol-based networks — and how to tell which one applies to you."
+    }
   }
 }

@@ -160,9 +160,78 @@ t.check("the sitemap is served and well-formed",
     `/ ${locs.includes("/")}, /sources ${locs.includes("/sources")}`);
   // lastmod comes from each page's own row rather than a typed date.
   const dated = locs.filter((l, i) => /<lastmod>/.test(sitemap.split("<url>")[i + 1] || ""));
+  // WITHIN GERMANY'S OWN <url> BLOCK, not "somewhere after its <loc>".
+  // The first version matched loc immediately followed by lastmod, and
+  // broke the moment hreflang alternates were inserted between them —
+  // which is the correct markup, so the test was asserting the absence
+  // of a feature rather than the presence of a date.
+  const germany = (sitemap.match(/<url>(?:(?!<\/url>)[\s\S])*\/germany<\/loc>[\s\S]*?<\/url>/) || [""])[0];
   t.check("country entries carry a lastmod from the database",
-    /<loc>[^<]*\/germany<\/loc>\s*<lastmod>\d{4}-\d{2}-\d{2}<\/lastmod>/.test(sitemap),
-    `${dated.length} entries with lastmod`);
+    /<lastmod>\d{4}-\d{2}-\d{2}<\/lastmod>/.test(germany),
+    `${dated.length} entries with lastmod; germany block: ${germany.slice(0, 120)}`);
+}
+
+// ---- 2b. one URL, one language -----------------------------------------
+//
+// The change of 24 August: the cookie no longer decides what a URL
+// returns. Before it, one URL served four documents on a
+// `public, max-age=300` response with no Vary — so a shared cache could
+// hand the German copy to the next English reader, and every German page
+// pointed its canonical at the English URL.
+{
+  const bare = await get("/germany");
+  const withCookie = await worker.fetch(
+    new Request("https://e-invoicingcompliancecorner.com/germany",
+      { headers: { Cookie: "eicc_lang=de" } }), env, { waitUntil() {} });
+  const bareHtml = await bare.text();
+  const cookieHtml = await withCookie.text();
+
+  t.check("a cookie cannot change what a URL returns",
+    bareHtml === cookieHtml,
+    "the same URL served two different documents — the cache bug is back");
+  t.check("and no language cookie is set on a cacheable page",
+    !bare.headers.get("set-cookie"),
+    `Set-Cookie: ${bare.headers.get("set-cookie")}`);
+
+  const de = await (await get("/germany?lang=de")).text();
+  t.check("the query parameter still chooses the language",
+    /<html lang="de"/.test(de) && /<html lang="en"/.test(bareHtml));
+
+  // SELF-REFERENTIAL, both of them. A variant that canonicalises to
+  // another language is the defect this whole change exists to remove.
+  const canon = (h) => (h.match(/<link rel="canonical" href="([^"]*)"/) || [])[1];
+  t.check("each variant is its own canonical",
+    canon(bareHtml) === "https://e-invoicingcompliancecorner.com/germany"
+    && canon(de) === "https://e-invoicingcompliancecorner.com/germany?lang=de",
+    `en: ${canon(bareHtml)} | de: ${canon(de)}`);
+
+  // THE CLUSTER MUST CONTAIN THE PAGE ITSELF. An hreflang set that omits
+  // the current URL is the most common way a cluster is silently
+  // ignored, and it looks complete from any single page.
+  for (const [label, html, self] of [["en", bareHtml, "/germany"], ["de", de, "/germany?lang=de"]]) {
+    const alts = [...html.matchAll(/hreflang="([^"]+)" href="([^"]+)"/g)].map((m) => m[2]);
+    t.check(`the ${label} page's hreflang cluster names all four and itself`,
+      alts.length === 5 && alts.includes(`https://e-invoicingcompliancecorner.com${self}`),
+      `${alts.length} alternates: ${alts.join(" ")}`);
+  }
+
+  // Public pages that had no canonical at all before today.
+  for (const path of ["/sources", "/map", "/insights"]) {
+    const html = await (await get(path)).text();
+    t.check(`${path} declares a canonical and its languages`,
+      /<link rel="canonical"/.test(html) && /hreflang="x-default"/.test(html));
+  }
+}
+
+{
+  // The sitemap says the same thing as the pages. A cluster in the head
+  // and no cluster in the sitemap is not wrong, but the two disagreeing
+  // about which URLs exist is.
+  const germanyBlock = (sitemap.match(/<url>(?:(?!<\/url>)[\s\S])*\/germany<\/loc>[\s\S]*?<\/url>/) || [""])[0];
+  const alts = [...germanyBlock.matchAll(/hreflang="([^"]+)"/g)].map((m) => m[1]);
+  t.check("the sitemap declares each page's language variants",
+    alts.length === 5 && alts.includes("x-default"),
+    `germany alternates in sitemap: ${alts.join(", ")}`);
 }
 
 // ---- 3. the country pages ----------------------------------------------
@@ -204,6 +273,71 @@ t.check("the sitemap is served and well-formed",
     dDe.length > 50 && dDe !== dEn, `de: "${dDe.slice(0, 60)}…"`);
   t.check("and og:locale follows the language",
     /content="de_DE"/.test(de) && /content="en_GB"/.test(en));
+}
+
+// ---- 4. the static pages ------------------------------------------------
+//
+// Their bodies have been translated for months; their titles,
+// descriptions and <html lang> never were. Those three are what a search
+// engine reads before it reads a word of the page.
+{
+  const { readdirSync } = await import("node:fs");
+  const files = readdirSync(REPO).filter((f) => f.endsWith(".html"));
+  const problems = [];
+
+  for (const file of files) {
+    const html = readFileSync(join(REPO, file), "utf8");
+    const pageKey = (html.match(/<body[^>]*data-page="([^"]*)"/) || [])[1];
+    const loadsI18n = /i18n\/i18n\.js/.test(html);
+    const ns = (html.match(/i18n\/i18n\.js"[^>]*data-namespace="([^"]*)"/) || [])[1] || "";
+    const hasCluster = /rel="alternate" hreflang/.test(html);
+    const byFile = /data-lang-mode="files"/.test(html);
+
+    // THE DEFECT THIS CATCHES, because it shipped for ten minutes today:
+    // a page with an hreflang cluster advertising ?lang= variants but no
+    // i18n loader serves the SAME ENGLISH DOCUMENT at all four URLs.
+    // That is worse than saying nothing — it invites a crawler to index
+    // four addresses for one page.
+    if (hasCluster && !byFile && !loadsI18n) {
+      problems.push(`${file}: advertises ?lang= variants but loads no i18n loader`);
+    }
+    if (pageKey && !loadsI18n) {
+      problems.push(`${file}: declares data-page but cannot translate anything`);
+    }
+    // And a page that CAN translate should say which strings are its own.
+    if (loadsI18n && !pageKey && file !== "einvoicing-compliance-tracker.html") {
+      problems.push(`${file}: loads i18n but declares no data-page, so its title stays English`);
+    }
+
+    if (!pageKey) continue;
+    // The strings must be in the file this page actually loads — not the
+    // main one, unless that is what it loads. Getting this wrong gives a
+    // German page with a German lang attribute and an English title, and
+    // nothing anywhere fails.
+    for (const lang of ["en", "de", "fr", "es"]) {
+      const name = ns ? `${lang}-${ns}.json` : `${lang}.json`;
+      let doc;
+      try { doc = JSON.parse(readFileSync(join(REPO, "i18n", name), "utf8")); }
+      catch { problems.push(`${file}: loads i18n/${name}, which is missing`); continue; }
+      const meta = (doc.pages || {})[pageKey];
+      if (!meta || !meta.title || !meta.description) {
+        problems.push(`${file}: no pages.${pageKey} in i18n/${name}`);
+      }
+    }
+  }
+  t.check("every static page can describe itself in all four languages",
+    problems.length === 0, problems.slice(0, 8).join("\n        "));
+
+  // The loader has to actually do it, or the strings sit unused.
+  const loader = readFileSync(join(REPO, "i18n", "i18n.js"), "utf8");
+  t.check("and the loader rewrites the head, not only the body",
+    /applyHead\(\)/.test(loader) && /document\.title = head\.title/.test(loader)
+    && /doc\.setAttribute\("lang"/.test(loader));
+  t.check("and restores a reader's language without redirecting a crawler",
+    /redirectToPreferredLanguage\(\)/.test(loader)
+    && /if \(params\.has\("lang"\)\) return false;/.test(loader)
+    && /location\.replace/.test(loader),
+    "the redirect must be cookie-gated, skip ?lang= URLs, and not stack history");
 }
 
 console.log(`  note  ${tracked.length} countries linked from the tracker and listed in `

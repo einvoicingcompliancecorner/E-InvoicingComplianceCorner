@@ -1,5 +1,8 @@
 {
-  "_meta": { "language": "en", "reviewed": true },
+  "_meta": {
+    "language": "en",
+    "reviewed": true
+  },
   "backLink": "← Back to global tracker",
   "header": {
     "eyebrow": "Legal",
@@ -79,5 +82,11 @@
   },
   "footer": {
     "note": "This page is a general template and does not constitute legal advice. Data protection obligations vary by jurisdiction and by the specific providers and processes you use — please have this reviewed by a qualified professional before relying on it for a real, paying customer base."
+  },
+  "pages": {
+    "privacy": {
+      "title": "Privacy Policy — The E-Invoicing Compliance Corner",
+      "description": "How The E-Invoicing Compliance Corner collects, uses and protects your data, including subscriber information and site analytics."
+    }
   }
 }

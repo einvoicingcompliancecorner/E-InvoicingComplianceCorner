@@ -25,5 +25,11 @@
     "ifNeeded": "si nécessaire.",
     "backToTracker": "Retour au suivi",
     "sendAnother": "Envoyer un autre"
+  },
+  "pages": {
+    "feedback": {
+      "title": "Commentaires — The E-Invoicing Compliance Corner",
+      "description": "Vous avez repéré une lacune, une date périmée ou un lien mort ? Dites-le-nous."
+    }
   }
 }

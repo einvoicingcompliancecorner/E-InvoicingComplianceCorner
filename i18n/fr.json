@@ -648,5 +648,51 @@
   "index": {
     "heading": "Toutes les juridictions",
     "intro": "Tous les pays suivis par ce tracker, avec leur prochaine échéance datée. Chaque entrée mène à un dossier complet : calendrier, format, démarches et sanctions."
+  },
+  "pages": {
+    "certified-providers": {
+      "title": "Prestataires e-invoicing certifiés — registres officiels par pays",
+      "description": "Liens directs vers les registres officiels de prestataires accrédités — ASP, PAC, OSE, GSP et points d'accès Peppol — vérifiés pays par pays."
+    },
+    "feedback": {
+      "title": "Commentaires — The E-Invoicing Compliance Corner",
+      "description": "Vous avez repéré une lacune, une date périmée ou un lien mort ? Dites-le-nous."
+    },
+    "home": {
+      "title": "The E-Invoicing Compliance Corner",
+      "description": "Suivez les obligations de facturation électronique et les échéances de conformité dans 70 pays, mis à jour chaque mois."
+    },
+    "impact-of-mandate": {
+      "title": "Impact d'un mandat de facturation électronique — technique, financier et organisationnel",
+      "description": "Ce qu'un mandat change réellement : intégration technique, résidence des données, impact financier et la préparation organisationnelle que la plupart des équipes sous-estiment."
+    },
+    "mandate-types": {
+      "title": "Types de mandat — les 7 modèles de conformité e-invoicing expliqués",
+      "description": "Les sept modèles de conformité expliqués : post-audit, déclaration en temps réel, clearance, plateformes centralisées et réseaux Peppol — et comment savoir lequel vous concerne."
+    },
+    "preparing-for-mandate": {
+      "title": "Se préparer à un mandat de facturation électronique — calendrier et choix du prestataire",
+      "description": "Comment se préparer à un nouveau mandat : qui impliquer, un calendrier réaliste de 12 à 18 mois et un processus de sélection du prestataire étape par étape."
+    },
+    "privacy": {
+      "title": "Politique de confidentialité — The E-Invoicing Compliance Corner",
+      "description": "Comment The E-Invoicing Compliance Corner collecte, utilise et protège vos données, y compris les informations d'abonné et les statistiques du site."
+    },
+    "subscribe": {
+      "title": "S'abonner — The E-Invoicing Compliance Corner",
+      "description": "Soyez averti lorsqu'un État modifie ses règles de facturation électronique. Mises à jour mensuelles sur 70 pays, adaptées aux juridictions où vous opérez."
+    },
+    "tracker": {
+      "title": "The E-Invoicing Compliance Corner",
+      "description": "Suivez les obligations de facturation électronique et les échéances de conformité dans 70 pays, mis à jour chaque mois."
+    },
+    "types-of-provider": {
+      "title": "Types de prestataires e-invoicing — ERP, solution, fiscalité et conseil comparés",
+      "description": "Les cinq catégories de prestataires expliquées — ERP, éditeur de solution, conformité fiscale, technologie et conseil — avec un comparatif côte à côte."
+    },
+    "whitepaper-roi": {
+      "title": "Ce que la facturation électronique fait vraiment économiser — les preuves publiées",
+      "description": "Un audit des preuves publiées sur les économies de la facturation électronique : ce que chaque étude a réellement mesuré, quels chiffres très cités ne résistent pas à la vérification."
+    }
   }
 }

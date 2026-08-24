@@ -94,5 +94,11 @@
   },
   "footer": {
     "text": "This page links directly to official government and authority sources as verified at the date above, and is provided for general awareness — it is not an endorsement of any specific provider, and inclusion on a government list is not a guarantee of fit for your specific needs. Always confirm a provider's current accreditation status directly on the linked official page before signing an agreement."
+  },
+  "pages": {
+    "certified-providers": {
+      "title": "Government Certified E-Invoicing Providers — Official Registries by Country",
+      "description": "Direct links to official government registries of accredited e-invoicing service providers — ASP, PAC, OSE, GSP and Peppol Access Points — verified country by country."
+    }
   }
 }

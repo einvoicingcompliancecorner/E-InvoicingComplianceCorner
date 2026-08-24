@@ -176,5 +176,11 @@
   },
   "footer": {
     "text": "Diese Seite bietet allgemeinen Bildungskontext zur Unterstützung der internen Planung und stellt keine Rechts-, Steuer- oder technische Umsetzungsberatung dar. Konkrete Anforderungen variieren je nach Land sowie Ihren eigenen Systemen und Ihrer Konzernstruktur — konsultieren Sie die jeweilige Länderanalyse und einen qualifizierten Berater, bevor Sie Umsetzungsentscheidungen treffen."
+  },
+  "pages": {
+    "impact-of-mandate": {
+      "title": "Auswirkungen einer E-Invoicing-Pflicht — technisch, finanziell, organisatorisch",
+      "description": "Was eine E-Invoicing-Pflicht tatsächlich verändert: technische Integration, Datenresidenz, finanzielle Folgen und die organisatorische Bereitschaft, die die meisten Teams unterschätzen."
+    }
   }
 }

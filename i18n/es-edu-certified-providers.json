@@ -94,5 +94,11 @@
   },
   "footer": {
     "text": "Esta página enlaza directamente con fuentes oficiales de gobiernos y autoridades verificadas en la fecha indicada arriba, y se ofrece con fines informativos generales — no constituye un aval de ningún proveedor concreto, y la inclusión en una lista gubernamental no garantiza su idoneidad para sus necesidades específicas. Confirme siempre el estado de acreditación actual de un proveedor directamente en la página oficial enlazada antes de firmar cualquier acuerdo."
+  },
+  "pages": {
+    "certified-providers": {
+      "title": "Proveedores de facturación electrónica certificados — registros oficiales por país",
+      "description": "Enlaces directos a los registros oficiales de proveedores acreditados — ASP, PAC, OSE, GSP y puntos de acceso Peppol — verificados país por país."
+    }
   }
 }
