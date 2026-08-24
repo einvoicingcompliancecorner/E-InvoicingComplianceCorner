@@ -344,6 +344,16 @@
     gap:1px; background:var(--line);
     margin:22px 5vw 0; border:1px solid var(--line); border-radius:var(--radius); overflow:hidden;
   }
+  /* Shown only when the page is running on its frozen snapshot. Amber
+     rather than red: the board below is still real, just old. */
+  .snapshot-note{
+    margin:22px 5vw 0; padding:12px 16px; border:1px solid var(--soon);
+    border-left:4px solid var(--soon); border-radius:var(--radius);
+    background:rgba(201,138,58,.10); color:var(--paper);
+    font-size:14px; line-height:1.5;
+  }
+  .snapshot-note[hidden]{display:none;}
+  .snapshot-note b{color:var(--soon);}
   .stat{background:var(--ink-2); padding:16px 18px;}
   .stat .num{font-family:'Big Shoulders Display',sans-serif; font-weight:800; font-size:30px; line-height:1;}
   .stat .lbl{font-size:11.5px; color:var(--muted); text-transform:uppercase; letter-spacing:0.08em; margin-top:4px;}
@@ -1099,6 +1109,7 @@
   <div class="term-board" id="arrivalsBoard" aria-label="Compliance arrivals board"></div>
 </div>
 
+<div class="snapshot-note" id="snapshotNote" role="status" hidden></div>
 <div class="stats" id="stats"></div>
 
 <div class="filters">
@@ -1160,6 +1171,18 @@
 // static copy only ever renders if the D1 queries fail, so it can go
 // stale gracefully; refresh it occasionally if it drifts far.
 // ============================================================
+// LIVE, OR THE SNAPSHOT? site-worker sets this to null when it injects
+// D1 rows below. If it is still a date when this script runs, the reader
+// is looking at the frozen array and the page says so out loud.
+//
+// On 23 August a migration wrote prose into a JSON column, the injection
+// threw on every request, and this page served the snapshot below to
+// every reader for a day -- with a stats box confidently reporting 31
+// jurisdictions and 79 milestones, which were the SNAPSHOT's numbers.
+// Nothing on the page said it was cached, so nothing looked wrong.
+// Failing silently with plausible numbers is worse than failing loudly.
+const DATA_SNAPSHOT_DATE = '2026-08-02';
+
 const DATA = [
   // ---------------- EUROPEAN UNION (ViDA) ----------------
   {
@@ -2168,18 +2191,66 @@ function renderStats(){
   // whole point: the last time this number was written down it sat at
   // 48 across seven HTML files and four JSON files while D1 said 56,
   // through several country additions, with nothing complaining.
-  window.EICC_JURISDICTION_COUNT = countries;
+  // NOT PUBLISHED ON CACHED DATA. The sign-up panel says "N
+  // jurisdictions tracked" from this global, and on the snapshot N is
+  // 31 -- so the outage would have understated the site by half in the
+  // one place that is trying to persuade someone to subscribe.
+  // auth-overlay.js already treats a missing or non-positive value as
+  // "no number to show" and omits the claim, which is the right
+  // behaviour and needed no change.
+  if (typeof DATA_SNAPSHOT_DATE !== 'string' || !DATA_SNAPSHOT_DATE) {
+    window.EICC_JURISDICTION_COUNT = countries;
+  }
   const inforce = DATA.filter(e=>computeStatus(e,NOW)==='inforce').length;
   const soon = DATA.filter(e=>computeStatus(e,NOW)==='soon').length;
   const upcoming = DATA.filter(e=>computeStatus(e,NOW)==='upcoming').length;
   const i18n = window.EICC_I18N;
   const tt = (key, fallback) => (i18n && i18n.t(key)) || fallback;
+
+  // ON THE SNAPSHOT, THE NUMBERS ARE WITHHELD RATHER THAN GUESSED.
+  //
+  // Dan, 24 August 2026, after a day of the page quietly reporting the
+  // frozen array's totals: "Is there a more graceful way to fail, rather
+  // than displaying incorrect counts?"
+  //
+  // This is that. The board below still renders from the snapshot, so
+  // the page keeps its use -- a reader can still see Poland's dates and
+  // follow through to a deep dive. But every number in this strip is a
+  // claim about TODAY, and on cached data not one of them is safe to
+  // make. They print as a dash, and the banner above says why.
+  //
+  // The alternative -- showing them with a caveat beside them -- was
+  // considered and rejected: a number on screen gets read and
+  // remembered, and its footnote does not.
+  const cached = typeof DATA_SNAPSHOT_DATE === 'string' && DATA_SNAPSHOT_DATE;
+  const note = document.getElementById('snapshotNote');
+  if (note) {
+    if (cached) {
+      // The date is rendered in the reader's own locale where the
+      // browser can, and left as the ISO string where it cannot --
+      // never silently omitted, because "a cached copy" without a date
+      // is the same unhelpful vagueness in a politer form.
+      let when = DATA_SNAPSHOT_DATE;
+      try {
+        when = new Date(DATA_SNAPSHOT_DATE + 'T00:00:00Z').toLocaleDateString(
+          (i18n && i18n.lang) || 'en', {year:'numeric', month:'long', day:'numeric', timeZone:'UTC'});
+      } catch (e) { /* keep the ISO form */ }
+      note.innerHTML = '<b>' + tt('stats.cachedTitle', 'Showing a cached copy') + '</b> — '
+        + tt('stats.cachedBody', 'live data is temporarily unavailable, so this board is a saved copy from {0} and the counts below are hidden rather than shown out of date.')
+            .replace('{0}', when);
+      note.hidden = false;
+    } else {
+      note.hidden = true;
+    }
+  }
+
+  const dash = '—';
   const stats = [
-    {num:countries, lbl:tt('stats.jurisdictionsTracked','Jurisdictions tracked')},
-    {num:DATA.length, lbl:tt('stats.milestonesTracked','Milestones tracked')},
-    {num:inforce, lbl:tt('stats.alreadyInEffect','Already in effect')},
-    {num:soon, lbl:tt('stats.dueWithin90Days','Due within 90 days')},
-    {num:upcoming, lbl:tt('stats.furtherOut','Further out')},
+    {num:cached ? dash : countries,    lbl:tt('stats.jurisdictionsTracked','Jurisdictions tracked')},
+    {num:cached ? dash : DATA.length,  lbl:tt('stats.milestonesTracked','Milestones tracked')},
+    {num:cached ? dash : inforce,      lbl:tt('stats.alreadyInEffect','Already in effect')},
+    {num:cached ? dash : soon,         lbl:tt('stats.dueWithin90Days','Due within 90 days')},
+    {num:cached ? dash : upcoming,     lbl:tt('stats.furtherOut','Further out')},
   ];
   document.getElementById('stats').innerHTML = stats.map(s=>
     `<div class="stat"><div class="num display">${s.num}</div><div class="lbl">${s.lbl}</div></div>`

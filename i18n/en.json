@@ -141,7 +141,9 @@
     "dueWithin90Days": "Due within 90 days",
     "furtherOut": "Further out",
     "jurisdictionsTracked": "Jurisdictions tracked",
-    "milestonesTracked": "Milestones tracked"
+    "milestonesTracked": "Milestones tracked",
+    "cachedBody": "live data is temporarily unavailable, so this board is a saved copy from {0} and the counts below are hidden rather than shown out of date.",
+    "cachedTitle": "Showing a cached copy"
   },
   "who": {
     "signedInAs": "Signed in as",

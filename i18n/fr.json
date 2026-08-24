@@ -141,7 +141,9 @@
     "dueWithin90Days": "Échéance sous 90 jours",
     "furtherOut": "Plus lointain",
     "jurisdictionsTracked": "Juridictions suivies",
-    "milestonesTracked": "Jalons suivis"
+    "milestonesTracked": "Jalons suivis",
+    "cachedBody": "les données en direct sont momentanément indisponibles : ce tableau est une copie enregistrée du {0}, et les chiffres ci-dessous sont masqués plutôt qu'affichés périmés.",
+    "cachedTitle": "Affichage d'une copie en cache"
   },
   "who": {
     "signedInAs": "Connecté en tant que",

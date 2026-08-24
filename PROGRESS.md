@@ -15877,7 +15877,7 @@ longer and would have been the thing that tipped it.
 gained eleven keys per language and `shared/guides-render.mjs` changed,
 and both ship in the site-worker.
 
-### The board had been serving a stale snapshot for a day (24 Aug 2026)
+### The board had been serving a stale snapshot for a day (24 Aug 2026, deployed)
 
 Dan: *"The main tracker page says 31 Jurisdictions tracked ... This
 previously said 70 Jurisdictions, but has come down. Is this because this

@@ -141,7 +141,9 @@
     "dueWithin90Days": "Fällig innerhalb von 90 Tagen",
     "furtherOut": "Später fällig",
     "jurisdictionsTracked": "Erfasste Rechtsordnungen",
-    "milestonesTracked": "Erfasste Meilensteine"
+    "milestonesTracked": "Erfasste Meilensteine",
+    "cachedBody": "Live-Daten sind vorübergehend nicht verfügbar. Diese Übersicht ist eine gespeicherte Fassung vom {0}; die Zahlen darunter werden ausgeblendet, statt veraltet angezeigt zu werden.",
+    "cachedTitle": "Zwischengespeicherte Fassung"
   },
   "who": {
     "signedInAs": "Angemeldet als",
