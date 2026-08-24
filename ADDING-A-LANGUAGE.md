@@ -1,5 +1,15 @@
 # Adding a New Language — Runbook
 
+> **Where this fits.** This is a *procedure* — it answers "what do I do".
+> `PROGRESS.md` is the *record* and answers "why is it like this".
+> `claude/design-architecture-review.html` is the *map*: the architecture,
+> the editorial vocabulary, the failure classes and the release checklist.
+> A fact that is a procedure step belongs here; a decision belongs in the
+> design review; a change belongs in PROGRESS. **Counts are deliberately
+> not restated in this file** — they drift, and a number with no
+> connection to the thing it counts is how the "48 countries" bug lasted
+> two days.
+
 > Written 17 August 2026, immediately after migrations 569–574 made the
 > ROI & Wave Planner actually translatable. Before those, this document
 > could not honestly have been written: the page would have failed to
@@ -593,10 +603,11 @@ something going visibly wrong.
 
 | Where | What | Size |
 | --- | --- | --- |
-| `translations`, `tracker`, `guides.*` | the chooser, the sign-up wall, and every heading, column and status word in the printed document | **72 keys** |
+| `translations`, `tracker`, `guides.*` | the chooser, the sign-up wall, and every heading, column and status word in the printed document | **83 keys** |
 | `translations`, `tracker`, `menu.guides` | the Resources menu entry | 1 key |
 | `translations`, namespace `regions` | the picker's region headings | 4 keys, already parity |
-| `country_headline_fact_translations` | the qualifying line under each of the five headline facts, per country | **350 cells** |
+| `translations`, `tracker`, `guides.hl.freq.*` and `guides.hl.er.*` | the e-Reporting card's cadence words and its two non-cadence states | **11 keys** |
+| `country_headline_fact_translations` | the qualifying line under each of the **six** headline facts, per country | **420 cells** |
 
 `guides.*` lives inside `tracker`, not in a namespace of its own, for the
 same reason `auth.*` does — `generate_files.py` rebuilds `tracker` into
@@ -607,10 +618,12 @@ everything else in there.
 
 ### The status words are the ones to get right
 
-Fifteen of the 72 are the words printed in the headline cards — ACTIVE,
-PLANNED, NO MANDATE, NOT CONFIRMED, REQUIRED, VARIES and the rest. They
-are set at 11.5pt across a third of a page and they are what a reader
-skimming eleven countries actually reads.
+Twenty-six of the 83 are the words printed in the headline cards —
+ACTIVE, PLANNED, NO MANDATE, NOT CONFIRMED, REQUIRED, VARIES, and since
+24 August the e-Reporting cadences: MONTHLY, REAL-TIME, NEAR REAL-TIME,
+QUARTERLY, ANNUAL, ON REQUEST and the rest. They are set at 11.5pt in a
+card a sixth of the page wide, and they are what a reader skimming
+eleven countries actually reads.
 
 **Length is a correctness constraint here, not taste.** The German for
 "not confirmed" was chosen as `NICHT BESTÄTIGT` over `NICHT VERIFIZIERT`
@@ -678,6 +691,58 @@ SELECT lang, count(*) FROM country_headline_fact_translations GROUP BY lang;
 
 Seventy rows per language is complete.
 
+### The four rules that came out of doing it
+
+Written 23–24 August, after the notes were translated for the first time
+and then a sixth note was added the next day. These are the criteria to
+hold a translator to, and each one exists because getting it wrong is
+invisible rather than because it is elegant.
+
+**1 · Four languages or none, per field.** 624's standing invariant
+counts *languages per country*, and a later one had to be added per
+*column*, because the first would still pass if every country had `de`,
+`fr` and `es` rows whose new note happened to be NULL. Both are needed.
+The general rule: an invariant over rows does not constrain columns, and
+a new column is exactly where the next gap will be.
+
+**2 · Length is a per-card constraint, not one number.** The five older
+notes are capped at 125 characters in English and 130 translated. The
+e-Reporting note is capped at **115**, because its card is a sixth of the
+page and carries a line the others do not — the system name. There is no
+single cap that is right for every card, and picking the loosest one and
+applying it everywhere is how the German pages ended up at the fitter's
+floor.
+
+**3 · Proper nouns are never translated, and the check has to know
+which.** JPK_V7M, myDATA, SAF-T, D406, kontrolní hlášení, eTIMS,
+FATOORA — a reader matches these character for character against their
+own tax portal, so they are stored once on the fact and rendered
+untranslated in all four editions. The translator brief lists them
+explicitly; assuming a translator will recognise an identifier is how one
+gets helpfully rendered into the local language.
+
+**4 · Never assert an English word against a translated string.** 633
+tried to check that two new keys contained an English stem in all four
+languages and failed on its first run: *ROI* is a loanword in German,
+French and Spanish alike, but *compliance* becomes **conformité** and
+**cumplimiento**. An assertion like that either passes by luck or fails
+for the wrong reason. Check content against English, and cover the other
+three with a count plus the four-languages-or-none invariant.
+
+### What is checked mechanically, and what is not
+
+`tests/headline-notes-langs.mjs` reads all **1,260** translated notes and
+asks three questions no comprehension is needed for: does every English
+note have all three translations; does every digit-run in the English
+survive into each one (dates, thresholds, article numbers); and does any
+translated note claim a duty to issue that its own tile denies. It also
+asserts **its own patterns still fire** — a language whose duty regex
+stops matching would let the third check pass in silence.
+
+What it cannot check is whether a translation *means* the same thing.
+Hedges, the issue-versus-receive distinction and the schedule-versus-
+on-request distinction are held to by review, and the brief says so.
+
 ### Country names come from CODE here, not from D1
 
 A trap worth one line before it costs an afternoon. The tracker's country
@@ -738,17 +803,32 @@ adds the language.
 ## Phase 6 — verify
 
 ```bash
-node tests/roi-coverage.mjs             # per-language, all three ROI tables
-node tests/auth-code.mjs                # the sign-up panel's 67 strings
-node tests/guides-routes.mjs            # the guides strings exist in all four files
-node tests/lib/guides-fit-harness.mjs   # the one-page rule survives the new language
-npm test                                # every suite
+node tests/roi-coverage.mjs                    # per-language, all three ROI tables
+node tests/auth-code.mjs                       # the sign-up panel's 67 strings
+node tests/guides-routes.mjs                   # the guides strings exist in all four files
+node tests/headline-notes-langs.mjs            # 1,260 notes: structure, figures, issue-vs-receive
+node tests/lib/guides-fit-langs.mjs en de fr es  # the one-page rule, per language
+npm test                                       # every suite
 ```
 
-The fit harness is not in `npm test` and is the one to run by hand. A
-language with longer status words does not fail anything — it makes
-seventy pages print a little smaller, which no assertion notices and a
-reader does. It prints the median fill; compare it against English.
+The two fit harnesses are not in `npm test` and are the ones to run by
+hand. A language with longer status words does not fail anything — it
+makes seventy pages print a little smaller, which no assertion notices
+and a reader does.
+
+**Read the floor line, not the "over one page" line.** Nothing is ever
+over a page: the fitter guarantees that by shrinking, so the number that
+carries information is how hard it had to shrink. English stops at 84%;
+`de`, `fr` and `es` reach the hard floor of 80% on the same handful of
+thin countries — Colombia, Costa Rica, Uruguay, Argentina, Kenya. A new
+language that pushes a country *below* that means shorter status words
+and shorter notes, not a lower floor.
+
+**And measure with the real translations in, not with English standing
+in.** The notes COALESCE onto English, so a fit run before the
+translations land measures a document 20% shorter than the one that will
+ship. That ordering is why the e-Reporting card was translated before its
+final fit run rather than after.
 
 **The suite count is not written down here on purpose.** It was "10
 suites" in this file while the repository had fifteen, which is the same
@@ -950,7 +1030,7 @@ Whatever the language, the work splits three ways:
 | --- | --- | --- |
 | The planner | 537 cells | `roi-coverage.mjs`, and a gate that refuses a partial language |
 | The rest of the site chrome | 761 rows, 108 of them the guides and methodology | `tracker-i18n.mjs` parity, `guides-routes.mjs` and `methodology.mjs` |
-| The headline-fact notes | **350 cells** | 624's four-languages-or-none invariant, and `headline-notes-langs.mjs` |
+| The headline-fact notes | **420 cells** | 624's four-languages-or-none invariant, 630's per-column one, and `headline-notes-langs.mjs` |
 
 The third column is the one to read. The last row is the largest single
 job, and until 23 August 2026 it was the only one where finishing was a

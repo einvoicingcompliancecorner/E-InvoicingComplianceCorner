@@ -16017,7 +16017,7 @@ because the commit stat said `PROGRESS.md | 2 +-` where forty-odd lines
 were expected — the same way the tracker outage was caught, by a number
 being smaller than it should have been.
 
-### The subscribe copy catches up with the product (24 Aug 2026)
+### The subscribe copy catches up with the product (24 Aug 2026, deployed)
 
 Dan asked for the carousel's subscribe card to name the ROI planner and
 the compliance guides, and for the "Subscribers also get" panel at the
@@ -16080,3 +16080,92 @@ Resources menu.
 `npm test`: **26 suites**. Replay OK across **633 files**, 617 assertions.
 
 **Needs both a migration apply and a site-worker deploy.**
+
+### The design review becomes a taxonomy, and gains a checklist (24 Aug 2026)
+
+Dan: *"Could these have been avoided with a more thorough design
+document. If so, could you update the design review document, so that it
+is a comprehensive review of the system... I'm also aware there are
+multiple documents which may hold overlapping information."*
+
+**The honest answer is one of them, and not the ones you would expect** —
+so the answer shaped what got built rather than just being the preamble.
+
+| What went wrong | Would a document have caught it? |
+| --- | --- |
+| Prose written into a JSON column | **No.** Knowable from the data; an assertion caught it, and an assertion existing first would have prevented it. |
+| A German note clipped mid-word | **No.** Found by looking at a screenshot. |
+| An assertion checking an English stem against translations | **No.** Caught in a minute by the runner. |
+| e-Reporting never registered in `features` | **Yes.** Not discoverable from code or data. It is a *step*. |
+| The announcement job having no cron | **Yes.** A decision taken implicitly and never written down. |
+
+**So the conclusion is not "write more documentation".** Every real save
+this fortnight was an assertion, a test, or a person reading a rendered
+page. Prose that duplicates a mechanism drifts from it and then
+*certifies the defect* — which has happened here, when a stale comment
+sat above correct code and made the wrong lines look right. The document
+should hold only what a check cannot.
+
+#### What was actually missing, and is now there
+
+**A release checklist (§07).** The one failure class no check can close.
+Every other class is two things disagreeing, and a machine can compare
+two things; this is *one thing and its absence*, and absence has no
+representation. Ten items, deliberately short, with everything automatable
+left off.
+
+**A schedule table (§03).** There was no single place saying which jobs
+exist and what triggers them, so a job built without one looked exactly
+like a job with one. The feature-announcement job is manual by design —
+that is defensible, and it was invisible.
+
+**The editorial vocabulary (§04).** The issuing rule, planned-requires-
+enacted-and-dated, `unknown` as a first-class answer, clearance-is-not-
+reporting, content-not-envelope, grade-the-host. This is the product, it
+is the part that cannot be recovered from the code, and it had never been
+written down in one place.
+
+**A document map (§00),** and the same note added to both runbooks: the
+runbooks are *procedures* and answer "what do I do"; PROGRESS is the
+*record* and answers "why is it like this"; the design review is the
+*map*. Counts are restated in none of them.
+
+#### The review section was restructured, and that is itself a finding
+
+§05 had grown into a chronological list of every defect since 13 August —
+**which is precisely the failure mode it names two cards down**, quality
+problems that arrive by accumulation. It is now seven *classes* with
+instances as evidence, because a future reader needs to recognise the
+shape of a defect, not read its history.
+
+The new class is **C · a monitor cannot see what was never declared to
+it**, which now has three instances: `features` and the e-Reporting card;
+`cited_sources` and seventy invisible source URLs a day earlier; and
+`tracking_sources`, where the same exposure exists and has not yet bitten
+— a country added without its sources is monitored by nothing, and the
+monitor reports a clean sweep.
+
+#### Fixed while writing it
+
+Migration 634 registers the e-Reporting card as feature 9, unannounced.
+`FEATURE_LINKS` gains its entry, and `feature-announcement.mjs` now
+checks the two registers against each other in both directions.
+
+**That test also caught a real defect in itself.** Its gate check mapped
+one hardcoded slug per gated route — an assumption of one-to-one it was
+never promised — which held until e-Reporting became the second feature
+behind `?view=guides`. It now derives the gated set from each feature's
+actual route. A test encoding an unwarranted one-to-one is the same
+defect class the suite exists to guard against.
+
+`ADDING-A-LANGUAGE.md` gains the four criteria that came out of
+translating the notes: four-languages-or-none *per column* as well as per
+country; per-card length caps rather than one number; proper nouns are
+never translated and the brief must list them; and never assert an
+English word against a translated string. `ADDING-A-COUNTRY.md` gains the
+registration table.
+
+`npm test`: **26 suites**. Replay OK across **634 files**, 622 assertions.
+
+**Migration-apply and a members-worker deploy** — `FEATURE_LINKS` ships
+in the worker.
