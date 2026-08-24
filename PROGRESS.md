@@ -16802,3 +16802,34 @@ across **642 files**.
 cache-correctness bug that let a shared cache serve the German copy to
 an English reader is closed after as long as the site has had
 translations.
+
+#### And the .html question, settled by measurement (24 August 2026)
+
+The audit had inferred that `.html` URLs redirect. Dan measured it:
+`/education-mandate-types` answers **200**, `/education-mandate-types.html`
+answers **307** to it.
+
+**307, not 301.** A temporary redirect tells a search engine not to
+consolidate signals onto the target at all — so every static page on
+this site was canonicalising to an address search engines are told to
+treat as provisional, and ten sitemap entries pointed at the same place.
+
+Canonicals, `og:url`, hreflang clusters and the sitemap now name the
+extensionless form, and 26 internal links were moved off the redirecting
+one so a reader no longer pays a round trip to reach the privacy policy.
+
+**The tracker keeps its `.html` address, deliberately.** It appears in
+`TRACKER_PATHS` twice, so `run_worker_first` serves it at both forms with
+no redirect at all — and it is the site's most-linked URL, where asking
+Google to move indexing has a real cost and buys nothing.
+
+Two checks of mine broke, both for the same reason and both worth
+recording: they had encoded **the shape of the data rather than its
+source**. `seo-crawlability` recognised static pages by "ends in .html",
+so the moment the pages were corrected it reported thirteen of them as
+countries the router does not know — it now reads the worker's own
+`SITEMAP_STATIC`. And `roi-regression` asserted the gate's subscribe link
+matched `subscribe\.html$`, when the question it exists to ask is whether
+a route to subscribing is offered at all.
+
+`npm test`: **29 suites**, 42 checks in the crawlability suite.

@@ -300,24 +300,30 @@ const SITEMAP_STATIC = [
   { loc: "/insights", priority: "0.8", changefreq: "weekly" },
   { loc: "/methodology", priority: "0.7", changefreq: "monthly" },
   { loc: "/changes", priority: "0.7", changefreq: "daily" },
+  // EXTENSIONLESS, verified 24 August 2026: the .html form of every
+  // asset-served page answers 307 to the extensionless one, so listing
+  // .html here offered Google ten URLs that redirect. The tracker is the
+  // exception and keeps its .html form -- run_worker_first serves it at
+  // both addresses with no redirect at all, and it is the site's
+  // most-linked URL.
   // Static explainers.
-  { loc: "/education-mandate-types.html", priority: "0.6", changefreq: "monthly" },
-  { loc: "/education-impact-of-mandate.html", priority: "0.6", changefreq: "monthly" },
-  { loc: "/education-preparing-for-mandate.html", priority: "0.6", changefreq: "monthly" },
-  { loc: "/education-types-of-provider.html", priority: "0.6", changefreq: "monthly" },
-  { loc: "/education-certified-providers.html", priority: "0.6", changefreq: "monthly" },
+  { loc: "/education-mandate-types", priority: "0.6", changefreq: "monthly" },
+  { loc: "/education-impact-of-mandate", priority: "0.6", changefreq: "monthly" },
+  { loc: "/education-preparing-for-mandate", priority: "0.6", changefreq: "monthly" },
+  { loc: "/education-types-of-provider", priority: "0.6", changefreq: "monthly" },
+  { loc: "/education-certified-providers", priority: "0.6", changefreq: "monthly" },
   // The whitepapers, in every language they exist in. The three
   // translated CTC files are real, indexable URLs carrying correct
   // reciprocal hreflang, and the old sitemap listed only the English
   // one -- so three complete translations were undeclared.
-  { loc: "/whitepaper-ctc-rollouts-compared.html", priority: "0.7", changefreq: "monthly" },
-  { loc: "/whitepaper-ctc-rollouts-compared-de.html", priority: "0.6", changefreq: "monthly" },
-  { loc: "/whitepaper-ctc-rollouts-compared-fr.html", priority: "0.6", changefreq: "monthly" },
-  { loc: "/whitepaper-ctc-rollouts-compared-es.html", priority: "0.6", changefreq: "monthly" },
-  { loc: "/whitepaper-einvoicing-roi-evidence.html", priority: "0.7", changefreq: "monthly" },
-  { loc: "/subscribe.html", priority: "0.6", changefreq: "monthly" },
-  { loc: "/feedback.html", priority: "0.4", changefreq: "yearly" },
-  { loc: "/privacy-policy.html", priority: "0.3", changefreq: "yearly" },
+  { loc: "/whitepaper-ctc-rollouts-compared", priority: "0.7", changefreq: "monthly" },
+  { loc: "/whitepaper-ctc-rollouts-compared-de", priority: "0.6", changefreq: "monthly" },
+  { loc: "/whitepaper-ctc-rollouts-compared-fr", priority: "0.6", changefreq: "monthly" },
+  { loc: "/whitepaper-ctc-rollouts-compared-es", priority: "0.6", changefreq: "monthly" },
+  { loc: "/whitepaper-einvoicing-roi-evidence", priority: "0.7", changefreq: "monthly" },
+  { loc: "/subscribe", priority: "0.6", changefreq: "monthly" },
+  { loc: "/feedback", priority: "0.4", changefreq: "yearly" },
+  { loc: "/privacy-policy", priority: "0.3", changefreq: "yearly" },
 ];
 
 // ONE ENTRY PER PAGE, WITH ITS LANGUAGES DECLARED INSIDE IT.
@@ -1111,7 +1117,7 @@ function mapPageBodyHtml() {
     <p id="footerText"></p>
     <div class="footer-cta-buttons">
       <a class="archive-btn" href="https://members.e-invoicingcompliancecorner.com/members/archive" id="archiveBtnLink"></a>
-      <a class="subscribe-btn" href="/subscribe.html" id="subscribeBtnLink"></a>
+      <a class="subscribe-btn" href="/subscribe" id="subscribeBtnLink"></a>
     </div>
   </div>
 </div>
@@ -1848,7 +1854,7 @@ async function renderChangesPage(request, env) {
     "All of these date from the day the record was opened."))}</p>` : ""}
   ${body}
   <p class="cta"><a href="/methodology" target="_top">${escHtml(t("link.method", "How we decide"))}</a>
-     <a href="/feedback.html" target="_top">${escHtml(t("link.fix", "Send a correction"))}</a></p>
+     <a href="/feedback" target="_top">${escHtml(t("link.fix", "Send a correction"))}</a></p>
 </div>
 </body>
 </html>`;
@@ -2238,7 +2244,7 @@ async function renderMethodologyPage(request, env) {
 
   ${h("fix.h", "Tell us when we are wrong")}
   ${p("fix.p1", "Mandates move and we get things wrong.")}
-  <p class="cta"><a href="/feedback.html">${escHtml(t("fix.cta", "Send a correction"))}</a>
+  <p class="cta"><a href="/feedback">${escHtml(t("fix.cta", "Send a correction"))}</a>
      <a href="/sources">${escHtml(t("link.sources", "The sources we monitor"))}</a></p>
   <p class="fig">${escHtml(fillPlain(t("verified",
     "Covering {0} jurisdictions. Last fact-check recorded {1}."), countries, row?.latest || "—"))}</p>`;

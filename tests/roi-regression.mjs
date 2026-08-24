@@ -3281,8 +3281,13 @@ const routes = await gated.evaluate(() => {
     sinTop: sin && sin.getAttribute("target"),
   };
 });
+// THE PAGE, NOT ITS EXTENSION. This asserted `subscribe.html$` until 24
+// August, when every static page moved onto its extensionless address —
+// the .html form answers 307, so a link to it cost a redirect. The
+// question this check exists to ask is whether the gate offers a route
+// to subscribing at all; the file extension was never the point.
 t.check("the gate offers a way to SUBSCRIBE, not only to sign in",
-  /subscribe\.html$/.test(routes.subHref || ""), JSON.stringify(routes.subHref));
+  /\/subscribe(\.html)?$/.test(routes.subHref || ""), JSON.stringify(routes.subHref));
 t.check("and the subscribe button does not also claim to sign you in",
   !/sign\s*in|log\s*in/i.test(routes.subText || ""), routes.subText);
 t.check("signing in is still offered, separately, to people who have an account",

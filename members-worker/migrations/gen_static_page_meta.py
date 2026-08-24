@@ -278,8 +278,17 @@ def unwire_pages():
 
 
 def hreflang_block(file_name):
-    """The cluster for a ?lang= page: four variants plus x-default."""
-    base = f"{ORIGIN}/{file_name}"
+    """The cluster for a ?lang= page: four variants plus x-default.
+
+    EXTENSIONLESS, because that is the address that answers 200. Verified
+    24 August 2026: /education-mandate-types returns 200 and
+    /education-mandate-types.html returns a 307 to it. A canonical
+    pointing at the .html form names a URL that redirects -- and a 307 is
+    TEMPORARY, which tells Google not to consolidate signals onto the
+    target at all. So every one of these pages was canonicalising to an
+    address search engines are told to treat as provisional.
+    """
+    base = f"{ORIGIN}/{file_name}".replace(".html", "")
     lines = [f'<link rel="alternate" hreflang="{l}" href="{base}{"" if l == "en" else f"?lang={l}"}">'
              for l in LANGS]
     lines.append(f'<link rel="alternate" hreflang="x-default" href="{base}">')

@@ -1866,7 +1866,7 @@ ${langAsked && langAsked !== lang ? `<p class="note noprint" style="margin:0 0 1
        Resources panel: without it the fallback would open a full
        sign-up page inside a panel with no chrome. Harmless unframed,
        where _top is this window. -->
-  <a class="primary" id="subscribe" target="_top" rel="noopener" href="/subscribe.html">${t("gate.cta2", "Create a free account")}</a>
+  <a class="primary" id="subscribe" target="_top" rel="noopener" href="/subscribe">${t("gate.cta2", "Create a free account")}</a>
   <p class="hint" style="margin:12px 0 0">${sfill(t("gate.signin", "Already have one? {0}."),
       `<a id="signin" target="_top" rel="noopener" href="${esc(membersUrl)}/members">${t("gate.signin.link", "Sign in")}</a>`)}</p>
 </div>
