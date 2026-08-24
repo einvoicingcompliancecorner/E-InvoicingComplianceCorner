@@ -15876,3 +15876,79 @@ longer and would have been the thing that tipped it.
 **This one needs a deploy as well as a migration apply** — `i18n/*.json`
 gained eleven keys per language and `shared/guides-render.mjs` changed,
 and both ship in the site-worker.
+
+### The board had been serving a stale snapshot for a day (24 Aug 2026)
+
+Dan: *"The main tracker page says 31 Jurisdictions tracked ... This
+previously said 70 Jurisdictions, but has come down. Is this because this
+number represents only countries with mandates in effect?"*
+
+No. **Those are the static fallback snapshot's numbers** — 79 entries
+across 31 countries once the EU row is excluded, exactly. The stats box
+was not filtering anything; it was counting a frozen array baked into
+`einvoicing-compliance-tracker.html`, because `renderTracker` had been
+throwing on every request since the previous evening.
+
+`wrangler tail` named it in one line:
+
+```
+Dynamic tracker render failed, serving static fallback:
+SyntaxError: Unexpected token 'R', "Register t"... is not valid JSON
+```
+
+**The cause was mine.** `milestone_translations.actions` holds a JSON
+array. Migration 625 put a paragraph of prose in it, for two new
+milestones in four languages. `buildTrackerData` does
+`JSON.parse(r.actions)`, one row throws, `renderTracker` catches, and
+every reader on the site gets the snapshot.
+
+#### Why three separate guards all missed it
+
+**625's own assertions were all true.** The milestone existed, was on the
+board, carried four translations — every structural claim it made held.
+The content was the wrong *shape*, and no assertion asked about shape.
+
+**Replay cannot catch it, because replay does not render.** It applied
+the SQL faithfully; nothing in the chain ever parsed the column.
+
+**`jurisdiction-count.mjs` was also right.** It checks that prose claims
+about the count agree with the database. Both were correct. The page was
+serving neither.
+
+That is the interesting part: a whole-site outage sitting in the gap
+between three checks, each of which passed honestly.
+
+#### The audit found a ninth broken row, older and not mine
+
+`ec-realtime-transmission-2026`'s **German** actions use German
+typographic quotes around a Spanish term and close with a straight double
+quote — `,,consumidor final"` — which ends the JSON string early. English,
+French and Spanish are fine. German board data has been failing to parse
+for as long as that row has existed. It took parsing all 1,656
+translation rows to see it. `portals` was audited at the same time: 270
+rows, all valid.
+
+#### Three fixes, because the data was only one of them
+
+**631 repairs the nine rows** and asserts the format: `json_valid` and
+`json_type = 'array'`, standing, for `actions` and for `portals` — the
+column one careless migration away from the identical outage. That is the
+assertion that would have stopped 625 reaching production.
+
+**The renderer stops betting the site on one row.** `buildTrackerData`
+now parses each value in isolation and logs the offending milestone id
+rather than throwing. A malformed row costs that row its action list; it
+does not cost seventy countries their board. The blast radius was the
+bug, not just the bad data.
+
+**`tests/tracker-board-renders.mjs`** runs the worker's own query and its
+own parsing, in all four languages, and asserts the board that comes out
+is the one the database describes — including, explicitly, that the count
+is not 31, which is the single most diagnostic number this check could
+print. It also asserts both injection regexes still match the static
+shell, since a change to that file's shape would put the site back on the
+snapshot with D1 working perfectly. Negative-tested by reverting 631.
+
+`npm test`: **26 suites**. Replay OK across **631 files**, 607 assertions.
+
+**Needs both a migration apply and a site-worker deploy.**
