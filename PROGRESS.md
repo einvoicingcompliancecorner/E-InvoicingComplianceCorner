@@ -11765,6 +11765,49 @@ state.
    `apply_migrations.py --remote --assert-only` on a schedule would
    finish what the test work started.
 
+7. **The announcement backlog, and the LinkedIn channel decision.**
+   *(Added 24 Aug 2026, deliberately deferred — Dan's call.)* The
+   monitor's "Ready to announce" section is reporting **11 items**, all
+   features and articles, every one missing both expected channels:
+
+   > The Map · the ROI & Wave Planner · Insights & Whitepapers · archive
+   > filtering by country · the tracker's due-soon default · the change
+   > history · the methodology page · build-your-own-guide · the
+   > e-Reporting card · and both whitepapers.
+
+   Nothing published since 3 August has been announced to a subscriber.
+
+   **Two separable questions, and they should not be answered together.**
+
+   *The newsletter half is real work.* Features cannot self-clear the
+   way stories do — `sendMonthlyNotifications` records the newsletter
+   channel for the stories it sent, but a feature is only recorded when
+   the feature-announcement job actually sends, and that job has never
+   run. It is built, tested, manual-only by design
+   (`POST /admin/announce-features?confirm=SEND`), and nothing will
+   trigger it. Either send, or record a decision not to — an
+   unannounced row with no decision beside it is ambiguous forever.
+
+   *The LinkedIn half is a policy question about a channel that does not
+   exist.* `ANNOUNCEMENT_CHANNELS_BY_TYPE` expects `newsletter, linkedin`
+   for articles and features. Migration 503 deliberately backfilled no
+   `linkedin` row — the system has no idea what was ever posted socially
+   and inventing that would poison the only signal it gives — so with no
+   account, every feature and article will carry "Not yet announced on:
+   LinkedIn" for its full 60-day window. **That is the noise problem
+   this design was built to avoid, arriving from a direction it did not
+   anticipate: a channel that is expected but unreachable is
+   indistinguishable, in this model, from one that is merely neglected.**
+
+   Three options when it is picked up: drop `linkedin` from the map (one
+   line, restore it the day an account exists — the cheapest and the one
+   I would take); keep it and record posts by hand; or move the channel
+   policy into data so it can be switched without a deploy. The last is
+   more machinery than the decision currently warrants.
+
+   Nothing is broken and nothing degrades while this waits — the digest
+   simply keeps listing the same 11 items until somebody decides.
+
 **Worth recording about the week of 14–15 August**, because it changes
 what the tests are for. The ROI planner's economics were substantially
 rebuilt across migrations 522–531, and *almost every defect corrected

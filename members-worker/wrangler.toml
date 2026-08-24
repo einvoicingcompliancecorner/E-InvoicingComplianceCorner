@@ -57,7 +57,7 @@ ONE_TIME_VARIANT_ID = "1962239"
 # you want it to stick permanently, update this file too.
 ARCHIVE_PUBLIC = "true"
 
-# Where the weekly content-monitor digest is sent. This is an INTERNAL
+# Where the content-monitor digest is sent (nightly since 24 Aug 2026). This is an INTERNAL
 # operator email only -- raw "these government pages changed, go look"
 # material, never sent to subscribers. See CONTENT-MONITORING.md.
 CONTENT_MONITOR_EMAIL = "einvoicingcompliancecorner@gmail.com"
@@ -70,7 +70,7 @@ CONTENT_MONITOR_EMAIL = "einvoicingcompliancecorner@gmail.com"
 binding = "SUBSCRIBERS"
 id = "5a7d9f86169a4e16852e914346568a9a"
 
-# CONTENT_MONITOR: snapshot hashes for the weekly "known-page watcher"
+# CONTENT_MONITOR: snapshot hashes for the nightly "known-page watcher"
 # (CONTENT-MONITORING.md). Deliberately a SEPARATE namespace from
 # SUBSCRIBERS -- this stores page-content hashes for monitoring, not
 # subscriber data, and the two shouldn't share a keyspace. One-time
