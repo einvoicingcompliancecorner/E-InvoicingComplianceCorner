@@ -25,6 +25,10 @@ const SUITES = [
   // at a comment, which is the least legible message this repo produces.
   { name: "render lint", cmd: "node", args: [join(HERE, "render-lint.mjs")], cwd: REPO },
   { name: "jurisdiction count", cmd: "node", args: [join(HERE, "jurisdiction-count.mjs")], cwd: REPO },
+  // The board the tracker actually serves. jurisdiction-count checks that
+  // PROSE claims agree with the database; this checks that the PAGE does
+  // — the gap migration 625 fell through for a day in August.
+  { name: "tracker board renders", cmd: "node", args: [join(HERE, "tracker-board-renders.mjs")], cwd: REPO },
   // Static files only, no browser. Placed with the fast ones so a missing
   // translation key is reported in a second rather than after the four
   // browser suites have spent two minutes not looking for it.

@@ -152,6 +152,33 @@ async function buildTrackerData(db) {
       WHEN 'Asia-Pacific' THEN 2 WHEN 'Americas' THEN 3 ELSE 4 END,
       m.date, m.id
   `).all();
+  // ONE BAD ROW MAY NOT TAKE DOWN SEVENTY COUNTRIES.
+  //
+  // These two columns hold serialised JSON, and until 24 August a single
+  // unparseable value threw straight out of buildTrackerData, was caught
+  // by renderTracker, and served EVERY reader the static fallback
+  // snapshot -- a frozen board of 79 milestones across 31 countries.
+  // That is what migration 625 did by writing prose into `actions`, and
+  // it ran for a day before Dan noticed the jurisdiction count had
+  // dropped from 70 to 31.
+  //
+  // The blast radius was the bug. A malformed row should cost that row
+  // its action list, not cost the site its board. So each parse is
+  // isolated and LOUD: the row still renders, and the id goes to the log
+  // rather than being swallowed -- migration 631 asserts the column is
+  // valid JSON, so anything reaching here is already a broken promise
+  // and should be findable in a tail.
+  const parseList = (raw, id, field) => {
+    if (!raw) return [];
+    try {
+      const v = JSON.parse(raw);
+      if (Array.isArray(v)) return v;
+      console.error(`tracker: ${field} for milestone ${id} is JSON but not an array — rendering none`);
+    } catch (err) {
+      console.error(`tracker: ${field} for milestone ${id} is not valid JSON — rendering none:`, err && err.message);
+    }
+    return [];
+  };
   return results.map((r) => {
     const entry = {
       id: r.id,
@@ -162,8 +189,8 @@ async function buildTrackerData(db) {
       system: r.system,
       date: r.date,
       desc: r.desc,
-      actions: JSON.parse(r.actions || "[]"),
-      portals: JSON.parse(r.portals || "[]"),
+      actions: parseList(r.actions, r.id, "actions"),
+      portals: parseList(r.portals, r.id, "portals"),
     };
     // The board checks `e.confidence==='expected'` — absent keys and
     // undefined behave identically, so only set it when present, which
