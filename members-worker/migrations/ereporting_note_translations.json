@@ -1,0 +1,496 @@
+{
+ "en": {
+  "Argentina": "Libro de IVA Digital: monthly ledger filed by day 15; from Dec 2025 VAT-exempt subjects only",
+  "Australia": "No transaction reporting to the ATO; Peppol e-invoicing voluntary in B2B; BAS is a summary return",
+  "Austria": "No periodic filing; SAF-T AT is produced only on request in an audit, under BAO sections 131(3), 132(3)",
+  "Azerbaijan": "No ledger or invoice reporting; e-kassa sends retail receipts to the STS and e-qaime is clearance",
+  "Bahrain": "No transaction reporting to the NBR; VAT returns only; e-invoicing framework still unpublished",
+  "Belgium": "Annual client listing of VAT-registered customers via Intervat by 31 March; e-reporting proposed for 2028",
+  "Brazil": "SPED: EFD ICMS/IPI and EFD-Contribuicoes filed monthly, separate from NF-e clearance",
+  "Bulgaria": "SAF-T to the NRA: monthly by the 14th, fixed assets by 30 June; phased by size 2026 to 2030",
+  "Canada": "No federal duty. Quebec's WEB-SRM covers restaurants, bars, catering, accommodation and taxis only",
+  "Chile": "DTE/boleta clearance only; RCV ledger is compiled by the SII from DTEs, no separate filing duty found",
+  "China": "Fully digitalised e-fapiao is cleared at issuance; no separate periodic or ledger reporting duty found",
+  "Colombia": "Annual informacion exogena to DIAN: third-party sales, purchase and VAT listings; no real-time system",
+  "Costa Rica": "D-270 monthly listing of clients, suppliers and specific expenses not covered by an electronic voucher",
+  "Croatia": "Invoice data fiscalised to Porezna uprava as a step separate from the e-invoice; B2C in real time",
+  "Cyprus": "No transaction reporting, SAF-T or real-time system; periodic VAT return and VIES only",
+  "Czech Republic": "kontrolni hlaseni: invoice-level VAT listing, monthly by the 25th; quarterly for some individuals",
+  "Denmark": "No periodic transmission; digital bookkeeping with SAF-T export produced for authorities on request",
+  "Dominican Republic": "Formats 606/607/608/609: monthly purchase, sales and cancelled-voucher listings to DGII by the 15th",
+  "Ecuador": "ATS: monthly XML of purchases, sales, exports and withholdings filed with SRI by RUC ninth digit",
+  "Egypt": "No ledger reporting. The e-Receipt system carries B2C till data; the e-invoice itself is clearance",
+  "Estonia": "KMD INF annex to the monthly VAT return lists sales and purchase invoices from EUR 1,000 per partner; due the 20th.",
+  "Finland": "No transaction-level reporting; VAT return and EU recapitulative statement only; no SAF-T.",
+  "France": "E-reporting of B2C, non-established B2B and payment data: 1 Sep 2026 large/ETI, 1 Sep 2027 others.",
+  "Germany": "No duty in force; the BMF plans a Meldesystem beside B2B e-invoicing but has named no date",
+  "Greece": "myDATA: invoice summaries and classifications transmitted to AADE in real time; mandatory since 2021.",
+  "Hungary": "Online Szamla: invoice data to NAV immediately from invoicing software, 4 days for handwritten invoices.",
+  "Iceland": "No transaction data transmission; VAT return every two months; cash-register records kept, not filed.",
+  "India": "GSTR-1: invoice-level outward supplies to GSTN monthly by the 11th; quarterly by the 13th under QRMP.",
+  "Indonesia": "SPT Masa PPN annexes list every tax invoice issued and received, monthly; auto-posted from e-Faktur since 2025",
+  "Ireland": "Nothing in force. Revenue's roadmap gives Nov 2028 and Nov 2029, with no enacted instrument and no day",
+  "Israel": "PCN874 detailed VAT report: invoice-level sales and purchases, monthly, by the 23rd",
+  "Italy": "Cross-border invoice data goes to SdI since Jul 2022; corrispettivi telematici is the daily till limb",
+  "Japan": "No SAF-T and no transaction-level reporting to the NTA; Qualified Invoice System governs content, not transmission",
+  "Jordan": "JoFotara clears invoices before issuance; no separate periodic reporting duty to the ISTD identified",
+  "Kazakhstan": "Invoice registers file with the quarterly VAT return, but ESF electronic invoices are excluded, so paper only",
+  "Kenya": "The iTax VAT3 return carries invoice-level sales and purchase schedules, pre-filled from eTIMS since Mar 2024",
+  "Latvia": "E-invoice data filed to VID within 5 working days; B2G since 2026, B2B from 2028",
+  "Lithuania": "i.SAF monthly VAT invoice registers, filed by the 20th of the following month",
+  "Luxembourg": "No periodic transaction reporting; FAIA audit file only on AED request",
+  "Malaysia": "MyInvois is clearance; the consolidated B2C e-invoice is filed in that platform, not a separate report.",
+  "Malta": "No transaction reporting to the tax authority; e-invoicing and real-time reporting under study, no dates set",
+  "Mexico": "Monthly balanza de comprobación XML to SAT under CFF art. 28 fr. IV; DIOT filed monthly",
+  "Netherlands": "No periodic transaction reporting; XAF audit file is a de-facto software format, not a legal filing",
+  "New Zealand": "No data reporting to Inland Revenue; Peppol e-invoicing is a B2B exchange and IR receives nothing",
+  "Nigeria": "No ledger or invoice-data reporting; the B2C receipt feed and MBS clearance both sit in the mandate box",
+  "Norway": "SAF-T Financial is produced on request in an audit only; no scheduled transmission of ledger data",
+  "Oman": "Position unsettled: sources conflict on dates and on whether the OTA data flow is a separate report.",
+  "Pakistan": "STR-7 Annexure A and C list every purchase and sale invoice; Annexure C is due on the 10th, the return on the 18th",
+  "Peru": "SIRE: electronic sales (RVIE) and purchase (RCE) registers filed monthly to SUNAT",
+  "Philippines": "eSales files machine-level monthly sales; the quarterly Summary Lists of Sales and Purchases are invoice-level",
+  "Poland": "JPK_V7M merges the VAT return and the sales/purchase ledger, filed monthly by the 25th; KSeF is separate",
+  "Portugal": "SAF-T (PT) de faturação: invoice data communicated to the AT by the 5th of the following month",
+  "Qatar": "No VAT and no transaction reporting duty; e-invoicing law approved by Cabinet May 2026, not yet gazetted",
+  "Romania": "D406 SAF-T filed monthly or quarterly by the last day of the following period; small taxpayers since 2025",
+  "Saudi Arabia": "Simplified B2C invoices reported to ZATCA within 24 hours; standard invoices are cleared, not reported",
+  "Serbia": "VAT calculation recorded in the SEF by the 12th of the following month; e-fiskalizacija covers retail",
+  "Singapore": "GST InvoiceNow: invoice data sent to IRAS via Peppol; phased from Nov 2025, all GST registrants by 2031",
+  "Slovakia": "Kontrolny vykaz lists every transaction and files with each VAT return; eKasa is the separate till feed",
+  "Slovenia": "No SAF-T and no ledger filing; davcne blagajne fiscalise cash invoices with FURS in real time",
+  "South Korea": "e-Tax invoices transmitted to the NTS by the day after issuance; no separate periodic audit file",
+  "Spain": "SII: invoice records supplied to AEAT within 4 working days; large taxpayers, VAT groups, REDEME.",
+  "Sweden": "No transaction reporting duty; Skatteverket cites EU cross-border digital reporting from 2030.",
+  "Taiwan": "eGUI data uploaded to the MOF platform within 2 days (non-business buyer) or 7 days; VAT Act art. 32-1.",
+  "Turkey": "e-Arsiv invoice data reported to GIB by 23:59 next day; monthly e-Defter berat; e-Fatura excluded.",
+  "United Arab Emirates": "MD 243/2025 art. 6(6): invoices must be reported to the FTA; phase 1 go-live 1 Jan 2027.",
+  "United Kingdom": "No reporting duty; e-invoicing mandated from 2029, real-time reporting explicitly deferred.",
+  "United States": "No reporting duty. Machine-sensible records under Rev. Proc. 98-25 are produced to the IRS on request",
+  "Uruguay": "CFE issuers send DGI a consolidated daily report within 18 hours of the next business day.",
+  "Uzbekistan": "VAT return annexes 4 and 5 register every purchase and sale invoice, monthly by the 20th; pre-filled from ESF data",
+  "Vietnam": "Uncoded e-invoices: data sent to the GDT - summary 01/TH-HDDT with the VAT return, or same day by sector."
+ },
+ "tr": {
+  "Argentina": {
+   "country": "Argentina",
+   "de": "Libro de IVA Digital: Monatsjournal bis zum 15.; ab Dez. 2025 nur USt-befreite Subjekte",
+   "fr": "Libro de IVA Digital : livre mensuel déposé au plus tard le 15 ; dès déc. 2025, seuls les exonérés de TVA",
+   "es": "Libro de IVA Digital: libro mensual presentado hasta el día 15; desde dic. 2025 solo sujetos exentos de IVA"
+  },
+  "Australia": {
+   "country": "Australia",
+   "de": "Keine Transaktionsmeldung an die ATO; Peppol-E-Rechnung im B2B freiwillig; BAS ist Sammelmeldung",
+   "fr": "Aucune transmission de transactions à l'ATO ; facturation Peppol B2B facultative ; le BAS est global",
+   "es": "Sin reporte de transacciones a la ATO; factura Peppol B2B voluntaria; el BAS es una declaración resumen"
+  },
+  "Austria": {
+   "country": "Austria",
+   "de": "Keine periodische Meldung; SAF-T AT nur auf Anforderung bei einer Prüfung, §§ 131(3), 132(3) BAO",
+   "fr": "Aucun dépôt périodique ; SAF-T AT produit sur demande lors d'un contrôle, BAO 131(3), 132(3)",
+   "es": "Sin presentación periódica; SAF-T AT solo a requerimiento en inspección, BAO 131(3), 132(3)"
+  },
+  "Azerbaijan": {
+   "country": "Azerbaijan",
+   "de": "Keine Journal- oder Rechnungsmeldung; e-kassa sendet Kassenbelege an die STS, e-qaime ist Clearing",
+   "fr": "Ni livres ni factures à déclarer ; e-kassa transmet les tickets à la STS et e-qaime fait le clearing",
+   "es": "Sin reporte de libros ni facturas; e-kassa envía tickets a la STS y e-qaime es el clearance"
+  },
+  "Bahrain": {
+   "country": "Bahrain",
+   "de": "Keine Transaktionsmeldung an die NBR; nur USt-Erklärungen; E-Rechnungsrahmen noch unveröffentlicht",
+   "fr": "Aucune déclaration transactionnelle au NBR ; déclarations de TVA seules ; cadre e-facture non publié",
+   "es": "Sin reporte de transacciones al NBR; solo declaraciones de IVA; marco de e-factura sin publicar"
+  },
+  "Belgium": {
+   "country": "Belgium",
+   "de": "Jährliche Kundenliste USt-registrierter Kunden über Intervat bis 31. März; E-Reporting für 2028 geplant",
+   "fr": "Listing client annuel des clients assujettis via Intervat au 31 mars ; e-reporting proposé pour 2028",
+   "es": "Listado anual de clientes con IVA vía Intervat hasta el 31 de marzo; e-reporting propuesto para 2028"
+  },
+  "Brazil": {
+   "country": "Brazil",
+   "de": "SPED: EFD ICMS/IPI und EFD-Contribuicoes monatlich, getrennt vom NF-e-Clearing",
+   "fr": "SPED : EFD ICMS/IPI et EFD-Contribuicoes déposés mensuellement, distincts du clearing NF-e",
+   "es": "SPED: EFD ICMS/IPI y EFD-Contribuicoes se presentan mensualmente, aparte del clearance de NF-e"
+  },
+  "Bulgaria": {
+   "country": "Bulgaria",
+   "de": "SAF-T an die NRA: monatlich bis zum 14., Anlagevermögen bis 30. Juni; nach Größe gestaffelt 2026-2030",
+   "fr": "SAF-T à la NRA : mensuel au 14, immobilisations au 30 juin ; par taille, de 2026 à 2030",
+   "es": "SAF-T a la NRA: mensual hasta el 14, activos fijos al 30 de junio; por tamaño de 2026 a 2030"
+  },
+  "Canada": {
+   "country": "Canada",
+   "de": "Keine Bundespflicht. Quebecs WEB-SRM gilt nur für Restaurants, Bars, Catering, Beherbergung und Taxis",
+   "fr": "Aucune obligation fédérale. Le WEB-SRM du Québec ne vise que restaurants, bars, traiteurs, hébergement, taxis",
+   "es": "Sin obligación federal. El WEB-SRM de Quebec solo cubre restaurantes, bares, catering, hospedaje y taxis"
+  },
+  "Chile": {
+   "country": "Chile",
+   "de": "Nur DTE/boleta-Clearing; das RCV-Journal erstellt die SII aus DTE, keine eigene Meldepflicht gefunden",
+   "fr": "Clearing DTE/boleta seul ; le RCV est compilé par le SII depuis les DTE, aucun dépôt distinct recensé",
+   "es": "Solo clearance DTE/boleta; el SII compila el RCV desde los DTE, no consta presentación aparte"
+  },
+  "China": {
+   "country": "China",
+   "de": "Voll digitales e-fapiao wird bei Ausstellung freigegeben; keine eigene periodische oder Journalmeldung",
+   "fr": "L'e-fapiao entièrement numérique est validé à l'émission ; aucune déclaration périodique ni de livres",
+   "es": "El e-fapiao totalmente digital se valida al emitirse; no consta reporte periódico ni de libros aparte"
+  },
+  "Colombia": {
+   "country": "Colombia",
+   "de": "Jährliche informacion exogena an DIAN: Verkaufs-, Einkaufs- und USt-Listen Dritter; kein Echtzeitsystem",
+   "fr": "informacion exogena annuelle à la DIAN : listes tiers ventes, achats et TVA ; pas de système temps réel",
+   "es": "informacion exogena anual a la DIAN: listados de terceros de ventas, compras e IVA; sin tiempo real"
+  },
+  "Costa Rica": {
+   "country": "Costa Rica",
+   "de": "D-270: monatliche Liste von Kunden, Lieferanten und Ausgaben ohne elektronischen Beleg",
+   "fr": "D-270 : liste mensuelle des clients, fournisseurs et dépenses sans facture électronique",
+   "es": "D-270: listado mensual de clientes, proveedores y gastos específicos sin comprobante electrónico"
+  },
+  "Croatia": {
+   "country": "Croatia",
+   "de": "Rechnungsdaten getrennt von der E-Rechnung an Porezna uprava fiskalisiert; B2C in Echtzeit",
+   "fr": "Données de facture fiscalisées auprès de Porezna uprava, étape distincte de l'e-facture ; B2C en direct",
+   "es": "Datos de factura fiscalizados ante Porezna uprava como paso aparte de la e-factura; B2C en tiempo real"
+  },
+  "Cyprus": {
+   "country": "Cyprus",
+   "de": "Keine Transaktionsmeldung, kein SAF-T, kein Echtzeitsystem; nur periodische USt-Erklärung und VIES",
+   "fr": "Ni déclaration transactionnelle, ni SAF-T, ni temps réel ; déclaration de TVA périodique et VIES",
+   "es": "Sin reporte de transacciones, SAF-T ni sistema en tiempo real; solo declaración de IVA y VIES"
+  },
+  "Czech Republic": {
+   "country": "Czech Republic",
+   "de": "kontrolni hlaseni: USt-Liste auf Rechnungsebene, monatlich bis zum 25.; für manche Personen quartalsweise",
+   "fr": "kontrolni hlaseni : liste TVA au niveau facture, mensuelle au 25 ; trimestrielle pour certains particuliers",
+   "es": "kontrolni hlaseni: listado de IVA por factura, mensual hasta el 25; trimestral para algunas personas"
+  },
+  "Denmark": {
+   "country": "Denmark",
+   "de": "Keine periodische Übermittlung; digitale Buchführung, SAF-T-Export nur auf Anforderung der Behörden",
+   "fr": "Aucune transmission périodique ; comptabilité numérique, export SAF-T fourni sur demande seulement",
+   "es": "Sin transmisión periódica; contabilidad digital con exportación SAF-T solo a requerimiento oficial"
+  },
+  "Dominican Republic": {
+   "country": "Dominican Republic",
+   "de": "Formate 606/607/608/609: monatliche Einkaufs-, Verkaufs- und Stornolisten an DGII bis Tag 15",
+   "fr": "Formats 606/607/608/609 : listes mensuelles achats, ventes et annulations à la DGII au 15",
+   "es": "Formatos 606/607/608/609: listados mensuales de compras, ventas y anulados a la DGII hasta el 15"
+  },
+  "Ecuador": {
+   "country": "Ecuador",
+   "de": "ATS: monatliche XML zu Einkäufen, Verkäufen, Exporten und Quellensteuern an SRI nach 9. RUC-Ziffer",
+   "fr": "ATS : XML mensuel achats, ventes, exportations et retenues déposé au SRI selon le 9e chiffre du RUC",
+   "es": "ATS: XML mensual de compras, ventas, exportaciones y retenciones al SRI según noveno dígito del RUC"
+  },
+  "Egypt": {
+   "country": "Egypt",
+   "de": "Keine Journalmeldung. Das e-Receipt-System überträgt B2C-Kassendaten; die E-Rechnung ist Clearing",
+   "fr": "Aucune déclaration de livres. Le système e-Receipt porte les données de caisse B2C ; l'e-facture est le clearing",
+   "es": "Sin reporte de libros. El sistema e-Receipt transmite datos de caja B2C; la e-factura es el clearance"
+  },
+  "Estonia": {
+   "country": "Estonia",
+   "de": "KMD INF zur monatlichen USt-Erklärung listet Aus- und Eingangsrechnungen ab EUR 1,000 je Partner; fällig am 20.",
+   "fr": "KMD INF, annexe à la déclaration de TVA mensuelle : factures dès EUR 1,000 par partenaire ; due le 20.",
+   "es": "KMD INF, anexo a la declaración mensual de IVA: facturas desde EUR 1,000 por socio; vence el día 20."
+  },
+  "Finland": {
+   "country": "Finland",
+   "de": "Keine Meldung auf Transaktionsebene; nur USt-Erklärung und EU-Zusammenfassende Meldung; kein SAF-T.",
+   "fr": "Aucune déclaration au niveau transaction ; TVA et état récapitulatif UE seuls ; pas de SAF-T.",
+   "es": "Sin reporte a nivel de transacción; solo declaración de IVA y estado recapitulativo UE; sin SAF-T."
+  },
+  "France": {
+   "country": "France",
+   "de": "E-Reporting für B2C, nicht ansässiges B2B und Zahlungsdaten: 1. Sep. 2026 Groß/ETI, 1. Sep. 2027 übrige.",
+   "fr": "E-reporting B2C, B2B non établi et données de paiement : 1er sept. 2026 GE/ETI, 1er sept. 2027 les autres.",
+   "es": "E-reporting de B2C, B2B no establecido y datos de pago: 1 sep 2026 grandes/ETI, 1 sep 2027 el resto."
+  },
+  "Germany": {
+   "country": "Germany",
+   "de": "Keine Pflicht in Kraft; das BMF plant ein Meldesystem neben der B2B-E-Rechnung, nennt aber kein Datum",
+   "fr": "Aucune obligation en vigueur ; le BMF prévoit un Meldesystem à côté de l'e-facture B2B, sans date",
+   "es": "Sin obligación vigente; el BMF planea un Meldesystem junto a la e-factura B2B, pero sin fecha"
+  },
+  "Greece": {
+   "country": "Greece",
+   "de": "myDATA: Rechnungsübersichten und Klassifizierungen in Echtzeit an AADE; Pflicht seit 2021.",
+   "fr": "myDATA : résumés et classifications de factures transmis à l'AADE en temps réel ; obligatoire depuis 2021.",
+   "es": "myDATA: resúmenes y clasificaciones de facturas enviados a AADE en tiempo real; obligatorio desde 2021."
+  },
+  "Hungary": {
+   "country": "Hungary",
+   "de": "Online Szamla: Rechnungsdaten sofort aus der Software an NAV, 4 Tage bei handschriftlichen Rechnungen.",
+   "fr": "Online Szamla : données de facture au NAV immédiatement depuis le logiciel, 4 jours si facture manuscrite.",
+   "es": "Online Szamla: datos de factura a NAV al instante desde el software, 4 días si la factura es manuscrita."
+  },
+  "Iceland": {
+   "country": "Iceland",
+   "de": "Keine Transaktionsdatenübermittlung; USt-Erklärung alle zwei Monate; Kassendaten aufbewahrt, nicht gemeldet.",
+   "fr": "Pas de transmission des transactions ; déclaration TVA bimestrielle ; données de caisse conservées, non déposées.",
+   "es": "Sin envío de datos de transacciones; IVA bimestral; registros de caja conservados, no presentados."
+  },
+  "India": {
+   "country": "India",
+   "de": "GSTR-1: Ausgangsumsätze auf Rechnungsebene an GSTN monatlich bis zum 11.; unter QRMP quartalsweise bis zum 13.",
+   "fr": "GSTR-1 : livraisons sortantes au niveau facture au GSTN, mensuel le 11 ; trimestriel le 13 sous QRMP.",
+   "es": "GSTR-1: ventas a nivel de factura a GSTN, mensual antes del 11; trimestral antes del 13 con QRMP."
+  },
+  "Indonesia": {
+   "country": "Indonesia",
+   "de": "SPT Masa PPN: Anlagen listen monatlich jede aus- und eingehende Steuerrechnung; seit 2025 auto aus e-Faktur",
+   "fr": "Les annexes SPT Masa PPN listent chaque facture émise et reçue, mensuel ; auto-injecté d'e-Faktur depuis 2025",
+   "es": "Los anexos del SPT Masa PPN listan cada factura emitida y recibida, mensual; auto desde e-Faktur desde 2025"
+  },
+  "Ireland": {
+   "country": "Ireland",
+   "de": "Nichts in Kraft. Revenue-Fahrplan nennt Nov 2028 und Nov 2029, ohne erlassenen Rechtsakt und ohne Stichtag",
+   "fr": "Rien en vigueur. La feuille de route de Revenue cite nov. 2028 et nov. 2029, sans texte adopté ni date",
+   "es": "Nada en vigor. La hoja de ruta de Revenue cita nov 2028 y nov 2029, sin norma aprobada ni fecha"
+  },
+  "Israel": {
+   "country": "Israel",
+   "de": "PCN874 detaillierter USt-Bericht: Verkäufe und Einkäufe auf Rechnungsebene, monatlich, bis zum 23.",
+   "fr": "PCN874, déclaration TVA détaillée : ventes et achats au niveau facture, mensuel, avant le 23",
+   "es": "PCN874, informe de IVA detallado: ventas y compras a nivel de factura, mensual, antes del 23"
+  },
+  "Italy": {
+   "country": "Italy",
+   "de": "Grenzüberschreitende Rechnungsdaten seit Jul 2022 an SdI; corrispettivi telematici ist der Tageskassenteil",
+   "fr": "Données de factures transfrontalières au SdI depuis juil. 2022 ; corrispettivi telematici, volet caisse quotidien",
+   "es": "Datos de facturas transfronterizas al SdI desde jul 2022; corrispettivi telematici es el ramo diario de caja"
+  },
+  "Japan": {
+   "country": "Japan",
+   "de": "Kein SAF-T, keine Meldung auf Transaktionsebene an NTA; Qualified Invoice System regelt Inhalt, nicht Übermittlung",
+   "fr": "Ni SAF-T ni déclaration au niveau transaction à la NTA ; le Qualified Invoice System régit le contenu, pas l'envoi",
+   "es": "Sin SAF-T ni reporte a nivel de transacción a la NTA; el Qualified Invoice System rige el contenido, no el envío"
+  },
+  "Jordan": {
+   "country": "Jordan",
+   "de": "JoFotara prüft Rechnungen vor Ausstellung; keine gesonderte periodische Meldepflicht an ISTD festgestellt",
+   "fr": "JoFotara valide les factures avant émission ; aucune obligation déclarative périodique distincte à l'ISTD",
+   "es": "JoFotara valida las facturas antes de emitirlas; no consta obligación periódica separada ante la ISTD"
+  },
+  "Kazakhstan": {
+   "country": "Kazakhstan",
+   "de": "Rechnungsregister mit der Quartals-USt-Erklärung, ESF-E-Rechnungen ausgenommen, daher nur Papier",
+   "fr": "Les registres de factures suivent la déclaration TVA trimestrielle ; factures ESF exclues, donc papier seul",
+   "es": "Los registros de facturas se presentan con el IVA trimestral; las facturas ESF quedan excluidas, solo papel"
+  },
+  "Kenya": {
+   "country": "Kenya",
+   "de": "iTax-Erklärung VAT3 enthält Verkaufs- und Einkaufslisten je Rechnung, seit Mär 2024 aus eTIMS vorbefüllt",
+   "fr": "La déclaration VAT3 sur iTax porte les annexes ventes/achats par facture, préremplies d'eTIMS depuis mars 2024",
+   "es": "La declaración VAT3 en iTax lleva anexos de ventas y compras por factura, precargados de eTIMS desde mar 2024"
+  },
+  "Latvia": {
+   "country": "Latvia",
+   "de": "E-Rechnungsdaten binnen 5 Werktagen an VID; B2G seit 2026, B2B ab 2028",
+   "fr": "Données d'e-facture déposées au VID sous 5 jours ouvrés ; B2G depuis 2026, B2B à partir de 2028",
+   "es": "Datos de e-factura al VID en 5 días hábiles; B2G desde 2026, B2B desde 2028"
+  },
+  "Lithuania": {
+   "country": "Lithuania",
+   "de": "i.SAF: monatliche USt-Rechnungsregister, einzureichen bis zum 20. des Folgemonats",
+   "fr": "i.SAF : registres mensuels des factures TVA, déposés avant le 20 du mois suivant",
+   "es": "i.SAF: registros mensuales de facturas de IVA, presentados antes del 20 del mes siguiente"
+  },
+  "Luxembourg": {
+   "country": "Luxembourg",
+   "de": "Keine periodische Transaktionsmeldung; FAIA-Prüfdatei nur auf Anfrage der AED",
+   "fr": "Aucune déclaration périodique des transactions ; fichier d'audit FAIA seulement sur demande de l'AED",
+   "es": "Sin reporte periódico de transacciones; fichero de auditoría FAIA solo a petición de la AED"
+  },
+  "Malaysia": {
+   "country": "Malaysia",
+   "de": "MyInvois ist Clearance; die konsolidierte B2C-E-Rechnung läuft über diese Plattform, kein eigener Bericht.",
+   "fr": "MyInvois est une validation ; l'e-facture B2C consolidée est déposée sur cette plateforme, pas un rapport à part.",
+   "es": "MyInvois es clearance; la e-factura B2C consolidada se presenta en esa plataforma, no es un informe aparte."
+  },
+  "Malta": {
+   "country": "Malta",
+   "de": "Keine Transaktionsmeldung an die Steuerbehörde; E-Rechnung und Echtzeitmeldung in Prüfung, keine Termine",
+   "fr": "Aucune déclaration des transactions au fisc ; e-facturation et déclaration temps réel à l'étude, sans dates",
+   "es": "Sin reporte de transacciones a la autoridad fiscal; e-factura y reporte en tiempo real en estudio, sin fechas"
+  },
+  "Mexico": {
+   "country": "Mexico",
+   "de": "Monatliche balanza de comprobación als XML an SAT gemäß CFF Art. 28 fr. IV; DIOT monatlich",
+   "fr": "balanza de comprobación mensuelle en XML au SAT, CFF art. 28 fr. IV ; DIOT déposée chaque mois",
+   "es": "XML de balanza de comprobación mensual al SAT conforme al CFF art. 28 fr. IV; DIOT mensual"
+  },
+  "Netherlands": {
+   "country": "Netherlands",
+   "de": "Keine periodische Transaktionsmeldung; XAF-Prüfdatei ist De-facto-Softwareformat, keine gesetzliche Meldung",
+   "fr": "Pas de déclaration périodique des transactions ; le fichier XAF est un format de fait, non un dépôt légal",
+   "es": "Sin reporte periódico de transacciones; el fichero XAF es un formato de facto, no una presentación legal"
+  },
+  "New Zealand": {
+   "country": "New Zealand",
+   "de": "Keine Datenmeldung an Inland Revenue; Peppol-E-Rechnung ist B2B-Austausch, IR erhält nichts",
+   "fr": "Aucune transmission de données à Inland Revenue ; Peppol est un échange B2B et l'IR ne reçoit rien",
+   "es": "Sin envío de datos a Inland Revenue; la e-factura Peppol es un intercambio B2B y el IR no recibe nada"
+  },
+  "Nigeria": {
+   "country": "Nigeria",
+   "de": "Keine Meldung von Buchhaltungs- oder Rechnungsdaten; B2C-Belegstrom und MBS-Clearance gehören zum Mandat",
+   "fr": "Ni livres ni données de facture à déclarer ; le flux de tickets B2C et le clearance MBS relèvent du mandat",
+   "es": "Sin reporte de libros ni de datos de factura; el flujo de tickets B2C y el clearance MBS van en el mandato"
+  },
+  "Norway": {
+   "country": "Norway",
+   "de": "SAF-T Financial nur auf Anforderung bei einer Prüfung; keine planmäßige Übermittlung von Buchhaltungsdaten",
+   "fr": "SAF-T Financial produit uniquement sur demande lors d'un contrôle ; aucune transmission périodique des livres",
+   "es": "SAF-T Financial solo se aporta a requerimiento en una auditoría; sin envío periódico de datos contables"
+  },
+  "Oman": {
+   "country": "Oman",
+   "de": "Lage unklar: Quellen widersprechen sich zu Terminen und dazu, ob der OTA-Datenfluss ein eigener Bericht ist.",
+   "fr": "Situation incertaine : les sources divergent sur les dates et sur le fait que le flux OTA soit un rapport à part.",
+   "es": "Situación abierta: las fuentes discrepan en las fechas y en si el flujo de datos de la OTA es un informe aparte."
+  },
+  "Pakistan": {
+   "country": "Pakistan",
+   "de": "STR-7 Annexure A und C listen jede Ein- und Verkaufsrechnung; Annexure C bis zum 10., die Erklärung bis zum 18.",
+   "fr": "Les Annexure A et C du STR-7 listent chaque facture d'achat et de vente ; Annexure C le 10, déclaration le 18",
+   "es": "Las Annexure A y C del STR-7 listan cada factura de compra y venta; Annexure C vence el 10, declaración el 18"
+  },
+  "Peru": {
+   "country": "Peru",
+   "de": "SIRE: elektronische Verkaufs- (RVIE) und Einkaufsregister (RCE) monatlich an die SUNAT",
+   "fr": "SIRE : registres électroniques des ventes (RVIE) et des achats (RCE) déposés chaque mois à la SUNAT",
+   "es": "SIRE: registros electrónicos de ventas (RVIE) y compras (RCE) presentados mensualmente a la SUNAT"
+  },
+  "Philippines": {
+   "country": "Philippines",
+   "de": "eSales meldet Monatsumsätze je Kasse; die vierteljährlichen Summenlisten Verkauf/Einkauf sind rechnungsweise",
+   "fr": "eSales déclare les ventes mensuelles par caisse ; les listes récapitulatives trimestrielles sont par facture",
+   "es": "eSales declara ventas mensuales por máquina; los resúmenes trimestrales de ventas y compras son por factura"
+  },
+  "Poland": {
+   "country": "Poland",
+   "de": "JPK_V7M vereint USt-Erklärung und Verkaufs-/Einkaufsregister, monatlich bis zum 25.; KSeF ist getrennt",
+   "fr": "JPK_V7M fusionne déclaration de TVA et registres ventes/achats, mensuel avant le 25 ; KSeF est distinct",
+   "es": "JPK_V7M une la declaración de IVA y el registro de ventas/compras, mensual antes del 25; KSeF es aparte"
+  },
+  "Portugal": {
+   "country": "Portugal",
+   "de": "SAF-T (PT) de faturação: Rechnungsdaten bis zum 5. des Folgemonats an die AT übermittelt",
+   "fr": "SAF-T (PT) de faturação : données de facture communiquées à l'AT avant le 5 du mois suivant",
+   "es": "SAF-T (PT) de faturação: datos de factura comunicados a la AT antes del día 5 del mes siguiente"
+  },
+  "Qatar": {
+   "country": "Qatar",
+   "de": "Keine MwSt und keine Meldepflicht; E-Invoicing-Gesetz im Mai 2026 vom Kabinett gebilligt, noch nicht verkündet",
+   "fr": "Pas de TVA ni d'obligation de déclaration ; loi e-facturation approuvée par le Cabinet en mai 2026, non publiée",
+   "es": "Sin IVA ni obligación de reporte; ley de e-facturación aprobada por el Gabinete en mayo 2026, aún sin publicar"
+  },
+  "Romania": {
+   "country": "Romania",
+   "de": "D406 SAF-T monatlich oder vierteljährlich bis zum letzten Tag der Folgeperiode; Kleinunternehmen seit 2025",
+   "fr": "D406 SAF-T déposé mensuel ou trimestriel au dernier jour de la période suivante ; petits contribuables dès 2025",
+   "es": "D406 SAF-T mensual o trimestral el último día del período siguiente; pequeños contribuyentes desde 2025"
+  },
+  "Saudi Arabia": {
+   "country": "Saudi Arabia",
+   "de": "Vereinfachte B2C-Rechnungen binnen 24 Std. an ZATCA; Standardrechnungen werden freigegeben, nicht gemeldet",
+   "fr": "Factures B2C simplifiées transmises à ZATCA sous 24 h ; les factures standard sont validées, non déclarées",
+   "es": "Facturas B2C simplificadas se reportan a ZATCA en 24 h; las estándar se validan, no se reportan"
+  },
+  "Serbia": {
+   "country": "Serbia",
+   "de": "MwSt-Berechnung bis zum 12. des Folgemonats im SEF erfasst; e-fiskalizacija deckt den Einzelhandel ab",
+   "fr": "Calcul de TVA enregistré dans le SEF avant le 12 du mois suivant ; e-fiskalizacija couvre le détail",
+   "es": "Cálculo del IVA registrado en el SEF antes del día 12 del mes siguiente; e-fiskalizacija cubre el minorista"
+  },
+  "Singapore": {
+   "country": "Singapore",
+   "de": "GST InvoiceNow: Rechnungsdaten via Peppol an die IRAS; gestaffelt ab Nov. 2025, alle GST-Registrierten bis 2031",
+   "fr": "GST InvoiceNow : données de facture à l'IRAS via Peppol ; par phases dès nov. 2025, tous les assujettis en 2031",
+   "es": "GST InvoiceNow: datos de factura a la IRAS vía Peppol; por fases desde nov 2025, todos los registrados en 2031"
+  },
+  "Slovakia": {
+   "country": "Slovakia",
+   "de": "Kontrolny vykaz listet jede Transaktion, Abgabe mit jeder USt-Erklärung; eKasa ist der separate Kassen-Feed",
+   "fr": "Kontrolny vykaz recense chaque opération et accompagne chaque déclaration de TVA ; eKasa est le flux caisses",
+   "es": "Kontrolny vykaz detalla cada operación y se presenta con cada declaración de IVA; eKasa es el flujo de cajas"
+  },
+  "Slovenia": {
+   "country": "Slovenia",
+   "de": "Kein SAF-T und keine Registermeldung; davcne blagajne fiskalisieren Barrechnungen in Echtzeit bei FURS",
+   "fr": "Ni SAF-T ni dépôt de registres ; davcne blagajne fiscalisent en temps réel les factures espèces avec FURS",
+   "es": "Sin SAF-T ni presentación de registros; davcne blagajne fiscalizan facturas en efectivo con FURS en tiempo real"
+  },
+  "South Korea": {
+   "country": "South Korea",
+   "de": "e-Tax-Rechnungen bis zum Tag nach Ausstellung an den NTS; keine separate periodische Prüfdatei",
+   "fr": "Factures e-Tax transmises au NTS au plus tard le lendemain de l'émission ; pas de fichier d'audit périodique",
+   "es": "Facturas e-Tax transmitidas al NTS al día siguiente de la emisión; sin archivo de auditoría periódico aparte"
+  },
+  "Spain": {
+   "country": "Spain",
+   "de": "SII: Rechnungsdatensätze binnen 4 Werktagen an die AEAT; Großunternehmen, MwSt-Gruppen, REDEME.",
+   "fr": "SII : registres de factures transmis à l'AEAT sous 4 jours ouvrés ; grandes entreprises, groupes TVA, REDEME.",
+   "es": "SII: registros de facturas a la AEAT en 4 días hábiles; grandes empresas, grupos de IVA, REDEME."
+  },
+  "Sweden": {
+   "country": "Sweden",
+   "de": "Keine Transaktionsmeldepflicht; Skatteverket verweist auf grenzüberschreitende EU-Meldung ab 2030.",
+   "fr": "Aucune obligation de déclaration des transactions ; Skatteverket cite la déclaration UE transfrontalière dès 2030.",
+   "es": "Sin obligación de reporte de transacciones; Skatteverket cita el reporte digital transfronterizo UE desde 2030."
+  },
+  "Taiwan": {
+   "country": "Taiwan",
+   "de": "eGUI-Daten binnen 2 Tagen (Privatkäufer) bzw. 7 Tagen auf die MOF-Plattform; USt-Gesetz Art. 32-1.",
+   "fr": "Données eGUI sur la plateforme du MOF sous 2 jours (acheteur non pro) ou 7 jours ; loi TVA art. 32-1.",
+   "es": "Datos eGUI subidos a la plataforma del MOF en 2 días (comprador no empresa) o 7 días; Ley IVA art. 32-1."
+  },
+  "Turkey": {
+   "country": "Turkey",
+   "de": "e-Arsiv-Rechnungsdaten bis 23:59 des Folgetags an GIB; monatlich e-Defter-Berat; e-Fatura ausgenommen.",
+   "fr": "Données de facture e-Arsiv déclarées à GIB avant 23:59 le lendemain ; e-Defter berat mensuel ; e-Fatura exclu.",
+   "es": "Datos de factura e-Arsiv a GIB antes de las 23:59 del día siguiente; berat e-Defter mensual; e-Fatura excluida."
+  },
+  "United Arab Emirates": {
+   "country": "United Arab Emirates",
+   "de": "MD 243/2025 Art. 6(6): Rechnungen sind an die FTA zu melden; Start Phase 1 am 1. Jan. 2027.",
+   "fr": "MD 243/2025 art. 6(6) : les factures doivent être déclarées à la FTA ; phase 1 le 1er janv. 2027.",
+   "es": "MD 243/2025 art. 6(6): las facturas deben reportarse a la FTA; fase 1 en vigor el 1 ene 2027."
+  },
+  "United Kingdom": {
+   "country": "United Kingdom",
+   "de": "Keine Meldepflicht; E-Invoicing ab 2029 verpflichtend, Echtzeitmeldung ausdrücklich zurückgestellt.",
+   "fr": "Aucune obligation de déclaration ; e-facturation obligatoire dès 2029, temps réel explicitement reporté.",
+   "es": "Sin obligación de reporte; facturación electrónica obligatoria desde 2029, tiempo real aplazado expresamente."
+  },
+  "United States": {
+   "country": "United States",
+   "de": "Keine Meldepflicht. Maschinenlesbare Aufzeichnungen nach Rev. Proc. 98-25 nur auf Anfrage an den IRS",
+   "fr": "Aucune obligation de déclaration. Registres lisibles par machine (Rev. Proc. 98-25) fournis à l'IRS sur demande",
+   "es": "Sin obligación de reporte. Los registros legibles por máquina de Rev. Proc. 98-25 se entregan al IRS a petición"
+  },
+  "Uruguay": {
+   "country": "Uruguay",
+   "de": "CFE-Aussteller senden der DGI einen konsolidierten Tagesbericht binnen 18 Std. des nächsten Werktags.",
+   "fr": "Les émetteurs de CFE envoient à la DGI un rapport quotidien consolidé sous 18 h le jour ouvrable suivant.",
+   "es": "Los emisores de CFE envían a la DGI un reporte diario consolidado en 18 h del siguiente día hábil."
+  },
+  "Uzbekistan": {
+   "country": "Uzbekistan",
+   "de": "MwSt-Anlagen 4 und 5 erfassen jede Ein- und Verkaufsrechnung, monatlich bis zum 20.; vorbefüllt aus ESF-Daten",
+   "fr": "Annexes 4 et 5 de la déclaration TVA : chaque facture d'achat et de vente, avant le 20 ; pré-remplies via ESF",
+   "es": "Los anexos 4 y 5 del IVA registran cada factura de compra y venta, mensual antes del 20; precargados desde ESF"
+  },
+  "Vietnam": {
+   "country": "Vietnam",
+   "de": "E-Rechnungen ohne Code: Daten an die GDT - Übersicht 01/TH-HDDT mit der USt-Erklärung oder taggleich je Branche.",
+   "fr": "E-factures sans code : données au GDT - relevé 01/TH-HDDT avec la déclaration TVA, ou le jour même selon secteur.",
+   "es": "E-facturas sin código: datos al GDT - resumen 01/TH-HDDT con la declaración de IVA, o el mismo día según sector."
+  }
+ }
+}

@@ -369,7 +369,8 @@
         "b2c": "Factura-e B2C",
         "b2g": "Factura-e B2G",
         "signature": "Firma digital",
-        "mandate": "Mandato de factura-e"
+        "mandate": "Mandato de factura-e",
+        "ereporting": "E-reporting"
       },
       "none": "SIN MANDATO",
       "planned": "PREVISTO",
@@ -386,6 +387,20 @@
         "b2b": "B2B",
         "b2c": "B2C",
         "b2g": "B2G"
+      },
+      "er": {
+        "none": "SIN OBLIGACIÓN",
+        "planned": "PREVISTO"
+      },
+      "freq": {
+        "annual": "ANUAL",
+        "daily": "DIARIO",
+        "monthly": "MENSUAL",
+        "near_real_time": "CASI TIEMPO REAL",
+        "on_request": "A PETICIÓN",
+        "quarterly": "TRIMESTRAL",
+        "real_time": "TIEMPO REAL",
+        "varies": "VARIABLE"
       }
     },
     "lbl": {

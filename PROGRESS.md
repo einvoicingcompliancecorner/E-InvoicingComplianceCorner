@@ -15655,7 +15655,7 @@ partial apply is `apply_migrations.py --remote --assert-only`, which
 re-runs the standing invariants — including 624's four-languages-or-none
 — against the live database.
 
-### "we seem to show united states as active B2G also. is this correct?" (23 Aug 2026)
+### "we seem to show united states as active B2G also. is this correct?" (23 Aug 2026, deployed)
 
 Yes — and checking why found that the front-page map and the guide tiles
 had been running on two different definitions of "mandate" for six
@@ -15771,3 +15771,108 @@ it *still disagrees*, so a stale exemption fails rather than quietly
 excusing the next real defect.
 
 `npm test`: **25 suites**. Replay OK across **625 files**, 575 assertions.
+
+**Migration-apply only.** The map computes its status from D1 at request
+time in `shared/map-data.mjs`, so the nine colour changes needed no
+`wrangler deploy` — which also means the front page changed the moment
+the migration landed, without any asset being republished. Worth a look
+at the map itself: this is the largest single change to what it shows
+since it was built, and nothing about a colour being wrong would fail a
+test that the tiles now agree with it.
+
+### A sixth headline fact: e-Reporting (23 Aug 2026)
+
+Dan: *"I'd like to add another box/card to the top of the compliance
+guides, which sits between the E-invoice mandate box, and the Archiving
+box ... for e-Reporting."* And, mid-build: *"I was just using SAF-T as an
+example - not an exclusive request. Please ensure if there is a B2B
+e-Reporting requirement, it is listed, regardless of whether SAF-T or
+another."*
+
+Seventy countries researched from scratch. **39 ACTIVE, 23 NO MANDATE,
+5 ON REQUEST, 2 PLANNED, 1 NOT CONFIRMED.** Only four of the thirty-nine
+are SAF-T; the rest run on about thirty different regimes.
+
+Two decisions were Dan's and are recorded in `ereporting_decisions.py`
+with a reason per country. **Audit-only files show as ON REQUEST** — a
+third value beside MONTHLY and REAL-TIME, because by the site's own rule
+a file produced only when asked is not a standing duty, but Norway
+reading NO MANDATE while it has a SAF-T obligation would look like an
+error. **Retail and till fiscalisation is excluded**, which costs eight
+countries their ACTIVE — Azerbaijan, Canada, Egypt, Nigeria, Pakistan's
+POS limb, Slovenia, Uzbekistan's till limb, Kazakhstan — and most
+competitor trackers show them as live.
+
+#### The mistake that nearly shipped
+
+The research brief said to exclude the periodic VAT return as a summary
+declaration. Several researchers applied that to **invoice-level
+schedules attached to a return**, which is a different thing entirely.
+It was inconsistent on its face: Poland's JPK_V7M merges the VAT return
+and the sales/purchase ledger into one file and was being counted, while
+Indonesia's identical-in-substance annexes were dropped for arriving
+stapled to a return.
+
+Dan's mid-build message is what surfaced it. **The rule is content, not
+envelope** — invoice-level or per-counterparty data counts wherever it
+travels. That recovered **Indonesia, Pakistan, Uzbekistan and Kenya**,
+and settled **Chile** the other way: the SII's own FAQ says it *builds*
+the Registro de Compras y Ventas from documents it already holds, and
+that the register replaced the file taxpayers used to send. Chile had
+been the weakest row in the set and is now a primary-sourced no.
+
+EU recapitulative statements (VIES) are excluded as an explicit decision
+rather than an oversight: they fit the rule, but all twenty-seven member
+states have one and a column reading ACTIVE for all of them says nothing.
+
+#### Three things the build found that the research did not
+
+**The citation view could not see the new column.** `cited_sources` — the
+view every tier statistic and `/methodology` read — enumerates columns,
+so seventy new source URLs were invisible and the standing "every cited
+host is graded" assertion went on passing because there was nothing new
+to grade. 628 adds a fourth part. It could not be a fourth *term*: D1
+refuses compound SELECTs past about three, this database has hit that
+twice, so the union is now two levels of three and two.
+
+**A ladder rung that could never work.** German printed Colombia and
+Uruguay at 1.01 pages. Dropping the e-reporting system name looked like
+the obvious saving and was added as a fitter rung — then measured, and it
+cannot help: the strip is a grid, so its height is the *tallest* card,
+which is always the mandate card with three segment rows. Colombia's
+strip and mandate card are both 90px. That is this file's own August
+lesson repeating: *a removal that does not shrink the page is pure loss*.
+The real cause was that six columns narrowed the mandate card so its
+segment notes wrapped more; fixed by giving that card its width back
+(`5.6em` → `4.8em` label column), not by deleting anything.
+
+**A clipped word, found only by looking.** The German Poland page read
+"...und Verkaufs-/Einkaufsregis" and stopped. `.statstrip.hl .n` had no
+`overflow-wrap`, so a German compound wider than a sixth-page column was
+clipped rather than wrapped. **No test could have caught it** — the
+element's height is unchanged and the text is all still in the DOM. It
+took a screenshot.
+
+#### The layout
+
+Six columns, mandate spanning three. Five-with-a-narrowed-mandate was
+tried and rejected: that card is an inner grid and at two fifths of the
+page the label column eats the value column, which is the whole reason
+B2G/B2B/B2C were merged into one card in August.
+
+| | over a page | scaled | smallest | median fill |
+| --- | --- | --- | --- | --- |
+| en | 0 | 30/70 | 84% | 98% |
+| de | 0 | 43/70 | 80% | 98% |
+| fr | 0 | 42/70 | 80% | 99% |
+| es | 0 | 42/70 | 80% | 98% |
+
+Measured with the real translations in place, not with English standing
+in — the notes were translated first precisely because German runs 20%
+longer and would have been the thing that tipped it.
+
+`npm test`: **25 suites**. Replay OK across **630 files**, 602 assertions.
+
+**This one needs a deploy as well as a migration apply** — `i18n/*.json`
+gained eleven keys per language and `shared/guides-render.mjs` changed,
+and both ship in the site-worker.

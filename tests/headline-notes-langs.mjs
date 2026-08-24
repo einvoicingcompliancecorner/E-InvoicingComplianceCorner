@@ -47,7 +47,11 @@ const all = async (sql, ...args) =>
   (await d1.prepare(sql).bind(...args).all()).results || [];
 
 const LANGS = ["de", "fr", "es"];
-const FIELDS = ["b2g", "b2b", "b2c", "archiving", "signature"];
+// Six since 23 August, when e-Reporting joined the strip. Adding the
+// field here is what makes the structure and figure checks below cover
+// the new note without another line of code -- and what would have
+// caught 630 shipping with a language missing.
+const FIELDS = ["b2g", "b2b", "b2c", "archiving", "signature", "ereporting"];
 const SEGMENTS = ["b2g", "b2b", "b2c"];
 // The looser of 624's two caps. The tight one (130) belongs to the
 // migration, which knows what it just wrote; this is the line past which
@@ -56,7 +60,7 @@ const CAP = 150;
 
 const rows = await all(`
   SELECT c.name_en AS name, t.lang, t.b2g_note, t.b2b_note, t.b2c_note,
-         t.archiving_note, t.signature_note
+         t.archiving_note, t.signature_note, t.ereporting_note
     FROM country_headline_fact_translations t
     JOIN countries c ON c.id = t.country_id
    ORDER BY c.name_en, t.lang`);

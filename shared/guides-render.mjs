@@ -234,11 +234,14 @@ export async function getGuideBundle(db, names, lang) {
     SELECT c.name_en, f.b2g_status, f.b2g_date, f.b2b_status, f.b2b_date,
            f.b2c_status, f.b2c_date, f.archiving_years, f.archiving_status,
            f.signature_status, f.last_verified,
+           f.ereporting_status, f.ereporting_frequency, f.ereporting_system,
+           f.ereporting_date,
            COALESCE(ht.b2g_note, ht_en.b2g_note)             AS b2g_note,
            COALESCE(ht.b2b_note, ht_en.b2b_note)             AS b2b_note,
            COALESCE(ht.b2c_note, ht_en.b2c_note)             AS b2c_note,
            COALESCE(ht.archiving_note, ht_en.archiving_note) AS archiving_note,
-           COALESCE(ht.signature_note, ht_en.signature_note) AS signature_note
+           COALESCE(ht.signature_note, ht_en.signature_note) AS signature_note,
+           COALESCE(ht.ereporting_note, ht_en.ereporting_note) AS ereporting_note
     FROM country_headline_facts f
     JOIN countries c ON c.id = f.country_id
     LEFT JOIN country_headline_fact_translations ht    ON ht.country_id = f.country_id AND ht.lang = ?1
@@ -559,13 +562,30 @@ table.summary td.date{font-family:'IBM Plex Mono',monospace;white-space:nowrap;c
 .statstrip .v{font-family:'Big Shoulders Display',sans-serif;font-weight:700;font-size:14pt;color:#111;line-height:1}
 .statstrip .l{font-size:6.9pt;color:#555;line-height:1.25;margin-top:2px}
 
-/* THE HEADLINE STRIP: THREE CARDS.
-   Mandate (holding B2G, B2B and B2C as rows), archiving, signature. The
-   mandate card takes three of the five columns so the three segments have
-   room to sit as a small table the reader compares down, rather than as
-   three identical boxes they compare across. */
-.statstrip.hl{grid-template-columns:repeat(5,1fr)}
+/* THE HEADLINE STRIP: FOUR CARDS.
+   Mandate (holding B2G, B2B and B2C as rows), e-reporting, archiving,
+   signature. The mandate card takes three of the SIX columns so the three
+   segments have room to sit as a small table the reader compares down,
+   rather than as three identical boxes they compare across.
+
+   SIX COLUMNS, NOT FIVE WITH THE MANDATE CARD NARROWED. e-Reporting was
+   added on 23 August and the obvious move -- keep five columns and drop
+   the mandate card to two -- breaks it: that card is an inner grid of
+   5.6em / auto / 1fr, and at two fifths of the page the label column
+   eats the value column and B2G/B2B/B2C stop lining up, which is the
+   entire reason they were merged into one card in the first place. Going to six
+   costs the mandate card 60% -> 50% of the width and each single card
+   20% -> 16.7%, which the fit harness says the pages absorb. */
+.statstrip.hl{grid-template-columns:repeat(6,1fr)}
 .statstrip.hl > .mand{grid-column:span 3}
+/* The system name under the cadence -- JPK_V7M, myDATA, SAF-T. Mono,
+   because it is an identifier a reader will match character for
+   character against their own portal, and never translated. Allowed to
+   wrap: a name that does not fit on one line is better wrapped than
+   clipped, and gen_ereporting keeps them to 18 characters so it rarely
+   comes up. */
+.statstrip.hl .sys{font-family:'IBM Plex Mono',monospace;font-size:6.8pt;
+  color:#333;line-height:1.2;margin-top:2px;overflow-wrap:anywhere}
 .statstrip.hl .v{font-size:11.5pt;letter-spacing:.2px}
 .statstrip.hl .dt{font-family:'IBM Plex Sans',sans-serif;font-weight:600;font-size:8.4pt;
   letter-spacing:0;color:#444;white-space:nowrap}
@@ -575,20 +595,27 @@ table.summary td.date{font-family:'IBM Plex Mono',monospace;white-space:nowrap;c
    the underlying law usually is not. 7.2pt, not the 6.4pt it was: this is
    the sentence that stops the status being misread, and it was the least
    readable text on the page. */
+/* overflow-wrap:anywhere BECAUSE GERMAN. The cards are a sixth of the
+   page and German builds words like Verkaufs-/Einkaufsregister, which is
+   wider than the column. Without this the word does not wrap -- it is
+   CLIPPED, so the note reads "...und Verkaufs-/Einkaufsregis" and stops.
+   Found by screenshotting the German Poland page after the e-Reporting
+   card narrowed the strip; no test would have caught it, because the
+   element's height is unchanged and the text is all still in the DOM. */
 .statstrip.hl .n{font-size:7.2pt;color:#555;line-height:1.3;margin-top:3px;
-  border-top:1px solid #e4e4e4;padding-top:3px}
+  border-top:1px solid #e4e4e4;padding-top:3px;overflow-wrap:anywhere}
 
 /* The mandate card's three rows. One grid so the three status words start
    at the same x and can be read down as a column. */
-.statstrip.hl > .mand{display:grid;grid-template-columns:5.6em auto 1fr;
-  gap:1px 7px;align-content:start}
+.statstrip.hl > .mand{display:grid;grid-template-columns:4.8em auto 1fr;
+  gap:1px 6px;align-content:start}
 .statstrip.hl > .mand > .l{grid-column:1/-1;margin:0 0 2px}
 .statstrip.hl .seg{display:contents}
 .statstrip.hl .seg .sl{font-family:'IBM Plex Mono',monospace;font-size:7.4pt;
   letter-spacing:.6px;color:#555;padding-top:1.5px}
 .statstrip.hl .seg .sv{font-family:'Big Shoulders Display',sans-serif;font-weight:700;
   font-size:10.5pt;color:#111;line-height:1.15;white-space:nowrap}
-.statstrip.hl .seg .sn{font-size:7pt;color:#555;line-height:1.3}
+.statstrip.hl .seg .sn{font-size:7pt;color:#555;line-height:1.3;overflow-wrap:anywhere}
 /* THE STATE IS ON THE ROW, NOT ONLY IN A COLOUR.
    A printed sheet may be monochrome, and the tints below are 2-3%
    saturation -- they photocopy to identical white. The left rule on each
@@ -788,6 +815,33 @@ const HL_STATUS = {
   no_mandate: ["hl.none",       "NO MANDATE",   "off"],
   unknown:    ["hl.unknown",    "NOT CONFIRMED", "unk"],
 };
+// The e-Reporting card prints a CADENCE where the others print a status,
+// so the status table only has to cover the states that are not one.
+// 'active' never reaches it: an active row always has a frequency, which
+// 626 asserts, and the frequency is what the card shows.
+const HL_EREPORTING = {
+  active:     [null,             null,            "on"],
+  planned:    ["hl.er.planned",  "PLANNED",       "soon"],
+  // An audit file is a real obligation that is not a schedule. Blue,
+  // the same tone VOLUNTARY uses on the mandate card, because both mean
+  // "this applies to you conditionally" -- and pointedly not the grey of
+  // NO MANDATE beside it.
+  on_request: [null,             null,            "opt"],
+  voluntary:  ["hl.voluntary",   "VOLUNTARY",     "opt"],
+  no_mandate: ["hl.er.none",     "NO MANDATE",    "off"],
+  unknown:    ["hl.unknown",     "NOT CONFIRMED", "unk"],
+};
+const HL_FREQUENCY = {
+  real_time:      ["hl.freq.real_time",      "REAL-TIME"],
+  near_real_time: ["hl.freq.near_real_time", "NEAR REAL-TIME"],
+  daily:          ["hl.freq.daily",          "DAILY"],
+  monthly:        ["hl.freq.monthly",        "MONTHLY"],
+  quarterly:      ["hl.freq.quarterly",      "QUARTERLY"],
+  annual:         ["hl.freq.annual",         "ANNUAL"],
+  varies:         ["hl.freq.varies",         "VARIES"],
+  on_request:     ["hl.freq.on_request",     "ON REQUEST"],
+};
+
 const HL_SIGNATURE = {
   required:     ["hl.sig.required",    "REQUIRED",     "on"],
   conditional:  ["hl.sig.conditional", "CONDITIONAL",  "soon"],
@@ -834,9 +888,47 @@ function headlineTiles(h, t) {
       <span class="sn">${note ? esc(note) : ""}</span></div>`;
   };
 
-  const card = (value, tone, label, note) =>
-    `<div class="hcard ${tone}"><div class="v">${value}</div><div class="l">${esc(label)}</div>${
+  const card = (value, tone, label, note, system) =>
+    `<div class="hcard ${tone}"><div class="v">${value}</div>${
+      system ? `<div class="sys">${esc(system)}</div>` : ""
+    }<div class="l">${esc(label)}</div>${
       note ? `<div class="n">${esc(note)}</div>` : ""}</div>`;
+
+  // ---- e-Reporting -----------------------------------------------------
+  //
+  // Dan, 23 August 2026: a fourth card "for e-Reporting, and will alert
+  // the user to any e-Reporting mandates that are in place such as
+  // SAF-T" -- and, when the first cut leaned on SAF-T: "I was just using
+  // SAF-T as an example ... ensure if there is a B2B e-Reporting
+  // requirement, it is listed, regardless of whether SAF-T or another."
+  //
+  // Only four of the thirty-nine live regimes ARE SAF-T, which is why
+  // the card leads with the cadence and names the system underneath
+  // rather than the other way round. MONTHLY tells a reader what they
+  // have to build; "SAF-T" only tells them so if their country happens
+  // to use it.
+  const erep = (() => {
+    const st = h.ereporting_status || "unknown";
+    const [key, en, tone] = HL_EREPORTING[st] || HL_EREPORTING.unknown;
+    const label = t("hl.lbl.ereporting", "E-reporting");
+    // A cadence, where there is one. `active` and `on_request` carry no
+    // status word of their own precisely so the card cannot print
+    // "ACTIVE" over a system name and leave the reader to guess how
+    // often -- which is the thing this card exists to answer.
+    const freq = HL_FREQUENCY[h.ereporting_frequency];
+    if (key === null && freq) {
+      return card(esc(t(freq[0], freq[1])), tone, label,
+                  h.ereporting_note, h.ereporting_system);
+    }
+    // PLANNED rides with its date, the same way the mandate segments do:
+    // "PLANNED" alone is the omission migration 600's CHECK refuses to
+    // store, and 626 restates it for this column.
+    const value = st === "planned" && h.ereporting_date
+      ? `${esc(t(key, en))} <span class="dt">${esc(shortDate(h.ereporting_date))}</span>`
+      : esc(t(key || "hl.unknown", en || "NOT CONFIRMED"));
+    return card(value, tone, label, h.ereporting_note,
+                st === "planned" ? h.ereporting_system : null);
+  })();
 
   const arch = (() => {
     if (h.archiving_status === "years" && h.archiving_years != null) {
@@ -866,6 +958,7 @@ function headlineTiles(h, t) {
       ${seg(h.b2b_status, h.b2b_date, t("hl.seg.b2b", "B2B"), h.b2b_note)}
       ${seg(h.b2c_status, h.b2c_date, t("hl.seg.b2c", "B2C"), h.b2c_note)}
     </div>
+    ${erep}
     ${arch}
     ${card(esc(t(sk, sen)), stone, t("hl.lbl.signature", "Digital signature"), h.signature_note)}
   </div>`;
@@ -1175,6 +1268,22 @@ export const GUIDE_FIT_SCRIPT = `
     // the tiles exist, and a page that dropped them to fit would be
     // solving the layout problem by deleting the answer.
     function(s){ var n = s.querySelectorAll('.statstrip.hl .n'); return n.length ? n[n.length-1] : null; },
+    // A RUNG FOR THE E-REPORTING SYSTEM NAME WAS TRIED HERE AND REMOVED.
+    //
+    // When the fourth card was added, German printed Colombia and
+    // Uruguay at 1.01 pages, and dropping the system name looked like
+    // the obvious saving -- it is a whole extra line. Measuring says it
+    // can never help: the strip is a grid, so its height is the TALLEST
+    // card, and that is always the mandate card with its three segment
+    // rows. Colombia's strip and its mandate card are both 90px; the
+    // three single cards are 90px because the grid stretched them, not
+    // because they need to be.
+    //
+    // Which is this file's own lesson from August, one paragraph down:
+    // a removal that does not shrink the page is pure loss. The real
+    // cause was that six columns made the MANDATE card narrower, so its
+    // segment notes wrapped onto more lines -- fixed in the CSS above by
+    // giving that card back the width, not by deleting anything.
     function(s){ var n = s.querySelectorAll('.news a'); return n.length > 1 ? n[n.length-1] : null; },
     function(s){ return s.querySelector('.news'); }
   ];

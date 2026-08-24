@@ -63,11 +63,17 @@ for (const lang of LANGS) {
   // left for the next sentence anyone adds. Those are the pages worth
   // naming, because "0 over one page" hides them completely.
   const floored = m.filter((x) => x.zoom <= 0.82);
-  // THE FIVE FACTS ARE NOT NEGOTIABLE IN ANY LANGUAGE. Same check the
+  // THE SIX FACTS ARE NOT NEGOTIABLE IN ANY LANGUAGE. Same check the
   // English harness makes, repeated per language: a translation long
   // enough to cost a tile would satisfy the one-page rule by breaking
   // what the page is for.
-  const shortTiles = m.filter((x) => x.cards !== 3 || x.facts !== 5);
+  //
+  // Four cards, six facts since 23 August, when e-Reporting was added
+  // between the mandate and archiving. It was three and five before, and
+  // this check is what turned the change from "looks fine" into a list
+  // of seventy countries -- which is the point of counting rather than
+  // eyeballing.
+  const shortTiles = m.filter((x) => x.cards !== 4 || x.facts !== 6);
   const worstZoom = Math.min(...m.map((x) => x.zoom));
   summary.push({ lang, over: over.length, shortTiles: shortTiles.length,
                  zoomed: zoomed.length, worstZoom,
