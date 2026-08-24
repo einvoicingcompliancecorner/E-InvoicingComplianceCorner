@@ -1852,6 +1852,7 @@ export const FEATURE_LINKS = {
   "tracker-due-soon-default": TRACKER,
   "roi-wave-planner": `${TRACKER}?view=roi`,
   "compliance-guides": `${TRACKER}?view=guides`,
+  "spec-register": `${TRACKER}?view=specs`,
   "methodology": `${TRACKER}?view=methodology`,
   "change-record": `${TRACKER}?view=changes`,
   // The e-Reporting card lives inside the compliance guides, so it

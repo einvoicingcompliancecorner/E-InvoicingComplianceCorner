@@ -365,10 +365,28 @@ t.check("including the two Dan named",
   // was never promised is the same defect class as the rest of this
   // suite guards against, so it now asks the actual question: does this
   // feature's link land on a view that gates?
+  //
+  // AND THE SAME DEFECT AGAIN, ONE FEATURE LATER. On 24 August the
+  // specification register shipped behind a third gate function, and
+  // this block knew about two — so a genuinely gated, correctly marked
+  // feature failed the check a second time. The map below is still
+  // written by hand, because only a person knows which ?view= key a
+  // gate function sits behind; what changed is that an unlisted gate
+  // now fails LOUDLY on the line above rather than silently producing
+  // a short `gatedViews` set and blaming the feature.
   const site = readFileSync(join(REPO, "site-worker", "src", "index.js"), "utf8");
-  const gatedViews = new Set();
-  if (/return renderRoiGate\(/.test(site)) gatedViews.add("roi");
-  if (/return renderGuidesGate\(/.test(site)) gatedViews.add("guides");
+  const VIEW_FOR_GATE = {
+    renderRoiGate: "roi",
+    renderGuidesGate: "guides",
+    renderSpecGate: "specs",
+  };
+  const gateFns = [...site.matchAll(/^const (render\w*Gate) =/gm)].map((m) => m[1]);
+  t.check("this suite knows every gate function site-worker defines",
+    gateFns.length > 0 && gateFns.every((f) => VIEW_FOR_GATE[f]),
+    `site-worker defines: ${gateFns.join(", ")} | mapped here: ${Object.keys(VIEW_FOR_GATE).join(", ")}`);
+  const gatedViews = new Set(
+    gateFns.filter((f) => new RegExp(`return ${f}\\(`).test(site))
+      .map((f) => VIEW_FOR_GATE[f]).filter(Boolean));
   const viewOf = (slug) => ((FEATURE_LINKS[slug] || "").match(/\?view=([a-z]+)/) || [])[1];
   const gates = new Set(
     (await q("SELECT slug FROM features")).map((f) => f.slug)

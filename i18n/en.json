@@ -104,7 +104,8 @@
     "navHelp": "Navigation Help",
     "guides": "Compliance guides",
     "methodology": "Methodology",
-    "changes": "What changed"
+    "changes": "What changed",
+    "specs": "Specification register"
   },
   "navTips": {
     "label": "Getting around this site",
@@ -548,5 +549,82 @@
     "title": "What changed",
     "watch": "{0} facts across {1} jurisdictions are on the record. A status cannot change here without the change being recorded — the build refuses it.",
     "opened": "All of these date from the day the record was opened. They came from reconciling every country's tiles against its own timeline — a check that now runs on every build — so each was a disagreement inside our own data rather than a published fact anyone had acted on."
+  },
+  "spec": {
+    "eyebrow": "The specification register",
+    "title": "What each country actually mandates, and where the file is",
+    "intro": "The format, the version, the authoritative file, the licence, and the date a version becomes obligatory — with, for every country, what the published artefacts do not tell you.",
+    "caveat": "This register says where a specification is and what it covers. It is not a validator, and conforming to a published artefact is not the same as being accepted — every platform applies checks that no artefact describes.",
+    "asOf": "Verified {0}",
+    "back": "← Back to global tracker",
+    "guideLink": "What is mandated, and from when →",
+    "strip": {
+      "jurisdictions": "Jurisdictions",
+      "named": "Under a named licence",
+      "validators": "Public validator",
+      "nothing": "Nothing machine-readable"
+    },
+    "gapHeading": "What the artefacts do not tell you",
+    "artefactsHeading": "Authoritative files",
+    "noArtefacts": "Nothing to download",
+    "lbl": {
+      "format": "Format",
+      "version": "Version",
+      "syntax": "Syntax",
+      "standard": "EN 16931",
+      "published_by": "Published by",
+      "licence": "Licence",
+      "access": "Access",
+      "released": "Released",
+      "mandatory": "Obligatory from",
+      "changelog": "Version history",
+      "validator": "Public validator"
+    },
+    "capture": {
+      "published": "Published",
+      "partial": "Partly published",
+      "unpublished": "Not published",
+      "unreachable": "We could not read it",
+      "not_yet": "Not issued yet"
+    },
+    "licenceStatus": {
+      "named": "Named licence",
+      "permissive_unnamed": "Reuse permitted, no named licence",
+      "restrictive": "Open to download, redistribution refused",
+      "unstated": "No terms stated",
+      "unknown": "Terms not established"
+    },
+    "access": {
+      "open": "Download, no account",
+      "registration": "Email or free account",
+      "credentials": "National digital identity",
+      "blocked": "Publisher blocks automated access",
+      "none": "Nothing published yet"
+    },
+    "syntaxName": {
+      "ubl": "UBL 2.1",
+      "cii": "UN/CEFACT CII",
+      "hybrid": "Hybrid PDF + CII",
+      "national_xml": "National XML",
+      "json": "JSON",
+      "multiple": "More than one accepted",
+      "unknown": "Not established"
+    },
+    "artefact": {
+      "xsd": "Schema (XSD)",
+      "schematron": "Business rules (Schematron)",
+      "xslt": "Rules (XSLT)",
+      "codelist": "Code lists",
+      "sdk": "Validator or SDK",
+      "testsuite": "Test invoices",
+      "spec_pdf": "Specification document",
+      "repo": "Repository"
+    },
+    "yes": "Yes",
+    "no": "No",
+    "unknown": "Not established",
+    "gateEyebrow": "Subscriber reference",
+    "gateTitle": "The specification register",
+    "gateBody": "Subscribing is free. The register names the mandated format, its current version, the authoritative file and its licence for twenty jurisdictions — and, for each, what the published artefacts leave out."
   }
 }

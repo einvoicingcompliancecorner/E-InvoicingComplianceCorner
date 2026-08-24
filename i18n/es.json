@@ -104,7 +104,8 @@
     "navHelp": "Ayuda de navegación",
     "guides": "Guías de cumplimiento",
     "methodology": "Metodología",
-    "changes": "Qué ha cambiado"
+    "changes": "Qué ha cambiado",
+    "specs": "Registro de especificaciones"
   },
   "navTips": {
     "label": "Cómo navegar por este sitio",
@@ -548,5 +549,82 @@
     "title": "Qué ha cambiado",
     "watch": "{0} datos de {1} jurisdicciones están registrados. Un estado no puede cambiar aquí sin que el cambio quede registrado: la compilación lo rechaza.",
     "opened": "Todos datan del día en que se abrió el registro. Surgieron de contrastar los mosaicos de cada país con su propia cronología —una comprobación que ahora se ejecuta en cada compilación—, de modo que cada uno fue una contradicción dentro de nuestros propios datos y no un dato publicado sobre el que alguien hubiera actuado."
+  },
+  "spec": {
+    "eyebrow": "El registro de especificaciones",
+    "title": "Qué exige realmente cada país y dónde está el archivo",
+    "intro": "El formato, la versión, el archivo de referencia, la licencia y la fecha en que una versión pasa a ser obligatoria, y para cada país lo que los artefactos publicados no cuentan.",
+    "caveat": "Este registro indica dónde está una especificación y qué abarca. No es un validador: cumplir un artefacto publicado no equivale a ser aceptado, porque toda plataforma aplica controles que ningún artefacto describe.",
+    "asOf": "Verificado el {0}",
+    "back": "← Volver al rastreador global",
+    "guideLink": "Qué es obligatorio y desde cuándo →",
+    "strip": {
+      "jurisdictions": "Jurisdicciones",
+      "named": "Con licencia con nombre",
+      "validators": "Validador público",
+      "nothing": "Nada legible por máquina"
+    },
+    "gapHeading": "Lo que los artefactos no dicen",
+    "artefactsHeading": "Archivos de referencia",
+    "noArtefacts": "Nada que descargar",
+    "lbl": {
+      "format": "Formato",
+      "version": "Versión",
+      "syntax": "Sintaxis",
+      "standard": "EN 16931",
+      "published_by": "Publicado por",
+      "licence": "Licencia",
+      "access": "Acceso",
+      "released": "Publicada",
+      "mandatory": "Obligatoria desde",
+      "changelog": "Historial de versiones",
+      "validator": "Validador público"
+    },
+    "capture": {
+      "published": "Publicada",
+      "partial": "Publicada en parte",
+      "unpublished": "No publicada",
+      "unreachable": "No pudimos leerla",
+      "not_yet": "Aún no publicada"
+    },
+    "licenceStatus": {
+      "named": "Licencia con nombre",
+      "permissive_unnamed": "Reutilización permitida, sin licencia con nombre",
+      "restrictive": "Descargable, redistribución denegada",
+      "unstated": "Sin condiciones indicadas",
+      "unknown": "Condiciones no determinadas"
+    },
+    "access": {
+      "open": "Descarga sin cuenta",
+      "registration": "Correo o cuenta gratuita",
+      "credentials": "Identidad digital nacional",
+      "blocked": "El editor bloquea el acceso automatizado",
+      "none": "Nada publicado aún"
+    },
+    "syntaxName": {
+      "ubl": "UBL 2.1",
+      "cii": "UN/CEFACT CII",
+      "hybrid": "Híbrido PDF + CII",
+      "national_xml": "XML nacional",
+      "json": "JSON",
+      "multiple": "Se admite más de uno",
+      "unknown": "Sin determinar"
+    },
+    "artefact": {
+      "xsd": "Esquema (XSD)",
+      "schematron": "Reglas de negocio (Schematron)",
+      "xslt": "Reglas (XSLT)",
+      "codelist": "Listas de códigos",
+      "sdk": "Validador o SDK",
+      "testsuite": "Facturas de prueba",
+      "spec_pdf": "Documento de especificación",
+      "repo": "Repositorio"
+    },
+    "yes": "Sí",
+    "no": "No",
+    "unknown": "Sin determinar",
+    "gateEyebrow": "Referencia para suscriptores",
+    "gateTitle": "El registro de especificaciones",
+    "gateBody": "Suscribirse es gratis. El registro indica, para veinte jurisdicciones, el formato exigido, su versión actual, el archivo de referencia y su licencia, y qué omiten los artefactos publicados."
   }
 }

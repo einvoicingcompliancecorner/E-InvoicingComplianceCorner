@@ -16345,3 +16345,139 @@ next run), 0 changed, 1 failed, 11 awaiting announcement` — which is the
 widened list, the cursor and the digest all working. Tonight's 08:00 UTC
 run is the first with the full 8-minute budget and the first genuinely
 representative digest.
+
+---
+
+### 24 August 2026 — the specification register
+
+Dan asked whether a schema checker was feasible: could we validate an
+invoice against what a given tax authority mandates, and how easy is it
+to capture each country's specification? Sixteen jurisdictions were
+researched against primary sources, and the answer split the question
+into three.
+
+**Structure is published nearly everywhere** — an XSD or a UBL profile
+is a download in almost every jurisdiction, and it is the least useful
+layer. **Business rules vary enormously**: executable Schematron under
+an open licence in the EN 16931 world, structured rule tables trapped in
+153- and 753-page PDFs across Latin America, prose in Malaysia and
+India. **Platform behaviour is essentially never published** — what
+Italy's SdI or Poland's KSeF actually rejects exceeds every downloadable
+artefact, which is why an industry of unofficial "why was this rejected"
+guides exists.
+
+So a checker can honestly say *this conforms to the published
+specification* and can never say *this will be accepted*. Worse, for
+most clearance regimes you cannot establish that your PASS agrees with
+the authority's, because testing against their validator needs
+credentials tied to a registered domestic taxpayer — SPID for Italy, a
+GSTIN or GSP relationship for India, a *habilitación* for Colombia.
+
+**And the difficulty curve runs opposite to the differentiation curve.**
+Where capture is easy the market already gives it away: B2BRouter,
+`easybill/e-invoice-validator`, Invoice Navigator, peppolvalidator.com,
+a community list of "30+ free Peppol tools", and `phax/phive-rules`,
+which bundles rule sets for ~30 jurisdictions as Apache-2.0 code. Where
+it would differentiate, the spec cannot be captured reliably.
+
+Dan's call, on the recommendation: build the register instead, tier 1
+first, gated under the tracker's resources menu.
+
+#### What shipped
+
+Migrations 636–640, and a page at `/spec-register`.
+
+**636** is the schema, and its one design decision is that *capture
+status*, *access* and *licence* are three facts, not one. Germany is
+open/named. Japan is open/**restrictive** — the Peppol artefacts
+download without a login and then say they "may not be modified,
+re-distribute, sold or repackaged … without the prior consent of
+OpenPeppol AISBL". France is **registration**: Factur-X wants an email
+address. Collapsing those into a word like "open" is how a reader
+concludes a licence exists because a download worked.
+
+**637** holds twenty jurisdictions. The research corrected the
+feasibility study twice: it had called France and Turkey tier 1, and
+neither is — France gates its package behind an email, and Turkey's GİB
+blocks automated access entirely, so nothing about it could be verified.
+`capture_status = 'unreachable'` says *we could not read it*, which is a
+claim about us, not about the publisher.
+
+**Nine rows fall short of 'published', and they are the most valuable
+rows in the table.** Romania's RO_CIUS exists only as prose in a
+ministerial ordinance, with no ANAF-published XSD or Schematron
+anywhere. Ireland's does not exist yet. Portugal's newest indexed
+version is from 2021. A register that silently omitted them would read
+as though those countries mandate nothing.
+
+The column the feature exists for is `gap_note`: **what the published
+artefacts do not tell you**, per country, in four languages, capped at
+220 characters. Everything else on a card can be read off a web page in
+an afternoon.
+
+**639** puts every artefact, changelog and validator URL into
+`cited_sources`, which grades each host and — since yesterday — puts it
+on the content monitor's nightly watch list. A register that goes stale
+silently is worse than none, and a table of URLs nobody declared to the
+monitor is failure class C reopened one day after it was closed. This is
+also the third level of the compound-SELECT ladder that 628 predicted in
+as many words: *the next fact added gets a fifth part and a third level,
+never a fourth term.*
+
+**One uncomfortable grading call, made explicitly rather than fudged.**
+`github.com` is graded **secondary**. Germany's XRechnung rules, the
+Netherlands' NLCIUS Schematron and Peppol's own rule sets all live in
+repositories owned by the authorities — served by a commercial platform
+in another jurisdiction. Grading it primary because the repository owner
+is official would be grading the page rather than the host, which is the
+one thing the tier rule forbids. The host note says so, so nobody has to
+infer it from a tier.
+
+#### What the numbers turned out to be
+
+Of twenty jurisdictions, **two** publish machine-readable artefacts
+under a named licence — Germany (Apache-2.0) and the Netherlands (MIT).
+Croatia is third and still does not qualify: an explicit permission to
+reuse, with no licence name on it. **Two** publish a validator a
+stranger can use without registering: Denmark and Norway. **Four**
+publish nothing machine-readable at all.
+
+Those counts are computed on the page, not typed, and asserted in the
+migration — a headline figure that is typed is a figure that goes stale
+in silence, which this site has published about.
+
+#### What the checks caught
+
+`tests/spec-register.mjs` drives the real router, counts D1 queries to
+prove the gate answers before the database is touched, and reads the
+page in all four languages. Three things it caught:
+
+- **I had written "three of twenty publish under a named licence" in
+  four places.** It is two. Croatia's permission has no licence name,
+  which is exactly the distinction the schema was built to keep — and I
+  collapsed it in the prose while the data held it correctly.
+- **"Eight publish nothing machine-readable"** was four.
+- **Its own framed-page check was passing on a CSS rule.** `lang-current`
+  appears in the stylesheet as well as the markup, so the test would
+  have gone on passing with two language switchers on screen.
+
+`tests/feature-announcement.mjs` also failed, for the second time in two
+days and the same way: it derived "which features are gated" from two
+hardcoded gate-function names, and the register is behind a third. An
+unlisted gate now fails loudly on its own line rather than silently
+producing a short set and blaming the feature.
+
+`npm test`: **28 suites**. Replay OK across **640 files**, 665
+assertions, 213 standing invariants.
+
+#### Noticed, not fixed
+
+Server-rendered pages print country names in English while the tracker
+localises them client-side from the `countryNames` i18n subtree. The
+guides, `/changes` and `/methodology` all do this, so the register does
+too rather than being the one page that differs — but the German page
+does say "AUSTRALIA". Worth closing site-wide, in one change, sometime.
+
+**Needs a migration-apply and a deploy of both Workers** — `i18n/*.json`
+and the tracker shell are assets, so a migration alone changes nothing a
+reader sees.

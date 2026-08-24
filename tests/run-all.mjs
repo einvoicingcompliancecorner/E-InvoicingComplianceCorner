@@ -70,6 +70,11 @@ const SUITES = [
   // the cadence it is actually achieving. Both of its historical
   // failures were true numbers beside a false word.
   { name: "content monitor", cmd: "node", args: [join(HERE, "content-monitor.mjs")], cwd: REPO },
+  // The register, through the real router: the gate, the four languages,
+  // the controlled vocabulary, and whether every link it publishes is on
+  // the monitor's watch list. It caught two prose errors and a test of
+  // its own that was passing on a CSS rule.
+  { name: "specification register", cmd: "node", args: [join(HERE, "spec-register.mjs")], cwd: REPO },
   { name: "methodology", cmd: "node", args: [join(HERE, "methodology.mjs")], cwd: REPO },
   { name: "changes", cmd: "node", args: [join(HERE, "changes.mjs")], cwd: REPO },
   { name: "subscriber walk", cmd: "node", args: [join(HERE, "subscriber-walk.mjs")], cwd: REPO },

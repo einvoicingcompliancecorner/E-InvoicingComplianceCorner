@@ -1003,6 +1003,7 @@
                have seen what is on offer. Unlike the planner, this one
                genuinely is gated — see GUIDES_PATHS in site-worker. -->
           <a class="dropdown-item" href="/compliance-guides"><span class="dd-icon">📄</span><span data-i18n="menu.guides">Compliance guides</span></a>
+          <a class="dropdown-item" href="/spec-register"><span class="dd-icon">📐</span><span data-i18n="menu.specs">Specification register</span></a>
         </div>
       </div>
       <div class="actions-menu" id="educationMenu">
@@ -3730,6 +3731,13 @@ const FRAMED_PAGES = {
     marker: '.wrap',
     unavailable: 'roiPanel.unavailable',
   },
+  specs: {
+    src: '/spec-register?frame=1',
+    url: '/spec-register',
+    title: 'Specification register',
+    marker: '.wrap',
+    unavailable: 'roiPanel.unavailable',
+  },
 };
 async function openRoiPage(opts){
   opts = opts || {};
@@ -5114,6 +5122,13 @@ function wireDeepDiveInPagePanel(){
       openRoiPage({ page: 'guides' });
       return;
     }
+    if(href === '/spec-register' || href === '/spec-register.html'){
+      e.preventDefault();
+      document.getElementById('sidebar')?.classList.remove('open');
+      document.getElementById('sidebarOverlay')?.classList.remove('open');
+      openRoiPage({ page: 'specs' });
+      return;
+    }
 
     // The Resources > Newsletter archive link -- opens the archive
     // list in the main frame instead of navigating away, same
@@ -5288,6 +5303,7 @@ function wireDeepDiveInPagePanel(){
     archive:     () => openArchive({ skipHistory: true }),
     roi:         () => openRoiPage({ skipHistory: true }),
     guides:      () => openRoiPage({ page: 'guides', skipHistory: true }),
+    specs:       () => openRoiPage({ page: 'specs', skipHistory: true }),
     map:         () => openMapPage({ skipHistory: true }),
     insights:    () => openInsightsPage({ skipHistory: true }),
     sources:     () => openSourcesPage({ skipHistory: true }),
