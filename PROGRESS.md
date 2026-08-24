@@ -15780,7 +15780,7 @@ at the map itself: this is the largest single change to what it shows
 since it was built, and nothing about a colour being wrong would fail a
 test that the tiles now agree with it.
 
-### A sixth headline fact: e-Reporting (23 Aug 2026)
+### A sixth headline fact: e-Reporting (23 Aug 2026, deployed)
 
 Dan: *"I'd like to add another box/card to the top of the compliance
 guides, which sits between the E-invoice mandate box, and the Archiving
