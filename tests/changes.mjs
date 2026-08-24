@@ -239,7 +239,11 @@ for (const lang of ["en", "es", "de", "fr"]) {
   t.check("the close button the wiring looks for exists",
     tracker.includes('id="changesModalClose"'),
     "wireDocPopout would throw on a null and take the rest of boot with it");
-  const sitemap = readFileSync(join(REPO, "sitemap.xml"), "utf8");
+  // THE SITEMAP IS A ROUTE NOW, not a file — it is generated from D1
+  // since 24 August, because the hand-maintained file had drifted to
+  // listing 28 of the site's 70 country pages. Reading the response
+  // rather than a checked-in copy is what keeps this check honest.
+  const sitemap = await (await get("/sitemap.xml")).text();
   t.check("it is in the sitemap", sitemap.includes("/changes"));
   t.check("and /methodology sends readers to it",
     (await (await get("/methodology")).text()).includes('href="/changes"'),

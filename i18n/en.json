@@ -644,5 +644,9 @@
     "gateEyebrow": "Subscriber reference",
     "gateTitle": "The specification register",
     "gateBody": "Subscribing is free. The register names the mandated format, its current version, the authoritative file and its licence for twenty jurisdictions — and, for each, what the published artefacts leave out."
+  },
+  "index": {
+    "heading": "All jurisdictions",
+    "intro": "Every country this tracker covers, with its next dated milestone. Each links to a full briefing: the timeline, the format, registration steps and penalties."
   }
 }

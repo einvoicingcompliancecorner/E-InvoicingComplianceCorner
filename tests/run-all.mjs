@@ -75,6 +75,12 @@ const SUITES = [
   // the monitor's watch list. It caught two prose errors and a test of
   // its own that was passing on a CSS rule.
   { name: "specification register", cmd: "node", args: [join(HERE, "spec-register.mjs")], cwd: REPO },
+  // What a crawler that does not run JavaScript can reach. Every other
+  // suite here either calls a renderer directly or drives a real
+  // browser, and a real browser runs the JavaScript that hid the
+  // problem: the tracker linked to none of the seventy country pages,
+  // and the sitemap listed 28 of them.
+  { name: "seo crawlability", cmd: "node", args: [join(HERE, "seo-crawlability.mjs")], cwd: REPO },
   { name: "methodology", cmd: "node", args: [join(HERE, "methodology.mjs")], cwd: REPO },
   { name: "changes", cmd: "node", args: [join(HERE, "changes.mjs")], cwd: REPO },
   { name: "subscriber walk", cmd: "node", args: [join(HERE, "subscriber-walk.mjs")], cwd: REPO },

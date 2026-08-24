@@ -644,5 +644,9 @@
     "gateEyebrow": "Référence abonnés",
     "gateTitle": "Le registre des spécifications",
     "gateBody": "L'abonnement est gratuit. Le registre indique, pour vingt juridictions, le format imposé, sa version actuelle, le fichier de référence et sa licence — et ce que les artefacts publiés omettent."
+  },
+  "index": {
+    "heading": "Toutes les juridictions",
+    "intro": "Tous les pays suivis par ce tracker, avec leur prochaine échéance datée. Chaque entrée mène à un dossier complet : calendrier, format, démarches et sanctions."
   }
 }

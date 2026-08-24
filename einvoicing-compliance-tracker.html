@@ -756,6 +756,42 @@
     border:1px solid var(--paper-line);
     border-radius:9px; padding:1px 6px; margin-left:6px;
   }
+
+  /* THE COUNTRY INDEX, 24 August 2026. Seventy real anchors, server-
+     rendered, sitting above the footer.
+     
+     It exists because the board does not: the board is built by
+     renderBoard() from a JS array, so a crawler that does not execute
+     JavaScript saw this page as 718 words with no link to any of the
+     seventy country pages, and 42 of those pages were in neither the
+     sitemap nor any anchor anywhere on the site.
+     
+     A <noscript> block was the other option and is worse: it is a
+     second copy of the same list that no reader ever sees, so it rots
+     unwatched. This is one list, always present, useful to a person
+     scanning for a jurisdiction and to anything that reads HTML. */
+  .country-index{
+    max-width:1400px; margin:34px auto 0; padding:22px 20px 0;
+    border-top:1px solid var(--line);
+  }
+  .country-index h2{
+    font-family:'Big Shoulders Display',sans-serif; font-weight:800;
+    font-size:19px; text-transform:uppercase; letter-spacing:.02em;
+    margin:0 0 4px; color:var(--text-lo);
+  }
+  .country-index .ci-intro{font-size:12.5px; color:var(--muted); margin:0 0 14px;}
+  .country-index ul{
+    list-style:none; margin:0; padding:0;
+    display:grid; grid-template-columns:repeat(auto-fill,minmax(190px,1fr)); gap:2px 18px;
+  }
+  .country-index li{font-size:13px; line-height:1.7;}
+  .country-index a{color:var(--text-lo); text-decoration:none; border-bottom:1px solid transparent;}
+  .country-index a:hover,.country-index a:focus{color:var(--soon); border-bottom-color:var(--soon);}
+  .country-index .ci-date{
+    font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:var(--muted);
+    margin-left:5px; white-space:nowrap;
+  }
+  .country-index .ci-empty{font-size:12.5px; color:var(--muted); margin:0;}
 </style>
 <!-- i18n loader — see i18n/i18n.js for how this works and how to add a language -->
 <script src="i18n/i18n.js"></script>
@@ -1178,6 +1214,19 @@
 <div id="mapView" style="display:none;"></div>
 <div id="insightsView" style="display:none;"></div>
 <div id="roiView" style="display:none;"></div>
+
+<!-- COUNTRY INDEX. site-worker replaces the <ul> inside this nav at
+     request time (see renderTracker's countryIndexHtml). The empty list
+     below is what a reader gets if that injection is skipped, which is
+     also the state the static fallback serves -- deliberately empty
+     rather than a hardcoded seventy-country copy, because a second copy
+     of the country list in a file nobody regenerates is exactly the
+     drift this index was built to end. -->
+<nav class="country-index" id="countryIndex" aria-labelledby="countryIndexHeading">
+  <h2 id="countryIndexHeading" data-i18n="index.heading">All jurisdictions</h2>
+  <p class="ci-intro" data-i18n="index.intro">Every country this tracker covers, with its next dated milestone. Each links to a full briefing: the timeline, the format, registration steps and penalties.</p>
+  <ul id="countryIndexList"></ul>
+</nav>
 
 <footer>
   <p data-i18n="filters.disclaimer">This tracker reflects publicly available guidance as of July 2026 and is provided for general awareness, not legal or tax advice. E-invoicing thresholds, wave numbers and go-live dates change frequently — confirm your obligations directly on the official government portal linked in each entry, or with your tax advisor, before making compliance decisions.</p>
@@ -5320,6 +5369,28 @@ function wireDeepDiveInPagePanel(){
   // Every entry here is a function that already exists and is already
   // wired to a menu item. This routes to them; it does not add a second
   // way for a panel to open.
+  // THE INDEX IS SERVER-RENDERED IN ENGLISH, on purpose -- see
+  // buildCountryIndexHtml in site-worker for why (one URL, four
+  // languages, no Vary header, English canonical). That is right for a
+  // crawler and wrong for a German reader looking at the same list, so
+  // the labels are translated here once the language is known. The href
+  // never changes: there is one URL per country and it is the English
+  // slug, which is what the canonical claims.
+  function translateCountryIndex(){
+    const list = document.getElementById('countryIndexList');
+    if(!list || !window.EICC_I18N) return;
+    list.querySelectorAll('a[data-country]').forEach((a)=>{
+      const en = a.getAttribute('data-country');
+      const local = window.EICC_I18N.translateCountry ? window.EICC_I18N.translateCountry(en) : en;
+      if(local && local !== a.textContent) a.textContent = local;
+    });
+  }
+  translateCountryIndex();
+  // The event i18n.js actually dispatches -- not 'eicc:lang', which is
+  // what I assumed and which would have left the index in English on
+  // every switch while looking wired.
+  document.addEventListener('eicc:languageChanged', translateCountryIndex);
+
   const VIEW_ROUTES = {
     archive:     () => openArchive({ skipHistory: true }),
     roi:         () => openRoiPage({ skipHistory: true }),
