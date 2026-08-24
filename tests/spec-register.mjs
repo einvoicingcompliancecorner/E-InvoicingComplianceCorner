@@ -155,6 +155,52 @@ t.check("there is a register to check", rows.length >= 15, `${rows.length} count
     wrong.length === 0, `fell back or missing in: ${wrong.join(", ")}`);
 }
 
+// ---- 3b. country names are the reader's, not ours -----------------------
+//
+// Dan, 24 August 2026: "I noticed that the country names in the page are
+// not translated." They were not, and the cause was bigger than this
+// page: countryNames held 54 entries against 70 tracked jurisdictions,
+// so seventeen countries had been rendering in English on every
+// translated surface since the day each was added. The map is read
+// client-side and falls back to the English name, so the failure looked
+// exactly like a working page.
+{
+  const tracked = await all(
+    "SELECT name_en FROM countries WHERE code != 'EU' AND slug IS NOT NULL");
+  const gaps = [];
+  for (const lang of ["de", "fr", "es"]) {
+    const map = JSON.parse(readFileSync(join(REPO, "i18n", `${lang}.json`), "utf8")).countryNames || {};
+    for (const c of tracked) if (!map[c.name_en]) gaps.push(`${lang}: ${c.name_en}`);
+  }
+  // EVERY TRACKED COUNTRY, not only the twenty in the register — the
+  // tracker reads the same map for all seventy, and the register is
+  // simply where the gap became visible.
+  t.check("every tracked jurisdiction has a name in all four languages",
+    gaps.length === 0,
+    `${tracked.length} countries x 3 languages, ${gaps.length} missing\n        `
+    + gaps.slice(0, 8).join("\n        "));
+
+  // AND THE PAGE USES THEM. Asserted against the map rather than against
+  // a word typed here, so it cannot pass because the test and the page
+  // agree on a translation that has since changed.
+  const de = JSON.parse(readFileSync(join(REPO, "i18n", "de.json"), "utf8")).countryNames;
+  const untranslated = rows
+    .filter((r) => de[r.country] && de[r.country] !== r.country)
+    .filter((r) => !pages.de.includes(`>${de[r.country]}</h2>`));
+  t.check("and the German page prints the German names",
+    untranslated.length === 0,
+    untranslated.map((r) => `${r.country} -> ${de[r.country]}`).join(", "));
+
+  // SORTED IN THE READER'S ALPHABET. Translating the names without
+  // re-sorting leaves a list that looks unsorted rather than translated —
+  // Kroatien sitting between Costa Rica and Denmark.
+  const order = [...pages.de.matchAll(/<h2>([^<]+)<\/h2>/g)].map((m) => m[1]);
+  const sorted = [...order].sort((a, b) => a.localeCompare(b, "de"));
+  t.check("and orders them in German, not in English",
+    order.join("|") === sorted.join("|"),
+    `first divergence near: ${order.find((n, i) => n !== sorted[i]) || "none"}`);
+}
+
 // ---- 4. no raw vocabulary reaches the reader ----------------------------
 //
 // Every controlled word in the schema, in every language. 'not_yet' or
@@ -233,6 +279,87 @@ t.check("there is a register to check", rows.length >= 15, `${rows.length} count
     const i18n = JSON.parse(readFileSync(join(REPO, "i18n", `${lang}.json`), "utf8"));
     t.check(`the menu label resolves in ${lang}`,
       Boolean((i18n.menu || {}).specs), "menu.specs missing");
+  }
+}
+
+// ---- 7b. the menu marks exactly the items that gate ---------------------
+//
+// Dan, 24 August 2026: "it would be good to highlight this in the menu
+// itself", and the marker must not disable the link.
+//
+// THE CHECK IS THE MARKER'S WHOLE JUSTIFICATION. A padlock was removed
+// from this menu on 21 August because it claimed "subscribers only"
+// about a page then served to everyone — a false promise made to the one
+// reader it would turn away. Restoring it is only defensible if
+// something keeps it true, so this derives the gated set from
+// site-worker's own `return render*Gate(` calls and compares it with
+// what the menu marks.
+{
+  const tracker = readFileSync(join(REPO, "einvoicing-compliance-tracker.html"), "utf8");
+  const site = readFileSync(join(REPO, "site-worker", "src", "index.js"), "utf8");
+
+  // Which menu hrefs carry the marker. Every dropdown item in the file,
+  // not a slice of it: the first attempt bounded the search to
+  // #resourcesPanel with a non-greedy match that stopped at the panel's
+  // first nested </div>, found zero items, and reported that the marked
+  // set matched the gated set — which was true of two empty sets. The
+  // tripwire three checks below is what caught it, and is why it is
+  // there.
+  const items = [...tracker.matchAll(/<a class="dropdown-item" href="([^"]+)"([\s\S]*?)<\/a>/g)];
+  const marked = new Set(items.filter(([, , body]) => /dd-sub/.test(body)).map(([, href]) => href));
+
+  // Which routes actually answer a wall: every path in a *_PATHS set
+  // whose handler returns a gate.
+  const gated = new Set();
+  for (const [, name, list] of site.matchAll(/const (\w+_PATHS) = new Set\(\[([^\]]+)\]\)/g)) {
+    // The whole branch, not the first return in it. The planner's branch
+    // checks ROI_PUBLIC first and returns a 404 Response — an earlier
+    // version of this regex stopped there, decided the planner had no
+    // handler, and left it out of the gated set entirely.
+    // BOUNDED AT THE NEXT BRANCH, not at a character count. A fixed
+    // 400-character window ran past the end of the shorter branches and
+    // picked up the NEXT route's handler: /changes and /methodology were
+    // both being reported as gated because the register's branch sits
+    // below them. Nothing failed — neither is a dropdown item — but the
+    // derivation was wrong, and it would have demanded a subscriber
+    // marker on two public pages the day either moved into this menu.
+    const from = site.indexOf(`${name}.has(url.pathname)`);
+    const rest = from === -1 ? "" : site.slice(from);
+    const next = rest.slice(1).search(/\n\s*if \(\w+_PATHS\.has\(/);
+    const branch = next === -1 ? rest.slice(0, 400) : rest.slice(0, next + 1);
+    const handlers = [...branch.matchAll(/return (render\w+)\(/g)].map((m) => m[1]);
+    const gates = handlers.some((h) => {
+      const body = (site.match(new RegExp(`(?:async )?function ${h}\\([\\s\\S]*?\\n\\}`)) || [""])[0];
+      return /return render\w*Gate\(/.test(body);
+    });
+    if (!gates) continue;
+    for (const p of list.split(",")) {
+      const path = p.trim().replace(/["']/g, "");
+      if (path) gated.add(path);
+    }
+  }
+  const gatedInMenu = new Set(items.map(([, href]) => href).filter((h) => gated.has(h)));
+  t.check("the menu marks a subscriber item only where the route gates",
+    [...marked].every((h) => gated.has(h)),
+    `marked: ${[...marked].join(", ")} | gated routes: ${[...gated].join(", ")}`);
+  t.check("and marks every menu item whose route gates",
+    [...gatedInMenu].every((h) => marked.has(h)),
+    `unmarked but gated: ${[...gatedInMenu].filter((h) => !marked.has(h)).join(", ")}`);
+  t.check("the marker found something to check",
+    marked.size >= 3 && gated.size >= 3, `${marked.size} marked, ${gated.size} gated paths`);
+
+  // AND IT DOES NOT DISABLE ANYTHING. Dan was explicit: the reader
+  // clicks through to the sign-up page. A marker that grew a
+  // disabled/aria-disabled attribute would be a different feature.
+  const markedItems = items.filter(([, , body]) => /dd-sub/.test(body));
+  t.check("a marked item is still a live link",
+    markedItems.every(([whole]) => !/aria-disabled|disabled|pointer-events:\s*none/.test(whole)),
+    "a marked menu item is not clickable");
+
+  for (const lang of ["en", "de", "fr", "es"]) {
+    const i18n = JSON.parse(readFileSync(join(REPO, "i18n", `${lang}.json`), "utf8"));
+    t.check(`the marker is translated in ${lang}`,
+      Boolean((i18n.menu || {}).subscriberOnly), "menu.subscriberOnly missing");
   }
 }
 
