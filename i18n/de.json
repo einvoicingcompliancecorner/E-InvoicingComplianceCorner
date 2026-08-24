@@ -104,7 +104,8 @@
     "navHelp": "Navigationshilfe",
     "guides": "Compliance-Leitfäden",
     "methodology": "Methodik",
-    "changes": "Was sich geändert hat"
+    "changes": "Was sich geändert hat",
+    "specs": "Spezifikationsregister"
   },
   "navTips": {
     "label": "So funktioniert diese Seite",
@@ -548,5 +549,82 @@
     "title": "Was sich geändert hat",
     "watch": "{0} Fakten aus {1} Jurisdiktionen sind erfasst. Ein Status kann sich hier nicht ändern, ohne dass die Änderung festgehalten wird — der Build verweigert es.",
     "opened": "Alle stammen vom Tag der Eröffnung des Nachweises. Sie ergaben sich aus dem Abgleich der Kacheln jedes Landes mit dessen eigener Zeitleiste — eine Prüfung, die inzwischen bei jedem Build läuft. Jede war damit ein Widerspruch innerhalb unserer eigenen Daten und keine veröffentlichte Aussage, nach der jemand gehandelt hätte."
+  },
+  "spec": {
+    "eyebrow": "Das Spezifikationsregister",
+    "title": "Was jedes Land tatsächlich vorschreibt – und wo die Datei liegt",
+    "intro": "Format, Version, maßgebliche Datei, Lizenz und der Stichtag, ab dem eine Version gilt – und für jedes Land das, was die veröffentlichten Artefakte nicht sagen.",
+    "caveat": "Dieses Register sagt, wo eine Spezifikation liegt und was sie abdeckt. Es ist kein Prüfdienst: Die Konformität mit einem Artefakt bedeutet nicht Annahme – jede Plattform prüft mehr, als Artefakte beschreiben.",
+    "asOf": "Geprüft am {0}",
+    "back": "← Zurück zum globalen Tracker",
+    "guideLink": "Was gilt – und ab wann →",
+    "strip": {
+      "jurisdictions": "Jurisdiktionen",
+      "named": "Mit benannter Lizenz",
+      "validators": "Öffentlicher Prüfdienst",
+      "nothing": "Nichts Maschinenlesbares"
+    },
+    "gapHeading": "Was die Artefakte nicht sagen",
+    "artefactsHeading": "Maßgebliche Dateien",
+    "noArtefacts": "Kein Download vorhanden",
+    "lbl": {
+      "format": "Format",
+      "version": "Version",
+      "syntax": "Syntax",
+      "standard": "EN 16931",
+      "published_by": "Herausgeber",
+      "licence": "Lizenz",
+      "access": "Zugang",
+      "released": "Veröffentlicht",
+      "mandatory": "Verbindlich ab",
+      "changelog": "Versionsverlauf",
+      "validator": "Öffentlicher Prüfdienst"
+    },
+    "capture": {
+      "published": "Veröffentlicht",
+      "partial": "Teilweise veröffentlicht",
+      "unpublished": "Nicht veröffentlicht",
+      "unreachable": "Für uns nicht lesbar",
+      "not_yet": "Noch nicht erschienen"
+    },
+    "licenceStatus": {
+      "named": "Benannte Lizenz",
+      "permissive_unnamed": "Nutzung erlaubt, ohne benannte Lizenz",
+      "restrictive": "Frei ladbar, Weitergabe untersagt",
+      "unstated": "Keine Bedingungen genannt",
+      "unknown": "Bedingungen ungeklärt"
+    },
+    "access": {
+      "open": "Download ohne Konto",
+      "registration": "E-Mail oder kostenloses Konto",
+      "credentials": "Nationale digitale Identität",
+      "blocked": "Herausgeber sperrt automatisierten Zugriff",
+      "none": "Noch nichts veröffentlicht"
+    },
+    "syntaxName": {
+      "ubl": "UBL 2.1",
+      "cii": "UN/CEFACT CII",
+      "hybrid": "Hybrid PDF + CII",
+      "national_xml": "Nationales XML",
+      "json": "JSON",
+      "multiple": "Mehrere zulässig",
+      "unknown": "Ungeklärt"
+    },
+    "artefact": {
+      "xsd": "Schema (XSD)",
+      "schematron": "Geschäftsregeln (Schematron)",
+      "xslt": "Regeln (XSLT)",
+      "codelist": "Codelisten",
+      "sdk": "Prüfwerkzeug oder SDK",
+      "testsuite": "Testrechnungen",
+      "spec_pdf": "Spezifikationsdokument",
+      "repo": "Repository"
+    },
+    "yes": "Ja",
+    "no": "Nein",
+    "unknown": "Ungeklärt",
+    "gateEyebrow": "Referenz für Abonnenten",
+    "gateTitle": "Das Spezifikationsregister",
+    "gateBody": "Das Abonnement ist kostenlos. Das Register nennt für zwanzig Jurisdiktionen das vorgeschriebene Format, die aktuelle Version, die maßgebliche Datei und deren Lizenz – und was die Artefakte auslassen."
   }
 }

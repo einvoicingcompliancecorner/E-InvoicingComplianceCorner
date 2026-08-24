@@ -895,6 +895,15 @@ const GUIDES_PATHS = new Set(["/compliance-guides", "/compliance-guides.html"]);
 // inside the About modal, which has no URL at all.
 const METHOD_PATHS = new Set(["/methodology", "/methodology.html"]);
 const CHANGES_PATHS = new Set(["/changes", "/changes.html"]);
+
+// ---- the specification register -----------------------------------------
+//
+// Gated, and for the same reason the guides are: it is the deepest piece
+// of research this site publishes and it is what a subscription buys.
+// NO ENV FLAG, per the note above GUIDES_PATHS -- the route answers a
+// sign-up wall from its first deploy, so there is nothing a flag would
+// hide that the gate does not already hold back.
+const SPEC_PATHS = new Set(["/spec-register", "/spec-register.html", "/specifications"]);
 const GUIDE_DOC_PATHS = new Set(["/compliance-guides/guide"]);
 
 // The members subdomain, written once. It appears in four other places
@@ -1270,6 +1279,16 @@ const renderGuidesGate = (request, env, lang, framed) =>
     blurb: "Subscribing is free. Pick the markets you care about and we will build a one-page briefing for each &mdash; the mandate as it stands, the dated timeline, the penalties, the key facts and what to do next &mdash; ready to print or save as a PDF.",
   });
 
+const renderSpecGate = (request, env, lang, framed) =>
+  renderSubscriberGate(request, env, lang, framed, {
+    namespace: "spec",
+    canonical: "/spec-register",
+    docTitle: "The specification register",
+    eyebrow: "Subscriber reference",
+    title: "The specification register",
+    blurb: "Subscribing is free. The register names the mandated format, its current version, the authoritative file and its licence for twenty jurisdictions &mdash; and, for each, what the published artefacts leave out.",
+  });
+
 // ================================================================
 // COMPLIANCE GUIDES
 // ================================================================
@@ -1583,6 +1602,242 @@ async function renderChangesPage(request, env) {
   const headers = new Headers({
     "Content-Type": "text/html; charset=UTF-8",
     "Cache-Control": "public, max-age=600",
+  });
+  if (shouldSetCookie) {
+    headers.append("Set-Cookie", `${LANG_COOKIE}=${lang}; Domain=.e-invoicingcompliancecorner.com; Path=/; Max-Age=${LANG_COOKIE_TTL_SECONDS}; SameSite=Lax`);
+  }
+  return new Response(html, { headers });
+}
+
+// ================================================================
+// THE SPECIFICATION REGISTER
+// ================================================================
+//
+// Dan, 24 August 2026, on the schema-checker feasibility study: "Yes, I
+// think this would be good value-add for a subscriber."
+//
+// WHAT THIS PAGE IS CAREFUL NOT TO BE. The study's finding was that a
+// validator can honestly say "this conforms to the published
+// specification" and can never say "this will be accepted" -- because
+// what a platform actually rejects exceeds every downloadable artefact,
+// and because for most clearance regimes you cannot test against the
+// authority's own validator without credentials tied to a registered
+// domestic taxpayer. So this page publishes the register and prints
+// spec.caveat above the fold, in four languages, saying exactly that.
+//
+// The gap note is the product. Every other field on a card can be read
+// off a web page in an afternoon; the sentence naming what the
+// artefacts leave out is the part that took the research.
+async function renderSpecRegisterPage(request, env) {
+  if (!env.eicc_content) return new Response("Missing D1 binding", { status: 500 });
+  const { lang, shouldSetCookie } = resolveInsightsLang(request);
+  const framed = new URL(request.url).searchParams.get("frame") === "1";
+
+  // THE GATE IS THE ROUTE. Before any D1 query, so a signed-out request
+  // costs the database nothing and cannot leak a count through timing
+  // or through an error message.
+  const signedInAs = await sessionEmail(request, env.SESSION_SECRET);
+  if (!signedInAs) return renderSpecGate(request, env, lang, framed);
+
+  const strings = await authStrings(env, lang, "spec");
+  const t = subtreeT(strings);
+
+  const rows = (await env.eicc_content.prepare(`
+    SELECT c.name_en AS country, c.code, c.slug,
+           s.capture_status, s.format_name, s.format_version, s.syntax, s.is_en16931,
+           s.governance, s.licence, s.licence_status, s.access,
+           s.version_released, s.mandatory_from, s.changelog_url, s.validator_url,
+           s.last_verified,
+           COALESCE(tr.gap_note, tr_en.gap_note) AS gap_note
+      FROM country_spec s
+      JOIN countries c ON c.id = s.country_id
+      LEFT JOIN country_spec_translations tr    ON tr.country_id = s.country_id AND tr.lang = ?
+      LEFT JOIN country_spec_translations tr_en ON tr_en.country_id = s.country_id AND tr_en.lang = 'en'
+     ORDER BY c.name_en`).bind(lang).all()).results || [];
+
+  const artefacts = (await env.eicc_content.prepare(`
+    SELECT a.country_id, c.code, a.kind, a.url, a.publisher
+      FROM country_spec_artefacts a
+      JOIN countries c ON c.id = a.country_id
+     ORDER BY a.country_id, a.sort_order`).all()).results || [];
+  const byCode = new Map();
+  for (const a of artefacts) {
+    if (!byCode.has(a.code)) byCode.set(a.code, []);
+    byCode.get(a.code).push(a);
+  }
+
+  // The three numbers the study turned on, counted here rather than
+  // written down -- a headline figure that is typed is a figure that
+  // goes stale in silence, which this site has published about.
+  const named = rows.filter((r) => r.licence_status === "named").length;
+  const validators = rows.filter((r) => r.validator_url).length;
+  const nothing = rows.filter((r) => !(byCode.get(r.code) || []).some(
+    (a) => ["xsd", "schematron", "xslt", "sdk"].includes(a.kind))).length;
+  const verified = rows.reduce((a, r) => (r.last_verified > a ? r.last_verified : a), "");
+
+  const label = (group, key, fallback) => t(`${group}.${key}`, fallback || key);
+  const yesNo = (v) => v === "yes" ? t("yes", "Yes") : v === "no" ? t("no", "No") : t("unknown", "Not established");
+
+  // A field prints only when it has a value. A register whose cards are
+  // half em-dashes reads as broken rather than as honest, and the
+  // honest part is already carried by capture_status and the gap note.
+  const field = (k, en, value) => value
+    ? `<div class="f"><span class="k">${escHtml(label("lbl", k, en))}</span><span class="v">${escHtml(value)}</span></div>`
+    : "";
+
+  const card = (r) => {
+    const list = byCode.get(r.code) || [];
+    const links = list.map((a) =>
+      `<li><a href="${escHtml(a.url)}" target="_blank" rel="noopener noreferrer">`
+      + `${escHtml(label("artefact", a.kind, a.kind))}</a>`
+      + `<span class="pub">${escHtml(a.publisher)}</span></li>`).join("");
+    return `<article class="c st-${escHtml(r.capture_status)}">
+      <header>
+        <h2>${escHtml(r.country)}</h2>
+        <span class="pill">${escHtml(label("capture", r.capture_status))}</span>
+      </header>
+      <div class="fields">
+        ${field("format", "Format", r.format_name)}
+        ${field("version", "Version", r.format_version)}
+        ${field("syntax", "Syntax", r.syntax ? label("syntaxName", r.syntax) : "")}
+        ${field("standard", "EN 16931", yesNo(r.is_en16931))}
+        ${field("published_by", "Published by", r.governance)}
+        ${field("licence", "Licence", r.licence || label("licenceStatus", r.licence_status))}
+        ${field("access", "Access", label("access", r.access))}
+        ${field("released", "Released", r.version_released)}
+        ${field("mandatory", "Obligatory from", r.mandatory_from)}
+      </div>
+      ${r.licence && r.licence_status === "restrictive" ? "" : ""}
+      <div class="gap">
+        <p class="gh">${escHtml(t("gapHeading", "What the artefacts do not tell you"))}</p>
+        <p class="gn">${escHtml(r.gap_note || "")}</p>
+      </div>
+      <div class="art">
+        <p class="ah">${escHtml(t("artefactsHeading", "Authoritative files"))}</p>
+        ${links ? `<ul>${links}</ul>`
+          : `<p class="none">${escHtml(t("noArtefacts", "Nothing to download"))}</p>`}
+        <p class="extra">${[
+          r.changelog_url ? `<a href="${escHtml(r.changelog_url)}" target="_blank" rel="noopener noreferrer">${escHtml(label("lbl", "changelog", "Version history"))}</a>` : "",
+          r.validator_url ? `<a href="${escHtml(r.validator_url)}" target="_blank" rel="noopener noreferrer">${escHtml(label("lbl", "validator", "Public validator"))}</a>` : "",
+          r.slug ? `<a href="/compliance-guides" target="_top">${escHtml(t("guideLink", "What is mandated, and from when →"))}</a>` : "",
+        ].filter(Boolean).join("")}</p>
+      </div>
+    </article>`;
+  };
+
+  const langLinks = SUPPORTED_LANGS.map((l) =>
+    l === lang ? `<span class="lang-current">${l.toUpperCase()}</span>`
+      : `<a href="/spec-register?lang=${l}">${l.toUpperCase()}</a>`).join(" · ");
+
+  const html = `<!DOCTYPE html>
+<html lang="${escHtml(lang)}">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>${escHtml(t("eyebrow", "The specification register"))} — The E-Invoicing Compliance Corner</title>
+<meta name="robots" content="noindex,nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0f1a2b; --ink-2:#152238; --line:#2b3c5a;
+    --text:#f2f0e8; --muted:#93a3c0;
+    --amber:#c98a3a; --stamp:#b5432f; --live:#3f7d5c; --dim:#6b7a95;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{background:var(--ink); color:var(--text);
+       font-family:'IBM Plex Sans',system-ui,sans-serif; line-height:1.55;}
+  .display{font-family:'Big Shoulders Display',sans-serif; font-weight:800;}
+  a{color:var(--amber);}
+  .wrap{max-width:1100px; margin:0 auto; padding:0 5vw 60px;}
+  .top-bar{display:flex; justify-content:space-between; align-items:center;
+           gap:14px; padding:18px 0; border-bottom:1px solid var(--line); flex-wrap:wrap;}
+  .top-bar a{text-decoration:none; font-size:13px;}
+  .langs{font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--muted);}
+  .lang-current{color:var(--amber); font-weight:600;}
+  .eyebrow{font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.16em;
+           text-transform:uppercase; color:var(--amber); margin:28px 0 6px;}
+  h1{font-size:clamp(26px,4.4vw,40px); margin:0 0 12px; text-transform:uppercase;
+     line-height:.98; font-family:'Big Shoulders Display',sans-serif; font-weight:800;}
+  .intro{font-size:15px; color:var(--muted); max-width:760px; margin:0 0 16px;}
+  /* THE CAVEAT. Given the strongest treatment on the page that is not a
+     heading, because the one way this feature fails is a reader taking
+     it for a promise of acceptance. */
+  .caveat{border-left:3px solid var(--stamp); background:rgba(181,67,47,.09);
+          padding:12px 16px; border-radius:0 6px 6px 0; font-size:13.5px;
+          color:var(--text); max-width:820px; margin:0 0 20px;}
+  .strip{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:1px;
+         background:var(--line); border:1px solid var(--line); border-radius:8px;
+         overflow:hidden; margin:0 0 8px;}
+  .strip div{background:var(--ink-2); padding:13px 15px;}
+  .strip .n{font-family:'Big Shoulders Display',sans-serif; font-weight:800; font-size:23px;}
+  .strip .l{font-size:10.5px; color:var(--muted); text-transform:uppercase;
+            letter-spacing:.07em; margin-top:4px;}
+  .asof{font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--muted); margin:0 0 26px;}
+  .cards{display:grid; grid-template-columns:repeat(auto-fill,minmax(330px,1fr)); gap:14px;}
+  .c{background:var(--ink-2); border:1px solid var(--line); border-radius:9px;
+     padding:15px 17px; border-left-width:4px;}
+  .c.st-published{border-left-color:var(--live);}
+  .c.st-partial{border-left-color:var(--amber);}
+  .c.st-unpublished,.c.st-unreachable{border-left-color:var(--stamp);}
+  .c.st-not_yet{border-left-color:var(--dim);}
+  .c header{display:flex; justify-content:space-between; align-items:baseline;
+            gap:10px; margin-bottom:10px; flex-wrap:wrap;}
+  .c h2{font-size:17px; margin:0; font-family:'Big Shoulders Display',sans-serif;
+        font-weight:800; text-transform:uppercase; letter-spacing:.01em;}
+  .pill{font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:.05em;
+        text-transform:uppercase; padding:2px 8px; border-radius:20px;
+        border:1px solid var(--line); color:var(--muted); white-space:nowrap;}
+  .fields{display:grid; gap:3px; margin-bottom:11px;}
+  .f{display:grid; grid-template-columns:9.5em 1fr; gap:8px; font-size:12.5px;}
+  .f .k{color:var(--muted);}
+  .f .v{color:var(--text); overflow-wrap:anywhere;}
+  .gap{background:rgba(201,138,58,.08); border-radius:6px; padding:10px 12px; margin-bottom:11px;}
+  .gh{font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:.06em;
+      text-transform:uppercase; color:var(--amber); margin:0 0 5px;}
+  .gn{margin:0; font-size:13px; color:var(--text);}
+  .ah{font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:.06em;
+      text-transform:uppercase; color:var(--muted); margin:0 0 5px;}
+  .art ul{margin:0 0 8px; padding-left:0; list-style:none;}
+  .art li{font-size:12.5px; margin-bottom:3px;}
+  .art li a{overflow-wrap:anywhere;}
+  .art .pub{color:var(--muted); font-size:11px; margin-left:6px;}
+  .art .none{margin:0 0 8px; font-size:12.5px; color:var(--muted);}
+  .extra{margin:0; font-size:12.5px; display:flex; gap:14px; flex-wrap:wrap;}
+  @media (max-width:520px){ .f{grid-template-columns:1fr;} .f .k{font-size:11px;} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top-bar">
+    <a href="/einvoicing-compliance-tracker.html" target="_top">${escHtml(t("back", "← Back to global tracker"))}</a>
+    ${framed ? "" : `<span class="langs">${langLinks}</span>`}
+  </div>
+  <p class="eyebrow">${escHtml(t("eyebrow", "The specification register"))}</p>
+  <h1>${escHtml(t("title", "What each country actually mandates, and where the file is"))}</h1>
+  <p class="intro">${escHtml(t("intro", "The format, the version, the authoritative file, the licence, and the date a version becomes obligatory."))}</p>
+  <p class="caveat">${escHtml(t("caveat", "This register says where a specification is and what it covers. It is not a validator."))}</p>
+  <div class="strip">
+    <div><div class="n display">${rows.length}</div><div class="l">${escHtml(t("strip.jurisdictions", "Jurisdictions"))}</div></div>
+    <div><div class="n display">${named}</div><div class="l">${escHtml(t("strip.named", "Under a named licence"))}</div></div>
+    <div><div class="n display">${validators}</div><div class="l">${escHtml(t("strip.validators", "Public validator"))}</div></div>
+    <div><div class="n display">${nothing}</div><div class="l">${escHtml(t("strip.nothing", "Nothing machine-readable"))}</div></div>
+  </div>
+  <p class="asof">${escHtml(fillPlain(t("asOf", "Verified {0}"), verified || "—"))}</p>
+  <div class="cards">${rows.map(card).join("")}</div>
+</div>
+</body>
+</html>`;
+
+  const headers = new Headers({
+    "Content-Type": "text/html; charset=UTF-8",
+    // Private, and short. A gated page cached by a shared cache is how
+    // one subscriber's page reaches a stranger; `vary: Cookie` is on the
+    // gate for the same reason.
+    "Cache-Control": "private, max-age=60",
+    "Vary": "Cookie",
   });
   if (shouldSetCookie) {
     headers.append("Set-Cookie", `${LANG_COOKIE}=${lang}; Domain=.e-invoicingcompliancecorner.com; Path=/; Max-Age=${LANG_COOKIE_TTL_SECONDS}; SameSite=Lax`);
@@ -2606,6 +2861,9 @@ export default {
     // GUIDES_PATHS for why this one differs from ROI_PUBLIC.
     if (CHANGES_PATHS.has(url.pathname)) {
       return renderChangesPage(request, env);
+    }
+    if (SPEC_PATHS.has(url.pathname)) {
+      return renderSpecRegisterPage(request, env);
     }
     if (METHOD_PATHS.has(url.pathname)) {
       return renderMethodologyPage(request, env);
