@@ -15952,3 +15952,67 @@ snapshot with D1 working perfectly. Negative-tested by reverting 631.
 `npm test`: **26 suites**. Replay OK across **631 files**, 607 assertions.
 
 **Needs both a migration apply and a site-worker deploy.**
+
+### A page that knows whether it is live (24 Aug 2026, deployed)
+
+Dan, straight after the fix above: *"Is there a more graceful way to
+fail, rather than displaying incorrect counts?"*
+
+Yes, and the old design was the wrong trade. On any D1 failure
+`renderTracker` served a months-old snapshot **silently**, so the page did
+not fail at all — it reported the snapshot's totals as though they were
+today's. It did not look broken. It looked like the site had shrunk.
+
+**The page now knows which it is showing.** The shell declares
+`DATA_SNAPSHOT_DATE = '2026-08-02'` beside its frozen array — the date
+that array last changed, established from git rather than invented, and
+the commit that changed it was Luxembourg becoming the 32nd country,
+which is exactly the 31-plus-EU Dan was looking at. site-worker clears
+the flag when injection succeeds, so **the default is the safe one**: a
+page that never reaches that line describes itself as cached.
+
+On the snapshot, the board still renders — a reader keeps the dates and
+the route through to a deep dive — but all five stat numbers print as a
+dash and an amber banner says live data is unavailable, gives the date of
+the copy, and says the counts are hidden deliberately. That last clause
+matters: without it, five dashes read as a second fault.
+
+Showing the counts with a caveat beside them was considered and rejected.
+A number on screen gets read and remembered; its footnote does not.
+
+**One thing the audit caught that the brief did not ask about.**
+`window.EICC_JURISDICTION_COUNT` is published from the same function and
+is what the sign-up panel's "N jurisdictions tracked" reads. On the
+snapshot that is 31 — so for a day the site understated itself by half in
+the one place trying to persuade someone to subscribe. It is no longer
+published at all on cached data, and `auth-overlay.js` already treated a
+missing value as "no number to show" and needed no change.
+
+The three-way injection guard now covers the flag too: live rows under a
+cached banner would be its own kind of lie, so a failure to clear it is a
+failure to render.
+
+`tracker-board-renders.mjs` grew from 9 checks to 16 — it now renders
+**both** states in a real browser and asserts each shows the opposite of
+the other, because the failure being guarded is precisely a page that
+looks fine while saying something untrue, and no amount of reading source
+establishes that.
+
+Not doing, on Dan's call: an external scheduled check on the live page.
+The format assertions and per-row isolation make a repeat unlikely, and
+the banner means a reader would now see it.
+
+`npm test`: **26 suites**. Replay OK across **632 files**, 610 assertions.
+
+#### A footnote on how this entry nearly went missing
+
+It was written once and silently lost. The append ran in the same shell
+command that backgrounded the test suite, the write did not land, and the
+`echo "PROGRESS written"` that followed reported success because it runs
+whether or not the line before it did anything.
+
+Which is this week's lesson in miniature: **a step that reports success
+without checking it did anything is not a step, it is a claim.** Caught
+because the commit stat said `PROGRESS.md | 2 +-` where forty-odd lines
+were expected — the same way the tracker outage was caught, by a number
+being smaller than it should have been.
