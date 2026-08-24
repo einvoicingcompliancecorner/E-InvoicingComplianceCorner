@@ -340,6 +340,77 @@ t.check("the sitemap is served and well-formed",
     "the redirect must be cookie-gated, skip ?lang= URLs, and not stack history");
 }
 
+// ---- 5. the members subdomain -------------------------------------------
+//
+// It emitted no noindex anywhere and served no robots.txt, and a MISSING
+// robots.txt reads to a crawler as "everything allowed". The public
+// tracker links here, so the path in was already open: sign-in pages,
+// preferences and every magic-link landing page were one crawl from a
+// search result.
+{
+  const members = (await import(join(REPO, "members-worker", "src", "index.js"))).default;
+  const mEnv = { ...env, ARCHIVE_PUBLIC: "true", MEMBERS: null };
+  const mGet = (path, e = mEnv) => members.fetch(
+    new Request(`https://members.e-invoicingcompliancecorner.com${path}`), e, { waitUntil() {} });
+
+  const robots = await mGet("/robots.txt");
+  const body = await robots.text();
+  t.check("the members subdomain serves a robots.txt",
+    robots.status === 200 && /Disallow: \//.test(body), `status ${robots.status}: ${body}`);
+
+  // THE ARCHIVE IS THE DELIBERATE EXCEPTION, and it follows the flag
+  // rather than a second decision someone has to remember.
+  t.check("and allows the archive while the promo is on",
+    /Allow: \/members\/archive/.test(body), body);
+  const offBody = await (await mGet("/robots.txt", { ...mEnv, ARCHIVE_PUBLIC: "false" })).text();
+  t.check("and stops allowing it the moment the promo ends",
+    !/Allow:/.test(offBody), offBody);
+
+  // The header, on a page that must never be indexed.
+  const prefs = await mGet("/members/preferences");
+  t.check("a members page carries X-Robots-Tag: noindex",
+    /noindex/.test(prefs.headers.get("x-robots-tag") || ""),
+    `X-Robots-Tag: ${prefs.headers.get("x-robots-tag")}`);
+
+  const archive = await mGet("/members/archive");
+  t.check("and the public archive does not, while it is public",
+    !archive.headers.get("x-robots-tag"),
+    `X-Robots-Tag: ${archive.headers.get("x-robots-tag")}`);
+  const archiveClosed = await mGet("/members/archive", { ...mEnv, ARCHIVE_PUBLIC: "false" });
+  t.check("but does the moment it is not",
+    /noindex/.test(archiveClosed.headers.get("x-robots-tag") || ""),
+    `X-Robots-Tag: ${archiveClosed.headers.get("x-robots-tag")}`);
+}
+
+// ---- 6. the structured-data entities --------------------------------------
+{
+  const sd = await import(join(REPO, "shared", "structured-data.mjs"));
+  const org = sd.organizationLd();
+  const person = sd.personLd();
+  // ONE PERSON, REFERENCED TWICE. Nested inline on the Organization and
+  // repeated on each Article, the same human would have been two
+  // unrelated entities to any consumer.
+  t.check("the founder is one addressable entity, not two inline copies",
+    org.founder && org.founder["@id"] === person["@id"] && !org.founder.name,
+    JSON.stringify(org.founder));
+  const article = sd.articleLd({ slug: "x", headline: "H", lang: "en" });
+  t.check("and every article names an author",
+    article.author && article.author["@id"] === person["@id"], JSON.stringify(article.author));
+  t.check("the founder carries a real photo and a real profile",
+    /dan-young\.png$/.test(person.image) && Array.isArray(person.sameAs) && person.sameAs.length > 0);
+
+  // AND THE TRACKER'S STATIC GRAPH CONTAINS THE NODE IT REFERENCES.
+  // Organization, Person and WebSite are hardcoded in the asset; the
+  // @id references on every other page resolve to them or to nothing.
+  const tracker = readFileSync(join(REPO, "einvoicing-compliance-tracker.html"), "utf8");
+  const graph = JSON.parse((tracker.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/) || [, "{}"])[1]
+    .replace(/\\u003c/g, "<"));
+  const ids = (graph["@graph"] || []).map((n) => n["@id"]);
+  t.check("the tracker's graph defines every entity the site references",
+    ids.includes(person["@id"]) && ids.includes(org["@id"]),
+    `graph holds: ${ids.join(", ")}`);
+}
+
 console.log(`  note  ${tracked.length} countries linked from the tracker and listed in `
   + `${locs.length} sitemap URLs`);
 

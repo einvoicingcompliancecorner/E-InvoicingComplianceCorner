@@ -88,12 +88,40 @@ export function organizationLd() {
     // as the statement of editorial principles a publisher works to,
     // which is precisely what that page is.
     publishingPrinciples: `${ORIGIN}/methodology`,
-    founder: {
-      "@type": "Person",
-      name: "Dan Young",
-      description: "25 years in financial software transformation, focused on "
-        + "invoice digitisation and Accounts Payable automation.",
-    },
+    founder: { "@id": `${ORIGIN}/#founder` },
+  };
+}
+
+/**
+ * The founder, as an addressable entity rather than an inline blob.
+ *
+ * WHY IT GAINED AN @id (24 August 2026). It was nested inside
+ * Organization, which means the same person described on the Article
+ * nodes would have been a SECOND, unrelated Person to a consumer. One
+ * node, referenced from both, says they are the same human — which is
+ * the entire point of using @id.
+ *
+ * THE PHOTO IS REAL AND THE LOGO IS NOT. images/dan-young.png exists and
+ * is him, so it is asserted here. The Organization has no logo asset at
+ * all, and inventing a URL for one — or pointing `logo` at a portrait —
+ * would be a structured-data claim this site cannot support. Left off
+ * until there is a logo to name.
+ */
+export function personLd() {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    "@id": `${ORIGIN}/#founder`,
+    name: "Dan Young",
+    description: "25 years in financial software transformation, focused on "
+      + "invoice digitisation and Accounts Payable automation.",
+    image: `${ORIGIN}/images/dan-young.png`,
+    // The one profile this site actually links to, from the tracker's
+    // own footer. sameAs belongs on the PERSON, not the Organization:
+    // it is his profile, not the publication's, and claiming otherwise
+    // is the kind of small overstatement this site does not make.
+    sameAs: ["https://www.linkedin.com/in/danielyoung76/"],
+    worksFor: { "@id": `${ORIGIN}/#organization` },
   };
 }
 
@@ -195,7 +223,7 @@ export function countryPageLd({ countryName, displayName, slug, lang, lastUpdate
  * these genuinely are written pieces with a publication date the page
  * already displays.
  */
-export function articleLd({ slug, headline, description, published, lang, isFree }) {
+export function articleLd({ slug, headline, description, published, modified, lang, isFree }) {
   const node = {
     "@context": "https://schema.org",
     "@type": "Article",
@@ -205,11 +233,19 @@ export function articleLd({ slug, headline, description, published, lang, isFree
     inLanguage: lang,
     isPartOf: { "@id": `${ORIGIN}/#website` },
     publisher: { "@id": `${ORIGIN}/#organization` },
+    // AUTHOR, added 24 August 2026. Google lists it as required for
+    // Article rich-result eligibility and these pieces had none — every
+    // whitepaper on this site was published by an organisation and
+    // written, as far as any consumer could tell, by nobody.
+    author: { "@id": `${ORIGIN}/#founder` },
     publishingPrinciples: `${ORIGIN}/methodology`,
   };
   if (description) node.description = description;
   if (published && /^\d{4}-\d{2}-\d{2}/.test(String(published))) {
     node.datePublished = String(published).slice(0, 10);
+  }
+  if (modified && /^\d{4}-\d{2}-\d{2}/.test(String(modified))) {
+    node.dateModified = String(modified).slice(0, 10);
   }
   // isAccessibleForFree is only stated where we know the answer. A gated
   // piece marked free is a promise the paywall breaks.

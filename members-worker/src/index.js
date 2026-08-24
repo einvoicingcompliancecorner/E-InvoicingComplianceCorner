@@ -479,6 +479,44 @@ async function withUpgradedSession(request, env, response) {
   return new Response(response.body, { status: response.status, headers });
 }
 
+// ================================================================
+// NOTHING ON THIS SUBDOMAIN IS INDEXABLE, EXCEPT WHAT IS DELIBERATELY PUBLIC
+// ================================================================
+//
+// Found by the 24 August SEO audit: members-worker emitted no `noindex`
+// anywhere and served no robots.txt at all -- and a MISSING robots.txt
+// reads to a crawler as "everything allowed", not as "ask first". The
+// public tracker links to this subdomain, so the path in was already
+// open. Sign-in pages, preferences, the ROI planner behind its wall and
+// every magic-link landing page were one crawl away from a search
+// result.
+//
+// THE ARCHIVE IS THE DELIBERATE EXCEPTION, and it is derived rather than
+// hardcoded. ARCHIVE_PUBLIC exists "to build page traffic" (wrangler
+// .toml), which is a decision to be FOUND -- so while the promo is on
+// the archive is indexable, and the day the flag flips it stops being,
+// with no second edit to remember. A promo that quietly leaves its
+// pages indexed after it ends is the same drift in a slower form.
+function robotsTagFor(pathname, env) {
+  const archivePublic = env.ARCHIVE_PUBLIC === "true";
+  const isArchive = pathname === "/members/archive" || pathname.startsWith("/members/archive/");
+  if (isArchive && archivePublic) return null;
+  return "noindex, nofollow";
+}
+
+// Served rather than 404ed, for the same reason: a 404 here is read as
+// permission. Disallow is explicit, and the archive is listed as Allow
+// only while it is genuinely open.
+function membersRobotsTxt(env) {
+  const lines = ["User-agent: *"];
+  if (env.ARCHIVE_PUBLIC === "true") {
+    lines.push("Allow: /members/archive");
+    lines.push("Allow: /members/archive/");
+  }
+  lines.push("Disallow: /");
+  return lines.join("\n") + "\n";
+}
+
 function withLangCookie(response, lang, shouldSetCookie, cookieDuplicated) {
   if (!shouldSetCookie && !cookieDuplicated) return response;
   const headers = new Headers(response.headers);
@@ -615,8 +653,23 @@ export default {
         return handleAnnounceFeaturesTrigger(request, env);
       } else if (request.method === "POST" && url.pathname === "/admin/run-content-monitor") {
         return handleManualContentMonitorTrigger(request, env, ctx);
+      } else if (request.method === "GET" && url.pathname === "/robots.txt") {
+        response = new Response(membersRobotsTxt(env), {
+          headers: { "Content-Type": "text/plain; charset=UTF-8", "Cache-Control": "public, max-age=3600" },
+        });
       } else {
         response = new Response("Not found", { status: 404 });
+      }
+      // X-Robots-Tag rather than a meta tag: it covers the JSON
+      // endpoints and the PDF-ish responses too, and it cannot be
+      // forgotten by a renderer the way a <meta> in one template can.
+      const robots = robotsTagFor(url.pathname, env);
+      if (robots && url.pathname !== "/robots.txt") {
+        response = new Response(response.body, {
+          status: response.status,
+          headers: new Headers(response.headers),
+        });
+        response.headers.set("X-Robots-Tag", robots);
       }
       return await withUpgradedSession(request, env, withLangCookie(response, lang, shouldSetCookie, cookieDuplicated));
     } catch (err) {

@@ -809,6 +809,9 @@ async function renderSourcesPage(request, env) {
   const { lang } = resolveInsightsLang(request);
   const ui = SOURCES_UI[lang] || SOURCES_UI.en;
 
+  const datasetModified = (await env.eicc_content.prepare(
+    "SELECT max(last_verified) AS m FROM country_headline_facts").first())?.m;
+
   const { results } = await env.eicc_content.prepare(`
     SELECT c.name_en, c.code, c.region, ct.display_name,
            ts.url, COALESCE(tst.description, tste.description, ts.url) AS description
@@ -866,6 +869,11 @@ ${ldScript([
   // reason tests/jurisdiction-count.mjs exists.
   datasetLd({
     countryCount: new Set(results.filter((r) => r.code !== "EU").map((r) => r.name_en)).size,
+    // WHEN THE DATA WAS LAST VERIFIED, which the Dataset node has always
+    // had a slot for and never been given. It is the most useful single
+    // property on this page for anyone deciding whether to cite it, and
+    // it comes from the facts themselves rather than from a deploy date.
+    modified: datasetModified || undefined,
     lang,
   }),
   breadcrumbLd([
