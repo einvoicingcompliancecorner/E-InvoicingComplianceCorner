@@ -373,6 +373,23 @@ t.check("there is a register to check", rows.length >= 15, `${rows.length} count
   const body = html.split("</style>").pop();
   t.check("framed, the page drops its own language row",
     !/lang-current/.test(body), "the frame would show two language switchers");
+  // Dan, 24 August 2026: "there are two headline links which are labelled
+  // '← Back to the global tracker'". The panel draws one above the
+  // iframe; this page was drawing a second inside it. /changes and
+  // /methodology drop the whole top bar when framed and always have —
+  // this page stripped only the language row, which is the visible half
+  // of the same contract, so the defect was one line of an inherited
+  // pattern that had not been inherited completely.
+  t.check("and its own back link, which the panel already draws",
+    !/einvoicing-compliance-tracker\.html/.test(body),
+    "the frame would show two 'back to tracker' links, one above the other");
+  // The standalone page must still have exactly one. Dropping the bar in
+  // both states would be the opposite defect and would look identical to
+  // this fix from inside the panel.
+  const plain = (await (await get("/spec-register", cookie)).text()).split("</style>").pop();
+  const backs = (plain.match(/einvoicing-compliance-tracker\.html/g) || []).length;
+  t.check("while the standalone page keeps exactly one",
+    backs === 1, `${backs} back link(s) outside the frame`);
   t.check("and still carries the marker the panel checks for",
     /class="wrap"/.test(html));
 }
