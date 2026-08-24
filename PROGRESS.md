@@ -16337,3 +16337,11 @@ manual, complete sweep, changed fact source — instead of grepping the
 source for what it was written to say.
 
 `npm test`: 27 suites, **29 checks in the monitor suite**.
+
+**Deployed and confirmed by Dan, 24 August 2026.** Migration 635 applied
+remotely, both Workers redeployed, and the new cron registered. The first
+manual run went through end to end — `10/758 checked (748 deferred to
+next run), 0 changed, 1 failed, 11 awaiting announcement` — which is the
+widened list, the cursor and the digest all working. Tonight's 08:00 UTC
+run is the first with the full 8-minute budget and the first genuinely
+representative digest.
