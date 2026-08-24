@@ -138,8 +138,20 @@ t.check("the sitemap is served and well-formed",
   // offered to Google. Country-shaped entries only — the static list
   // holds real files the asset layer serves.
   const known = new Set(tracked.map((c) => `/${c.slug}`));
-  const staticish = /\.(html|xml)$|^\/$|^\/(map|sources|insights|methodology|changes)/;
-  const orphan = locs.filter((l) => !known.has(l) && !staticish.test(l) && !l.startsWith("/insights/"));
+  // THE STATIC SET, READ FROM THE WORKER'S OWN LIST rather than guessed
+  // at by shape. The first version matched anything ending .html — which
+  // silently stopped recognising every static page the moment they moved
+  // onto their extensionless addresses, and reported thirteen real pages
+  // as countries the router does not know. A check that encodes the
+  // shape of the data instead of its source breaks when the data is
+  // corrected, which is the wrong way round.
+  const site = readFileSync(join(REPO, "site-worker", "src", "index.js"), "utf8");
+  const staticBlock = (site.match(/const SITEMAP_STATIC = \[[\s\S]*?\n\];/) || [""])[0];
+  const declared = new Set([...staticBlock.matchAll(/loc: "([^"]+)"/g)].map((m) => m[1]));
+  t.check("the static list is readable, so this check is checking something",
+    declared.size >= 10, `${declared.size} static entries found`);
+  const orphan = locs.filter((l) =>
+    !known.has(l) && !declared.has(l) && !l.startsWith("/insights/"));
   t.check("and nothing in it is a country the router does not know",
     orphan.length === 0, orphan.join(", "));
 }
@@ -338,6 +350,44 @@ t.check("the sitemap is served and well-formed",
     && /if \(params\.has\("lang"\)\) return false;/.test(loader)
     && /location\.replace/.test(loader),
     "the redirect must be cookie-gated, skip ?lang= URLs, and not stack history");
+}
+
+// ---- 4b. nothing points at a URL that redirects --------------------------
+//
+// VERIFIED AGAINST THE LIVE SITE, 24 August 2026, because the audit had
+// only inferred it: /education-mandate-types answers 200 and
+// /education-mandate-types.html answers 307 to it. So every .html
+// canonical on this site named a URL that redirects — and a 307 is
+// TEMPORARY, which tells a search engine not to consolidate signals onto
+// the target at all. Ten sitemap entries and every static page's
+// canonical were pointing there.
+//
+// THE TRACKER IS THE ONE EXCEPTION and it is not an oversight: it is in
+// TRACKER_PATHS twice, so run_worker_first serves it at both addresses
+// with no redirect, and it is the site's most-linked URL.
+{
+  const TRACKER = "einvoicing-compliance-tracker";
+  const redirects = (u) => /\.html($|\?)/.test(u) && !u.includes(TRACKER);
+
+  const badSitemap = locs.filter(redirects);
+  t.check("no sitemap entry points at a URL that 307s",
+    badSitemap.length === 0, badSitemap.join(", "));
+
+  const { readdirSync } = await import("node:fs");
+  const offenders = [];
+  for (const file of readdirSync(REPO).filter((f) => f.endsWith(".html"))) {
+    const html = readFileSync(join(REPO, file), "utf8");
+    for (const [, attr, url] of html.matchAll(/(canonical|og:url|hreflang="[^"]*")[^>]*?(?:href|content)="(https:\/\/[^"]+)"/g)) {
+      if (redirects(url)) offenders.push(`${file}: ${attr} -> ${url}`);
+    }
+    // And the links a reader follows, which cost a round trip each.
+    for (const [, href] of html.matchAll(/href="(\/?[a-z0-9-]+\.html)"/g)) {
+      if (redirects(href)) offenders.push(`${file}: link -> ${href}`);
+    }
+  }
+  t.check("and no canonical, hreflang or internal link does either",
+    offenders.length === 0,
+    `${offenders.length}\n        ` + offenders.slice(0, 8).join("\n        "));
 }
 
 // ---- 5. the members subdomain -------------------------------------------
