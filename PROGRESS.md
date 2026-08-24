@@ -16563,3 +16563,37 @@ changes, methodology and the register all now report 0 back links framed
 and at most 1 plain. The register was the only one that had it.
 
 `npm test`: 28 suites, **40 checks** in the register suite.
+
+**Deployed and confirmed, 24 August 2026** — but it took four exchanges
+to land, and none of them were about the code.
+
+The fix was correct when it was written. What went wrong is that it was
+never in Dan's tree: the bundle download had collided with an earlier
+one the browser had renamed `_1`, so the pull ran against a stale file
+and reported success. Every subsequent check I proposed was consistent
+with the fix being live, because each one measured the wrong thing:
+
+- `wrangler deployments list` showed a deploy 20 minutes old. **A
+  deployment list proves a worker shipped, never WHAT shipped.** I read a
+  recent timestamp as evidence the code was live.
+- I sent him `| head -20` on a list that is oldest-first, so the first
+  answer showed deployments from that morning.
+- And the grep I finally asked for was `class="back-link"`, which appears
+  six times across site-worker — /changes, /methodology and the guides
+  all use it. **It returns 6 on a correct tree and 6 on a broken one.**
+
+What settled it in one line was `git log --oneline -3`: the commit
+simply was not there. Three rules out of it, all cheap:
+
+1. **Verify the tree, not the deployment.** A commit hash in the log
+   beats any amount of deployment metadata.
+2. **A verification grep must be unique to the change.** If the string
+   also matches code that was already there, the check cannot fail.
+3. **Bundles need collision-proof filenames.** A browser silently
+   appending `_1` to a repeat download is enough to make `git pull`
+   succeed against yesterday's work.
+
+The one diagnostic that did earn its keep was asking what COLOUR the
+link was. Orange is `--amber`, which is the register page's own link
+style and not the panel's — that single word ruled out the entire
+panel-chrome theory I had been building on for two exchanges.
