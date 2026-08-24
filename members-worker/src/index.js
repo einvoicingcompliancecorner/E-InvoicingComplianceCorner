@@ -629,7 +629,7 @@ export default {
   // strings both land here; event.cron tells them apart. Sends every
   // active subscriber a short, personalised notification about the
   // current month's issue (monthly), and separately runs the content
-  // monitor's known-page watcher (weekly) — see CONTENT-MONITORING.md
+  // monitor's known-page watcher (daily) — see CONTENT-MONITORING.md
   // for the full design and why these are deliberately kept separate
   // from anything that publishes to subscribers.
   async scheduled(event, env, ctx) {
@@ -674,9 +674,26 @@ export default {
 // there automatically adds it to monitoring; setting active = 0 pulls
 // it out of both places at once, by design (one registry, one meaning).
 
-const CONTENT_MONITOR_CRON = "0 8 * * 1"; // Monday 08:00 UTC — see wrangler.toml
+// DAILY since migration 635, was Mondays. The watch list went from 140
+// URLs to 758 when it started following the citations rather than a
+// curated list, and 758 x ~1.75s is ~22 minutes — past Cloudflare's
+// 15-minute ceiling for a scheduled handler, let alone this job's own
+// 8-minute budget.
+//
+// Running nightly and continuing from the cursor gets through ~270 a
+// night, so a FULL SWEEP EVERY THREE DAYS: better coverage and better
+// freshness than the weekly run it replaces, with the budget untouched.
+// The alternative — keep it weekly and rotate — would have meant each
+// page checked every three weeks by a job called weekly, which is the
+// exact defect corrected on 10 August.
+const CONTENT_MONITOR_CRON = "0 8 * * *"; // 08:00 UTC daily — see wrangler.toml
 const CONTENT_MONITOR_FETCH_DELAY_MS = 750; // spacing between fetches — considerate of government infrastructure, not a bulk scraper
-const CONTENT_MONITOR_USER_AGENT = "EICC-ContentMonitor/1.0 (+https://e-invoicingcompliancecorner.com/about; weekly check for compliance updates)";
+// The cadence is stated to the SITES WE FETCH, not only to ourselves —
+// a webmaster reading their logs should be able to tell from the agent
+// string roughly how often we come back. It said "weekly" while the job
+// ran weekly; it says daily now that it does, and it must keep pace
+// with CONTENT_MONITOR_CRON. cm-digest-honest.mjs checks that it does.
+const CONTENT_MONITOR_USER_AGENT = "EICC-ContentMonitor/1.0 (+https://e-invoicingcompliancecorner.com/about; daily check for compliance updates)";
 const CONTENT_MONITOR_FETCH_TIMEOUT_MS = 15000;
 // SELF-IMPOSED time budget for a single run.
 //
@@ -691,7 +708,7 @@ const CONTENT_MONITOR_FETCH_TIMEOUT_MS = 15000;
 // Cloudflare documents a 15-MINUTE duration limit for a scheduled
 // handler's returned promise, and for a cron interval of an hour or
 // more the CPU allowance is 15 minutes too (this Worker's monitor cron
-// is weekly, and almost all of its wall time is spent waiting on the
+// is daily, and almost all of its wall time is spent waiting on the
 // network, not on CPU).
 //
 // The cost of getting this wrong was invisible but real: at 20s the
@@ -716,16 +733,21 @@ const CONTENT_MONITOR_TIME_BUDGET_MS = 480000;
 // slice. Same cursor, so nothing is lost — the next run continues.
 const CONTENT_MONITOR_MANUAL_BUDGET_MS = 20000;
 // A source that has failed this many consecutive runs is reported as a
-// "known blocker" — a one-line group rather than a full card each week.
+// "known blocker" — a one-line group rather than a full card each run.
 // Some official sites (Israel's gov.il, for one) block automated
 // requests as a matter of policy and will never succeed; repeating an
-// identical full-size failure card every week trains the reader to
+// identical full-size failure card every run trains the reader to
 // skim past the failures section, which is precisely where a NEW
 // failure needs to be noticed. Nothing is ever silently dropped — the
 // group is always listed, with its run count, so a blocker cannot
 // quietly become a blind spot.
 const CONTENT_MONITOR_KNOWN_BLOCKER_RUNS = 3;
-const CONTENT_MONITOR_CURSOR_KEY = "cursor:next-source-id";
+// Holds a URL since migration 635, not an id — the widened watch list
+// is derived from citations and has no stable integer key. The KV name
+// changed with it, so an old id-shaped cursor cannot be misread as a
+// URL: findIndex(url >= "37") would match the first URL alphabetically
+// after "37", which is every URL, and the sweep would look fine.
+const CONTENT_MONITOR_CURSOR_KEY = "cursor:next-url";
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -801,7 +823,9 @@ async function fetchWithTimeout(url, options, timeoutMs) {
 // cleared the moment a source succeeds again — a site that starts
 // working is immediately "recovered", not still on probation.
 async function bumpSourceFailure(env, sourceId) {
-  const key = `fail:${sourceId}`;
+  // `fail:u:<urlhash>` since 635, for the same reason as the snapshot
+  // key: the widened list has no integer id to count against.
+  const key = `fail:u:${sourceId}`;
   const prev = parseInt(await env.CONTENT_MONITOR.get(key) || "0", 10) || 0;
   const next = prev + 1;
   await env.CONTENT_MONITOR.put(key, String(next));
@@ -809,33 +833,36 @@ async function bumpSourceFailure(env, sourceId) {
 }
 
 async function clearSourceFailure(env, sourceId) {
-  await env.CONTENT_MONITOR.delete(`fail:${sourceId}`);
+  await env.CONTENT_MONITOR.delete(`fail:u:${sourceId}`);
 }
 
 async function checkOneSource(env, source) {
   // source: { id, url, country, description }
-  const kvKey = `hash:${source.id}`;
+  // Keyed on the URL since migration 635 — see monitorKey(). The list
+  // the monitor walks no longer has an integer id, and the URL is the
+  // right identity anyway: it is the thing being compared.
+  const kvKey = `hash:u:${await monitorKey(source.url)}`;
   let response;
   try {
     response = await fetchWithTimeout(source.url, {
       headers: { "User-Agent": CONTENT_MONITOR_USER_AGENT },
     }, CONTENT_MONITOR_FETCH_TIMEOUT_MS);
   } catch (err) {
-    const consecutiveFailures = await bumpSourceFailure(env, source.id);
+    const consecutiveFailures = await bumpSourceFailure(env, await monitorKey(source.url));
     return { source, status: "failed", error: String(err && err.message || err), consecutiveFailures };
   }
   if (!response.ok) {
-    const consecutiveFailures = await bumpSourceFailure(env, source.id);
+    const consecutiveFailures = await bumpSourceFailure(env, await monitorKey(source.url));
     return { source, status: "failed", error: `HTTP ${response.status}`, consecutiveFailures };
   }
   let html;
   try {
     html = await response.text();
   } catch (err) {
-    const consecutiveFailures = await bumpSourceFailure(env, source.id);
+    const consecutiveFailures = await bumpSourceFailure(env, await monitorKey(source.url));
     return { source, status: "failed", error: "could not read response body", consecutiveFailures };
   }
-  await clearSourceFailure(env, source.id);
+  await clearSourceFailure(env, await monitorKey(source.url));
   const text = extractComparableText(html);
   const hash = await sha256Hex(text);
   const previous = await env.CONTENT_MONITOR.get(kvKey);
@@ -917,7 +944,7 @@ function currentMonthKeyUTC() {
 // Silence while the facts hold; a prompt the moment they do not.
 // A BARE "report" IS TOO LOOSE, and testing proved it: the first run
 // flagged the Netherlands because a milestone mentions an advisory
-// *report*, and a weekly section that opens with permanent false
+// *report*, and a recurring section that opens with permanent false
 // positives teaches the reader to skip it — the same failure this
 // digest already fixed once, for known blockers. So the pattern requires
 // reporting to appear as an OBLIGATION, plus the terms that are
@@ -1032,6 +1059,64 @@ async function getActiveTrackingSources(env) {
   `);
 }
 
+/**
+ * Everything the monitor watches — migration 635.
+ *
+ * THE MONITOR USED TO WATCH A LIST; IT NOW WATCHES THE EVIDENCE. The
+ * curated `tracking_sources` list is 140 URLs. The site cites 849, and
+ * 397 of the 420 citations behind the six headline facts were watched by
+ * nothing — the most prominent claims on the site, 95% unwatched.
+ *
+ * `monitored_sources` is those citations minus the story ones, distinct
+ * by URL so a page cited by four facts is fetched once. Ordered by URL
+ * because THE URL IS THE CURSOR: this list has no stable integer id, its
+ * membership changes whenever a source is re-cited, and a positional
+ * cursor into a list that reorders is how a sweep silently starts
+ * skipping things.
+ *
+ * `country` and `description` are kept on the shape so the digest
+ * renderer, which predates this, needs no special case for a URL that
+ * came from a fact rather than from the curated list.
+ */
+async function getMonitoredSources(env) {
+  return d1All(env, `
+    SELECT ms.url,
+           ms.is_fact_source,
+           ms.is_curated,
+           ms.citations,
+           (SELECT c.name_en FROM tracking_sources ts
+              JOIN countries c ON c.id = ts.country_id
+             WHERE ts.url = ms.url AND ts.active = 1 LIMIT 1) AS curated_country,
+           (SELECT group_concat(DISTINCT fsm.country) FROM fact_source_map fsm
+             WHERE fsm.url = ms.url) AS fact_countries,
+           (SELECT group_concat(fsm.field) FROM fact_source_map fsm
+             WHERE fsm.url = ms.url) AS fact_fields,
+           (SELECT min(fsm.last_verified) FROM fact_source_map fsm
+             WHERE fsm.url = ms.url) AS last_verified
+      FROM monitored_sources ms
+     ORDER BY ms.url
+  `);
+}
+
+/**
+ * A stable KV identity for a watched URL.
+ *
+ * The old scheme keyed on `tracking_sources.id`, which the widened list
+ * has no equivalent of. Hashing the URL is the natural identity — it is
+ * the thing whose content is being compared — and it means a URL keeps
+ * its baseline when it moves between registers, or is cited by a second
+ * fact, or drops off the curated list.
+ *
+ * The 140 existing `hash:<id>` entries are orphaned by this and their
+ * URLs re-baseline once, silently. That costs one cycle of signal on
+ * pages that were already being watched, and is stated in the digest
+ * rather than left to look like a quiet week.
+ */
+async function monitorKey(url) {
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(url));
+  return [...new Uint8Array(digest)].slice(0, 10).map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
 function escapeHtmlCM(s) {
   return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
@@ -1069,7 +1154,7 @@ const CM_HEADER_HTML = buildBoldMastheadHtml();
 // Plain-language translation of fetch failures for the digest email.
 // The raw error (HTTP status codes, "Too many redirects" with a
 // 20-URL chain, abort messages) is exact and useful for debugging, but
-// meaningless to read at a glance in a weekly summary — replaced here
+// meaningless to read at a glance in a daily summary — replaced here
 // with a one-line, common-sense explanation. The raw detail is still
 // shown, just de-emphasized (small, muted, clearly secondary) rather
 // than removed outright, so nothing is lost if it's ever needed.
@@ -1091,11 +1176,69 @@ function cmStatCell(value, label, color) {
   </td>`;
 }
 
+/**
+ * WHAT A CHANGED PAGE ACTUALLY SUPPORTS — migration 635.
+ *
+ * Before the monitor followed the citations, every watched URL came from
+ * the curated list and had a country and a hand-written description. Now
+ * most come from a fact, so the heading is derived: the countries whose
+ * headline facts cite this page, and which of the six fields.
+ *
+ * THE last_verified DATE IS THE POINT. "This page changed" is an errand.
+ * "This page changed and it is the source for Saudi Arabia's B2B status,
+ * last verified 21 August" is a task — and if the page changed after
+ * that date, what the site publishes may now be wrong. That is the only
+ * line in this email that distinguishes movement from a problem.
+ */
+function cmSourceHeading(source) {
+  if (source.description) return `${source.country || source.curated_country} — ${source.description}`;
+  const countries = (source.fact_countries || "").split(",").filter(Boolean);
+  const fields = [...new Set((source.fact_fields || "").split(",").filter(Boolean))];
+  if (!countries.length) return source.curated_country || source.country || source.url;
+  const where = countries.length > 3
+    ? `${countries.slice(0, 3).join(", ")} +${countries.length - 3} more`
+    : countries.join(", ");
+  return fields.length ? `${where} — ${fields.join(", ")}` : where;
+}
+
+/**
+ * One short label for grouping a watched URL in the housekeeping notes.
+ *
+ * Deliberately separate from cmSourceHeading, which names everything a
+ * URL backs and is right for a card the reader is being asked to act
+ * on. This is for counting: it must return exactly one string per URL
+ * or a set of them is not a count of anything.
+ *
+ * Falls back to the HOST rather than to the empty string. A URL cited
+ * by nothing country-specific — an EU directive, a VAT-committee paper
+ * — is still a real page with a real publisher, and "ec.europa.eu" in
+ * a queue note is informative where "undefined" is a bug report.
+ * Before 635 this was `source.country`, which every row had; the
+ * citation-derived rows do not, and the note would have read "across 1
+ * countries: undefined" without anything failing.
+ */
+function cmSourceGroup(source) {
+  const first = (source.fact_countries || "").split(",").filter(Boolean)[0];
+  if (source.curated_country) return source.curated_country;
+  if (first) return first;
+  try {
+    return new URL(source.url).hostname.replace(/^www\./, "");
+  } catch {
+    return String(source.url || "").slice(0, 40);
+  }
+}
+
 function cmSourceCard(source, accentColor, bodyHtml) {
+  // Stated only when there is one, and only for fact sources: a curated
+  // page has a description that already says what it is.
+  const verified = source.last_verified && !source.description
+    ? `<p style="margin:0 0 8px; font-size:11.5px; color:${CM_MUTED};">Fact last verified ${escapeHtmlCM(source.last_verified)}${
+        source.citations > 1 ? ` · cited ${source.citations} times` : ""}</p>`
+    : "";
   return `<div style="margin:0 0 14px; padding:14px 16px; background-color:#f9f6ee; border-left:3px solid ${accentColor}; border-radius:4px;">
-    <p style="margin:0 0 6px; font-family:Georgia,serif; font-size:14.5px; font-weight:bold; color:${CM_HEADING};">${escapeHtmlCM(source.country)} — ${escapeHtmlCM(source.description || source.url)}</p>
+    <p style="margin:0 0 6px; font-family:Georgia,serif; font-size:14.5px; font-weight:bold; color:${CM_HEADING};">${escapeHtmlCM(cmSourceHeading(source))}</p>
     <p style="margin:0 0 8px; font-family:'Courier New',Courier,monospace; font-size:11px;"><a href="${escapeHtmlCM(source.url)}" style="color:${CM_MUTED}; text-decoration:none;">${escapeHtmlCM(source.url)}</a></p>
-    ${bodyHtml}
+    ${verified}${bodyHtml}
   </div>`;
 }
 
@@ -1127,19 +1270,61 @@ function buildDigestHtml(results, totalSources, skipped, unannounced, cxDrift) {
   const fullSweep = skipped.length === 0;
   const needsAttention = changed.length + newFailures.length + unannounced.length + cxDrift.length;
 
+  // THE CYCLE THIS RUN IS ACTUALLY ACHIEVING, measured from this run
+  // rather than asserted from the cron string.
+  //
+  // This is the correction of 10 August restated for a list five times
+  // longer. Back then the digest was honest about its numbers ("107
+  // deferred") but silent about what they MEANT, and nobody read them
+  // as "each page is checked once a quarter by a job called weekly".
+  // Since 635 a partial sweep is the NORMAL outcome, not a shortfall:
+  // 758 sources at ~1.75s apiece cannot fit in one run, by arithmetic,
+  // so the design is a slice a night. A reader told "270 of 758" every
+  // morning and nothing else would draw exactly the wrong conclusion
+  // from it. So the sentence does the division itself and gives the
+  // answer in days — the one number that says whether the monitor is
+  // keeping up.
+  const sweepDays = results.length > 0 ? Math.ceil(totalSources / results.length) : 0;
+  const cadence = fullSweep
+    ? `All ${totalSources} sources checked.`
+    : `${results.length} of ${totalSources} checked today${
+        sweepDays > 1 ? ` — at this rate every source is seen about every ${sweepDays} days` : ""
+      }; the rest are first in the queue tomorrow.`;
+
   let html = `
     <p style="margin:0 0 4px; font-family:'Courier New',Courier,monospace; font-size:11px; letter-spacing:1.5px; text-transform:uppercase; color:${CM_AMBER};">Content Monitor</p>
-    <h1 style="margin:0 0 6px; font-family:Georgia,serif; font-size:20px; color:${CM_HEADING};">Weekly check — ${dateStr}</h1>
+    <h1 style="margin:0 0 6px; font-family:Georgia,serif; font-size:20px; color:${CM_HEADING};">Daily check — ${dateStr}</h1>
     <p style="margin:0 0 18px; font-size:13px; color:${CM_BODY};">${
       needsAttention === 0
-        ? `Nothing needs you this week. ${fullSweep ? `All ${totalSources} sources checked` : `${results.length} of ${totalSources} sources checked`}, no changes found.`
-        : `<strong>${needsAttention} item${needsAttention === 1 ? "" : "s"} for you below.</strong> ${fullSweep ? `All ${totalSources} sources checked.` : `${results.length} of ${totalSources} sources checked.`}`
+        ? `Nothing needs you today. ${cadence} No changes found.`
+        : `<strong>${needsAttention} item${needsAttention === 1 ? "" : "s"} for you below.</strong> ${cadence}`
     }</p>`;
 
   // ---- Attention: pages that changed ----
-  if (changed.length) {
-    html += `<h2 style="margin:0 0 10px; font-family:Georgia,serif; font-size:15px; color:${CM_HEADING};"><span style="color:${CM_AMBER};">●</span> Changed (${changed.length}) — go look</h2>`;
-    for (const r of changed) {
+  //
+  // SPLIT BY WHETHER THE PAGE BACKS A PUBLISHED FACT — migration 635.
+  // The watch list is five times larger than it was, so an undifferen-
+  // tiated list of changes is how this section becomes the part of the
+  // email that gets skimmed. A change behind one of the six headline
+  // cards can make what the site publishes wrong today; a change behind
+  // a milestone or a portal link usually cannot.
+  const factChanges = changed.filter((r) => r.source.is_fact_source);
+  const otherChanges = changed.filter((r) => !r.source.is_fact_source);
+
+  if (factChanges.length) {
+    html += `<h2 style="margin:0 0 4px; font-family:Georgia,serif; font-size:15px; color:${CM_HEADING};"><span style="color:${CM_STAMP};">●</span> Behind a published fact (${factChanges.length}) — check these first</h2>
+      <p style="margin:0 0 10px; font-size:12px; color:${CM_MUTED};">These pages are the cited source for a headline card on a compliance guide. If one of them now says something different, so should we.</p>`;
+    for (const r of factChanges) {
+      html += cmSourceCard(r.source, CM_STAMP, `
+        <p style="margin:0 0 3px; font-family:'Courier New',Courier,monospace; font-size:11px; color:${CM_MUTED};">Before: …${escapeHtmlCM(r.diff.before)}…</p>
+        <p style="margin:0; font-family:'Courier New',Courier,monospace; font-size:11px; color:${CM_LIVE};">After: …${escapeHtmlCM(r.diff.after)}…</p>
+      `);
+    }
+  }
+
+  if (otherChanges.length) {
+    html += `<h2 style="margin:0 0 10px; font-family:Georgia,serif; font-size:15px; color:${CM_HEADING};"><span style="color:${CM_AMBER};">●</span> Other sources changed (${otherChanges.length}) — go look</h2>`;
+    for (const r of otherChanges) {
       html += cmSourceCard(r.source, CM_AMBER, `
         <p style="margin:0 0 3px; font-family:'Courier New',Courier,monospace; font-size:11px; color:${CM_MUTED};">Before: …${escapeHtmlCM(r.diff.before)}…</p>
         <p style="margin:0; font-family:'Courier New',Courier,monospace; font-size:11px; color:${CM_LIVE};">After: …${escapeHtmlCM(r.diff.after)}…</p>
@@ -1211,20 +1396,34 @@ function buildDigestHtml(results, totalSources, skipped, unannounced, cxDrift) {
     // sources — Israel currently has two, and "Israel (9 runs), Israel
     // (9 runs)" tells the reader nothing about which pages are dark.
     const names = knownBlockers.map((r) => {
-      const label = r.source.description ? String(r.source.description).split(/\s+[—-]\s+/).pop() : r.source.url;
-      return `${escapeHtmlCM(r.source.country)} — ${escapeHtmlCM(String(label).slice(0, 60))} (${r.consecutiveFailures} runs)`;
+      const label = r.source.description
+        ? String(r.source.description).split(/\s+[—-]\s+/).pop()
+        : cmSourceHeading(r.source);
+      return `${escapeHtmlCM(cmSourceGroup(r.source))} — ${escapeHtmlCM(String(label).slice(0, 60))} (${r.consecutiveFailures} runs)`;
     });
-    notes.push(`<strong>${knownBlockers.length} known blocker${knownBlockers.length === 1 ? "" : "s"}</strong>, unchanged: ${names.join(", ")}. These sites refuse automated visits as a matter of policy, so they're listed rather than re-explained each week — they still need occasional manual checking, and they'd move back up into "newly unreachable" if they ever started working and then broke again.`);
+    notes.push(`<strong>${knownBlockers.length} known blocker${knownBlockers.length === 1 ? "" : "s"}</strong>, unchanged: ${names.join(", ")}. These sites refuse automated visits as a matter of policy, so they're listed rather than re-explained every run — they still need occasional manual checking, and they'd move back up into "newly unreachable" if they ever started working and then broke again.`);
   }
   if (baseline.length) {
+    // WHY THIS COUNT IS LARGE FOR ABOUT THREE DAYS AFTER 635, and then
+    // small forever. The KV baselines used to be keyed on a
+    // tracking_sources id; the widened list keys on a hash of the URL,
+    // so every page re-baselines once as the sweep first reaches it.
+    // Nothing is lost but one cycle of comparison — and saying so here
+    // is the difference between a reader seeing a settling-in cost and
+    // a reader seeing an unexplained wall of first-time checks.
     notes.push(`${baseline.length} source${baseline.length === 1 ? "" : "s"} checked for the first time — baseline recorded, nothing to compare against yet.`);
   }
   if (skipped.length) {
-    // Distinct countries, not one entry per source: listing "Latvia,
-    // Latvia, Latvia" because a country has three tracked sources made
-    // the old note look broken.
-    const countries = [...new Set(skipped.map((s) => s.country))];
-    notes.push(`${skipped.length} source${skipped.length === 1 ? "" : "s"} across ${countries.length} countr${countries.length === 1 ? "y" : "ies"} didn't fit in this run's time budget and are first in the queue next time: ${countries.slice(0, 6).map(escapeHtmlCM).join(", ")}${countries.length > 6 ? `, +${countries.length - 6} more` : ""}.`);
+    // NOT A SHORTFALL, and the wording matters: since 635 the watch
+    // list cannot fit in one run by design, so this note describes the
+    // remainder of a sweep in progress, not work that failed to happen.
+    // The opening line already gives the cycle in days; this says
+    // where the queue currently stands.
+    //
+    // Grouped, not one entry per source — a country with three cited
+    // pages used to print "Latvia, Latvia, Latvia" and read like a bug.
+    const groups = [...new Set(skipped.map(cmSourceGroup))];
+    notes.push(`${skipped.length} source${skipped.length === 1 ? "" : "s"} across ${groups.length} ${groups.length === 1 ? "country or publisher" : "countries and publishers"} are still queued from this sweep and go first tomorrow: ${groups.slice(0, 6).map(escapeHtmlCM).join(", ")}${groups.length > 6 ? `, +${groups.length - 6} more` : ""}.`);
   }
   if (notes.length) {
     html += `<div style="margin:22px 0 0; padding:12px 14px; background-color:#f5f0e2; border-radius:4px;">
@@ -1238,25 +1437,28 @@ function buildDigestHtml(results, totalSources, skipped, unannounced, cxDrift) {
 
 async function runContentMonitor(env, opts) {
   // timeBudgetMs is overridable because the two callers have genuinely
-  // different lifetimes: the Monday cron awaits inside scheduled() and
+  // different lifetimes: the nightly cron awaits inside scheduled() and
   // gets Cloudflare's 15-minute allowance, while the manual admin
   // trigger runs under waitUntil() after a response and gets far less.
   // See CONTENT_MONITOR_MANUAL_BUDGET_MS.
   const timeBudgetMs = (opts && opts.timeBudgetMs) || CONTENT_MONITOR_TIME_BUDGET_MS;
-  const allSources = await getActiveTrackingSources(env);
+  const allSources = await getMonitoredSources(env);
   if (allSources.length === 0) {
-    console.log("Content monitor: no active tracking sources — nothing to check.");
+    console.log("Content monitor: nothing cited to check.");
     return;
   }
 
   // Resume from wherever the previous run's time budget cut it off.
-  // The cursor is a source id; find its position in the current
-  // (stable, ORDER BY-ed) list and rotate the array to start there —
-  // if that source no longer exists (deleted/deactivated since), fall
-  // back to the start. This also self-heals if the source list's
-  // membership or order changes between runs.
+  //
+  // THE CURSOR IS A URL SINCE MIGRATION 635, not a source id and not a
+  // position. The widened list is derived from citations, so its
+  // membership changes whenever a source is added or re-cited — and a
+  // POSITIONAL cursor into a list that reorders is how a sweep starts
+  // silently skipping pages. A URL cursor self-heals: if the URL it
+  // names is gone, the next one after it in sort order is where the run
+  // resumes, and nothing between them is lost more than once.
   const storedCursor = await env.CONTENT_MONITOR.get(CONTENT_MONITOR_CURSOR_KEY);
-  let startIndex = storedCursor ? allSources.findIndex((s) => String(s.id) === storedCursor) : -1;
+  let startIndex = storedCursor ? allSources.findIndex((s) => s.url >= storedCursor) : -1;
   if (startIndex === -1) startIndex = 0;
   const orderedSources = [...allSources.slice(startIndex), ...allSources.slice(0, startIndex)];
 
@@ -1282,7 +1484,7 @@ async function runContentMonitor(env, opts) {
   // back to the very start if this run made it through everything —
   // so a fully-completing run doesn't leave a stale cursor pointing
   // partway through a list that's since changed.
-  const nextCursor = skipped.length > 0 ? String(skipped[0].id) : null;
+  const nextCursor = skipped.length > 0 ? String(skipped[0].url) : null;
   if (nextCursor) {
     await env.CONTENT_MONITOR.put(CONTENT_MONITOR_CURSOR_KEY, nextCursor);
   } else {
@@ -1334,7 +1536,7 @@ async function runContentMonitor(env, opts) {
 async function handleManualContentMonitorTrigger(request, env, ctx) {
   // Same shared-secret guard as the monthly notification's manual
   // trigger — not linked anywhere, exists for testing without waiting
-  // for Monday.
+  // for tomorrow's 08:00 run.
   const provided = request.headers.get("X-Admin-Secret");
   if (!provided || provided !== env.SESSION_SECRET) {
     return new Response("Unauthorized", { status: 401 });
@@ -1359,7 +1561,7 @@ async function handleManualContentMonitorTrigger(request, env, ctx) {
   // genuinely different lifetimes and always did.)
   ctx.waitUntil(runContentMonitor(env, { timeBudgetMs: CONTENT_MONITOR_MANUAL_BUDGET_MS }));
   return new Response(
-    "Content monitor run started in the background. NOTE: a manual run deliberately checks only a slice of the sources (~20 seconds' worth), because this path runs after the HTTP response and doesn't get the full time budget the Monday cron does. It advances the same cursor, so the next run picks up where this one stopped. Watch `wrangler tail` for progress; a digest email is sent when the slice completes.",
+    "Content monitor run started in the background. NOTE: a manual run deliberately checks only a slice of the sources (~20 seconds' worth), because this path runs after the HTTP response and doesn't get the full time budget the nightly cron does. It advances the same cursor, so the next run picks up where this one stopped. Watch `wrangler tail` for progress; a digest email is sent when the slice completes.",
     { status: 202 }
   );
 }
@@ -1504,7 +1706,7 @@ async function sendMonthlyNotifications(env, opts) {
     console.log(`Monthly notification run for ${monthKey} COMPLETE — ${sent} sent, ${failed} failed.`);
   }
 
-  // Record what subscribers were actually told about, so the weekly
+  // Record what subscribers were actually told about, so the monitor
   // digest's "not yet announced" section stays true without anyone
   // maintaining it by hand (migration 503).
   //
@@ -1529,7 +1731,7 @@ async function sendMonthlyNotifications(env, opts) {
 //
 // The bookkeeping already existed and had never been used: `features`
 // lists what shipped, `announcements` records what has been said and
-// where, and the weekly digest has always had a "published, not yet
+// where, and the monitor digest has always had a "published, not yet
 // announced" section nagging about it. This is the job that acts on it.
 //
 // ---- IT DECIDES NOTHING ABOUT WHAT IS NEW ---------------------------
@@ -1822,7 +2024,7 @@ async function sendFeatureAnnouncements(env, opts = {}) {
  *
  * which is one dropped WHERE clause away from deleting the 148 rows
  * recording every newsletter story ever announced -- the table the
- * weekly digest reads to know what still needs saying. This can only
+ * monitor digest reads to know what still needs saying. This can only
  * ever touch feature rows, and says exactly what it removed.
  *
  * It sends nothing. It makes a send POSSIBLE again, which is a different

@@ -116,9 +116,14 @@ database_id = "d1d10bd0-e90a-44a3-9494-a63689e8d32e"
 # src/index.js tells them apart via event.cron:
 #   "0 9 1 * *"  -- 09:00 UTC on the 1st of every month: the monthly
 #                   subscriber notification job (unchanged, pre-existing)
-#   "0 8 * * 1"  -- 08:00 UTC every Monday: the content monitor's
-#                   weekly known-page watcher (CONTENT-MONITORING.md)
-crons = ["0 9 1 * *", "0 8 * * 1"]
+#   "0 8 * * *"  -- 08:00 UTC DAILY: the content monitor. Was Mondays
+#                   until 24 Aug 2026, when migration 635 widened its
+#                   watch list from 140 curated pages to the 758 URLs
+#                   the site actually cites. That does not fit one run,
+#                   so it runs nightly and continues from a cursor --
+#                   a full sweep every three days rather than one a
+#                   week. See CONTENT-MONITORING.md.
+crons = ["0 9 1 * *", "0 8 * * *"]
 
 # ----------------------------------------------------------------
 # Secrets are NOT set here — never put real secrets in this file,
