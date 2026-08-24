@@ -742,6 +742,20 @@
      states: 5.1:1 at rest and 4.5:1 on .dropdown-item:hover, which is
      the darker of the two and the one a colour picked by eye misses. */
   .dd-beta{color:#6a6049; font-size:11px; letter-spacing:.3px; white-space:nowrap;}
+  /* The subscriber marker, 24 August 2026. Same colour as (Beta) and for
+     the same reason: that value is the one measured against both
+     dropdown states, and the tracker's menus are not covered by the
+     contrast audit. Bordered rather than bare so it reads as a tag
+     rather than as more label -- which matters here because the panel is
+     narrow enough that long items already wrap, and a bare word would
+     read as the third word of the title. NOT uppercased: the house rule
+     for this marker is that it qualifies the link rather than warning
+     about it, and (Beta) two lines up sets the volume. */
+  .dd-sub{
+    color:#6a6049; font-size:10.5px; white-space:nowrap;
+    border:1px solid var(--paper-line);
+    border-radius:9px; padding:1px 6px; margin-left:6px;
+  }
 </style>
 <!-- i18n loader — see i18n/i18n.js for how this works and how to add a language -->
 <script src="i18n/i18n.js"></script>
@@ -976,13 +990,20 @@
                destroyed the moment a language loads. One wrapper solves
                both -- the label translates, the marker survives, and the
                two flow as one line that wraps together. -->
-          <!-- THE PADLOCK IS GONE, 21 August 2026, with the wall it
-               warned about. It told a signed-out reader "subscribers
-               only" about a page that is served to everyone and always
-               was — a promise of exclusivity the site could not keep,
-               made to the one person it would turn away. See
-               openRoiPage() for why the wall went. -->
-          <a class="dropdown-item" href="/roi-calculator"><span class="dd-icon">🧮</span><span class="dd-label"><span data-i18n="menu.roi">ROI &amp; Wave Planner</span> <span class="dd-beta">(Beta)</span></span></a>
+          <!-- THE MARKER IS BACK, 24 August 2026, because the fact it
+               states is true again. A padlock came off this item on 21
+               August: it claimed "subscribers only" for a page then
+               served to everyone, which is a promise of exclusivity made
+               to the one person it would turn away. The planner gates
+               again now, as do the guides and the specification
+               register, so the qualifier is honest — and Dan's
+               instruction was explicit that it must NOT disable the
+               link: the item stays clickable and the route answers the
+               sign-up wall, which is where the invitation lives.
+               spec-register.mjs asserts the marked set equals the set of
+               routes that actually gate, so this cannot drift back into
+               claiming a wall that is not there. -->
+          <a class="dropdown-item" href="/roi-calculator"><span class="dd-icon">🧮</span><span class="dd-label"><span data-i18n="menu.roi">ROI &amp; Wave Planner</span> <span class="dd-beta">(Beta)</span><span class="dd-sub" data-i18n="menu.subscriberOnly">Subscribers</span></span></a>
           <!-- Compliance guides. A PLAIN LINK, and deliberately not the
                planner's treatment: it navigates rather than opening in a
                frame, like /sources, /insights and /map above it.
@@ -1002,8 +1023,8 @@
                so the menu does not need to turn anyone away before they
                have seen what is on offer. Unlike the planner, this one
                genuinely is gated — see GUIDES_PATHS in site-worker. -->
-          <a class="dropdown-item" href="/compliance-guides"><span class="dd-icon">📄</span><span data-i18n="menu.guides">Compliance guides</span></a>
-          <a class="dropdown-item" href="/spec-register"><span class="dd-icon">📐</span><span data-i18n="menu.specs">Specification register</span></a>
+          <a class="dropdown-item" href="/compliance-guides"><span class="dd-icon">📄</span><span class="dd-label"><span data-i18n="menu.guides">Compliance guides</span><span class="dd-sub" data-i18n="menu.subscriberOnly">Subscribers</span></span></a>
+          <a class="dropdown-item" href="/spec-register"><span class="dd-icon">📐</span><span class="dd-label"><span data-i18n="menu.specs">Specification register</span><span class="dd-sub" data-i18n="menu.subscriberOnly">Subscribers</span></span></a>
         </div>
       </div>
       <div class="actions-menu" id="educationMenu">

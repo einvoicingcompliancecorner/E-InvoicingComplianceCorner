@@ -16481,3 +16481,59 @@ does say "AUSTRALIA". Worth closing site-wide, in one change, sometime.
 **Needs a migration-apply and a deploy of both Workers** — `i18n/*.json`
 and the tracker shell are assets, so a migration alone changes nothing a
 reader sees.
+
+#### Two corrections on Dan's read of the register, same day
+
+**"The country names in the page are not translated."** They were not,
+and the cause was larger than that page: `countryNames` held 54 entries
+against 70 tracked jurisdictions, so **seventeen countries had been
+rendering in English on every translated surface since the day each was
+added** — Japan, Turkey, South Korea, Vietnam and the whole 2026 Latin
+American run. The map is read client-side by the tracker and by
+`subscribe.html`, both of which fall back to the English name, so the
+failure rendered as a perfectly normal page and nothing could see it.
+
+`gen_country_names.py` fills the gap. It writes no migration, and that
+is the finding underneath: `countryNames` is the one string table on
+this site with **no D1 home** — the tracker is a static asset and cannot
+query for its own labels — so the JSON *is* the source of truth and a
+generator plus a test is the only thing that can keep it complete. The
+test asserts all seventy in all four languages, not only the twenty in
+the register.
+
+The register also now sorts in the reader's alphabet. Translating names
+without re-sorting leaves Kroatien between Costa Rica and Denmark, which
+reads as unsorted rather than translated.
+
+**The menu now marks subscriber-only items** — the planner, the guides
+and the register — as a tag on the label, not a state on the link. Dan
+was explicit that it must still be clickable, and the test asserts no
+marked item carries `aria-disabled` or `pointer-events: none`.
+
+**This undoes a deliberate removal, which is the interesting part.** A
+padlock came off the planner's menu item on 21 August with a comment
+explaining why: it claimed "subscribers only" for a page then served to
+everyone — a promise of exclusivity made to the one person it would turn
+away. Three routes genuinely gate now, so the claim is true again, and
+that comment had quietly become **prose certifying the opposite of what
+the code does** — failure class D. Rewritten rather than left standing.
+
+Restoring it is only defensible if something keeps it true, so the check
+derives the gated set from site-worker's own `return render*Gate(` calls
+and compares it with what the menu marks. Proved by marking `/map` and
+watching it fail.
+
+**That check found two bugs in itself before it found anything else.**
+Its first version bounded the search to `#resourcesPanel` with a
+non-greedy match that stopped at the panel's first nested `</div>`,
+found zero menu items, and reported that the marked set matched the
+gated set — true of two empty sets. The `marked.size >= 3` tripwire is
+what caught it. Its second version read a fixed 400-character window
+after each route branch, which ran past the short ones and picked up the
+*next* route's handler, so `/changes` and `/methodology` were both being
+reported as gated. Nothing failed, because neither is a dropdown item —
+it would have demanded a subscriber marker on two public pages the day
+either moved into this menu.
+
+`npm test`: 28 suites, **38 checks** in the register suite. Replay OK
+across **641 files**.

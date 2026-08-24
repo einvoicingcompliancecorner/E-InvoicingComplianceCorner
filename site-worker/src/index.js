@@ -1639,8 +1639,21 @@ async function renderSpecRegisterPage(request, env) {
   const signedInAs = await sessionEmail(request, env.SESSION_SECRET);
   if (!signedInAs) return renderSpecGate(request, env, lang, framed);
 
-  const strings = await authStrings(env, lang, "spec");
+  // TWO SUBTREES. `countryNames` maps the English name a row holds onto
+  // the reader's own language, and it is the one string table on this
+  // site with no D1 home -- the tracker is a static asset and cannot
+  // query for its own labels, so the JSON is the source of truth. It
+  // was also incomplete: seventeen tracked jurisdictions had no
+  // translated name at all, which rendered as a normal-looking page in
+  // English. gen_country_names.py filled them; the test asserts it.
+  const [strings, countryNames] = await Promise.all([
+    authStrings(env, lang, "spec"),
+    authStrings(env, lang, "countryNames"),
+  ]);
   const t = subtreeT(strings);
+  // Falls back to the English name rather than to a blank, the same way
+  // every other translated column on this site degrades.
+  const countryName = (nameEn) => countryNames[nameEn] || nameEn;
 
   const rows = (await env.eicc_content.prepare(`
     SELECT c.name_en AS country, c.code, c.slug,
@@ -1693,7 +1706,7 @@ async function renderSpecRegisterPage(request, env) {
       + `<span class="pub">${escHtml(a.publisher)}</span></li>`).join("");
     return `<article class="c st-${escHtml(r.capture_status)}">
       <header>
-        <h2>${escHtml(r.country)}</h2>
+        <h2>${escHtml(countryName(r.country))}</h2>
         <span class="pill">${escHtml(label("capture", r.capture_status))}</span>
       </header>
       <div class="fields">
@@ -1728,6 +1741,11 @@ async function renderSpecRegisterPage(request, env) {
   const langLinks = SUPPORTED_LANGS.map((l) =>
     l === lang ? `<span class="lang-current">${l.toUpperCase()}</span>`
       : `<a href="/spec-register?lang=${l}">${l.toUpperCase()}</a>`).join(" · ");
+
+  // SORTED IN THE READER'S ALPHABET. The query orders by the English
+  // name, which puts Kroatien between Costa Rica and Denmark on a German
+  // page -- a list that looks unsorted rather than translated.
+  rows.sort((a, b) => countryName(a.country).localeCompare(countryName(b.country), lang));
 
   const html = `<!DOCTYPE html>
 <html lang="${escHtml(lang)}">
