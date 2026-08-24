@@ -36,7 +36,7 @@
     "newsDesc": "Parcourez l'intégralité des archives de la newsletter — chaque annonce passée, consultable par recherche.",
     "subscribeEyebrow": "Restez informé",
     "subscribeTitle": "S'abonner",
-    "subscribeDesc": "Recevez un résumé mensuel dès qu'un mandat ou une échéance change.",
+    "subscribeDesc": "Recevez un résumé mensuel dès qu'un mandat ou une échéance change. Calculez le ROI de votre projet et planifiez sa mise en œuvre au regard des mandats. Téléchargez les guides de conformité par pays.",
     "featuredEyebrow": "Analyses",
     "featuredTitle": "Analyses et Livres Blancs",
     "featuredDesc": "Analyses originales et livres blancs — à commencer par notre comparaison des déploiements de CTC dans 60 juridictions.",
@@ -125,8 +125,8 @@
     "heading": "Les abonnés bénéficient également de",
     "item1": "Une synthèse mensuelle par e-mail — chaque nouvelle obligation ou changement d'échéance, résumé",
     "item2": "L'accès complet aux archives de la newsletter, pas seulement au numéro du mois",
-    "item3": "Un accès prioritaire aux nouvelles analyses par pays dès leur publication",
-    "item4": "Des synthèses en langage clair sur \"ce que cela signifie pour votre équipe\", pas seulement du texte juridique"
+    "item3": "Le calculateur de ROI — bâtissez l'analyse de rentabilité de votre programme, avec le détail du calcul derrière chaque chiffre",
+    "item4": "Guides de conformité par pays — une note d'une page prête à imprimer pour chaque marché choisi"
   },
   "roiPanel": {
     "unavailable": "Le planificateur n'a pas pu être chargé pour le moment. Veuillez réessayer dans quelques instants.",

@@ -16016,3 +16016,67 @@ without checking it did anything is not a step, it is a claim.** Caught
 because the commit stat said `PROGRESS.md | 2 +-` where forty-odd lines
 were expected — the same way the tracker outage was caught, by a number
 being smaller than it should have been.
+
+### The subscribe copy catches up with the product (24 Aug 2026)
+
+Dan asked for the carousel's subscribe card to name the ROI planner and
+the compliance guides, and for the "Subscribers also get" panel at the
+top left of the tracker to be updated.
+
+Both strings were written before either feature existed, and both still
+sold a newsletter and nothing else. **The two biggest things behind the
+subscription wall went unmentioned on the two surfaces whose entire job
+is to say what is behind it.**
+
+#### A claim the site could not stand behind
+
+`perks.item3` read *"Priority access to new country deep dives as they're
+published"*. Priority over whom? Every deep dive is a public page —
+anyone can read `/poland` right now with no account. The line promised an
+exclusivity the site does not enforce and does not intend to.
+
+It is replaced rather than reworded, because there is no honest version
+of it. `perks.item4` went with it on Dan's decision: *"plain-language
+write-ups"* largely restated the digest and archive listed above it. The
+two lines that stay are the two that name something a non-subscriber
+genuinely cannot get — and so do the two replacing them. That is now true
+of every line in the panel, which it was not before.
+
+#### Three surfaces, and they are not the same three
+
+`perks.*` lives in **D1, in `i18n/<lang>.json`, and as a hardcoded `<li>`
+fallback in the tracker markup** — all three patched by the generator,
+because the fallback is the one no other check can see, and this project
+has already shipped a renderer still saying "We were wrong" a day after
+the label was retired everywhere else.
+
+`carousel.subscribeDesc` lives in **only two** of those: the JSON and a
+hardcoded `desc:` in the carousel's card array. It is one of the ~60
+tracker keys never migrated to D1 — the gap `generate_files.py` reports
+on every run. Deliberately not migrated here: doing it for one key of the
+carousel and leaving the rest would make that inconsistency harder to
+notice, not easier.
+
+#### The assertion caught me being lazy
+
+The first draft asserted both new keys contained an English stem in all
+four languages. It failed immediately: **ROI is a loanword in German,
+French and Spanish alike, and "compliance" is not** — it becomes
+*conformité* and *cumplimiento*. Asserting an English word against a
+translated string either passes by luck or fails for the wrong reason, so
+the content check is made against English and the other three are covered
+by a count plus the four-languages-or-none invariant.
+
+The standing invariant is that the deep-dive claim cannot come back in
+any language — stated for all four, because an English-only edit leaving
+German and Spanish behind is this project's most repeated i18n failure,
+and the reason `jurisdiction-count.mjs` exists at all.
+
+Dan's wording is used as given, with one house-style correction he
+invited: *"Country Compliance Guides"* → *"country compliance guides"*,
+since the site sets this in sentence case everywhere else including the
+Resources menu.
+
+`npm test`: **26 suites**. Replay OK across **633 files**, 617 assertions.
+
+**Needs both a migration apply and a site-worker deploy.**
