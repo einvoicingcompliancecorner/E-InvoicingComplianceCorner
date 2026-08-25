@@ -17697,3 +17697,15 @@ the middle of it.
 suite reports both on every run.
 
 `npm test`: **30 suites**, replay OK across 648 files.
+
+**Deployed 25 August 2026** (`e7280ce`): all five passes applied. The
+country deep dives carry the five headline tiles, and 99 of the 354
+free-form stat tiles that restated them are gone.
+
+**The two open items are content decisions, not code.** Romania states
+archiving as 10 yrs in the stat strip and 5 yrs in the tile; China as
+10–30 and 30. Both print about 40mm apart on the same page. Deleting
+either side would settle the contradiction by fiat rather than by
+checking, which is why they were held back in the first place —
+`tests/headline-facts.mjs` names them on every run and the CONTESTED list
+must be edited by whoever resolves one.
