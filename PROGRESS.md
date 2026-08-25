@@ -17302,3 +17302,38 @@ If the card is ever revisited for small-render legibility, the honest
 lever is less on it — the wordmark alone at roughly twice the size, no
 strapline — rather than any attempt to sharpen a file that is already
 sharp.
+
+#### RETRACTION: the privacy policy was never overstating (25 August 2026)
+
+The 24 August SEO audit listed, and this file and the project doc then
+repeated for two days, that "the privacy policy asserts Cloudflare Web
+Analytics and no beacon appears anywhere in the repository — either the
+beacon is missing or the policy overstates."
+
+**Both halves of that were wrong, and the answer was already written down
+in this very file.** See "Cloudflare Web Analytics enabled on both
+hostnames (3 August 2026, deployed & tested)", twelve hundred lines up:
+
+- The **public site** uses Cloudflare's zero-code automatic injection,
+  because the zone is proxied. That is precisely why no beacon appears in
+  the repository — there is nothing to appear. Grepping the tree for it
+  and concluding the site does not do it was the error.
+- The **members host** could not use automatic setup and carries the
+  manual snippet in `pageShell()` — which a grep of `members-worker`
+  finds immediately, and which I did not run before making the claim.
+
+**HOW THIS HAPPENED, because the shape matters more than the fact.** The
+audit searched the repository for evidence of a behaviour that lives at
+the edge, found none, and reported an inconsistency. Absence of a beacon
+in the tree is not absence of a beacon on the site. The design review
+already has a name for this — failure class A, a confident wrong answer —
+and the specific lesson is narrower: **PROGRESS.md is a source, and an
+audit that does not search it is not finished.** Two days of a false
+finding sat in the cross-session project doc because of one unrun grep.
+
+Nothing to build. The claim is true, and has been since 3 August.
+
+**The check that would confirm it end to end** is the Web Analytics
+dashboard showing page views in the last 24 hours — better evidence than
+markup inspection, because it proves the beacon is not merely present but
+actually reporting.
