@@ -52,15 +52,37 @@ DGFIP_LEGAL = ("https://www.impots.gouv.fr/sites/default/files/media/1_metier/2_
 NAV_KOBAK = ("https://nav.gov.hu/ado/enyugta/nyugtaadat-szolgaltatas/kezi-rogzites/"
              "segedlet-a-kobak-portal-nyugtaadat-rogzito-feluletenek-hasznalatahoz")
 
-# EXTENSIONLESS. The August SEO work established that /france.html answers
-# 307 to /france -- a TEMPORARY redirect, which tells a search engine not
-# to consolidate signals onto the target at all. One existing story and 13
-# translations still carry the .html form; these two do not add to that.
-def footer(slug, label):
-    return ('<p style="margin-top:18px; padding-top:14px; border-top:1px dashed #c9bd9e;">'
-            f'<a href="https://e-invoicingcompliancecorner.com/{slug}" '
-            'style="color:#b5432f; text-decoration:underline; font-weight:600; font-size:13px;">'
-            f'📖 {label} →</a></p>')
+# NO FOOTER HELPER HERE, DELIBERATELY.
+#
+# A footer() lived at this spot and appended a "Read the full <country>
+# Deep Dive" paragraph to all four bodies. It was wrong; migration 650
+# removed what it produced, from these two stories and from four older
+# ones that had the same paragraph.
+#
+# renderIssue() in members-worker/src/index.js already builds the foot of
+# an article -- accuracy note, official source, then one deep-dive link
+# per tagged country -- and says so in a comment: "Deep-dive links are
+# always rendered below the source link, never embedded in a story's own
+# HTML." Putting one in the body duplicates it on the rendered page, which
+# is what Dan saw.
+#
+# The renderer's version is the better one on its own merits, too. It
+# skips a country whose deep-dive slug is NULL (the European Union has no
+# page) rather than linking somewhere broken, it emits one link per
+# country on a story tagged with several, and it takes its label from the
+# archive i18n strings -- so it is actually translated, which the
+# hand-written footer here was not: the French, German and Spanish bodies
+# all carried an English label.
+#
+# The rule is: story bodies carry prose and links to SOURCES. Links back
+# into this site are the renderer's to place. 650 states that as a
+# standing invariant, so a generator that reintroduces the pattern fails
+# on replay rather than waiting to be noticed on a page.
+#
+# Each story below kept its "slug" as the record of which deep dive its
+# country tag resolves to; nothing renders from it. The "cta" label that
+# sat beside it fed footer() and nothing else, so it is gone -- a dead
+# string that reads like a rendered label is an invitation to use it.
 
 
 FR_EN = """<h3>🇫🇷 The last regulatory step lands, five weeks out</h3>
@@ -109,7 +131,7 @@ STORIES = [
         "date": "2026-08-25",
         "countries": ["France"],
         "source": DGFIP_LEGAL,
-        "slug": "france", "cta": "Read the full France Deep Dive for complete technical detail",
+        "slug": "france",
         "bodies": {"en": FR_EN, "fr": FR_FR, "de": FR_DE, "es": FR_ES},
         "t": {
             "en": ("The last regulatory step lands, five weeks out",
@@ -127,7 +149,7 @@ STORIES = [
         "date": "2026-08-25",
         "countries": ["Hungary"],
         "source": NAV_KOBAK,
-        "slug": "hungary", "cta": "Read the full Hungary Deep Dive for complete technical detail",
+        "slug": "hungary",
         "bodies": {"en": HU_EN, "fr": HU_FR, "de": HU_DE, "es": HU_ES},
         "t": {
             "en": ("Receipt-data reporting: what actually has to happen from 1 September",
@@ -175,8 +197,9 @@ HEADER = """-- ================================================================
 def sql():
     out = [HEADER]
     for s in STORIES:
-        bodies = {lang: s["bodies"][lang] + "\n" + footer(s["slug"], s["cta"])
-                  for lang in ("en", "fr", "de", "es")}
+        # The body is the body. Nothing is appended to it -- see the note
+        # where footer() used to be, above.
+        bodies = {lang: s["bodies"][lang] for lang in ("en", "fr", "de", "es")}
         body = bodies["en"]
         en_title, en_sum = s["t"]["en"]
         out.append(f"\n-- ---- {s['id']} ----")
@@ -234,6 +257,30 @@ def sql():
 
 if __name__ == "__main__":
     out = os.path.join(HERE, "649_sept_mandate_stories.sql")
+
+    # THIS NO LONGER REPRODUCES 649, AND MUST NOT OVERWRITE IT.
+    #
+    # 649 shipped with a deep-dive paragraph appended to every body. That
+    # was wrong and migration 650 removed it, and the footer() helper that
+    # produced it is gone from this file -- so running this now would emit
+    # a 649 that differs from the one already applied.
+    #
+    # apply_migrations records a sha256 per file and refuses to run when a
+    # recorded file's content has drifted, so the damage would be caught
+    # rather than silent. Being caught by the drift check is still a bad
+    # afternoon. Refusing here costs nothing and turns it into one line.
+    #
+    # The file stays as the record of what was applied. If these stories
+    # ever need regenerating, that is a NEW migration number, not an edit
+    # to a migration that has already run.
+    if os.path.exists(out):
+        raise SystemExit(
+            f"{out} already exists and has been applied.\n"
+            "This generator no longer reproduces it: the deep-dive footer it\n"
+            "used to append was removed by migration 650. Writing over 649\n"
+            "would put the tree out of step with the applied database.\n"
+            "Give a new migration a new number instead.")
+
     with open(out, "w", encoding="utf-8") as fh:
         fh.write(sql())
     print(f"{out}: {len(STORIES)} stories x 4 languages")
