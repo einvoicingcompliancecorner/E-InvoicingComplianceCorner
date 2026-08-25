@@ -1596,7 +1596,10 @@ async function renderSubscriberGate(request, env, lang, framed, spec) {
       window.EICC_AUTH.open({ mode: mode });
       return;
     }
-    window.top.location.href = '/subscribe.html';
+    // Extensionless: /subscribe.html answers 307 to /subscribe, and this
+    // is the last-resort navigation for a reader whose auth-overlay.js
+    // never loaded -- no reason to spend a redirect on them too.
+    window.top.location.href = '/subscribe';
   }
   var sub = document.getElementById('roiGateSubscribe');
   var sin = document.getElementById('roiGateSignin');

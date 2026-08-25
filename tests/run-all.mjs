@@ -38,6 +38,13 @@ const SUITES = [
   // the answer to, because they all call the render functions directly
   // and never touch the router.
   { name: "menu routes", cmd: "node", args: [join(HERE, "menu-routes.mjs")], cwd: REPO },
+  // Clicks every item in the tracker's Menu in a real browser and asserts
+  // the reader stayed on the tracker. menu-routes.mjs above checks that
+  // the WORKER serves each menu route; this checks that the CLICK still
+  // opens it in-page. Between them the two halves cover every menu link
+  // -- and the gap between them is exactly where the 24 August
+  // extensionless-link rewrite silently unhooked seven of them.
+  { name: "menu in-page", cmd: "node", args: [join(HERE, "menu-in-page.mjs")], cwd: REPO },
   // The shared session token and its Set-Cookie lines. No browser, no
   // network. It runs early because a break here logs everyone out of the
   // whole site, which is a worse failure than anything below it.
