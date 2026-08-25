@@ -17015,3 +17015,16 @@ landmarks — a `-1` index would have made the slice the whole document and
 passed on any layout at all.
 
 `npm test`: **29 suites**, 65 checks in the crawlability suite.
+
+**Deployed 25 August 2026** (`b88c6b6`): the home page is the tracker,
+country pages link sideways, the insights hub publishes a CollectionPage,
+the address bar agrees with the canonical, and the country index no longer
+shows underneath the panels.
+
+**The one thing still outstanding is not code.** `GOOGLE_SITE_VERIFICATION`
+and `BING_SITE_VERIFICATION` are deployed and empty, so no tag is being
+emitted and neither property is claimed. Until one of them is, this
+project still cannot see a single impression, query or coverage error —
+which is the whole reason the last month of work was done. Prefer the DNS
+TXT record on the apex over the meta tag: it covers every subdomain,
+survives every deploy, and leaves both vars empty.
