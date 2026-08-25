@@ -89,6 +89,12 @@ const SUITES = [
   { name: "methodology", cmd: "node", args: [join(HERE, "methodology.mjs")], cwd: REPO },
   { name: "changes", cmd: "node", args: [join(HERE, "changes.mjs")], cwd: REPO },
   { name: "subscriber walk", cmd: "node", args: [join(HERE, "subscriber-walk.mjs")], cwd: REPO },
+  // Counts the links at the foot of every archive article, in four
+  // languages, on the RENDERED page. Migration 650's invariant stops a
+  // story body carrying its own deep-dive link; this is the half that
+  // invariant cannot see -- renderIssue() emitting one twice, or out of
+  // order, would leave the entire migration chain green.
+  { name: "archive article links", cmd: "node", args: [join(HERE, "archive-article-links.mjs")], cwd: REPO },
   { name: "feature announcement", cmd: "node", args: [join(HERE, "feature-announcement.mjs")], cwd: REPO },
   { name: "structured data", cmd: "node", args: [join(HERE, "structured-data.mjs")], cwd: REPO },
   { name: "ROI regression", cmd: "node", args: [join(HERE, "roi-regression.mjs")], cwd: REPO },

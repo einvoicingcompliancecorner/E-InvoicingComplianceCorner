@@ -17792,3 +17792,110 @@ the ministry and sourced to trade press is the kind of claim this site
 says it does not make. Dan's call.
 
 `npm test`: **30 suites**, replay OK across 649 files.
+
+---
+
+### 25 August 2026 — the deep-dive link, listed twice
+
+Dan, reading the two stories added the day before:
+
+> "at the bottom of the article, the link to the deep dive is listed
+> twice ... Would it be possible to delete the first reference link to
+> the deep dive, so that there are only two remaining links, one for the
+> official source, and a second for the deep dive. I think this would be
+> consistent with other news article messages."
+
+He was right, and the second sentence is the important one: he was not
+asking for a new preference, he was pointing out that these stories did
+not match the rest of the archive.
+
+#### Where the second link came from
+
+`renderIssue()` builds the foot of every article itself — accuracy note,
+then the official source from `stories.source_url`, then one deep-dive
+link per tagged country. It carries a comment stating the rule outright:
+*"Deep-dive links are always rendered below the source link, never
+embedded in a story's own HTML."* It gives two reasons and both still
+hold: a country with a NULL slug (the European Union has no deep dive) is
+skipped rather than linked somewhere broken, and a story tagged with
+several countries gets one link each.
+
+I wrote a `footer()` helper into `gen_sept_mandate_stories.py` that
+appended that paragraph to all four language bodies. I had not read
+`renderIssue()` before writing it, so I reproduced by hand the thing the
+renderer was already doing — and broke a rule the code states in a
+comment three lines above the markup it duplicates.
+
+#### It was not only my two stories
+
+Dan said it was "also exhibited in a couple of other france messages",
+which is why the fix swept the table rather than the rows I had just
+added. Every story body was queried; **24 rows across six stories**
+carried the paragraph:
+
+| Story | Languages |
+|---|---|
+| `2026-02-24-france-ppf-pilot-opens` | de, es, fr |
+| `2026-07-10-france-no-delay-confirmed` | de, es, fr |
+| `2026-07-28-france-readiness-numbers` | de, es, fr |
+| `2026-08-05-france-dgfip-guide-closeup` | en, de, es, fr |
+| `2026-08-25-france-decret-2026-677` | en, de, es, fr |
+| `2026-08-25-hungary-receipt-data-operational-detail` | en, de, es, fr |
+
+**The three older France stories are the instructive ones.** Their English
+bodies are clean and only the translations carry the link — somebody fixed
+the English and left de/es/fr behind. That is exactly the defect a reader
+in one language sees and a reader in another does not, and it is why the
+sweep was a query over all 779 bodies rather than the list of stories I
+remembered touching.
+
+#### Two things it fixed without being about them
+
+- 649's French, German and Spanish bodies carried the footer with its
+  **English label**, so a French reader got "Read the full France Deep
+  Dive" sitting above a correctly translated one. Another 649 defect,
+  gone with the paragraph.
+- The 21 older rows pointed at `/france.html`, which answers **307**.
+  Twenty-one of the legacy `.html` links stop existing here.
+
+#### Migration 650, and why the removal was safe to do in SQL
+
+Checked rather than assumed, across all 779 bodies: exactly 24 rows
+contain the dashed-border style and none contains it twice; in every one
+the style opens a `<p>` holding nothing but the anchor, and nothing
+follows it; and after removal **no story body anywhere links to this site
+at all**. That last point is what makes 650's standing invariant honest
+rather than aspirational — story bodies link *out*, to sources.
+
+The generator lost `footer()`, and gained a guard that refuses to
+overwrite 649: it no longer reproduces that file, and while
+`apply_migrations` would catch the drift by checksum, being caught by the
+drift check is still a bad afternoon.
+
+#### A new test, because the invariant can only see half of it
+
+650's `ASSERT ALWAYS` stops the defect returning through the **data**. It
+cannot see `renderIssue()` growing a second link, losing the source link,
+or emitting them in the wrong order — every assertion in the chain would
+still pass while the page looked exactly like the one Dan complained
+about. The defect was reported as something on a rendered page, so
+`tests/archive-article-links.mjs` renders every published story in four
+languages and counts what a reader counts: link counts derived from the
+same data the renderer reads, source before deep dive, and no English
+label on a translated page. All four of its checks were confirmed by
+breaking the renderer and the migration in turn.
+
+#### Found on the way, and it is Dan's call
+
+**Sixty translated bodies across 20 stories carry their own "Official
+source" paragraph**, so those pages show two source links. These are *not*
+duplicates: in **57 of the 60 the body's URL is a different source from
+the story row's, and usually the better one** — `hasil.gov.my` against
+`cleartax.com`, `sat.gob.mx` against a consultancy blog,
+`porezna-uprava.gov.hr` against `vatupdate.com`. Deleting them the way the
+deep-dive footer was deleted would throw away a primary source and keep a
+secondary one. The English bodies are all clean, so only translated
+readers see it. Reported by `archive-article-links.mjs` on every run
+rather than fixed.
+
+`npm test`: **31 suites**, replay OK across 650 files.
