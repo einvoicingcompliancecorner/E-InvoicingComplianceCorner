@@ -17139,3 +17139,29 @@ along, which is the discovery path that actually matters.
 Submission, and it is a good fit here — the content monitor already knows
 the moment a country fact changes, so it could notify at that point rather
 than waiting to be crawled. Added to the list rather than done tonight.
+
+#### Both engines verified (25 August 2026)
+
+**Google** — Domain property, DNS TXT on the apex. Covers every subdomain
+including the members host. Confirmed against two resolvers.
+
+**Bing** — verified by `/BingSiteAuth.xml`, with the meta tag serving the
+same key as a second route. Site added to Webmaster Tools.
+
+That closes the item that has been the ceiling on everything else since
+the audit began. Until today this project had no way to tell whether any
+of the last month's work had done anything; every claim was inferred from
+markup. From here the answers come from data.
+
+**Nothing further is required to make the site discoverable.** `robots.txt`
+declares the sitemap, both engines can read it, and the internal linking
+work of the last week means a crawler that reaches any page can reach the
+rest. What remains is waiting, and reading what comes back.
+
+**What to look for, in the order it will arrive.** Coverage first: the
+seventy country pages moving from "Discovered" to "Indexed", which is the
+direct test of whether the crawlability work landed — forty-two of them
+were reachable from nothing at all a week ago. Then the reported canonical
+for the tracker switching from `/einvoicing-compliance-tracker.html` to
+`/`. Only much later, query and impression data worth drawing a conclusion
+from. The first fortnight will look noisy and should not be read closely.
