@@ -52,6 +52,11 @@
 // pills, they are the one N+1 in the original, and they are decoration on
 // a page this dense.
 import { escapeHtml, translateCountryName, deriveFlagFromCode } from "./deep-dive-render.mjs";
+// The five headline facts moved to a leaf module on 25 August 2026 so the
+// deep-dive pages could show the same tiles without a circular import --
+// this file already imports from deep-dive-render, so deep-dive-render
+// could not import from this one. See shared/headline-facts.mjs.
+import { shortDate, headlineTiles } from "./headline-facts.mjs";
 
 /** Placeholders in a translated string: {0}, {1}... */
 function fill(str, ...args) {
@@ -762,7 +767,6 @@ ol.steps span{color:#555}
 }
 `;
 
-const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 // A CUT MID-WORD READS AS BROKEN SOFTWARE, not as an abbreviation.
 //
 // The cover's Model column was a bare .slice(0, 64). On roughly half the
@@ -782,186 +786,6 @@ function clip(text, max) {
   const cut = str.slice(0, max);
   const space = cut.lastIndexOf(" ");
   return (space > max * 0.6 ? cut.slice(0, space) : cut).replace(/[ ,;:(]+$/, "") + "\u2026";
-}
-
-function shortDate(d) {
-  if (!d) return "";
-  const [y, m] = String(d).split("-");
-  return `${MONTHS[parseInt(m, 10) - 1] || ""} ${y}`;
-}
-
-// ---- the five headline tiles -----------------------------------------
-//
-// THE POINT OF THESE IS THAT THEY ARE THE SAME FIVE EVERY TIME.
-//
-// What they replace was five free-form value/label pairs chosen per
-// country: Germany offered "2 formats / No CTC / 8 yrs / EUR 5,000 /
-// 2028", Azerbaijan offered a launch date and a VAT rate. Interesting,
-// and not comparable -- a reader with eleven markets could not line
-// eleven pages up against each other, which was Dan's complaint.
-//
-// Those per-country stats are not thrown away; they move to an optional
-// second strip that a page shows only if it has room (see the renderer).
-//
-// AN UNKNOWN PRINTS AS "NOT CONFIRMED" AND NEVER AS BLANK. 18 of the 350
-// stored facts are unknown, each with a recorded reason. A blank tile
-// would read as "no requirement", which is a different claim and the one
-// that gets somebody fined. This is the whole argument for the enum
-// carrying 'unknown' as a value rather than using NULL.
-const HL_STATUS = {
-  active:     ["hl.active",     "ACTIVE",       "on"],
-  planned:    ["hl.planned",    "PLANNED",      "soon"],
-  voluntary:  ["hl.voluntary",  "VOLUNTARY",    "opt"],
-  no_mandate: ["hl.none",       "NO MANDATE",   "off"],
-  unknown:    ["hl.unknown",    "NOT CONFIRMED", "unk"],
-};
-// The e-Reporting card prints a CADENCE where the others print a status,
-// so the status table only has to cover the states that are not one.
-// 'active' never reaches it: an active row always has a frequency, which
-// 626 asserts, and the frequency is what the card shows.
-const HL_EREPORTING = {
-  active:     [null,             null,            "on"],
-  planned:    ["hl.er.planned",  "PLANNED",       "soon"],
-  // An audit file is a real obligation that is not a schedule. Blue,
-  // the same tone VOLUNTARY uses on the mandate card, because both mean
-  // "this applies to you conditionally" -- and pointedly not the grey of
-  // NO MANDATE beside it.
-  on_request: [null,             null,            "opt"],
-  voluntary:  ["hl.voluntary",   "VOLUNTARY",     "opt"],
-  no_mandate: ["hl.er.none",     "NO MANDATE",    "off"],
-  unknown:    ["hl.unknown",     "NOT CONFIRMED", "unk"],
-};
-const HL_FREQUENCY = {
-  real_time:      ["hl.freq.real_time",      "REAL-TIME"],
-  near_real_time: ["hl.freq.near_real_time", "NEAR REAL-TIME"],
-  daily:          ["hl.freq.daily",          "DAILY"],
-  monthly:        ["hl.freq.monthly",        "MONTHLY"],
-  quarterly:      ["hl.freq.quarterly",      "QUARTERLY"],
-  annual:         ["hl.freq.annual",         "ANNUAL"],
-  varies:         ["hl.freq.varies",         "VARIES"],
-  on_request:     ["hl.freq.on_request",     "ON REQUEST"],
-};
-
-const HL_SIGNATURE = {
-  required:     ["hl.sig.required",    "REQUIRED",     "on"],
-  conditional:  ["hl.sig.conditional", "CONDITIONAL",  "soon"],
-  not_required: ["hl.sig.not",         "NOT REQUIRED", "off"],
-  unknown:      ["hl.unknown",         "NOT CONFIRMED", "unk"],
-};
-
-function headlineTiles(h, t) {
-  if (!h) return "";
-  const esc = escapeHtml;
-
-  // ---- THREE CARDS, NOT FIVE ------------------------------------------
-  //
-  // Dan, 22 August 2026: "from a section arrangement standard - we should
-  // only have 5 boxes / cards at the top of the page. We can combine B2G,
-  // B2B and B2C into one card."
-  //
-  // He was counting ten. Nine countries were also showing the demoted
-  // per-country stats as a second strip directly underneath, in a
-  // different style, and on Brazil, Bahrain and Romania it restated the
-  // tiles above it -- Romania printed "5 yrs" in one strip and "10 yrs" in
-  // the other, 15mm apart, for the same fact. That strip is gone; see the
-  // renderer below.
-  //
-  // COMBINING THE THREE SEGMENTS IS A READABILITY FIX, not just a count.
-  // As three separate tiles they were three identical boxes: Kenya and
-  // Uruguay both printed ACTIVE / ACTIVE / ACTIVE across the top with
-  // nothing to tell them apart, because the qualifying lines are the first
-  // thing the fitter takes. Read as one card with three labelled rows,
-  // the segments are compared against each other -- which is the actual
-  // question, "does this apply to me" -- instead of against the same
-  // segment on another country's page.
-  const seg = (status, date, label, note) => {
-    const [key, en, tone] = HL_STATUS[status] || HL_STATUS.unknown;
-    // The date rides WITH the word rather than replacing it: "Jan 2027"
-    // alone does not say whether that is a start or a deadline, and
-    // "PLANNED" alone is the omission migration 600's CHECK refuses to
-    // store.
-    const value = status === "planned" && date
-      ? `${esc(t(key, en))} <span class="dt">${esc(shortDate(date))}</span>`
-      : esc(t(key, en));
-    return `<div class="seg ${tone}"><span class="sl">${esc(label)}</span>
-      <span class="sv">${value}</span>
-      <span class="sn">${note ? esc(note) : ""}</span></div>`;
-  };
-
-  const card = (value, tone, label, note, system) =>
-    `<div class="hcard ${tone}"><div class="v">${value}</div>${
-      system ? `<div class="sys">${esc(system)}</div>` : ""
-    }<div class="l">${esc(label)}</div>${
-      note ? `<div class="n">${esc(note)}</div>` : ""}</div>`;
-
-  // ---- e-Reporting -----------------------------------------------------
-  //
-  // Dan, 23 August 2026: a fourth card "for e-Reporting, and will alert
-  // the user to any e-Reporting mandates that are in place such as
-  // SAF-T" -- and, when the first cut leaned on SAF-T: "I was just using
-  // SAF-T as an example ... ensure if there is a B2B e-Reporting
-  // requirement, it is listed, regardless of whether SAF-T or another."
-  //
-  // Only four of the thirty-nine live regimes ARE SAF-T, which is why
-  // the card leads with the cadence and names the system underneath
-  // rather than the other way round. MONTHLY tells a reader what they
-  // have to build; "SAF-T" only tells them so if their country happens
-  // to use it.
-  const erep = (() => {
-    const st = h.ereporting_status || "unknown";
-    const [key, en, tone] = HL_EREPORTING[st] || HL_EREPORTING.unknown;
-    const label = t("hl.lbl.ereporting", "E-reporting");
-    // A cadence, where there is one. `active` and `on_request` carry no
-    // status word of their own precisely so the card cannot print
-    // "ACTIVE" over a system name and leave the reader to guess how
-    // often -- which is the thing this card exists to answer.
-    const freq = HL_FREQUENCY[h.ereporting_frequency];
-    if (key === null && freq) {
-      return card(esc(t(freq[0], freq[1])), tone, label,
-                  h.ereporting_note, h.ereporting_system);
-    }
-    // PLANNED rides with its date, the same way the mandate segments do:
-    // "PLANNED" alone is the omission migration 600's CHECK refuses to
-    // store, and 626 restates it for this column.
-    const value = st === "planned" && h.ereporting_date
-      ? `${esc(t(key, en))} <span class="dt">${esc(shortDate(h.ereporting_date))}</span>`
-      : esc(t(key || "hl.unknown", en || "NOT CONFIRMED"));
-    return card(value, tone, label, h.ereporting_note,
-                st === "planned" ? h.ereporting_system : null);
-  })();
-
-  const arch = (() => {
-    if (h.archiving_status === "years" && h.archiving_years != null) {
-      // NOT the same green as an in-force mandate. A retention period is
-      // not a compliance status, and painting "7 yrs" the colour that
-      // means ACTIVE two cards to the left made the strip say something it
-      // did not mean. Neutral, because a number is just a number.
-      return card(`${esc(String(h.archiving_years))} <span class="dt">${
-        esc(t("hl.yrs", "yrs"))}</span>`, "num", t("hl.lbl.archiving", "Archiving"), h.archiving_note);
-    }
-    const map = {
-      // "VARIES" used to print in the amber that means "a deadline is
-      // coming" everywhere else on the page. It is not a warning.
-      varies:         ["hl.arch.varies", "VARIES",         "num"],
-      no_requirement: ["hl.arch.none",   "NO REQUIREMENT", "off"],
-      unknown:        ["hl.unknown",     "NOT CONFIRMED",  "unk"],
-    };
-    const [key, en, tone] = map[h.archiving_status] || map.unknown;
-    return card(esc(t(key, en)), tone, t("hl.lbl.archiving", "Archiving"), h.archiving_note);
-  })();
-
-  const [sk, sen, stone] = HL_SIGNATURE[h.signature_status] || HL_SIGNATURE.unknown;
-
-  return `<div class="statstrip hl">
-    <div class="hcard mand"><div class="l">${esc(t("hl.lbl.mandate", "E-invoicing mandate"))}</div>
-      ${seg(h.b2g_status, h.b2g_date, t("hl.seg.b2g", "B2G"), h.b2g_note)}
-      ${seg(h.b2b_status, h.b2b_date, t("hl.seg.b2b", "B2B"), h.b2b_note)}
-      ${seg(h.b2c_status, h.b2c_date, t("hl.seg.b2c", "B2C"), h.b2c_note)}
-    </div>
-    ${erep}
-    ${arch}
-    ${card(esc(t(sk, sen)), stone, t("hl.lbl.signature", "Digital signature"), h.signature_note)}
-  </div>`;
 }
 
 /**

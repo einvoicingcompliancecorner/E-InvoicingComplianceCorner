@@ -17267,3 +17267,174 @@ fixed numbers, so the card can ship at any density. Verified by shrinking
 the file while leaving the markup alone.
 
 `npm test`: **29 suites**, 87 checks in the crawlability suite.
+
+#### Closed: the card was never blurred (25 August 2026)
+
+Bisected rather than guessed at, in the end, and the answer is that there
+was no defect anywhere in this project.
+
+- **The file is crisp.** Mean edge transition 0.90px, and sharper by
+  measurement than a native 1x render of the same card.
+- **Delivery is not degrading it.** Cloudflare Polish is the only thing
+  that would recompress a PNG in transit, and it is a Pro-plan feature;
+  this zone is on Free, so the bytes served are the bytes generated.
+- **The image is clear when opened directly.** Confirmed by Dan at the
+  asset URL, which is the observation that settles it.
+
+So what looked blurred was LinkedIn's Post Inspector preview: a thumbnail
+scaling 1200px into a few hundred, and LinkedIn's own JPEG re-encode,
+which is at its worst on heavy cream type over near-black navy.
+
+**THE INSPECTOR'S THUMBNAIL IS NOT WHAT A READER SEES.** The real card in
+a feed post renders around 550px. Judge it there.
+
+Worth being honest in the record: two changes were shipped against this
+before it was bisected, on the inference that "it must be downstream".
+Neither was harmful — the 2x card is genuinely better on retina, and the
+size assertion that came with it caught a real flaw where the test was
+comparing hardcoded numbers to hardcoded numbers — but neither was needed,
+and the five-second check of opening the asset URL should have come first.
+
+**The habit, restated:** when a report and a measurement disagree, find
+the third thing that can distinguish them before changing either.
+
+If the card is ever revisited for small-render legibility, the honest
+lever is less on it — the wordmark alone at roughly twice the size, no
+strapline — rather than any attempt to sharpen a file that is already
+sharp.
+
+#### RETRACTION: the privacy policy was never overstating (25 August 2026)
+
+The 24 August SEO audit listed, and this file and the project doc then
+repeated for two days, that "the privacy policy asserts Cloudflare Web
+Analytics and no beacon appears anywhere in the repository — either the
+beacon is missing or the policy overstates."
+
+**Both halves of that were wrong, and the answer was already written down
+in this very file.** See "Cloudflare Web Analytics enabled on both
+hostnames (3 August 2026, deployed & tested)", twelve hundred lines up:
+
+- The **public site** uses Cloudflare's zero-code automatic injection,
+  because the zone is proxied. That is precisely why no beacon appears in
+  the repository — there is nothing to appear. Grepping the tree for it
+  and concluding the site does not do it was the error.
+- The **members host** could not use automatic setup and carries the
+  manual snippet in `pageShell()` — which a grep of `members-worker`
+  finds immediately, and which I did not run before making the claim.
+
+**HOW THIS HAPPENED, because the shape matters more than the fact.** The
+audit searched the repository for evidence of a behaviour that lives at
+the edge, found none, and reported an inconsistency. Absence of a beacon
+in the tree is not absence of a beacon on the site. The design review
+already has a name for this — failure class A, a confident wrong answer —
+and the specific lesson is narrower: **PROGRESS.md is a source, and an
+audit that does not search it is not finished.** Two days of a false
+finding sat in the cross-session project doc because of one unrun grep.
+
+Nothing to build. The claim is true, and has been since 3 August.
+
+**The check that would confirm it end to end** is the Web Analytics
+dashboard showing page views in the last 24 hours — better evidence than
+markup inspection, because it proves the beacon is not merely present but
+actually reporting.
+
+#### Parked: a Tradeshift sponsor clip on the share card (25 August 2026)
+
+Dan asked for a mock-up, saw three treatments, and parked the decision.
+`tools/mock-sponsor-card.mjs` is kept rather than deleted so the options
+can be looked at again without rebuilding them; it writes to /tmp and
+ships nothing. Delete it once a treatment is chosen and folded into
+`gen-social-images.mjs`, or once the idea is dropped.
+
+The three: **A** a plain mono credit with no container, which reads as an
+acknowledgement rather than an advertisement; **B** a cream pill, the
+pragmatic choice because most corporate wordmarks are drawn for light
+backgrounds and many have no approved reversed version; **C** a ruled
+corner in the site's own line colour.
+
+**NO LOGO WAS DRAWN.** The placeholder is a dashed box at roughly 4:1.
+Reproducing another company's wordmark from memory gets the letterforms,
+weight and spacing wrong, and a bad rendering of a trademark is worse than
+an obvious gap. This needs the real asset — ideally both a full-colour and
+a reversed version — before anything ships.
+
+**THE EDITORIAL QUESTION IS THE REAL ONE, and it outlives the artwork.**
+`organizationLd()` describes this site as "Independent tracking of
+e-invoicing mandates, legislation and deadlines". A permanent sponsor mark
+is compatible with that — plenty of independent publications carry
+sponsors — but the two statements have to be made to agree rather than
+left to sit side by side. The machinery for the honest version already
+exists at the article level (`is_sponsored`, `sponsor_name`, a visible
+badge). If this goes ahead, the methodology page should gain a short
+paragraph naming who funds the site and confirming sponsors have no input
+into what it reports. That sentence is what lets the independence claim
+survive the logo.
+
+Worth separating: the disclosure argument stands on its own. Readers
+assessing a compliance tracker will weigh who is behind it, and that is
+true whether or not a logo ever appears.
+
+### The headline tiles come to the country pages (25 August 2026)
+
+Dan: *"In the compliance guide printout, we added cards/tiles at the top
+of the page covering the B2B/B2G/B2C, e-Reporting, Archiving and Digital
+Signature requirements for each country. I would like that information to
+be repeated in the country deep-dive pages."* The data already existed —
+`country_headline_facts`, five facts for seventy countries since
+migration 608.
+
+**THE TILES MOVED TO A LEAF MODULE, AND HAD TO.** They lived in
+`guides-render.mjs`, and the obvious implementation — import
+`headlineTiles` from there — is a **circular import**: `guides-render`
+already imports `escapeHtml` and `translateCountryName` from
+`deep-dive-render`. So the vocabulary now lives in
+`shared/headline-facts.mjs`, which imports nothing. Both renderers depend
+on it and it depends on neither, which is also the honest shape: these
+five facts are a property of the country, not of the guide.
+
+**ONE MARKUP, TWO STYLESHEETS.** `headlineTiles()` takes a wrapper class
+and that is the *only* thing the two surfaces vary — the classes, the
+structure, the words and the tone each status maps to are identical,
+because a reader with the guide and the page open must not be able to find
+a discrepancy. `tests/headline-facts.mjs` asserts the two outputs are
+byte-identical apart from that wrapper.
+
+#### Two rows, not the guide's six columns — decided by measurement
+
+The first version copied the guide's six-column strip and **clipped text
+in all four languages**: CONDITIONNELLE, CONDICIONAL, NICHT ERFORDERLICH
+and the plain English CONDITIONAL all lost their tails. Measured, a single
+card at six columns has a 103px content box and `ERFORDERLICH` needs
+135px at any font size a headline value should use. It was never a
+type-size problem.
+
+A printed A4 page has fixed height, so the guide spends horizontal space
+to save vertical. **A deep dive scrolls**, so the trade reverses: the
+mandate card takes a full row and its three segments line up across the
+whole container, and the three single cards take a third each.
+
+That clipping is invisible to every other check in this repository — the
+element keeps its height and the text stays in the DOM — so the new suite
+**measures a rendered page** at five widths in four languages across six
+countries. Verified by restoring the six-column layout and watching it go
+red.
+
+#### And a contradiction the feature exposes rather than causes
+
+23 countries already state an archiving period in their free-form
+deep-dive stat strip, which now sits directly beneath a tile stating the
+same fact from `country_headline_facts`. **Three disagree:**
+
+- **Belgium** — stat strip "7 yrs", tile "10 yrs"
+- **Romania** — stat strip "10 yrs", tile "5 yrs"
+- **China** — stat strip "10–30 yrs", tile "30 yrs"
+
+Both numbers now print about 40mm apart on the same page. This is the
+defect the guide already had, and Romania is in both stories.
+
+**REPORTED, NOT FAILED.** Which number is right is a content decision, and
+a failing suite would either block the feature or invite someone to
+silence the check — the shape `guides-consistency` already uses for the
+same reason.
+
+`npm test`: **30 suites**.

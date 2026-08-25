@@ -81,6 +81,11 @@ const SUITES = [
   // problem: the tracker linked to none of the seventy country pages,
   // and the sitemap listed 28 of them.
   { name: "seo crawlability", cmd: "node", args: [join(HERE, "seo-crawlability.mjs")], cwd: REPO },
+  // The five headline tiles on the deep-dive pages, added 25 August. It
+  // MEASURES a rendered page rather than reading markup, because the
+  // defect it exists for -- a status word clipped rather than wrapped --
+  // leaves the element's height unchanged and all the text in the DOM.
+  { name: "headline facts", cmd: "node", args: [join(HERE, "headline-facts.mjs")], cwd: REPO },
   { name: "methodology", cmd: "node", args: [join(HERE, "methodology.mjs")], cwd: REPO },
   { name: "changes", cmd: "node", args: [join(HERE, "changes.mjs")], cwd: REPO },
   { name: "subscriber walk", cmd: "node", args: [join(HERE, "subscriber-walk.mjs")], cwd: REPO },

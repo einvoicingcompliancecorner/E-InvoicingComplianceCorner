@@ -16,6 +16,7 @@
 // See README.md in this folder for full setup instructions.
 // ================================================================
 
+import { getCountryHeadlineFacts as sharedGetCountryHeadlineFacts } from "../../shared/headline-facts.mjs";
 import {
   getMilestonesForCountry as sharedGetMilestonesForCountry,
   renderDeepDiveStyleMilestones as sharedRenderDeepDiveStyleMilestones,
@@ -3310,9 +3311,25 @@ async function handleDeepDivePreview(request, env, lang) {
     console.error("preview: related jurisdictions failed:", err && err.message);
   }
 
+  // The headline facts too, so the preview shows the page the reader gets.
+  //
+  // NO guideStrings: this Worker is a separate origin and cannot fetch the
+  // static site's i18n files (see the TRANSLATIONS note at the top of this
+  // file). With none supplied the tiles fall back to the English written
+  // into headline-facts.mjs, which is the right trade for an admin preview
+  // — the STRUCTURE is what an editor is checking here, and inventing a
+  // second copy of those strings in this Worker is exactly the drift the
+  // shared module exists to prevent.
+  let headline = null;
+  try {
+    headline = await sharedGetCountryHeadlineFacts(env.eicc_content, countryName, lang);
+  } catch (err) {
+    console.error("preview: headline facts failed:", err && err.message);
+  }
+
   const html = await sharedRenderFullDeepDivePage(
     countryName, flag, countryRow.code, countryRow.region, content, milestones, lang,
-    "https://e-invoicingcompliancecorner.com/", related
+    "https://e-invoicingcompliancecorner.com/", { related, headline }
   );
   return htmlResponse(html);
 }
