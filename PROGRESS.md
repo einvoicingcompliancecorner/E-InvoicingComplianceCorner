@@ -17028,3 +17028,34 @@ project still cannot see a single impression, query or coverage error —
 which is the whole reason the last month of work was done. Prefer the DNS
 TXT record on the apex over the meta tag: it covers every subdomain,
 survives every deploy, and leaves both vars empty.
+
+#### Verified — and the first thing this project can actually observe (25 August 2026)
+
+Google Search Console **Domain property**, verified by a TXT record on the
+apex. Confirmed independently rather than taken from the dashboard: both
+Cloudflare's and Google's public resolvers return
+
+    google-site-verification=l5HTDJEKiUkcfk7T15wdcOwx-ElhBixdyI34hFO-TFQ
+
+as a single clean string with no wrapping quote characters, TTL 3600.
+
+**A Domain property, not a URL prefix**, which matters more here than it
+looks: it covers www and apex, http and https, and every subdomain — so
+the members host is inside the same property without a second
+verification, and the three tracker addresses are all inside it while
+Google works out that `/` is now the canonical.
+
+**THE RECORD MUST NEVER BE DELETED.** Google revokes verification if it
+disappears, and a TXT record nobody recognises is exactly the kind of
+thing that gets tidied out of a DNS zone a year later. It is not
+associated with any Worker, so nothing in this repository refers to it —
+which is why it is written down here.
+
+`GOOGLE_SITE_VERIFICATION` and `BING_SITE_VERIFICATION` stay **empty**.
+The DNS method needs no tag, and the vars remain as the fallback if the
+record is ever lost. Nothing to deploy.
+
+After a month of audits inferring search performance from markup, this
+project can now observe it. The first question it answers is the one the
+whole crawlability effort was premised on: whether the forty-two country
+pages that were unreachable are now indexed.
