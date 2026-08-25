@@ -17574,3 +17574,37 @@ rounded cards, and these are now the same object rather than a different
 one.
 
 `npm test`: **30 suites**, replay OK across 645 files.
+
+#### Middle East / Africa, the third pass (25 August 2026)
+
+Dan is working the regions in turn: 644 was Europe and the Americas, 646
+is Middle East / Africa. Eight tiles, all matched exactly against live
+rows before anything was written.
+
+All eight are the class 643's rules could not see, because those rules
+kept anything carrying a year: a DATED milestone that says only what a
+headline tile now says. Egypt's "2023 / B2B fully in force" beside a B2B
+tile reading ACTIVE; Saudi Arabia's "2021 / Phase 1 live since" beside the
+same; Kenya's two TIMS/eTIMS rollout dates; Jordan's "Apr 2025 / Full
+B2B/B2G/B2C enforcement" beside three ACTIVE rows; Nigeria's MBS go-live.
+
+**The dates are not lost.** Every one is in the compliance timeline
+further down the same page, which is where a sequence of events belongs.
+The strip is for what a reader needs before deciding whether the page
+applies to them at all.
+
+**Qatar's second tile is the exception**, and is here on Dan's judgement
+rather than by any rule: "None yet / Qatar has not yet implemented VAT"
+duplicates nothing. It is simply not what the strip is for — a tile
+explaining a country has no VAT sits oddly above four tiles about
+obligations that therefore cannot exist, and the mandate tile already
+reads NO MANDATE.
+
+Kenya and Qatar each lose two, so the floor was worth checking rather than
+assuming: the lowest any affected country reaches is three, and Cyprus
+remains the only country at two.
+
+Running total across the three passes: **75 tiles removed, 279 left**, from
+354.
+
+`npm test`: **30 suites**, replay OK across 646 files.
