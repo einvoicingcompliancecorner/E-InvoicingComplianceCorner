@@ -17267,3 +17267,38 @@ fixed numbers, so the card can ship at any density. Verified by shrinking
 the file while leaving the markup alone.
 
 `npm test`: **29 suites**, 87 checks in the crawlability suite.
+
+#### Closed: the card was never blurred (25 August 2026)
+
+Bisected rather than guessed at, in the end, and the answer is that there
+was no defect anywhere in this project.
+
+- **The file is crisp.** Mean edge transition 0.90px, and sharper by
+  measurement than a native 1x render of the same card.
+- **Delivery is not degrading it.** Cloudflare Polish is the only thing
+  that would recompress a PNG in transit, and it is a Pro-plan feature;
+  this zone is on Free, so the bytes served are the bytes generated.
+- **The image is clear when opened directly.** Confirmed by Dan at the
+  asset URL, which is the observation that settles it.
+
+So what looked blurred was LinkedIn's Post Inspector preview: a thumbnail
+scaling 1200px into a few hundred, and LinkedIn's own JPEG re-encode,
+which is at its worst on heavy cream type over near-black navy.
+
+**THE INSPECTOR'S THUMBNAIL IS NOT WHAT A READER SEES.** The real card in
+a feed post renders around 550px. Judge it there.
+
+Worth being honest in the record: two changes were shipped against this
+before it was bisected, on the inference that "it must be downstream".
+Neither was harmful — the 2x card is genuinely better on retina, and the
+size assertion that came with it caught a real flaw where the test was
+comparing hardcoded numbers to hardcoded numbers — but neither was needed,
+and the five-second check of opening the asset URL should have come first.
+
+**The habit, restated:** when a report and a measurement disagree, find
+the third thing that can distinguish them before changing either.
+
+If the card is ever revisited for small-render legibility, the honest
+lever is less on it — the wordmark alone at roughly twice the size, no
+strapline — rather than any attempt to sharpen a file that is already
+sharp.
