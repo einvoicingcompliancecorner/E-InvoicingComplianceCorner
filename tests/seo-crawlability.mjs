@@ -672,6 +672,36 @@ t.check("the sitemap is served and well-formed",
       !/[<>]/.test(value) && !value.includes("content="),
       `looks like a pasted tag: ${value.slice(0, 40)}`);
   }
+
+  // BING IS VERIFIED TWO WAYS, AND THEY MUST AGREE.
+  //
+  // The meta tag went live first and Bing kept refusing it, because its
+  // dialog verifies whichever option is open and Dan was on the XML-file
+  // one — "please make sure the authentication file contains…" is that
+  // method's wording, and there was no such file. Serving it too means
+  // whichever button gets pressed, the answer is the same.
+  //
+  // The failure this guards is re-verification: if the property is ever
+  // reclaimed, Bing issues a new key, and updating the var while leaving
+  // the file behind (or the reverse) leaves one method quietly asserting
+  // a key that is no longer valid.
+  const auth = readFileSync(join(REPO, "BingSiteAuth.xml"), "utf8");
+  const fileKey = (auth.match(/<user>([^<]+)<\/user>/) || [])[1];
+  t.check("BingSiteAuth.xml names a key",
+    !!fileKey, "no <user> element found");
+  t.check("and it is the same key the meta tag serves",
+    fileKey === vars.BING_SITE_VERIFICATION,
+    `file ${fileKey} vs var ${vars.BING_SITE_VERIFICATION}`);
+
+  // THE FILENAME IS CASE-SENSITIVE, which is its own reported failure
+  // mode on Microsoft's support forum: Bing asks for /BingSiteAuth.xml
+  // and a lowercase file 404s. Asserted against the real router rather
+  // than the filesystem, because the asset layer is what decides.
+  const cased = await worker.fetch(
+    new Request("https://e-invoicingcompliancecorner.com/BingSiteAuth.xml"), env, { waitUntil() {} });
+  t.check("the router serves it at the exact capitalisation Bing asks for",
+    cased.status === 200 && (await cased.text()).includes(fileKey),
+    `status ${cased.status}`);
 }
 
 console.log(`  note  ${tracked.length} countries linked from the tracker and listed in `

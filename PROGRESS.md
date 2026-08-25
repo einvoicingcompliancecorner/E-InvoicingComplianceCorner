@@ -17090,3 +17090,36 @@ a failure with nothing visibly wrong in the config. Verified by pasting a
 whole tag in and watching it go red.
 
 `npm test`: **29 suites**, 67 checks in the crawlability suite.
+
+#### And the file too, because the dialog verifies whichever tab is open
+
+The meta tag went live and Bing went on refusing it. The tag was never
+the problem — fetched from the deployed home page, `msvalidate.01` was
+present and correct. The message was: *"please make sure the
+authentication **file** contains the following verification key"*, which
+is the XML-file method's wording, and there was no such file. Bing's
+dialog checks whichever option is open, and each option has its own
+Verify button, so it is easy to read the key off one tab and press the
+button belonging to another.
+
+So the site now answers both. `BingSiteAuth.xml` sits at the repo root
+(`[assets] directory = "../"`, and `.assetsignore` does not exclude
+`*.xml`), served at `/BingSiteAuth.xml`. Dan pasted Bing's own copy and
+it was byte-identical to the reconstruction, so nothing is guessed here.
+
+Two invariants are now asserted, because the real risk is not today:
+
+- **The file and the var must name the same key.** If the property is
+  ever reclaimed, Bing issues a new one, and updating the var while
+  leaving the file behind leaves one method quietly asserting a key that
+  is no longer valid. Verified by changing one and watching it go red.
+- **The capitalisation is exact.** `/BingSiteAuth.xml` answers 200 and
+  `/bingsiteauth.xml` 404s — a documented way to fail on Microsoft's own
+  support forum. Asserted against the router rather than the filesystem,
+  because the asset layer is what decides.
+
+Also recorded: `www.e-invoicingcompliancecorner.com` does not resolve at
+all. Only the apex does. Anything that asks to be pointed at a hostname
+should be given the apex over https.
+
+`npm test`: **29 suites**, 70 checks in the crawlability suite.
