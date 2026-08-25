@@ -16955,3 +16955,63 @@ precise failure it exists to catch. Comment lines are stripped now, and
 the fix was verified by deleting the entry and watching it go red.
 
 `npm test`: **29 suites**, 61 checks in the crawlability suite.
+
+#### Two more, found by asking what a reader would actually notice
+
+Dan asked what the UX change amounts to. Answering it properly meant
+reading the client-side routing rather than reasoning about the server,
+and that turned up a partial migration: **ten `history.pushState()` calls
+still wrote `/einvoicing-compliance-tracker.html` into the address bar**
+when a panel closed. Nothing was broken — that URL serves the tracker —
+but a reader arriving at `/`, opening a country and closing it was
+silently moved to the non-canonical address, so one session showed two
+different URLs for the same home page. Invisible to every check here,
+because they all read the HTML the server sent and none of them watch
+what the page does to the URL afterwards. There is a check now.
+
+And an unrelated one the full run surfaced twice: `session.mjs`'s
+"a flipped signature bit is refused" tampered with a token by replacing
+the last base64url character with `"A"`. About one signature in
+sixty-four already ends in `"A"`, so on those runs the token reached
+`verifyToken` **unmodified**, verified, and the line went red. The false
+alarm was the visible half; the worse half is that on exactly those runs
+the check asserted nothing, because the "tampered" token was the real
+one. It now decodes, flips a bit in the bytes, re-encodes, and asserts
+that the tampering changed something before asserting it was refused.
+Twelve consecutive green runs.
+
+`npm test`: **29 suites**, 63 checks in the crawlability suite.
+
+#### The index was showing underneath every panel (25 August 2026)
+
+Dan, on `/costa-rica`: the page showed that country's new **Related
+jurisdictions** block and then, directly below it, **All jurisdictions** —
+all seventy again.
+
+The related block made it visible; it was not the cause. `#countryIndex`
+was a **sibling** of `#boardView` and of all nine panel views, so it
+stayed on screen underneath every one of them. It had been doing that
+since the index shipped on the 24th — on the map, sources, insights, ROI,
+guides, archive, education, feedback and subscribe panels as well as the
+deep dives. Nobody had noticed because the panels are long and the index
+is at the very bottom.
+
+**The fix is nesting, not toggling.** The nav is now the last child of
+`#boardView`, so its visibility *is* the board's visibility and there is
+nothing to remember. The alternative — a show/hide call in each of the
+nine open/close pairs — is eighteen places to get right, and is exactly
+the pattern that produced the duplicated back link on the specification
+register the day before.
+
+No crawler cost: `#boardView` is visible in the served HTML, so the
+seventy anchors sit exactly where they were to anything reading markup.
+
+Verified by driving the real page rather than by reasoning about it —
+board load: index visible; deep dive open: hidden; closed: visible again;
+map panel open: hidden. And the new structural check was confirmed by
+putting the nav back outside `#boardView` and watching it go red, with a
+second assertion that the slice it inspects actually found both its
+landmarks — a `-1` index would have made the slice the whole document and
+passed on any layout at all.
+
+`npm test`: **29 suites**, 65 checks in the crawlability suite.

@@ -49,8 +49,28 @@ const forgedPayload = Buffer.from(JSON.stringify({
 })).toString("base64url");
 t.check("a swapped payload with a valid signature is refused",
   (await verifyToken(SECRET, `${forgedPayload}.${sig}`)) === null);
+// A REAL BIT FLIP, IN THE DECODED BYTES.
+//
+// This used to replace the last base64url character with "A" — which is
+// not a flipped bit, it is a substituted character that is USUALLY
+// different. Roughly one signature in sixty-four already ends in "A", and
+// on those runs the token reached verifyToken completely unmodified, so it
+// verified and this line went red. Caught on 25 August as an intermittent
+// failure in a suite with nothing to do with the change being made.
+//
+// The false alarm is the visible half. The worse half is that on exactly
+// those runs the check was asserting nothing at all, because the
+// "tampered" token was the genuine one.
+//
+// Decoding, flipping one bit and re-encoding cannot land on the original,
+// and the line below proves it did not.
+const sigBytes = Buffer.from(sig, "base64url");
+sigBytes[0] ^= 0x01;
+const flipped = sigBytes.toString("base64url");
+t.check("the flip actually changed the signature",
+  flipped !== sig, "the tampered token is byte-identical to the real one");
 t.check("a flipped signature bit is refused",
-  (await verifyToken(SECRET, `${payloadB64}.${sig.slice(0, -1)}A`)) === null);
+  (await verifyToken(SECRET, `${payloadB64}.${flipped}`)) === null);
 
 // EXPIRY IS CHECKED SEPARATELY FROM THE SIGNATURE, because an expired
 // token's signature is still perfectly valid — nothing about the crypto

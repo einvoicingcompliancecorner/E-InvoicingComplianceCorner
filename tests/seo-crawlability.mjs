@@ -113,6 +113,34 @@ const markup = trackerHtml.replace(/<script[\s\S]*?<\/script>/gi, " ");
   t.check("the index is populated, not an empty shell",
     !/<ul id="countryIndexList"><\/ul>/.test(markup),
     "the marker did not match and the worker served the page without it");
+
+  // AND IT IS INSIDE #boardView, WHICH IS WHAT HIDES IT.
+  //
+  // The index was a SIBLING of the board and of all nine panel views, so
+  // it stayed on screen underneath every one of them: opening a country
+  // gave a reader that country's own related-jurisdictions block and then
+  // all seventy again directly below it. Dan caught it on /costa-rica on
+  // 25 August; it had been true of the map, sources, insights, ROI,
+  // guides and archive panels since the index shipped on the 24th.
+  //
+  // Nesting is the fix rather than a show/hide call in each of the nine
+  // open/close pairs — eighteen places to get right, which is the pattern
+  // that produced the duplicated back link on the spec register. So the
+  // nesting IS the behaviour, and this asserts it structurally.
+  const board = trackerHtml.slice(
+    trackerHtml.indexOf('<div id="boardView">'),
+    trackerHtml.indexOf('<div id="countryDeepDiveView"'));
+  t.check("the index sits inside the board, so every panel hides it",
+    board.includes('id="countryIndex"'),
+    "the index is a sibling of the panels and will show underneath them");
+  // The slice above is only meaningful if both markers were found; a
+  // -1 index would silently make `board` the whole document and the
+  // check above would pass on any layout at all.
+  t.check("and this check found the two landmarks it slices between",
+    trackerHtml.includes('<div id="boardView">')
+      && trackerHtml.includes('<div id="countryDeepDiveView"')
+      && board.length > 0 && board.length < trackerHtml.length,
+    `slice length ${board.length} of ${trackerHtml.length}`);
 }
 
 // ---- 2. the sitemap -----------------------------------------------------
@@ -530,6 +558,23 @@ t.check("the sitemap is served and well-formed",
     refresh === "/einvoicing-compliance-tracker.html", String(refresh));
   t.check("and is not itself indexable",
     /<meta name="robots" content="noindex">/.test(stub));
+
+  // AND THE ADDRESS BAR AGREES WITH THE CANONICAL.
+  //
+  // Ten history.pushState() calls wrote `/einvoicing-compliance-tracker
+  // .html` when a panel closed. Nothing broke — that URL still serves the
+  // tracker — but a reader who arrived at "/", opened a country and closed
+  // it was silently moved to the non-canonical address, so one session
+  // showed two different URLs for the same home page. Invisible to every
+  // other check here, because every other check reads the HTML the server
+  // sent rather than what the page does to the URL afterwards.
+  const pushes = [...trackerAsset.matchAll(/history\.(?:push|replace)State\([^)]*?,\s*''\s*,\s*'([^']+)'\)/g)]
+    .map((m) => m[1]);
+  t.check("no panel writes the old tracker URL into the address bar",
+    !pushes.some((u) => u.includes("einvoicing-compliance-tracker")),
+    pushes.filter((u) => u.includes("einvoicing-compliance-tracker")).join(", "));
+  t.check("and the check is looking at something",
+    pushes.length >= 10, `${pushes.length} history writes found`);
 }
 
 // ---- 8. country pages link sideways -------------------------------------
