@@ -1229,6 +1229,40 @@
     </div>
   </details>
 </div>
+
+<!-- COUNTRY INDEX.
+
+     INSIDE #boardView ON PURPOSE, since 25 August 2026. It used to be a
+     SIBLING of the board and of all nine panel views, which meant it
+     stayed on screen underneath every one of them -- so opening Costa
+     Rica gave a reader that country's own "Related jurisdictions" block
+     and then, directly below it, all seventy again. Dan caught it on
+     /costa-rica; it had been true of the map, sources, insights, ROI,
+     guides and archive panels too, since the index shipped on the 24th.
+
+     Nested here, its visibility is the board's visibility and there is
+     nothing to remember. The alternative -- a show/hide call in each of
+     the nine open/close pairs -- is eighteen places to get right and is
+     exactly the pattern that produced the duplicated back link on the
+     specification register a day earlier.
+
+     NO CRAWLER COST: #boardView is visible in the served HTML, so the
+     seventy anchors are exactly where they were to anything reading
+     markup. tests/seo-crawlability.mjs still finds all seventy, and now
+     also asserts the nesting.
+
+     site-worker replaces the <ul> inside this nav at request time (see
+     renderTracker's buildCountryIndexHtml). The empty list below is what
+     a reader gets if that injection is skipped, which is also the state
+     the static fallback serves -- deliberately empty rather than a
+     hardcoded seventy-country copy, because a second copy of the country
+     list in a file nobody regenerates is exactly the drift this index
+     was built to end. -->
+<nav class="country-index" id="countryIndex" aria-labelledby="countryIndexHeading">
+  <h2 id="countryIndexHeading" data-i18n="index.heading">All jurisdictions</h2>
+  <p class="ci-intro" data-i18n="index.intro">Every country this tracker covers, with its next dated milestone. Each links to a full briefing: the timeline, the format, registration steps and penalties.</p>
+  <ul id="countryIndexList"></ul>
+</nav>
 </div>
 
 <div id="countryDeepDiveView" style="display:none;"></div>
@@ -1241,18 +1275,6 @@
 <div id="insightsView" style="display:none;"></div>
 <div id="roiView" style="display:none;"></div>
 
-<!-- COUNTRY INDEX. site-worker replaces the <ul> inside this nav at
-     request time (see renderTracker's countryIndexHtml). The empty list
-     below is what a reader gets if that injection is skipped, which is
-     also the state the static fallback serves -- deliberately empty
-     rather than a hardcoded seventy-country copy, because a second copy
-     of the country list in a file nobody regenerates is exactly the
-     drift this index was built to end. -->
-<nav class="country-index" id="countryIndex" aria-labelledby="countryIndexHeading">
-  <h2 id="countryIndexHeading" data-i18n="index.heading">All jurisdictions</h2>
-  <p class="ci-intro" data-i18n="index.intro">Every country this tracker covers, with its next dated milestone. Each links to a full briefing: the timeline, the format, registration steps and penalties.</p>
-  <ul id="countryIndexList"></ul>
-</nav>
 
 <footer>
   <p data-i18n="filters.disclaimer">This tracker reflects publicly available guidance as of July 2026 and is provided for general awareness, not legal or tax advice. E-invoicing thresholds, wave numbers and go-live dates change frequently — confirm your obligations directly on the official government portal linked in each entry, or with your tax advisor, before making compliance decisions.</p>

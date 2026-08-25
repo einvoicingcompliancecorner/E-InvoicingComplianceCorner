@@ -16981,3 +16981,37 @@ that the tampering changed something before asserting it was refused.
 Twelve consecutive green runs.
 
 `npm test`: **29 suites**, 63 checks in the crawlability suite.
+
+#### The index was showing underneath every panel (25 August 2026)
+
+Dan, on `/costa-rica`: the page showed that country's new **Related
+jurisdictions** block and then, directly below it, **All jurisdictions** —
+all seventy again.
+
+The related block made it visible; it was not the cause. `#countryIndex`
+was a **sibling** of `#boardView` and of all nine panel views, so it
+stayed on screen underneath every one of them. It had been doing that
+since the index shipped on the 24th — on the map, sources, insights, ROI,
+guides, archive, education, feedback and subscribe panels as well as the
+deep dives. Nobody had noticed because the panels are long and the index
+is at the very bottom.
+
+**The fix is nesting, not toggling.** The nav is now the last child of
+`#boardView`, so its visibility *is* the board's visibility and there is
+nothing to remember. The alternative — a show/hide call in each of the
+nine open/close pairs — is eighteen places to get right, and is exactly
+the pattern that produced the duplicated back link on the specification
+register the day before.
+
+No crawler cost: `#boardView` is visible in the served HTML, so the
+seventy anchors sit exactly where they were to anything reading markup.
+
+Verified by driving the real page rather than by reasoning about it —
+board load: index visible; deep dive open: hidden; closed: visible again;
+map panel open: hidden. And the new structural check was confirmed by
+putting the nav back outside `#boardView` and watching it go red, with a
+second assertion that the slice it inspects actually found both its
+landmarks — a `-1` index would have made the slice the whole document and
+passed on any layout at all.
+
+`npm test`: **29 suites**, 65 checks in the crawlability suite.
