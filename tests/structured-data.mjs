@@ -189,6 +189,44 @@ const typeOf = (nodes, type) => nodes.find((n) => n["@type"] === type);
     "a second node claiming the same @id, on a noindex page");
 }
 
+// ---- the insights hub's CollectionPage ----------------------------------
+//
+// The rule this file is written against is that markup may only say what
+// the page says. An ItemList is the easiest place on this site to break
+// it, because nothing visible would change: a list re-sorted, padded or
+// truncated for the markup looks identical on screen to a correct one.
+{
+  const { collectionPageLd } = await import(join(REPO, "shared", "structured-data.mjs"));
+
+  // AN EMPTY HUB GETS NO ItemList. "Nothing published yet" is what the
+  // page says; numberOfItems: 0 is the same statement made less clearly,
+  // and consumers treat empty lists inconsistently.
+  const empty = collectionPageLd({ articles: [], lang: "en" });
+  t.check("an empty hub publishes no list at all",
+    !empty.mainEntity, JSON.stringify(empty.mainEntity));
+
+  const articles = [{ slug: "b", title: "Newer" }, { slug: "a", title: "Older" }];
+  const node = collectionPageLd({ articles, lang: "de", title: "Einblicke" });
+  t.check("the count is the length of the list, not a number written beside it",
+    node.mainEntity.numberOfItems === node.mainEntity.itemListElement.length,
+    `${node.mainEntity.numberOfItems} vs ${node.mainEntity.itemListElement.length}`);
+  // POSITION IS THE DISPLAYED ORDER. The hub renders published_at DESC and
+  // the node declares Descending; a list re-sorted here would assert an
+  // order the page does not have.
+  t.check("positions follow the order the page rendered",
+    node.mainEntity.itemListElement.map((e) => e.position).join(",") === "1,2"
+      && node.mainEntity.itemListElement[0].url.endsWith("/insights/b"));
+  t.check("and the declared order matches how the hub actually sorts",
+    node.mainEntity.itemListOrder === "https://schema.org/ItemListOrderDescending");
+  // NO NESTED Article NODES. The full description lives on each piece's own
+  // page; a thinner second copy here is one more thing to reconcile.
+  t.check("entries are links, not a second thinner copy of each Article",
+    node.mainEntity.itemListElement.every((e) => e["@type"] === "ListItem" && !e.item));
+  t.check("the hub is part of the site and names its publisher",
+    node.isPartOf["@id"].endsWith("/#website") && node.publisher["@id"].endsWith("/#organization"));
+  t.check("and it reports the language it was rendered in", node.inLanguage === "de");
+}
+
 // ---- escaping -----------------------------------------------------------
 //
 // `</` inside a JSON string closes the script block and drops the rest of

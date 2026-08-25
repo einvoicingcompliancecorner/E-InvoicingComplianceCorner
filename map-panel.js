@@ -532,7 +532,7 @@
       const suffix = this.lang !== "en" ? "?lang=" + this.lang : "";
       set("backToTrackerLink", (el) => {
         el.textContent = u.backToTracker;
-        if (!this.isEmbedded()) el.href = (this.opts.backUrl || "/einvoicing-compliance-tracker.html") + suffix;
+        if (!this.isEmbedded()) el.href = (this.opts.backUrl || "/") + suffix;
       });
       set("archiveBtnLink", (el) => {
         el.textContent = u.archiveBtn;

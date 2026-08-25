@@ -114,7 +114,17 @@ const ANCHORED_SITES = [
   { file: "einvoicing-compliance-tracker.html", anchor: /<meta name="description" content="([^"]*)"/, what: "meta description" },
   { file: "einvoicing-compliance-tracker.html", anchor: /<meta property="og:description" content="([^"]*)"/, what: "og:description" },
   { file: "einvoicing-compliance-tracker.html", anchor: /<meta name="twitter:description" content="([^"]*)"/, what: "twitter:description" },
-  { file: "index.html", anchor: /<meta name="description" content="([^"]*)"/, what: "meta description" },
+  // index.html IS GONE FROM THIS LIST, 25 August 2026, and that is a
+  // removal rather than a check being switched off. It used to be the
+  // home page and carried the count in a meta description. It is now an
+  // unreachable fallback stub — "/" is served by renderTracker — and it
+  // describes nothing, claims no count, and carries `noindex`. A site
+  // that states the number of jurisdictions is what this list guards;
+  // a stub that states nothing has nothing to disagree with.
+  //
+  // The count it used to carry did not vanish with it: the tracker's own
+  // three description tags are the three entries above, and they are the
+  // ones served at "/" now.
   { file: "subscribe.html", anchor: /<meta name="description" content="([^"]*)"/, what: "meta description" },
   { file: "subscribe.html", anchor: /<meta property="og:description" content="([^"]*)"/, what: "og:description" },
   { file: "subscribe.html", anchor: /<meta name="twitter:description" content="([^"]*)"/, what: "twitter:description" },

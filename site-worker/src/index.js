@@ -29,6 +29,7 @@ import {
   deriveFlagFromCode,
   getDeepDiveContent,
   getMilestonesForCountry,
+  getRelatedJurisdictions,
   renderFullDeepDivePage,
   translateCountryName,
 } from "../../shared/deep-dive-render.mjs";
@@ -79,6 +80,7 @@ import {
   datasetLd,
   breadcrumbLd,
   articleLd,
+  collectionPageLd,
   methodologyLd,
   changesLd,
 } from "../../shared/structured-data.mjs";
@@ -110,13 +112,49 @@ const LANG_COOKIE_TTL_SECONDS = 60 * 60 * 24 * 365; // 1 year
 // milestone_translations, falling back to the static file.
 // ================================================================
 
+// THE ASSET, which is the shell renderTracker injects into. Not the
+// public address any more — see TRACKER_HREF below.
 const TRACKER_PATH = "/einvoicing-compliance-tracker.html";
+
+// ---- THE HOME PAGE IS THE TRACKER (25 August 2026) -------------------
+//
+// It was not. `/` served index.html: twenty lines containing a
+// `<meta http-equiv="refresh">`, a `location.replace()`, and a canonical
+// pointing away at /einvoicing-compliance-tracker.html. So the strongest
+// URL this domain owns held a redirect notice, and told search engines
+// to credit a different address for it.
+//
+// Three things were wrong with that at once. A meta refresh is a
+// client-side redirect and has never been a reliable signal — Google
+// treats it as a hint, not the instruction a 301 is. The root URL is
+// what people type, what gets linked from outside, and what every
+// breadcrumb on this site already named as its first crumb; all of that
+// arrived at a stub. And the Organization and WebSite nodes both assert
+// `url: "https://e-invoicingcompliancecorner.com"`, which was a claim
+// about a page with no content on it.
+//
+// So `/` now renders the tracker, and `/` is the canonical. The two
+// /einvoicing-compliance-tracker forms still serve the same page — 89
+// internal links and every external link ever shared point at them and
+// must not break — but they name `/` as canonical, which is what
+// consolidates the three addresses into one.
+//
+// REQUIRES run_worker_first TO INCLUDE "/". Without it the asset layer
+// answers `/` with index.html and this Worker never runs, which is the
+// exact failure mode that made the tracker serve a frozen snapshot for
+// weeks before Stage 5. Asserted in tests/seo-crawlability.mjs against
+// wrangler.toml, because nothing else in this repository reads that file.
+const HOME_PATH = "/";
+// What every internal link and every canonical should say. One constant
+// so the next move of this page is one edit rather than 89.
+const TRACKER_HREF = HOME_PATH;
+
 // Cloudflare's static-assets serving can canonicalize .html URLs to
 // extensionless ones (html_handling auto-trailing-slash) — so the same
 // page is reachable at both forms, and the router must treat both as
 // the tracker or the redirect target silently falls through to the
 // plain static asset (no error, no log — just the fallback page).
-const TRACKER_PATHS = new Set([TRACKER_PATH, "/einvoicing-compliance-tracker"]);
+const TRACKER_PATHS = new Set([HOME_PATH, TRACKER_PATH, "/einvoicing-compliance-tracker"]);
 const DATA_JSON_RE = /^\/i18n\/(es|de|fr)-data\.json$/;
 
 // ASSETS.fetch itself may answer with a redirect between the two forms;
@@ -288,10 +326,15 @@ function buildCountryIndexHtml(data, deepDives) {
 // noindex,nofollow; listing them would ask Google to index a page that
 // tells it not to.
 const SITEMAP_STATIC = [
-  // The home page and the tracker. Both, because / is a redirect to the
-  // tracker and the audit found neither of them declared anywhere.
+  // THE HOME PAGE, AND ONLY THE HOME PAGE.
+  //
+  // Both were listed until 25 August, when / was a redirect stub and the
+  // tracker was the canonical. Now / IS the tracker and the canonical,
+  // and the two /einvoicing-compliance-tracker forms are duplicates that
+  // point here. Listing a URL that canonicalises elsewhere asks Google
+  // to crawl a page in order to be told to go somewhere else, which is
+  // the same contradiction the gated pages are kept out for.
   { loc: "/", priority: "1.0", changefreq: "daily" },
-  { loc: "/einvoicing-compliance-tracker.html", priority: "1.0", changefreq: "daily" },
   // D1-rendered public pages. /sources was missing from the old file
   // and is the page carrying the Dataset structured data -- the most
   // citable object the site publishes.
@@ -405,6 +448,43 @@ async function renderSitemap(request, env) {
   });
 }
 
+// ---- SEARCH ENGINE OWNERSHIP VERIFICATION ---------------------------
+//
+// WHY THIS IS THE MOST VALUABLE THING IN THIS FILE, despite being nine
+// lines. Until 25 August 2026 there was no verification tag anywhere in
+// this repository, which means Google has never reported a single
+// impression, query, coverage error or rejected structured-data block
+// back to this project. Every claim made about this site's search
+// performance in the last month — including a month of audits — was
+// inferred from markup and never once observed. The specific question it
+// answers: forty-two country pages were unreachable until last week, and
+// whether they are now indexed is the entire premise of that work.
+//
+// THE TOKENS ARE VARS, NOT LITERALS. Neither is a secret — both are
+// published in the HTML by design — but a token in source is a token
+// that gets copied into a fork, and pasting one into wrangler.toml is a
+// thing Dan can do without editing JavaScript.
+//
+// EMPTY IS THE DEFAULT AND EMITS NOTHING. A `<meta content="">` is worse
+// than no tag: Google reads it, fails verification, and reports the
+// property as claimed-but-invalid rather than as unclaimed.
+//
+// DNS IS STILL THE BETTER METHOD and is recommended in PROGRESS.md. A
+// TXT record verifies every subdomain at once — including the members
+// host — and cannot be lost by a deploy, which this tag can. This exists
+// because Search Console offers the meta tag first and it should not be
+// a code change when Dan is standing in that dialog.
+const VERIFICATION_MARKER = "<!-- SITE VERIFICATION -->";
+
+function verificationMeta(env) {
+  const tags = [];
+  const google = (env.GOOGLE_SITE_VERIFICATION || "").trim();
+  const bing = (env.BING_SITE_VERIFICATION || "").trim();
+  if (google) tags.push(`<meta name="google-site-verification" content="${escHtml(google)}">`);
+  if (bing) tags.push(`<meta name="msvalidate.01" content="${escHtml(bing)}">`);
+  return tags.join("\n");
+}
+
 async function renderTracker(request, env) {
   // Always fetch the static asset first — it's both the shell we inject
   // into and the complete fallback if anything below throws. Fetch via
@@ -412,7 +492,28 @@ async function renderTracker(request, env) {
   // itself answer with a redirect to the extensionless form.
   const assetResp = await fetchAssetFollowingRedirect(env, new Request(new URL(TRACKER_PATH, request.url), { headers: request.headers }));
   if (!assetResp.ok) return assetResp;
-  const html = await assetResp.text();
+  // BEFORE THE try, SO THE FALLBACK CARRIES IT TOO.
+  //
+  // The catch below serves this same `html` when D1 is unreachable. If
+  // the verification tag were injected inside the try, then the one
+  // situation where the site is already having a bad day would also be
+  // the situation where Google decides we do not own the domain and
+  // unverifies the property. Injected here, an outage costs the board
+  // and not the Search Console account.
+  //
+  // Marker-based and FAILS SOFT, like the country index: a missing
+  // marker logs and serves the page. tests/seo-crawlability.mjs asserts
+  // the marker is present in the asset, so a shape change is caught
+  // before it ships rather than silently dropping the tag.
+  const verification = verificationMeta(env);
+  let html = await assetResp.text();
+  if (verification) {
+    if (html.includes(VERIFICATION_MARKER)) {
+      html = html.replace(VERIFICATION_MARKER, `${VERIFICATION_MARKER}\n${verification}`);
+    } else {
+      console.log("Tracker: verification marker not found — serving the page without the tag.");
+    }
+  }
   try {
     const [data, deepDives] = await Promise.all([
       buildTrackerData(env.eicc_content),
@@ -755,7 +856,19 @@ async function renderInsightsHub(request, env) {
   const html = insightsPageShell({
     titleTag: ui.title, metaDescription: ui.intro, bodyHtml, lang,
     path: "/insights",
-    backHref: "/einvoicing-compliance-tracker.html",
+    backHref: TRACKER_HREF,
+    // THE ONE CALLER OF THIS SHELL THAT PASSED NO `ld` — until 25 August
+    // the hub was the only page on this site with a slot for structured
+    // data and nothing in it. `articles` is the same array the list
+    // fragment above renders, in the same order, so the ItemList cannot
+    // describe a page other than the one being served.
+    ld: [
+      collectionPageLd({ articles, lang, title: ui.title, description: ui.intro }),
+      breadcrumbLd([
+        { name: "The E-Invoicing Compliance Corner", url: "https://e-invoicingcompliancecorner.com/" },
+        { name: ui.title, url: "https://e-invoicingcompliancecorner.com/insights" },
+      ]),
+    ],
   });
 
   const headers = new Headers({ "Content-Type": "text/html; charset=UTF-8", "Cache-Control": "public, max-age=300" });
@@ -931,7 +1044,7 @@ ${ldScript([
 </head>
 <body>
 <div class="wrap">
-  <div class="top-bar"><a class="back-link" href="/einvoicing-compliance-tracker.html">${ui.back}</a></div>
+  <div class="top-bar"><a class="back-link" href="/">${ui.back}</a></div>
   <p class="eyebrow">${escHtml(ui.eyebrow)}</p>
   <h1 class="display">${escHtml(ui.title)}</h1>
   <p class="intro">${escHtml(ui.intro)}</p>
@@ -1088,7 +1201,7 @@ const MAP_STYLE = `
 
 function mapPageBodyHtml() {
   return `
-<div class="map-back-row"><a class="back-link" href="/einvoicing-compliance-tracker.html" id="backToTrackerLink"></a></div>
+<div class="map-back-row"><a class="back-link" href="/" id="backToTrackerLink"></a></div>
 <div class="map-topbar">
   <div class="map-topbar-brand">
     <p class="brand-eyebrow" id="brandEyebrow"></p>
@@ -1839,7 +1952,7 @@ async function renderChangesPage(request, env) {
 </head>
 <body${framed ? ' data-framed="1"' : ""}>
 <div class="wrap">
-  ${framed ? "" : `<div class="top-bar"><a class="back-link" href="/einvoicing-compliance-tracker.html">${
+  ${framed ? "" : `<div class="top-bar"><a class="back-link" href="/">${
     escHtml(t("back", "← Back to global tracker"))}</a></div>`}
   <p class="eyebrow">${escHtml(t("eyebrow", "The record"))}</p>
   <h1 class="display">${escHtml(t("title", "What changed"))}</h1>
@@ -2094,7 +2207,7 @@ async function renderSpecRegisterPage(request, env) {
 <body>
 <div class="wrap">
   ${framed ? "" : `<div class="top-bar">
-    <a class="back-link" href="/einvoicing-compliance-tracker.html" target="_top">${escHtml(t("back", "← Back to global tracker"))}</a>
+    <a class="back-link" href="/" target="_top">${escHtml(t("back", "← Back to global tracker"))}</a>
     <span class="langs">${langLinks}</span>
   </div>`}
   <p class="eyebrow">${escHtml(t("eyebrow", "The specification register"))}</p>
@@ -2323,7 +2436,7 @@ async function renderMethodologyPage(request, env) {
 </head>
 <body${framed ? ' data-framed="1"' : ""}>
 <div class="wrap">
-  ${framed ? "" : `<div class="top-bar"><a class="back-link" href="/einvoicing-compliance-tracker.html">${
+  ${framed ? "" : `<div class="top-bar"><a class="back-link" href="/">${
     escHtml(t("back", "← Back to global tracker"))}</a></div>`}
   <p class="eyebrow">${escHtml(t("eyebrow", "How we decide"))}</p>
   <h1 class="display">${escHtml(t("title", "Methodology"))}</h1>
@@ -2995,9 +3108,22 @@ async function renderCountryDeepDive(request, env, slug) {
   const milestones = await getMilestonesForCountry(db, countryName, lang);
   const flag = deriveFlagFromCode(countryRow.code);
 
+  // THE NEIGHBOURS. Fetched here rather than inside the renderer because
+  // this is the only layer that holds a db handle in both runtimes, and
+  // it FAILS SOFT: a related block is a navigation aid, and losing it
+  // must not cost a reader the country page. The pattern is the country
+  // index's, for the same reason — the tracker went down for a day on
+  // 23 August because a secondary feature threw into the main render.
+  let related = [];
+  try {
+    related = await getRelatedJurisdictions(db, countryRow.region, countryName);
+  } catch (err) {
+    console.error(`related jurisdictions for ${countryName} failed — serving the page without them:`, err && err.message);
+  }
+
   const html = await renderFullDeepDivePage(
     countryName, flag, countryRow.code, countryRow.region, content, milestones, lang,
-    "/einvoicing-compliance-tracker.html"
+    TRACKER_HREF, related
   );
 
   const headers = new Headers({

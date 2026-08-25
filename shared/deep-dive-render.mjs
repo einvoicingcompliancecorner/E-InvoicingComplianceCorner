@@ -115,6 +115,26 @@ export function translateCountryName(lang, name) {
   return COUNTRY_NAME_TRANSLATIONS[lang]?.[name] || name;
 }
 
+// The four region names D1 holds, which are stored in English because
+// they are also a sort key (see buildTrackerData's CASE). Added with the
+// related-jurisdictions block, whose heading names the region it grouped
+// by — and a German page reading "Weitere Jurisdiktionen — Middle East /
+// Africa" is the same half-translated sentence this project has shipped
+// twice before. Falls through to the stored value for anything not
+// listed, so a new region appears in English rather than not at all.
+const REGION_TRANSLATIONS = {
+  es: { "Europe": "Europa", "Middle East / Africa": "Oriente Medio / África",
+        "Asia-Pacific": "Asia-Pacífico", "Americas": "América" },
+  de: { "Europe": "Europa", "Middle East / Africa": "Naher Osten / Afrika",
+        "Asia-Pacific": "Asien-Pazifik", "Americas": "Amerika" },
+  fr: { "Europe": "Europe", "Middle East / Africa": "Moyen-Orient / Afrique",
+        "Asia-Pacific": "Asie-Pacifique", "Americas": "Amériques" },
+};
+
+export function translateRegion(lang, region) {
+  return REGION_TRANSLATIONS[lang]?.[region] || region;
+}
+
 // Minimal UI-string set — only the keys the deep-dive template itself
 // needs, a subset of members-worker's much larger WORKER_I18N (which
 // also covers login/archive/preferences pages this module never touches).
@@ -126,6 +146,8 @@ const DEEP_DIVE_I18N = {
     secTimeline: "Compliance timeline", secFileFormat: "File format & data specification",
     secScope: "Scope & transmission", secSteps: "Getting compliant", secPenalties: "Penalties & enforcement",
     countryDeepDiveEyebrow: "Country deep dive", lastUpdatedLabel: "Last updated", complianceModelLabel: "Compliance model",
+    relatedHeading: "Related jurisdictions",
+    relatedIntro: "Other countries in the same region, ordered by their next dated milestone. Each links to a full briefing.",
   },
   es: {
     backToTracker: "← Volver al panel general",
@@ -134,6 +156,8 @@ const DEEP_DIVE_I18N = {
     secTimeline: "Cronología de cumplimiento", secFileFormat: "Formato de archivo y especificación de datos",
     secScope: "Alcance y transmisión", secSteps: "Cómo cumplir", secPenalties: "Sanciones y aplicación",
     countryDeepDiveEyebrow: "Análisis del país", lastUpdatedLabel: "Última actualización", complianceModelLabel: "Modelo de cumplimiento",
+    relatedHeading: "Jurisdicciones relacionadas",
+    relatedIntro: "Otros países de la misma región, ordenados por su próximo hito con fecha. Cada enlace lleva a un informe completo.",
   },
   de: {
     backToTracker: "← Zurück zur Übersicht",
@@ -142,6 +166,8 @@ const DEEP_DIVE_I18N = {
     secTimeline: "Compliance-Zeitachse", secFileFormat: "Dateiformat & Datenspezifikation",
     secScope: "Anwendungsbereich & Übermittlung", secSteps: "So werden Sie compliant", secPenalties: "Sanktionen & Durchsetzung",
     countryDeepDiveEyebrow: "Länderanalyse", lastUpdatedLabel: "Zuletzt aktualisiert", complianceModelLabel: "Compliance-Modell",
+    relatedHeading: "Weitere Jurisdiktionen",
+    relatedIntro: "Andere Länder derselben Region, sortiert nach ihrem nächsten datierten Meilenstein. Jeder Eintrag führt zu einem vollständigen Briefing.",
   },
   fr: {
     backToTracker: "← Retour au suivi global",
@@ -150,6 +176,8 @@ const DEEP_DIVE_I18N = {
     secTimeline: "Chronologie de conformité", secFileFormat: "Format de fichier et spécification des données",
     secScope: "Champ d'application et transmission", secSteps: "Comment se conformer", secPenalties: "Sanctions et application",
     countryDeepDiveEyebrow: "Analyse par pays", lastUpdatedLabel: "Dernière mise à jour", complianceModelLabel: "Modèle de conformité",
+    relatedHeading: "Juridictions liées",
+    relatedIntro: "Les autres pays de la même région, classés par prochaine échéance datée. Chaque entrée mène à un dossier complet.",
   },
 };
 
@@ -210,6 +238,87 @@ export async function getMilestonesForCountry(db, countryName, lang) {
     desc: r.desc,
     actions: JSON.parse(r.actions || "[]"),
   }));
+}
+
+/**
+ * The other jurisdictions in this country's region.
+ *
+ * WHY THIS EXISTS (25 August 2026). Every one of the seventy deep dives
+ * linked UP to the tracker and nowhere sideways. There was no path from
+ * Germany to France, or from Saudi Arabia to the UAE, even though the
+ * clusters are in the data as `region` and a reader working one GCC
+ * mandate is very often working the others. Two costs: a reader who
+ * wanted the neighbour had to go back to the board and find it, and a
+ * crawler reaching any country page found exactly one link out of it, so
+ * the whole set hung off the sitemap and one index rather than off each
+ * other.
+ *
+ * JOINED TO milestones ON on_tracker, not left-joined. A country with no
+ * tracked milestone is not on the board, and listing it here would put
+ * seventy-first and seventy-second jurisdictions in front of a reader
+ * that every other surface on this site says do not exist.
+ *
+ * `next_date` IS THE NEXT ONE, NOT THE FIRST ONE. The tracker's country
+ * index shipped on 24 August printing each country's EARLIEST milestone
+ * under a heading promising its next — the United States was listed as
+ * March 2003. The CASE below filters to dates from today forward before
+ * MIN sees them, so a country whose milestones are all in the past
+ * sorts last with no date rather than with an ancient one.
+ */
+export async function getRelatedJurisdictions(db, region, countryName) {
+  if (!region) return [];
+  return d1All(db, `
+    SELECT c.name_en AS name, c.code, c.slug,
+           MIN(CASE WHEN m.date >= date('now') THEN m.date END) AS next_date
+    FROM countries c
+    JOIN milestones m ON m.country_id = c.id AND m.on_tracker = 1
+    WHERE c.region = ?
+      AND c.name_en != ?
+      AND c.slug IS NOT NULL
+      AND c.code != 'EU'
+    GROUP BY c.id, c.name_en, c.code, c.slug
+    ORDER BY (next_date IS NULL), next_date, c.name_en
+  `, region, countryName);
+}
+
+/**
+ * The related block. Chips, not a nav list: each carries the next dated
+ * milestone, so it tells a reader something before they click.
+ *
+ * NO CAP, DELIBERATELY. Europe is around thirty entries and that is four
+ * rows of chips. A "top 8 related" would be a silent truncation of the
+ * exact thing this block exists to provide, and this repository has a
+ * standing rule against bounding coverage without saying so.
+ *
+ * COUNTRY NAMES ARE TRANSLATED SERVER-SIDE HERE, unlike the tracker's
+ * country index, which server-renders English and translates after load.
+ * It can be done properly here because this whole page is already
+ * rendered per language — `lang` is in hand and translateCountryName is
+ * two functions up.
+ *
+ * Renders nothing at all when there is nothing to show, rather than a
+ * heading over an empty row.
+ */
+export function renderRelatedJurisdictions(related, lang, region) {
+  if (!related || !related.length) return "";
+  const chips = related.map((r) => {
+    const label = escapeHtml(translateCountryName(lang, r.name));
+    const when = r.next_date ? formatMilestoneDate(r.next_date) : "";
+    return `<a class="rj-chip" href="/${escapeHtml(r.slug)}${lang === "en" ? "" : `?lang=${escapeHtml(lang)}`}">`
+      + `<span class="rj-flag">${deriveFlagFromCode(r.code)}</span>`
+      + `<span class="rj-name">${label}</span>`
+      + (when ? `<span class="rj-when">${escapeHtml(when)}</span>` : "")
+      + `</a>`;
+  }).join("");
+  // The heading names the region, so the block says what it grouped by
+  // rather than leaving the reader to infer it from the members.
+  const heading = `${t(lang, "relatedHeading")} — ${escapeHtml(region)}`;
+  return `
+  <div class="section rj-section">
+    <div class="section-head"><span class="num mono">06</span><h2 class="display">${heading}</h2></div>
+    <p class="section-intro">${escapeHtml(t(lang, "relatedIntro"))}</p>
+    <div class="rj-grid">${chips}</div>
+  </div>`;
 }
 
 function formatMilestoneDate(dateStr) {
@@ -462,7 +571,18 @@ export function deepDiveDescription(summary, cap = 155) {
   return (lastSpace > 60 ? cut.slice(0, lastSpace) : cut).replace(/[,;:.\u2014-]+$/, "") + "\u2026";
 }
 
-export async function renderFullDeepDivePage(countryName, flag, code, region, content, milestones, lang, backLinkHref) {
+/**
+ * `related` is the ninth argument and it is OPTIONAL on purpose.
+ *
+ * Two runtimes call this — site-worker for the public page and
+ * members-worker for the admin preview — and they are deployed
+ * separately. An argument the caller must supply would mean a page that
+ * throws, or renders a block of `undefined`, in whichever of the two
+ * shipped second. Omitted, it renders nothing, which is the same page
+ * this function produced yesterday.
+ */
+export async function renderFullDeepDivePage(countryName, flag, code, region, content, milestones, lang, backLinkHref, related) {
+  const relatedJurisdictionsHtml = renderRelatedJurisdictions(related, lang, translateRegion(lang, region));
   const timelineHtml = renderDeepDiveStyleMilestones(milestones, lang);
   const statsHtml = content.stats.map((s) => `<div class="stat"><div class="num display">${escapeHtml(s.stat_value)}</div><div class="lbl">${escapeHtml(s.stat_label)}</div></div>`).join("");
   const fileFormatHtml = content.cards.file_format.map(renderSpecCard).join("") + renderLifecycleCardsForSection(content.lifecycleCards, "file_format");
@@ -617,6 +737,19 @@ ${ldScript([
   .penalty-table td{color:#241d10;}
   .penalty-card{background:var(--paper); color:#241d10; border-radius:var(--radius); border:1px solid var(--paper-line); padding:16px 18px; grid-column:1 / -1;}
   .portal-btn{display:inline-block; background:var(--ink-2); border:1px solid var(--line); border-radius:999px; padding:9px 18px; font-family:'IBM Plex Mono',monospace; font-size:12.5px; text-decoration:none; color:var(--text-lo);}
+  /* Related jurisdictions. Chips rather than cards: there can be thirty
+     of them in Europe, and thirty cards would be a second page. The
+     chip's own colours match .portal-btn, which is the existing pattern
+     on this page for "a compact thing you click through". */
+  .rj-grid{display:flex; flex-wrap:wrap; gap:9px;}
+  .rj-chip{display:inline-flex; align-items:baseline; gap:8px; background:var(--ink-2); border:1px solid var(--line); border-radius:999px; padding:8px 15px; text-decoration:none; color:var(--text-lo); font-size:13px; line-height:1.2;}
+  .rj-chip:hover{border-color:var(--soon); color:var(--soon);}
+  .rj-flag{font-size:14px;}
+  .rj-name{font-weight:500;}
+  /* The date is secondary and must never be mistaken for the country.
+     inherit on hover so the whole chip lights up as one control. */
+  .rj-when{font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--muted);}
+  .rj-chip:hover .rj-when{color:inherit;}
   footer{border-top:1px solid var(--line); padding-top:20px; color:var(--muted); font-size:12px; line-height:1.6;}
 </style>
 </head>
@@ -674,7 +807,7 @@ ${renderLangBanner(lang)}
     <p class="section-intro">${escapeHtml(content.penalties_intro)}</p>
     <div class="related-grid">${relatedHtml}</div>
   </div>
-
+${relatedJurisdictionsHtml}
   <footer><p>${escapeHtml(content.footer_disclaimer)}</p></footer>
 </div>
 </body>

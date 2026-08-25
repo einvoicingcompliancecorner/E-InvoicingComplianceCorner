@@ -2,11 +2,35 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta http-equiv="refresh" content="0; url=einvoicing-compliance-tracker.html">
-<script>window.location.replace("einvoicing-compliance-tracker.html");</script>
+<!--
+  THIS PAGE SHOULD NEVER BE SERVED, and that is a change from what it was.
+
+  Until 25 August 2026 this WAS the home page: `/` returned these twenty
+  lines, and a meta refresh bounced the reader to the tracker. The
+  strongest URL this domain owns held a redirect notice, its canonical
+  pointed away at /einvoicing-compliance-tracker.html, and the
+  Organization and WebSite nodes on the tracker asserted
+  `url: "https://e-invoicingcompliancecorner.com"` — a claim about a
+  page with no content on it.
+
+  `/` is now in run_worker_first and in TRACKER_PATHS, so the Worker
+  renders the real tracker there and this asset is unreachable by design.
+
+  IT IS KEPT ANYWAY, as the one thing that stands between a lost
+  run_worker_first entry and a blank front door. If the asset layer ever
+  answers `/` directly again, a reader lands here and still arrives.
+
+  WHICH IS WHY THE TARGET BELOW IS THE .html FORM AND NOT `/`.
+  In the only situation where this file is ever read, `/` is what failed
+  — pointing it at `/` would be a refresh loop on the site's home page.
+  The .html address serves the tracker whether the Worker runs or not.
+
+  NO CANONICAL. A fallback stub has no business naming the canonical URL
+  of anything; the page it forwards to states it correctly.
+-->
+<meta http-equiv="refresh" content="0; url=/einvoicing-compliance-tracker.html">
+<meta name="robots" content="noindex">
 <title>The E-Invoicing Compliance Corner</title>
-<link rel="canonical" href="https://e-invoicingcompliancecorner.com/einvoicing-compliance-tracker.html">
-<meta name="description" content="Track e-invoicing mandates and compliance deadlines across 70 countries, updated monthly.">
 <style>
   body{
     margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center;
@@ -16,6 +40,6 @@
 </style>
 </head>
 <body>
-  <p>Redirecting to <a href="einvoicing-compliance-tracker.html">The E-Invoicing Compliance Corner</a>…</p>
+  <p>Continue to <a href="/einvoicing-compliance-tracker.html">The E-Invoicing Compliance Corner</a>…</p>
 </body>
 </html>

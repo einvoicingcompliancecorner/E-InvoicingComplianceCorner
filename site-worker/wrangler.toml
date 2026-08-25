@@ -41,6 +41,17 @@ binding = "ASSETS"
 # covers both /einvoicing-compliance-tracker.html and the extensionless
 # form the asset layer canonicalizes to.
 run_worker_first = [
+  # "/" IS THE TRACKER FROM 25 AUGUST 2026, and this line is the whole
+  # reason it works. index.html is still an asset at the root, so without
+  # this entry the asset layer answers `/` with the old redirect stub and
+  # renderTracker never runs — no error, no log, just the front door
+  # quietly reverting to what it was. That is the same silent failure
+  # described immediately above, on the page it would hurt most.
+  #
+  # Matches the root path only; every other asset keeps direct serving.
+  # tests/seo-crawlability.mjs reads THIS FILE and fails if the entry
+  # disappears, because nothing else in the repository would notice.
+  "/",
   "/einvoicing-compliance-tracker*",
   "/i18n/es-data.json",
   "/i18n/de-data.json",
@@ -111,6 +122,37 @@ service = "eicc-members"
 [vars]
 ROI_PUBLIC = "true"
 ROI_INDEXABLE = "false"
+
+# ----------------------------------------------------------------
+# SEARCH ENGINE OWNERSHIP VERIFICATION — paste the token, redeploy.
+#
+# Both are EMPTY on purpose and emit nothing while they are. A
+# `<meta content="">` is worse than no tag at all: the engine reads it,
+# fails the check, and records the property as claimed-but-invalid.
+#
+# NEITHER IS A SECRET. Both are published in the HTML of the home page by
+# design — that is how the check works. They are vars rather than
+# literals in index.js so that claiming the property is a config edit
+# rather than a code change.
+#
+# GOOGLE: Search Console → Add property → URL prefix →
+#   https://e-invoicingcompliancecorner.com/ → "HTML tag". Copy ONLY the
+#   content="..." value, not the whole tag. Deploy, then press Verify.
+#
+# BING: Bing Webmaster Tools → Add site → "Meta tag", same rule. Worth
+# doing beside Google rather than instead of it: Bing's index is what
+# several assistant products query when they search, so being absent
+# from it is an absence from a discovery surface and not just from a
+# search engine.
+#
+# DNS IS THE BETTER METHOD IF YOU HAVE THE CHOICE. A TXT record on the
+# apex verifies every subdomain at once (including the members host),
+# survives every deploy, and cannot be dropped by an edit to the tracker
+# markup — which this tag can. Cloudflare hosts this zone's DNS, so it is
+# a two-minute dashboard change. Use these two only if you are already
+# standing in the "HTML tag" dialog.
+GOOGLE_SITE_VERIFICATION = ""
+BING_SITE_VERIFICATION = ""
 
 # ----------------------------------------------------------------
 # SESSION_SECRET — a SECRET, not a var. Deliberately not written here.
