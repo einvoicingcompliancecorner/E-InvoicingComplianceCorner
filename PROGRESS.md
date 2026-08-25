@@ -17608,3 +17608,43 @@ Running total across the three passes: **75 tiles removed, 279 left**, from
 354.
 
 `npm test`: **30 suites**, replay OK across 646 files.
+
+#### Asia-Pacific, and the end of the sweep (25 August 2026)
+
+The fourth and last regional pass: 643 by rule, then Dan on Europe and the
+Americas (644), Middle East / Africa (646), and now Asia-Pacific (647).
+Fifteen tiles, all matched against live rows first — including two that
+would have defeated a careless match: Azerbaijan's label carries the
+schwa in "e-qaimə", and Australia's splits as value "No B2B" plus label
+"Mandate — voluntary only".
+
+Most are the familiar class — India's "2020 / Mandatory since October",
+Indonesia's e-Faktur and Coretax dates, Kazakhstan's 2014 pilot and 2019
+mandate — dated milestones restating a headline tile, with the dates still
+present in each page's compliance timeline.
+
+**Two are the plainer kind, and they are the interesting ones.**
+Australia's "No B2B / Mandate — voluntary only" and Japan's "Voluntary /
+JP PINT/Peppol e-invoicing adoption" are the status word itself, printed
+under a mandate tile saying the same word. 643's `mandate-status` rule was
+built for exactly these and missed both on wording: it required the value
+to be a bare status word, and "No B2B" is a value carrying half of its own
+label.
+
+Worth recording rather than patching. The rule was not too cautious — it
+was pattern-matching prose, and prose does not divide tidily into a value
+column and a label column. **Four passes of a person reading pages found
+47 tiles that six rules could not**, which is the honest measure of what
+the rules were worth: they did the mechanical 43 quickly and were never
+going to finish the job.
+
+Singapore's "First Peppol Authority outside Europe" and the Philippines'
+TRAIN Law citation duplicate nothing; like Qatar's VAT tile they are
+Dan's judgement about what the strip is for, and are recorded as judgement
+so neither reads as a mistake later.
+
+**Final tally: 90 of 354 tiles removed, 264 left.** Cyprus remains the
+only country at two; the floor is asserted in each migration rather than
+assumed to have survived the pass before.
+
+`npm test`: **30 suites**, replay OK across 647 files.
