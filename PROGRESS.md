@@ -17899,3 +17899,105 @@ readers see it. Reported by `archive-article-links.mjs` on every run
 rather than fixed.
 
 `npm test`: **31 suites**, replay OK across 650 files.
+
+---
+
+### 25 August 2026 — seven menu items had quietly stopped being menu items
+
+Dan:
+
+> "Please can [the] subscribe page under the menu option be replaced with
+> the popout subscribe box that appears when you click subscribe via the
+> compliance guide?"
+
+It already was the pop-out. It had been since 21 August. **The menu had
+regressed the day before and nobody had noticed**, so this arrived as a
+feature request and turned out to be a bug report.
+
+#### What actually happened
+
+Commit `1052487` ("Nothing points at a URL that 307s", 24 August) rewrote
+26 internal links to their extensionless form. The tracker's single
+delegated click handler matches the **raw href attribute** against literal
+strings:
+
+```js
+if(href === 'subscribe.html'){ ... }
+if(href === 'feedback.html'){ ... }
+EDUCATION_PAGES['/education-mandate-types.html']
+```
+
+Every one of those stopped matching that afternoon. **Seven menu items —
+Subscribe, Give feedback and all five Education pages — silently went back
+to being ordinary links** that navigate away from the tracker.
+
+Confirmed by clicking them in a real browser before changing anything:
+
+| Control | Before | After |
+|---|---|---|
+| Menu › Subscribe | **navigates away** | pop-out |
+| Perks box › Subscribe | **navigates away** | pop-out |
+| Carousel card › Subscribe | pop-out | pop-out |
+| Menu › all five Education pages | **navigates away** | in-page panel |
+| Menu › Give feedback | **navigates away** | in-page panel |
+
+**The one control that still worked is why this stayed invisible.** The
+carousel slide's href lives in a JavaScript array, not in the HTML, so the
+link rewrite never touched it — and it went on opening the panel exactly
+as before. The only Subscribe control that behaved was the one nobody had
+edited.
+
+#### The fix is a normaliser, not a fourth string
+
+Adding `'subscribe'` beside `'subscribe.html'` would have restored the
+behaviour and left the same trap armed for the next person who tidies a
+link. Instead there is now one `routeKey()`, which reduces any href —
+relative, absolute, extensioned or not — to a bare route name, and every
+one of these comparisons goes through it. `EDUCATION_PAGES` is re-keyed to
+match; its `file` values still carry `.html`, because that is the asset
+actually fetched, and the two are no longer the same string.
+
+While there: the panels pushed `/subscribe.html` and `/feedback.html` into
+the address bar, both of which **307**. They now push the extensionless
+routes, which are what the sitemap has declared all along. The gate's
+fallback in `site-worker` did the same and now doesn't.
+
+#### Thirty suites passed on the day this broke
+
+`menu-routes.mjs` is the file named for this and could not see it. Its
+first line filters the menu down to site-absolute hrefs:
+
+```js
+.filter((h) => h.startsWith("/"))
+```
+
+with a comment explaining that a relative link is a static asset served
+without the worker being consulted. That is **correct for the question
+that file asks** — does the worker serve this route — and it means the
+seven relative menu links had no interception coverage at all.
+`seo-crawlability.mjs` saw the links change and approved; extensionless is
+what it wants. Nothing owned the question *does the click still do what
+the menu promises*.
+
+So `tests/menu-in-page.mjs` clicks all fourteen menu links in a real
+browser. Static analysis is what missed this: a handler matching a literal
+string is invisible to a checker that doesn't know which literal, and the
+next regression will be a different literal. Targets come from the markup,
+so a menu item added tomorrow is covered without anyone remembering.
+
+#### And a check inside it that could not fail
+
+The verdict is `event.defaultPrevented`, read in the same dispatch. The
+first version read it back on the dispatching side — **after the harness's
+own sentinel listener had called `preventDefault()`**, so it read `true`
+for every link including ones nothing had caught. For the six routes whose
+panels this harness cannot serve, that boolean is the only signal, so
+those six were unchecked while appearing to pass.
+
+Found by breaking the tracker deliberately and *reading the message*: it
+said "intercepted, then the handler navigated" about a link that had never
+been intercepted. The sentinel now records the verdict before altering it.
+All three regression classes — the two literal strings, the education map,
+and a site-absolute route — were confirmed to fail the check afterwards.
+
+`npm test`: **32 suites**.

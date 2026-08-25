@@ -2910,10 +2910,20 @@ function wireFeatureCarousel(){
 
   // Content: the only thing you'd edit to change slides, order, copy,
   // links, or thumbnail art. Hrefs below ('/map', '/members/archive',
-  // 'subscribe.html') are written to match EXACTLY what
-  // wireDeepDiveInPagePanel() checks for above -- that's a single
-  // delegated document-level listener, so it catches clicks on these
-  // slides automatically. Don't add target="_blank" or a click handler
+  // 'subscribe') are matched by wireDeepDiveInPagePanel() above -- a
+  // single delegated document-level listener, so it catches clicks on
+  // these slides automatically.
+  //
+  // THEY NO LONGER HAVE TO MATCH EXACTLY, and that is the point of the
+  // 25 August change: routeKey() normalises a href before comparing, so
+  // 'subscribe' and 'subscribe.html' reach the same branch. This comment
+  // used to insist on an exact match, and the exact match is what broke.
+  // When the menu's links were made extensionless these slides were the
+  // only Subscribe control still spelling it the old way -- so the one
+  // control that still worked was the one nobody had edited, which is
+  // why the regression looked like it wasn't there.
+  //
+  // Don't add target="_blank" or a click handler
   // here, or you'll bypass the in-page panel and get a real standalone
   // navigation instead. The "preparing" slide's href
   // (education-preparing-for-mandate.html) also gets in-page-panel
@@ -2930,7 +2940,7 @@ function wireFeatureCarousel(){
   const SLIDES = [
     {thumb:THUMB_MAP, i18nKey:'map', eyebrow:'Explore', title:'View the Map', desc:'See every mandate status worldwide at a glance, color-coded by stage.', href:'/map'},
     {thumb:THUMB_NEWS, i18nKey:'news', eyebrow:'Catch up', title:'View the News', desc:'Browse the full newsletter archive — every past announcement, searchable.', href:'/members/archive'},
-    {thumb:THUMB_SUBSCRIBE, i18nKey:'subscribe', eyebrow:'Stay ahead', title:'Subscribe', desc:'Get a monthly digest the moment a mandate or deadline changes. Calculate the ROI of your project, and plan implementation against mandates. Download country compliance guides.', href:'subscribe.html'},
+    {thumb:THUMB_SUBSCRIBE, i18nKey:'subscribe', eyebrow:'Stay ahead', title:'Subscribe', desc:'Get a monthly digest the moment a mandate or deadline changes. Calculate the ROI of your project, and plan implementation against mandates. Download country compliance guides.', href:'subscribe'},
     {thumb:THUMB_PREPARE, i18nKey:'preparing', eyebrow:'Get ready', title:'Preparing for a Mandate', desc:'What to do before a mandate takes effect — timelines, vendor selection, and internal readiness.', href:'education-preparing-for-mandate.html'},
     // Sponsor This Site -- parked for now per Dan's request (6 Aug 2026).
     // Uncomment when there's an actual sponsorship model/page to link to
@@ -3295,6 +3305,48 @@ function slugFromHref(href){
   catch(e){ return null; }
   const slug = pathname.replace(/^\/+|\/+$/g, '');
   return DEEP_DIVE_SLUGS.has(slug) ? slug : null;
+}
+
+/** ONE NAME FOR A ROUTE, whichever way the link happens to spell it.
+ *
+ *  WHY THIS EXISTS. On 24 August 2026 commit 1052487 ("Nothing points at
+ *  a URL that 307s") rewrote 26 internal links to their extensionless
+ *  form -- an href of "subscribe.html" became "subscribe" -- and did not
+ *  touch the interception constants further down this same file, which
+ *  compare the raw href attribute against 'subscribe.html' and
+ *  'feedback.html' by exact string, and look education pages up in a map
+ *  keyed by '/education-mandate-types.html'.
+ *
+ *  Every one of those comparisons quietly stopped matching. The Menu's
+ *  Subscribe item, the perks-box Subscribe CTA, all five Education menu
+ *  items and Give feedback went back to being ordinary links: the reader
+ *  left the tracker and got the standalone page. Dan reported it as the
+ *  Subscribe half, on 25 August: "please can the subscribe page under the
+ *  menu option be replaced with the popout subscribe box".
+ *
+ *  Nothing was broken visibly. The panels still worked, the pages they
+ *  fell back to still existed and still said the right things, and the
+ *  one Subscribe control that DID still open the panel -- the rotating
+ *  carousel card, whose href is written in JavaScript and so was not part
+ *  of the HTML rewrite -- made the whole thing look like it worked.
+ *
+ *  SO THE FIX IS NOT A FOURTH EXACT STRING. Adding 'subscribe' beside
+ *  'subscribe.html' would restore the behaviour and leave the same trap
+ *  armed for the next person who tidies a link. Normalising once, here,
+ *  means a route is identified by WHAT IT IS rather than by how a
+ *  particular anchor spelled it, and both spellings match forever.
+ *
+ *  Returns the pathname with leading and trailing slashes and any .html
+ *  extension removed: 'subscribe.html', '/subscribe', 'subscribe' and
+ *  'https://this-origin/subscribe.html' all come back as 'subscribe'.
+ *  Returns null for a href that will not parse.
+ */
+function routeKey(href){
+  if(!href) return null;
+  let pathname;
+  try { pathname = new URL(href, window.location.origin).pathname; }
+  catch(e){ return null; }
+  return pathname.replace(/^\/+|\/+$/g, '').replace(/\.html$/, '');
 }
 
 async function openDeepDive(slug, opts){
@@ -4569,22 +4621,25 @@ function closeArchive(opts){
 // i18n.js's logic (data-i18n / data-i18n-attr lookup and replacement)
 // to run against the shadow root directly, using the correct
 // per-page namespace file.
+// KEYED BY routeKey(), NOT BY FILENAME. The key is what goes in the
+// address bar and what a link is matched against; `file` is the asset
+// actually fetched, and the two are no longer the same string. Before
+// 25 August these keys carried the .html extension, which is why the
+// five Education menu links stopped opening in-page the moment their
+// hrefs were made extensionless -- see routeKey() above.
 const EDUCATION_PAGES = {
-  '/education-mandate-types.html': { file: 'education-mandate-types.html', namespace: 'edu-mandate-types' },
-  '/education-impact-of-mandate.html': { file: 'education-impact-of-mandate.html', namespace: 'edu-impact-of-mandate' },
-  '/education-preparing-for-mandate.html': { file: 'education-preparing-for-mandate.html', namespace: 'edu-preparing-for-mandate' },
-  '/education-types-of-provider.html': { file: 'education-types-of-provider.html', namespace: 'edu-types-of-provider' },
-  '/education-certified-providers.html': { file: 'education-certified-providers.html', namespace: 'edu-certified-providers' },
+  'education-mandate-types': { file: 'education-mandate-types.html', namespace: 'edu-mandate-types' },
+  'education-impact-of-mandate': { file: 'education-impact-of-mandate.html', namespace: 'edu-impact-of-mandate' },
+  'education-preparing-for-mandate': { file: 'education-preparing-for-mandate.html', namespace: 'edu-preparing-for-mandate' },
+  'education-types-of-provider': { file: 'education-types-of-provider.html', namespace: 'edu-types-of-provider' },
+  'education-certified-providers': { file: 'education-certified-providers.html', namespace: 'edu-certified-providers' },
 };
 let currentEducationPage = null; // one of the EDUCATION_PAGES keys above, or null
 const educationI18nCache = {}; // "<lang>-<namespace>" -> parsed JSON, avoids refetching within a session
 
 function educationPageFromHref(href){
-  if(!href) return null;
-  let pathname;
-  try { pathname = new URL(href, window.location.origin).pathname; }
-  catch(e){ return null; }
-  return EDUCATION_PAGES[pathname] ? pathname : null;
+  const key = routeKey(href);
+  return key && EDUCATION_PAGES[key] ? key : null;
 }
 
 async function applyI18nToShadow(shadow, namespace){
@@ -4628,7 +4683,10 @@ async function applyI18nToShadow(shadow, namespace){
 async function openEducationPage(pageKey, opts){
   opts = opts || {};
   const info = EDUCATION_PAGES[pageKey];
-  if(!info){ window.location.href = pageKey; return; }
+  // ROOT-ABSOLUTE. pageKey is now a bare route name ('education-mandate-types'),
+  // so a relative navigation would resolve against whatever path the tracker
+  // has pushed into the address bar -- '/france' while a deep dive is open.
+  if(!info){ window.location.href = '/' + pageKey; return; }
   const boardView = document.getElementById('boardView');
   const panel = document.getElementById('educationView');
   const topbarBrand = document.querySelector('.topbar-brand');
@@ -4661,7 +4719,7 @@ async function openEducationPage(pageKey, opts){
     html = await res.text();
   } catch(err){
     console.warn('Falling back to a full navigation for', pageKey, err);
-    window.location.href = pageKey;
+    window.location.href = '/' + pageKey;
     return;
   }
   // Guard against a slower, now-superseded fetch landing after a newer
@@ -4712,7 +4770,7 @@ async function openEducationPage(pageKey, opts){
   if(currentEducationPage !== pageKey) return;
 
   if(!opts.skipHistory){
-    history.pushState({ education: pageKey }, '', pageKey);
+    history.pushState({ education: pageKey }, '', '/' + pageKey);
   }
 }
 
@@ -4860,7 +4918,7 @@ async function openFeedbackPage(opts){
     html = await res.text();
   } catch(err){
     console.warn('Falling back to a full navigation for feedback.html', err);
-    window.location.href = 'feedback.html';
+    window.location.href = '/feedback';
     return;
   }
   if(!feedbackPageOpen) return;
@@ -4903,7 +4961,7 @@ async function openFeedbackPage(opts){
   if(!feedbackPageOpen) return;
 
   if(!opts.skipHistory){
-    history.pushState({ feedback: true }, '', '/feedback.html');
+    history.pushState({ feedback: true }, '', '/feedback');
   }
 }
 
@@ -5101,7 +5159,7 @@ async function openSubscribePage(opts){
     html = await res.text();
   } catch(err){
     console.warn('Falling back to a full navigation for subscribe.html', err);
-    window.location.href = 'subscribe.html';
+    window.location.href = '/subscribe';
     return;
   }
   if(!subscribePageOpen) return;
@@ -5153,7 +5211,7 @@ async function openSubscribePage(opts){
   if(!subscribePageOpen) return;
 
   if(!opts.skipHistory){
-    history.pushState({ subscribe: true }, '', '/subscribe.html');
+    history.pushState({ subscribe: true }, '', '/subscribe');
   }
 }
 
@@ -5277,7 +5335,7 @@ function wireDeepDiveInPagePanel(){
     }
 
     // The "Give feedback" link in the Menu dropdown -- same treatment.
-    if(href === 'feedback.html'){
+    if(routeKey(href) === 'feedback'){
       e.preventDefault();
       document.getElementById('sidebar')?.classList.remove('open');
       document.getElementById('sidebarOverlay')?.classList.remove('open');
@@ -5302,7 +5360,7 @@ function wireDeepDiveInPagePanel(){
     // subscribe.html stays for exactly this reason, and because Dan
     // asked it to: "There is a chance a visitor goes to the menu, and
     // clicks subscribe which I think would bring them to this page."
-    if(href === 'subscribe.html'){
+    if(routeKey(href) === 'subscribe'){
       e.preventDefault();
       document.getElementById('sidebar')?.classList.remove('open');
       document.getElementById('sidebarOverlay')?.classList.remove('open');
@@ -5326,8 +5384,8 @@ function wireDeepDiveInPagePanel(){
     const isArchiveUrl = new URLSearchParams(window.location.search).get('view') === 'archive';
     const slug = slugFromHref(window.location.pathname);
     const eduPage = educationPageFromHref(window.location.pathname);
-    const isFeedbackUrl = window.location.pathname.replace(/^\/+/, '') === 'feedback.html';
-    const isSubscribeUrl = window.location.pathname.replace(/^\/+/, '') === 'subscribe.html';
+    const isFeedbackUrl = routeKey(window.location.pathname) === 'feedback';
+    const isSubscribeUrl = routeKey(window.location.pathname) === 'subscribe';
     const isSourcesUrl = window.location.pathname === '/sources' || window.location.pathname === '/sources.html';
     const isMapUrl = window.location.pathname === '/map' || window.location.pathname === '/map.html';
     const isInsightsUrl = window.location.pathname === '/insights' || window.location.pathname === '/insights.html';
