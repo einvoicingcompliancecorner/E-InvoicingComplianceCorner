@@ -17123,3 +17123,19 @@ all. Only the apex does. Anything that asks to be pointed at a hostname
 should be given the apex over https.
 
 `npm test`: **29 suites**, 70 checks in the crawlability suite.
+
+**Deployed 25 August 2026** (`939b104`): `/BingSiteAuth.xml` serves, confirmed
+by Dan in a browser. Bing can now be verified from either the XML-file or
+the meta-tag option — both carry the same key, and the suite asserts they
+agree.
+
+Bing's **URL Submission** allowance reads 0, which is expected rather than
+broken: that quota is scaled by verified age and impression history, and
+this property is hours old. It is also the wrong tool — sitemaps have
+their own menu and no quota, and `robots.txt` has declared the sitemap all
+along, which is the discovery path that actually matters.
+
+**Worth doing later: IndexNow.** Bing's own guidance now prefers it to URL
+Submission, and it is a good fit here — the content monitor already knows
+the moment a country fact changes, so it could notify at that point rather
+than waiting to be crawled. Added to the list rather than done tonight.
