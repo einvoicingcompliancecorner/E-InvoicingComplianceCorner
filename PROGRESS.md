@@ -17123,3 +17123,95 @@ all. Only the apex does. Anything that asks to be pointed at a hostname
 should be given the apex over https.
 
 `npm test`: **29 suites**, 70 checks in the crawlability suite.
+
+**Deployed 25 August 2026** (`939b104`): `/BingSiteAuth.xml` serves, confirmed
+by Dan in a browser. Bing can now be verified from either the XML-file or
+the meta-tag option — both carry the same key, and the suite asserts they
+agree.
+
+Bing's **URL Submission** allowance reads 0, which is expected rather than
+broken: that quota is scaled by verified age and impression history, and
+this property is hours old. It is also the wrong tool — sitemaps have
+their own menu and no quota, and `robots.txt` has declared the sitemap all
+along, which is the discovery path that actually matters.
+
+**Worth doing later: IndexNow.** Bing's own guidance now prefers it to URL
+Submission, and it is a good fit here — the content monitor already knows
+the moment a country fact changes, so it could notify at that point rather
+than waiting to be crawled. Added to the list rather than done tonight.
+
+#### Both engines verified (25 August 2026)
+
+**Google** — Domain property, DNS TXT on the apex. Covers every subdomain
+including the members host. Confirmed against two resolvers.
+
+**Bing** — verified by `/BingSiteAuth.xml`, with the meta tag serving the
+same key as a second route. Site added to Webmaster Tools.
+
+That closes the item that has been the ceiling on everything else since
+the audit began. Until today this project had no way to tell whether any
+of the last month's work had done anything; every claim was inferred from
+markup. From here the answers come from data.
+
+**Nothing further is required to make the site discoverable.** `robots.txt`
+declares the sitemap, both engines can read it, and the internal linking
+work of the last week means a crawler that reaches any page can reach the
+rest. What remains is waiting, and reading what comes back.
+
+**What to look for, in the order it will arrive.** Coverage first: the
+seventy country pages moving from "Discovered" to "Indexed", which is the
+direct test of whether the crawlability work landed — forty-two of them
+were reachable from nothing at all a week ago. Then the reported canonical
+for the tracker switching from `/einvoicing-compliance-tracker.html` to
+`/`. Only much later, query and impression data worth drawing a conclusion
+from. The first fortnight will look noisy and should not be read closely.
+
+#### A logo, and the end of the grey rectangle (25 August 2026)
+
+Dan supplied the wordmark. Two things followed from it.
+
+**The Organization has a logo.** That node carried no `logo` for three
+days, deliberately — pointing it at the founder's portrait or inventing a
+URL would have been a claim the site could not support. It has a real one
+now, and the portrait stays where it belongs, on the Person.
+
+**Every share stops being a grey rectangle.** `og:image` appeared ZERO
+times across the repository; the single occurrence of the string was a
+comment explaining why there wasn't one. Fourteen static pages and all
+seventy country pages now carry a 1200x630 card and
+`summary_large_image`.
+
+**The supplied art is the source, not the asset.** It arrived at 344x93,
+which is the right mark at the wrong resolution — upscaling it three and a
+half times is visibly soft on exactly the surface the image exists for.
+`tools/gen-social-images.mjs` rebuilds it from the same font the site
+loads (Big Shoulders Display 800, what every `.display` heading is set
+in), rendered at 2x and downsampled. Same mark, sharp, and it stays in
+step with the site's typography rather than being a picture of it.
+
+**A REVERSAL, RECORDED AS ONE.** The deep-dive renderer carried a comment
+arguing that a single generic image on seventy pages is worse than none
+because every share looks identical. That is true and it compared the
+wrong two things: the choice was never generic-versus-per-country, it was
+generic-versus-nothing. The title beside the card already says "Germany
+E-Invoicing Requirements", so the recipient is not relying on the picture
+to tell them which country it is. Per-country artwork remains the upgrade.
+
+**NO FACTS IN THE PIXELS.** The tempting strapline is "70 countries" and
+it would be the most persuasive thing on the card. It would also be a
+claim baked into a binary that `jurisdiction-count.mjs` cannot read, in a
+repository that has already had a stale jurisdiction count sit across
+thirty files for two days. The strapline carries no count, no date and no
+status. `seo-crawlability` asserts the generator's strapline contains no
+digits at all — and asserts that it found a strapline to check, because
+the version of that test which located it by CSS selector would have
+passed on an empty string. Both halves verified by breaking them.
+
+Still open: the worker-rendered pages (`/map`, `/sources`, `/insights`,
+`/changes`, `/methodology`) carry **no** Open Graph tags at all — not a
+regression, a gap that predates this. And per-country cards need a
+decision about whether they show the next dated milestone, which is the
+difference between seventy images generated once and seventy that go
+stale.
+
+`npm test`: **29 suites**, 85 checks in the crawlability suite.

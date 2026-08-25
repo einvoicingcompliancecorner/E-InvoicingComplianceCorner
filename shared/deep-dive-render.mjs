@@ -624,22 +624,40 @@ export async function renderFullDeepDivePage(countryName, flag, code, region, co
 <meta name="description" content="${escapeHtml(description)}">
 <link rel="canonical" href="${escapeHtml(canonicalUrl)}">
 ${hreflang}
-<!-- Social cards. Until now a shared country page rendered as a bare
-     URL with no title, description or site name -- on LinkedIn, which
-     is where this site's readers actually pass links to each other.
-     No og:image: the site has no per-country artwork and a single
-     generic image on 70 pages is worse than none, because it makes
-     every share look identical. summary rather than summary_large_image
-     for the same reason. -->
+<!-- Social cards. Until 24 August a shared country page rendered as a
+     bare URL with no title, description or site name -- on LinkedIn,
+     which is where this site's readers actually pass links to each
+     other.
+
+     THE IMAGE IS THE SITE'S, NOT THE COUNTRY'S, and that is a reversal
+     of what this comment said for a day. The argument against a generic
+     image was that seventy identical cards tell a recipient nothing.
+     True, but it compared the wrong two things: the choice is not
+     between a generic card and a per-country one, it is between a
+     generic card and NO CARD -- a grey rectangle. The title beside it
+     already says "Germany E-Invoicing Requirements", so the recipient
+     is not relying on the picture to tell them which country it is.
+
+     Per-country artwork remains the upgrade and is on the list. It
+     needs a decision about whether the card carries the next dated
+     milestone, because that is the difference between seventy images
+     generated once and seventy images that go stale.
+
+     summary_large_image now that there is something to show. -->
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="The E-Invoicing Compliance Corner">
 <meta property="og:title" content="${escapeHtml(pageTitle)}">
 <meta property="og:description" content="${escapeHtml(description)}">
 <meta property="og:url" content="${escapeHtml(canonicalUrl)}">
 <meta property="og:locale" content="${escapeHtml(OG_LOCALE[lang] || OG_LOCALE.en)}">
-<meta name="twitter:card" content="summary">
+<meta property="og:image" content="https://e-invoicingcompliancecorner.com/images/og-default.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="The E-Invoicing Compliance Corner">
+<meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="${escapeHtml(pageTitle)}">
 <meta name="twitter:description" content="${escapeHtml(description)}">
+<meta name="twitter:image" content="https://e-invoicingcompliancecorner.com/images/og-default.png">
 ${ldScript([
   countryPageLd({
     countryName,
