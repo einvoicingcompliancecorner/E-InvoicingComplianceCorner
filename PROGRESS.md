@@ -17337,3 +17337,39 @@ Nothing to build. The claim is true, and has been since 3 August.
 dashboard showing page views in the last 24 hours — better evidence than
 markup inspection, because it proves the beacon is not merely present but
 actually reporting.
+
+#### Parked: a Tradeshift sponsor clip on the share card (25 August 2026)
+
+Dan asked for a mock-up, saw three treatments, and parked the decision.
+`tools/mock-sponsor-card.mjs` is kept rather than deleted so the options
+can be looked at again without rebuilding them; it writes to /tmp and
+ships nothing. Delete it once a treatment is chosen and folded into
+`gen-social-images.mjs`, or once the idea is dropped.
+
+The three: **A** a plain mono credit with no container, which reads as an
+acknowledgement rather than an advertisement; **B** a cream pill, the
+pragmatic choice because most corporate wordmarks are drawn for light
+backgrounds and many have no approved reversed version; **C** a ruled
+corner in the site's own line colour.
+
+**NO LOGO WAS DRAWN.** The placeholder is a dashed box at roughly 4:1.
+Reproducing another company's wordmark from memory gets the letterforms,
+weight and spacing wrong, and a bad rendering of a trademark is worse than
+an obvious gap. This needs the real asset — ideally both a full-colour and
+a reversed version — before anything ships.
+
+**THE EDITORIAL QUESTION IS THE REAL ONE, and it outlives the artwork.**
+`organizationLd()` describes this site as "Independent tracking of
+e-invoicing mandates, legislation and deadlines". A permanent sponsor mark
+is compatible with that — plenty of independent publications carry
+sponsors — but the two statements have to be made to agree rather than
+left to sit side by side. The machinery for the honest version already
+exists at the article level (`is_sponsored`, `sponsor_name`, a visible
+badge). If this goes ahead, the methodology page should gain a short
+paragraph naming who funds the site and confirming sponsors have no input
+into what it reports. That sentence is what lets the independence claim
+survive the logo.
+
+Worth separating: the disclosure argument stands on its own. Readers
+assessing a compliance tracker will weigh who is behind it, and that is
+true whether or not a logo ever appears.
