@@ -651,8 +651,8 @@ ${hreflang}
 <meta property="og:url" content="${escapeHtml(canonicalUrl)}">
 <meta property="og:locale" content="${escapeHtml(OG_LOCALE[lang] || OG_LOCALE.en)}">
 <meta property="og:image" content="https://e-invoicingcompliancecorner.com/images/og-default.png">
-<meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="630">
+<meta property="og:image:width" content="2400">
+<meta property="og:image:height" content="1260">
 <meta property="og:image:alt" content="The E-Invoicing Compliance Corner">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="${escapeHtml(pageTitle)}">

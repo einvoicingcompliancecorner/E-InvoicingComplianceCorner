@@ -723,8 +723,24 @@ t.check("the sitemap is served and well-formed",
   const isPng = png.subarray(1, 4).toString() === "PNG";
   const width = png.readUInt32BE(16), height = png.readUInt32BE(20);
   t.check("the share card is a real PNG", isPng);
-  t.check("and is exactly the size the tags declare",
-    width === 1200 && height === 630, `${width}x${height}`);
+  // READ THE DECLARED SIZE FROM THE MARKUP, do not restate it here.
+  //
+  // The first version hardcoded 1200x630 on both sides, so when the card
+  // moved to 2x it failed on a file that was correct and a declaration
+  // that was correct — it was only ever checking the test against itself.
+  // Taking one side from the served page makes this an agreement check,
+  // which is the thing that actually matters to a scraper.
+  const tracker = readFileSync(join(REPO, "einvoicing-compliance-tracker.html"), "utf8");
+  const declW = Number((tracker.match(/og:image:width" content="(\d+)"/) || [])[1]);
+  const declH = Number((tracker.match(/og:image:height" content="(\d+)"/) || [])[1]);
+  t.check("the page declares the card's dimensions", declW > 0 && declH > 0,
+    `${declW}x${declH}`);
+  t.check("and the file is exactly the size they declare",
+    width === declW && height === declH, `file ${width}x${height}, declared ${declW}x${declH}`);
+  // 1.91:1 is what LinkedIn, Slack and X all crop to. Asserted as a ratio
+  // rather than as fixed numbers so the card can ship at any density.
+  t.check("at the aspect ratio every platform crops from",
+    Math.abs(width / height - 1200 / 630) < 0.01, (width / height).toFixed(3));
   t.check("the logo exists for the Organization node",
     statSync(join(REPO, "images", "logo.png")).size > 0);
 
