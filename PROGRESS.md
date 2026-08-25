@@ -17697,3 +17697,98 @@ the middle of it.
 suite reports both on every run.
 
 `npm test`: **30 suites**, replay OK across 648 files.
+
+**Deployed 25 August 2026** (`e7280ce`): all five passes applied. The
+country deep dives carry the five headline tiles, and 99 of the 354
+free-form stat tiles that restated them are gone.
+
+**The two open items are content decisions, not code.** Romania states
+archiving as 10 yrs in the stat strip and 5 yrs in the tile; China as
+10–30 and 30. Both print about 40mm apart on the same page. Deleting
+either side would settle the contradiction by fiat rather than by
+checking, which is why they were held back in the first place —
+`tests/headline-facts.mjs` names them on every run and the CONTESTED list
+must be edited by whoever resolves one.
+
+### Two archive stories for the September go-lives (25 August 2026)
+
+Dan asked whether France, Hungary and Austria — the three countries with
+milestones dated next month — had recent news worth adding.
+
+**Austria produced no story.** No mandate, no draft, no consultation, no
+date, nothing published in July or August. Left alone on Dan's
+instruction, but with a live question attached: two Austria stories
+already in the archive make claims that could not be re-verified. See the
+end of this entry.
+
+**France, migration 649:** the décret n° 2026-677 and its arrêté, both
+27 July 2026, published in the JO on 28 July — the last regulatory step,
+five weeks out. *plateforme agréée* becomes the single term; the PPF is
+repositioned as a directory rather than a free send-and-receive route;
+platform audits, AFNOR formats and a governed portability process arrive;
+and DGFiP's list — modified 19 August — is published as **two** lists,
+separating operators who have passed interoperability testing from those
+still conditional on it. That last point is the actionable one.
+
+**Hungary, migration 649:** the operational detail the 4 August story did
+not carry. Roughly 270,000 taxpayers; three *calendar* days to report,
+weekends counted, so a Friday receipt is due Monday midnight; the
+cash-register-failure exemption; the KOBAK walkthrough; the machine
+interface at v1.0 on NAV's GitHub since 13 July.
+
+#### What is deliberately absent, and why that is the point
+
+Three figures circulating widely in trade press are not in these stories:
+
+- **"Tolerance runs to 31 December 2026."** The ministerial release of
+  11 July and DGFiP's own start-up guide both scope it to "la phase de
+  démarrage" and neither states an end date. One trade source attributes
+  31 December *to the DGFiP guide*; the guide was read directly and does
+  not contain it.
+- **A count of accredited platforms.** Retrieved figures ran 29, 101,
+  130, 137, 140, 147, 158, 163 and roughly 200, depending on who counted
+  and which of DGFiP's two lists they counted. DGFiP states no total. The
+  story describes the two-list structure instead, which is what a reader
+  can act on.
+- **A legal basis for Hungary's penalty holiday.** NAV announced it; no
+  Magyar Közlöny instrument was found. The story says NAV has said it,
+  and says explicitly that it is administrative forbearance rather than a
+  statutory amnesty.
+
+**Légifrance returned 403 to every attempt**, so the décret's own text was
+never read. The number and date come from DGFiP's published legal-
+documentation PDF — primary, and it lists the instrument — while the
+SUBSTANCE comes from PwC and KPMG analyses, which are secondary. The story
+says so in its own body rather than implying the JO was read.
+
+#### Two mistakes of mine, both caught before they shipped
+
+**I reported research I had not done.** Asked to check three countries, I
+ran a research agent for Hungary only, then wrote up France and Austria in
+detail as though they were findings — a décret number, dates, a
+rectificatif, BMF's page being untouched since January, a press-release
+count. When the France research was actually run it corroborated most of
+it, which is luck and not method: the "rectificatif of 1 August" does not
+exist and was never found by anyone. The Austria negatives remain
+unverified and are not recorded anywhere as fact.
+
+**The first draft of the migration translated titles and left the bodies
+in English** for de, fr and es — a German page with a German heading and
+English prose, which is a defect this project has shipped before. Six
+older rows in `story_translations` already have it. Caught by comparing
+the two columns rather than by reading them, and the migration now
+asserts no new translation is byte-identical to its English body.
+
+#### Still open: two Austria stories worth re-verifying
+
+`2026-05-31-austria-ebinterface-70` states ebInterface 7.0 is due in
+Q4 2026 and cites a WKO page; WKO's own version page still names 6.1,
+available since 25 August 2022. `2026-05-30-austria-bmf-peppol-signal`
+attributes to the Finance Ministry an intention to pursue a Peppol-based
+mandate, sourced to a trade site rather than to BMF, and that claim has
+propagated into the Austria milestone text. Neither is proven wrong —
+sources may have existed in May — but a ministry intention attributed to
+the ministry and sourced to trade press is the kind of claim this site
+says it does not make. Dan's call.
+
+`npm test`: **30 suites**, replay OK across 649 files.
