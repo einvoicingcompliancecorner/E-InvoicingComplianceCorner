@@ -17648,3 +17648,52 @@ only country at two; the floor is asserted in each migration rather than
 assumed to have survived the pass before.
 
 `npm test`: **30 suites**, replay OK across 647 files.
+
+#### The Americas, and the sweep is finished (25 August 2026)
+
+Nine tiles, the fifth and last pass. All matched against live rows first.
+
+**Latin America is where this pattern was thickest**, and for a reason
+worth recording: these are the oldest continuous e-invoicing regimes in
+the world, so nearly every page led with the year it started — Mexico's
+"2014 / CFDI mandatory since", Ecuador's "Since 2014", Uruguay's 2012
+decree, Argentina's and Colombia's first mandatory waves, Costa Rica's
+completed general mandate, the Dominican Republic's Ley 32-23 — sitting
+directly above a B2B tile already reading ACTIVE. The dates stay in each
+page's compliance timeline, which is where a founding date belongs: it
+explains how a country got here, and the strip is for what is true now.
+
+Canada's "No B2B / Federal mandate — none" is the other kind: the status
+word itself under a tile printing NO MANDATE, the same shape as
+Australia's and Japan's, and missed by 643's rule for the same reason —
+the value carries half of its own label.
+
+**What the whole sweep cost, and what that says:**
+
+    643  rules     43 tiles
+    644  Dan       24
+    646  Dan        8
+    647  Dan       15
+    648  Dan        9
+                  ---
+                   99 of 354, leaving 255
+
+The rules found 43 and were never going to find the other 56. That is not
+a criticism of them — they cleared the mechanical cases in one pass and
+made the remainder small enough for a person to read, which is a good
+division of labour. But the durable lesson is the one 647 recorded:
+**prose does not divide tidily into a value column and a label column**,
+and a rule that assumes it does will keep missing "No B2B / Federal
+mandate — none" forever.
+
+Cyprus is still the only country at two, after five passes and 99
+removals. The floor was asserted in each migration rather than assumed to
+have survived the pass before, and 648 restates it as a standing
+invariant so it lives with the last migration of the sweep rather than
+the middle of it.
+
+**Still open, and unchanged by any of this:** Romania (10 vs 5) and China
+(10–30 vs 30) each state archiving twice with different numbers. The
+suite reports both on every run.
+
+`npm test`: **30 suites**, replay OK across 648 files.
