@@ -31,7 +31,6 @@
 // schedule and added to the checked set, deliberately, not by drifting
 // into it.
 import { chromium } from "playwright";
-import sharp from "sharp";
 import { readFileSync, mkdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -118,29 +117,36 @@ const browser = await chromium.launch({
 mkdirSync(OUT, { recursive: true });
 
 for (const shot of SHOTS) {
-  // RENDERED AT 2x, DELIVERED AT 1x. Capturing at the target size gives
-  // visibly ragged edges on a display face this heavy; capturing at twice
-  // the density and downsampling with Lanczos is supersampling, and the
-  // letterforms come out clean.
+  // LAID OUT AT 1x, DELIVERED AT 2x — and the declared og:image:width
+  // follows the FILE, not the layout.
   //
-  // Delivered at exactly the declared size rather than left at 2x, because
-  // og:image:width and og:image:height are assertions about the file and
-  // 1200x630 is the size every platform expects to crop from. A file whose
-  // real dimensions differ from the declared ones is the sort of small
-  // untruth that some scrapers forgive and others do not.
+  // The first version downsampled back to 1200x630, on the reasoning that
+  // the declared dimensions must match the file. They still must; the
+  // dimensions declared in the markup are simply the doubled ones now.
+  //
+  // WHY IT CHANGED (25 August 2026). Dan reported the wordmark looking
+  // blurred in LinkedIn's Post Inspector. Measured, the 1200x630 file was
+  // not soft at all: mean edge transition 0.90px, and it scored HIGHER
+  // edge energy than a native 1x render of the same card. So the softness
+  // was never in the file — it is the preview thumbnail scaling 1200px
+  // into a few hundred, and LinkedIn re-encoding to JPEG, which is at its
+  // worst on exactly this content: heavy cream type on near-black navy.
+  //
+  // Neither of those is controllable. The only lever left is giving their
+  // scaler more to work with, so the file ships at twice the reference
+  // size. Every platform downscales to its own card width anyway, and a
+  // 2x source survives that better than a 1x one — the same reason this
+  // renders at deviceScaleFactor 2 in the first place.
   const page = await browser.newPage({
     viewport: { width: shot.width, height: shot.height },
     deviceScaleFactor: 2,
   });
   await page.setContent(`<style>${FACES}</style>${shot.html}`, { waitUntil: "load" });
   await page.evaluate(() => document.fonts.ready);
-  const buf = await page.screenshot({ type: "png" });
   const path = join(OUT, shot.file);
-  await sharp(buf)
-    .resize(shot.width, shot.height, { kernel: "lanczos3" })
-    .png({ compressionLevel: 9 })
-    .toFile(path);
-  console.log(`  images/${shot.file}  ${shot.width}x${shot.height}`);
+  await page.screenshot({ path, type: "png" });
+  console.log(`  images/${shot.file}  ${shot.width * 2}x${shot.height * 2}`
+    + ` (laid out at ${shot.width}x${shot.height}, captured at 2x)`);
   await page.close();
 }
 

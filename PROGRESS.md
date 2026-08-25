@@ -17232,3 +17232,38 @@ running regardless of doubt: LinkedIn caches Open Graph data hard, so
 every link to this site shared before today will keep rendering the old
 bare card until something forces a re-scrape. The Inspector both shows
 what LinkedIn actually sees and performs that re-scrape.
+
+#### "The logo is blurred" — measured before changing anything (25 August 2026)
+
+Dan reported the wordmark looking soft in LinkedIn's Post Inspector. The
+first move was to measure the file rather than believe the eye or dismiss
+the report.
+
+**The file was not soft.** Mean edge transition through the type: 0.90px,
+where 1–2px is a crisply rendered edge. Rendered three ways and compared —
+native 1x, 2x-downsampled-with-Lanczos, and a 2x CSS layout at 1x density
+— the shipped version scored the HIGHEST edge energy of the three. There
+was nothing to fix in the PNG.
+
+So the softness is downstream, in two places neither of which is
+controllable: the Inspector's preview scales 1200px into a few hundred,
+and **LinkedIn re-encodes Open Graph images to JPEG**, which is at its
+worst on precisely this content — heavy cream type on near-black navy,
+where chroma subsampling rings around every letterform.
+
+The one lever left is giving their scaler more to work with, so the card
+now ships at **2400x1260** and the logo at 2000x540. Same layout, captured
+at 2x and delivered at 2x rather than downsampled back. Every platform
+downscales to its own card width regardless, and a 2x source survives that
+better than a 1x one.
+
+**And a check that was only testing itself.** The size assertion hardcoded
+1200x630 on both sides — the file and the expectation — so it would have
+failed on a correct file the moment the card legitimately moved to 2x. It
+now reads the declared width out of the served markup and compares it to
+the PNG header, which makes it an *agreement* check: the thing a scraper
+actually cares about. Aspect ratio is asserted as a ratio rather than as
+fixed numbers, so the card can ship at any density. Verified by shrinking
+the file while leaving the markup alone.
+
+`npm test`: **29 suites**, 87 checks in the crawlability suite.
