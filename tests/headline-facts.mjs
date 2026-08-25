@@ -150,8 +150,26 @@ await browser.close();
     if (n == null || r.yrs == null) continue;   // not comparable, not a contradiction
     if (Number(n) !== Number(r.yrs)) disagree.push(`${r.country}: stat strip "${r.v}", tile "${r.yrs} yrs"`);
   }
-  t.check("the comparison found archiving stats to compare",
-    arch.length >= 5, `${arch.length} archiving stat tiles`);
+  // THE ONLY ARCHIVING TILES LEFT ARE THE CONTESTED ONES.
+  //
+  // Migration 643 removed 43 tiles that restated a headline fact, and held
+  // back exactly three: Belgium, Romania and China each state archiving
+  // twice with DIFFERENT numbers, and deleting one side there would not
+  // resolve the contradiction, it would decide it in the tile's favour
+  // without anyone checking which number is right.
+  //
+  // This assertion is stronger than the ">= 5 to compare" it replaces,
+  // which was written before the deduplication and would now pass on a
+  // migration that had removed nothing at all. It says the sweep happened
+  // AND that it stopped where it was told to.
+  const CONTESTED = ["Belgium", "China", "Romania"];
+  t.check("only the contested archiving tiles survived the deduplication",
+    arch.length === CONTESTED.length
+      && CONTESTED.every((c) => arch.some((r) => r.country === c)),
+    `${arch.length} archiving stat tiles: ${arch.map((r) => r.country).join(", ")}`);
+  t.check("and every one of them is a genuine disagreement, not a leftover",
+    disagree.length === arch.length,
+    `${arch.length} held back, ${disagree.length} actually disagree — a tile that AGREES should have been removed`);
   if (disagree.length) {
     console.log(`  note  ${disagree.length} countries state archiving twice, with different numbers:`);
     for (const d of disagree) console.log(`          ${d}`);
