@@ -54,3 +54,8 @@ package-lock.json
 #   curl -sI https://e-invoicingcompliancecorner.com/node_modules/wrangler/package.json
 # It should 404.
 # ----------------------------------------------------------------
+
+# Asset generators. tools/gen-social-images.mjs builds images/logo.png
+# and images/og-default.png; the images themselves ARE served, the script
+# that makes them is not.
+tools/

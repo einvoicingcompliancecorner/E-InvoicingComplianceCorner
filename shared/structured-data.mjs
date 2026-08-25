@@ -88,6 +88,13 @@ export function organizationLd() {
     // as the statement of editorial principles a publisher works to,
     // which is precisely what that page is.
     publishingPrinciples: `${ORIGIN}/methodology`,
+    // THE LOGO, from 25 August 2026. It was omitted for three days with a
+    // comment explaining that no logo asset existed and that pointing this
+    // at the founder's portrait, or inventing a URL, would be a claim the
+    // site could not support. Dan supplied the wordmark; the asset is
+    // rebuilt from it at 1000x270 by tools/gen-social-images.mjs. A
+    // rectangle rather than a square, which is what Google asks for here.
+    logo: `${ORIGIN}/images/logo.png`,
     founder: { "@id": `${ORIGIN}/#founder` },
   };
 }
@@ -101,11 +108,12 @@ export function organizationLd() {
  * node, referenced from both, says they are the same human — which is
  * the entire point of using @id.
  *
- * THE PHOTO IS REAL AND THE LOGO IS NOT. images/dan-young.png exists and
- * is him, so it is asserted here. The Organization has no logo asset at
- * all, and inventing a URL for one — or pointing `logo` at a portrait —
- * would be a structured-data claim this site cannot support. Left off
- * until there is a logo to name.
+ * THE PHOTO IS REAL. images/dan-young.png exists and is him, so it is
+ * asserted here. It is NOT the Organization's logo and never was: for
+ * three days that node carried no `logo` at all rather than point the
+ * property at a portrait or invent a URL. Dan supplied a wordmark on
+ * 25 August and the Organization has its own logo now — a separate
+ * asset, saying a separate thing.
  */
 export function personLd() {
   return {

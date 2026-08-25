@@ -704,6 +704,80 @@ t.check("the sitemap is served and well-formed",
     `status ${cased.status}`);
 }
 
+// ---- 10. the share card -------------------------------------------------
+//
+// Every link to this site pasted into LinkedIn, Slack or Teams rendered as
+// a bare grey rectangle until 25 August: og:image appeared zero times
+// across the whole repository, and the single occurrence of the string was
+// a comment explaining why there wasn't one.
+{
+  const OG = "https://e-invoicingcompliancecorner.com/images/og-default.png";
+  const { statSync } = await import("node:fs");
+
+  // THE FILE EXISTS AND IS THE SIZE IT CLAIMS. og:image:width and
+  // og:image:height are assertions about the file; a scraper that trusts
+  // them and finds otherwise crops badly, and one that does not trust them
+  // has to fetch and measure. Read from the PNG header rather than from
+  // the generator, so a hand-edited image is caught too.
+  const png = readFileSync(join(REPO, "images", "og-default.png"));
+  const isPng = png.subarray(1, 4).toString() === "PNG";
+  const width = png.readUInt32BE(16), height = png.readUInt32BE(20);
+  t.check("the share card is a real PNG", isPng);
+  t.check("and is exactly the size the tags declare",
+    width === 1200 && height === 630, `${width}x${height}`);
+  t.check("the logo exists for the Organization node",
+    statSync(join(REPO, "images", "logo.png")).size > 0);
+
+  // NO FACTS IN THE PIXELS. The tempting thing to put on a share card is
+  // "70 countries", and it would be the most persuasive thing on it. It
+  // would also be a claim baked into a binary that jurisdiction-count.mjs
+  // cannot read, in a repository that has already had a stale count sit
+  // across thirty files for two days. This asserts the generator's
+  // strapline stays free of digits, which is the machine-readable half of
+  // that rule.
+  const gen = readFileSync(join(REPO, "tools", "gen-social-images.mjs"), "utf8");
+  const strapline = (gen.match(/text-transform:uppercase[^"]*">\s*\n\s*([^<\n]+)/) || [])[1] || "";
+  t.check("this check found the card's strapline", !!strapline.trim(), JSON.stringify(strapline));
+  t.check("and it states no number that could go stale",
+    !/\d/.test(strapline), `"${strapline.trim()}" — a count in a PNG is a claim no test can read`);
+
+  // EVERY PAGE THAT OFFERS A CARD OFFERS AN IMAGE WITH IT. A
+  // summary_large_image with no image is worse than summary: the platform
+  // reserves the large slot and then has nothing to fill it.
+  const withCard = [];
+  for (const f of ["einvoicing-compliance-tracker.html", "subscribe.html", "feedback.html",
+    "privacy-policy.html", "whitepaper-einvoicing-roi-evidence.html"]) {
+    const html = readFileSync(join(REPO, f), "utf8");
+    if (/twitter:card/.test(html)) withCard.push([f, html]);
+  }
+  t.check("this check found pages carrying social tags", withCard.length === 5,
+    `${withCard.length} of 5`);
+  for (const [f, html] of withCard) {
+    t.check(`${f} declares a large card and an image to fill it`,
+      /content="summary_large_image"/.test(html) && html.includes(OG),
+      "large card with no image reserves a slot it cannot fill");
+  }
+
+  // AND SO DOES A COUNTRY PAGE, THROUGH THE RENDERER. The static pages
+  // above are files; this is the template all seventy come out of.
+  const country = await (await get("/germany")).text();
+  t.check("a country page carries the card too",
+    /property="og:image" content="[^"]+"/.test(country)
+      && /content="summary_large_image"/.test(country));
+  t.check("and the image URL is absolute, which scrapers require",
+    (country.match(/property="og:image" content="([^"]+)"/) || [, ""])[1].startsWith("https://"));
+
+  // THE ORGANIZATION FINALLY HAS A LOGO, and it points at the asset rather
+  // than at the founder's portrait — which is what it deliberately did not
+  // do for the three days there was no logo to name.
+  const sd = await import(join(REPO, "shared", "structured-data.mjs"));
+  const org = sd.organizationLd();
+  t.check("the Organization names a logo",
+    typeof org.logo === "string" && org.logo.endsWith("/images/logo.png"), String(org.logo));
+  t.check("and it is not the founder's photograph",
+    !String(org.logo).includes("dan-young"), String(org.logo));
+}
+
 console.log(`  note  ${tracked.length} countries linked from the tracker and listed in `
   + `${locs.length} sitemap URLs`);
 
