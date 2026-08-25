@@ -17490,3 +17490,87 @@ Consistency was worth more than winning that one tile, but it can go by
 hand if he wants it gone.
 
 `npm test`: **30 suites**, replay OK across 643 files.
+
+#### Dan's own removal list, and Cyprus/Czechia go voluntary (25 August 2026)
+
+**24 more tiles, reviewed by hand.** 643's rules kept anything carrying a
+year, on the principle that a year is a milestone — the rule that saved
+Latvia from being emptied. It is blind to the case where a DATED tile
+still says only what a tile now says: "2014 / B2G mandate in force" beside
+a B2G tile reading ACTIVE, with the date already in the timeline below. No
+rule separates those from a real milestone. Dan read the pages and sent
+the list; migration 644 is it, kept separate from 643 so it stays clear
+which removals were reasoned about and which were pattern-matched.
+
+Three of his 24 would have silently matched nothing: Finland, Portugal and
+Sweden split the sentence differently from his note, as value `"No B2B"`
+plus label `"mandate — yet"`. Every entry was resolved against the live
+row before the migration was written.
+
+**Belgium's archiving tile is one of them**, which resolves one of the
+three contradictions 643 held back: 7 vs 10, and 10 stands. Romania
+(10 vs 5) and China (10–30 vs 30) are still open. The test names them
+rather than counting them, so whoever settles the next one has to edit
+the line.
+
+**The floor moved from three tiles to two**, and the runner caught it
+before I did: *"an ASSERT ALWAYS held when its own migration ran, and does
+not hold at the end of the chain."* Cyprus loses its B2G receive tile and
+keeps two. Restated with the reason rather than deleted — an ASSERT ALWAYS
+is a claim about how the world must stay, and when the world legitimately
+changes the claim is rewritten, not removed.
+
+#### Cyprus and the Czech Republic: a guaranteed channel is not "no mandate"
+
+Both were already `no_mandate`, not `active` — the notes had said so all
+along ("obliges authorities to RECEIVE; no supplier duty"). Dan: *"Cyprus
+B2G is configured to receive electronically, but no issuing duty.
+Therefore it is voluntary for the supplier."*
+
+The two words make different claims. NO MANDATE says nothing is in place;
+a supplier sending a structured invoice has no assurance anyone can accept
+it. VOLUNTARY says the channel exists and is guaranteed in law, and using
+it is the supplier's choice. Cyprus is the second, and calling it the
+first understates a real statutory route — this site is as careful about
+understating an obligation as about overstating one.
+
+**THE MIRROR OF CANADA (621).** There the correction ran the other way: a
+portal most federal suppliers use was called ACTIVE, and "a channel most
+people use is not a duty" made it VOLUNTARY. Cyprus is the same word
+reached from below. Both land there because that is what the word is for.
+
+Czechia was deliberately held back in the first draft — changing a
+jurisdiction's facts by inference from a neighbour is exactly what 611 did
+to Canada and 621 had to undo. Dan then said "same with Czech Republic",
+which is a decision rather than an inference, so both moved.
+
+Migration 645 writes `fact_history` rows and notes in four languages,
+because /changes claims to list every change to the five headline facts
+and a correction that skipped it would make that page quietly false.
+
+**Two of my own assertions were wrong and the runner said so.** One
+claimed every `fact_history` row carries an English note; 350 do not, and
+they are all `kind='first_recorded'` — a first record has no earlier value
+to explain. Scoped to corrections, it is true of all 14. The other was
+written as `... AND note LIKE 'x' OR note LIKE 'y' = 2`, where the OR
+escapes the country filter entirely because SQL binds AND tighter. **It
+passed, by luck**, because only these two countries use the phrase today.
+Caught by reading it back, which is the only way that class of bug is ever
+caught.
+
+#### And the strip was re-laid out, because the tiles kept moving
+
+Dan: *"You will need to adjust table orientation once these boxes are
+removed."* Measured: tiles were grid tracks in one bordered slab, so their
+width was the container divided by whatever number that country had.
+Cyprus's two came out at **434px** each holding the word "2×"; Azerbaijan's
+five sat at **173px** — the same furniture at two and a half times the
+size, page to page.
+
+They are separate cards now, flex-wrapped with a 280px cap, so they are
+the same size on every country and simply wrap. It also settles an
+inconsistency the headline strip introduced directly above it: that one is
+rounded cards, and these are now the same object rather than a different
+one.
+
+`npm test`: **30 suites**, replay OK across 645 files.

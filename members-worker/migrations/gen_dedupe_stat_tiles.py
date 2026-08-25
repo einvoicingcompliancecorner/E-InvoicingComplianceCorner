@@ -179,10 +179,21 @@ def sql():
 -- of its tiles are dated milestones that read like mandate statuses. The
 -- floor is asserted rather than trusted.
 --
+-- THE FLOOR IS TWO, NOT THE THREE THIS MIGRATION LEFT. Written as 3 and
+-- true when 643 ran; migration 644 -- Dan's hand-reviewed list -- takes
+-- Cyprus's B2G receive tile and leaves it with two. The runner caught it
+-- immediately and said so precisely: "an ASSERT ALWAYS held when its own
+-- migration ran, and does not hold at the end of the chain."
+--
+-- Loosened deliberately rather than deleted. An ASSERT ALWAYS is a claim
+-- about how the world must stay, not a record of how it was; when the
+-- world legitimately changes the claim is restated with the reason, and
+-- the floor still stops a future sweep emptying a strip.
+--
 -- WRAPPED IN A SUBQUERY: the runner splits on the LAST comparison
--- operator in the line, so a bare `... HAVING count(*) < 3 ... = 0` would
+-- operator in the line, so a bare `... HAVING count(*) < 2 ... = 0` would
 -- be read as a query ending `< 3` compared against 0.
--- ASSERT ALWAYS: SELECT (SELECT count(*) FROM (SELECT country_id FROM deep_dive_stats GROUP BY country_id HAVING count(*) < 3)) = 0
+-- ASSERT ALWAYS: SELECT (SELECT count(*) FROM (SELECT country_id FROM deep_dive_stats GROUP BY country_id HAVING count(*) < 2)) = 0
 
 -- AND NOTHING IS ORPHANED LATER EITHER.
 -- ASSERT ALWAYS: SELECT count(*) FROM deep_dive_stat_translations t LEFT JOIN deep_dive_stats ds ON ds.id = t.stat_id WHERE ds.id IS NULL = 0
