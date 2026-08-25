@@ -17215,3 +17215,20 @@ difference between seventy images generated once and seventy that go
 stale.
 
 `npm test`: **29 suites**, 85 checks in the crawlability suite.
+
+**Deployed 25 August 2026** (`609a664`): the logo and the share card.
+
+Not independently confirmed from the sandbox, and worth recording why.
+The fetch tool available here converts pages to markdown before reporting
+on them, and it reported the tracker as having no `application/ld+json`
+block at all — which is provably false; that block has been in the asset
+since `19284ec` and the suite parses it. A tool that drops structured data
+in conversion cannot be trusted to say whether a `<meta>` tag is present,
+in either direction. Recorded as deployed on Dan's word, which is better
+evidence than a lossy reader.
+
+**The authoritative check is LinkedIn's Post Inspector**, and it is worth
+running regardless of doubt: LinkedIn caches Open Graph data hard, so
+every link to this site shared before today will keep rendering the old
+bare card until something forces a re-scrape. The Inspector both shows
+what LinkedIn actually sees and performs that re-scrape.
