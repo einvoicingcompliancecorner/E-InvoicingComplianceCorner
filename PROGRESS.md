@@ -17438,3 +17438,55 @@ silence the check — the shape `guides-consistency` already uses for the
 same reason.
 
 `npm test`: **30 suites**.
+
+#### And then removing what the tiles now say (25 August 2026)
+
+Dan, on the deployed page: *"there is now duplication with some existing
+cards / tiles that were already there. For example, if you look at Germany
+- we state the archiving requirement twice, we state 'no CTC' below."*
+Right on both counts — Germany's compliance-model line already read
+"Fully decentralised — no clearance".
+
+**HIS FALLBACK WAS TO DROP THE WHOLE STRIP, AND THE NUMBERS ARGUED
+AGAINST IT.** That would have removed 354 tiles to fix 43. The other 311
+are why a deep dive exists rather than a row on the tracker: "2 formats /
+XRechnung / ZUGFeRD", "€5,000 / Max fine per offence", "AZN 200,000 /
+registration threshold", dated milestones with legal citations. The guide
+replaced its per-country stats with the standard five because a reader
+comparing eleven markets could not line them up — that argument is about
+COMPARISON and does not carry to the one page where the idiosyncratic
+detail is the point.
+
+Migration 643 removes 43: 20 archiving, 12 clearance-model, 11
+mandate-status. Matched on country plus English label rather than on stat
+id, because ids are insertion-ordered and not guaranteed identical between
+the replay fixture and production.
+
+**THE RULE THAT SAVED IT: A YEAR IS A MILESTONE, NOT A DUPLICATE.** The
+tiles state a STATUS; a tile carrying a year tells the reader WHEN. An
+earlier draft without that rule flagged **86** tiles and would have left
+**Latvia with none** — all five of its tiles are dated milestones that
+read like mandate statuses. It also swept up Indonesia's Coretax
+enforcement date and Portugal's QES deadline, both facts found nowhere
+else on the page. With the rule, the floor is three tiles on every
+country, and the migration asserts it.
+
+**THREE COUNTRIES DELIBERATELY UNTOUCHED.** Belgium, Romania and China
+each state archiving twice with DIFFERENT numbers. Deleting the stat tile
+there would not resolve the contradiction — it would decide it in the
+tile's favour, silently, without anyone checking which number is right.
+They keep both, visibly, until Dan decides.
+
+The check that reported those three was rewritten rather than left
+passing: it asserted `arch.length >= 5`, which was true before the sweep
+and would now pass on a migration that removed nothing at all. It asserts
+the *new* invariant — that exactly the three contested tiles survived, and
+that every survivor is a genuine disagreement rather than a leftover.
+
+**Still marginal, and Dan's call:** Germany keeps "2028 / Full B2B
+issuance mandate" while the B2B tile's note already reads "issuing from
+2027 (>€800k), all 2028". It carries a year, so the rule keeps it.
+Consistency was worth more than winning that one tile, but it can go by
+hand if he wants it gone.
+
+`npm test`: **30 suites**, replay OK across 643 files.
