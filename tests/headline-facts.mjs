@@ -162,7 +162,14 @@ await browser.close();
   // which was written before the deduplication and would now pass on a
   // migration that had removed nothing at all. It says the sweep happened
   // AND that it stopped where it was told to.
-  const CONTESTED = ["Belgium", "China", "Romania"];
+  // BELGIUM CAME OFF THIS LIST BECAUSE DAN SETTLED IT, not because the
+  // check was loosened. 643 held back three tiles whose numbers
+  // contradicted the headline tile; 644 removed Belgium's "7 yrs" on his
+  // hand-reviewed list, which is a person deciding that 10 is right. The
+  // other two are still open, and the day either is resolved this line
+  // must be edited by whoever resolves it — which is the point of naming
+  // them rather than counting them.
+  const CONTESTED = ["China", "Romania"];
   t.check("only the contested archiving tiles survived the deduplication",
     arch.length === CONTESTED.length
       && CONTESTED.every((c) => arch.some((r) => r.country === c)),

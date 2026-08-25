@@ -724,8 +724,22 @@ ${ldScript([
   .country-meta{font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--muted); text-align:right;}
   .country-meta-col{display:flex; flex-direction:column; align-items:flex-end; gap:10px;}
   .portal-row-header{display:flex; flex-wrap:wrap; gap:8px; justify-content:flex-end;}
-  .stat-strip{display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:1px; background:var(--line); border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; margin-bottom:36px;}
-  .stat-strip .stat{background:var(--ink-2); padding:16px 18px;}
+  /* SEPARATE CARDS, NOT ONE DIVIDED SLAB — changed 25 August 2026.
+     The old strip was a single bordered block whose tiles were grid
+     tracks sharing a 1px gap over a background, so each tile's width was
+     the container divided by however many tiles that country happened to
+     have. That was tolerable when every country had five. After the
+     deduplication it is not: Cyprus keeps two and got 434px tiles holding
+     the word "2x", while Azerbaijan's five sat at 173px — the same
+     furniture at two and a half times the size, page to page.
+     As flex items with a max width they stay the same size everywhere and
+     simply wrap. It also settles an inconsistency the headline strip
+     introduced directly above: that one is separate rounded cards, and
+     these are now the same object rather than a different one. */
+  .stat-strip{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:36px;}
+  .stat-strip .stat{background:var(--ink-2); border:1px solid var(--line);
+    border-radius:var(--radius); padding:14px 16px;
+    flex:1 1 190px; max-width:280px; min-width:0;}
   .stat-strip .stat .num{font-family:'Big Shoulders Display',sans-serif; font-weight:800; font-size:22px; line-height:1.15;}
   .stat-strip .stat .lbl{font-size:10.8px; color:var(--muted); text-transform:uppercase; letter-spacing:0.07em; margin-top:5px;}
   .status-banner{background:var(--soon-dim); border:1px solid var(--soon); color:#ffe9c7; border-radius:var(--radius); padding:14px 18px; margin-bottom:32px; font-size:13.3px; display:flex; gap:12px; align-items:flex-start;}
