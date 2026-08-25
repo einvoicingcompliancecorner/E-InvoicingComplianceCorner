@@ -647,6 +647,31 @@ t.check("the sitemap is served and well-formed",
     { ...env, GOOGLE_SITE_VERIFICATION: "  " }, { waitUntil() {} })).text();
   t.check("while an empty one emits no tag at all",
     !/google-site-verification/.test(blank));
+
+  // AND WHAT IS ACTUALLY CONFIGURED IS A TOKEN, NOT A PASTED TAG.
+  //
+  // Every dialog that hands out one of these values shows it wrapped in a
+  // <meta> element, and the natural thing to do is copy the element.
+  // Doing so produces a nested tag — the Worker builds `<meta ... content="`
+  // around whatever it is given — and the engine then reads a content
+  // attribute of `<meta name=`. Google's own help text warns about it, and
+  // it fails with nothing visibly wrong in the config.
+  //
+  // Checked against the real file, because the checks above pass values in
+  // by hand and would never see what is deployed.
+  const config = readFileSync(join(REPO, "site-worker", "wrangler.toml"), "utf8");
+  const vars = Object.fromEntries(
+    [...config.matchAll(/^(GOOGLE_SITE_VERIFICATION|BING_SITE_VERIFICATION)\s*=\s*"([^"]*)"/gm)]
+      .map((m) => [m[1], m[2]]));
+  t.check("this check found both verification vars in wrangler.toml",
+    Object.keys(vars).length === 2, Object.keys(vars).join(", ") || "(none)");
+  for (const [name, value] of Object.entries(vars)) {
+    // Empty is legitimate and means "verified another way, or not yet".
+    if (!value.trim()) continue;
+    t.check(`${name} holds a bare token, not markup`,
+      !/[<>]/.test(value) && !value.includes("content="),
+      `looks like a pasted tag: ${value.slice(0, 40)}`);
+  }
 }
 
 console.log(`  note  ${tracked.length} countries linked from the tracker and listed in `

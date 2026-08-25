@@ -17015,3 +17015,78 @@ landmarks — a `-1` index would have made the slice the whole document and
 passed on any layout at all.
 
 `npm test`: **29 suites**, 65 checks in the crawlability suite.
+
+**Deployed 25 August 2026** (`b88c6b6`): the home page is the tracker,
+country pages link sideways, the insights hub publishes a CollectionPage,
+the address bar agrees with the canonical, and the country index no longer
+shows underneath the panels.
+
+**The one thing still outstanding is not code.** `GOOGLE_SITE_VERIFICATION`
+and `BING_SITE_VERIFICATION` are deployed and empty, so no tag is being
+emitted and neither property is claimed. Until one of them is, this
+project still cannot see a single impression, query or coverage error —
+which is the whole reason the last month of work was done. Prefer the DNS
+TXT record on the apex over the meta tag: it covers every subdomain,
+survives every deploy, and leaves both vars empty.
+
+#### Verified — and the first thing this project can actually observe (25 August 2026)
+
+Google Search Console **Domain property**, verified by a TXT record on the
+apex. Confirmed independently rather than taken from the dashboard: both
+Cloudflare's and Google's public resolvers return
+
+    google-site-verification=l5HTDJEKiUkcfk7T15wdcOwx-ElhBixdyI34hFO-TFQ
+
+as a single clean string with no wrapping quote characters, TTL 3600.
+
+**A Domain property, not a URL prefix**, which matters more here than it
+looks: it covers www and apex, http and https, and every subdomain — so
+the members host is inside the same property without a second
+verification, and the three tracker addresses are all inside it while
+Google works out that `/` is now the canonical.
+
+**THE RECORD MUST NEVER BE DELETED.** Google revokes verification if it
+disappears, and a TXT record nobody recognises is exactly the kind of
+thing that gets tidied out of a DNS zone a year later. It is not
+associated with any Worker, so nothing in this repository refers to it —
+which is why it is written down here.
+
+`GOOGLE_SITE_VERIFICATION` and `BING_SITE_VERIFICATION` stay **empty**.
+The DNS method needs no tag, and the vars remain as the fallback if the
+record is ever lost. Nothing to deploy.
+
+After a month of audits inferring search performance from markup, this
+project can now observe it. The first question it answers is the one the
+whole crawlability effort was premised on: whether the forty-two country
+pages that were unreachable are now indexed.
+
+#### Bing, the meta tag, and why not the other two methods (25 August 2026)
+
+Dan took Bing's default offer — the **XML file** — and got "Incorrect
+authentication key: please make sure the authentication file contains the
+following verification key". That error is about the FILE, not the key:
+Bing wants `BingSiteAuth.xml` at the site root, and this site is a Worker
+with an asset bundle, so there is no directory to drop a file into by
+hand.
+
+Bing's DNS option is a **CNAME**, not the TXT that Google accepted, so it
+is not a one-line addition beside the record already there.
+
+Which leaves the meta tag, which is exactly what `BING_SITE_VERIFICATION`
+was built for a day earlier. Set, deployed, nothing else to write.
+
+**The import would have skipped all of it.** Bing Webmaster Tools → My
+Sites → **Import** pulls a property across from Search Console already
+verified, no file, no tag, no record. Worth remembering if this is ever
+redone.
+
+And a new guard, because every one of these dialogs hands you the value
+already wrapped in a `<meta>` element and the natural act is to copy the
+element: `seo-crawlability` now reads `wrangler.toml` and fails if either
+verification var contains markup rather than a bare token. The Worker
+builds the tag around whatever it is given, so a pasted tag yields a
+nested one and the engine reads a content attribute of `<meta name=` —
+a failure with nothing visibly wrong in the config. Verified by pasting a
+whole tag in and watching it go red.
+
+`npm test`: **29 suites**, 67 checks in the crawlability suite.

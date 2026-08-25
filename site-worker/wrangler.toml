@@ -135,24 +135,38 @@ ROI_INDEXABLE = "false"
 # literals in index.js so that claiming the property is a config edit
 # rather than a code change.
 #
-# GOOGLE: Search Console → Add property → URL prefix →
-#   https://e-invoicingcompliancecorner.com/ → "HTML tag". Copy ONLY the
-#   content="..." value, not the whole tag. Deploy, then press Verify.
+# PASTE THE TOKEN ONLY — never the whole <meta ...> tag. This Worker
+# builds the tag around the value, so a pasted tag produces a nested one
+# and the engine reads a content attribute of `<meta name=`. There is a
+# check for that in tests/seo-crawlability.mjs, which reads THIS FILE.
 #
-# BING: Bing Webmaster Tools → Add site → "Meta tag", same rule. Worth
-# doing beside Google rather than instead of it: Bing's index is what
-# several assistant products query when they search, so being absent
-# from it is an absence from a discovery surface and not just from a
-# search engine.
+# GOOGLE: DONE, 25 August 2026, AND NOT VIA THIS VAR. Verified as a
+# DOMAIN property by a TXT record on the apex:
+#   google-site-verification=l5HTDJEKiUkcfk7T15wdcOwx-ElhBixdyI34hFO-TFQ
+# Confirmed against Cloudflare's and Google's resolvers, TTL 3600. That
+# record MUST NEVER BE DELETED — Google revokes verification if it goes,
+# and nothing in this repository refers to it. A domain property covers
+# every subdomain, so the members host came along for free. This var
+# stays empty and is now only the fallback if the record is ever lost.
 #
-# DNS IS THE BETTER METHOD IF YOU HAVE THE CHOICE. A TXT record on the
-# apex verifies every subdomain at once (including the members host),
-# survives every deploy, and cannot be dropped by an edit to the tracker
-# markup — which this tag can. Cloudflare hosts this zone's DNS, so it is
-# a two-minute dashboard change. Use these two only if you are already
-# standing in the "HTML tag" dialog.
+# BING: the meta tag, because the alternatives do not fit this site.
+# Bing's default offer is an XML file at the site root
+# (BingSiteAuth.xml), which is a file you cannot drop onto a Worker by
+# hand; its DNS option is a CNAME rather than the TXT that Google
+# accepted. Dan hit the XML-file path first on 25 August and got
+# "Incorrect authentication key" — that error means the file, not the
+# key. Switching to the "HTML Meta Tag" option in the same dialog is the
+# fix, and this is the var it lands in.
+#
+# BING IMPORT WOULD HAVE SKIPPED ALL OF THIS: My Sites → Import pulls a
+# verified property across from Search Console already verified. Worth
+# remembering if this ever has to be redone.
+#
+# DNS REMAINS THE BETTER METHOD WHERE IT IS OFFERED. A record survives
+# every deploy and cannot be dropped by an edit to the tracker markup —
+# which this tag can. Google is on DNS for exactly that reason.
 GOOGLE_SITE_VERIFICATION = ""
-BING_SITE_VERIFICATION = ""
+BING_SITE_VERIFICATION = "C59017D17265E7162686E94B2105BD59"
 
 # ----------------------------------------------------------------
 # SESSION_SECRET — a SECRET, not a var. Deliberately not written here.
