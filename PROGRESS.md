@@ -17373,3 +17373,68 @@ survive the logo.
 Worth separating: the disclosure argument stands on its own. Readers
 assessing a compliance tracker will weigh who is behind it, and that is
 true whether or not a logo ever appears.
+
+### The headline tiles come to the country pages (25 August 2026)
+
+Dan: *"In the compliance guide printout, we added cards/tiles at the top
+of the page covering the B2B/B2G/B2C, e-Reporting, Archiving and Digital
+Signature requirements for each country. I would like that information to
+be repeated in the country deep-dive pages."* The data already existed —
+`country_headline_facts`, five facts for seventy countries since
+migration 608.
+
+**THE TILES MOVED TO A LEAF MODULE, AND HAD TO.** They lived in
+`guides-render.mjs`, and the obvious implementation — import
+`headlineTiles` from there — is a **circular import**: `guides-render`
+already imports `escapeHtml` and `translateCountryName` from
+`deep-dive-render`. So the vocabulary now lives in
+`shared/headline-facts.mjs`, which imports nothing. Both renderers depend
+on it and it depends on neither, which is also the honest shape: these
+five facts are a property of the country, not of the guide.
+
+**ONE MARKUP, TWO STYLESHEETS.** `headlineTiles()` takes a wrapper class
+and that is the *only* thing the two surfaces vary — the classes, the
+structure, the words and the tone each status maps to are identical,
+because a reader with the guide and the page open must not be able to find
+a discrepancy. `tests/headline-facts.mjs` asserts the two outputs are
+byte-identical apart from that wrapper.
+
+#### Two rows, not the guide's six columns — decided by measurement
+
+The first version copied the guide's six-column strip and **clipped text
+in all four languages**: CONDITIONNELLE, CONDICIONAL, NICHT ERFORDERLICH
+and the plain English CONDITIONAL all lost their tails. Measured, a single
+card at six columns has a 103px content box and `ERFORDERLICH` needs
+135px at any font size a headline value should use. It was never a
+type-size problem.
+
+A printed A4 page has fixed height, so the guide spends horizontal space
+to save vertical. **A deep dive scrolls**, so the trade reverses: the
+mandate card takes a full row and its three segments line up across the
+whole container, and the three single cards take a third each.
+
+That clipping is invisible to every other check in this repository — the
+element keeps its height and the text stays in the DOM — so the new suite
+**measures a rendered page** at five widths in four languages across six
+countries. Verified by restoring the six-column layout and watching it go
+red.
+
+#### And a contradiction the feature exposes rather than causes
+
+23 countries already state an archiving period in their free-form
+deep-dive stat strip, which now sits directly beneath a tile stating the
+same fact from `country_headline_facts`. **Three disagree:**
+
+- **Belgium** — stat strip "7 yrs", tile "10 yrs"
+- **Romania** — stat strip "10 yrs", tile "5 yrs"
+- **China** — stat strip "10–30 yrs", tile "30 yrs"
+
+Both numbers now print about 40mm apart on the same page. This is the
+defect the guide already had, and Romania is in both stories.
+
+**REPORTED, NOT FAILED.** Which number is right is a content decision, and
+a failing suite would either block the feature or invite someone to
+silence the check — the shape `guides-consistency` already uses for the
+same reason.
+
+`npm test`: **30 suites**.

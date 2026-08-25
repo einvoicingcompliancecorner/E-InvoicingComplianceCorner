@@ -24,6 +24,10 @@
 // ================================================================
 
 import { ldScript, countryPageLd, breadcrumbLd } from "./structured-data.mjs";
+// The five headline facts, shared with the compliance guide. A LEAF
+// module: guides-render.mjs imports from THIS file, so the tiles could
+// not live there and be imported back. See shared/headline-facts.mjs.
+import { headlineTiles, HEADLINE_DARK_STYLE } from "./headline-facts.mjs";
 
 export const SUPPORTED_LANGS = ["en", "es", "de", "fr"];
 
@@ -581,8 +585,28 @@ export function deepDiveDescription(summary, cap = 155) {
  * shipped second. Omitted, it renders nothing, which is the same page
  * this function produced yesterday.
  */
-export async function renderFullDeepDivePage(countryName, flag, code, region, content, milestones, lang, backLinkHref, related) {
+export async function renderFullDeepDivePage(countryName, flag, code, region, content, milestones, lang, backLinkHref, extras = {}) {
+  // ONE OPTIONS BAG, NOT A NINTH AND TENTH POSITIONAL ARGUMENT. `related`
+  // was added positionally yesterday and `headline` would have made three
+  // trailing optionals whose order two independently-deployed callers
+  // would have to agree on. Both callers live in this repository and were
+  // updated in the same commit.
+  //
+  // EVERY MEMBER IS OPTIONAL AND ABSENCE RENDERS NOTHING. The two runtimes
+  // deploy separately, so whichever ships second must not throw or print
+  // `undefined` into a country page.
+  const { related, headline, guideStrings } = extras;
   const relatedJurisdictionsHtml = renderRelatedJurisdictions(related, lang, translateRegion(lang, region));
+  // t(key, English) against the `guides` subtree, which is where these
+  // words are defined and where the methodology page reads them from —
+  // so the tile saying ACTIVE and the page explaining ACTIVE cannot drift.
+  // With no strings supplied every call falls back to the English written
+  // into headline-facts.mjs, which is what the admin preview gets.
+  const gt = (key, fallback) => {
+    const v = guideStrings && guideStrings[key];
+    return typeof v === "string" && v ? v : fallback;
+  };
+  const headlineHtml = headline ? headlineTiles(headline, gt, "hl-strip") : "";
   const timelineHtml = renderDeepDiveStyleMilestones(milestones, lang);
   const statsHtml = content.stats.map((s) => `<div class="stat"><div class="num display">${escapeHtml(s.stat_value)}</div><div class="lbl">${escapeHtml(s.stat_label)}</div></div>`).join("");
   const fileFormatHtml = content.cards.file_format.map(renderSpecCard).join("") + renderLifecycleCardsForSection(content.lifecycleCards, "file_format");
@@ -768,6 +792,7 @@ ${ldScript([
      inherit on hover so the whole chip lights up as one control. */
   .rj-when{font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--muted);}
   .rj-chip:hover .rj-when{color:inherit;}
+${HEADLINE_DARK_STYLE}
   footer{border-top:1px solid var(--line); padding-top:20px; color:var(--muted); font-size:12px; line-height:1.6;}
 </style>
 </head>
@@ -794,6 +819,7 @@ ${renderLangBanner(lang)}
 
   ${content.mandate_summary ? `<div class="status-banner"><span class="icon">${escapeHtml(content.mandate_summary_icon || "ℹ️")}</span><span>${escapeHtml(content.mandate_summary)}</span></div>` : ""}
 
+  ${headlineHtml}
   <div class="stat-strip">${statsHtml}</div>
 
   <div class="section">

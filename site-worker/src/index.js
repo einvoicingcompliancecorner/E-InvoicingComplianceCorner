@@ -62,6 +62,7 @@ import {
   renderRoiPage,
   ROI_STYLE,
 } from "../../shared/roi-render.mjs";
+import { getCountryHeadlineFacts } from "../../shared/headline-facts.mjs";
 import {
   getGuideBundle,
   renderGuideDocument,
@@ -3121,9 +3122,29 @@ async function renderCountryDeepDive(request, env, slug) {
     console.error(`related jurisdictions for ${countryName} failed — serving the page without them:`, err && err.message);
   }
 
+  // THE FIVE HEADLINE FACTS, and the words the tiles print them in.
+  //
+  // Both fail soft, and for the same reason the related block does: these
+  // are a summary of facts the page states again in full below, so losing
+  // them must cost a strip and not a country page.
+  //
+  // The strings come from the `guides` subtree because that is where these
+  // five status words are defined and where /methodology reads them from.
+  // A tile saying ACTIVE beside a page explaining a different word is
+  // worse than no tile.
+  let headline = null, guideStrings = null;
+  try {
+    [headline, guideStrings] = await Promise.all([
+      getCountryHeadlineFacts(db, countryName, lang),
+      authStrings(env, lang, "guides"),
+    ]);
+  } catch (err) {
+    console.error(`headline facts for ${countryName} failed — serving the page without them:`, err && err.message);
+  }
+
   const html = await renderFullDeepDivePage(
     countryName, flag, countryRow.code, countryRow.region, content, milestones, lang,
-    TRACKER_HREF, related
+    TRACKER_HREF, { related, headline, guideStrings }
   );
 
   const headers = new Headers({
