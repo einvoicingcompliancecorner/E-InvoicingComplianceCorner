@@ -530,6 +530,23 @@ t.check("the sitemap is served and well-formed",
     refresh === "/einvoicing-compliance-tracker.html", String(refresh));
   t.check("and is not itself indexable",
     /<meta name="robots" content="noindex">/.test(stub));
+
+  // AND THE ADDRESS BAR AGREES WITH THE CANONICAL.
+  //
+  // Ten history.pushState() calls wrote `/einvoicing-compliance-tracker
+  // .html` when a panel closed. Nothing broke — that URL still serves the
+  // tracker — but a reader who arrived at "/", opened a country and closed
+  // it was silently moved to the non-canonical address, so one session
+  // showed two different URLs for the same home page. Invisible to every
+  // other check here, because every other check reads the HTML the server
+  // sent rather than what the page does to the URL afterwards.
+  const pushes = [...trackerAsset.matchAll(/history\.(?:push|replace)State\([^)]*?,\s*''\s*,\s*'([^']+)'\)/g)]
+    .map((m) => m[1]);
+  t.check("no panel writes the old tracker URL into the address bar",
+    !pushes.some((u) => u.includes("einvoicing-compliance-tracker")),
+    pushes.filter((u) => u.includes("einvoicing-compliance-tracker")).join(", "));
+  t.check("and the check is looking at something",
+    pushes.length >= 10, `${pushes.length} history writes found`);
 }
 
 // ---- 8. country pages link sideways -------------------------------------

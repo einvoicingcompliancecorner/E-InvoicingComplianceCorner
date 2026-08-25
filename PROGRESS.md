@@ -16955,3 +16955,29 @@ precise failure it exists to catch. Comment lines are stripped now, and
 the fix was verified by deleting the entry and watching it go red.
 
 `npm test`: **29 suites**, 61 checks in the crawlability suite.
+
+#### Two more, found by asking what a reader would actually notice
+
+Dan asked what the UX change amounts to. Answering it properly meant
+reading the client-side routing rather than reasoning about the server,
+and that turned up a partial migration: **ten `history.pushState()` calls
+still wrote `/einvoicing-compliance-tracker.html` into the address bar**
+when a panel closed. Nothing was broken — that URL serves the tracker —
+but a reader arriving at `/`, opening a country and closing it was
+silently moved to the non-canonical address, so one session showed two
+different URLs for the same home page. Invisible to every check here,
+because they all read the HTML the server sent and none of them watch
+what the page does to the URL afterwards. There is a check now.
+
+And an unrelated one the full run surfaced twice: `session.mjs`'s
+"a flipped signature bit is refused" tampered with a token by replacing
+the last base64url character with `"A"`. About one signature in
+sixty-four already ends in `"A"`, so on those runs the token reached
+`verifyToken` **unmodified**, verified, and the line went red. The false
+alarm was the visible half; the worse half is that on exactly those runs
+the check asserted nothing, because the "tampered" token was the real
+one. It now decodes, flips a bit in the bytes, re-encodes, and asserts
+that the tampering changed something before asserting it was refused.
+Twelve consecutive green runs.
+
+`npm test`: **29 suites**, 63 checks in the crawlability suite.

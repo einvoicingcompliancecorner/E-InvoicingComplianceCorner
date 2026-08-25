@@ -3380,7 +3380,7 @@ function closeDeepDive(opts){
   panel.style.display = 'none';
   panel.innerHTML = '';
   if(!opts.skipHistory){
-    history.pushState({ deepDive: null }, '', '/einvoicing-compliance-tracker.html');
+    history.pushState({ deepDive: null }, '', '/');
   }
 }
 // ---------- in-page tracking-sources panel ----------
@@ -3476,7 +3476,7 @@ function closeSourcesPage(opts){
   panel.style.display = 'none';
   panel.innerHTML = '';
   if(!opts.skipHistory){
-    history.pushState({ sources: null }, '', '/einvoicing-compliance-tracker.html');
+    history.pushState({ sources: null }, '', '/');
   }
 }
 
@@ -3588,7 +3588,7 @@ function closeInsightsPage(opts){
   panel.style.display = 'none';
   panel.innerHTML = '';
   if(!opts.skipHistory){
-    history.pushState({ insights: null }, '', '/einvoicing-compliance-tracker.html');
+    history.pushState({ insights: null }, '', '/');
   }
 }
 
@@ -4006,7 +4006,7 @@ function closeRoiPage(opts){
   // heaviest page on this site.
   panel.innerHTML = '';
   if(!opts.skipHistory){
-    history.pushState({ roi: null }, '', '/einvoicing-compliance-tracker.html');
+    history.pushState({ roi: null }, '', '/');
   }
 }
 
@@ -4111,7 +4111,7 @@ function closeMapPage(opts){
   panel.style.display = 'none';
   panel.innerHTML = '';
   if(!opts.skipHistory){
-    history.pushState({ map: null }, '', '/einvoicing-compliance-tracker.html');
+    history.pushState({ map: null }, '', '/');
   }
 }
 
@@ -4435,7 +4435,7 @@ async function openArchive(opts){
   wireArchiveStoryModal(shadow);
 
   if(!opts.skipHistory){
-    history.pushState({ archive: true }, '', '/einvoicing-compliance-tracker.html?view=archive');
+    history.pushState({ archive: true }, '', '/?view=archive');
   }
 }
 
@@ -4522,7 +4522,7 @@ function closeArchive(opts){
   panel.style.display = 'none';
   panel.innerHTML = '';
   if(!opts.skipHistory){
-    history.pushState({ archive: false }, '', '/einvoicing-compliance-tracker.html');
+    history.pushState({ archive: false }, '', '/');
   }
 }
 
@@ -4701,7 +4701,7 @@ function closeEducationPage(opts){
   panel.style.display = 'none';
   panel.innerHTML = '';
   if(!opts.skipHistory){
-    history.pushState({ education: null }, '', '/einvoicing-compliance-tracker.html');
+    history.pushState({ education: null }, '', '/');
   }
 }
 
@@ -4892,7 +4892,7 @@ function closeFeedbackPage(opts){
   panel.style.display = 'none';
   panel.innerHTML = '';
   if(!opts.skipHistory){
-    history.pushState({ feedback: false }, '', '/einvoicing-compliance-tracker.html');
+    history.pushState({ feedback: false }, '', '/');
   }
 }
 
@@ -5143,7 +5143,7 @@ function closeSubscribePage(opts){
   panel.style.display = 'none';
   panel.innerHTML = '';
   if(!opts.skipHistory){
-    history.pushState({ subscribe: false }, '', '/einvoicing-compliance-tracker.html');
+    history.pushState({ subscribe: false }, '', '/');
   }
 }
 
