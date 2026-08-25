@@ -17059,3 +17059,34 @@ After a month of audits inferring search performance from markup, this
 project can now observe it. The first question it answers is the one the
 whole crawlability effort was premised on: whether the forty-two country
 pages that were unreachable are now indexed.
+
+#### Bing, the meta tag, and why not the other two methods (25 August 2026)
+
+Dan took Bing's default offer — the **XML file** — and got "Incorrect
+authentication key: please make sure the authentication file contains the
+following verification key". That error is about the FILE, not the key:
+Bing wants `BingSiteAuth.xml` at the site root, and this site is a Worker
+with an asset bundle, so there is no directory to drop a file into by
+hand.
+
+Bing's DNS option is a **CNAME**, not the TXT that Google accepted, so it
+is not a one-line addition beside the record already there.
+
+Which leaves the meta tag, which is exactly what `BING_SITE_VERIFICATION`
+was built for a day earlier. Set, deployed, nothing else to write.
+
+**The import would have skipped all of it.** Bing Webmaster Tools → My
+Sites → **Import** pulls a property across from Search Console already
+verified, no file, no tag, no record. Worth remembering if this is ever
+redone.
+
+And a new guard, because every one of these dialogs hands you the value
+already wrapped in a `<meta>` element and the natural act is to copy the
+element: `seo-crawlability` now reads `wrangler.toml` and fails if either
+verification var contains markup rather than a bare token. The Worker
+builds the tag around whatever it is given, so a pasted tag yields a
+nested one and the engine reads a content attribute of `<meta name=` —
+a failure with nothing visibly wrong in the config. Verified by pasting a
+whole tag in and watching it go red.
+
+`npm test`: **29 suites**, 67 checks in the crawlability suite.
