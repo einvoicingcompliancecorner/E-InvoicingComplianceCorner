@@ -18349,3 +18349,54 @@ check that reads back what the code just set is not a check. Dan found this
 one by looking at the site.
 
 `npm test`: **34 suites**.
+
+---
+
+### 26 August 2026 — the subscriber panel, and a sweep that had gone quiet
+
+Dan, after noticing the row had gone half-empty once the Subscribe advert
+was hidden from signed-in readers:
+
+> "keep the panel, and put 'You're subscribed' with links to 'Manage Your
+> Countries', and perhaps 'Build an ROI and Plan Your Project'... This
+> should be in the same font as the existing box, that was hidden."
+
+Three treatments were mocked up **inside the real page at the real width
+with a signed-in cookie**, so the panel, heading, hairline rule and mono
+CTA were the existing styles rather than reproductions. Dan picked the one
+with an orienting line above four arrowed links.
+
+The panel reuses `.subscriber-perks` wholesale; the only new CSS is what
+the advert had no rule for, because its rows were statements and these are
+links. The arrow replaces the tick deliberately — a tick reads as "you get
+this", which was the pitch, and these are destinations.
+
+**Every href is one the tracker already intercepts**, so the rows open
+in-page panels exactly as the Menu items do. Dan asked the right question
+("will these rows be links to the pages?") and the answer is checked by
+clicking them, not inferred from the hrefs looking familiar.
+
+#### The sweep had quietly stopped covering two links
+
+Adding the panel's rows to `menu-in-page.mjs` moved its target count from
+14 to 15 — when it should have stayed at 14, since all four destinations
+were already menu items. That one-off discrepancy was the thread.
+
+Its selector was `class="dropdown-item"`, an exact match. **On 25 August
+the Subscribe item gained `eicc-signed-out-only` and the new Manage
+Preferences item shipped as `dropdown-item eicc-signed-in-only`** — and an
+exact class match stops matching the moment a second class appears. From
+that commit the sweep walked **13 links instead of 15, and the two it
+dropped were the two that had just changed.**
+
+The file written to catch silent coverage loss lost coverage silently. It
+is the sharpest version of the lesson it already contains, and it was found
+by a count being off by one rather than by anything going red.
+
+Fixed two ways, because the loose selector alone would not stop a
+recurrence: the regex now tolerates extra classes, **and** a new check
+counts the anchors in the markup independently and insists the two numbers
+agree. Verified by restoring the strict selector and watching it report
+"13 of 15".
+
+`npm test`: **34 suites**.

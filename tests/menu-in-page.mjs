@@ -108,9 +108,30 @@ const HOME = `http://127.0.0.1:${server.address().port}/einvoicing-compliance-tr
 
 // ---- what to click ----------------------------------------------------
 const TRACKER = readFileSync(join(REPO, "einvoicing-compliance-tracker.html"), "utf8");
-const menu = [...TRACKER.matchAll(/<a class="dropdown-item"[^>]*href="([^"]+)"/g)].map((m) => m[1]);
+// THE CLASS LIST IS OPEN-ENDED, and pinning it to exactly "dropdown-item"
+// cost this file two of its targets without a word.
+//
+// On 26 August the Subscribe item gained `eicc-signed-out-only` and the new
+// Manage Preferences item shipped as `dropdown-item eicc-signed-in-only`.
+// `class="dropdown-item"` stops matching the moment a second class appears,
+// so from that commit this sweep quietly walked 13 links instead of 15 --
+// and the two it dropped were the two that had just changed. A file written
+// to catch silent coverage loss lost coverage silently, which is the
+// sharpest version of the lesson it already contains.
+//
+// Matched loosely now, and template placeholders (`${...}` inside the
+// carousel's own JS) are excluded rather than clicked.
+const menu = [...TRACKER.matchAll(/<a class="dropdown-item[^"]*"[^>]*href="([^"]+)"/g)]
+  .map((m) => m[1]).filter((h) => !h.includes("${"));
 const extras = [...TRACKER.matchAll(/<a class="perks-cta"[^>]*href="([^"]+)"/g)].map((m) => m[1]);
-const targets = [...new Set([...menu, ...extras])];
+// AND THE SUBSCRIBER PANEL'S ROWS, added 26 August. They are links into
+// the same in-page panels the Menu opens, and Dan asked the right question
+// about them -- "will these rows be links to the pages?" -- so the answer
+// is checked here by clicking them rather than asserted from the fact that
+// the hrefs look familiar. A row that full-navigates would drop a
+// subscriber out of the tracker from a panel that exists to keep them in.
+const panel = [...TRACKER.matchAll(/<li class="go"><a href="([^"]+)"/g)].map((m) => m[1]);
+const targets = [...new Set([...menu, ...extras, ...panel])];
 
 /** Is this route a static file this harness can actually serve?
  *
@@ -126,6 +147,17 @@ const targets = [...new Set([...menu, ...extras])];
  */
 const servedHere = (href) => !href.startsWith("/") && !/^https?:/.test(href);
 
+// A FLOOR IS NOT ENOUGH, and ">= 10" is what let 15 quietly become 13.
+// This counts the anchors in the markup independently of the capturing
+// regex above and insists the two agree, so a selector that stops matching
+// something fails HERE rather than passing with a smaller sweep.
+const anchorCount = (TRACKER.match(/<a class="dropdown-item[^"]*"/g) || []).length
+  - (TRACKER.match(/<a class="dropdown-item[^"]*"[^>]*href="[^"]*\$\{/g) || []).length;
+t.check(`every dropdown-item anchor in the markup is in the sweep (${menu.length} of ${anchorCount})`,
+  menu.length === anchorCount,
+  "the capturing selector and the markup disagree — the sweep is walking "
+  + "fewer links than exist, which is how the Subscribe and Manage Preferences "
+  + "items went uncovered for a day");
 t.check(`the Menu has links to click (${targets.length} found)`, targets.length >= 10,
   "if this drops, the selector stopped matching the markup and everything below is vacuous");
 
@@ -148,7 +180,13 @@ for (const href of targets) {
   try {
     await page.goto(HOME, { waitUntil: "load" });
     await page.waitForTimeout(1400);
+    // The subscriber panel is hidden for a signed-out reader, and a hidden
+    // element cannot be clicked. Revealed rather than cookie-driven: this
+    // file is about interception, and subscriber-menu.mjs already owns the
+    // question of who sees it.
     await page.evaluate(() => {
+      const sp = document.getElementById("subscriberPanel");
+      if (sp) sp.hidden = false;
       window.__seen = [];
       document.addEventListener("click", (e) => {
         const a = e.target.closest && e.target.closest("a[href]");

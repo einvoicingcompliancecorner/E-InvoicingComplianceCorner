@@ -698,5 +698,13 @@
   },
   "prefs": {
     "saveFailed": "Enregistrement impossible pour l'instant. Merci de réessayer."
+  },
+  "subs": {
+    "heading": "Vous êtes abonné",
+    "sub": "Tout ce qui suit est inclus dans votre abonnement.",
+    "countries": "Gérer vos pays",
+    "roi": "Calculer le ROI et planifier votre projet",
+    "guides": "Télécharger les guides de conformité",
+    "specs": "Consulter le registre des spécifications"
   }
 }
