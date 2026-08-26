@@ -18109,3 +18109,40 @@ and another quoting a phrase `roi-i18n.mjs` samples for, which failed that
 check with the copy behaving perfectly.
 
 `npm test`: **33 suites**, replay OK across 651 files.
+
+---
+
+### 26 August 2026 — the PDF stops offering a scope nobody chose
+
+Dan, after deploying the benefits block:
+
+> "please can you remove the sentence saying 'Available on a wider scope'
+> and the saving figure from the pdf report, when compliance only is
+> selected. As the user has not selected with AP automation, the
+> additional saving is a mute point."
+
+Right about the case, and the case turns out to be the only one. The row
+was guarded by `l1Unbanked > 0`, and on the wider scope `l1` and
+`l1Banked` are equal by construction — so it rendered on compliance scope
+and nowhere else. Removing it there removed it from the PDF entirely,
+which left `sv.unbanked` with nothing rendering it, so migration 652
+deletes the key.
+
+**The fact is scoped to a surface, not dropped.** The planner still states
+it twice on compliance scope — the headline stat's parenthetical and the
+line under the composition chart — and `roi-regression.mjs` asserts *both*
+carriers deliberately, because an earlier tidy-up removed one on the
+understanding that the other kept the fact. Those checks are untouched and
+still pass. Two things guard the boundary now: a check that page one of
+the PDF never carries the phrase, and an assertion in 652 that
+`sv.unbankedNote` — the screen's key, four characters different — still
+exists in all four languages. Deleting the wrong one of the two would look
+exactly like this change and would take the disclosure off the page where
+the reader is actually deciding.
+
+The distinction is audience. Someone moving the scope control is exploring
+what a wider programme would be worth; the PDF is a board paper for the
+programme they have chosen, and a figure there nobody in the room can act
+on invites a question the document cannot answer.
+
+`npm test`: **33 suites**, replay OK across 652 files.
