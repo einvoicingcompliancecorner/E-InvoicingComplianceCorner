@@ -1115,15 +1115,30 @@ t.check(`the PDF strip has as many boxes as the screen (${strip.pdfBoxes} vs ${s
 // -- so the check follows the fact rather than the old opening words, and
 // gets stricter: BOTH counts have to reach the PDF, because the whole
 // point of the rewrite is that one without the other is the defect.
-t.check("and page 1 states the footprint before it states the money",
-  /You selected \d+ jurisdiction/.test(pdf.p1) && /plan covers \d+/.test(pdf.p1)
-    && /country-system integration/.test(pdf.p1), pdf.p1.slice(0, 220));
+// MOVED TO PAGE 2 ON 26 AUGUST 2026, AND THIS ASSERTION MOVED WITH IT.
+//
+// It used to read "page 1 states the footprint before it states the
+// money", which is what Dan asked for in August and is still the better
+// arrangement if the page has room. It does not. The benefits block he
+// asked for on 26 August ("acknowledging all benefits, including
+// intangible benefits ... only on page one, and not [spilling] into a
+// second page") pushes German, French and Spanish to THREE pages at the
+// eleven-jurisdiction default while this paragraph is on page 1.
+//
+// Two instructions of his that cannot both hold; he chose. This is a
+// retired guarantee, not a relaxed one -- the same three facts are still
+// required, on the page they now live on, so the paragraph cannot quietly
+// disappear on the way. If page 1 ever gets its room back, move this line
+// and the placement together.
+t.check("the footprint sentence states scope, plan size and integrations",
+  /You selected \d+ jurisdiction/.test(pdf.p2) && /plan covers \d+/.test(pdf.p2)
+    && /country-system integration/.test(pdf.p2), pdf.p2.slice(0, 220));
 // And the integration count has to say where the extra ones come from.
 // The investment side is built on it, and "roughly 22" beside "12
 // jurisdictions, 1 system" reads as an error unless the sentence accounts
 // for the gap.
 t.check("and says why there are more integrations than jurisdictions",
-  /member state/i.test(pdf.p1), pdf.p1.slice(0, 260));
+  /member state/i.test(pdf.p2), pdf.p2.slice(0, 260));
 // The ribbon on each box says which way the number points. Dan: "green,
 // indicating positive saving, or net benefit, and red ribbon to indicate
 // a cost. I can see that the one-off investment is green, but this is an
