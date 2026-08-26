@@ -249,7 +249,6 @@ const WORKER_I18N = {
       noIssuesYet: "No issues published yet — check back after the next monthly send.",
       loading: "Loading…",
       noMatch: "No issues match your search or filter.",
-      managePrefs: "Manage which countries you get alerts for →",
       officialSource: "Official source",
       editionAll: "All editions", editionLatest: "Latest edition", editionThisYear: "This year",
       readDeepDive: (country) => `Read the full ${country} Deep Dive for complete technical detail →`,
@@ -298,7 +297,6 @@ const WORKER_I18N = {
       noIssuesYet: "Aún no se ha publicado ningún número — vuelva después del próximo envío mensual.",
       loading: "Cargando…",
       noMatch: "Ningún número coincide con su búsqueda o filtro.",
-      managePrefs: "Gestione los países sobre los que recibe alertas →",
       officialSource: "Fuente oficial",
       editionAll: "Todas las ediciones", editionLatest: "Última edición", editionThisYear: "Este año",
       readDeepDive: (country) => `Lea el análisis completo de ${country} para el detalle técnico completo →`,
@@ -347,7 +345,6 @@ const WORKER_I18N = {
       noIssuesYet: "Noch keine Ausgabe veröffentlicht — schauen Sie nach dem nächsten monatlichen Versand wieder vorbei.",
       loading: "Wird geladen…",
       noMatch: "Keine Ausgabe entspricht Ihrer Suche oder Ihrem Filter.",
-      managePrefs: "Verwalten Sie, für welche Länder Sie Benachrichtigungen erhalten →",
       officialSource: "Offizielle Quelle",
       editionAll: "Alle Ausgaben", editionLatest: "Neueste Ausgabe", editionThisYear: "Dieses Jahr",
       readDeepDive: (country) => `Lesen Sie die vollständige Länderanalyse ${country} für alle technischen Details →`,
@@ -396,7 +393,6 @@ const WORKER_I18N = {
       noIssuesYet: "Aucun numéro publié pour l'instant — revenez après le prochain envoi mensuel.",
       loading: "Chargement…",
       noMatch: "Aucun numéro ne correspond à votre recherche ou filtre.",
-      managePrefs: "Gérez les pays pour lesquels vous recevez des alertes →",
       officialSource: "Source officielle",
       editionAll: "Toutes les éditions", editionLatest: "Dernière édition", editionThisYear: "Cette année",
       readDeepDive: (country) => `Lire l'analyse complète de ${country} pour tous les détails techniques →`,
@@ -4141,7 +4137,14 @@ function renderArchiveList(stories, regionByCountryName, englishNameByDisplayNam
       <p class="sub" style="margin-bottom:18px;">${t(lang, "archive.issuesPublished")(stories.length)}</p>
     </div>
 
-    ${isAnonymous ? "" : `<p class="fineprint" style="margin:0 0 16px;"><a href="/members/preferences" style="color:var(--stamp); text-decoration:underline;">${t(lang, "archive.managePrefs")}</a></p>`}
+    ${/* NO MANAGE-PREFERENCES LINK HERE any more. Dan, 26 August 2026:
+         "I would also like the ability to manage removed from the
+         newsletter archive. It does not make sense to exist there now, as
+         we have so many other subscriber features."
+         It moved to the tracker's Menu, as a Subscribers item injected for
+         readers with a session -- see SUBSCRIBER_MENU_MARKER in
+         site-worker. The welcome email's "Manage my preferences" link is
+         unchanged, so a new subscriber still has a route on day one. */ ""}
 
     <div class="archive-toolbar">
       <input type="text" id="archiveSearch" class="archive-search" placeholder="${t(lang, "archive.searchPlaceholder")}">

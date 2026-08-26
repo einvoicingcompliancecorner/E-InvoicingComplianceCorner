@@ -18146,3 +18146,81 @@ programme they have chosen, and a figure there nobody in the room can act
 on invites a question the document cannot answer.
 
 `npm test`: **33 suites**, replay OK across 652 files.
+
+---
+
+### 26 August 2026 — Subscribers, in the Menu
+
+Dan asked where a subscriber could manage their countries. The answer was
+thinner than it looked: the page exists at `/members/preferences`, but the
+only in-site route to it was a link on the **newsletter archive list** —
+not on an article, not in the tracker's Menu at all — plus a magic link in
+the welcome email. The monthly notification email, which is exactly when
+someone thinks "drop Poland, add Belgium", offers only unsubscribe.
+
+So:
+
+> "please could you add a Menu entry on the tracker for signed in readers
+> ... labelled as 'Subscribers', in the same way the Compliance Guide,
+> Specification Register and ROI & Wave Planner shows in the menu. I would
+> also like the ability to manage removed from the newsletter archive."
+
+#### The item is rendered, not revealed
+
+The tracker is a static asset and cannot know who is reading it, so
+site-worker injects the item into a `<!-- SUBSCRIBER MENU -->` marker when
+`sessionEmail()` returns one. Shipping it hidden and unhiding it with a
+flag would be less code and would put a subscriber destination in the
+markup every anonymous reader and crawler receives — the same false
+promise the padlock was removed for in August.
+
+Injected **before** the try that builds the board, for the reason the
+verification tag is: a subscriber whose board is having a D1 outage should
+not also find their own preferences missing from the menu.
+
+#### The first write relay on the public origin
+
+The three items Dan named are site-worker routes that read the session and
+render. This one is neither — the page lives on members-worker and it is a
+form that writes. `/api/preferences` carries both halves, so the browser
+talks to its own origin and the cookie travels first-party. That is the
+same reason the archive stopped fetching cross-origin in August, after
+weeks of showing every subscriber the anonymous promo banner because
+`fetch()` omits cookies by default.
+
+It carries a POST, which nothing on this origin did before, so the
+reasoning is written where the next person will look: one exact path, no
+prefix; it authorises nothing, because members-worker calls
+`requireSession()` on both methods; and it writes only the caller's own
+row, because `handlePreferencesPost` keys on the session's email and never
+on the body.
+
+**The save stays in the panel.** The form is intercepted and posted through
+the same relay as `application/x-www-form-urlencoded` — what a native
+submit would send — and the response, which members-worker renders with its
+own confirmation, is mounted back into the shadow root. Nobody leaves the
+board to change a country.
+
+#### Three bugs, two of them mine, one caught by an existing test
+
+- **`page-scripts.mjs` caught the new panel immediately**: a `<div>` added
+  to the markup and not to `PANEL_IDS`, so opening any other panel would
+  have left it showing underneath.
+- **A bulk edit added the mutual-exclusion guard to every opener including
+  its own**, so `openSubscribersPage` set `subscribersPageOpen = true` and
+  then closed itself one line later. The panel opened, showed "Loading…"
+  and stopped — indistinguishable from a failed request, and the fetch had
+  in fact returned 200. Found by instrumenting the panel rather than
+  believing the symptom.
+- **The form posted multipart** because `FormData` handed to `fetch()`
+  generates a boundary. It worked, and it meant the relayed request no
+  longer looked like the one members-worker would have received natively.
+  Two encodings for one endpoint costs nothing to remove now.
+
+`tests/subscriber-menu.mjs` drives the real site-worker with and without a
+session, and all fifteen checks were confirmed by breaking the thing they
+watch — including the one that matters most: **rename the marker and every
+subscriber silently loses the only route they have**, now that the archive
+link is gone.
+
+`npm test`: **34 suites**.

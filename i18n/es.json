@@ -106,7 +106,8 @@
     "methodology": "Metodología",
     "changes": "Qué ha cambiado",
     "specs": "Registro de especificaciones",
-    "subscriberOnly": "Suscriptores"
+    "subscriberOnly": "Suscriptores",
+    "subscribers": "Suscriptores"
   },
   "navTips": {
     "label": "Cómo navegar por este sitio",
@@ -694,5 +695,8 @@
       "title": "Lo que ahorra realmente la facturación electrónica — la evidencia publicada",
       "description": "Una auditoría de la evidencia publicada sobre el ahorro: qué midió realmente cada estudio, qué cifras muy citadas no resisten la comprobación y qué queda en pie."
     }
+  },
+  "prefs": {
+    "saveFailed": "No se ha podido guardar. Inténtelo de nuevo."
   }
 }

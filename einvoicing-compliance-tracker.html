@@ -1133,6 +1133,7 @@
                own live link under Resources, since it's open to
                everyone for free during a temporary promo; see
                wrangler.toml's ARCHIVE_PUBLIC comment. -->
+          <!-- SUBSCRIBER MENU -->
           <a class="dropdown-item" href="subscribe"><span class="dd-icon">✉</span><span data-i18n="menu.subscribe">Subscribe</span></a>
           <a class="dropdown-item" href="feedback"><span class="dd-icon">💬</span><span data-i18n="menu.feedback">Give feedback</span></a>
         </div>
@@ -1276,6 +1277,7 @@
 <div id="feedbackView" style="display:none;"></div>
 <div id="sourcesView" style="display:none;"></div>
 <div id="subscribeView" style="display:none;"></div>
+<div id="subscribersView" style="display:none;"></div>
 <div id="mapView" style="display:none;"></div>
 <div id="insightsView" style="display:none;"></div>
 <div id="roiView" style="display:none;"></div>
@@ -3184,7 +3186,7 @@ function wireActionsMenu(){
 // hand. That is the shape of this class of bug: fixed once, in the one
 // place somebody noticed, for the one pair they happened to try.
 const PANEL_IDS = ['archiveView','countryDeepDiveView','educationView','feedbackView',
-  'insightsView','mapView','roiView','sourcesView','subscribeView'];
+  'insightsView','mapView','roiView','sourcesView','subscribeView','subscribersView'];
 function hideOtherPanels(keepId){
   for(const id of PANEL_IDS){
     if(id === keepId) continue;
@@ -3379,6 +3381,7 @@ async function openDeepDive(slug, opts){
   if(currentEducationPage) closeEducationPage({ skipHistory: true });
   if(feedbackPageOpen) closeFeedbackPage({ skipHistory: true });
   if(subscribePageOpen) closeSubscribePage({ skipHistory: true });
+  if(subscribersPageOpen) closeSubscribersPage({ skipHistory: true });
   if(sourcesPageOpen) closeSourcesPage({ skipHistory: true });
   if(mapPageOpen) closeMapPage({ skipHistory: true });
   if(insightsPageOpen) closeInsightsPage({ skipHistory: true });
@@ -3482,6 +3485,7 @@ async function openSourcesPage(opts){
   if(currentEducationPage) closeEducationPage({ skipHistory: true });
   if(feedbackPageOpen) closeFeedbackPage({ skipHistory: true });
   if(subscribePageOpen) closeSubscribePage({ skipHistory: true });
+  if(subscribersPageOpen) closeSubscribersPage({ skipHistory: true });
   if(mapPageOpen) closeMapPage({ skipHistory: true });
   if(insightsPageOpen) closeInsightsPage({ skipHistory: true });
 
@@ -3583,6 +3587,7 @@ async function openInsightsPage(opts){
   if(currentEducationPage) closeEducationPage({ skipHistory: true });
   if(feedbackPageOpen) closeFeedbackPage({ skipHistory: true });
   if(subscribePageOpen) closeSubscribePage({ skipHistory: true });
+  if(subscribersPageOpen) closeSubscribersPage({ skipHistory: true });
   if(sourcesPageOpen) closeSourcesPage({ skipHistory: true });
   if(mapPageOpen) closeMapPage({ skipHistory: true });
 
@@ -3783,6 +3788,7 @@ async function openMapPage(opts){
   if(currentEducationPage) closeEducationPage({ skipHistory: true });
   if(feedbackPageOpen) closeFeedbackPage({ skipHistory: true });
   if(subscribePageOpen) closeSubscribePage({ skipHistory: true });
+  if(subscribersPageOpen) closeSubscribersPage({ skipHistory: true });
   if(sourcesPageOpen) closeSourcesPage({ skipHistory: true });
   if(insightsPageOpen) closeInsightsPage({ skipHistory: true });
 
@@ -3928,6 +3934,7 @@ async function openRoiPage(opts){
   if(currentEducationPage) closeEducationPage({ skipHistory: true });
   if(feedbackPageOpen) closeFeedbackPage({ skipHistory: true });
   if(subscribePageOpen) closeSubscribePage({ skipHistory: true });
+  if(subscribersPageOpen) closeSubscribersPage({ skipHistory: true });
   if(sourcesPageOpen) closeSourcesPage({ skipHistory: true });
   if(mapPageOpen) closeMapPage({ skipHistory: true });
   if(insightsPageOpen) closeInsightsPage({ skipHistory: true });
@@ -4342,6 +4349,7 @@ async function openArchive(opts){
   if(currentEducationPage) closeEducationPage({ skipHistory: true });
   if(feedbackPageOpen) closeFeedbackPage({ skipHistory: true });
   if(subscribePageOpen) closeSubscribePage({ skipHistory: true });
+  if(subscribersPageOpen) closeSubscribersPage({ skipHistory: true });
   if(sourcesPageOpen) closeSourcesPage({ skipHistory: true });
   if(mapPageOpen) closeMapPage({ skipHistory: true });
   if(insightsPageOpen) closeInsightsPage({ skipHistory: true });
@@ -4700,6 +4708,7 @@ async function openEducationPage(pageKey, opts){
   if(archiveOpen) closeArchive({ skipHistory: true });
   if(feedbackPageOpen) closeFeedbackPage({ skipHistory: true });
   if(subscribePageOpen) closeSubscribePage({ skipHistory: true });
+  if(subscribersPageOpen) closeSubscribersPage({ skipHistory: true });
   if(sourcesPageOpen) closeSourcesPage({ skipHistory: true });
   if(mapPageOpen) closeMapPage({ skipHistory: true });
   if(insightsPageOpen) closeInsightsPage({ skipHistory: true });
@@ -4887,6 +4896,194 @@ function wireFeedbackForm(shadow){
   }
 }
 
+// ---- the Subscribers panel ---------------------------------------------
+//
+// Dan, 26 August 2026: a Menu entry for signed-in readers, "labelled as
+// 'Subscribers', in the same way the Compliance Guide, Specification
+// Register and ROI & Wave Planner shows in the menu" -- and, in the same
+// breath, take the manage-preferences link off the newsletter archive,
+// because "it does not make sense to exist there now, as we have so many
+// other subscriber features."
+//
+// The three items he named are site-worker routes that read the session
+// and render. This one is neither: the page lives on members-worker and it
+// is a FORM that writes. Both halves go through /api/preferences, the
+// relay in site-worker, so the browser talks to its own origin and the
+// session cookie travels as a first-party one -- the same reason the
+// archive panel stopped fetching cross-origin in August, when it spent
+// weeks showing every subscriber the anonymous promo banner because
+// fetch() omits cookies by default.
+//
+// THE SAVE STAYS IN THE PANEL. The form is intercepted and posted through
+// the same relay, and the response -- which members-worker renders with
+// its own "saved" confirmation -- is mounted back into the shadow root. No
+// navigation, so a reader who changes their countries is still looking at
+// the board they were looking at.
+let subscribersPageOpen = false;
+
+async function openSubscribersPage(opts){
+  opts = opts || {};
+  const boardView = document.getElementById('boardView');
+  const panel = document.getElementById('subscribersView');
+  const topbarBrand = document.querySelector('.topbar-brand');
+  const brandRow = document.querySelector('.brand-row');
+  subscribersPageOpen = true;
+  if(currentDeepDiveSlug) closeDeepDive({ skipHistory: true });
+  if(archiveOpen) closeArchive({ skipHistory: true });
+  if(currentEducationPage) closeEducationPage({ skipHistory: true });
+  if(feedbackPageOpen) closeFeedbackPage({ skipHistory: true });
+  if(subscribePageOpen) closeSubscribePage({ skipHistory: true });
+  // NOT closeSubscribersPage() here, obviously -- but a bulk edit added it
+  // to every opener including this one, which set subscribersPageOpen back
+  // to false one line after setting it true. The panel then opened, showed
+  // "Loading...", and stopped: the fetch succeeded and the guard after it
+  // returned early. It looked exactly like a failed request.
+  if(sourcesPageOpen) closeSourcesPage({ skipHistory: true });
+  if(mapPageOpen) closeMapPage({ skipHistory: true });
+  if(insightsPageOpen) closeInsightsPage({ skipHistory: true });
+
+  boardView.style.display = 'none';
+  hideOtherPanels('subscribersView');
+  if(topbarBrand) topbarBrand.style.display = 'none';
+  if(brandRow) brandRow.style.display = 'none';
+  panel.style.display = '';
+  panel.innerHTML = '<p style="color:var(--muted); font-family:\'IBM Plex Mono\',monospace; font-size:13px; padding:40px 5vw;">Loading…</p>';
+  window.scrollTo(0, 0);
+
+  const html = await fetchSubscribersHtml();
+  if(html === null) return;               // already navigated away
+  if(!subscribersPageOpen) return;
+  mountSubscribers(panel, html);
+
+  if(!opts.skipHistory){
+    history.pushState({ subscribers: true }, '', '/subscribers');
+  }
+}
+
+/** GET the preferences page through the relay.
+ *
+ *  Returns null after starting a full navigation, which is what happens
+ *  when there is no usable session. members-worker answers a signed-out
+ *  request with a redirect to its own sign-in page; following that from
+ *  here would land cross-origin markup in a panel, so the reader is sent
+ *  there properly instead. The menu item only renders for signed-in
+ *  readers, so this is the expired-session path rather than the common one.
+ */
+async function fetchSubscribersHtml(){
+  try {
+    const res = await fetch('/api/preferences', { headers: { 'Accept': 'text/html' } });
+    if(res.redirected || !res.ok){
+      window.location.href = MEMBERS_ORIGIN + '/members/preferences';
+      return null;
+    }
+    return await res.text();
+  } catch(err){
+    console.warn('Falling back to a full navigation for preferences', err);
+    window.location.href = MEMBERS_ORIGIN + '/members/preferences';
+    return null;
+  }
+}
+
+/** Mount the fetched page into a shadow root, and keep the form in-page. */
+function mountSubscribers(panel, html){
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  const styleEl = doc.querySelector('style');
+  const wrap = doc.querySelector('.wrap');
+  if(!wrap){
+    // Shape changed on the other side. Better a real page than an empty
+    // panel that looks like the feature is broken.
+    window.location.href = MEMBERS_ORIGIN + '/members/preferences';
+    return;
+  }
+  const backLink = wrap.querySelector('.back-link');
+  if(backLink) backLink.remove();
+
+  const scopedCss = PANEL_FONT_IMPORT + (styleEl ? styleEl.textContent : '')
+    .replace(':root{', ':host{')
+    .replace(/(?<![.\w#-])body\{/g, ':host{');
+
+  // Same rewrite the archive panel does: root-relative links belong to the
+  // members origin, not to this page's.
+  wrap.querySelectorAll('a[href^="/"]').forEach(a => {
+    a.setAttribute('href', MEMBERS_ORIGIN + a.getAttribute('href'));
+  });
+
+  panel.innerHTML = '';
+  const host = document.createElement('div');
+  panel.appendChild(host);
+  const shadow = host.attachShadow({ mode: 'open' });
+
+  const closeLabel = (window.EICC_I18N && window.EICC_I18N.t('backLink')) || '← Back to global tracker';
+  shadow.innerHTML = '<style>' + scopedCss + '</style>'
+    + '<div class="topbar topbar-wide"><a class="back-link" id="subsCloseLink" href="/">' + closeLabel + '</a></div>'
+    + wrap.outerHTML;
+  shadow.getElementById('subsCloseLink').addEventListener('click', (e)=>{
+    e.preventDefault();
+    closeSubscribersPage();
+  });
+
+  // THE FORM POSTS THROUGH THE RELAY, NOT TO THE OTHER ORIGIN.
+  //
+  // Left alone it would post to this origin and 404 -- the same defect the
+  // archive panel's sign-out form hit in August, arriving by a different
+  // door. Rewriting the action to the members origin would work but would
+  // navigate the reader off the tracker mid-save, which is the thing this
+  // panel exists to avoid.
+  const form = shadow.querySelector('form');
+  if(form){
+    form.addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const btn = form.querySelector('button[type=submit]');
+      if(btn) btn.disabled = true;
+      try {
+        // URL-ENCODED, WHICH IS WHAT THE FORM ITSELF WOULD SEND. Passing
+        // the FormData straight to fetch() makes it multipart with a
+        // generated boundary -- it works, because Workers' formData()
+        // parses both, but it means the relayed request no longer looks
+        // like the one members-worker would have received natively. Two
+        // encodings for one endpoint is a difference that costs nothing
+        // to remove and something to debug later. URLSearchParams keeps
+        // repeated keys, which matters: "countries" is one per tick.
+        const res = await fetch('/api/preferences', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+          body: new URLSearchParams(new FormData(form)).toString(),
+        });
+        if(!res.ok) throw new Error('save failed: ' + res.status);
+        const saved = await res.text();
+        if(subscribersPageOpen) mountSubscribers(panel, saved);
+      } catch(err){
+        console.warn('Preferences save failed', err);
+        if(btn) btn.disabled = false;
+        // Say so in the panel rather than leaving a dead button. A silent
+        // failure here reads as "saved" and the reader finds out a month
+        // later, by not getting the alerts they thought they had asked for.
+        const note = document.createElement('p');
+        note.setAttribute('style', 'color:#b5432f; font-size:13px; margin:10px 0 0;');
+        note.textContent = (window.EICC_I18N && window.EICC_I18N.t('prefs.saveFailed'))
+          || 'Could not save just now. Please try again.';
+        form.appendChild(note);
+      }
+    });
+  }
+}
+
+function closeSubscribersPage(opts){
+  opts = opts || {};
+  subscribersPageOpen = false;
+  const panel = document.getElementById('subscribersView');
+  panel.style.display = 'none';
+  panel.innerHTML = '';
+  document.getElementById('boardView').style.display = '';
+  const topbarBrand = document.querySelector('.topbar-brand');
+  const brandRow = document.querySelector('.brand-row');
+  if(topbarBrand) topbarBrand.style.display = '';
+  if(brandRow) brandRow.style.display = '';
+  if(!opts.skipHistory){
+    history.pushState({ subscribers: false }, '', '/');
+  }
+}
+
 async function openFeedbackPage(opts){
   opts = opts || {};
   const boardView = document.getElementById('boardView');
@@ -4899,6 +5096,7 @@ async function openFeedbackPage(opts){
   if(archiveOpen) closeArchive({ skipHistory: true });
   if(currentEducationPage) closeEducationPage({ skipHistory: true });
   if(subscribePageOpen) closeSubscribePage({ skipHistory: true });
+  if(subscribersPageOpen) closeSubscribersPage({ skipHistory: true });
   if(sourcesPageOpen) closeSourcesPage({ skipHistory: true });
   if(mapPageOpen) closeMapPage({ skipHistory: true });
   if(insightsPageOpen) closeInsightsPage({ skipHistory: true });
@@ -5360,6 +5558,17 @@ function wireDeepDiveInPagePanel(){
     // subscribe.html stays for exactly this reason, and because Dan
     // asked it to: "There is a chance a visitor goes to the menu, and
     // clicks subscribe which I think would bring them to this page."
+    // The Menu's Subscribers item. Injected by site-worker only when the
+    // reader has a session, so this branch is unreachable for everyone
+    // else -- see SUBSCRIBER_MENU_MARKER there.
+    if(routeKey(href) === 'subscribers'){
+      e.preventDefault();
+      document.getElementById('sidebar')?.classList.remove('open');
+      document.getElementById('sidebarOverlay')?.classList.remove('open');
+      openSubscribersPage();
+      return;
+    }
+
     if(routeKey(href) === 'subscribe'){
       e.preventDefault();
       document.getElementById('sidebar')?.classList.remove('open');
@@ -5380,12 +5589,21 @@ function wireDeepDiveInPagePanel(){
     openDeepDive(slug);
   });
 
+  // A DIRECT HIT OR A REFRESH ON /subscribers. site-worker serves the
+  // tracker for that path (TRACKER_PATHS), so without this the reader
+  // would get the board with "/subscribers" in the address bar -- the URL
+  // promising a panel that never opened.
+  if(routeKey(window.location.pathname) === 'subscribers'){
+    openSubscribersPage({ skipHistory: true });
+  }
+
   window.addEventListener('popstate', ()=>{
     const isArchiveUrl = new URLSearchParams(window.location.search).get('view') === 'archive';
     const slug = slugFromHref(window.location.pathname);
     const eduPage = educationPageFromHref(window.location.pathname);
     const isFeedbackUrl = routeKey(window.location.pathname) === 'feedback';
     const isSubscribeUrl = routeKey(window.location.pathname) === 'subscribe';
+    const isSubscribersUrl = routeKey(window.location.pathname) === 'subscribers';
     const isSourcesUrl = window.location.pathname === '/sources' || window.location.pathname === '/sources.html';
     const isMapUrl = window.location.pathname === '/map' || window.location.pathname === '/map.html';
     const isInsightsUrl = window.location.pathname === '/insights' || window.location.pathname === '/insights.html';
@@ -5401,6 +5619,8 @@ function wireDeepDiveInPagePanel(){
       openEducationPage(eduPage, { skipHistory: true });
     } else if(isFeedbackUrl){
       openFeedbackPage({ skipHistory: true });
+    } else if(isSubscribersUrl){
+      openSubscribersPage({ skipHistory: true });
     } else if(isSubscribeUrl){
       openSubscribePage({ skipHistory: true });
     } else if(isSourcesUrl){
@@ -5421,6 +5641,8 @@ function wireDeepDiveInPagePanel(){
       closeEducationPage({ skipHistory: true });
     } else if(feedbackPageOpen){
       closeFeedbackPage({ skipHistory: true });
+    } else if(subscribersPageOpen){
+      closeSubscribersPage({ skipHistory: true });
     } else if(subscribePageOpen){
       closeSubscribePage({ skipHistory: true });
     } else if(sourcesPageOpen){
