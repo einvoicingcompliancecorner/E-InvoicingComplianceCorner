@@ -45,6 +45,12 @@ const SUITES = [
   // -- and the gap between them is exactly where the 24 August
   // extensionless-link rewrite silently unhooked seven of them.
   { name: "menu in-page", cmd: "node", args: [join(HERE, "menu-in-page.mjs")], cwd: REPO },
+  // The Menu's Subscribers item and the relay behind it. Drives the real
+  // site-worker with and without a session, because the item is INJECTED
+  // into a marker -- a marker that stops matching fails silently and takes
+  // away the only in-site route to preferences, the archive link having
+  // been removed on 26 August.
+  { name: "subscriber menu", cmd: "node", args: [join(HERE, "subscriber-menu.mjs")], cwd: REPO },
   // The shared session token and its Set-Cookie lines. No browser, no
   // network. It runs early because a break here logs everyone out of the
   // whole site, which is a worse failure than anything below it.

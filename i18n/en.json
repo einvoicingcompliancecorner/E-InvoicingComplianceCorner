@@ -106,7 +106,8 @@
     "methodology": "Methodology",
     "changes": "What changed",
     "specs": "Specification register",
-    "subscriberOnly": "Subscribers"
+    "subscriberOnly": "Subscribers",
+    "subscribers": "Subscribers"
   },
   "navTips": {
     "label": "Getting around this site",
@@ -694,5 +695,8 @@
       "title": "What E-Invoicing Actually Saves — The Published Evidence for Buyers and Suppliers",
       "description": "An audit of the published evidence on e-invoicing savings: what each study actually measured, which widely-quoted figures do not survive checking, and what remains defensible."
     }
+  },
+  "prefs": {
+    "saveFailed": "Could not save just now. Please try again."
   }
 }

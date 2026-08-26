@@ -155,7 +155,14 @@ const TRACKER_HREF = HOME_PATH;
 // page is reachable at both forms, and the router must treat both as
 // the tracker or the redirect target silently falls through to the
 // plain static asset (no error, no log — just the fallback page).
-const TRACKER_PATHS = new Set([HOME_PATH, TRACKER_PATH, "/einvoicing-compliance-tracker"]);
+// "/subscribers" is the in-page Subscribers panel's pushState URL, so a
+// refresh or a shared link has to land somewhere. It serves the tracker,
+// which then opens the panel from the path. Not in the sitemap and not a
+// destination for anyone else: the menu item that reaches it is injected
+// only for readers with a session, and the panel behind it answers
+// members-worker's own sign-in wall regardless.
+const TRACKER_PATHS = new Set([HOME_PATH, TRACKER_PATH, "/einvoicing-compliance-tracker",
+  "/subscribers"]);
 const DATA_JSON_RE = /^\/i18n\/(es|de|fr)-data\.json$/;
 
 // ASSETS.fetch itself may answer with a redirect between the two forms;
@@ -477,6 +484,23 @@ async function renderSitemap(request, env) {
 // a code change when Dan is standing in that dialog.
 const VERIFICATION_MARKER = "<!-- SITE VERIFICATION -->";
 
+// ---- the Menu's subscriber-only entry -----------------------------------
+//
+// The tracker is a static asset, so it cannot know who is reading it. This
+// marker is where site-worker tells it, for the one menu item that should
+// not exist for a reader who has no preferences to manage.
+//
+// RENDERED, NOT REVEALED. The alternative is to ship the item in the HTML
+// and unhide it with a flag, which is less code and puts a link to a
+// subscriber page in the markup every anonymous reader and crawler
+// receives. Nothing secret is behind it -- /members/preferences answers
+// its own sign-in wall -- but a menu that offers a signed-out reader a
+// destination they cannot use is the same false promise the padlock was
+// removed for in August, and migration 641's "(subscribers)" marker is
+// already the honest way to say "you will need an account" about the
+// items that ARE for everyone.
+const SUBSCRIBER_MENU_MARKER = "<!-- SUBSCRIBER MENU -->";
+
 function verificationMeta(env) {
   const tags = [];
   const google = (env.GOOGLE_SITE_VERIFICATION || "").trim();
@@ -508,6 +532,33 @@ async function renderTracker(request, env) {
   // before it ships rather than silently dropping the tag.
   const verification = verificationMeta(env);
   let html = await assetResp.text();
+
+  // BEFORE THE try, FOR THE SAME REASON THE VERIFICATION TAG IS. The catch
+  // below serves this same `html` when D1 is unreachable, and a subscriber
+  // whose board is having an outage should not also find their own
+  // preferences missing from the menu.
+  //
+  // FAILS SOFT BOTH WAYS: no session, no item; no marker, a log line and
+  // the page unchanged. tests/subscriber-menu.mjs asserts the marker is
+  // present in the asset, so a shape change is caught before it ships
+  // rather than quietly serving every subscriber a menu without it.
+  let signedIn = false;
+  try {
+    signedIn = !!(await sessionEmail(request, env.SESSION_SECRET));
+  } catch (err) {
+    console.log(`Tracker: session read failed, menu served signed-out — ${err && err.message}`);
+  }
+  if (signedIn) {
+    if (html.includes(SUBSCRIBER_MENU_MARKER)) {
+      html = html.replace(SUBSCRIBER_MENU_MARKER,
+        '<a class="dropdown-item" href="/subscribers" id="ddSubscribers">'
+        + '<span class="dd-icon">\u2699</span>'
+        + '<span data-i18n="menu.subscribers">Subscribers</span></a>');
+    } else {
+      console.log("Tracker: subscriber menu marker not found — serving the menu without it.");
+    }
+  }
+
   if (verification) {
     if (html.includes(VERIFICATION_MARKER)) {
       html = html.replace(VERIFICATION_MARKER, `${VERIFICATION_MARKER}\n${verification}`);
@@ -1362,6 +1413,80 @@ async function relayArchive(request, env, url) {
   // trap 1 from the logged-in-site evaluation, arriving for real: a
   // personalised response that is publicly cacheable serves one
   // subscriber's page to the next person along.
+  const headers = new Headers(upstream.headers);
+  headers.set("Cache-Control", "private, no-store");
+  headers.set("Vary", "Cookie");
+  return new Response(upstream.body, { status: upstream.status, headers });
+}
+
+// ---- and the subscriber's own preferences -------------------------------
+//
+// Dan, 26 August 2026: "please could you add a Menu entry on the tracker
+// for signed in readers ... labelled as 'Subscribers', in the same way the
+// Compliance Guide, Specification Register and ROI & Wave Planner shows in
+// the menu."
+//
+// Those three are site-worker routes that read the session and render.
+// Preferences is neither: it lives on members-worker and it is a FORM that
+// writes. So this is the first relay on this origin that carries a POST,
+// and that is worth being explicit about rather than folding into the map
+// above.
+//
+// WHY IT IS SAFE TO CARRY A WRITE HERE, stated so the next person can
+// check the reasoning rather than the vibe:
+//
+//   * ONE EXACT PATH. No prefix, no slug, no rewrite. /api/preferences is
+//     the only thing that reaches /members/preferences, and adding a
+//     second write means editing this function.
+//   * IT AUTHORISES NOTHING. members-worker calls requireSession() on both
+//     the GET and the POST and redirects to sign-in without one. The relay
+//     forwards a cookie; it cannot mint one, and a request without a
+//     session gets exactly what it would get going direct.
+//   * IT WRITES ONLY THE CALLER'S OWN ROW. handlePreferencesPost keys
+//     putSubscriber on the session's email, never on anything in the body,
+//     so a forged form cannot name a different subscriber.
+//   * SAME-SITE ALREADY. The cookie is Domain-scoped across the apex and
+//     the members subdomain, so this hop moves a request that the browser
+//     would already send. What the relay buys is that fetch() sends the
+//     cookie at all -- cross-origin fetch defaults to omitting it, which
+//     is the exact defect the archive relay exists to fix.
+//
+// The one thing it must not do is widen into "any members path", which is
+// why the target is a literal and not derived from the request.
+const PREFS_RELAY_PATH = "/api/preferences";
+const PREFS_TARGET = "/members/preferences";
+
+async function relayPreferences(request, env, url) {
+  if (!env.MEMBERS) return new Response("Not found", { status: 404 });
+  const qs = url.searchParams.toString();
+  const init = {
+    method: request.method,
+    headers: { Cookie: request.headers.get("Cookie") || "" },
+  };
+  if (request.method === "POST") {
+    // The form's own encoding, passed through. Read as text rather than
+    // re-serialised from formData(): re-serialising would silently drop a
+    // field shape this relay does not know about, and the relay's job is
+    // to move the body, not to have opinions about it.
+    const ct = request.headers.get("Content-Type");
+    if (ct) init.headers["Content-Type"] = ct;
+    // BYTES, NOT TEXT. The body is form-encoded and carries country names
+    // -- Türkiye, Côte d'Ivoire -- so decoding it to a string here and
+    // letting fetch re-encode it is a round trip this hop has no reason
+    // to take. Reading it as an ArrayBuffer moves exactly what arrived.
+    init.body = await request.arrayBuffer();
+  }
+  let upstream;
+  try {
+    upstream = await env.MEMBERS.fetch(
+      new Request(MEMBERS_ORIGIN + PREFS_TARGET + (qs ? "?" + qs : ""), init));
+  } catch (err) {
+    console.warn(`preferences relay: service binding failed — ${err && err.message}`);
+    return new Response("Preferences unavailable", { status: 503 });
+  }
+  // Same reasoning as the archive relay: this response is one reader's
+  // country selection. A publicly cacheable copy of it is one subscriber's
+  // preferences served to the next person along.
   const headers = new Headers(upstream.headers);
   headers.set("Cache-Control", "private, no-store");
   headers.set("Vary", "Cookie");
@@ -3198,6 +3323,10 @@ export default {
     // every decision and stays the only thing that can mint a session or
     // touch an account. This Worker forwards a body and copies back
     // headers; it inspects, decides and shortcuts nothing.
+    if (url.pathname === PREFS_RELAY_PATH
+        && (request.method === "GET" || request.method === "POST")) {
+      return relayPreferences(request, env, url);
+    }
     if (request.method === "POST" && AUTH_RELAY.has(url.pathname)) {
       return relayToMembers(request, env, AUTH_RELAY.get(url.pathname));
     }

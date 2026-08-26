@@ -106,7 +106,8 @@
     "methodology": "Methodik",
     "changes": "Was sich geändert hat",
     "specs": "Spezifikationsregister",
-    "subscriberOnly": "Abonnenten"
+    "subscriberOnly": "Abonnenten",
+    "subscribers": "Abonnenten"
   },
   "navTips": {
     "label": "So funktioniert diese Seite",
@@ -694,5 +695,8 @@
       "title": "Was E-Invoicing wirklich spart — die veröffentlichte Evidenz für Käufer und Lieferanten",
       "description": "Eine Prüfung der veröffentlichten Belege zu Einsparungen durch E-Invoicing: was jede Studie wirklich gemessen hat, welche verbreiteten Zahlen der Prüfung nicht standhalten und was bleibt."
     }
+  },
+  "prefs": {
+    "saveFailed": "Konnte gerade nicht gespeichert werden. Bitte erneut versuchen."
   }
 }

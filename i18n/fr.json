@@ -106,7 +106,8 @@
     "methodology": "Méthodologie",
     "changes": "Ce qui a changé",
     "specs": "Registre des spécifications",
-    "subscriberOnly": "Abonnés"
+    "subscriberOnly": "Abonnés",
+    "subscribers": "Abonnés"
   },
   "navTips": {
     "label": "Comment naviguer sur ce site",
@@ -694,5 +695,8 @@
       "title": "Ce que la facturation électronique fait vraiment économiser — les preuves publiées",
       "description": "Un audit des preuves publiées sur les économies de la facturation électronique : ce que chaque étude a réellement mesuré, quels chiffres très cités ne résistent pas à la vérification."
     }
+  },
+  "prefs": {
+    "saveFailed": "Enregistrement impossible pour l'instant. Merci de réessayer."
   }
 }
