@@ -7,12 +7,19 @@
 // it automatically — so adding a country here is the ONLY step
 // needed to make it appear on the subscribe page too.
 //
-// NOTE: this does NOT automatically add a new country to the main
-// tracker itself (that still needs a DATA entry and, ideally, a
-// deep-dive page, added directly in einvoicing-compliance-tracker.html)
-// — this file only keeps the SUBSCRIBE PAGE's checklist in sync with
-// whatever's added there. When adding a new country to the tracker,
-// add it here too, in the same step, so nothing drifts out of sync.
+// NOTE: this does NOT add a new country to the main tracker. The board,
+// the deep dives and everything else render from D1 as of Stage 5, so a
+// country is added by migration — follow ADDING-A-COUNTRY.md, which is
+// the procedure this comment used to try to summarise. This file is one
+// of its Phase 2 hand-edits and nothing more: it keeps the SUBSCRIBE
+// PAGE's checklist in sync, because that page is static and cannot
+// query D1. Keep it matching D1's `in_picker = 1` rows.
+//
+// (Corrected 26 August 2026. It previously said a new country "still
+// needs a DATA entry and, ideally, a deep-dive page, added directly in
+// einvoicing-compliance-tracker.html". That has not been true since
+// Stage 5 — the DATA blob in the tracker is a fallback snapshot served
+// only if D1 fails, so editing it changes nothing a reader sees.)
 //
 // The members-worker (Cloudflare Worker) used to keep its own copy of
 // this list for the "manage preferences" page — it no longer does: as
