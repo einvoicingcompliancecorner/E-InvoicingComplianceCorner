@@ -108,6 +108,13 @@ const SUITES = [
   { name: "ROI i18n", cmd: "node", args: [join(HERE, "roi-i18n.mjs")], cwd: REPO },
   { name: "ROI hardcoded strings", cmd: "node", args: [join(HERE, "roi-hardcoded.mjs")], cwd: REPO },
   { name: "ROI translation coverage", cmd: "node", args: [join(HERE, "roi-coverage.mjs")], cwd: REPO },
+  // The planner's PDF, counted as PAGES in a real print rather than
+  // measured in the DOM. Dan's rule is two pages; the document was
+  // silently printing three in Spanish from twenty jurisdictions, and
+  // no DOM measurement can see it -- break-inside:avoid makes the fit a
+  // step function, so only the page count is the truth. Slow (~36s)
+  // because it prints sixteen PDFs, and worth it for the same reason.
+  { name: "ROI PDF benefits", cmd: "node", args: [join(HERE, "roi-pdf-benefits.mjs")], cwd: REPO },
   { name: "currency round trip", cmd: "node", args: [join(HERE, "roi-currency.mjs")], cwd: REPO },
   { name: "contrast audit", cmd: "node", args: [join(HERE, "contrast-audit.mjs")], cwd: REPO },
 ];

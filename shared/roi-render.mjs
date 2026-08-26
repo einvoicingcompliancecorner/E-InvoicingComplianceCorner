@@ -1050,6 +1050,27 @@ footer{margin-top:40px;padding-top:16px;border-top:1px solid var(--line);font-si
   #pdfdoc .pkey li{display:grid;grid-template-columns:10px 1fr auto 40px;gap:7px;align-items:center;padding:2px 0}
   #pdfdoc .pkey i{width:10px;height:10px;border-radius:2px;display:inline-block}
   #pdfdoc .pkey em{font-style:normal;text-align:right;color:#555;font-family:'IBM Plex Mono',monospace}
+  /* The wave table's overflow line. Grey and italic so it reads as a
+     count of what is not shown rather than as another wave. */
+  #pdfdoc td.planmore{color:#666;font-style:italic}
+  /* ---- benefits this model does not price -------------------------
+     Four cards across, because tiling beats stacking at this word
+     count -- see the note by benefitsBlock for the 144px-vs-131px
+     measurement that settled it against a table.
+     The green top rule and the green citation mark the two cards whose
+     evidence is Grade A, so the distinction is visible before anything
+     is read. break-inside:avoid on the grid is deliberate and is why
+     the fit had to be measured by real page count: a block that does
+     not fit does not part-fill page one, it jumps whole to page 3. */
+  #pdfdoc .blede{font-size:7.6pt;color:#444;margin:0 0 5px;line-height:1.38}
+  #pdfdoc .bgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;break-inside:avoid}
+  #pdfdoc .bgrid .c{border:1px solid #d3d3d3;border-top:2px solid #4a5a72;padding:4px 6px;break-inside:avoid}
+  #pdfdoc .bgrid .c.a{border-top-color:#2f7d55}
+  #pdfdoc .bgrid h4{margin:0 0 2px;font-size:7.3pt;color:#111;line-height:1.2}
+  #pdfdoc .bgrid p{margin:0;font-size:6.6pt;color:#555;line-height:1.28}
+  #pdfdoc .bgrid cite{display:block;font-style:normal;font-family:'IBM Plex Mono',monospace;
+    font-size:5.8pt;letter-spacing:.2px;color:#2f7d55;margin-top:2px;text-transform:uppercase}
+  #pdfdoc .bvat{margin:4px 0 0;font-size:6.6pt;color:#666;font-style:italic}
 }
 `;
 
@@ -4827,6 +4848,195 @@ function build(){
       + Math.round(sg.v / SV.segs.reduce((a, c) => a + c.v, 0) * 100) + '%</em></li>').join('');
     const when = new Date().toISOString().slice(0, 10);
 
+    // ---- page one is a fixed budget, and it was already overdrawn ------
+    //
+    // PLAN_ROW_CAP exists because this PDF was printing THREE pages before
+    // anything was added to it, and only English readers were safe. Real
+    // page counts, as shipped on 25 August:
+    //
+    //     lang   n=20   n=30   n=45   n=70
+    //     en        2      2      3      3
+    //     de        2      3      3      3
+    //     fr        2      3      3      3
+    //     es        3      3      3      3
+    //
+    // Spanish broke at twenty jurisdictions. Dan's original instruction on
+    // 15 August was "It should be no longer than 2 pages", so this was a
+    // standing defect nobody had measured -- I reported it to him as an
+    // English-only, seventy-jurisdiction curiosity before checking the
+    // other three languages, which was wrong and is the reason the numbers
+    // are written down here rather than remembered.
+    //
+    // The wave table is the elastic part: it grows a row per wave and was
+    // 403px of a 1024px page at seventy jurisdictions. Capping it is what
+    // buys the room back. Six is measured, not chosen for looking round --
+    // it is the largest cap that keeps two pages in all four languages
+    // with the benefits block present.
+    //
+    // The dropped rows are NOT hidden: the count says how many, and the
+    // planner has the full schedule. A silent truncation would read as
+    // "this is the whole plan", which on a compliance deadline table is
+    // the worst thing this document could imply.
+    const PLAN_ROW_CAP = 6;
+    // IT FOLDS, IT DOES NOT TRUNCATE, AND THAT DISTINCTION WAS A TEST
+    // FAILURE BEFORE IT WAS A DESIGN.
+    //
+    // The first version simply dropped the rows past the cap and printed
+    // "+ N further waves". roi-regression.mjs caught it twice over --
+    // "the PDF plan accounts for every ticked jurisdiction" (15 named of
+    // 32 ticked) and "undated jurisdictions get a row rather than being
+    // dropped". Both guarantees predate this change and both are right:
+    // a reader who ticks a country and cannot find it in the plan has
+    // been told it does not need one.
+    //
+    // So the tail is COMBINED rather than cut. The folded row carries the
+    // same four facts the rows above it carry -- the earliest go-live in
+    // the fold, who is in it, how many, and the earliest responsible
+    // start -- and names jurisdictions up to the same six-and-"+N" limit
+    // the grouped rows already use. Nothing leaves the page; several
+    // waves share a line.
+    // IT FOLDS THE DATED TAIL ONLY, and the two exceptions are not
+    // fussiness -- roi-regression.mjs failed on both when the first
+    // version folded everything past the cap:
+    //
+    //   "a pinned start prints as the pinned date" -- a pinned row is
+    //   there BECAUSE the reader chose that date. Folding it away
+    //   discards the one thing they asked the plan to respect.
+    //
+    //   "the no-deadline row says so in words" -- the jurisdictions with
+    //   no mandated go-live are already collapsed into a single row that
+    //   says so. Folding that row into a dated one would print a date
+    //   beside countries that do not have one, which is the opposite of
+    //   what this document is for.
+    //
+    // So those two always print, and only the dated waves are combined.
+    const foldPlanRows = (dated, tail) => {
+      const d = dated.filter(Boolean), t = tail.filter(Boolean);
+      const room = Math.max(1, PLAN_ROW_CAP - t.length);
+      if (d.length <= room) return d.concat(t).map(r => r.html).join('');
+      const keep = d.slice(0, room - 1);
+      const fold = d.slice(room - 1);
+      const who = [].concat(...fold.map(r => r.who));
+      const starts = fold.map(r => r.start).filter(Boolean).sort();
+      const label = fold.map(r => r.dl).filter(Boolean).sort()[0];
+      // MARKED, so a test can tell a folded row from a wave. Detecting it
+      // by its wording would be a check that only works in English.
+      return keep.map(r => r.html).join('')
+        + '<tr class="planfold"><td>' + fill('${tj("pdf.planFrom","{0} onward")}', label) + '</td><td>'
+        + (who.length > 6 ? who.slice(0, 6).join(', ') + ' +' + (who.length - 6) : who.join(', '))
+        + '</td><td class="num">' + who.length + '</td><td class="num">'
+        + (starts[0] || '&mdash;') + '</td><td class="num">'
+        + Math.round(Math.max(...fold.map(r => r.weeks || 0))) + 'w</td></tr>'
+        + t.map(r => r.html).join('');
+    };
+
+    const undatedNote = UNDATED.length
+      ? '<div class="note">' + UNDATED.length + ' ${tj("pdf.undatedNote","selected jurisdictions have no mandated go-live. They are costed and scheduled; any date shown for them is a planning choice, not an obligation.")}</div>'
+      : '';
+
+    // ---- what the model will not price, named anyway -------------------
+    //
+    // Dan, 26 August 2026: "I would like to support the business case by
+    // acknowledging all benefits, including intangible benefits ... I'd
+    // like for the reader of the PDF to understand the whole project
+    // benefits, not just the commercial savings which are listed next to
+    // the pie chart."
+    //
+    // These are the unpriced rows section 4 groups below its total, which
+    // the planner has carried for weeks and the PDF has never shown.
+    //
+    // THE GROUP'S HEADING IS NOT QUOTED HERE ON PURPOSE. This comment
+    // lives inside the client script, so its text ships in the HTML --
+    // and roi-i18n.mjs renders the page with every D1 string stubbed and
+    // asserts that sampled phrases have disappeared. Quoting one in a
+    // comment failed that check with the copy behaving perfectly. The
+    // point of
+    // putting them on page ONE is that page one is what gets read: a board
+    // that sees only the priced total is being told the project is worth
+    // less than it is.
+    //
+    // CITATIONS ONLY WHERE THE EVIDENCE IS GRADE A -- Dan's instruction,
+    // and the right one. Of these four, only cycle time (Ardent Partners
+    // 2025) and paper (ATO / Deloitte) are Grade A on this site's own
+    // grading; penalty exposure and fraud are Grade D, named because they
+    // are real and left unsourced because there is nothing at that grade
+    // to point at. Attaching a weak citation to a strong claim is how a
+    // compliance document loses the reader who checks one.
+    //
+    // A CARD GRID RATHER THAN A TABLE, AND THAT IS A MEASUREMENT, NOT A
+    // TASTE. Dan asked for the table shape section 4 uses. Built both with
+    // identical wording, the table is 144px and this grid is 131px: five
+    // table rows each spend a line's height on a short phrase, while four
+    // cards tile across the page width and spend one row's height on all
+    // of them. Thirteen pixels decides it -- with the same space freed,
+    // the table printed three pages in German and Spanish at thirty
+    // jurisdictions and this does not.
+    //
+    // VAT IS NOT ONE OF THESE AND MUST NOT LOOK LIKE ONE. Section 4 does
+    // not merely leave it unpriced, it says it is "often quoted and not
+    // defensible" and excludes it. Listing it as a benefit on the page a
+    // board reads would overstate the case this site exists to state
+    // carefully, so it sits below the cards as an exclusion.
+    // THE KEY IS EMITTED, and that is not decoration. The Grade A styling
+    // and the citation both derive from the same src argument -- NO
+    // BACKTICKS IN THIS COMMENT, it lives inside a template literal and
+    // a stray one ends the string -- so a test comparing them to each
+    // other compares a variable with itself and passes whatever
+    // you do -- which is exactly what the first version of
+    // roi-pdf-benefits.mjs did, and it stayed green when a citation was
+    // pinned onto the Grade D fraud card. data-b names the row so the
+    // check can assert against the intended set instead.
+    const benefitCard = (key, title, body, src) =>
+      '<div class="c' + (src ? ' a' : '') + '" data-b="' + key + '"><h4>' + title + '</h4><p>' + body + '</p>'
+      + (src ? '<cite>' + src + '</cite>' : '') + '</div>';
+    const penaltyCount = sel.filter(c => c[6] > 0).length;
+    const benefitsBlock =
+      '<h2>${tj("pdf.h.benefits","Benefits this model does not price")}</h2>'
+      + '<p class="blede">${tj("pdf.ben.lede","The case above prices only what a number can defend. These are real too &mdash; Grade A evidence is cited, and the rest are named rather than guessed.")}</p>'
+      + '<div class="bgrid">'
+      + benefitCard('cycle', '${tj("pdf.ben.cycle","Faster cycle time, fewer supplier queries")}',
+          '${tj("pdf.ben.cycleD","2.9 vs 13.5 days; queries 12.8% vs 24.0% of AP time.")}',
+          '${tj("pdf.ben.cycleSrc","Ardent Partners 2025 &mdash; A")}')
+      + benefitCard('paper', '${tj("pdf.ben.paper","Paper, print, postage, storage")}',
+          '${tj("pdf.ben.paperD","AUD 30.87 vs 9.18 an invoice.")}',
+          '${tj("pdf.ben.paperSrc","ATO / Deloitte &mdash; A")}')
+      + benefitCard('penalty', '${tj("pdf.ben.penalty","Penalty &amp; remediation exposure avoided")}',
+          fill('${tj("pdf.ben.penaltyD","{0} of your jurisdictions publish a schedule. Size it per country.")}', penaltyCount), '')
+      + benefitCard('fraud', '${tj("pdf.ben.fraud","Fraud detection, working-capital visibility")}',
+          '${tj("pdf.ben.fraudD","No published benchmark.")}', '')
+      + '</div>'
+      + '<p class="bvat">${tj("pdf.ben.vat","<strong>VAT leakage / gap recovery</strong> is often quoted, is not defensible, and is excluded from this model entirely.")}</p>';
+
+    // ---- the two paragraphs that moved to page 2, 26 August 2026 -----
+    //
+    // Dan asked for the whole benefit picture on page 1, "importantly ...
+    // only on page one, and not [spilling] into a second page. So page
+    // real-estate is important."
+    //
+    // Page 1 had none to give. Measured at A4 width across all four
+    // languages, the free space below the existing content ran from
+    // 159px (English, 11 jurisdictions) down to 42px in German -- and
+    // NEGATIVE beyond about 20 to 45 depending on language, which is to
+    // say this PDF was already printing three pages before anything was
+    // added to it. See the note above PLAN_ROW_CAP.
+    //
+    // These two blocks are built here and PLACED ON PAGE 2. Both are
+    // explanation rather than finding, which is where Dan put the line on
+    // 15 August: "any assumptions, or caveats should be displayed on page
+    // 2". The scope paragraph is the closer call of the two and he made
+    // it explicitly rather than my inferring it.
+    const scopeNote = '<div class="note">' + fill('${tj("card.mix2","You selected {4}. The plan covers {0}: {1} (CTC or 5-corner) and {2} (4-corner exchange){3}.")}',
+          '<strong>' + planned + '</strong>',
+          '<strong>' + complex.length + ' ${tj("word.complex","complex")}</strong>',
+          '<strong>' + simple.length + ' ' + plur(simple.length, PLURALS.regime) + '</strong>',
+          watch.length ? fill('${tj("card.plusNoMandate",", plus {0} with no mandate{1}")}', watch.length, '') : '',
+          '<strong>' + sel.length + ' ' + plur(sel.length, PLURALS.jur) + '</strong>')
+        + (euInjected ? ' ' + fill('${tj("card.euRow","One of these is the <strong>EU-wide obligation</strong>, added automatically because you selected a member state{0} &mdash; ViDA binds it whether or not it legislates its own mandate.")}', '') : '')
+        + ' ' + fill('${tj("card.integrations2","With {0} that is roughly {1}{2} to deliver &mdash; one per jurisdiction in the plan, and one more per EU member state, because the EU-wide obligation reaches each of them separately.")}',
+          erp + ' ' + plur(erp, PLURALS.erp),
+          '<strong>' + integrations + ' ' + plur(integrations, PLURALS.integration) + '</strong>', '')
+        + ' ${tj("ev.siteLabel","Source: tracker data")}.</div>'
+
     pdfEl.innerHTML =
       '<section class="pg">'
       + '<div class="mast"><h1>${tj("pdf.title","E-Invoicing ROI<br>&amp; Wave Plan")}</h1>'
@@ -4893,17 +5103,21 @@ function build(){
       // meaningless on paper, but the words around it are not, and
       // rewriting them for print would be a third copy of a sentence this
       // migration exists to stop duplicating.
-      + '<div class="note">' + fill('${tj("card.mix2","You selected {4}. The plan covers {0}: {1} (CTC or 5-corner) and {2} (4-corner exchange){3}.")}',
-          '<strong>' + planned + '</strong>',
-          '<strong>' + complex.length + ' ${tj("word.complex","complex")}</strong>',
-          '<strong>' + simple.length + ' ' + plur(simple.length, PLURALS.regime) + '</strong>',
-          watch.length ? fill('${tj("card.plusNoMandate",", plus {0} with no mandate{1}")}', watch.length, '') : '',
-          '<strong>' + sel.length + ' ' + plur(sel.length, PLURALS.jur) + '</strong>')
-        + (euInjected ? ' ' + fill('${tj("card.euRow","One of these is the <strong>EU-wide obligation</strong>, added automatically because you selected a member state{0} &mdash; ViDA binds it whether or not it legislates its own mandate.")}', '') : '')
-        + ' ' + fill('${tj("card.integrations2","With {0} that is roughly {1}{2} to deliver &mdash; one per jurisdiction in the plan, and one more per EU member state, because the EU-wide obligation reaches each of them separately.")}',
-          erp + ' ' + plur(erp, PLURALS.erp),
-          '<strong>' + integrations + ' ' + plur(integrations, PLURALS.integration) + '</strong>', '')
-        + ' ${tj("ev.siteLabel","Source: tracker data")}.</div>'
+      // THE SCOPE SENTENCE IS ON PAGE 2, AND THAT REVERSES AN EARLIER
+      // INSTRUCTION -- deliberately, with Dan's agreement, on 26 August.
+      //
+      // He asked for it on page 1 in August, for a good reason recorded
+      // below: it says WHAT YOU SELECTED before the page says what it is
+      // worth. roi-regression.mjs encoded that as "page 1 states the
+      // footprint before it states the money" and it is what failed when
+      // this first moved -- the test doing exactly its job.
+      //
+      // It moved anyway because the two instructions cannot both hold.
+      // With this paragraph on page 1 the benefits block Dan asked for on
+      // 26 August pushes German, French and Spanish to three pages AT THE
+      // ELEVEN-JURISDICTION DEFAULT, against his rule that the document is
+      // two pages. Something had to give and he chose this. The check now
+      // asserts it is on page 2, so it still cannot silently vanish.
       + '<h2>${tj("pdf.h.mix","Where the annual saving comes from")}</h2>'
       + '<div class="pielay">' + (pieSvg ? pieSvg.outerHTML.replace(/width="\d+"/, 'width="150"').replace(/height="\d+"/, 'height="150"') : '')
       + '<ul class="pkey">' + rows
@@ -4921,7 +5135,11 @@ function build(){
           + '<th>${tj("pdf.th.who","Jurisdictions")}</th><th class="num">${tj("pdf.th.n","No.")}</th>'
           + '<th class="num">${tj("pdf.th.start","Latest responsible start")}</th>'
           + '<th class="num">${tj("pdf.th.elapsed","Elapsed")}</th></tr></thead><tbody>'
-          + WAVES.map(wv => {
+          + foldPlanRows(
+              // Each row is DATA plus its rendered html, so the tail can
+              // be recombined into one row rather than thrown away. See
+              // foldPlanRows above for why that distinction matters.
+              WAVES.map(wv => {
               // (ganttRows || []) -- buildGantt returns NULL when there is
               // nothing dated to plan, which is what an empty country
               // selection produces. The guard three hundred lines up
@@ -4929,46 +5147,51 @@ function build(){
               // the table view and then clearing the selection threw
               // "Cannot read properties of null" and the table silently
               // stopped rendering.
-              //
-              // Live since the table view was added, and never seen
-              // because reaching it needs two actions in one order: open
-              // the table, THEN empty the selection. Found by a new
-              // regression check for a different defect walking that path
-              // by accident -- which is the argument for tests that drive
-              // states rather than assert on the default one.
               const who = (ganttRows || []).filter(r => r.waveKey === wv.dl).map(r => r.c[0]);
               const flag = wv.risk === 'critical' ? ' &#9888;' : '';
-              return '<tr><td><strong>' + wv.dl + '</strong>' + flag + '</td><td>'
-                + (who.length > 6 ? who.slice(0, 6).join(', ') + ' +' + (who.length - 6) : who.join(', '))
-                + '</td><td class="num">' + wv.n + '</td><td class="num">'
-                + wv.waveStart.toISOString().slice(0, 10) + '</td><td class="num">'
-                + Math.round(wv.elapsed) + 'w</td></tr>';
-            }).join('')
+              return {
+                dl: wv.dl, who: who, weeks: wv.elapsed,
+                start: wv.waveStart.toISOString().slice(0, 10),
+                html: '<tr><td><strong>' + wv.dl + '</strong>' + flag + '</td><td>'
+                  + (who.length > 6 ? who.slice(0, 6).join(', ') + ' +' + (who.length - 6) : who.join(', '))
+                  + '</td><td class="num">' + wv.n + '</td><td class="num">'
+                  + wv.waveStart.toISOString().slice(0, 10) + '</td><td class="num">'
+                  + Math.round(wv.elapsed) + 'w</td></tr>',
+              };
+            }),
+          // ---- the tail: always printed whole ----------------------
           // One row per PINNED jurisdiction, because the reader chose that
           // date and it is the whole reason they pinned it. The rest share
           // a single row, the same shape the dated waves use and the same
-          // shape the chart collapses them into. Printing eleven one-line
-          // rows instead pushed page one to 307mm against A4's 271.
-          + UNDATED.filter(u => u.pinned).map(u => '<tr><td><strong>'
-              + u.start.toISOString().slice(0, 10) + '</strong> ${tj("pdf.pinned","pinned")}'
-              + (u.clamped ? ' ${tj("pdf.clamped","(moved to earliest)")}' : '')
-              + '</td><td>' + u.name + '</td><td class="num">1</td><td class="num">'
-              + u.start.toISOString().slice(0, 10) + '</td><td class="num">'
-              + Math.round(u.weeks) + 'w</td></tr>').join('')
-          + (UNDATED.some(u => !u.pinned) ? (() => {
+          // shape the chart collapses them into.
+              [].concat(
+              UNDATED.filter(u => u.pinned).map(u => ({
+                dl: u.start.toISOString().slice(0, 10), who: [u.name], weeks: u.weeks,
+                start: u.start.toISOString().slice(0, 10),
+                html: '<tr><td><strong>' + u.start.toISOString().slice(0, 10)
+                  + '</strong> ${tj("pdf.pinned","pinned")}'
+                  + (u.clamped ? ' ${tj("pdf.clamped","(moved to earliest)")}' : '')
+                  + '</td><td>' + u.name + '</td><td class="num">1</td><td class="num">'
+                  + u.start.toISOString().slice(0, 10) + '</td><td class="num">'
+                  + Math.round(u.weeks) + 'w</td></tr>',
+              })),
+              (UNDATED.some(u => !u.pinned) ? [(() => {
               const free = UNDATED.filter(u => !u.pinned);
               const who = free.map(u => u.name);
-              return '<tr><td>${tj("pdf.nodate","Not yet defined")}</td><td>'
-                + (who.length > 6 ? who.slice(0, 6).join(', ') + ' +' + (who.length - 6) : who.join(', '))
-                + '</td><td class="num">' + free.length + '</td><td class="num">'
-                + free[0].start.toISOString().slice(0, 10) + '</td><td class="num">'
-                + Math.round(Math.max(...free.map(u => u.weeks))) + 'w</td></tr>';
-            })() : '')
+              return {
+                dl: '', who: who, weeks: Math.max(...free.map(u => u.weeks)),
+                start: free[0].start.toISOString().slice(0, 10),
+                html: '<tr><td>${tj("pdf.nodate","Not yet defined")}</td><td>'
+                  + (who.length > 6 ? who.slice(0, 6).join(', ') + ' +' + (who.length - 6) : who.join(', '))
+                  + '</td><td class="num">' + free.length + '</td><td class="num">'
+                  + free[0].start.toISOString().slice(0, 10) + '</td><td class="num">'
+                  + Math.round(Math.max(...free.map(u => u.weeks))) + 'w</td></tr>',
+              };
+            })()] : [])))
           + '</tbody></table>' : '')
       // The table above is now every selected jurisdiction, so say which
       // rows carry no deadline rather than leaving a reader to infer it
       // from a blank Go-live cell.
-      + (UNDATED.length ? '<div class="note">' + UNDATED.length + ' ${tj("pdf.undatedNote","selected jurisdictions have no mandated go-live. They are costed and scheduled; any date shown for them is a planning choice, not an obligation.")}</div>' : '')
       // Headlines only. Each guard opens with a bolded sentence that is the
       // whole finding; the body after it is the explanation, which belongs
       // with the other reasoning on page 2. Printing them whole cost 33mm
@@ -4978,12 +5201,19 @@ function build(){
                             const head = (i >= 0 && j > i) ? w.slice(i + 8, j) : w;
                             return head.replace(/<[^>]+>/g, ''); }).join(' ')
           + ' ${tj("pdf.flagsMore","Reasoning overleaf.")}</div>' : '')
+      + benefitsBlock
       + '<div class="foot">${tj("pdf.foot1","Mandate data comes from this site&rsquo;s tracker and every date is traceable to each country&rsquo;s deep dive. Assumptions, sources and evidence grades are on page 2.")}</div>'
       + '</section>'
 
       + '<section class="pg">'
       + '<div class="mast"><h1>${tj("pdf.title2","Assumptions<br>&amp; sources")}</h1>'
       + '<div class="who">${tj("pdf.masthead","The E-Invoicing Compliance Corner")}<br>${tj("pdf.page2","Page 2 of 2")} &middot; ' + when + '</div></div>'
+      // The scope paragraph and the go-live caveat, moved off page 1 on
+      // 26 August to make room for the benefits block. They lead page 2
+      // because they frame everything under them: what was selected, and
+      // which of it carries no deadline.
+      + scopeNote
+      + undatedNote
       + '<h2>${tj("pdf.h.reasoning","The reasoning")}</h2>'
       // Lifted from the panel that just rendered, rather than restated with
       // its own copy of the strings. Two copies of the same paragraph is

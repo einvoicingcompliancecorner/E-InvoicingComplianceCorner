@@ -18001,3 +18001,111 @@ All three regression classes — the two literal strings, the education map,
 and a site-absolute route — were confirmed to fail the check afterwards.
 
 `npm test`: **32 suites**.
+
+---
+
+### 26 August 2026 — the whole benefit picture on page one
+
+Dan:
+
+> "I would like to support the business case by acknowledging all
+> benefits, including intangible benefits ... **Importantly, I'd like this
+> information to appear only on page one, and not spill into a second
+> page. So page real-estate is important.**"
+
+and, on the mock-ups: *"I like option A with the tangible saving, and a
+sentence to explain — perhaps citing only Grade A sources / citations."*
+
+Four cards now sit under the wave plan: faster cycle time, paper and
+postage, penalty exposure, fraud and working capital. Two carry a source
+because two are Grade A; the other two are named and left unsourced. VAT
+leakage sits below them as an **exclusion**, because section 4 does not
+merely leave it unpriced — it calls it "not defensible".
+
+#### The PDF was already printing three pages
+
+Page one had no room to give, and measuring it found a defect older than
+the request. Real page counts of the document **as it shipped on 25
+August**, before any of this:
+
+| lang | n=20 | n=30 | n=45 | n=70 |
+|---|---|---|---|---|
+| en | 2 | 2 | **3** | **3** |
+| de | 2 | **3** | **3** | **3** |
+| fr | 2 | **3** | **3** | **3** |
+| es | **3** | **3** | **3** | **3** |
+
+**Spanish was breaking at twenty jurisdictions**, against Dan's rule of 15
+August that it "should be no longer than 2 pages". I first reported this
+to him as an English-only, seventy-jurisdiction curiosity, having measured
+one language and generalised from it. German has 42px of free space at the
+eleven-country default where English has 159px.
+
+#### A table would have been prettier and does not fit
+
+Dan asked whether section 4's table shape would save room. Built both with
+identical wording: **the table is 144px, the card grid 131px.** Five table
+rows each spend a line on a short phrase; four cards tile across the page
+width and spend one row's height on all of them. Thirteen pixels decided
+it — with the same space freed, the table printed three pages in German
+and Spanish at thirty jurisdictions and the grid did not.
+
+#### The measurement that lies
+
+The fast check — measure page one in the DOM under print media, compare
+against A4's usable height — is **optimistic by 25–30px**. The German
+table candidate measured 24px of headroom and printed three pages.
+
+`break-inside: avoid` is why. A block that does not fit does not part-fill
+page one and continue; it moves **whole** to page three. Content height
+against page count is a step function, so only the page count is the
+truth. `tests/roi-pdf-benefits.mjs` prints sixteen real PDFs and counts
+pages in the bytes.
+
+#### Truncating is not folding, and three existing tests said so
+
+The wave table is the elastic part — 403px of a 1024px page at seventy
+jurisdictions — so capping it is what buys the room. The first version
+**dropped** the rows past the cap. `roi-regression.mjs` caught it three
+ways: "the PDF plan accounts for every ticked jurisdiction" found 15 named
+of 32 ticked; "a pinned start prints as the pinned date" and "the
+no-deadline row says so in words" found the two row types that must never
+be folded away.
+
+All three were right. A reader who ticks a country and cannot find it in
+the plan has been told it does not need one. The tail is now **combined**
+into one row carrying the same four facts and naming its jurisdictions,
+and pinned rows and the no-deadline row always print whole.
+
+#### A guarantee retired on purpose, not quietly
+
+The scope paragraph moved to page 2, and that **reverses an instruction
+Dan gave in August** — that page 1 should say what you selected before it
+says what it is worth. `roi-regression.mjs` encoded it and it failed,
+which is the test doing its job.
+
+The two instructions cannot both hold: with that paragraph on page 1 the
+benefits block pushes German, French and Spanish to three pages **at the
+eleven-jurisdiction default**. Dan chose. The assertion moved with the
+paragraph rather than being deleted — the same three facts are still
+required, on the page they now live on.
+
+#### Two checks of mine that could not fail
+
+- **The citation check compared a variable with itself.** `cited` and
+  `graded` both derive from the same `src` argument in `benefitCard()`, so
+  pinning a citation onto the Grade D fraud card left it green. The cards
+  now emit `data-b` and the test asserts against a named set.
+- **The figure check was satisfied by my own prose.** It counted
+  occurrences of each number in `roi-render.mjs` and required two —
+  and the second was a comment I had written describing the figure.
+  Changing the PDF's 2.9 to 3.4 passed. It now parses the `tj()` defaults
+  and compares string to string.
+
+Both found by breaking the renderer on purpose and watching nothing
+happen. Also caught this way: a comment of mine containing backticks
+around a variable name, inside a template literal, which ended the string;
+and another quoting a phrase `roi-i18n.mjs` samples for, which failed that
+check with the copy behaving perfectly.
+
+`npm test`: **33 suites**, replay OK across 651 files.
