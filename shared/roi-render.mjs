@@ -5121,7 +5121,28 @@ function build(){
       + '<h2>${tj("pdf.h.mix","Where the annual saving comes from")}</h2>'
       + '<div class="pielay">' + (pieSvg ? pieSvg.outerHTML.replace(/width="\d+"/, 'width="150"').replace(/height="\d+"/, 'height="150"') : '')
       + '<ul class="pkey">' + rows
-      + (l1Unbanked > 0 ? '<li><i style="background:repeating-linear-gradient(45deg,#888 0 2px,transparent 2px 5px);border:1px solid #999"></i><span>${tj("sv.unbanked","Available on a wider scope")}</span><b>' + money(l1Unbanked) + '</b><em>&mdash;</em></li>' : '')
+      // NO "AVAILABLE ON A WIDER SCOPE" ROW HERE, since 26 August 2026.
+      //
+      // Dan: "please can you remove the sentence saying 'Available on a
+      // wider scope' and the saving figure from the pdf report, when
+      // compliance only is selected. As the user has not selected with
+      // AP automation, the additional saving is a mute point."
+      //
+      // It only ever appeared in that case. l1Unbanked is l1 minus
+      // l1Banked, and on the wider scope those are equal by construction
+      // -- so the row rendered on compliance scope and nowhere else, and
+      // removing it there removes it from the PDF entirely.
+      //
+      // THE FACT IS NOT LOST, IT IS SCOPED TO THE SURFACE THAT WANTS IT.
+      // The screen still states it twice, in the headline stat's
+      // parenthetical and under the composition chart, and
+      // roi-regression.mjs asserts BOTH of those on compliance scope --
+      // deliberately, because an earlier tidy-up nearly left the reader
+      // with no statement anywhere that a compliance-only figure leaves
+      // money on the table. Those checks still pass and must keep
+      // passing: this is a change to the board-facing PDF, where a
+      // number the reader cannot act on is a distraction, not a change
+      // to what the tool tells someone exploring the model.
       + '</ul></div>'
 
       // The on-screen chart is 1000x1282 — portrait — so capping its height

@@ -199,6 +199,24 @@ t.check("the PDF is two pages in every language at every jurisdiction count",
     + "which is a different and worse change than the one that was agreed");
 }
 
+// ---- 3b. the PDF does not offer a scope the reader did not choose -----
+//
+// Dan, 26 August: "remove the sentence saying 'Available on a wider
+// scope' and the saving figure from the pdf report ... the additional
+// saving is a mute point."
+//
+// ASSERTED ON THE PDF ONLY, AND THAT BOUNDARY IS THE POINT. The screen
+// still states this twice on compliance scope, and roi-regression.mjs
+// asserts both carriers there on purpose -- an earlier tidy-up dropped
+// one on the understanding the other kept the fact. If this check ever
+// starts failing because someone deleted the disclosure everywhere
+// rather than from the board paper, that is the defect, not this line.
+{
+  const offering = seen.filter((r) => !r.dom.missing && /wider scope/i.test(r.dom.page1Text));
+  t.check("page one never offers a saving on a scope the reader did not pick",
+    offering.length === 0, `${offering.length} renders still carry it`);
+}
+
 // ---- 4. the wave table folds, and folding is not dropping -------------
 //
 // THE FIRST VERSION OF THIS FEATURE TRUNCATED, AND THREE TESTS CAUGHT IT.

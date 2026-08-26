@@ -1,0 +1,77 @@
+-- ================================================================
+-- The PDF stops offering a saving the reader did not ask for.
+-- ================================================================
+--
+-- Dan, 26 August 2026:
+--
+--   "please can you remove the sentence saying 'Available on a wider
+--    scope' and the saving figure from the pdf report, when compliance
+--    only is selected. As the user has not selected with AP automation,
+--    the additional saving is a mute point."
+--
+-- He is right about the case, and the case turns out to be the only one.
+-- The row was guarded by `l1Unbanked > 0`, and
+--
+--     l1        = saving + savingAR + errSave
+--     l1Banked  = (banked ? saving : saving * captureShare)
+--                 + savingAR + (banked ? errSave : 0)
+--
+-- so on the wider scope the two are equal by construction and the guard
+-- was already false. The row rendered on compliance scope and nowhere
+-- else; removing it there removed it from the PDF entirely, which leaves
+-- 'sv.unbanked' with nothing rendering it.
+--
+-- ---- WHY DELETE THE STRING RATHER THAN LEAVE IT ---------------------
+--
+-- roi-i18n.mjs asserts that no D1 key is left unrendered, and reports "0
+-- kept by decision". A key nothing reads is a key that drifts: it gets
+-- translated, reviewed and counted in coverage while being incapable of
+-- reaching a reader. Migration 589's sweep exists for exactly this.
+--
+-- 'sv.unbankedNote' is a DIFFERENT key and stays. It is the screen's
+-- version -- "plus {0} available on a wider scope" under the composition
+-- chart -- and the screen keeps saying this. Deleting the wrong one of
+-- the two would silently remove the fact from the page as well.
+--
+-- ---- AND THE FACT IS STILL ON THE PAGE ------------------------------
+--
+-- This is a change to the PDF, not a retreat from the disclosure. The
+-- planner still states it twice on compliance scope: in the headline
+-- stat's parenthetical (res.unbanked) and under the chart
+-- (sv.unbankedNote). roi-regression.mjs asserts BOTH, and the comment
+-- above those checks explains why both -- an earlier tidy-up dropped one
+-- carrier on the understanding that the other kept the fact, and
+-- deleting the second as well would have turned that trade into a
+-- subtraction. Those checks are untouched and still pass.
+--
+-- The distinction being drawn is about audience. Someone moving the
+-- scope control is exploring what a wider programme would be worth. The
+-- PDF is a board paper for the programme they HAVE chosen, and a figure
+-- there that nobody in the room can act on invites a question the
+-- document cannot answer.
+-- ================================================================
+
+DELETE FROM translations WHERE namespace = 'roi' AND key = 'sv.unbanked';
+
+-- ---- what this migration claims it did ------------------------------
+
+-- ASSERT: SELECT (SELECT count(*) FROM translations WHERE namespace = 'roi' AND key = 'sv.unbanked') = 0
+
+-- THE SCREEN'S VERSION SURVIVED, IN ALL FOUR LANGUAGES.
+--
+-- The two keys differ by four characters. If this migration ever takes
+-- the wrong one, the planner stops telling a compliance-scope reader
+-- what the wider scope is worth, on the surface where that reader is
+-- actually deciding it -- and it would look like a tidy-up.
+-- ASSERT: SELECT (SELECT count(*) FROM translations WHERE namespace = 'roi' AND key = 'sv.unbankedNote') = 4
+
+-- ---- and what must stay true afterwards -----------------------------
+
+-- IT STAYS GONE UNLESS SOMETHING RENDERS IT AGAIN.
+--
+-- Not a prohibition on the row ever returning: if Dan wants it back the
+-- key comes back with the code that reads it, in one change. This is a
+-- guard against the row being re-seeded by a bulk string migration while
+-- nothing on any surface reads it, which is the state roi-i18n.mjs
+-- exists to keep this namespace out of.
+-- ASSERT ALWAYS: SELECT (SELECT count(*) FROM translations WHERE namespace = 'roi' AND key = 'sv.unbanked') = 0
