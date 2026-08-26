@@ -5,7 +5,7 @@
 import { writeFileSync } from "node:fs";
 import { openReplayDb } from "./replay-db.mjs";
 import { getGuideBundle, renderGuideDocument, GUIDE_STYLE, GUIDE_FIT_SCRIPT } from "../../shared/guides-render.mjs";
-import { loadPlaywright } from "./browser.mjs";
+import { loadPlaywright, launch } from "./browser.mjs";
 const TODAY = "2026-08-21";
 const { d1 } = await openReplayDb();
 const { results } = await d1.prepare("SELECT name_en FROM countries WHERE code != 'EU' ORDER BY name_en").bind().all();
@@ -17,7 +17,15 @@ writeFileSync("/tmp/all70.html", `<!DOCTYPE html><html lang="en"><head><meta cha
 <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>${GUIDE_STYLE}</style></head><body>${html}<scr`+`ipt>${GUIDE_FIT_SCRIPT}</scr`+`ipt></body></html>`);
 const { chromium } = await loadPlaywright();
-const b = await chromium.launch({ executablePath: "/opt/pw-browsers/chromium" });
+// SHARED launch(), NOT chromium.launch() WITH A PATH. Dan hit this on
+// 26 August: "Failed to launch chromium because executable doesn't
+// exist at /opt/pw-browsers/chromium". That path is the sandbox this
+// project is developed in; on any other machine Playwright's own
+// download location is right and the hardcoded one is a crash. The
+// helper uses the sandbox binary when it is there, falls back to
+// Playwright's when it is not, and turns a missing download into one
+// line of instructions instead of a stack trace.
+const b = await launch();
 const p = await b.newPage({ viewport: { width: 1100, height: 1000 } });
 await p.goto("file:///tmp/all70.html", { waitUntil: "load" });
 await p.waitForTimeout(8000);

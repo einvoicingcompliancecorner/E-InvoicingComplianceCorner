@@ -80,8 +80,7 @@ import { createServer } from "node:http";
 import { readFileSync, existsSync, statSync } from "node:fs";
 import { join, dirname, extname, normalize } from "node:path";
 import { fileURLToPath } from "node:url";
-import { chromium } from "playwright";
-import { suite } from "./lib/browser.mjs";
+import { suite, launch } from "./lib/browser.mjs";
 
 const REPO = dirname(dirname(fileURLToPath(import.meta.url)));
 const t = suite("menu in-page");
@@ -130,7 +129,15 @@ const servedHere = (href) => !href.startsWith("/") && !/^https?:/.test(href);
 t.check(`the Menu has links to click (${targets.length} found)`, targets.length >= 10,
   "if this drops, the selector stopped matching the markup and everything below is vacuous");
 
-const browser = await chromium.launch({ executablePath: "/opt/pw-browsers/chromium" });
+// SHARED launch(), NOT chromium.launch() WITH A PATH. Dan hit this on
+// 26 August: "Failed to launch chromium because executable doesn't
+// exist at /opt/pw-browsers/chromium". That path is the sandbox this
+// project is developed in; on any other machine Playwright's own
+// download location is right and the hardcoded one is a crash. The
+// helper uses the sandbox binary when it is there, falls back to
+// Playwright's when it is not, and turns a missing download into one
+// line of instructions instead of a stack trace.
+const browser = await launch();
 const problems = [];
 let clicked = 0;
 
