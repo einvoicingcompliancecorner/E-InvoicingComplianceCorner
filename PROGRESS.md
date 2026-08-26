@@ -18224,3 +18224,74 @@ subscriber silently loses the only route they have**, now that the archive
 link is gone.
 
 `npm test`: **34 suites**.
+
+---
+
+### 26 August 2026 — Manage Preferences, and a cache defect of my own
+
+Dan: *"Could we change the 'Subscribers' menu option to read 'Manage
+Preferences', and then hide the Subscribe pop-out when logged in?"*
+
+Both done — and doing the second one properly meant undoing how the first
+had been built that morning.
+
+#### The tracker was being personalised on a publicly cacheable response
+
+The Subscribers item was injected into a marker by site-worker when
+`sessionEmail()` returned one. That made the tracker **differ per reader on
+a route served `public, max-age=60` with no `Vary`** — while the comment
+sitting beside those very headers says the quiet part out loud: *only the
+planner's route varies by session, and only that route goes private.* I
+broke a deliberate stance without reading it, on the busiest page on the
+site.
+
+Nothing sensitive was in the injected markup — a link to a page that gates
+itself, no name, no email, no countries — so this was a **correctness and
+cache-fragmentation defect, not a data leak**. The failure it could produce
+is a shared cache handing a subscriber's copy to an anonymous reader for up
+to a minute, and the reverse.
+
+**The fix is not `Vary: Cookie`.** That keys the whole site's busiest page
+on a header analytics and language cookies also occupy — trading a real
+cache for a menu item. Both items now ship in the markup and the browser
+picks one from `eicc_who`: the display cookie that already exists, is
+already read by `i18n.js`, and carries no authority by design. Forging it
+changes which menu item shows and unlocks nothing, because `/subscribers`
+answers members-worker's own sign-in wall and the session cookie behind it
+is HttpOnly. **A menu is display.**
+
+#### Hiding a pop-out means hiding what opens it
+
+Three things open the signup panel: the Menu item, the perks box CTA, and
+the carousel's Subscribe slide. Leaving any of them visible would either
+ask a subscriber to subscribe or leave a button that does nothing. All
+three go. The carousel slide is **filtered from the array** rather than
+hidden, because the dots and the rotation are built from that array's
+length — hidden, it would leave a dot that rotates to blank once a cycle.
+That is one of the checks.
+
+#### A hook nobody would ever have hung anything on
+
+The first version added a `window.addEventListener('eicc:signed-in', ...)`
+so the menu would update after signing in without a reload. Nothing in the
+repo dispatches that event, and nothing needs to: `succeed()` in
+`auth-overlay.js` calls `window.location.reload()` unless the caller passes
+`onSuccess`, and the tracker's Subscribe trigger passes only `{ mode }`.
+Removed, with the reasoning recorded — this is the exact shape migration
+589's sweep could not see and that cost two dead parameters in
+`roi-render.mjs`.
+
+#### And the browser path, which only broke on Dan's machine
+
+Dan hit `Failed to launch chromium because executable doesn't exist at
+/opt/pw-browsers/chromium`. That path is this development sandbox;
+`tests/lib/browser.mjs` has had a `launch()` helper for exactly this since
+it was written, which uses the sandbox binary when present, falls back to
+Playwright's own, and turns a missing download into one line of
+instructions rather than a stack trace.
+
+**Five test files bypassed it** — two I added this week, three older. All
+five now use the helper, and the fix was verified by pointing the sandbox
+constant at a path that does not exist and re-running.
+
+`npm test`: **34 suites**.

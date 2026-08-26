@@ -44,8 +44,7 @@
 import { readFileSync, unlinkSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { chromium } from "playwright";
-import { suite } from "./lib/browser.mjs";
+import { suite, launch } from "./lib/browser.mjs";
 import { buildRoiPage } from "./lib/build-page.mjs";
 
 const REPO = dirname(dirname(fileURLToPath(import.meta.url)));
@@ -79,7 +78,15 @@ const COUNTS = [1, 11, 30, 70];
 const files = {};
 for (const lang of LANGS) files[lang] = (await buildRoiPage({ lang })).file;
 
-const browser = await chromium.launch({ executablePath: "/opt/pw-browsers/chromium" });
+// SHARED launch(), NOT chromium.launch() WITH A PATH. Dan hit this on
+// 26 August: "Failed to launch chromium because executable doesn't
+// exist at /opt/pw-browsers/chromium". That path is the sandbox this
+// project is developed in; on any other machine Playwright's own
+// download location is right and the hardcoded one is a crash. The
+// helper uses the sandbox binary when it is there, falls back to
+// Playwright's when it is not, and turns a missing download into one
+// line of instructions instead of a stack trace.
+const browser = await launch();
 
 /** Render the planner, calculate with `n` jurisdictions, print, measure. */
 async function render(lang, n) {

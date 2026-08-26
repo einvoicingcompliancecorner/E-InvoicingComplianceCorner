@@ -17,7 +17,7 @@
 import { writeFileSync } from "node:fs";
 import { openReplayDb } from "./replay-db.mjs";
 import { getGuideBundle, renderGuideDocument, GUIDE_STYLE, GUIDE_FIT_SCRIPT } from "../../shared/guides-render.mjs";
-import { loadPlaywright } from "./browser.mjs";
+import { loadPlaywright, launch } from "./browser.mjs";
 
 const TODAY = "2026-08-23";
 const PAGE_PX = 1010;
@@ -29,7 +29,15 @@ const { results } = await d1.prepare(
 const names = results.map((r) => r.name_en);
 
 const { chromium } = await loadPlaywright();
-const b = await chromium.launch({ executablePath: "/opt/pw-browsers/chromium" });
+// SHARED launch(), NOT chromium.launch() WITH A PATH. Dan hit this on
+// 26 August: "Failed to launch chromium because executable doesn't
+// exist at /opt/pw-browsers/chromium". That path is the sandbox this
+// project is developed in; on any other machine Playwright's own
+// download location is right and the hardcoded one is a crash. The
+// helper uses the sandbox binary when it is there, falls back to
+// Playwright's when it is not, and turns a missing download into one
+// line of instructions instead of a stack trace.
+const b = await launch();
 
 const summary = [];
 for (const lang of LANGS) {

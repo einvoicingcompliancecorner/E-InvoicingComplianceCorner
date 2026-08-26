@@ -484,22 +484,6 @@ async function renderSitemap(request, env) {
 // a code change when Dan is standing in that dialog.
 const VERIFICATION_MARKER = "<!-- SITE VERIFICATION -->";
 
-// ---- the Menu's subscriber-only entry -----------------------------------
-//
-// The tracker is a static asset, so it cannot know who is reading it. This
-// marker is where site-worker tells it, for the one menu item that should
-// not exist for a reader who has no preferences to manage.
-//
-// RENDERED, NOT REVEALED. The alternative is to ship the item in the HTML
-// and unhide it with a flag, which is less code and puts a link to a
-// subscriber page in the markup every anonymous reader and crawler
-// receives. Nothing secret is behind it -- /members/preferences answers
-// its own sign-in wall -- but a menu that offers a signed-out reader a
-// destination they cannot use is the same false promise the padlock was
-// removed for in August, and migration 641's "(subscribers)" marker is
-// already the honest way to say "you will need an account" about the
-// items that ARE for everyone.
-const SUBSCRIBER_MENU_MARKER = "<!-- SUBSCRIBER MENU -->";
 
 function verificationMeta(env) {
   const tags = [];
@@ -533,32 +517,29 @@ async function renderTracker(request, env) {
   const verification = verificationMeta(env);
   let html = await assetResp.text();
 
-  // BEFORE THE try, FOR THE SAME REASON THE VERIFICATION TAG IS. The catch
-  // below serves this same `html` when D1 is unreachable, and a subscriber
-  // whose board is having an outage should not also find their own
-  // preferences missing from the menu.
+  // NOT PERSONALISED HERE, AND THAT IS A CORRECTION.
   //
-  // FAILS SOFT BOTH WAYS: no session, no item; no marker, a log line and
-  // the page unchanged. tests/subscriber-menu.mjs asserts the marker is
-  // present in the asset, so a shape change is caught before it ships
-  // rather than quietly serving every subscriber a menu without it.
-  let signedIn = false;
-  try {
-    signedIn = !!(await sessionEmail(request, env.SESSION_SECRET));
-  } catch (err) {
-    console.log(`Tracker: session read failed, menu served signed-out — ${err && err.message}`);
-  }
-  if (signedIn) {
-    if (html.includes(SUBSCRIBER_MENU_MARKER)) {
-      html = html.replace(SUBSCRIBER_MENU_MARKER,
-        '<a class="dropdown-item" href="/subscribers" id="ddSubscribers">'
-        + '<span class="dd-icon">\u2699</span>'
-        + '<span data-i18n="menu.subscribers">Subscribers</span></a>');
-    } else {
-      console.log("Tracker: subscriber menu marker not found — serving the menu without it.");
-    }
-  }
-
+  // The Subscribers menu item was injected at this point for readers with
+  // a session, which made this response differ per reader -- on a route
+  // served `public, max-age=60` with no Vary. That is trap 1 from the
+  // logged-in-site evaluation, and the comment beside those very headers
+  // says the quiet part: only the planner's route varies by session, and
+  // only that route goes private. I broke that deliberate stance without
+  // reading it.
+  //
+  // Nothing sensitive was in the injected markup -- a link to a page that
+  // gates itself, no name, no email, no countries -- so this was a
+  // correctness and cache-fragmentation defect rather than a data leak.
+  // The failure it could produce is a shared cache handing a subscriber's
+  // copy to an anonymous reader for up to a minute, and the reverse.
+  //
+  // The fix is not Vary: Cookie. That keys the busiest page on the whole
+  // site's cache by a header that analytics and language cookies also
+  // occupy, which trades a real cache for a menu item. The tracker goes
+  // back to being one document for everyone, and the two items that
+  // depend on who is reading are toggled in the browser from `eicc_who`
+  // -- the display cookie that already exists, is already read by
+  // i18n.js, and carries no authority by design. A menu is display.
   if (verification) {
     if (html.includes(VERIFICATION_MARKER)) {
       html = html.replace(VERIFICATION_MARKER, `${VERIFICATION_MARKER}\n${verification}`);

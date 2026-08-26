@@ -12,10 +12,11 @@
 // Three things had to be true at once and none of them is visible by
 // reading one file:
 //
-//   1. THE ITEM EXISTS ONLY FOR A READER WITH A SESSION. The tracker is a
-//      static asset and cannot know that, so site-worker injects it into a
-//      marker. A marker that stops matching fails silently and every
-//      subscriber loses the menu entry with nothing logged as an error.
+//   1. THE MENU SHOWS THE RIGHT ITEM TO THE RIGHT READER, and does it
+//      WITHOUT making the tracker differ per reader. It was injected
+//      server-side for one commit; that personalised a response served
+//      `public, max-age=60` with no Vary, and is now decided in the
+//      browser from the authority-free display cookie instead.
 //
 //   2. THE RELAY CARRIES A WRITE. /api/preferences is the first POST on
 //      this origin that reaches members-worker. It must forward one exact
@@ -23,15 +24,20 @@
 //      nobody asked it to.
 //
 //   3. THE OLD ROUTE IS GONE. The archive's manage-preferences link was
-//      removed at Dan's request, so the injected item is now the ONLY
-//      in-site route to preferences. If the injection breaks and the
-//      archive link is gone, subscribers have no way in at all except the
-//      welcome email — which is why 1 is checked against the real worker
-//      rather than by reading the template.
-import { readFileSync } from "node:fs";
+//      removed at Dan's request, so the menu item is now the ONLY in-site
+//      route to preferences. If it breaks and the archive link is gone,
+//      subscribers have no way in at all except the welcome email.
+//
+// And then, on 26 August: "change the 'Subscribers' menu option to read
+// 'Manage Preferences', and then hide the Subscribe pop-out when logged
+// in." The pop-out has three triggers, so hiding it means hiding all
+// three, and a signed-out reader must still get every one of them.
+import { readFileSync, existsSync, statSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { suite } from "./lib/browser.mjs";
+import { createServer } from "node:http";
+import { extname, normalize } from "node:path";
+import { suite, launch } from "./lib/browser.mjs";
 import { openReplayDb } from "./lib/replay-db.mjs";
 import { signToken, SESSION_COOKIE } from "../shared/session.mjs";
 
@@ -41,13 +47,110 @@ const t = suite("subscriber menu");
 const SECRET = "test-secret-not-a-real-one";
 const TRACKER = readFileSync(join(REPO, "einvoicing-compliance-tracker.html"), "utf8");
 
-// ---- 0. the marker the injection depends on ----------------------------
-t.check("the tracker asset carries the subscriber-menu marker",
-  TRACKER.includes("<!-- SUBSCRIBER MENU -->"),
-  "site-worker replaces this marker; without it the injection logs and "
-  + "serves a menu with no Subscribers item, which looks like the feature "
-  + "was never built");
+// The tracker has to come off an http origin, not file://, because the
+// menu decision reads document.cookie and file:// pages cannot have one.
+const TYPES = { ".html": "text/html", ".js": "text/javascript", ".json": "application/json",
+  ".css": "text/css", ".svg": "image/svg+xml", ".png": "image/png", ".woff2": "font/woff2" };
+const server = createServer((req, res) => {
+  const p = req.url.split("?")[0];
+  if (p === "/" || p === "/subscribers") {
+    res.writeHead(200, { "content-type": "text/html" });
+    return res.end(TRACKER);
+  }
+  const rel = normalize(decodeURIComponent(p)).replace(/^(\.\.[/\\])+/, "");
+  let f = join(REPO, rel);
+  if (!existsSync(f) || !statSync(f).isFile()) f += ".html";
+  if (!existsSync(f) || !statSync(f).isFile()) { res.writeHead(404); return res.end("no"); }
+  res.writeHead(200, { "content-type": TYPES[extname(f)] || "application/octet-stream" });
+  res.end(readFileSync(f));
+});
+await new Promise((r) => server.listen(0, "127.0.0.1", r));
+const HOME = `http://127.0.0.1:${server.address().port}/`;
 
+// ---- 0 and 1. the menu, decided in the browser --------------------------
+//
+// IT WAS INJECTED SERVER-SIDE FOR ONE COMMIT, AND THAT WAS WRONG. The item
+// was written into a marker by site-worker when sessionEmail() returned
+// one, which made the tracker differ per reader on a route served
+// `public, max-age=60` with no Vary -- while the comment beside those very
+// headers says only the planner's route varies by session. A shared cache
+// could hand one reader's copy to the next for up to a minute.
+//
+// Nothing sensitive was in it, so that was a correctness and cache defect
+// rather than a leak. The fix was not Vary: Cookie -- that keys the
+// busiest page on the site by a header analytics and language cookies also
+// occupy. Both items ship in the markup and the browser picks one from
+// `eicc_who`, the display cookie that already exists and carries no
+// authority.
+//
+// So this is checked in a real browser with and without that cookie, which
+// is also the only way to see the `hidden` attribute actually applied.
+{
+  t.check("both menu items ship in the markup",
+    /id="ddSubscribers"/.test(TRACKER) && /id="ddSubscribe"/.test(TRACKER),
+    "the browser chooses between them; neither is injected");
+  t.check("and the signed-in one ships hidden",
+    /id="ddSubscribers"[^>]*\shidden|hidden[^>]*id="ddSubscribers"/.test(TRACKER),
+    "a reader with no JavaScript must be offered neither, not both");
+  t.check("the tracker response carries no per-reader markup",
+    !/SUBSCRIBER_MENU_MARKER/.test(readFileSync(join(REPO, "site-worker", "src", "index.js"), "utf8")),
+    "site-worker must not personalise a publicly cacheable page");
+
+  const browser = await launch();
+  const look = async (signedIn) => {
+    const ctx = await browser.newContext();
+    if (signedIn) await ctx.addCookies([{ name: "eicc_who", value: "dan%40example.com",
+      domain: "127.0.0.1", path: "/" }]);
+    const page = await ctx.newPage();
+    await page.goto(HOME, { waitUntil: "load" });
+    await page.waitForTimeout(1200);
+    const r = await page.evaluate(() => {
+      const vis = (sel) => { const e = document.querySelector(sel);
+        return e ? (!e.hidden && getComputedStyle(e).display !== "none") : false; };
+      return {
+        managePrefs: vis("#ddSubscribers"),
+        label: ((document.querySelector("#ddSubscribers") || {}).innerText || "").trim(),
+        subscribeItem: vis("#ddSubscribe"),
+        perks: vis(".subscriber-perks"),
+        carouselSubscribe: !!document.querySelector('a.car-slide[href="subscribe"]'),
+        slides: document.querySelectorAll(".car-slide").length,
+        dots: document.querySelectorAll(".car-dot").length,
+      };
+    });
+    await ctx.close();
+    return r;
+  };
+
+  const out = await look(false);
+  const inn = await look(true);
+  await browser.close();
+
+  t.check("a signed-out reader is offered Subscribe and not Manage Preferences",
+    out.subscribeItem && !out.managePrefs, JSON.stringify(out));
+
+  // Dan, 26 August: "change the 'Subscribers' menu option to read 'Manage
+  // Preferences', and then hide the Subscribe pop-out when logged in."
+  t.check("a signed-in reader is offered Manage Preferences instead",
+    inn.managePrefs && /Manage Preferences/.test(inn.label) && !inn.subscribeItem,
+    JSON.stringify(inn));
+
+  // THE POP-OUT HAS THREE TRIGGERS AND HIDING IT MEANS HIDING ALL THREE.
+  // A visible "Subscribe →" that does nothing is worse than one that asks
+  // a subscriber to subscribe.
+  t.check("and none of the three signup triggers survives being signed in",
+    !inn.subscribeItem && !inn.perks && !inn.carouselSubscribe,
+    `menu=${inn.subscribeItem} perks=${inn.perks} carousel=${inn.carouselSubscribe}`);
+  t.check("while a signed-out reader still gets all three",
+    out.subscribeItem && out.perks && out.carouselSubscribe, JSON.stringify(out));
+
+  // The carousel is built from an array and its dots from the same array.
+  // Filtering one and not the other rotates to a blank slide once a cycle.
+  t.check("the carousel's dots match the slides it actually renders",
+    out.slides === out.dots && inn.slides === inn.dots && inn.slides === out.slides - 1,
+    `signed out ${out.slides}/${out.dots}, signed in ${inn.slides}/${inn.dots}`);
+}
+
+// ---- the worker, for everything below -----------------------------------
 const { d1 } = await openReplayDb();
 const worker = (await import(join(REPO, "site-worker", "src", "index.js"))).default;
 
@@ -57,7 +160,7 @@ const membersStub = {
   async fetch(req) {
     const body = req.method === "POST" ? await req.text() : "";
     seenByMembers.push({ url: req.url, method: req.method, cookie: req.headers.get("Cookie") || "", body });
-    return new Response("<html><body><div class=\"wrap\">prefs</div></body></html>",
+    return new Response('<html><body><div class="wrap">prefs</div></body></html>',
       { status: 200, headers: { "content-type": "text/html" } });
   },
 };
@@ -66,10 +169,11 @@ const env = {
   eicc_content: d1,
   ASSETS: {
     async fetch(req) {
-      const p = new URL(req.url).pathname;
-      try { return new Response(readFileSync(join(REPO, p.replace(/^\//, "")), "utf8"),
-        { headers: { "content-type": "text/html" } }); }
-      catch { return new Response("not found", { status: 404 }); }
+      const path = new URL(req.url).pathname;
+      try {
+        return new Response(readFileSync(join(REPO, path.replace(/^\//, "")), "utf8"),
+          { headers: { "content-type": "text/html" } });
+      } catch { return new Response("not found", { status: 404 }); }
     },
   },
   SESSION_SECRET: SECRET,
@@ -82,27 +186,6 @@ const get = (path, opts = {}) => worker.fetch(
   new Request(`https://e-invoicingcompliancecorner.com${path}`, opts), env, { waitUntil() {} });
 const asSubscriber = (path, opts = {}) => get(path, {
   ...opts, headers: { ...(opts.headers || {}), Cookie: `${SESSION_COOKIE}=${session}` } });
-
-// ---- 1. the item appears only with a session ---------------------------
-{
-  const anon = await (await get("/")).text();
-  const signed = await (await asSubscriber("/")).text();
-
-  t.check("a signed-out reader is offered no Subscribers item",
-    !/id="ddSubscribers"/.test(anon),
-    "a menu item pointing at a page the reader cannot use is the false "
-    + "promise the padlock was removed for in August");
-  t.check("and a signed-in reader is",
-    /id="ddSubscribers"/.test(signed) && /data-i18n="menu\.subscribers"/.test(signed));
-
-  // THE MARKER IS CONSUMED, not merely appended next to. If the injection
-  // ever left the comment behind AND added the item, this passes; if it
-  // left the comment behind and added nothing, the check above catches it.
-  // Both are worth separating because they fail for different reasons.
-  t.check("the injected menu item is a real link to the panel route",
-    /id="ddSubscribers"[^>]*href="\/subscribers"|href="\/subscribers"[^>]*id="ddSubscribers"/.test(signed),
-    signed.split("ddSubscribers")[0].slice(-120));
-}
 
 // ---- 2. the route the panel pushes is actually served ------------------
 {
@@ -193,4 +276,5 @@ const asSubscriber = (path, opts = {}) => get(path, {
     /Manage my preferences/.test(members) && /members\/preferences/.test(members));
 }
 
+server.close();
 process.exit(t.report() ? 0 : 1);

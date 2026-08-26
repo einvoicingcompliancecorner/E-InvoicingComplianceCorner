@@ -1133,8 +1133,17 @@
                own live link under Resources, since it's open to
                everyone for free during a temporary promo; see
                wrangler.toml's ARCHIVE_PUBLIC comment. -->
-          <!-- SUBSCRIBER MENU -->
-          <a class="dropdown-item" href="subscribe"><span class="dd-icon">✉</span><span data-i18n="menu.subscribe">Subscribe</span></a>
+          <!-- BOTH ITEMS SHIP IN THE MARKUP AND THE BROWSER PICKS ONE.
+               Injecting the signed-in one server-side made the tracker
+               differ per reader on a `public, max-age=60` response, which
+               is the one thing the comment beside those headers says this
+               route does not do. eicc_who decides it here instead: a
+               display cookie, no authority, already read by i18n.js.
+               Hidden with the `hidden` attribute rather than CSS so it is
+               out of the accessibility tree too, and so a reader with no
+               JavaScript is offered neither rather than both. -->
+          <a class="dropdown-item eicc-signed-in-only" href="/subscribers" id="ddSubscribers" hidden><span class="dd-icon">⚙</span><span data-i18n="menu.managePrefs">Manage Preferences</span></a>
+          <a class="dropdown-item eicc-signed-out-only" href="subscribe" id="ddSubscribe"><span class="dd-icon">✉</span><span data-i18n="menu.subscribe">Subscribe</span></a>
           <a class="dropdown-item" href="feedback"><span class="dd-icon">💬</span><span data-i18n="menu.feedback">Give feedback</span></a>
         </div>
       </div>
@@ -1154,7 +1163,7 @@
          .topbar-right per Dan's request (6 Aug 2026). Fixed-width perks
          box, flex-growing carousel (see .perks-row above). -->
     <div class="perks-row">
-      <div class="subscriber-perks">
+      <div class="subscriber-perks eicc-signed-out-only">
         <h4 data-i18n="perks.heading">Subscribers also get</h4>
         <ul>
           <li data-i18n="perks.item1">A monthly email digest — every new mandate or deadline change, summarised</li>
@@ -2942,7 +2951,7 @@ function wireFeatureCarousel(){
   const SLIDES = [
     {thumb:THUMB_MAP, i18nKey:'map', eyebrow:'Explore', title:'View the Map', desc:'See every mandate status worldwide at a glance, color-coded by stage.', href:'/map'},
     {thumb:THUMB_NEWS, i18nKey:'news', eyebrow:'Catch up', title:'View the News', desc:'Browse the full newsletter archive — every past announcement, searchable.', href:'/members/archive'},
-    {thumb:THUMB_SUBSCRIBE, i18nKey:'subscribe', eyebrow:'Stay ahead', title:'Subscribe', desc:'Get a monthly digest the moment a mandate or deadline changes. Calculate the ROI of your project, and plan implementation against mandates. Download country compliance guides.', href:'subscribe'},
+    {thumb:THUMB_SUBSCRIBE, i18nKey:'subscribe', signedOutOnly:true, eyebrow:'Stay ahead', title:'Subscribe', desc:'Get a monthly digest the moment a mandate or deadline changes. Calculate the ROI of your project, and plan implementation against mandates. Download country compliance guides.', href:'subscribe'},
     {thumb:THUMB_PREPARE, i18nKey:'preparing', eyebrow:'Get ready', title:'Preparing for a Mandate', desc:'What to do before a mandate takes effect — timelines, vendor selection, and internal readiness.', href:'education-preparing-for-mandate.html'},
     // Sponsor This Site -- parked for now per Dan's request (6 Aug 2026).
     // Uncomment when there's an actual sponsorship model/page to link to
@@ -2958,7 +2967,15 @@ function wireFeatureCarousel(){
   ];
   const ROTATE_MS = 5000; // 5s per slide, per Dan's request (6 Aug 2026) -- was 3.5s
 
-  track.innerHTML = SLIDES.map(s => {
+  // The Subscribe slide is one of the three things that opens the signup
+  // pop-out, so it goes when the reader is already signed in -- see
+  // applySignedInChrome(). Filtered rather than hidden, because the dots
+  // and the rotation are both built from this array's length and a hidden
+  // slide would leave a dot that rotates to nothing.
+  const signedIn = (typeof EICC_WHO !== 'undefined') && !!EICC_WHO.read();
+  const slides = SLIDES.filter(s => !(s.signedOutOnly && signedIn));
+
+  track.innerHTML = slides.map(s => {
     const tag = s.href ? 'a' : 'div';
     const hrefAttr = s.href ? ` href="${s.href}"` : '';
     const cls = s.href ? 'car-slide' : 'car-slide coming-soon-slide';
@@ -2971,7 +2988,7 @@ function wireFeatureCarousel(){
         </div>
       </${tag}>`;
   }).join('');
-  dotsWrap.innerHTML = SLIDES.map((_,i) => `<button class="car-dot${i===0?' active':''}" data-i="${i}" aria-label="Slide ${i+1}"></button>`).join('');
+  dotsWrap.innerHTML = slides.map((_,i) => `<button class="car-dot${i===0?' active':''}" data-i="${i}" aria-label="Slide ${i+1}"></button>`).join('');
   // No extra language-change listener needed here: i18n.js's own
   // applyToDom() already re-translates every data-i18n element on the
   // page on init AND on every language switch (see i18n/i18n.js's
@@ -2983,7 +3000,11 @@ function wireFeatureCarousel(){
   let idx = 0;
   const dots = [...dotsWrap.querySelectorAll('.car-dot')];
   function go(i){
-    idx = (i + SLIDES.length) % SLIDES.length;
+    // `slides`, not SLIDES -- the rendered list, which is one shorter
+    // for a signed-in reader. Left on the unfiltered length this wraps
+    // to an index with no slide and no dot: the strip scrolls to blank
+    // once per rotation and every dot goes inactive.
+    idx = (i + slides.length) % slides.length;
     track.style.transform = `translateX(-${idx*100}%)`;
     dots.forEach((d,j) => d.classList.toggle('active', j===idx));
   }
@@ -5588,6 +5609,40 @@ function wireDeepDiveInPagePanel(){
     document.getElementById('sidebarOverlay')?.classList.remove('open');
     openDeepDive(slug);
   });
+
+  // ---- who the menu is for ---------------------------------------
+  //
+  // Dan, 26 August 2026: "Could we change the 'Subscribers' menu option to
+  // read 'Manage Preferences', and then hide the Subscribe pop-out when
+  // logged in?"
+  //
+  // The pop-out is opened from three places, and hiding it means hiding
+  // what opens it -- a visible "Subscribe →" that does nothing is worse
+  // than one that asks a subscriber to subscribe. The carousel's own
+  // Subscribe slide is dropped in wireFeatureCarousel(), which builds its
+  // slides from an array rather than from markup.
+  //
+  // READ ONCE, HERE. EICC_WHO.read() returns the address or null, and it
+  // is display only: forging the cookie changes which menu item shows and
+  // unlocks nothing, because /subscribers answers members-worker's own
+  // sign-in wall and the session cookie behind it is HttpOnly.
+  function applySignedInChrome(){
+    const signedIn = (typeof EICC_WHO !== 'undefined') && !!EICC_WHO.read();
+    document.querySelectorAll('.eicc-signed-in-only')
+      .forEach(el => { el.hidden = !signedIn; });
+    document.querySelectorAll('.eicc-signed-out-only')
+      .forEach(el => { el.hidden = signedIn; });
+  }
+  applySignedInChrome();
+  // NO 'eicc:signed-in' LISTENER HERE, and that is checked rather than
+  // assumed. The first version added one, on the reasoning that the auth
+  // pop-out signs someone in without a reload -- but succeed() in
+  // auth-overlay.js calls window.location.reload() unless the caller
+  // passes onSuccess, and the tracker's Subscribe trigger passes only
+  // { mode }. So the page reloads and this runs again on its own. Nothing
+  // dispatches that event anywhere in the repo, which would have made it
+  // a hook nobody ever hung anything on -- the exact shape migration
+  // 589's sweep could not see and that cost two parameters in roi-render.
 
   // A DIRECT HIT OR A REFRESH ON /subscribers. site-worker serves the
   // tracker for that path (TRACKER_PATHS), so without this the reader

@@ -37,7 +37,7 @@
 // drift cannot go unnoticed.
 import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { suite, loadPlaywright } from "./lib/browser.mjs";
+import { suite, loadPlaywright, launch } from "./lib/browser.mjs";
 import { openReplayDb, REPO } from "./lib/replay-db.mjs";
 
 const t = suite("tracker board renders");
@@ -153,7 +153,15 @@ t.check("the worker clears it and refuses to serve a half-injected page",
   /const DATA_SNAPSHOT_DATE = null;/.test(worker) && /snapshotFlag=\$\{clearedSnapshot\}/.test(worker));
 
 const { chromium } = await loadPlaywright();
-const browser = await chromium.launch({ executablePath: "/opt/pw-browsers/chromium" });
+// SHARED launch(), NOT chromium.launch() WITH A PATH. Dan hit this on
+// 26 August: "Failed to launch chromium because executable doesn't
+// exist at /opt/pw-browsers/chromium". That path is the sandbox this
+// project is developed in; on any other machine Playwright's own
+// download location is right and the hardcoded one is a crash. The
+// helper uses the sandbox binary when it is there, falls back to
+// Playwright's when it is not, and turns a missing download into one
+// line of instructions instead of a stack trace.
+const browser = await launch();
 const render = async (html, label) => {
   const file = `/tmp/tracker-state-${label}.html`;
   writeFileSync(file, html);
