@@ -588,6 +588,18 @@
   .dropdown-item.dd-country{gap:8px; font-size:12.5px;}
   .dropdown-item.dd-country .flag{font-size:14px;}
   .topbar-menus{display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; align-items:center;}
+  /* THE hidden ATTRIBUTE HAS TO WIN, and without this it does not.
+     The UA stylesheet's [hidden]{display:none} is the weakest rule in the
+     cascade, so ANY author rule that sets display beats it --
+     .dropdown-item{display:flex} below, and .subscriber-perks. Dan, 26
+     August: "I still see the Subscribe menu option when signed in as a
+     subscriber." The JavaScript was setting el.hidden correctly the whole
+     time and the element carried on being displayed.
+     Worse, the test agreed with the JavaScript: it read `e.hidden`, the
+     DOM property, which is true whatever the cascade does. It measured
+     the instruction rather than the result and passed on a broken page.
+     It measures layout now. */
+  [hidden]{display:none !important;}
   .dropdown-item{
     width:100%; text-align:left; background:none; border:none; cursor:pointer;
     padding:12px 16px; font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:#241d10;
@@ -5050,6 +5062,22 @@ function mountSubscribers(panel, html){
   // door. Rewriting the action to the members origin would work but would
   // navigate the reader off the tracker mid-save, which is the thing this
   // panel exists to avoid.
+  // SELECT ALL / CLEAR wire up HERE, because the page's own <script> does
+  // not run. Markup injected through innerHTML never executes its scripts
+  // -- so the two controls arrived looking exactly like buttons and did
+  // nothing at all. Dan, 26 August: "the select all and clear all links do
+  // not work."
+  //
+  // Re-implemented rather than eval'd: the behaviour is two lines, and
+  // running a fetched page's script inside this document is a much larger
+  // decision than this panel needs to make.
+  const boxes = () => shadow.querySelectorAll('#prefsBox input[type=checkbox]');
+  const setAll = (state) => boxes().forEach(cb => { cb.checked = state; });
+  const selectAll = shadow.getElementById('selectAllCountries');
+  const clearAll = shadow.getElementById('clearAllCountries');
+  if(selectAll) selectAll.addEventListener('click', (e) => { e.preventDefault(); setAll(true); });
+  if(clearAll) clearAll.addEventListener('click', (e) => { e.preventDefault(); setAll(false); });
+
   const form = shadow.querySelector('form');
   if(form){
     form.addEventListener('submit', async (e)=>{

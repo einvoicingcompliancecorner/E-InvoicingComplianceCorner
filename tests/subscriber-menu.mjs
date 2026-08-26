@@ -53,6 +53,32 @@ const TYPES = { ".html": "text/html", ".js": "text/javascript", ".json": "applic
   ".css": "text/css", ".svg": "image/svg+xml", ".png": "image/png", ".woff2": "font/woff2" };
 const server = createServer((req, res) => {
   const p = req.url.split("?")[0];
+  // Shaped like members-worker's renderPreferences: a <style>, a .wrap, the
+  // two bulk-select links, #prefsBox, and a form. The page's own <script>
+  // is included DELIBERATELY -- it is what wires select-all on the real
+  // site, and it is what does not run once this markup is injected through
+  // innerHTML. If the panel ever starts relying on it again, these checks
+  // go red while the stub looks perfectly correct.
+  if (p === "/api/preferences") {
+    res.writeHead(200, { "content-type": "text/html" });
+    return res.end(`<!doctype html><html><head><style>.wrap{padding:10px}</style></head>
+      <body><div class="wrap"><a class="back-link" href="/members">back</a>
+      <form method="POST" action="/members/preferences">
+        <a id="selectAllCountries" href="#">Select all</a>
+        <a id="clearAllCountries" href="#">Clear</a>
+        <div class="prefs-box" id="prefsBox">
+          <label><input type="checkbox" name="countries" value="France"> France</label>
+          <label><input type="checkbox" name="countries" value="Poland" checked> Poland</label>
+          <label><input type="checkbox" name="countries" value="Spain"> Spain</label>
+        </div>
+        <button type="submit" class="btn">Save</button>
+      </form></div>
+      <script>
+        document.getElementById('selectAllCountries').addEventListener('click', () => {
+          document.querySelectorAll('#prefsBox input[type=checkbox]').forEach(cb => cb.checked = true);
+        });
+      <\/script></body></html>`);
+  }
   if (p === "/" || p === "/subscribers") {
     res.writeHead(200, { "content-type": "text/html" });
     return res.end(TRACKER);
@@ -104,9 +130,34 @@ const HOME = `http://127.0.0.1:${server.address().port}/`;
     const page = await ctx.newPage();
     await page.goto(HOME, { waitUntil: "load" });
     await page.waitForTimeout(1200);
+    // THE MENU HAS TO BE OPEN. Its items sit in a collapsed panel, so
+    // offsetParent is null for every one of them while it is shut and the
+    // measurement below would report the whole menu invisible -- passing
+    // for the wrong reason, which is the failure this file has already
+    // had once.
+    await page.evaluate(() => {
+      document.getElementById("dropdownPanel").classList.add("open");
+    });
+    await page.waitForTimeout(150);
     const r = await page.evaluate(() => {
+      // LAYOUT, NOT THE ATTRIBUTE. The first version read `e.hidden` --
+      // the DOM property -- which is true the moment JavaScript sets it
+      // and stays true however the cascade resolves. It agreed with the
+      // code that set it and told us nothing about the page.
+      //
+      // .dropdown-item{display:flex} beats the UA's [hidden]{display:none}
+      // outright, so every one of these elements was on screen while this
+      // reported them hidden. Dan found it by looking at the site: "I
+      // still see the Subscribe menu option when signed in as a
+      // subscriber."
+      //
+      // offsetParent is null for anything display:none, itself or through
+      // an ancestor, so this is the rendered answer rather than the
+      // intended one.
       const vis = (sel) => { const e = document.querySelector(sel);
-        return e ? (!e.hidden && getComputedStyle(e).display !== "none") : false; };
+        if (!e) return false;
+        const box = e.getBoundingClientRect();
+        return e.offsetParent !== null && box.width > 0 && box.height > 0; };
       return {
         managePrefs: vis("#ddSubscribers"),
         label: ((document.querySelector("#ddSubscribers") || {}).innerText || "").trim(),
@@ -148,6 +199,62 @@ const HOME = `http://127.0.0.1:${server.address().port}/`;
   t.check("the carousel's dots match the slides it actually renders",
     out.slides === out.dots && inn.slides === inn.dots && inn.slides === out.slides - 1,
     `signed out ${out.slides}/${out.dots}, signed in ${inn.slides}/${inn.dots}`);
+}
+
+// ---- 1b. the panel's own controls actually do something ----------------
+//
+// Dan, 26 August, after deploying: "the manage preferences option opens,
+// but the select all and clear all links do not work."
+//
+// They were wired by an inline <script> on the preferences page, and
+// markup injected through innerHTML NEVER EXECUTES ITS SCRIPTS. The
+// buttons arrived looking exactly like buttons. Nothing threw, nothing
+// logged, and the panel test at the time only checked that the form
+// mounted -- so this needed a check that presses them.
+{
+  const browser = await launch();
+  const ctx = await browser.newContext();
+  await ctx.addCookies([{ name: "eicc_who", value: "dan%40example.com",
+    domain: "127.0.0.1", path: "/" }]);
+  const page = await ctx.newPage();
+  await page.goto(HOME, { waitUntil: "load" });
+  await page.waitForTimeout(1200);
+  await page.evaluate(() => document.getElementById("ddSubscribers")
+    .dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, view: window })));
+  await page.waitForTimeout(900);
+
+  const shadowState = () => page.evaluate(() => {
+    const host = document.getElementById("subscribersView").firstElementChild;
+    const sh = host && host.shadowRoot;
+    if (!sh) return { mounted: false };
+    const boxes = [...sh.querySelectorAll("#prefsBox input[type=checkbox]")];
+    return { mounted: true, total: boxes.length, checked: boxes.filter((b) => b.checked).length };
+  });
+
+  const opened = await shadowState();
+  t.check("the panel mounts the preferences page",
+    opened.mounted && opened.total === 3, JSON.stringify(opened));
+
+  const press = async (id) => {
+    await page.evaluate((which) => {
+      const sh = document.getElementById("subscribersView").firstElementChild.shadowRoot;
+      sh.getElementById(which).dispatchEvent(
+        new MouseEvent("click", { bubbles: true, cancelable: true, view: window }));
+    }, id);
+    await page.waitForTimeout(150);
+    return shadowState();
+  };
+
+  const all = await press("selectAllCountries");
+  t.check("Select all ticks every country",
+    all.checked === all.total, `${all.checked} of ${all.total} ticked`);
+
+  const none = await press("clearAllCountries");
+  t.check("and Clear unticks every one",
+    none.checked === 0, `${none.checked} still ticked`);
+
+  await ctx.close();
+  await browser.close();
 }
 
 // ---- the worker, for everything below -----------------------------------

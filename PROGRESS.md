@@ -18295,3 +18295,57 @@ five now use the helper, and the fix was verified by pointing the sandbox
 constant at a path that does not exist and re-running.
 
 `npm test`: **34 suites**.
+
+---
+
+### 26 August 2026 — two bugs Dan found that the tests had approved
+
+> "1) I still see the Subscribe menu option when signed in as a subscriber.
+> 2) the manage preferences option opens, but the select all and clear all
+> links do not work."
+
+Both real, both shipped, and the first one had a **passing test sitting
+directly on top of it**.
+
+#### `hidden` does nothing to an element with a display rule
+
+`[hidden]{display:none}` comes from the UA stylesheet, which is the
+weakest thing in the cascade. `.dropdown-item{display:flex}` beats it
+outright, as does `.subscriber-perks`. So `el.hidden = true` set the
+property, the property stayed true, and the element carried on being drawn.
+
+**The test agreed with the code rather than with the page.** It read
+`e.hidden` — the DOM property — which is true the moment JavaScript sets it
+and says nothing about what the cascade did with it. It was measuring the
+instruction, not the result.
+
+It now measures layout: `offsetParent !== null` and a non-zero box. Two
+things fell out of making that change. The corrected check reproduced
+Dan's report exactly, and it surfaced the half he had not mentioned —
+**signed-out readers were being shown "Manage Preferences"**, the same bug
+in the other direction. And it initially reported the whole menu invisible,
+because these items live in a collapsed dropdown, so the test now opens the
+menu first: measuring layout on a closed panel would have passed for a new
+wrong reason.
+
+An author-level `[hidden]{display:none !important}` fixes all three
+affordances at once.
+
+#### Injected markup never runs its scripts
+
+Select-all and Clear are wired by an inline `<script>` on the preferences
+page. `innerHTML` does not execute scripts, so both links mounted looking
+exactly like links and did nothing. Nothing threw and nothing logged.
+
+Re-implemented in the panel — two lines against the shadow root — rather
+than eval'ing a fetched page's script inside this document, which is a much
+larger decision than this panel needs to make. The test now **presses both
+buttons** and counts ticked boxes, and its stub deliberately includes the
+page's own script so that a future version relying on it again goes red
+while the stub still looks correct.
+
+The lesson is the one this project keeps relearning, in a new costume: a
+check that reads back what the code just set is not a check. Dan found this
+one by looking at the site.
+
+`npm test`: **34 suites**.
