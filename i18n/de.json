@@ -698,5 +698,13 @@
   },
   "prefs": {
     "saveFailed": "Konnte gerade nicht gespeichert werden. Bitte erneut versuchen."
+  },
+  "subs": {
+    "heading": "Sie sind Abonnent",
+    "sub": "Alles Folgende ist in Ihrem Abonnement enthalten.",
+    "countries": "Länderauswahl verwalten",
+    "roi": "ROI berechnen und Projekt planen",
+    "guides": "Länderleitfäden herunterladen",
+    "specs": "Spezifikationsregister ansehen"
   }
 }

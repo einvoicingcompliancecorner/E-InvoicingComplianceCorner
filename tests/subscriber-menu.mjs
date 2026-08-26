@@ -162,7 +162,10 @@ const HOME = `http://127.0.0.1:${server.address().port}/`;
         managePrefs: vis("#ddSubscribers"),
         label: ((document.querySelector("#ddSubscribers") || {}).innerText || "").trim(),
         subscribeItem: vis("#ddSubscribe"),
-        perks: vis(".subscriber-perks"),
+        perks: vis(".subscriber-perks.eicc-signed-out-only"),
+        subsPanel: vis("#subscriberPanel"),
+        subsRows: [...document.querySelectorAll("#subscriberPanel li.go a")]
+          .map((a) => a.getAttribute("href")),
         carouselSubscribe: !!document.querySelector('a.car-slide[href="subscribe"]'),
         slides: document.querySelectorAll(".car-slide").length,
         dots: document.querySelectorAll(".car-dot").length,
@@ -193,6 +196,28 @@ const HOME = `http://127.0.0.1:${server.address().port}/`;
     `menu=${inn.subscribeItem} perks=${inn.perks} carousel=${inn.carouselSubscribe}`);
   t.check("while a signed-out reader still gets all three",
     out.subscribeItem && out.perks && out.carouselSubscribe, JSON.stringify(out));
+
+  // ---- the panel swaps rather than emptying --------------------------
+  //
+  // Dan, 26 August, seeing the row go half-empty once the advert was
+  // hidden: "keep the panel, and put 'You're subscribed' with links to
+  // 'Manage Your Countries'..." So exactly one of the two panels is on
+  // screen at any time -- never both, and never neither, which is what
+  // left the carousel floating in a row sized for two.
+  t.check("a signed-out reader gets the advert and not the subscriber panel",
+    out.perks && !out.subsPanel, JSON.stringify({ perks: out.perks, panel: out.subsPanel }));
+  t.check("and a signed-in reader gets the subscriber panel instead",
+    inn.subsPanel && !inn.perks, JSON.stringify({ perks: inn.perks, panel: inn.subsPanel }));
+  t.check("so the row is never left with only the carousel in it",
+    (out.perks || out.subsPanel) && (inn.perks || inn.subsPanel),
+    "one panel or the other, always — the empty half is the defect this fixed");
+
+  // Its rows are the four destinations Dan named, and every one is a route
+  // the tracker intercepts. menu-in-page.mjs clicks them; this checks the
+  // panel is still pointing at them.
+  t.check("the subscriber panel offers all four destinations",
+    inn.subsRows.join(",") === "/subscribers,/roi-calculator,/compliance-guides,/spec-register",
+    inn.subsRows.join(", "));
 
   // The carousel is built from an array and its dots from the same array.
   // Filtering one and not the other rotates to a blank slide once a cycle.

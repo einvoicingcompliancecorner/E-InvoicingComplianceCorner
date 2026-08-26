@@ -698,5 +698,13 @@
   },
   "prefs": {
     "saveFailed": "Could not save just now. Please try again."
+  },
+  "subs": {
+    "heading": "You're subscribed",
+    "sub": "Everything below is included in your subscription.",
+    "countries": "Manage your countries",
+    "roi": "Build an ROI and plan your project",
+    "guides": "Download compliance guides",
+    "specs": "Check the specification register"
   }
 }

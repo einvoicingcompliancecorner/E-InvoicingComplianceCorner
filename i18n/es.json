@@ -698,5 +698,13 @@
   },
   "prefs": {
     "saveFailed": "No se ha podido guardar. Inténtelo de nuevo."
+  },
+  "subs": {
+    "heading": "Está suscrito",
+    "sub": "Todo lo siguiente está incluido en su suscripción.",
+    "countries": "Gestionar sus países",
+    "roi": "Calcular el ROI y planificar su proyecto",
+    "guides": "Descargar las guías de cumplimiento",
+    "specs": "Consultar el registro de especificaciones"
   }
 }

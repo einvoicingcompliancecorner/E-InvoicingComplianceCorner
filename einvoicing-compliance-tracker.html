@@ -151,6 +151,14 @@
   .subscriber-perks ul{list-style:none; margin:0 0 12px; padding:0;}
   .subscriber-perks li{font-size:11.8px; color:var(--muted); padding:3px 0 3px 18px; position:relative; line-height:1.45;}
   .subscriber-perks li::before{content:"✓"; position:absolute; left:0; color:var(--live); font-weight:700;}
+  /* The subscriber panel's rows are links, which the advert's rows never
+     were -- so they need a colour and a hover the tick list has no rule
+     for. The arrow replaces the tick deliberately: a tick reads as "you
+     get this", which was the pitch, and these are destinations. */
+  .subscriber-perks .perks-sub{font-size:11.8px; color:var(--muted); margin:0 0 10px; line-height:1.45;}
+  .subscriber-perks li.go::before{content:"\2192"; color:var(--soon); font-weight:700;}
+  .subscriber-perks li a{color:var(--text-lo); text-decoration:none;}
+  .subscriber-perks li a:hover{color:var(--soon); text-decoration:underline;}
   .subscriber-perks .perks-cta{
     display:inline-flex; align-items:center; gap:5px; font-family:'IBM Plex Mono',monospace; font-size:11.5px;
     color:var(--soon); text-decoration:none; font-weight:600;
@@ -1184,6 +1192,28 @@
           <li data-i18n="perks.item4">Country compliance guides — a printable one-page briefing for any market you pick</li>
         </ul>
         <a class="perks-cta" href="subscribe" data-i18n="perks.cta">Subscribe →</a>
+      </div>
+
+      <!-- THE SAME PANEL, FOR SOMEONE WHO ALREADY SUBSCRIBED.
+           Dan, 26 August 2026, after spotting the row had gone
+           half-empty: "keep the panel, and put 'You're subscribed' with
+           links to 'Manage Your Countries'... This should be in the same
+           font as the existing box, that was hidden."
+           So it reuses .subscriber-perks wholesale rather than styling a
+           second panel that merely resembles it. Only the list items
+           differ, because they are links here and statements there.
+           EVERY HREF BELOW IS ONE THE TRACKER ALREADY INTERCEPTS, so
+           these open in-page panels exactly as the Menu items do. That is
+           not an assumption -- tests/menu-in-page.mjs clicks each one. -->
+      <div class="subscriber-perks eicc-signed-in-only" id="subscriberPanel" hidden>
+        <h4 data-i18n="subs.heading">You're subscribed</h4>
+        <p class="perks-sub" data-i18n="subs.sub">Everything below is included in your subscription.</p>
+        <ul>
+          <li class="go"><a href="/subscribers" data-i18n="subs.countries">Manage your countries</a></li>
+          <li class="go"><a href="/roi-calculator" data-i18n="subs.roi">Build an ROI and plan your project</a></li>
+          <li class="go"><a href="/compliance-guides" data-i18n="subs.guides">Download compliance guides</a></li>
+          <li class="go"><a href="/spec-register" data-i18n="subs.specs">Check the specification register</a></li>
+        </ul>
       </div>
 
       <!-- Feature carousel: rotates links to the map, newsletter
