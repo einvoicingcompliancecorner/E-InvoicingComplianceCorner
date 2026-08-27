@@ -1590,7 +1590,7 @@ ${langAsked && langAsked !== lang ? `<p class="note noprint" style="margin:0 0 1
       esc(name));
   })()
 }</p>` : ""}
-<p class="lede">${t("page.lede", "Build a board-ready business case from your own volumes and footprint &mdash; with a dated, sourced compliance wave plan drawn from the 70 jurisdictions this site tracks. Every benchmark carries a visible evidence grade, so your CFO can see exactly which numbers are independently evidenced and which are your own assumptions.")}</p>
+<p class="lede">${t("page.lede", "Build a board-ready business case from your own volumes and footprint &mdash; with a dated, sourced compliance wave plan drawn from the 71 jurisdictions this site tracks. Every benchmark carries a visible evidence grade, so your CFO can see exactly which numbers are independently evidenced and which are your own assumptions.")}</p>
 
 
 <!-- Dan, 15 Aug 2026: "add simple and discrete instructions at the top of
@@ -1703,7 +1703,7 @@ ${langAsked && langAsked !== lang ? `<p class="note noprint" style="margin:0 0 1
         <span>${t("subs.label", "Use <strong>my subscribed countries</strong>")} <span id="subsCount" class="hint" style="display:inline"></span></span>
       </label>
       <p class="hint" id="subsWhat" style="margin:-4px 0 10px">${t("subs.what", "Those are the countries you follow for alerts. Adjust the list if your invoicing footprint is different.")}</p>
-      <input type="search" id="cSearch" autocomplete="off" placeholder="${t("input.countrySearch", "Search 70 jurisdictions")}" style="margin:0 0 8px">
+      <input type="search" id="cSearch" autocomplete="off" placeholder="${t("input.countrySearch", "Search 71 jurisdictions")}" style="margin:0 0 8px">
       <p class="hint hidden" id="cNoMatch" style="margin:0 0 8px">${t("input.countryNoMatch", "Nothing matches that. Clear the search to see every jurisdiction.")}</p>
       <div class="countries" id="countryList"></div>
     </div>

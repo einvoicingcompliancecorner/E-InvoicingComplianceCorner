@@ -529,7 +529,19 @@ python3 test_assertions.py                   # proves the mechanism itself still
      an override — that console warning is the reliable signal a new
      country needs one, don't rely on eyeballing the rendered map
      alone (a missing shape can be easy to miss among ~190 others).
-   - There's no validation step that catches either of these — check
+   - **`REGION_BOUNDS`** — the third hand-maintained table in that file,
+     and the one most likely to bite, because it fails without any
+     symptom at all. Each region is drawn through a hand-sized lon/lat
+     box, and a country outside its own region's box is simply projected
+     off screen: no console warning, no error, no missing-shape hint.
+     Decode the new country's real extent from
+     `vendor/countries-50m.json` and check it against the box before you
+     ship — the file's own comment asks for this, and doing it has now
+     twice found a country that was *already* clipped. Kazakhstan was
+     found that way in August 2026; Oman was found the same way on
+     27 August, clipped on its eastern edge since the day it was added,
+     while checking Botswana's southern extent.
+   - There's no validation step that catches any of these — check
      the console for the warning above and visually confirm the new
      country's shape or marker actually appears on `/map` before
      calling a launch done. Most countries need neither override; add
@@ -574,8 +586,11 @@ documented reason to exist:
   countries × 3 languages — and `COUNTRY_DEEP_DIVE_SLUGS` holds 70,
   matching the 70 slugged rows. Nothing is outstanding; just add yours.*
 - **`i18n/{en,es,de,fr}.json` `countryNames`** — used by the tracker's
-  client-side `translateCountry`. Regenerate from D1 rather than
-  hand-editing where possible:
+  client-side `translateCountry`. **This one is checked**, in a place
+  nobody would look for it: `tests/spec-register.mjs` compares every
+  slugged country against all three translated files, because that is
+  where the gap first became visible. Its own comment says so. Regenerate
+  from D1 rather than hand-editing where possible:
   ```bash
   cd members-worker && python3 migrations/generate_files.py --remote --out i18n-generated
   python3 migrations/compare_generated.py   # confirm only expected diffs
@@ -759,8 +774,10 @@ mind autoincrement-PK tables where a re-run genuinely duplicates rows
       name, and several of them are real checks on a country add: the ROI
       regression (a new country changes the planner's picker, integration
       count and wave plan), `headline-facts.mjs` (which renders pages at
-      five widths in four languages), `guides-consistency.mjs`, and
-      `spec-register.mjs`. Needs no credentials and takes a couple of
+      five widths in four languages), `guides-consistency.mjs`,
+      `spec-register.mjs`, and `country-pages.mjs`, which asks the router
+      for every slug and is the one that fails if your country has no
+      deep dive yet. Needs no credentials and takes a couple of
       minutes (see `tests/README.md`)
 - [ ] Main tracker: milestones on the board (both the arrivals view and
       list view), country in the region filter and sidebar
@@ -931,8 +948,15 @@ a stat tile that duplicates a headline tile, unless it happens to be
 about archiving; or a `COUNTRY_NAME_TRANSLATIONS` entry you forgot,
 which lives in a file the replay never reads.
 
-Those five are the list this runbook exists to carry, because nothing
-else will.
+**And nor will it refuse a country with no deep-dive content**, whose
+page is then a 404 that the tracker, the map and every neighbouring
+country's related-jurisdictions block all link to. `npm test` was green
+in exactly that state on 26 August 2026. `tests/country-pages.mjs` was
+written that day and asks the router for every slug; it is the check that
+turns this from a silent gap into a failing suite.
+
+Those are the list this runbook exists to carry, because the replay will
+not.
 
 ---
 
@@ -1006,7 +1030,7 @@ second list is the one that needs a person.
 
 | Register | Skipping it means | Caught by |
 | --- | --- | --- |
-| `tracking_sources` | the country's official pages are **watched by nothing**, and the weekly monitor reports a clean sweep | nothing — this is the live exposure |
+| `tracking_sources` | the country's official pages are **watched by nothing**, and the weekly monitor reports a clean sweep | **caught, indirectly**: `/sources` builds its JSON-LD Dataset count from this register, so an absent country makes the site under-report its own coverage, and `structured-data.mjs` compares that number against `countries`. An accidental guard rather than a designed one — keep it deliberately |
 | `country_headline_facts` + its translations | the deep dive loses its headline strip and the guide falls back to the country's free-form stats — both render cleanly and look finished | nothing, today. `guides-consistency.mjs` floors at sixty countries and compares what exists, not what is absent; 608's coverage claim is a point-in-time `ASSERT:`, so it reports *superseded* and passes |
 | `fact_history` for those facts | — | **caught**: 615's standing invariant requires every current value to be the newest history row |
 | `country_spec` + its translations | the country is absent from the specification register | nothing — and absence is a legitimate state, so this one is a decision to record rather than a gap to close |
