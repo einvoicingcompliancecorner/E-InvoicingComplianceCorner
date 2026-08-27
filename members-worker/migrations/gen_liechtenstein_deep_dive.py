@@ -1,0 +1,344 @@
+#!/usr/bin/env python3
+"""gen_liechtenstein_deep_dive.py — emits 669_liechtenstein_deep_dive.sql.
+
+Edit this file, not the SQL. Run:
+    python3 gen_liechtenstein_deep_dive.py > 669_liechtenstein_deep_dive.sql
+
+WHY THIS PAGE IS SHAPED THE WAY IT IS
+-------------------------------------
+Liechtenstein is the first country on this site where the honest headline
+is that almost nothing is required. That is useful information rather
+than a gap, and the page has to say it confidently instead of reading
+like a country whose research was never finished.
+
+It also sits across two regimes at once, and the page leads with that
+because every other fact follows from it. Swiss VAT law governs by the
+treaty of 28 October 1994, through Liechtenstein's own MWSTG and its own
+Steuerverwaltung. But indirect taxation is outside the EEA Agreement
+while public procurement is inside it, so Directive 2014/55/EU reached
+Liechtenstein and the EU VAT Directive never will. A reader who
+understands that one asymmetry can predict the whole country.
+
+The stat strip carries the rate, the threshold and the retention period.
+Nothing in it restates a headline tile -- the tiles above already carry
+every status, and the archiving years, and the signature position.
+"""
+import json
+
+LANGS = ("en", "es", "de", "fr")
+
+def esc(s):
+    return s.replace("'", "''")
+
+def lit(s):
+    return "NULL" if s is None else "'" + esc(s) + "'"
+
+CID = "(SELECT id FROM countries WHERE code = 'LI')"
+
+PAGE = {
+"en": dict(
+compliance_model="Two regimes at once. Swiss VAT law governs by treaty, through Liechtenstein's own VAT Act and its own tax administration, so there is no B2B or B2C mandate and none in prospect. Public procurement is inside the EEA Agreement, so contracting authorities must accept EN 16931 invoices — a duty to receive, not to send.",
+mandate_summary="Liechtenstein has no e-invoicing mandate on any business. Its contracting authorities have had to accept and process EN 16931 electronic invoices since 27 November 2018, but no supplier is obliged to send one, there is no national platform, and no authority receives invoice or transaction data. VAT returns have gone through the eMWST portal since January 2025, which is a filing channel and not a reporting regime.",
+mandate_summary_icon="🇱🇮",
+timeline_intro="Liechtenstein's timeline is short because its obligations are few, and the one that matters arrived by an unusual route. Directive 2014/55/EU was incorporated into the EEA Agreement by Joint Committee Decision 166/2015, in force on 1 January 2016, with an EEA compliance date of 27 November 2018. Everything since has been administrative rather than substantive.",
+file_format_intro="EN 16931 is the standard, because that is what the directive requires an authority to accept. There is no national CIUS in effect and no national extension. There is also no platform: the European Commission's own country page records that invoices above EU thresholds are sent to the contracting authority by email, in XML or PDF. Liechtenstein has no Peppol Authority, and neither does Switzerland — a business may use Peppol commercially, but there is no domestic governance or infrastructure behind it.",
+scope_intro="The scope question here is unusually clean, because the obligation is on the buyer rather than the seller. Contracting authorities must be able to receive and process a compliant electronic invoice for procurement above EU thresholds. Suppliers to those authorities may invoice electronically and are not required to. No business, of any size, in any sector, is obliged to issue an electronic invoice to anyone.",
+steps_intro="There is no compliance project here, and that is the finding rather than an omission. What is worth doing is confirming which administration you deal with, getting onto the mandatory filing portal, and knowing which of your obligations would move if Europe legislated again.",
+penalties_intro="There are no e-invoicing penalties, because there is no e-invoicing obligation on a business to breach. What does carry consequences is record-keeping: the retention rules below sit in Liechtenstein's own company and tax law and apply whatever form your invoices take.",
+footer_disclaimer="This page reflects Liechtenstein's Mehrwertsteuergesetz (LGBl 2009 Nr. 330) and Mehrwertsteuerverordnung in their versions in force from 1 January 2026, the Personen- und Gesellschaftsrecht and its ordinance, and the Gesetz über das Öffentliche Auftragswesen (LGBl 1998 Nr. 135), read with the EFTA Secretariat's record of EEA incorporation and, where the 1994 treaty makes Swiss law applicable, the Swiss Federal Tax Administration's own published position. Facts described as Swiss substance arriving by treaty are marked as such.",
+),
+"es": dict(
+compliance_model="Dos regímenes a la vez. La ley suiza del IVA rige por tratado, a través de la propia Ley del IVA de Liechtenstein y de su propia administración tributaria, de modo que no hay obligación B2B ni B2C ni se prevé ninguna. La contratación pública sí está dentro del Acuerdo EEE, así que los organismos deben aceptar facturas EN 16931: un deber de recibir, no de enviar.",
+mandate_summary="Liechtenstein no impone facturación electrónica a ninguna empresa. Sus organismos contratantes deben aceptar y procesar facturas electrónicas EN 16931 desde el 27 de noviembre de 2018, pero ningún proveedor está obligado a enviarlas, no existe plataforma nacional y ninguna administración recibe datos de facturas ni de operaciones. Las declaraciones de IVA pasan por el portal eMWST desde enero de 2025, que es un canal de presentación y no un régimen de declaración.",
+mandate_summary_icon="🇱🇮",
+timeline_intro="La cronología de Liechtenstein es corta porque sus obligaciones son pocas, y la que importa llegó por una vía poco común. La Directiva 2014/55/UE se incorporó al Acuerdo EEE mediante la Decisión 166/2015 del Comité Mixto, en vigor el 1 de enero de 2016, con fecha de cumplimiento en el EEE el 27 de noviembre de 2018. Todo lo posterior ha sido administrativo, no sustantivo.",
+file_format_intro="La norma es EN 16931, porque es lo que la directiva exige que un organismo acepte. No hay CIUS nacional en vigor ni extensión nacional. Tampoco hay plataforma: la propia ficha de país de la Comisión Europea recoge que las facturas por encima de los umbrales de la UE se envían por correo electrónico al organismo contratante, en XML o PDF. Liechtenstein no tiene autoridad Peppol, y Suiza tampoco: una empresa puede usar Peppol comercialmente, pero sin gobernanza ni infraestructura nacional detrás.",
+scope_intro="Aquí la cuestión del ámbito es inusualmente limpia, porque la obligación recae en el comprador y no en el vendedor. Los organismos contratantes deben poder recibir y procesar una factura electrónica conforme en contratación por encima de los umbrales de la UE. Sus proveedores pueden facturar electrónicamente y no están obligados a ello. Ninguna empresa, de ningún tamaño ni sector, está obligada a emitir una factura electrónica a nadie.",
+steps_intro="Aquí no hay proyecto de cumplimiento, y ese es el hallazgo y no una omisión. Lo que sí conviene hacer es confirmar con qué administración trata, darse de alta en el portal de presentación obligatorio y saber cuáles de sus obligaciones se moverían si Europa volviera a legislar.",
+penalties_intro="No hay sanciones de facturación electrónica, porque no hay obligación empresarial que incumplir. Lo que sí tiene consecuencias es la conservación de registros: las reglas de retención que siguen están en el derecho societario y tributario propio de Liechtenstein y se aplican sea cual sea la forma de sus facturas.",
+footer_disclaimer="Esta página refleja la Mehrwertsteuergesetz de Liechtenstein (LGBl 2009 Nr. 330) y la Mehrwertsteuerverordnung en sus versiones vigentes desde el 1 de enero de 2026, el Personen- und Gesellschaftsrecht y su reglamento, y la Gesetz über das Öffentliche Auftragswesen (LGBl 1998 Nr. 135), leídos junto al registro de incorporación al EEE de la Secretaría de la AELC y, cuando el tratado de 1994 hace aplicable el derecho suizo, la posición publicada por la Administración Federal Tributaria suiza. Los hechos descritos como sustancia suiza llegada por tratado se señalan como tales.",
+),
+"de": dict(
+compliance_model="Zwei Regime zugleich. Das schweizerische Mehrwertsteuerrecht gilt kraft Staatsvertrag, über Liechtensteins eigenes MWSTG und seine eigene Steuerverwaltung, weshalb es keine B2B- oder B2C-Pflicht gibt und keine in Aussicht steht. Das öffentliche Beschaffungswesen liegt dagegen innerhalb des EWR-Abkommens, sodass Auftraggeber EN-16931-Rechnungen annehmen müssen — eine Pflicht zu empfangen, nicht zu senden.",
+mandate_summary="Liechtenstein verpflichtet kein Unternehmen zur elektronischen Rechnungsstellung. Seine Auftraggeber müssen seit dem 27. November 2018 elektronische Rechnungen nach EN 16931 annehmen und verarbeiten, doch kein Lieferant muss eine senden, eine nationale Plattform existiert nicht, und keine Behörde erhält Rechnungs- oder Transaktionsdaten. Die MWST-Abrechnung läuft seit Januar 2025 über das eMWST-Portal, was ein Einreichungskanal ist und kein Meldeverfahren.",
+mandate_summary_icon="🇱🇮",
+timeline_intro="Liechtensteins Zeitleiste ist kurz, weil seine Pflichten wenige sind, und die entscheidende kam auf ungewöhnlichem Weg. Die Richtlinie 2014/55/EU wurde durch Beschluss 166/2015 des Gemeinsamen Ausschusses in das EWR-Abkommen übernommen, in Kraft am 1. Januar 2016, mit EWR-Umsetzungstermin 27. November 2018. Alles Spätere war administrativ, nicht materiell.",
+file_format_intro="Der Standard ist EN 16931, denn genau das muss ein Auftraggeber nach der Richtlinie annehmen. Es gibt keine geltende nationale CIUS und keine nationale Erweiterung. Es gibt auch keine Plattform: die Länderseite der Europäischen Kommission hält fest, dass Rechnungen oberhalb der EU-Schwellen per E-Mail an den Auftraggeber gehen, als XML oder PDF. Liechtenstein hat keine Peppol-Behörde, die Schweiz ebenso wenig — ein Unternehmen kann Peppol kommerziell nutzen, doch ohne nationale Governance oder Infrastruktur dahinter.",
+scope_intro="Die Frage des Anwendungsbereichs ist hier ungewöhnlich klar, weil die Pflicht den Käufer trifft und nicht den Verkäufer. Auftraggeber müssen eine konforme elektronische Rechnung im Beschaffungswesen oberhalb der EU-Schwellen empfangen und verarbeiten können. Deren Lieferanten dürfen elektronisch fakturieren und müssen es nicht. Kein Unternehmen, gleich welcher Grösse oder Branche, ist verpflichtet, irgendjemandem eine elektronische Rechnung auszustellen.",
+steps_intro="Ein Compliance-Projekt gibt es hier nicht, und das ist der Befund und kein Versäumnis. Sinnvoll ist zu klären, mit welcher Verwaltung Sie es zu tun haben, sich für das verbindliche Einreichungsportal zu registrieren und zu wissen, welche Ihrer Pflichten sich bewegen würden, wenn Europa erneut gesetzgeberisch tätig wird.",
+penalties_intro="E-Rechnungs-Sanktionen gibt es nicht, weil es keine unternehmerische Pflicht gibt, gegen die verstossen werden könnte. Folgen hat dagegen die Aufbewahrung: die nachstehenden Fristen stehen in Liechtensteins eigenem Gesellschafts- und Steuerrecht und gelten unabhängig von der Form Ihrer Rechnungen.",
+footer_disclaimer="Diese Seite gibt Liechtensteins Mehrwertsteuergesetz (LGBl 2009 Nr. 330) und die Mehrwertsteuerverordnung in den ab 1. Januar 2026 geltenden Fassungen wieder, das Personen- und Gesellschaftsrecht samt Verordnung sowie das Gesetz über das Öffentliche Auftragswesen (LGBl 1998 Nr. 135), gelesen mit dem Nachweis der EWR-Übernahme durch das EFTA-Sekretariat und, soweit der Staatsvertrag von 1994 schweizerisches Recht anwendbar macht, der veröffentlichten Position der Eidgenössischen Steuerverwaltung. Als über den Staatsvertrag wirkende schweizerische Substanz beschriebene Fakten sind entsprechend gekennzeichnet.",
+),
+"fr": dict(
+compliance_model="Deux régimes à la fois. Le droit suisse de la TVA s'applique par traité, à travers la loi TVA propre au Liechtenstein et sa propre administration fiscale : il n'existe donc aucune obligation B2B ou B2C, ni aucune en perspective. La commande publique, elle, relève de l'accord EEE, si bien que les pouvoirs adjudicateurs doivent accepter les factures EN 16931 — une obligation de recevoir, non d'émettre.",
+mandate_summary="Le Liechtenstein n'impose la facturation électronique à aucune entreprise. Ses pouvoirs adjudicateurs doivent accepter et traiter les factures électroniques EN 16931 depuis le 27 novembre 2018, mais aucun fournisseur n'est tenu d'en émettre, il n'existe pas de plateforme nationale et aucune administration ne reçoit de données de facture ou de transaction. Les déclarations de TVA passent par le portail eMWST depuis janvier 2025, ce qui est un canal de dépôt et non un régime déclaratif.",
+mandate_summary_icon="🇱🇮",
+timeline_intro="La chronologie du Liechtenstein est brève parce que ses obligations sont peu nombreuses, et celle qui compte est arrivée par une voie inhabituelle. La directive 2014/55/UE a été reprise dans l'accord EEE par la décision 166/2015 du Comité mixte, en vigueur le 1er janvier 2016, avec une date de conformité EEE au 27 novembre 2018. Tout ce qui a suivi relève de l'administratif et non du fond.",
+file_format_intro="La norme est EN 16931, puisque c'est ce que la directive impose à un pouvoir adjudicateur d'accepter. Il n'existe ni CIUS national en vigueur ni extension nationale. Il n'existe pas davantage de plateforme : la fiche pays de la Commission européenne indique que les factures au-dessus des seuils de l'UE sont envoyées par courriel au pouvoir adjudicateur, en XML ou en PDF. Le Liechtenstein n'a pas d'autorité Peppol, la Suisse non plus — une entreprise peut recourir à Peppol commercialement, mais sans gouvernance ni infrastructure nationale derrière.",
+scope_intro="La question du champ est ici d'une netteté inhabituelle, parce que l'obligation pèse sur l'acheteur et non sur le vendeur. Les pouvoirs adjudicateurs doivent pouvoir recevoir et traiter une facture électronique conforme pour les marchés au-dessus des seuils de l'UE. Leurs fournisseurs peuvent facturer par voie électronique sans y être tenus. Aucune entreprise, quelle que soit sa taille ou son secteur, n'est obligée d'émettre une facture électronique à qui que ce soit.",
+steps_intro="Il n'y a pas de projet de conformité ici, et c'est le constat plutôt qu'un oubli. Ce qui mérite d'être fait, c'est de confirmer à quelle administration vous avez affaire, de vous inscrire au portail de dépôt obligatoire et de savoir lesquelles de vos obligations bougeraient si l'Europe légiférait de nouveau.",
+penalties_intro="Il n'existe aucune sanction de facturation électronique, faute d'obligation d'entreprise à enfreindre. Ce qui emporte des conséquences, c'est la conservation : les règles de rétention ci-dessous figurent dans le droit des sociétés et le droit fiscal propres au Liechtenstein et s'appliquent quelle que soit la forme de vos factures.",
+footer_disclaimer="Cette page reflète la Mehrwertsteuergesetz du Liechtenstein (LGBl 2009 Nr. 330) et la Mehrwertsteuerverordnung dans leurs versions en vigueur au 1er janvier 2026, le Personen- und Gesellschaftsrecht et son ordonnance, ainsi que la Gesetz über das Öffentliche Auftragswesen (LGBl 1998 Nr. 135), lus avec le relevé d'incorporation à l'EEE du Secrétariat de l'AELE et, lorsque le traité de 1994 rend le droit suisse applicable, la position publiée par l'Administration fédérale des contributions suisse. Les faits décrits comme substance suisse arrivant par traité sont signalés comme tels.",
+),
+}
+
+# Nothing here restates a headline tile.
+STATS = [
+  {"en": ("8.1%", "Standard VAT rate, Swiss rates applying by treaty since January 2024"),
+   "es": ("8,1 %", "Tipo general del IVA; tipos suizos aplicables por tratado desde enero de 2024"),
+   "de": ("8,1 %", "Regulärer MWST-Satz; schweizerische Sätze gelten kraft Staatsvertrag seit Januar 2024"),
+   "fr": ("8,1 %", "Taux normal de TVA ; taux suisses applicables par traité depuis janvier 2024")},
+  {"en": ("CHF 100,000", "VAT registration threshold, under Liechtenstein's own VAT Act"),
+   "es": ("100.000 CHF", "Umbral de registro del IVA, según la Ley del IVA propia de Liechtenstein"),
+   "de": ("CHF 100'000", "Registrierungsschwelle nach Liechtensteins eigenem MWSTG"),
+   "fr": ("100 000 CHF", "Seuil d'assujettissement à la TVA, selon la loi TVA propre au Liechtenstein")},
+  {"en": ("0", "Businesses under any obligation to issue an electronic invoice"),
+   "es": ("0", "Empresas obligadas a emitir una factura electrónica"),
+   "de": ("0", "Unternehmen, die zur Ausstellung einer elektronischen Rechnung verpflichtet sind"),
+   "fr": ("0", "Entreprises tenues d'émettre une facture électronique")},
+]
+
+CARDS = [
+ dict(section="scope_transmission", sort=0, t={
+   "en": ("Two regimes, and which fact comes from which", [
+     ["Swiss VAT law, by treaty", "The treaty of 28 October 1994 makes Swiss VAT substance applicable, but through Liechtenstein's own VAT Act (LGBl 2009 Nr. 330). B2B, B2C, e-reporting and the signature position all sit here."],
+     ["Liechtenstein's own administration", "Competence follows seat, not turnover: a Liechtenstein-seated business files with the Liechtenstein Steuerverwaltung and never with the Swiss FTA. Import VAT is the exception and is administered on the Swiss side."],
+     ["The EEA Agreement, for procurement", "Annex XVI covers public procurement, which is how Directive 2014/55/EU reached a non-EU state. The B2G answer is genuinely Liechtenstein's own."],
+     ["What this asymmetry predicts", "Indirect taxation is expressly outside the EEA Agreement. ViDA and any future EU B2B or digital reporting requirement will not propagate here. European procurement instruments will."],
+   ]),
+   "es": ("Dos regímenes, y de cuál procede cada hecho", [
+     ["Ley suiza del IVA, por tratado", "El tratado de 28 de octubre de 1994 hace aplicable la sustancia del IVA suizo, pero a través de la Ley del IVA propia de Liechtenstein (LGBl 2009 Nr. 330). B2B, B2C, e-reporting y la firma se sitúan aquí."],
+     ["Administración propia de Liechtenstein", "La competencia sigue al domicilio, no al volumen: una empresa con sede en Liechtenstein declara ante la Steuerverwaltung de Liechtenstein y nunca ante la administración suiza. El IVA a la importación es la excepción y se administra del lado suizo."],
+     ["El Acuerdo EEE, para la contratación", "El anexo XVI cubre la contratación pública, y así llegó la Directiva 2014/55/UE a un Estado no perteneciente a la UE. La respuesta B2G es genuinamente propia de Liechtenstein."],
+     ["Qué predice esta asimetría", "La fiscalidad indirecta queda expresamente fuera del Acuerdo EEE. ViDA y cualquier futuro requisito europeo B2B o de declaración digital no se propagarán aquí. Los instrumentos europeos de contratación sí."],
+   ]),
+   "de": ("Zwei Regime, und woher welche Tatsache stammt", [
+     ["Schweizerisches MWST-Recht, kraft Staatsvertrag", "Der Staatsvertrag vom 28. Oktober 1994 macht schweizerische MWST-Substanz anwendbar, jedoch über Liechtensteins eigenes MWSTG (LGBl 2009 Nr. 330). B2B, B2C, E-Reporting und die Signaturfrage liegen hier."],
+     ["Liechtensteins eigene Verwaltung", "Die Zuständigkeit folgt dem Sitz, nicht dem Umsatz: ein in Liechtenstein ansässiges Unternehmen rechnet mit der liechtensteinischen Steuerverwaltung ab und nie mit der ESTV. Die Einfuhrsteuer ist die Ausnahme und wird schweizerisch verwaltet."],
+     ["Das EWR-Abkommen, für die Beschaffung", "Anhang XVI erfasst das öffentliche Beschaffungswesen; so erreichte die Richtlinie 2014/55/EU einen Nicht-EU-Staat. Die B2G-Antwort ist wirklich Liechtensteins eigene."],
+     ["Was diese Asymmetrie voraussagt", "Die indirekte Besteuerung liegt ausdrücklich ausserhalb des EWR-Abkommens. ViDA und jede künftige EU-Pflicht zu B2B oder digitaler Meldung werden hier nicht ankommen. Europäische Beschaffungsinstrumente schon."],
+   ]),
+   "fr": ("Deux régimes, et d'où vient chaque fait", [
+     ["Droit suisse de la TVA, par traité", "Le traité du 28 octobre 1994 rend applicable la substance de la TVA suisse, mais à travers la loi TVA propre au Liechtenstein (LGBl 2009 Nr. 330). B2B, B2C, e-reporting et la question de la signature relèvent d'ici."],
+     ["L'administration propre au Liechtenstein", "La compétence suit le siège et non le chiffre d'affaires : une entreprise établie au Liechtenstein déclare auprès de la Steuerverwaltung locale et jamais auprès de l'administration suisse. La TVA à l'importation fait exception et relève du côté suisse."],
+     ["L'accord EEE, pour la commande publique", "L'annexe XVI couvre les marchés publics ; c'est ainsi que la directive 2014/55/UE a atteint un État non membre de l'UE. La réponse B2G est véritablement celle du Liechtenstein."],
+     ["Ce que cette asymétrie prédit", "La fiscalité indirecte est expressément hors de l'accord EEE. ViDA et toute future exigence européenne B2B ou de déclaration numérique ne s'y propageront pas. Les instruments européens de commande publique, si."],
+   ]),
+ }),
+ dict(section="scope_transmission", sort=1, t={
+   "en": ("⚠️ \"No B2G mandate\" is quoted out of context", [
+     ["What the Commission says", "Its country page states that Liechtenstein does not have a B2G e-invoicing mandate — meaning no duty on suppliers to SEND — and asserts the authorities' duty to RECEIVE on the same page."],
+     ["How it gets re-quoted", "The first half circulates on vendor trackers as though Liechtenstein had no B2G obligation at all. It has one; it simply falls on the buyer."],
+     ["Why the difference matters to you", "If you supply the Liechtenstein administration you may invoice electronically and be confident it can be received and processed. That assurance is the whole point of the directive, and it is what a bare \"no mandate\" would hide."],
+   ]),
+   "es": ("⚠️ «Sin obligación B2G» se cita fuera de contexto", [
+     ["Qué dice la Comisión", "Su ficha de país afirma que Liechtenstein no tiene una obligación B2G de facturación electrónica —es decir, ningún deber del proveedor de ENVIAR— y en la misma página sostiene el deber del organismo de RECIBIR."],
+     ["Cómo se recita", "La primera mitad circula en los rastreadores de proveedores como si Liechtenstein no tuviera obligación B2G alguna. La tiene; simplemente recae en el comprador."],
+     ["Por qué le importa la diferencia", "Si suministra a la administración de Liechtenstein, puede facturar electrónicamente con la seguridad de que podrá recibirse y procesarse. Esa garantía es el sentido de la directiva, y es lo que un escueto «sin obligación» ocultaría."],
+   ]),
+   "de": ("⚠️ «Keine B2G-Pflicht» wird aus dem Zusammenhang zitiert", [
+     ["Was die Kommission sagt", "Ihre Länderseite hält fest, Liechtenstein habe keine B2G-E-Rechnungs-Pflicht — gemeint ist: keine Pflicht des Lieferanten zu SENDEN — und behauptet auf derselben Seite die Pflicht der Behörde zu EMPFANGEN."],
+     ["Wie es weiterzitiert wird", "Die erste Hälfte kursiert auf Anbieter-Trackern, als hätte Liechtenstein überhaupt keine B2G-Pflicht. Es hat eine; sie trifft nur den Käufer."],
+     ["Warum der Unterschied für Sie zählt", "Wer die liechtensteinische Verwaltung beliefert, darf elektronisch fakturieren und kann sicher sein, dass die Rechnung angenommen und verarbeitet wird. Genau diese Zusicherung ist der Zweck der Richtlinie — und das, was ein blosses «keine Pflicht» verdecken würde."],
+   ]),
+   "fr": ("⚠️ « Aucune obligation B2G » est citée hors contexte", [
+     ["Ce que dit la Commission", "Sa fiche pays indique que le Liechtenstein n'a pas d'obligation B2G de facturation électronique — soit aucune obligation pour le fournisseur d'ÉMETTRE — et affirme sur la même page l'obligation du pouvoir adjudicateur de RECEVOIR."],
+     ["Comment elle est reprise", "La première moitié circule sur les trackers d'éditeurs comme si le Liechtenstein n'avait aucune obligation B2G. Il en a une ; elle pèse simplement sur l'acheteur."],
+     ["Pourquoi la nuance compte", "Si vous fournissez l'administration liechtensteinoise, vous pouvez facturer par voie électronique avec l'assurance que la facture sera reçue et traitée. Cette assurance est tout l'objet de la directive, et c'est ce qu'un simple « aucune obligation » masquerait."],
+   ]),
+ }),
+ dict(section="file_format", sort=0, t={
+   "en": ("Format, transmission and what does not exist", [
+     ["Standard", "EN 16931, as the directive requires. No national CIUS is in effect; the Commission notes a draft addressing VAT requirements, whose status is not published."],
+     ["Transmission", "By email to the contracting authority, in XML or PDF. There is no national e-invoicing platform and no central access point."],
+     ["Peppol", "No Peppol Authority in Liechtenstein, and none in Switzerland. Where no national authority exists OpenPeppol acts as authority, so commercial use is possible without any domestic governance behind it."],
+     ["Threshold", "The receive obligation is expressed as applying above EU procurement thresholds. The applicable figures are not stated in the sources consulted."],
+   ]),
+   "es": ("Formato, transmisión y lo que no existe", [
+     ["Norma", "EN 16931, según exige la directiva. No hay CIUS nacional en vigor; la Comisión menciona un borrador sobre requisitos de IVA cuyo estado no está publicado."],
+     ["Transmisión", "Por correo electrónico al organismo contratante, en XML o PDF. No hay plataforma nacional de facturación electrónica ni punto de acceso central."],
+     ["Peppol", "Sin autoridad Peppol en Liechtenstein, y ninguna en Suiza. Donde no hay autoridad nacional, OpenPeppol actúa como tal, de modo que el uso comercial es posible sin gobernanza nacional detrás."],
+     ["Umbral", "La obligación de recepción se expresa como aplicable por encima de los umbrales de contratación de la UE. Las cifras aplicables no constan en las fuentes consultadas."],
+   ]),
+   "de": ("Format, Übertragung und was es nicht gibt", [
+     ["Standard", "EN 16931, wie von der Richtlinie verlangt. Eine nationale CIUS gilt nicht; die Kommission erwähnt einen Entwurf zu MWST-Anforderungen, dessen Stand nicht veröffentlicht ist."],
+     ["Übertragung", "Per E-Mail an den Auftraggeber, als XML oder PDF. Eine nationale E-Rechnungs-Plattform und einen zentralen Zugangspunkt gibt es nicht."],
+     ["Peppol", "Keine Peppol-Behörde in Liechtenstein und keine in der Schweiz. Wo keine nationale Behörde besteht, handelt OpenPeppol als Behörde, sodass kommerzielle Nutzung ohne nationale Governance möglich ist."],
+     ["Schwellenwert", "Die Empfangspflicht gilt oberhalb der EU-Beschaffungsschwellen. Die massgeblichen Beträge werden in den herangezogenen Quellen nicht genannt."],
+   ]),
+   "fr": ("Format, transmission et ce qui n'existe pas", [
+     ["Norme", "EN 16931, comme l'exige la directive. Aucun CIUS national n'est en vigueur ; la Commission mentionne un projet portant sur les exigences de TVA, dont le statut n'est pas publié."],
+     ["Transmission", "Par courriel au pouvoir adjudicateur, en XML ou en PDF. Il n'existe ni plateforme nationale de facturation électronique ni point d'accès central."],
+     ["Peppol", "Aucune autorité Peppol au Liechtenstein, ni en Suisse. En l'absence d'autorité nationale, OpenPeppol fait office d'autorité : l'usage commercial est donc possible sans gouvernance nationale."],
+     ["Seuil", "L'obligation de réception s'applique au-dessus des seuils de la commande publique de l'UE. Les montants applicables ne figurent pas dans les sources consultées."],
+   ]),
+ }),
+ dict(section="penalties_related", sort=0, t={
+   "en": ("Retention, which is the obligation that actually binds you", [
+     ["Ten years", "From the end of the financial year of the last entries, under PGR Art. 1059, and separately until absolute prescription of the tax claim under the VAT Act, which is ten years after the end of the tax period."],
+     ["Twenty years", "For records concerning immovable property."],
+     ["Electronic retention", "Permitted. Records must not be alterable undetectably and must remain readable at any time; annual accounts and reports stay in written, signed form."],
+     ["Signatures", "Named in the ordinance as one example of assuring integrity, alongside others. Time stamps and audit logs must be retained on the same terms as the records they cover."],
+   ]),
+   "es": ("Conservación, que es la obligación que de verdad le vincula", [
+     ["Diez años", "Desde el cierre del ejercicio de los últimos asientos, según el art. 1059 PGR, y por separado hasta la prescripción absoluta del crédito tributario según la Ley del IVA, diez años tras el fin del periodo impositivo."],
+     ["Veinte años", "Para los registros relativos a bienes inmuebles."],
+     ["Archivo electrónico", "Permitido. Los registros no deben poder alterarse de forma inadvertida y han de seguir siendo legibles en todo momento; las cuentas e informes anuales se mantienen en forma escrita y firmada."],
+     ["Firmas", "El reglamento las cita como un ejemplo de garantizar la integridad, junto a otros. Los sellos de tiempo y los registros de auditoría se conservan en las mismas condiciones que los documentos que amparan."],
+   ]),
+   "de": ("Aufbewahrung, die Pflicht, die Sie tatsächlich bindet", [
+     ["Zehn Jahre", "Ab Ende des Geschäftsjahres der letzten Eintragungen nach Art. 1059 PGR und daneben bis zur absoluten Verjährung der Steuerforderung nach dem MWSTG, zehn Jahre nach Ablauf der Steuerperiode."],
+     ["Zwanzig Jahre", "Für Unterlagen im Zusammenhang mit Grundstücken."],
+     ["Elektronische Aufbewahrung", "Zulässig. Aufzeichnungen dürfen nicht unbemerkt änderbar sein und müssen jederzeit lesbar bleiben; Jahresrechnung und Berichte bleiben schriftlich und unterzeichnet."],
+     ["Signaturen", "In der Verordnung als ein Beispiel der Integritätssicherung neben anderen genannt. Zeitstempel und Prüfprotokolle sind unter denselben Bedingungen aufzubewahren wie die Unterlagen, die sie betreffen."],
+   ]),
+   "fr": ("La conservation, qui est l'obligation qui vous lie réellement", [
+     ["Dix ans", "À compter de la clôture de l'exercice des dernières écritures, selon l'art. 1059 PGR, et séparément jusqu'à la prescription absolue de la créance fiscale selon la loi TVA, dix ans après la fin de la période fiscale."],
+     ["Vingt ans", "Pour les documents relatifs aux biens immobiliers."],
+     ["Archivage électronique", "Admis. Les documents ne doivent pas pouvoir être modifiés de façon indétectable et doivent rester lisibles à tout moment ; comptes et rapports annuels demeurent écrits et signés."],
+     ["Signatures", "L'ordonnance les cite comme un exemple d'assurance de l'intégrité, parmi d'autres. Horodatages et journaux d'audit se conservent aux mêmes conditions que les documents qu'ils couvrent."],
+   ]),
+ }),
+ dict(section="penalties_related", sort=1, t={
+   "en": ("🔍 What we could not confirm", [
+     ["The article imposing the receive duty", "The Commission attributes it to Article 44a of the procurement act; Article 44a is about consulting trade associations, and the Act truncates on retrieval. What is confirmed is Article 1a, which lists Directive 2014/55/EU as implemented, and Article 7, which carries its definitions."],
+     ["The transposition date in national law", "A consolidated version of the procurement act commences on 27 November 2018, the EEA compliance date. The coincidence is compelling and the amending text could not be read."],
+     ["The 1994 treaty's own text", "Its name, date and reference are confirmed from the VAT Act and the 2012 supplementing agreement. The treaty text itself is served by a JavaScript-only site and could not be retrieved."],
+     ["The national CIUS", "The Commission says none is applied but that a draft addressing VAT requirements exists. Author, status and timeline unknown."],
+   ]),
+   "es": ("🔍 Lo que no pudimos confirmar", [
+     ["El artículo que impone el deber de recepción", "La Comisión lo atribuye al artículo 44a de la ley de contratación; el 44a trata de la consulta a asociaciones sectoriales, y la ley se trunca al recuperarla. Sí está confirmado el artículo 1a, que enumera la Directiva 2014/55/UE como implementada, y el 7, que recoge sus definiciones."],
+     ["La fecha de transposición en derecho interno", "Una versión consolidada de la ley de contratación entra en vigor el 27 de noviembre de 2018, fecha de cumplimiento en el EEE. La coincidencia es elocuente y el texto modificativo no pudo leerse."],
+     ["El texto del tratado de 1994", "Su nombre, fecha y referencia se confirman por la Ley del IVA y el acuerdo complementario de 2012. El texto del tratado lo sirve un sitio que solo funciona con JavaScript y no pudo recuperarse."],
+     ["El CIUS nacional", "La Comisión dice que no se aplica ninguno, pero que existe un borrador sobre requisitos de IVA. Autoría, estado y calendario desconocidos."],
+   ]),
+   "de": ("🔍 Was wir nicht bestätigen konnten", [
+     ["Der Artikel, der die Empfangspflicht begründet", "Die Kommission schreibt sie Art. 44a des Beschaffungsgesetzes zu; Art. 44a betrifft den Einbezug von Verbänden, und das Gesetz bricht beim Abruf ab. Bestätigt sind Art. 1a, der die Richtlinie 2014/55/EU als umgesetzt aufführt, und Art. 7, der ihre Definitionen trägt."],
+     ["Das Umsetzungsdatum im Landesrecht", "Eine konsolidierte Fassung des Beschaffungsgesetzes tritt am 27. November 2018 in Kraft, dem EWR-Umsetzungstermin. Das Zusammentreffen ist bezeichnend, der ändernde Text war nicht lesbar."],
+     ["Der Text des Staatsvertrags von 1994", "Name, Datum und Fundstelle sind über das MWSTG und die Vereinbarung von 2012 bestätigt. Der Vertragstext selbst wird von einer reinen JavaScript-Seite ausgeliefert und war nicht abrufbar."],
+     ["Die nationale CIUS", "Die Kommission sagt, es werde keine angewendet, es existiere aber ein Entwurf zu MWST-Anforderungen. Urheber, Stand und Zeitplan unbekannt."],
+   ]),
+   "fr": ("🔍 Ce que nous n'avons pas pu confirmer", [
+     ["L'article imposant l'obligation de réception", "La Commission l'attribue à l'article 44a de la loi sur les marchés publics ; or l'article 44a porte sur la consultation des associations professionnelles, et la loi est tronquée à la récupération. Sont confirmés l'article 1a, qui énumère la directive 2014/55/UE comme mise en œuvre, et l'article 7, qui en reprend les définitions."],
+     ["La date de transposition en droit interne", "Une version consolidée de la loi entre en vigueur le 27 novembre 2018, date de conformité EEE. La coïncidence est parlante et le texte modificatif n'a pas pu être lu."],
+     ["Le texte du traité de 1994", "Son intitulé, sa date et sa référence sont confirmés par la loi TVA et l'accord complémentaire de 2012. Le texte du traité lui-même est servi par un site uniquement en JavaScript et n'a pas pu être récupéré."],
+     ["Le CIUS national", "La Commission indique qu'aucun n'est appliqué, mais qu'un projet portant sur les exigences de TVA existe. Auteur, statut et calendrier inconnus."],
+   ]),
+ }),
+]
+
+STEPS = [
+ {"en": ("Confirm which administration you deal with", "Competence follows your seat, not your turnover. A Liechtenstein-seated business files domestic VAT with the Liechtenstein Steuerverwaltung; a business seated elsewhere in the joint territory files with the Swiss FTA. Import VAT is administered on the Swiss side either way."),
+  "es": ("Confirme con qué administración trata", "La competencia sigue a su domicilio, no a su volumen. Una empresa con sede en Liechtenstein declara el IVA interno ante la Steuerverwaltung de Liechtenstein; una con sede en el resto del territorio común lo hace ante la administración suiza. El IVA a la importación se administra del lado suizo en ambos casos."),
+  "de": ("Klären Sie, mit welcher Verwaltung Sie es zu tun haben", "Die Zuständigkeit folgt Ihrem Sitz, nicht Ihrem Umsatz. Ein in Liechtenstein ansässiges Unternehmen rechnet die Inland-MWST mit der liechtensteinischen Steuerverwaltung ab, ein im übrigen Anwendungsgebiet ansässiges mit der ESTV. Die Einfuhrsteuer wird in beiden Fällen schweizerisch verwaltet."),
+  "fr": ("Confirmez l'administration dont vous relevez", "La compétence suit votre siège, non votre chiffre d'affaires. Une entreprise établie au Liechtenstein déclare la TVA interne auprès de la Steuerverwaltung locale ; une entreprise établie ailleurs dans le territoire commun déclare auprès de l'administration suisse. La TVA à l'importation relève du côté suisse dans les deux cas.")},
+ {"en": ("Get onto eMWST if you have not", "Filing VAT returns through the portal has been mandatory since January 2025. This is the one Liechtenstein obligation with a recent date on it, and it is administrative rather than substantive — no invoice data is transmitted."),
+  "es": ("Dese de alta en eMWST si aún no lo ha hecho", "Presentar las declaraciones de IVA por el portal es obligatorio desde enero de 2025. Es la única obligación reciente de Liechtenstein con fecha, y es administrativa y no sustantiva: no se transmite ningún dato de factura."),
+  "de": ("Registrieren Sie sich für eMWST, falls noch nicht geschehen", "Die MWST-Abrechnung über das Portal ist seit Januar 2025 zwingend. Es ist die einzige liechtensteinische Pflicht mit jüngerem Datum, und sie ist administrativ, nicht materiell — Rechnungsdaten werden nicht übermittelt."),
+  "fr": ("Inscrivez-vous à eMWST si ce n'est pas fait", "Déposer les déclarations de TVA par le portail est obligatoire depuis janvier 2025. C'est la seule obligation liechtensteinoise récemment datée, et elle est administrative et non substantielle : aucune donnée de facture n'est transmise.")},
+ {"en": ("If you supply the administration, consider invoicing electronically anyway", "You are not required to, but the authority is required to accept and process a compliant invoice. That assurance exists in law and most suppliers never use it."),
+  "es": ("Si suministra a la administración, plantéese facturar electrónicamente igualmente", "No está obligado, pero el organismo sí lo está a aceptar y procesar una factura conforme. Esa garantía existe en la ley y la mayoría de los proveedores nunca la usa."),
+  "de": ("Wer die Verwaltung beliefert, sollte elektronische Rechnungen dennoch erwägen", "Sie müssen nicht, aber der Auftraggeber muss eine konforme Rechnung annehmen und verarbeiten. Diese Zusicherung steht im Gesetz, und die meisten Lieferanten nutzen sie nie."),
+  "fr": ("Si vous fournissez l'administration, envisagez tout de même la facture électronique", "Vous n'y êtes pas tenu, mais le pouvoir adjudicateur est tenu d'accepter et de traiter une facture conforme. Cette assurance existe en droit et la plupart des fournisseurs ne s'en servent jamais.")},
+ {"en": ("Know which of your obligations would move, and which would not", "A future EU B2B or digital reporting mandate cannot reach Liechtenstein: indirect taxation is outside the EEA Agreement. A future European procurement instrument can and would. If you are planning across markets, that is the line to plan against."),
+  "es": ("Sepa cuáles de sus obligaciones se moverían y cuáles no", "Una futura obligación europea B2B o de declaración digital no puede alcanzar a Liechtenstein: la fiscalidad indirecta queda fuera del Acuerdo EEE. Un futuro instrumento europeo de contratación sí puede y lo haría. Si planifica en varios mercados, esa es la línea sobre la que planificar."),
+  "de": ("Wissen Sie, welche Ihrer Pflichten sich bewegen würden und welche nicht", "Eine künftige EU-Pflicht zu B2B oder digitaler Meldung kann Liechtenstein nicht erreichen: die indirekte Besteuerung liegt ausserhalb des EWR-Abkommens. Ein künftiges europäisches Beschaffungsinstrument kann und würde es. Wer über Märkte hinweg plant, sollte an dieser Linie planen."),
+  "fr": ("Sachez lesquelles de vos obligations bougeraient, et lesquelles non", "Une future obligation européenne B2B ou de déclaration numérique ne peut atteindre le Liechtenstein : la fiscalité indirecte est hors de l'accord EEE. Un futur instrument européen de commande publique, si. Si vous planifiez sur plusieurs marchés, c'est la ligne sur laquelle planifier.")},
+]
+
+PORTALS = [
+ ("https://www.llv.li/en/national-administration/fiscal-authority/value-added-tax/e-mwst",
+  {"en": "eMWST — VAT filing portal (mandatory since January 2025)",
+   "es": "eMWST — portal de declaración del IVA (obligatorio desde enero de 2025)",
+   "de": "eMWST — MWST-Abrechnungsportal (zwingend seit Januar 2025)",
+   "fr": "eMWST — portail de déclaration de TVA (obligatoire depuis janvier 2025)"}),
+ ("https://www.llv.li/en/national-administration/fiscal-authority/value-added-tax",
+  {"en": "Steuerverwaltung — VAT rates, practice publications and the public VAT register",
+   "es": "Steuerverwaltung — tipos de IVA, publicaciones de práctica y registro público de IVA",
+   "de": "Steuerverwaltung — MWST-Sätze, Praxispublikationen und öffentliches MWST-Register",
+   "fr": "Steuerverwaltung — taux de TVA, publications de pratique et registre public de TVA"}),
+ ("https://www.llv.li/en/national-administration/public-procurement-department",
+  {"en": "Public Procurement Department",
+   "es": "Servicio de Contratación Pública",
+   "de": "Fachstelle Öffentliches Auftragswesen",
+   "fr": "Service des marchés publics"}),
+ ("https://www.gesetze.li/konso/2009330000",
+  {"en": "Lilex — the Value Added Tax Act (LGBl 2009 Nr. 330), consolidated",
+   "es": "Lilex — la Ley del Impuesto sobre el Valor Añadido (LGBl 2009 Nr. 330), consolidada",
+   "de": "Lilex — das Mehrwertsteuergesetz (LGBl 2009 Nr. 330), konsolidiert",
+   "fr": "Lilex — la loi sur la taxe sur la valeur ajoutée (LGBl 2009 Nr. 330), consolidée"}),
+]
+
+out = []
+w = out.append
+w("-- Liechtenstein deep dive. GENERATED by gen_liechtenstein_deep_dive.py")
+w("-- -- edit the generator, not this file. See its docstring for why the")
+w("-- page leads with the two-regime split and states plainly that almost")
+w("-- nothing is required.")
+w("")
+w("INSERT OR IGNORE INTO deep_dive_pages (country_id, last_updated) SELECT id, '2026-08-27' FROM countries WHERE code = 'LI';")
+w("")
+for lang in LANGS:
+    p = PAGE[lang]
+    w("INSERT OR IGNORE INTO deep_dive_page_translations (country_id, lang, compliance_model, footer_disclaimer,"
+      " timeline_intro, file_format_intro, scope_intro, steps_intro, penalties_intro, mandate_summary, mandate_summary_icon)")
+    w(f"SELECT id, '{lang}', {lit(p['compliance_model'])}, {lit(p['footer_disclaimer'])}, {lit(p['timeline_intro'])},"
+      f" {lit(p['file_format_intro'])}, {lit(p['scope_intro'])}, {lit(p['steps_intro'])}, {lit(p['penalties_intro'])},"
+      f" {lit(p['mandate_summary'])}, {lit(p['mandate_summary_icon'])} FROM countries WHERE code = 'LI';")
+    w("")
+
+w("-- ---- stat strip: nothing the headline tiles above already state ----")
+for i, s in enumerate(STATS):
+    w(f"INSERT INTO deep_dive_stats (country_id, sort_order) SELECT c.id, {i} FROM countries c WHERE c.code = 'LI'")
+    w(f"  AND NOT EXISTS (SELECT 1 FROM deep_dive_stats d WHERE d.country_id = c.id AND d.sort_order = {i});")
+    for lang in LANGS:
+        v, l = s[lang]
+        w("INSERT OR IGNORE INTO deep_dive_stat_translations (stat_id, lang, stat_value, stat_label)")
+        w(f"SELECT d.id, '{lang}', {lit(v)}, {lit(l)} FROM deep_dive_stats d WHERE d.country_id = {CID} AND d.sort_order = {i};")
+    w("")
+
+w("-- ---- cards ----")
+for c in CARDS:
+    sec, so = c["section"], c["sort"]
+    w(f"INSERT INTO deep_dive_cards (country_id, section, sort_order) SELECT c.id, '{sec}', {so} FROM countries c WHERE c.code = 'LI'")
+    w(f"  AND NOT EXISTS (SELECT 1 FROM deep_dive_cards d WHERE d.country_id = c.id AND d.section = '{sec}' AND d.sort_order = {so});")
+    for lang in LANGS:
+        title, rows = c["t"][lang]
+        w("INSERT OR IGNORE INTO deep_dive_card_translations (card_id, lang, title, rows_json)")
+        w(f"SELECT d.id, '{lang}', {lit(title)}, {lit(json.dumps(rows, ensure_ascii=False))} FROM deep_dive_cards d WHERE d.country_id = {CID} AND d.section = '{sec}' AND d.sort_order = {so};")
+    w("")
+
+w("-- ---- steps ----")
+for i, s in enumerate(STEPS):
+    w(f"INSERT INTO deep_dive_steps (country_id, sort_order) SELECT c.id, {i} FROM countries c WHERE c.code = 'LI'")
+    w(f"  AND NOT EXISTS (SELECT 1 FROM deep_dive_steps d WHERE d.country_id = c.id AND d.sort_order = {i});")
+    for lang in LANGS:
+        t, d = s[lang]
+        w("INSERT OR IGNORE INTO deep_dive_step_translations (step_id, lang, title, description)")
+        w(f"SELECT s.id, '{lang}', {lit(t)}, {lit(d)} FROM deep_dive_steps s WHERE s.country_id = {CID} AND s.sort_order = {i};")
+    w("")
+
+w("-- ---- portals ----")
+for i, (url, labels) in enumerate(PORTALS):
+    w(f"INSERT INTO deep_dive_portals (country_id, url, sort_order) SELECT c.id, {lit(url)}, {i} FROM countries c WHERE c.code = 'LI'")
+    w(f"  AND NOT EXISTS (SELECT 1 FROM deep_dive_portals d WHERE d.country_id = c.id AND d.url = {lit(url)});")
+    for lang in LANGS:
+        w("INSERT OR IGNORE INTO deep_dive_portal_translations (portal_id, lang, label)")
+        w(f"SELECT p.id, '{lang}', {lit(labels[lang])} FROM deep_dive_portals p WHERE p.country_id = {CID} AND p.url = {lit(url)};")
+    w("")
+
+w("-- ---- what this migration claims it did ----")
+w(f"-- ASSERT: SELECT count(*) FROM deep_dive_pages WHERE country_id = {CID} = 1")
+for lang in LANGS:
+    w(f"-- ASSERT: SELECT count(*) FROM deep_dive_page_translations WHERE country_id = {CID} AND lang = '{lang}' = 1")
+w(f"-- ASSERT: SELECT count(*) FROM deep_dive_stats WHERE country_id = {CID} = {len(STATS)}")
+w(f"-- ASSERT: SELECT count(*) FROM deep_dive_cards WHERE country_id = {CID} = {len(CARDS)}")
+w(f"-- ASSERT: SELECT count(*) FROM deep_dive_steps WHERE country_id = {CID} = {len(STEPS)}")
+w(f"-- ASSERT: SELECT count(*) FROM deep_dive_portals WHERE country_id = {CID} = {len(PORTALS)}")
+for lang in LANGS:
+    w(f"-- ASSERT: SELECT count(*) FROM deep_dive_card_translations t JOIN deep_dive_cards d ON d.id = t.card_id WHERE d.country_id = {CID} AND t.lang = '{lang}' = {len(CARDS)}")
+    w(f"-- ASSERT: SELECT count(*) FROM deep_dive_step_translations t JOIN deep_dive_steps s ON s.id = t.step_id WHERE s.country_id = {CID} AND t.lang = '{lang}' = {len(STEPS)}")
+w("-- The free-form strip must not restate a headline tile:")
+w(f"-- ASSERT: SELECT count(*) FROM deep_dive_stat_translations t JOIN deep_dive_stats d ON d.id = t.stat_id WHERE d.country_id = {CID} AND (t.stat_label LIKE '%archiv%' OR t.stat_label LIKE '%signature%' OR t.stat_label LIKE '%retention%') = 0")
+
+print("\n".join(out))
