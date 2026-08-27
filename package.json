@@ -13,7 +13,8 @@
     "contrast": "node tests/contrast-page.mjs",
     "count": "node tests/jurisdiction-count.mjs",
     "count:fix": "node tests/jurisdiction-count.mjs --fix",
-    "test:migrations": "cd members-worker/migrations && python3 apply_migrations.py --replay-only && python3 test_assertions.py"
+    "test:migrations": "cd members-worker/migrations && python3 apply_migrations.py --replay-only && python3 test_assertions.py",
+    "preview": "node tests/preview.mjs"
   },
   "devDependencies": {
     "playwright": "^1.62.1",
