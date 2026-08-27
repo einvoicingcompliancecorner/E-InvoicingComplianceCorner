@@ -69,7 +69,7 @@ const BACKLOG_CEILING = {
   "penalties_intro.max": 38,
   "portal.label": 28,
   "scope_intro.max": 44,
-  "spine.notyet": 72,
+  "spine.notyet": 64,
   "steps_intro.max": 31,
   "timeline_intro.max": 45,
   "translation.overrun": 1,
