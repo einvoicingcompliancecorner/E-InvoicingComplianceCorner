@@ -23,7 +23,7 @@
   },
   "backLink": "← Zurück zur globalen Übersicht",
   "brand": {
-    "description": "Ein laufend aktualisierter Überblick über E-Invoicing- und digitale Meldepflichten in 75 Ländern — EU-weite ViDA-Regeln, nationale CTC-Systeme und alles dazwischen. Jeder Eintrag zeigt die Frist, was konkret zu tun ist, und einen direkten Link zum offiziellen Regierungsportal — damit Sie in einem einzigen Blick von \"betrifft uns das?\" zu \"das müssen wir tun\" kommen.",
+    "description": "Ein laufend aktualisierter Überblick über E-Invoicing- und digitale Meldepflichten in 76 Ländern — EU-weite ViDA-Regeln, nationale CTC-Systeme und alles dazwischen. Jeder Eintrag zeigt die Frist, was konkret zu tun ist, und einen direkten Link zum offiziellen Regierungsportal — damit Sie in einem einzigen Blick von \"betrifft uns das?\" zu \"das müssen wir tun\" kommen.",
     "eyebrow": "Compliance-Übersicht",
     "title": "The E-Invoicing<br>Compliance Corner"
   },
@@ -235,7 +235,8 @@
     "Liechtenstein": "Liechtenstein",
     "Ghana": "Ghana",
     "Switzerland": "Schweiz",
-    "Hong Kong": "Hongkong"
+    "Hong Kong": "Hongkong",
+    "Thailand": "Thailand"
   },
   "terminal": {
     "arrivalsView": "Ankunftstafel",
