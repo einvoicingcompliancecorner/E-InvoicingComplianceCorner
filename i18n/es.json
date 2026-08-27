@@ -23,7 +23,7 @@
   },
   "backLink": "← Volver al panel global",
   "brand": {
-    "description": "Un seguimiento actualizado de los mandatos de facturación electrónica y reporte digital en 73 países — normas de ViDA a nivel de la UE, sistemas nacionales de CTC, y todo lo demás. Cada entrada muestra la fecha límite, lo que debe hacer al respecto, y un enlace directo al portal oficial del gobierno, para que pueda pasar de \"¿esto nos afecta?\" a \"esto es lo que hay que hacer\" en una sola página.",
+    "description": "Un seguimiento actualizado de los mandatos de facturación electrónica y reporte digital en 74 países — normas de ViDA a nivel de la UE, sistemas nacionales de CTC, y todo lo demás. Cada entrada muestra la fecha límite, lo que debe hacer al respecto, y un enlace directo al portal oficial del gobierno, para que pueda pasar de \"¿esto nos afecta?\" a \"esto es lo que hay que hacer\" en una sola página.",
     "eyebrow": "Panel de cumplimiento normativo",
     "title": "The E-Invoicing<br>Compliance Corner"
   },
@@ -233,7 +233,8 @@
     "Vietnam": "Vietnam",
     "Botswana": "Botsuana",
     "Liechtenstein": "Liechtenstein",
-    "Ghana": "Ghana"
+    "Ghana": "Ghana",
+    "Switzerland": "Suiza"
   },
   "terminal": {
     "arrivalsView": "Panel de llegadas",

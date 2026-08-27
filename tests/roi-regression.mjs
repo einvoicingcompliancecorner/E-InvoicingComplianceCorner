@@ -1267,10 +1267,11 @@ t.check("a member state with no national mandate is still plannable",
 // is worth stating because it will happen again. selectEU() ticks every
 // country whose region is "Eu" -- not the EU-27 -- so the total covers
 // every European jurisdiction this site tracks. It went 770,000 ->
-// 780,000 on 27 August 2026 when Liechtenstein was added: one more
-// country at the simple rate of $10,000, which is exactly the arithmetic
-// this check exists to protect. A delta that is NOT a clean multiple of
-// a rate is the signal to investigate rather than to bump.
+// 780,000 on 27 August 2026 when Liechtenstein was added, and 780,000 ->
+// 790,000 hours later when Switzerland was: one more country at the
+// simple rate of $10,000 each time, which is exactly the arithmetic this
+// check exists to protect. A delta that is NOT a clean multiple of a
+// rate is the signal to investigate rather than to bump.
 //
 // READ FROM THE TILE'S BREAKDOWN, not its headline. Migration 584 made
 // the headline year one cost -- implementation plus a year of recurring
@@ -1279,7 +1280,7 @@ t.check("a member state with no national mandate is still plannable",
 // implementation + $90,000 instead.
 const oneOff = await implFromTile();
 t.check(`the EU row costs one build plus a connection each (${oneOff})`,
-  oneOff === 780000, oneOff);
+  oneOff === 790000, oneOff);
 
 await page.evaluate(() => { document.getElementById("adjust").open = true; });
 await page.waitForTimeout(250);

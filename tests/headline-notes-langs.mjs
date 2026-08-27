@@ -107,7 +107,31 @@ t.check(`no translated note runs past ${CAP} characters`,
 // A digit-run with its internal separators: "5,000", "2019", "80m" is
 // caught by its "80", "art.48" by its "48". Trailing punctuation is not
 // part of it, so a note ending "...since 2019." still matches "2019".
-const DIGITS = /\d[\d,.]*\d|\d/g;
+//
+// SEPARATORS ARE NORMALISED BEFORE COMPARING, AND THAT IS NOT A
+// LOOSENING. A thousands separator is a property of the LANGUAGE, not of
+// the number: English writes 5,000, Swiss German writes 5'000, French
+// writes 5 000 with a non-breaking space, and German elsewhere writes
+// 5.000. Comparing the literal string made a correctly-translated note
+// look like a dropped figure — Switzerland's CHF 5,000 threshold failed
+// in German and French on 27 August 2026, and the translations were
+// right both times.
+//
+// The guarantee is unchanged: every figure in the English note must
+// appear in every translation. Only the digits are compared, so "5000"
+// still cannot satisfy "50000", and a genuinely missing number is still
+// missing. What is discarded is the punctuation between digit groups and
+// nothing else — a decimal point is a separator too, so 8.1 and 8,1
+// compare equal, which is also correct across these languages.
+// A separator only counts when it groups exactly three digits, which is
+// what a thousands separator does and what a comma between two numbers
+// does not. Without that, "decree 289/2022, 153 companies" read as one
+// run of "2022, 153" and the 153 vanished from every language at once --
+// found immediately, by Egypt, when this normalisation went in.
+const DIGITS = /\d{1,3}(?:[,.'\u00a0\u202f ]\d{3})+|\d+(?:[.,]\d+)?/g;
+// Keep only the digits of a run. "5,000" "5'000" "5 000" "5.000" all
+// become "5000"; "2019" stays "2019".
+const bare = (s) => String(s).replace(/[^\d]/g, "");
 const lostFigures = [];
 for (const [name, langs] of byCountry) {
   const en = langs.en;
@@ -119,7 +143,8 @@ for (const [name, langs] of byCountry) {
     for (const lang of LANGS) {
       const text = (langs[lang] || {})[col];
       if (!text) continue;
-      const lost = figures.filter((n) => !text.includes(n));
+      const theirs = new Set((text.match(DIGITS) || []).map(bare));
+      const lost = figures.filter((n) => !theirs.has(bare(n)));
       if (lost.length) lostFigures.push(`${name}/${lang}/${f}: lost ${lost.map((x) => `"${x}"`).join(", ")}`);
     }
   }
