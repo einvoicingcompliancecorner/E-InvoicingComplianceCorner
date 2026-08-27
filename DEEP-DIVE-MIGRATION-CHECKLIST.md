@@ -218,6 +218,17 @@ what exists and what each table is for.
   per language, holding `compliance_model`, `footer_disclaimer`, and the
   5 section-intro fields (`timeline_intro`, `file_format_intro`,
   `scope_intro`, `steps_intro`, `penalties_intro`)
+  **SUPERSEDED 27 August 2026 — see `DEEP-DIVE-FRAMEWORK.md`, which governs
+  every field's length and every section's card count, and is enforced by
+  `tests/deep-dive-shape.mjs`. The advice below is kept only as the record
+  of why a framework exists: it was written after the FIRST occurrence of
+  this drift (migration 355) and it did not hold. Two sentences of it are
+  the mechanism of the second occurrence — "err toward less elaboration
+  than the most recent country" is a ratchet, since every build anchors on
+  the last, and "nuance belongs in the cards, which have no comparable
+  length pressure" is where the elaboration went and why the card
+  vocabulary dissolved. Follow the framework, not this paragraph.**
+
   **Length target for `mandate_summary` (the top-of-page tile, see the
   "Mandate summary tile" section below) and `timeline_intro` (the text
   directly under the compliance timeline): keep `mandate_summary` to
