@@ -140,6 +140,16 @@ first place:
 
 ---
 
+> **Before writing any deep-dive prose, read `DEEP-DIVE-FRAMEWORK.md`**
+> (added 27 August 2026). It sets a hard maximum on every page field and a
+> floor and ceiling on every section's card count, and
+> `tests/deep-dive-shape.mjs` enforces it — a new country is held to the
+> framework on the day it lands, whatever the existing backlog says about
+> the seventy-six before it. **Do not size a new page by looking at the
+> most recent country.** That is exactly what produced two rounds of drift,
+> the second of which reached a 380-character description where the house
+> style is 64.
+
 ## Phase 1 — D1 migrations (the bulk of the work)
 
 **Start with the scaffolder** — it generates steps 1 and 2 below from a

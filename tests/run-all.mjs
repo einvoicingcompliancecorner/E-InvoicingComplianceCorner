@@ -112,6 +112,12 @@ const SUITES = [
   // penalties_related card built from rows_json printed the string "null"
   // -- on Kenya and Nigeria for weeks before Dan found it on Ghana.
   { name: "deep dive cards", cmd: "node", args: [join(HERE, "deep-dive-cards.mjs")], cwd: REPO },
+  // Cards render; this asks whether every page is still the SAME SHAPE.
+  // Dan, 27 August: recent countries were straying in style, length and
+  // structure -- the second occurrence of a drift migration 355 already
+  // fixed once with runbook advice. Advice lost; this is the check.
+  // Rules in DEEP-DIVE-FRAMEWORK.md, backlog in tests/data/.
+  { name: "deep dive shape", cmd: "node", args: [join(HERE, "deep-dive-shape.mjs")], cwd: REPO },
   // The five headline tiles on the deep-dive pages, added 25 August. It
   // MEASURES a rendered page rather than reading markup, because the
   // defect it exists for -- a status word clipped rather than wrapped --
