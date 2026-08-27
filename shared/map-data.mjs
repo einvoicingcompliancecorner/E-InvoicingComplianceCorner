@@ -120,6 +120,14 @@ const TOPO_NAME_OVERRIDES = {
 const MARKER_LONLAT_OVERRIDES = {
   Singapore: [103.82, 1.35],
   Bahrain: [50.59, 26.23],
+  // Liechtenstein, 27 August 2026, added BEFORE any console warning
+  // rather than after one. Decoding its topology arc gives a bounding
+  // box of 0.13 x 0.21 degrees (9.48-9.61 E, 47.06-47.27 N) -- smaller
+  // than Bahrain's 0.17 x 0.44 and smaller than Singapore's 0.35 x 0.18,
+  // so it is comfortably under both existing precedents for "too small
+  // to reliably render, hover or click". Its region box needs nothing:
+  // the Europe bounds already run -11 to 46 E and 34 to 71.5 N.
+  Liechtenstein: [9.55, 47.16],
 };
 
 // ----------------------------------------------------------------
