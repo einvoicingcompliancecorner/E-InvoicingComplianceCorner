@@ -80,6 +80,13 @@ const SUITES = [
   // whether a country PAGE contradicts itself; this asks whether the map
   // and the page contradict each other, which nothing did until 625.
   { name: "map and tiles agree", cmd: "node", args: [join(HERE, "map-tiles-agree.mjs")], cwd: REPO },
+  // The map's DATA is checked above; this checks its LAYOUT. Every
+  // small-country label was pushed a fixed distance from the centre with
+  // no idea another label existed, so two near neighbours collided --
+  // Hong Kong and Taiwan, found by Dan on 27 August 2026, and Bahrain and
+  // Qatar, found by the break test for the fix. It measures rendered
+  // bounding boxes, not the placement arithmetic.
+  { name: "map labels", cmd: "node", args: [join(HERE, "map-labels.mjs")], cwd: REPO },
   // The same page in the three languages guides-consistency cannot read.
   // Migration 624 put 1,050 sentences in the headline strip that every
   // other lexical check in this directory is blind to.

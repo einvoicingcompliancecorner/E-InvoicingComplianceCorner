@@ -99,6 +99,39 @@
     return [Math.max(minX, Math.min(maxX, x)), Math.max(PAD + 10, Math.min(HEIGHT - PAD - 6, y))];
   }
 
+  // The label's real footprint on screen: the 7px dot, a 12px gap, and
+  // the text running away from the dot in whichever direction it is
+  // anchored. Used to keep two small-country labels off each other.
+  function labelBox(x, y, anchorEnd, estWidth) {
+    return anchorEnd
+      ? { x0: x - 12 - estWidth, x1: x + 7, y0: y - 9, y1: y + 9 }
+      : { x0: x - 7, x1: x + 12 + estWidth, y0: y - 9, y1: y + 9 };
+  }
+  const boxesOverlap = (a, b) => a.x0 < b.x1 && b.x0 < a.x1 && a.y0 < b.y1 && b.y0 < a.y1;
+  const rotate = (x, y, a) =>
+    [x * Math.cos(a) - y * Math.sin(a), x * Math.sin(a) + y * Math.cos(a)];
+
+  // Candidate label positions, nearest first: the natural radial spot,
+  // then progressively further out and rotated to either side.
+  //
+  // WHY THIS EXISTS. Every small-country label was pushed a fixed 42 by
+  // 34 pixels straight out from the centre of the map. Two markers close
+  // together and pointing the same way therefore landed on top of each
+  // other -- Hong Kong and Taiwan in Asia-Pacific, found by Dan on 27
+  // August 2026, the day after Hong Kong was added. It was never a Hong
+  // Kong problem: the placement had no idea any other label existed, so
+  // the collision was waiting for whichever two countries happened to be
+  // near neighbours. Singapore and Malaysia would have done it too.
+  //
+  // The leader line still points at the true centroid, so moving the
+  // label costs no accuracy -- only the label moves, never the country.
+  const LABEL_PLACEMENTS = [];
+  for (const grow of [1, 1.45, 1.9, 2.4, 3]) {
+    for (const turn of [0, -0.35, 0.35, -0.7, 0.7, -1.05, 1.05]) {
+      LABEL_PLACEMENTS.push([grow, turn]);
+    }
+  }
+
   // The world-atlas topology is large (~750KB) and identical regardless
   // of language or which mode (standalone vs panel) requests it — fetch
   // it at most once per page load no matter how many MapPanel instances
@@ -659,7 +692,11 @@
       const markerLayer = svg.append("g");
       const centerX = WIDTH / 2, centerY = HEIGHT / 2;
 
-      for (const { c, feature } of smallEntries) {
+      // Place every label BEFORE drawing any of them, so each one can see
+      // where the others went. Sorted by name rather than by query order,
+      // so the same data always produces the same layout.
+      const placed = [];
+      for (const { c, feature } of [...smallEntries].sort((a, b) => a.c.nameEn.localeCompare(b.c.nameEn))) {
         let centroid;
         if (feature) centroid = path.centroid(feature);
         else if (c.markerLonLat) centroid = projection(c.markerLonLat);
@@ -668,12 +705,27 @@
         const dx = centroid[0] - centerX, dy = centroid[1] - centerY;
         const mag = Math.max(1, Math.hypot(dx, dy));
         const dirX = dx / mag, dirY = dy / mag;
-        const rawX = centroid[0] + dirX * 42;
-        const rawY = centroid[1] + dirY * 34;
-        const anchorEnd = dirX < 0;
         const estWidth = (c.flag.length + c.name.length + 2) * 6.5;
-        const [labelX, labelY] = clampLabel(rawX, rawY, anchorEnd, estWidth);
 
+        let spot = null;
+        for (const [grow, turn] of LABEL_PLACEMENTS) {
+          const [ux, uy] = rotate(dirX, dirY, turn);
+          const anchorEnd = ux < 0;
+          const [lx, ly] = clampLabel(centroid[0] + ux * 42 * grow,
+                                      centroid[1] + uy * 34 * grow, anchorEnd, estWidth);
+          const box = labelBox(lx, ly, anchorEnd, estWidth);
+          const candidate = { c, centroid, labelX: lx, labelY: ly, anchorEnd, estWidth, box };
+          if (!spot) spot = candidate;                    // the natural spot, kept as fallback
+          if (!placed.some((p) => boxesOverlap(p.box, box))) { spot = candidate; break; }
+        }
+        // If every candidate collides, take the natural position anyway.
+        // A label on top of another is bad; a country missing from the
+        // map is worse, and silently dropping one is how a reader
+        // concludes we do not track it.
+        placed.push(spot);
+      }
+
+      for (const { c, centroid, labelX, labelY, anchorEnd, estWidth } of placed) {
         markerLayer.append("line")
           .attr("class", "leader-line")
           .attr("x1", centroid[0]).attr("y1", centroid[1])
