@@ -94,6 +94,13 @@ const SUITES = [
   // problem: the tracker linked to none of the seventy country pages,
   // and the sitemap listed 28 of them.
   { name: "seo crawlability", cmd: "node", args: [join(HERE, "seo-crawlability.mjs")], cwd: REPO },
+  // Asks the ROUTER for every country the database gives a slug. The suite
+  // above checks each slug is LINKED TO and in the sitemap; on 26 August
+  // 2026 a country passed both while its own page 404'd, and 34 of 34
+  // suites went green. A link that is present and dead is the failure this
+  // covers, and no renderer test can see it -- with no deep-dive content
+  // the renderer throws and the router never reaches it.
+  { name: "country pages resolve", cmd: "node", args: [join(HERE, "country-pages.mjs")], cwd: REPO },
   // The five headline tiles on the deep-dive pages, added 25 August. It
   // MEASURES a rendered page rather than reading markup, because the
   // defect it exists for -- a status word clipped rather than wrapped --

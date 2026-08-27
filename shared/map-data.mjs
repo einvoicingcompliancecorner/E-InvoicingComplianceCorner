@@ -254,6 +254,21 @@ export const REGION_ORDER = ["Europe", "Middle East / Africa", "Asia-Pacific", "
 // this region (3 August 2026) -- Turkey's own extent runs to roughly
 // 45 deg E (Igdir Province), which the original box would have clipped.
 //
+// The same box was widened again on 27 August 2026, south from -6 to
+// -28 deg and east from 58 to 61 deg, when Botswana joined the region.
+// Botswana's decoded extent is 19.98-29.36 deg E and -26.85 to -17.79
+// deg S, so the old southern floor of -6 would have projected the whole
+// country off screen on its own region view -- silently, since a shape
+// outside the projection does not error, it simply is not drawn.
+//
+// The east widening is NOT for Botswana. Checking the union of every
+// country in this region, the way the Kazakhstan note below asks, found
+// OMAN already clipped: its eastern extent is 59.84 deg E against the
+// old 58 deg edge, and it has been that way since Oman was added. Same
+// class of bug as Kazakhstan's, found the same way, and worth stating
+// plainly: doing this check for a NEW country is what surfaces the
+// existing ones.
+//
 // Asia-Pacific's west edge was widened from 65 to 43 deg E and its
 // north edge from 55 to 57 deg N when Azerbaijan and Uzbekistan joined
 // this region (10 Aug 2026). Decoding the bundled topology directly
@@ -270,7 +285,7 @@ export const REGION_ORDER = ["Europe", "Middle East / Africa", "Asia-Pacific", "
 // the box is big enough because the region "obviously" contains it.
 export const REGION_BOUNDS = {
   "Europe": [[-11, 34], [46, 34], [46, 71.5], [-11, 71.5]],
-  "Middle East / Africa": [[0, -6], [58, -6], [58, 34], [0, 34]],
+  "Middle East / Africa": [[0, -28], [61, -28], [61, 34], [0, 34]],
   "Asia-Pacific": [[43, -48], [179, -48], [179, 57], [43, 57]],
   "Americas": [[-173, -57], [-33, -57], [-33, 75], [-173, 75]],
 };

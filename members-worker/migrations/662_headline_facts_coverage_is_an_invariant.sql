@@ -1,0 +1,38 @@
+-- Every country has headline facts. Say it as an invariant.
+--
+-- A migration containing no SQL at all, on the 517 pattern: the only
+-- thing here is a claim the whole chain must keep satisfying.
+--
+-- WHAT THIS FIXES. Migration 608 already made exactly this claim, in
+-- exactly the right words -- relative, one table against another, no
+-- hardcoded number -- and declared it as a plain `-- ASSERT:`. A plain
+-- assertion is point-in-time. So a country added without its headline
+-- facts did not fail the replay; 608's line was reported as *superseded*
+-- among a hundred and fifty lines that look identical, and the run
+-- printed "Replay validation OK" and exited zero.
+--
+-- That was tested rather than assumed, on 26 August 2026: a country was
+-- added to a copy of the chain with translations and a slug and no facts
+-- row, and the ONLY difference from a clean run was one extra superseded
+-- line. Declaring the same claim as ASSERT ALWAYS turned it into
+-- "ASSERTION FAILED ... expected = 0 actual: 1" with nothing applied.
+--
+-- WHY IT MATTERS MORE THAN IT LOOKS. `getCountryHeadlineFacts()` returns
+-- null rather than throwing when there is no row, and
+-- deep-dive-render.mjs renders an empty string, so the country's page
+-- loses its headline strip and keeps everything else. That degradation
+-- is right for a renderer -- it loses a strip rather than a page -- and
+-- it is exactly why the omission has to be caught here instead. A page
+-- that renders cleanly and says less than it should is invisible.
+--
+-- The European Union is excluded because it is a bloc rather than a
+-- jurisdiction with its own tax authority, which is the same exclusion
+-- 608 made and for the same reason.
+
+-- ASSERT ALWAYS: SELECT count(*) FROM countries WHERE name_en != 'European Union' AND id NOT IN (SELECT country_id FROM country_headline_facts) = 0
+
+-- And the notes that go with them, in all four languages. 624 asserts
+-- the four-language rule over rows that exist; this asserts that a
+-- country with facts has notes at all, which is the gap a new country
+-- falls through in exactly the same way.
+-- ASSERT ALWAYS: SELECT count(*) FROM country_headline_facts f WHERE NOT EXISTS (SELECT 1 FROM country_headline_fact_translations t WHERE t.country_id = f.country_id AND t.lang = 'en') = 0

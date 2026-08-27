@@ -987,6 +987,16 @@ function currentMonthKeyUTC() {
 // country stored 'simple' whose own milestones talk about reporting,
 // clearance or a 5-corner model.
 //
+// IT SCANS 'none' TOO, since 27 August 2026, and that was a real gap
+// rather than a widening for its own sake. `roi_complexity` is NOT NULL
+// DEFAULT 'none', and the scaffolder used to omit the column entirely, so
+// a newly added country landed on the default: zero integrations in the
+// planner, and — because this scan only looked at 'simple' — permanently
+// exempt from the one mechanism that would ever have raised it. The
+// default value was the only value nothing checked. The scaffolder now
+// requires the column, and this scan now covers the value it used to
+// produce, which are the two halves of the same fix.
+//
 // The acknowledgement is recorded against a FINGERPRINT of the country's
 // milestones rather than a plain flag. A flag would silence Denmark and
 // Germany permanently, which is the opposite of what was asked: add a
@@ -1019,7 +1029,7 @@ async function getRoiComplexityDrift(env) {
            r.decision AS reviewed_as, r.decided_on, r.fingerprint AS reviewed_fp, r.note
       FROM countries c
       LEFT JOIN roi_complexity_reviews r ON r.code = c.code
-     WHERE c.code <> 'EU' AND c.roi_complexity = 'simple'
+     WHERE c.code <> 'EU' AND c.roi_complexity IN ('simple', 'none')
   `);
   const out = [];
   for (const r of rows) {
