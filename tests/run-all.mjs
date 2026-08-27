@@ -107,6 +107,11 @@ const SUITES = [
   // covers, and no renderer test can see it -- with no deep-dive content
   // the renderer throws and the router never reaches it.
   { name: "country pages resolve", cmd: "node", args: [join(HERE, "country-pages.mjs")], cwd: REPO },
+  // Country pages resolve; this asks whether what the country AUTHORED is
+  // what the reader SEES. renderRelatedCard read only .body, so a
+  // penalties_related card built from rows_json printed the string "null"
+  // -- on Kenya and Nigeria for weeks before Dan found it on Ghana.
+  { name: "deep dive cards", cmd: "node", args: [join(HERE, "deep-dive-cards.mjs")], cwd: REPO },
   // The five headline tiles on the deep-dive pages, added 25 August. It
   // MEASURES a rendered page rather than reading markup, because the
   // defect it exists for -- a status word clipped rather than wrapped --
