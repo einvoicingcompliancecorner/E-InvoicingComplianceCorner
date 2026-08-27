@@ -42,6 +42,7 @@ export const SUPPORTED_LANGS = ["en", "es", "de", "fr"];
 // It's a hand-maintained table rather than a derived transform because
 // uae, uk, and united-states aren't simple lowercase-and-hyphenate.
 export const COUNTRY_DEEP_DIVE_SLUGS = {
+  "Hong Kong": "hong-kong",
   "Switzerland": "switzerland",
   "Ghana": "ghana",
   "Liechtenstein": "liechtenstein",
@@ -66,7 +67,7 @@ export const SLUG_TO_COUNTRY = Object.fromEntries(
 );
 
 const COUNTRY_NAME_TRANSLATIONS = {
-  es: { "Switzerland": "Suiza", "Ghana": "Ghana", "Liechtenstein": "Liechtenstein",
+  es: { "Hong Kong": "Hong Kong", "Switzerland": "Suiza", "Ghana": "Ghana", "Liechtenstein": "Liechtenstein",
      "Botswana": "Botsuana","Austria": "Austria", "Belgium": "Bélgica", "Bulgaria": "Bulgaria", "Croatia": "Croacia", "Cyprus": "Chipre", "Czech Republic": "República Checa", "Denmark": "Dinamarca", "Estonia": "Estonia",
     "Egypt": "Egipto", "Finland": "Finlandia", "France": "Francia",
     "Germany": "Alemania", "Greece": "Grecia", "Hungary": "Hungría", "Iceland": "Islandia", "Ireland": "Irlanda", "Israel": "Israel", "Italy": "Italia", "Jordan": "Jordania", "Luxembourg": "Luxemburgo",
@@ -83,7 +84,7 @@ const COUNTRY_NAME_TRANSLATIONS = {
     "Bahrain": "Baréin", "Qatar": "Catar",
     "Uzbekistan": "Uzbekistán", "Azerbaijan": "Azerbaiyán"
   },
-  de: { "Switzerland": "Schweiz", "Ghana": "Ghana", "Liechtenstein": "Liechtenstein",
+  de: { "Hong Kong": "Hongkong", "Switzerland": "Schweiz", "Ghana": "Ghana", "Liechtenstein": "Liechtenstein",
      "Botswana": "Botsuana","Austria": "Österreich", "Belgium": "Belgien", "Bulgaria": "Bulgarien", "Croatia": "Kroatien", "Cyprus": "Zypern", "Czech Republic": "Tschechien", "Denmark": "Dänemark", "Estonia": "Estland",
     "Egypt": "Ägypten", "Finland": "Finnland", "France": "Frankreich",
     "Germany": "Deutschland", "Greece": "Griechenland", "Hungary": "Ungarn", "Iceland": "Island", "Ireland": "Irland", "Israel": "Israel", "Italy": "Italien", "Jordan": "Jordanien", "Luxembourg": "Luxemburg",
@@ -100,7 +101,7 @@ const COUNTRY_NAME_TRANSLATIONS = {
     "Bahrain": "Bahrain", "Qatar": "Katar",
     "Uzbekistan": "Usbekistan", "Azerbaijan": "Aserbaidschan"
   },
-  fr: { "Switzerland": "Suisse", "Ghana": "Ghana", "Liechtenstein": "Liechtenstein",
+  fr: { "Hong Kong": "Hong Kong", "Switzerland": "Suisse", "Ghana": "Ghana", "Liechtenstein": "Liechtenstein",
      "Botswana": "Botswana","Austria": "Autriche", "Belgium": "Belgique", "Bulgaria": "Bulgarie", "Croatia": "Croatie", "Cyprus": "Chypre", "Czech Republic": "République tchèque", "Denmark": "Danemark", "Estonia": "Estonie",
     "Egypt": "Égypte", "Finland": "Finlande", "France": "France",
     "Germany": "Allemagne", "Greece": "Grèce", "Hungary": "Hongrie", "Iceland": "Islande", "Ireland": "Irlande", "Israel": "Israël", "Italy": "Italie", "Jordan": "Jordanie", "Luxembourg": "Luxembourg",
