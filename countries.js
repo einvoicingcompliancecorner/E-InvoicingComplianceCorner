@@ -41,7 +41,7 @@ const EICC_COUNTRIES_BY_REGION = {
     "Bahrain", "Botswana", "Egypt", "Ghana", "Israel", "Jordan", "Kenya", "Nigeria", "Oman", "Qatar", "Saudi Arabia", "United Arab Emirates"
   ],
   "Asia-Pacific": [
-    "Australia", "Azerbaijan", "China", "Hong Kong", "India", "Indonesia", "Japan", "Kazakhstan", "Malaysia", "New Zealand", "Pakistan", "Philippines", "Singapore", "South Korea", "Taiwan", "Uzbekistan", "Vietnam"
+    "Australia", "Azerbaijan", "China", "Hong Kong", "India", "Indonesia", "Japan", "Kazakhstan", "Malaysia", "New Zealand", "Pakistan", "Philippines", "Singapore", "South Korea", "Taiwan", "Thailand", "Uzbekistan", "Vietnam"
   ],
   "Americas": [
     "Argentina", "Brazil", "Canada", "Chile", "Colombia", "Costa Rica", "Dominican Republic", "Ecuador", "Mexico", "Peru", "United States", "Uruguay"
