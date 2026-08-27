@@ -262,7 +262,16 @@ export const REGION_ORDER = ["Europe", "Middle East / Africa", "Asia-Pacific", "
 // this region (3 August 2026) -- Turkey's own extent runs to roughly
 // 45 deg E (Igdir Province), which the original box would have clipped.
 //
-// The same box was widened again on 27 August 2026, south from -6 to
+// And widened a third time, hours later, west from 0 to -5 deg when
+// GHANA joined. Ghana straddles the prime meridian -- its decoded extent
+// is -3.25 to 1.19 deg E -- so the box's 0 deg western edge would have
+// cut the country in half on its own region view. Note the shape of this
+// entry and the two below it: three widenings in one day, each found by
+// decoding the new country's extent BEFORE deploying rather than by
+// looking at the rendered map afterwards. That is the only method that
+// works here, because the failure has no symptom.
+//
+// The same box was widened on 27 August 2026, south from -6 to
 // -28 deg and east from 58 to 61 deg, when Botswana joined the region.
 // Botswana's decoded extent is 19.98-29.36 deg E and -26.85 to -17.79
 // deg S, so the old southern floor of -6 would have projected the whole
@@ -293,7 +302,7 @@ export const REGION_ORDER = ["Europe", "Middle East / Africa", "Asia-Pacific", "
 // the box is big enough because the region "obviously" contains it.
 export const REGION_BOUNDS = {
   "Europe": [[-11, 34], [46, 34], [46, 71.5], [-11, 71.5]],
-  "Middle East / Africa": [[0, -28], [61, -28], [61, 34], [0, 34]],
+  "Middle East / Africa": [[-5, -28], [61, -28], [61, 34], [-5, 34]],
   "Asia-Pacific": [[43, -48], [179, -48], [179, 57], [43, 57]],
   "Americas": [[-173, -57], [-33, -57], [-33, 75], [-173, 75]],
 };

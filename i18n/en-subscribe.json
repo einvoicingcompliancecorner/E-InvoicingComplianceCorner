@@ -6,13 +6,13 @@
   "backLink": "← Back to global tracker",
   "benefits": {
     "eyebrow": "Never get caught off guard",
-    "intro": "E-invoicing thresholds, wave numbers, and go-live dates change constantly — often with little public notice. Subscribe once, and every government update or announcement across the 72 jurisdictions we track lands in your inbox automatically, in plain language, before it catches your team off guard.",
+    "intro": "E-invoicing thresholds, wave numbers, and go-live dates change constantly — often with little public notice. Subscribe once, and every government update or announcement across the 73 jurisdictions we track lands in your inbox automatically, in plain language, before it catches your team off guard.",
     "item1": {
       "body": "Every new mandate, shifted deadline, and penalty change we track, written in plain language — not legal text copy-pasted from a tax authority's press release.",
       "title": "Real government announcements, summarised"
     },
     "item2": {
-      "body": "Tell us which of the 72 jurisdictions matter to your business, and your monthly notification email tells you specifically whether they came up — or get the full global digest if you'd rather see everything.",
+      "body": "Tell us which of the 73 jurisdictions matter to your business, and your monthly notification email tells you specifically whether they came up — or get the full global digest if you'd rather see everything.",
       "title": "Choose exactly which countries you care about"
     },
     "item3": {
@@ -32,7 +32,7 @@
   },
   "card": {
     "clearAll": "Clear all",
-    "countriesHint": "Optional — leave everything unchecked and we'll send the full monthly digest covering all 72 jurisdictions.",
+    "countriesHint": "Optional — leave everything unchecked and we'll send the full monthly digest covering all 73 jurisdictions.",
     "countriesLabel": "Which countries do you want alerts for?",
     "countriesMissing": "Country selection is temporarily unavailable — you'll still get the full monthly digest. (Missing file: countries.js)",
     "eyebrow": "Subscribe",
@@ -60,7 +60,7 @@
     "eyebrow": "One more step",
     "fineprint": "You'll be taken to a secure Lemon Squeezy checkout window, where you can choose recurring or one-time payment and complete your purchase.",
     "for": "for",
-    "fullDigest": "the full digest (all 72 jurisdictions)",
+    "fullDigest": "the full digest (all 73 jurisdictions)",
     "payButton": "Continue to checkout →",
     "subscribingAs": "Subscribing as",
     "title": "Confirm your details"
