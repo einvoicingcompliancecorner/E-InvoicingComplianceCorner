@@ -51,7 +51,7 @@ const all = async (sql) => (await d1.prepare(sql).bind().all()).results || [];
 const backlog = JSON.parse(readFileSync(join(REPO, "tests/data/deep-dive-backlog.json"), "utf8"));
 // Counted before anything is checked, so the "may only shrink" test is
 // comparing against the file as committed rather than as mutated.
-const BACKLOG_CEILING = 369;   // 27 Aug 2026. Lower this as bundles land; never raise it.
+const BACKLOG_CEILING = 357;   // 27 Aug 2026, bundle 2 sample. Lower as bundles land; never raise.
 
 const words = (s) => String(s || "").trim().split(/\s+/).filter(Boolean).length;
 const chars = (s) => String(s || "").length;
