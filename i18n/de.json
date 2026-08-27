@@ -449,7 +449,9 @@
       "complex": "Komplex",
       "eu": "EU",
       "inforce": "In Kraft",
-      "nodate": "Kein datierter Schritt"
+      "nodate": "Kein datierter Schritt",
+      "nomandate": "Keine Pflicht",
+      "unconfirmed": "Nicht bestätigt"
     },
     "sec": {
       "facts": "Wichtigste Fakten",

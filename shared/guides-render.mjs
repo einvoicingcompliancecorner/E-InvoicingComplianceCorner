@@ -332,6 +332,22 @@ export function windowMilestones(milestones, todayISO) {
   };
 }
 
+// The three words the front-page table can end on, in the tiles' own
+// vocabulary. Exported so a test can assert the country list behind each
+// one rather than inferring it from rendered HTML.
+export function mandateStateOf(c, w) {
+  const h = c.headline;
+  if (h) {
+    const issue = [h.b2g_status, h.b2b_status, h.b2c_status];
+    if (issue.includes("active")) return "inforce";
+    if (issue.includes("unknown")) return "unconfirmed";
+    return "none";
+  }
+  // No stored headline facts: fall back to the old shape rather than
+  // claiming knowledge this function does not have.
+  return w.future.length === 0 && c.milestones.length > 0 ? "inforce" : "none";
+}
+
 // ---- the summary front page -------------------------------------------
 //
 // Dan chose this over content alone: "a one-page cross-country table --
@@ -358,9 +374,37 @@ export function summariseForFront(bundle, order, todayISO) {
       nextDate: next ? next.date : null,
       nextWhat: next ? next.system : null,
       milestoneCount: w.rows.length,
-      // Named so the front page can say "in force" rather than leaving a
-      // dash that reads as "we do not know".
-      inForceOnly: w.future.length === 0 && c.milestones.length > 0,
+      // WHAT THE FRONT PAGE SAYS WHEN THERE IS NO FUTURE DATE, which is a
+      // different question from whether dates exist, and was answered
+      // wrongly until 27 August 2026.
+      //
+      // It used to be `w.future.length === 0 && c.milestones.length > 0`
+      // -- "no future milestone, but some past ones" -- rendered as
+      // "In force". That silently assumed every past milestone is an
+      // obligation now binding a supplier, which held for every country
+      // on the site until Liechtenstein, whose two on-board milestones
+      // are a duty on the AUTHORITY to receive and a change of VAT filing
+      // channel. Neither obliges anyone to issue an e-invoice, and the
+      // table announced a mandate that does not exist. Dan found it in a
+      // generated PDF. Four other countries were already wrong the same
+      // way: Bahrain, Canada, Qatar and Taiwan.
+      //
+      // It is now derived from the SAME six headline facts the country
+      // page shows, which is the rule this function's own header states
+      // -- the front page and the page it summarises cannot disagree --
+      // and it was the milestone heuristic that broke it. The vocabulary
+      // is the tiles' own: a status describes the obligation to ISSUE.
+      //
+      //   active anywhere -> in force
+      //   otherwise unknown anywhere -> not confirmed, never "no mandate",
+      //     because a blank where a duty might sit is the one error that
+      //     gets somebody fined
+      //   otherwise -> no mandate
+      //
+      // The old heuristic survives only as the fallback for a country
+      // with no stored headline facts, which 662's standing invariant now
+      // makes impossible to create but which the harness can still build.
+      mandateState: mandateStateOf(c, w),
     };
   }).filter(Boolean);
 }
@@ -829,7 +873,10 @@ export function renderGuideDocument({ bundle, order, lang, strings, today, siteO
     <tbody>
     ${rows.map((r) => `<tr>
       <td>${esc(translateCountryName(lang, r.name))} ${r.euMember ? `<span class="pill eu">${t("pill.eu", "EU")}</span>` : ""}${r.complexity === "complex" ? ` <span class="pill cx">${t("pill.complex", "Complex")}</span>` : ""}</td>
-      <td class="date">${r.nextDate ? esc(r.nextDate) : `<span class="pill">${r.inForceOnly ? t("pill.inforce", "In force") : t("pill.nodate", "No dated step")}</span>`}</td>
+      <td class="date">${r.nextDate ? esc(r.nextDate) : `<span class="pill">${
+        r.mandateState === "inforce" ? t("pill.inforce", "In force")
+        : r.mandateState === "unconfirmed" ? t("pill.unconfirmed", "Not confirmed")
+        : t("pill.nomandate", "No mandate")}</span>`}</td>
       <td>${esc(r.nextWhat || "—")}</td>
       <td>${esc(clip(String(r.model || "—").split(/[.;]/)[0], 64))}</td>
     </tr>`).join("")}

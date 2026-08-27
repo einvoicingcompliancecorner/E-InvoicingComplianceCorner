@@ -449,7 +449,9 @@
       "complex": "Complejo",
       "eu": "UE",
       "inforce": "En vigor",
-      "nodate": "Sin paso con fecha"
+      "nodate": "Sin paso con fecha",
+      "nomandate": "Sin mandato",
+      "unconfirmed": "No confirmado"
     },
     "sec": {
       "facts": "Datos clave",

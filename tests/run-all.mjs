@@ -70,6 +70,12 @@ const SUITES = [
   { name: "ROI gate", cmd: "node", args: [join(HERE, "roi-gate.mjs")], cwd: REPO },
   { name: "compliance guides routes", cmd: "node", args: [join(HERE, "guides-routes.mjs")], cwd: REPO },
   { name: "guides consistency", cmd: "node", args: [join(HERE, "guides-consistency.mjs")], cwd: REPO },
+  // The guide's FRONT-PAGE table, which summarises the pages the suite
+  // above checks. It said "In force" for any country whose milestones
+  // were all in the past -- announcing a mandate for Liechtenstein,
+  // Bahrain, Canada, Qatar and Taiwan, none of which has one. Dan found
+  // it in a generated PDF.
+  { name: "guides front table", cmd: "node", args: [join(HERE, "guides-front-table.mjs")], cwd: REPO },
   // The front-page map against the same tiles. guides-consistency asks
   // whether a country PAGE contradicts itself; this asks whether the map
   // and the page contradict each other, which nothing did until 625.
