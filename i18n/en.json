@@ -23,7 +23,7 @@
   },
   "backLink": "← Back to global tracker",
   "brand": {
-    "description": "A living tracker of e-invoicing and digital reporting mandates across 74 countries — EU-wide ViDA rules, national CTC systems, and everything in between. Each entry shows the deadline, what you need to do about it, and a direct link to the official government portal, so you can go from \"is this relevant to us?\" to \"here's what to action\" in one page.",
+    "description": "A living tracker of e-invoicing and digital reporting mandates across 75 countries — EU-wide ViDA rules, national CTC systems, and everything in between. Each entry shows the deadline, what you need to do about it, and a direct link to the official government portal, so you can go from \"is this relevant to us?\" to \"here's what to action\" in one page.",
     "eyebrow": "Compliance tracker board",
     "title": "The E-Invoicing<br>Compliance Corner"
   },
@@ -234,7 +234,8 @@
     "Botswana": "Botswana",
     "Liechtenstein": "Liechtenstein",
     "Ghana": "Ghana",
-    "Switzerland": "Switzerland"
+    "Switzerland": "Switzerland",
+    "Hong Kong": "Hong Kong"
   },
   "terminal": {
     "arrivalsView": "Arrivals board",
