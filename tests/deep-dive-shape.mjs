@@ -51,7 +51,29 @@ const all = async (sql) => (await d1.prepare(sql).bind().all()).results || [];
 const backlog = JSON.parse(readFileSync(join(REPO, "tests/data/deep-dive-backlog.json"), "utf8"));
 // Counted before anything is checked, so the "may only shrink" test is
 // comparing against the file as committed rather than as mutated.
-const BACKLOG_CEILING = 357;   // 27 Aug 2026, bundle 2 sample. Lower as bundles land; never raise.
+// PER-RULE ceilings, not one total. A single number lets one rule grow
+// while another shrinks -- substitution, which is the drift this whole
+// file exists to catch, wearing a different hat. A rule missing from this
+// map is an error, so ADDING a rule is a deliberate edit here.
+const BACKLOG_CEILING = {
+  "compliance_model.max": 35,
+  "count.file_format": 18,
+  "count.penalties_related": 7,
+  "count.portals": 4,
+  "count.scope_transmission": 4,
+  "count.stats": 1,
+  "count.steps": 8,
+  "file_format_intro.max": 40,
+  "footer_disclaimer.max": 19,
+  "mandate_summary.max": 29,
+  "penalties_intro.max": 38,
+  "portal.label": 28,
+  "scope_intro.max": 44,
+  "spine.notyet": 72,
+  "steps_intro.max": 31,
+  "timeline_intro.max": 45,
+  "translation.overrun": 1,
+};
 
 const words = (s) => String(s || "").trim().split(/\s+/).filter(Boolean).length;
 const chars = (s) => String(s || "").length;
@@ -154,12 +176,21 @@ breaching["portal.label"] = new Set(labels.filter((r) => r.mx > LABEL_MAX).map((
       + (surprises.length > 12 ? ` … and ${surprises.length - 12} more` : ""));
 }
 
-// ---- 2. the backlog may only shrink -----------------------------------
+// ---- 2. no rule's backlog may grow ------------------------------------
 {
+  const bad = [];
+  for (const [rule, names] of Object.entries(backlog)) {
+    if (!(rule in BACKLOG_CEILING)) { bad.push(`${rule} has no ceiling — add it deliberately`); continue; }
+    if (names.length > BACKLOG_CEILING[rule]) {
+      bad.push(`${rule}: ${names.length} > ${BACKLOG_CEILING[rule]} — the framework is being widened, not met`);
+    }
+  }
+  for (const rule of Object.keys(BACKLOG_CEILING)) {
+    if (!(rule in backlog)) bad.push(`${rule} has a ceiling but no backlog entry — delete the ceiling too`);
+  }
   const total = Object.values(backlog).reduce((a, v) => a + v.length, 0);
-  t.check(`the backlog has not grown (${total} entries, ceiling ${BACKLOG_CEILING})`,
-    total <= BACKLOG_CEILING,
-    total > BACKLOG_CEILING ? `grew by ${total - BACKLOG_CEILING} — the framework is being widened, not met` : "");
+  t.check(`no rule's backlog has grown (${total} entries across ${Object.keys(backlog).length} rules)`,
+    bad.length === 0, bad.join("; "));
 }
 
 // ---- 3. a fixed country must leave the backlog ------------------------
@@ -169,7 +200,7 @@ breaching["portal.label"] = new Set(labels.filter((r) => r.mx > LABEL_MAX).map((
 {
   const stale = [];
   for (const [rule, names] of Object.entries(backlog)) {
-    if (rule === "translation.overrun") continue;   // paired check lives in 5
+    if (rule === "translation.overrun" || rule === "spine.notyet") continue;   // paired checks live in 5 and 6
     for (const n of names) if (!breaching[rule]?.has(n)) stale.push(`${rule}: ${n}`);
   }
   t.check("every country on the backlog still actually breaches its rule",
@@ -187,6 +218,7 @@ breaching["portal.label"] = new Set(labels.filter((r) => r.mx > LABEL_MAX).map((
   const bad = [];
   for (const [rule, names] of Object.entries(backlog)) {
     if (rule === "translation.overrun") continue;   // keyed "Country/lang field", checked in 5
+    if (rule === "spine.notyet") { for (const n of names) if (!known.has(n)) bad.push(`unknown country "${n}" under ${rule}`); continue; }
     if (!(rule in breaching)) bad.push(`unknown rule "${rule}"`);
     for (const n of names) if (!known.has(n)) bad.push(`unknown country "${n}" under ${rule}`);
     if (new Set(names).size !== names.length) bad.push(`duplicate entries under ${rule}`);
@@ -222,7 +254,50 @@ breaching["portal.label"] = new Set(labels.filter((r) => r.mx > LABEL_MAX).map((
     fixedTx.length === 0, fixedTx.length ? `now passing — delete from the backlog: ${fixedTx.join("; ")}` : "");
 }
 
-// ---- 6. the sweep is actually looking at everything -------------------
+// ---- 6. the section-02 spine matches the FRAMEWORK DOCUMENT -----------
+//
+// Read the spine out of DEEP-DIVE-FRAMEWORK.md rather than restating it
+// here, for the reason migration 700 taught the hard way: that migration
+// asserts each inserted title against the same Python variable that wrote
+// it, so changing the generator changes the claim and the evidence
+// together and the assertion passes. It is the "satisfied by the code
+// that produced it" failure this repo has now found six times.
+//
+// Two artefacts, neither able to move the other, is the fix -- the same
+// trick as reading the guide's clip constant out of guides-render.mjs.
+// Changing the spine now requires editing the framework AND the
+// generator, deliberately, which is what "the band moves for everyone or
+// for no one" means in practice.
+{
+  const doc = readFileSync(join(REPO, "DEEP-DIVE-FRAMEWORK.md"), "utf8");
+  const block = doc.split("## The section-02 spine")[1] || "";
+  const spine = [...block.matchAll(/^\d+\.\s+\*\*(.+?)\*\*\s*$/gm)].map((m) => m[1]);
+  t.check("the spine is readable from the framework document",
+    spine.length === 4, spine.join(" | ") || "no numbered bold titles found under the spine heading");
+
+  const titles = await all(`
+    SELECT c.name_en AS name, d.sort_order AS so, t.title
+      FROM deep_dive_cards d
+      JOIN deep_dive_card_translations t ON t.card_id = d.id AND t.lang = 'en'
+      JOIN countries c ON c.id = d.country_id
+     WHERE d.section = 'file_format' ORDER BY c.name_en, d.sort_order`);
+  const byCountry = new Map();
+  for (const r of titles) (byCountry.get(r.name) || byCountry.set(r.name, []).get(r.name)).push(r.title);
+
+  const notYet = new Set(backlog["spine.notyet"] || []);
+  const wrong = [], done = [];
+  for (const [name, list] of byCountry) {
+    const onSpine = spine.every((title, i) => list[i] === title);
+    if (notYet.has(name)) { if (onSpine) done.push(name); continue; }
+    if (!onSpine) wrong.push(`${name}: ${list.slice(0, 4).join(" / ") || "(no cards)"}`);
+  }
+  t.check(`every country off the spine backlog carries the framework's four titles, in order`,
+    wrong.length === 0, wrong.slice(0, 6).join("; "));
+  t.check("every country on the spine backlog is still off the spine",
+    done.length === 0, done.length ? `now on the spine — delete from the backlog: ${done.join(", ")}` : "");
+}
+
+// ---- 7. the sweep is actually looking at everything -------------------
 //
 // The failure this repo keeps finding: a check that passes because it is
 // reading nothing. State the reach so a silently narrowed sweep shows.
