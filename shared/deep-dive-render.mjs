@@ -480,8 +480,35 @@ function renderSpecCard(card) {
   return `<div class="spec-card"><h3>${escapeHtml(card.title)}${badgeHtml}</h3>${rowsHtml}${bodyHtml}${card.note ? `<p class="note">${escapeHtml(card.note)}</p>` : ""}</div>`;
 }
 
+// The penalties_related renderer, and the mirror of a bug already fixed
+// once above.
+//
+// renderSpecCard's comment records that file_format and
+// scope_transmission cards were rendering an empty box when a country
+// authored a body-only card, "since only renderRelatedCard
+// (penalties_related) used to read .body". That fix taught spec cards to
+// read bodies. It did not teach related cards to read ROWS -- so a
+// penalties_related card authored with rows_json and no body printed the
+// literal string "null" where its content should be, because
+// escapeHtml(null) is "null".
+//
+// Dan found it on Ghana on 27 August 2026. Kenya and Nigeria had been
+// shipping it since they were added, twelve cards across five countries.
+// Half a fix is how the second half survives.
+//
+// Now mirrors the compliance guide, which has always rendered all three
+// and skipped a card with none of them -- one vocabulary across the two
+// surfaces, which is the same rule the front-page table was corrected to
+// obey the day before.
 function renderRelatedCard(card) {
-  return `<div class="related-card"><h4>${escapeHtml(card.title)}</h4><p>${escapeHtml(card.body)}</p></div>`;
+  const rowsHtml = (card.rows || []).map(([k, v]) =>
+    `<div class="related-row"><span class="k">${escapeHtml(k)}</span><span class="v">${escapeHtml(v)}</span></div>`).join("");
+  const bodyHtml = card.body ? `<p>${escapeHtml(card.body)}</p>` : "";
+  const noteHtml = card.note ? `<p class="note">${escapeHtml(card.note)}</p>` : "";
+  // A card with a title and nothing else is a worse artefact than no
+  // card: it reads as content that failed to load.
+  if (!rowsHtml && !bodyHtml && !noteHtml) return "";
+  return `<div class="related-card"><h4>${escapeHtml(card.title)}</h4>${rowsHtml}${bodyHtml}${noteHtml}</div>`;
 }
 
 function renderLifecycleCard(card) {
@@ -790,6 +817,14 @@ ${ldScript([
   .related-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:14px;}
   .related-card{background:var(--ink-2); border:1px solid var(--line); border-radius:var(--radius); padding:16px 18px;}
   .related-card h4{margin:0 0 6px; font-size:14px;} .related-card p{margin:0; color:var(--muted); font-size:13px;}
+  /* Stacked rather than the spec-card's two columns: penalty rows carry
+     sentences, not values, and a right-aligned 58% column breaks them
+     into ribbons. */
+  .related-row{padding:7px 0; border-top:1px dashed var(--line); font-size:13px; color:var(--muted);}
+  .related-row:first-of-type{border-top:none; padding-top:2px;}
+  .related-row .k{display:block; color:var(--text-lo); font-weight:600; margin-bottom:2px;}
+  .related-row .v{display:block; overflow-wrap:break-word;}
+  .related-card p.note{margin-top:8px; font-style:italic;}
   .penalty-table{width:100%; border-collapse:collapse; font-size:13px;}
   .penalty-table th, .penalty-table td{text-align:left; padding:9px 10px; border-bottom:1px dashed var(--paper-line);}
   .penalty-table th{font-family:'IBM Plex Mono',monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:0.06em; color:#6b5f3f;}
