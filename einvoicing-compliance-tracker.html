@@ -3398,6 +3398,64 @@ function hideOtherPanels(keepId){
   }
 }
 
+// ---------- carrying the theme into an iframe ----------
+//
+// AN IFRAME IS A SECOND DOCUMENT AND INHERITS NOTHING. The in-page
+// panels -- deep dives, the map, the archive, education -- are shadow
+// roots inside THIS document, so custom properties reach them by
+// inheritance and the theme is free. Four things on this page are
+// iframes instead: the methodology pop-out, what-changed, the whitepaper
+// pop-out, and the shared panel that hosts the planner, the compliance
+// guides and the specification register. Each of those loads its own
+// URL, runs its own copy of the head script, and resolves its own theme
+// from scratch.
+//
+// THAT USED TO WORK BY ACCIDENT. While ?skin= was held in sessionStorage
+// the frames were same-origin in the same tab, so they shared it and
+// picked the slug up without anyone arranging it. Dan asked on 28 August
+// for the skin to belong to the URL rather than the tab, the storage
+// went, and with it the only thing telling a framed document who it was
+// being rendered for. He found it the same day, on two of the six
+// routes: "The menu -> methodology, does not retain partner branding."
+//
+// So the frame is TOLD, in the one place it can hear it -- its URL.
+//
+// IT READS THE ATTRIBUTE, NOT THE PARAMETER. location.search is not
+// reliable here: openDeepDive(), openMapPage() and the rest all
+// pushState a clean path, so by the time a reader opens the methodology
+// pop-out the parameter they arrived on is usually gone from the address
+// bar. data-eicc-theme is what the head script RESOLVED, from whichever
+// source won, and it survives every one of those rewrites because none
+// of them reload the document. It is also the same signal the carousel
+// slide reads, which is the point: one reader, one answer.
+//
+// Passing it when the theme came from the cookie is redundant rather
+// than wrong -- the frame would have read the cookie anyway, and the
+// head script prefers it over the parameter regardless. One rule that is
+// sometimes redundant beats two rules that can disagree.
+function activeThemeSlug(){
+  return document.documentElement.getAttribute('data-eicc-theme') || '';
+}
+
+// SAME-SITE ONLY. doc_url on an insights row is data, and a sponsored
+// whitepaper could point anywhere; appending our partner's slug to a
+// third party's URL would leak who the reader is to a host that has no
+// business knowing. Same SITE rather than same origin, for the reason
+// the deep-dive link guard is: the archive lives on the members
+// subdomain, is a different origin, and is ours.
+function withThemeParam(url){
+  const slug = activeThemeSlug();
+  if(!slug) return url;
+  let u;
+  try { u = new URL(url, location.href); } catch(e){ return url; }
+  if(u.origin !== location.origin && u.origin !== MEMBERS_ORIGIN) return url;
+  if(u.searchParams.get('skin') === slug) return url;
+  u.searchParams.set('skin', slug);
+  // Relative form for our own origin, so the value still compares
+  // equal to the data-src bookkeeping below and reads as it did.
+  return u.origin === location.origin ? u.pathname + u.search + u.hash : u.href;
+}
+
 // ---------- methodology pop-out ----------
 //
 // LOADED WHEN OPENED, NOT ON EVERY PAGE LOAD. The src is set at click
@@ -3419,7 +3477,7 @@ function openDocPopout(overlayId, frameId, route){
   const overlay = document.getElementById(overlayId);
   const frame = document.getElementById(frameId);
   const lang = (window.EICC_I18N && window.EICC_I18N.currentLang) || 'en';
-  const src = `${route}?frame=1&lang=${encodeURIComponent(lang)}`;
+  const src = withThemeParam(`${route}?frame=1&lang=${encodeURIComponent(lang)}`);
   // Re-set only when the language moved, so reopening in the same
   // language does not re-fetch.
   if(frame.getAttribute('data-src') !== src){
@@ -3883,8 +3941,12 @@ function openWhitepaperPopout(url){
   const frame = document.getElementById('whitepaperFrame');
   overlay.classList.add('open');
 
+  // Themed at the point of assignment rather than at each call site
+  // below, so the language probe keeps working on the bare URL and the
+  // three ways out of this function cannot disagree about it.
   const setSrc = (target) => {
-    if(frame.getAttribute('src') !== target) frame.setAttribute('src', target);
+    const themed = withThemeParam(target);
+    if(frame.getAttribute('src') !== themed) frame.setAttribute('src', themed);
   };
 
   // Full static translations (7 Aug 2026, per Dan's request): each
@@ -4148,7 +4210,7 @@ async function openRoiPage(opts){
   // should behave the same as one reached from here -- a page that
   // renders differently depending on how you arrived is a page nobody
 
-  const src = `${cfg.src}&lang=${encodeURIComponent(lang)}`;
+  const src = withThemeParam(`${cfg.src}&lang=${encodeURIComponent(lang)}`);
 
   // t(), NOT data-i18n. Every other panel does the same and the reason is
   // easy to miss: applyToDom() runs once, at init, over the document as it

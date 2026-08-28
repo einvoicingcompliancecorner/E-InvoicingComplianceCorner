@@ -332,11 +332,11 @@ t.check("site-worker issues the cookie on both of them",
 // Check 8 loads pages standalone and could never have seen it. This one
 // opens a panel the way the menu does and reads the computed value INSIDE
 // the shadow root, which is the only place the bug existed.
-const frameBrowser = await launch();
+const ifrBrowser = await launch();
 const frameResults = [];
 for (const [tag, slug, expect] of [["no cookie", null, DARK["--ink"]],
   ["tradeshift", "tradeshift", LIGHT["--ink"]]]) {
-  const ctx = await frameBrowser.newContext({ viewport: { width: 1200, height: 900 } });
+  const ctx = await ifrBrowser.newContext({ viewport: { width: 1200, height: 900 } });
   if (slug) {
     await ctx.addCookies([{ name: "eicc_theme", value: slug, domain: "127.0.0.1", path: "/" }]);
   }
@@ -359,7 +359,7 @@ for (const [tag, slug, expect] of [["no cookie", null, DARK["--ink"]],
   frameResults.push([tag, opened, ink, expect]);
   await ctx.close();
 }
-await frameBrowser.close();
+await ifrBrowser.close();
 for (const [tag, opened, got, expect] of frameResults) {
   t.check(`a panel opened in-frame, "${tag}", inherits --ink ${expect}`,
     opened && got === expect, opened ? `got ${got}` : "the menu item was not found");
@@ -429,6 +429,97 @@ t.check("tradeshift: the menu buttons are the same #242DC2",
   seen.tradeshift.navBg === rgb("#242dc2"), seen.tradeshift.navBg);
 t.check("tradeshift: menu-button text is white",
   seen.tradeshift.navInk === rgb("#ffffff"), seen.tradeshift.navInk);
+
+// ---- 10. an iframe is a second document and must be told -------------
+//
+// THE DEFECT THIS EXISTS FOR, reported by Dan the day the storage went:
+// "The menu -> methodology, does not retain partner branding." Six
+// routes on this page open in an iframe rather than a shadow root --
+// methodology, what changed, the whitepaper pop-out, and the shared
+// panel that hosts the planner, the compliance guides and the spec
+// register. A shadow root inherits custom properties from this
+// document; an iframe inherits nothing and resolves its own theme from
+// its own URL.
+//
+// While ?skin= lived in sessionStorage those frames worked without
+// anyone arranging it, because same-origin frames in one tab share it.
+// Taking the storage out took the theme out of all six at once, and
+// every check in this file stayed green -- none of them opens a frame.
+for (const [what, re] of [
+  ["the doc pop-outs (methodology, what changed)",
+    /const src = withThemeParam\(`\$\{route\}\?frame=1/],
+  ["the framed panel (planner, guides, spec register)",
+    /const src = withThemeParam\(`\$\{cfg\.src\}/],
+  ["the whitepaper pop-out",
+    /const themed = withThemeParam\(target\)/]]) {
+  t.check(`${what} carries the theme into the frame`, re.test(tracker));
+}
+
+// AND A SEVENTH WOULD SLIP THROUGH. The three checks above name the
+// three call sites, so they cannot notice a fourth being added -- the
+// exact shape this file has been caught by twice. This counts every
+// place the page writes a src at all and fails when the number moves,
+// so a new one has to be looked at and classified rather than landing
+// silently. Six today: three themed above, one about:blank teardown,
+// and two <script> loads, which are not documents and have no theme.
+const srcWrites = tracker.match(/setAttribute\('src'|\w+\.src = |src="\$\{src\}"/g) || [];
+t.check("every place the tracker writes a src is accounted for",
+  srcWrites.length === 6,
+  `found ${srcWrites.length}, expected 6 — if you added an iframe, route its `
+  + "src through withThemeParam() and raise this number; if you added a "
+  + "<script>, just raise it");
+
+// ---- 10b. and it behaves, in a browser -------------------------------
+const iframeBrowser = await launch();
+{
+  const ctx = await iframeBrowser.newContext({ viewport: { width: 1100, height: 800 } });
+  const page = await ctx.newPage();
+  await page.goto(`${ORIGIN}/einvoicing-compliance-tracker.html?skin=tradeshift`,
+    { waitUntil: "load" });
+  await page.waitForTimeout(500);
+  const seen = await page.evaluate(() => ({
+    same: withThemeParam("/methodology?frame=1&lang=en"),
+    external: withThemeParam("https://example.com/sponsored.html"),
+    already: withThemeParam("/x?skin=tradeshift"),
+  }));
+  t.check("a same-site frame URL gains the slug",
+    seen.same === "/methodology?frame=1&lang=en&skin=tradeshift", seen.same);
+  // A sponsored whitepaper's doc_url is data and can point anywhere.
+  // Appending the reader's partner to it would tell a third party who
+  // they work for, which is not a thing this feature is entitled to do.
+  t.check("a third-party URL is left exactly as it was",
+    seen.external === "https://example.com/sponsored.html", seen.external);
+  t.check("a URL that already carries the slug is not doubled",
+    seen.already === "/x?skin=tradeshift", seen.already);
+
+  // The whitepaper pop-out end to end: this static server can serve the
+  // document it frames, so the assertion is on the framed page's
+  // resolved colour rather than on the string that got it there.
+  await page.evaluate(() =>
+    openWhitepaperPopout("/whitepaper-einvoicing-roi-evidence.html"));
+  await page.waitForTimeout(1200);
+  const framed = page.frames().find((f) => f.url().includes("whitepaper-einvoicing-roi-evidence"));
+  const inFrame = framed
+    ? await framed.evaluate(() =>
+      getComputedStyle(document.documentElement).getPropertyValue("--ink").trim())
+    : "no frame loaded";
+  t.check(`a framed document inherits nothing and resolves ${LIGHT["--ink"]} from its own URL`,
+    inFrame === LIGHT["--ink"], inFrame);
+  await ctx.close();
+}
+{
+  // And an unskinned reader's frames stay clean: no parameter is
+  // appended when there is no theme to carry.
+  const ctx = await iframeBrowser.newContext({ viewport: { width: 1100, height: 800 } });
+  const page = await ctx.newPage();
+  await page.goto(`${ORIGIN}/einvoicing-compliance-tracker.html`, { waitUntil: "load" });
+  await page.waitForTimeout(400);
+  const plain = await page.evaluate(() => withThemeParam("/methodology?frame=1&lang=en"));
+  t.check("with no theme active, nothing is appended",
+    plain === "/methodology?frame=1&lang=en", plain);
+  await ctx.close();
+}
+await iframeBrowser.close();
 
 server.close();
 process.exit(t.report() ? 0 : 1);
