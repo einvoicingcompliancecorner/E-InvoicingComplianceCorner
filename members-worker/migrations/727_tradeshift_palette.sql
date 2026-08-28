@@ -129,7 +129,25 @@ INSERT OR REPLACE INTO partner_palette (partner_id, prop, value)
 -- on a light ground means dark-theme text on a light surface -- invisible,
 -- and invisible only for that partner's readers, which is the hardest
 -- kind of defect to hear about.
--- ASSERT ALWAYS: SELECT count(*) FROM (SELECT partner_id, count(*) AS n FROM partner_palette GROUP BY partner_id HAVING n <> 36) = 0
+--
+-- WRITTEN SELF-RELATIVELY, AND THAT IS AN EDIT MADE ON 28 AUGUST after
+-- this file had already been applied. It first read `HAVING n <> 36`,
+-- and migration 728 -- which adds the side-menu and menu-button
+-- properties Dan asked for -- takes every partner to 43. A standing
+-- invariant that hardcodes a count is one that has to be edited every
+-- time the palette legitimately grows, and editing an applied migration
+-- is the thing the checksum drift warning exists to catch.
+--
+-- So it now says what it always meant: no partner may hold FEWER
+-- properties than the partner that holds the most. That is true at 36, at
+-- 43, and at whatever comes next, and it still fails on the case it was
+-- written for -- a partner registered with half a palette.
+--
+-- Because this file changed after running, `apply_migrations.py` will
+-- report 727 as drifted. That is correct and expected; clear it with
+--   python3 apply_migrations.py --remote --refresh-checksums
+-- which records that a person looked, and nothing more.
+-- ASSERT ALWAYS: SELECT count(*) FROM (SELECT partner_id FROM partner_palette GROUP BY partner_id HAVING count(*) < (SELECT max(c) FROM (SELECT count(*) AS c FROM partner_palette GROUP BY partner_id))) = 0
 -- Every value is a six-digit hex. A stray CSS keyword would apply
 -- silently and theme one property wrongly.
 -- ASSERT ALWAYS: SELECT count(*) FROM partner_palette WHERE value NOT GLOB '#[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f]' = 0

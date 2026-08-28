@@ -93,6 +93,30 @@ export const DARK = {
   // inheriting the slightly different --stamp-ink.
   "--flap-ink": "#f2f0e8",
   "--flap-alert": "#e88a76",
+  // ---- the side menu ----
+  //
+  // Five properties of its own, all set to exactly what the sidebar
+  // resolved to before they existed, so the default theme is unchanged.
+  // They exist because Dan asked for the side menu to carry a partner's
+  // colour rather than the page's: "please can you change the side menu
+  // back-colour to be #242DC2, for only the side menu entitled Country
+  // Compliance Legislation. The text colour should be white."
+  //
+  // Named for the component rather than for the colour. A partner theme
+  // that wants the sidebar to match its page ground simply sets
+  // --sidebar to the same value as --ink-2, which is what the default
+  // theme does here.
+  "--sidebar": "#152238",
+  "--sidebar-ink": "#f2f0e8",
+  "--sidebar-muted": "#93a3c0",
+  "--sidebar-accent": "#c98a3a",
+  "--sidebar-line": "#2b3c5a",
+  // The three menu buttons in the top right -- Resources, Education,
+  // Menu. Their own pair for the same reason the sidebar has one: Dan
+  // asked for them to carry the partner's colour rather than the page's
+  // alert red. Default values are exactly what they resolved to before.
+  "--nav": "#b5432f",
+  "--nav-ink": "#f2f0e8",
   "--radius": "10px",
 };
 
@@ -157,6 +181,33 @@ export const LIGHT = {
   "--on-soon": "#ffffff",
   "--flap-ink": "#1e1e1e",
   "--flap-alert": "#8f1c2d",
+  // ---- the side menu ----
+  //
+  // #242DC2 IS DAN'S VALUE, NOT THE TEMPLATE'S. Tradeshift's master brand
+  // blue is #0a37f0 (theme1.xml, slide 8); this is a deeper one he
+  // specified directly on 28 August. Recorded because everything else in
+  // this theme is traceable to the brand file and this one is not -- it
+  // should be confirmed with whoever owns the brand alongside the derived
+  // greens.
+  //
+  // White text on it measures 9.42:1. The muted and accent tones are
+  // derived to clear 4.5:1 on the same ground: the region headings and
+  // the eyebrow have to stay legible, and the light theme's own --muted
+  // (#5c5c5c) would be 1.9:1 on this blue -- unreadable, and unreadable
+  // only inside one component.
+  "--sidebar": "#242dc2",
+  "--sidebar-ink": "#ffffff",
+  "--sidebar-muted": "#c7ccf5",
+  "--sidebar-accent": "#ffd9a3",
+  "--sidebar-line": "#4a52d4",
+  // SAME BLUE AS THE SIDE MENU, deliberately: Dan asked for the menu
+  // buttons to match it. They are separate properties rather than one
+  // shared name because they are separate components and a later partner
+  // may want them different -- but in this theme they are equal, and the
+  // check below measures each against its own ground so neither can drift
+  // into being unreadable on its own.
+  "--nav": "#242dc2",
+  "--nav-ink": "#ffffff",
   "--radius": "10px",
 };
 
@@ -197,6 +248,12 @@ export const CONTRAST_PAIRS = [
   ["text on solid soon", "--on-soon", "--soon", 4.5],
   ["arrivals flap text", "--flap-ink", "--ink-3", 4.5],
   ["arrivals flap alert", "--flap-alert", "--ink-3", 3.0],
+  ["side menu text", "--sidebar-ink", "--sidebar", 4.5],
+  ["side menu region headings", "--sidebar-muted", "--sidebar", 4.5],
+  ["side menu eyebrow and hover", "--sidebar-accent", "--sidebar", 4.5],
+  ["side menu against the page", "--sidebar", "--ink", 1.05],
+  ["menu button text", "--nav-ink", "--nav", 4.5],
+  ["menu button against the page", "--nav", "--ink", 1.05],
   ["live colour as text", "--live", "--ink", 3.0],
   ["soon colour as text", "--soon", "--ink", 3.0],
   ["stamp colour as text", "--stamp", "--ink", 3.0],
