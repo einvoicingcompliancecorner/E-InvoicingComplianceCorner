@@ -188,10 +188,20 @@ for (const [key, e] of Object.entries(EDIT)) {
   const sec = e.section || "file_format";
   const card = find(country, sec, e.match);
   if (!card) { problems.push(`${country}: no card "${e.match}" in ${sec} to edit`); continue; }
-  for (const f of ["title", "body", "note"]) {
+  for (const f of ["title", "body", "note", "rows"]) {
     if (e[f] && LANGS.some((l) => !e[f][l])) {
       problems.push(`${country}: the ${f} edit is missing a language`);
     }
+  }
+  // An edit may take a spine slot, the same way a move can: Bahrain's and
+  // Qatar's single section-02 card said "no format exists" as a body with
+  // no rows, which respine refuses to route. Turning it into the spine's
+  // Format & standard card, with that same answer expressed as rows, is
+  // what the framework asks for -- "a country with nothing to say under a
+  // heading says so in one row" -- rather than an exemption.
+  if (e.slot) e.title = Object.fromEntries(LANGS.map((l) => [l, titleFor(e.slot, l)]));
+  if (e.rows && LANGS.some((l) => e.rows[l].length !== e.rows.en.length)) {
+    problems.push(`${country}: the rows edit disagrees across languages`);
   }
   plan.push({ kind: "edit", country, sec, card, match: e.match, fields: e });
 }
@@ -210,7 +220,10 @@ for (const p of plan) {
   if (p.kind === "fold") console.log(`  ${p.country.padEnd(14)} FOLD  "${p.drop}" into "${p.into}" (${p.rows} rows)`);
   if (p.kind === "add") console.log(`  ${p.country.padEnd(14)} ADD   "${p.slot}" (${p.rows} rows)`);
   if (p.kind === "edit") console.log(`  ${p.country.padEnd(14)} EDIT  "${p.match}" in ${p.sec}`
-    + ` (${["title", "body", "note"].filter((f) => p.fields[f]).join(", ")})`);
+    + ` (${["title", "rows", "note"].filter((f) => p.fields[f])
+        .concat("body" in p.fields && p.fields.body === null ? ["body cleared"] : [])
+        .concat(p.fields.body ? ["body"] : []).join(", ")}`
+    + `${p.fields.rows ? `, ${p.fields.rows.en.length} rows` : ""})`);
 }
 for (const country of names) {
   const f = (state[country]?.file_format || []).length, s = (state[country]?.scope_transmission || []).length;
@@ -303,8 +316,13 @@ for (const p of plan.filter((x) => x.kind === "edit")) {
   w("");
   w(`-- ${p.country}: retarget "${p.match}" in ${p.sec}`);
   for (const l of LANGS) {
-    const bits = ["title", "body", "note"].filter((f) => p.fields[f])
+    const bits = ["title", "note"].filter((f) => p.fields[f])
       .map((f) => `${f} = ${lit(p.fields[f][l])}`);
+    if (p.fields.rows) bits.push(`rows_json = ${lit(JSON.stringify(p.fields.rows[l]))}`);
+    // body: an explicit null in the data file CLEARS it, which is how a
+    // body-only card becomes a rows-based one. Distinguished from absent.
+    if (p.fields.body) bits.push(`body = ${lit(p.fields.body[l])}`);
+    else if ("body" in p.fields && p.fields.body === null) bits.push("body = NULL");
     w(`UPDATE deep_dive_card_translations SET ${bits.join(", ")}`
       + ` WHERE lang = '${l}' AND card_id = ${cardSel(p.country, p.sec, p.card.so)};`);
   }
