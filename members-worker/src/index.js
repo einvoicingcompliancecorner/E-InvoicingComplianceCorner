@@ -36,6 +36,7 @@ import {
   signInCookies,
   signOutCookies,
 } from "../../shared/session.mjs";
+import { partnerForEmail } from "../../shared/partners.mjs";
 import {
   getRoiCountries as sharedGetRoiCountries,
   getRoiBenchmarks as sharedGetRoiBenchmarks,
@@ -264,6 +265,8 @@ const WORKER_I18N = {
       intro: "Choose which countries you want alerts for. Leave everything unchecked to receive the full monthly digest covering all tracked jurisdictions.",
       saved: "✓ Preferences saved.", selectAll: "Select all", clearAll: "Clear all",
       notifyLabel: "Email me a short notification when a new monthly issue is published",
+      brandingLabel: "Show {0} branding",
+      brandingHint: "Adds the {0} logo to PDFs you download from this site. Only you see this.",
       saveButton: "Save preferences",
     },
     unsubscribed: { title: "You've been unsubscribed from monthly notification emails.",
@@ -312,6 +315,8 @@ const WORKER_I18N = {
       intro: "Elija los países sobre los que desea recibir alertas. Deje todo sin marcar para recibir el resumen mensual completo de todas las jurisdicciones seguidas.",
       saved: "✓ Preferencias guardadas.", selectAll: "Seleccionar todo", clearAll: "Borrar todo",
       notifyLabel: "Enviarme una breve notificación por correo cuando se publique un nuevo número mensual",
+      brandingLabel: "Mostrar la marca de {0}",
+      brandingHint: "Añade el logotipo de {0} a los PDF que descargue de este sitio. Solo usted lo ve.",
       saveButton: "Guardar preferencias",
     },
     unsubscribed: { title: "Se ha dado de baja de las notificaciones mensuales por correo.",
@@ -360,6 +365,8 @@ const WORKER_I18N = {
       intro: "Wählen Sie, für welche Länder Sie Benachrichtigungen erhalten möchten. Lassen Sie alles unmarkiert, um den vollständigen monatlichen Digest für alle erfassten Länder zu erhalten.",
       saved: "✓ Einstellungen gespeichert.", selectAll: "Alle auswählen", clearAll: "Alle abwählen",
       notifyLabel: "Mich per kurzer E-Mail benachrichtigen, wenn eine neue monatliche Ausgabe veröffentlicht wird",
+      brandingLabel: "{0}-Branding anzeigen",
+      brandingHint: "Fügt das {0}-Logo zu PDFs hinzu, die Sie von dieser Website herunterladen. Nur Sie sehen es.",
       saveButton: "Einstellungen speichern",
     },
     unsubscribed: { title: "Sie haben die monatlichen Benachrichtigungs-E-Mails abbestellt.",
@@ -408,6 +415,8 @@ const WORKER_I18N = {
       intro: "Choisissez les pays pour lesquels vous souhaitez des alertes. Laissez tout décoché pour recevoir la synthèse mensuelle complète couvrant toutes les juridictions suivies.",
       saved: "✓ Préférences enregistrées.", selectAll: "Tout sélectionner", clearAll: "Tout désélectionner",
       notifyLabel: "M'envoyer une courte notification par e-mail lors de la publication d'un nouveau numéro mensuel",
+      brandingLabel: "Afficher la marque {0}",
+      brandingHint: "Ajoute le logo {0} aux PDF que vous téléchargez depuis ce site. Vous seul le voyez.",
       saveButton: "Enregistrer les préférences",
     },
     unsubscribed: { title: "Vous avez été désabonné des e-mails de notification mensuels.",
@@ -416,6 +425,17 @@ const WORKER_I18N = {
       body: "Vous pouvez gérer votre préférence de notification directement depuis les archives, une fois connecté." },
   },
 };
+
+/** {0} in a translated string, replaced everywhere it appears.
+ *
+ *  Every language needs the partner's name in a different position --
+ *  "Show Tradeshift branding" against "Afficher la marque Tradeshift" --
+ *  and the German hint wants it twice. A placeholder is the only way to
+ *  translate the sentence rather than gluing a name onto the end of one.
+ *  The value is escaped by the caller; this does no escaping of its own. */
+function fillPlaceholders(str, value) {
+  return String(str == null ? "" : str).split("{0}").join(value);
+}
 
 function t(lang, path) {
   const parts = path.split(".");
@@ -620,6 +640,8 @@ export default {
         response = await handleCodeVerify(request, env);
       } else if (request.method === "GET" && url.pathname === "/members/api/saved-countries") {
         response = await handleSavedCountriesApi(request, env);
+      } else if (request.method === "GET" && url.pathname === "/members/api/branding") {
+        response = await handleBrandingApi(request, env);
       } else if (request.method === "GET" && url.pathname === "/members/roi-calculator") {
         // Redirected rather than rendered -- see redirectToPublicPlanner.
         // handleRoiCalculator is kept for now: turning the redirect off is
@@ -3165,6 +3187,40 @@ async function handleSavedCountriesApi(request, env) {
   return jsonResponse({ countries: (sub && sub.countries) || [] });
 }
 
+/** Should this reader's documents carry a partner mark, and whose?
+ *
+ *  ONE ENDPOINT THAT ANSWERS THE WHOLE QUESTION, rather than site-worker
+ *  resolving the partner itself and asking here only for the preference.
+ *  site-worker has the D1 binding and could do the lookup -- but then the
+ *  rule for who gets branded would live in two places, and the first time
+ *  they disagreed a reader would see a mark on one document and not the
+ *  other with nothing in either Worker looking wrong.
+ *
+ *  The preference is checked HERE because it lives in the subscriber
+ *  record, and site-worker deliberately has no SUBSCRIBERS binding. That
+ *  boundary is worth more than the round trip it costs.
+ *
+ *  Fails soft, like handleSavedCountriesApi: 200 and no partner. A reader
+ *  who is signed out, works nowhere in particular, or has switched the
+ *  preference off are the same answer as far as the document is
+ *  concerned, and none of them is an error. */
+async function handleBrandingApi(request, env) {
+  const email = await requireSession(request, env);
+  if (!email) return jsonResponse({ partner: null });
+  try {
+    const sub = await getSubscriber(env, email);
+    // Default on, matching notificationsEnabled and matching what the
+    // preferences screen shows a partner subscriber before they have ever
+    // saved anything.
+    if (sub && sub.partnerBrandingEnabled === false) return jsonResponse({ partner: null });
+    const partner = await partnerForEmail(env.eicc_content, email);
+    return jsonResponse({ partner });
+  } catch (err) {
+    console.log(`branding api: ${(err && err.message) || err}`);
+    return jsonResponse({ partner: null });
+  }
+}
+
 // ================================================================
 // ONE PLANNER, NOT TWO
 // ================================================================
@@ -3398,8 +3454,13 @@ async function handlePreferencesGet(request, env, lang) {
   const sub = await getSubscriber(env, email);
   const currentCountries = sub?.countries || [];
   const notificationsEnabled = sub?.notificationsEnabled !== false; // default: enabled
+  const brandingEnabled = sub?.partnerBrandingEnabled !== false;    // default: enabled
   const countryPicker = await loadCountryPicker(env, lang);
-  return htmlResponse(renderPreferencesPage(email, currentCountries, false, notificationsEnabled, lang, countryPicker));
+  // null for almost everyone, and then the control simply is not there.
+  // A reader who works nowhere in particular should not learn that this
+  // feature exists from a greyed-out checkbox.
+  const partner = await partnerForEmail(env.eicc_content, email);
+  return htmlResponse(renderPreferencesPage(email, currentCountries, false, notificationsEnabled, lang, countryPicker, partner, brandingEnabled));
 }
 
 async function handlePreferencesPost(request, env, lang) {
@@ -3411,10 +3472,22 @@ async function handlePreferencesPost(request, env, lang) {
   const notificationsEnabled = form.get("notificationsEnabled") === "on";
 
   const existing = await getSubscriber(env, email);
-  await putSubscriber(env, email, { ...(existing || {}), countries: selected, notificationsEnabled, updated: Date.now() });
+  const partner = await partnerForEmail(env.eicc_content, email);
+
+  // WRITTEN ONLY WHEN THE CONTROL WAS THERE TO ANSWER, and that is the
+  // whole reason this is not one line like notificationsEnabled above.
+  // An unchecked box submits nothing, so a form that never rendered the
+  // control is indistinguishable from one where the reader cleared it.
+  // For a subscriber with no partner that would quietly write `false`
+  // into their record, and the day their employer became a partner the
+  // feature would arrive switched off for exactly the people who had
+  // saved a preference in the meantime.
+  const patch = { ...(existing || {}), countries: selected, notificationsEnabled, updated: Date.now() };
+  if (partner) patch.partnerBrandingEnabled = form.get("partnerBrandingEnabled") === "on";
+  await putSubscriber(env, email, patch);
 
   const countryPicker = await loadCountryPicker(env, lang);
-  return htmlResponse(renderPreferencesPage(email, selected, true, notificationsEnabled, lang, countryPicker));
+  return htmlResponse(renderPreferencesPage(email, selected, true, notificationsEnabled, lang, countryPicker, partner, patch.partnerBrandingEnabled !== false));
 }
 
 // ================================================================
@@ -3955,6 +4028,15 @@ const BASE_STYLE = `
   .prefs-actions{display:flex; gap:14px; margin:10px 0;}
   .prefs-actions a{font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--stamp); text-decoration:underline; cursor:pointer;}
   .saved-banner{background:var(--live-dim); color:#bfe6cf; border-radius:6px; padding:10px 14px; font-size:12.8px; margin-bottom:16px;}
+  /* The partner-branding control. Set apart by a rule rather than a box:
+     it is a preference like the one above it, not a promotion. Only a
+     subscriber on a partner domain ever sees this block at all. */
+  .pref-branding{border-top:1px dashed var(--paper-line); margin:16px 0 18px; padding-top:14px;}
+  .pref-branding .country-check{font-size:13.5px;}
+  /* Indented to the label's text rather than the checkbox, and explicitly
+     left-aligned: the card centres its button, and an inherited
+     text-align would centre a two-line hint under a left-aligned label. */
+  .pref-hint{margin:5px 0 0 26px; font-size:12px; line-height:1.5; color:#6b5f3f; text-align:left;}
   .promo-banner{background:var(--soon); color:#1a1207; border-radius:6px; padding:12px 16px; font-size:13.2px; font-weight:600; margin-bottom:16px; line-height:1.5;}
 
   /* Story pop-out modal (archive) -- same interaction pattern as the
@@ -4357,10 +4439,21 @@ function renderArchiveList(stories, regionByCountryName, englishNameByDisplayNam
   return pageShell(body, lang);
 }
 
-function renderPreferencesPage(email, selectedCountries, justSaved, notificationsEnabled, lang, countryPicker) {
+function renderPreferencesPage(email, selectedCountries, justSaved, notificationsEnabled, lang, countryPicker, partner, brandingEnabled) {
   lang = lang || "en";
   const selectedSet = new Set(selectedCountries || []);
   const notifChecked = notificationsEnabled !== false ? "checked" : "";
+  const brandChecked = brandingEnabled !== false ? "checked" : "";
+  const partnerName = partner ? escapeHtml(partner.displayName) : "";
+  const brandingBlock = partner
+    ? `<div class="pref-branding">
+          <label class="country-check">
+            <input type="checkbox" name="partnerBrandingEnabled" ${brandChecked}>
+            ${fillPlaceholders(t(lang, "preferences.brandingLabel"), partnerName)}
+          </label>
+          <p class="pref-hint">${fillPlaceholders(t(lang, "preferences.brandingHint"), partnerName)}</p>
+        </div>`
+    : "";
   const regionGroups = (countryPicker || [])
     .map(({ region, countries }) => {
       const checks = countries
@@ -4397,6 +4490,7 @@ function renderPreferencesPage(email, selectedCountries, justSaved, notification
           <input type="checkbox" name="notificationsEnabled" ${notifChecked}>
           ${t(lang, "preferences.notifyLabel")}
         </label>
+        ${brandingBlock}
         <button type="submit" class="btn">${t(lang, "preferences.saveButton")}</button>
       </form>
     </div>

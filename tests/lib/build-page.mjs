@@ -123,6 +123,13 @@ export async function buildRoiPage(opts = {}) {
       signedIn: opts.signedIn !== false,
       membersUrl: opts.membersUrl || "",
       subscribed,
+      // Off unless a suite asks for it, so every existing check keeps
+      // rendering the unbranded document it was written against. The
+      // origin is a file:// path in the harness because the mark is a
+      // real <img> and an unreachable one would measure as zero rather
+      // than failing -- see tests/partner-branding.mjs.
+      partner: opts.partner || null,
+      siteOrigin: opts.siteOrigin || "",
     });
 
     // pageShell()'s order, verbatim: BASE_STYLE first, page style second.

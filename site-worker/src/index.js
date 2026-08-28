@@ -2617,6 +2617,40 @@ async function renderComplianceGuidesPicker(request, env) {
 // The cap is the number of countries this site tracks, because that is
 // the largest honest request: "all of them" is a thing a reader will
 // legitimately ask for and the fitter has been calibrated on exactly that
+/** The partner whose mark belongs on this reader's documents, or null.
+ *
+ *  ASKED, NOT WORKED OUT HERE. This Worker holds the D1 binding and could
+ *  resolve the domain itself in one query -- but the answer also depends
+ *  on a preference stored in the subscriber record, and this Worker
+ *  deliberately has no SUBSCRIBERS binding. Splitting the decision would
+ *  put half the rule on each side of that boundary, and the first
+ *  disagreement between them would show up as a mark on the guide but not
+ *  on the planner, with neither Worker looking wrong.
+ *
+ *  FAILS SOFT, exactly like the saved-countries lookup this is modelled
+ *  on. No binding, a deploy skew, a slow answer, a 500: the reader gets
+ *  their document without a mark, which is the document this site served
+ *  yesterday. A logo is never worth failing a page for. */
+async function partnerBrandingFor(request, env) {
+  if (!env.MEMBERS) return null;
+  try {
+    const r = await env.MEMBERS.fetch(
+      new Request("https://members.e-invoicingcompliancecorner.com/members/api/branding", {
+        headers: { Cookie: request.headers.get("Cookie") || "" },
+      })
+    );
+    if (!r.ok) {
+      console.warn(`partner branding: members-worker answered ${r.status}`);
+      return null;
+    }
+    const body = await r.json();
+    return (body && body.partner) || null;
+  } catch (err) {
+    console.warn(`partner branding: service binding failed — ${err && err.message}`);
+    return null;
+  }
+}
+
 // document. What the cap stops is a hand-typed URL repeating the same
 // code four hundred times -- deduplicated first, so a reader who does
 // that gets their guide rather than a refusal.
@@ -2677,11 +2711,15 @@ async function renderComplianceGuideDocument(request, env) {
   }
 
   const today = new Date().toISOString().slice(0, 10);
-  const bundle = await getGuideBundle(env.eicc_content, chosen, lang);
+  const [bundle, partner] = await Promise.all([
+    getGuideBundle(env.eicc_content, chosen, lang),
+    partnerBrandingFor(request, env),
+  ]);
   const { html: doc } = renderGuideDocument({
     bundle, order: chosen, lang, strings, today,
     siteOrigin: "https://e-invoicingcompliancecorner.com",
     membersOrigin: MEMBERS_ORIGIN,
+    partner,
   });
 
   // THE TOOLBAR IS SCREEN-ONLY AND SAYS SO IN CSS, not in JavaScript.
@@ -2921,6 +2959,13 @@ async function renderRoiCalculatorPage(request, env) {
     }
   }
 
+  // Alongside the saved-countries lookup rather than after it: both are
+  // service calls to the same Worker for the same reader, and running
+  // them in sequence would charge the reader two round trips for one
+  // page. Null for anyone who is not signed in -- the branding endpoint
+  // would answer null anyway, and not asking is cheaper than being told.
+  const roiPartner = signedInAs ? await partnerBrandingFor(request, env) : null;
+
   const roiLang = await resolveRoiLang(env.eicc_content, lang);
 
   const [countries, benchmarks, phases, strings, fx, panelStrings] = await Promise.all([
@@ -2977,6 +3022,11 @@ async function renderRoiCalculatorPage(request, env) {
     // here, which nothing ever read) could not have served this even if
     // it had been wired up. See migration 591.
     membersUrl: MEMBERS_ORIGIN,
+    // The mark for the printed plan's first page, and the origin its
+    // <img> resolves against -- the PDF is built in the browser from a
+    // page that may be framed, so a root-relative path is not enough.
+    partner: roiPartner,
+    siteOrigin: "https://e-invoicingcompliancecorner.com",
   });
 
   // roiLang.lang, not lang: the document must declare the language it is
