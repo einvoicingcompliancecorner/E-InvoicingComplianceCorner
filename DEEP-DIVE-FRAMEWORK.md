@@ -135,9 +135,9 @@ or give it a card of its own.
 
 ### The row shape, and the three times this site has learned it
 
-Sections 02 and 03 render **two cards to a row**, and each row renders its
-**key above its value**, both full width. Not three cards, and not a key column
-beside a right-aligned value.
+Sections 02 and 03 flow their cards down **two columns**, and each row renders
+its **key above its value**, both full width. Not three columns, not grid rows,
+and not a key column beside a right-aligned value.
 
 Dan, 28 August 2026, on Poland and Malaysia: *"Is it better to have two boxes,
 rather than three in the row, and widening the box so text is not wrapped as
@@ -168,6 +168,26 @@ marginally shorter still and was **rejected on measurement**: 45% of the
 corpus's 468 cards mix short and long rows, so nearly half would render two
 different row shapes inside one card. That is the inconsistency this document
 exists to stop.
+
+**Columns, not grid rows** — the second half of the same report. Dan, on the
+two-up layout the day it deployed: *"the poland file format section now
+includes gaps, which could be filled with boxes moving up."* Sizing cards to
+their content had removed the empty *boxes*; only flowing them down columns
+removes the empty *space*. Two kinds of empty space have to be scored
+separately, and the first attempt at this scored them as one:
+
+| | gap with a card below it | ragged bottom |
+|---|---|---|
+| grid rows | 4,763px | 23,198px |
+| **column flow** | **39px** | 25,211px |
+
+A hole with content under it reads as broken; a section ending unevenly does
+not. The flow removes 4,724px of the first and pays 2,013px into the second.
+CSS masonry would be the textbook answer and is unsupported in all three of its
+spellings by the Chromium the suite runs against. A shortest-column fill
+computed in the renderer scores better than both — and was rejected because it
+puts a calibrated pixel model of the stylesheet inside the renderer, where a
+later font change degrades it silently, to win 0.6% of a page's whitespace.
 
 One thing the measurement ruled out: this was **not** content drift. Section 02
 averages 1,165 visible characters across the older half of the corpus and 1,171
