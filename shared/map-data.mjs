@@ -101,34 +101,44 @@ export function computeCountryMapStatus(milestones, todayISO) {
 // status logic, since both feed the same getMapCountries() output the
 // map page consumes; map-panel.js itself has no D1 access and can't
 // derive this.
-const TOPO_NAME_OVERRIDES = {
+// Exported so tests/map-tiles-agree.mjs can resolve a country the same way
+// map-panel.js does. The test reads this map and the topology file; neither
+// restates the other, so the check cannot be satisfied by the code it
+// checks -- the failure this repo has now found seven times.
+export const TOPO_NAME_OVERRIDES = {
   "United States": "United States of America",
   "Czech Republic": "Czechia",
   "Dominican Republic": "Dominican Rep.",
 };
 
-// Countries whose real shape is too small to reliably render/hover/
-// click at the map's zoom level get a fallback [lon, lat] marker
-// position instead of relying on the topology's own (tiny or, for a
-// handful of very small states, entirely absent) feature geometry.
-// Singapore needed this from the start; Bahrain was added 10 Aug 2026
-// after directly decoding its topology arc (bounding box ~0.17° x
-// 0.44° -- comparably tiny to Singapore's) rather than waiting for a
-// "no map position for Bahrain" console warning post-deploy. Add an
-// entry here rather than in map-panel.js if the topology has no
-// feature at all for a future very small addition.
-const MARKER_LONLAT_OVERRIDES = {
-  Singapore: [103.82, 1.35],
-  Bahrain: [50.59, 26.23],
-  // Liechtenstein, 27 August 2026, added BEFORE any console warning
-  // rather than after one. Decoding its topology arc gives a bounding
-  // box of 0.13 x 0.21 degrees (9.48-9.61 E, 47.06-47.27 N) -- smaller
-  // than Bahrain's 0.17 x 0.44 and smaller than Singapore's 0.35 x 0.18,
-  // so it is comfortably under both existing precedents for "too small
-  // to reliably render, hover or click". Its region box needs nothing:
-  // the Europe bounds already run -11 to 46 E and 34 to 71.5 N.
-  Liechtenstein: [9.55, 47.16],
-};
+// THERE WAS A MARKER_LONLAT_OVERRIDES MAP HERE, and it was never read.
+//
+// It held a hand-picked [lon, lat] for Singapore, Bahrain and
+// Liechtenstein, under a comment saying it was for countries "too small to
+// reliably render/hover/click". map-panel.js consulted it only where a
+// country had NO feature in the topology at all:
+//
+//     if (feature)            centroid = path.centroid(feature);
+//     else if (c.markerLonLat) centroid = projection(c.markerLonLat);
+//     else                     console.warn(...)
+//
+// All three have features in vendor/countries-50m.json, so all three
+// entries were inert and their label positions always came from real
+// geometry. It never showed a symptom because those centroids are right.
+// The comment described a SIZE criterion; the code applied an EXISTENCE
+// one. Liechtenstein's entry even carried careful bounding-box arithmetic
+// justifying an override that could not take effect, and the comment
+// predicted Monaco would need one -- Monaco has a feature too, as do
+// Malta, Mauritius and Puerto Rico. Every remaining country on the list
+// has one.
+//
+// Deleted 28 August 2026, on Dan's decision. The branch it fed is gone
+// from map-panel.js with it, and the failure it was a poor substitute for
+// -- a country whose topoName matches no feature -- is now a TEST rather
+// than a console warning nobody would see: tests/map-tiles-agree.mjs
+// checks every tracked country against the topology. The right repair for
+// that failure was always a TOPO_NAME_OVERRIDES entry, which gives the
+// country its real geometry, and never a hand-picked point.
 
 // ----------------------------------------------------------------
 // Recent news (the in-page tracker panel's sidebar, replacing the
@@ -240,7 +250,6 @@ export async function getMapCountries(db, lang) {
     code: c.code,
     flag: deriveFlagFromCode(c.code),
     topoName: TOPO_NAME_OVERRIDES[c.name_en] || c.name_en,
-    markerLonLat: MARKER_LONLAT_OVERRIDES[c.name_en] || null,
     status: computeCountryMapStatus(byCountry.get(c.id) || [], todayISO),
   }));
 }

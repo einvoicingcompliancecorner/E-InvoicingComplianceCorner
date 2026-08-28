@@ -124,8 +124,8 @@ const ARCHIVING_ROW = /archiv|retention|retain|storage|store|keep|conserv|aufbew
 // before the tool would touch that country at all.
 //
 // Second piece of dead code in this repo whose comment described a
-// criterion the code does not apply; MARKER_LONLAT_OVERRIDES in
-// map-panel.js is the other, and is still open.
+// criterion the code does not apply. The other was
+// MARKER_LONLAT_OVERRIDES in shared/map-data.mjs, deleted the same day.
 
 const { d1 } = await openReplayDb();
 const all = async (s) => (await d1.prepare(s).bind().all()).results || [];
