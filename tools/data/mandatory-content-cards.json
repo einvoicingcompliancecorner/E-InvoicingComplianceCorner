@@ -1,0 +1,197 @@
+{
+  "_comment": [
+    "The 'Mandatory content' spine card for the four countries respine refused",
+    "for exactly that one slot. Researched from primary sources, or from the",
+    "tax authority's own guidance where the statute could not be read — every",
+    "such case is named in that country's note, on the page, not just here.",
+    "",
+    "Row values are written to the framework's band: no value here renders",
+    "more than four lines in a full-width card in any of the four languages.",
+    "Figures are identical across languages; the digit runs are what the",
+    "language checks compare.",
+    "",
+    "France's row 3 states both dates rather than saying 'not yet required'.",
+    "It was drafted four days before the first of them, and a page that",
+    "renders from D1 at request time has nothing that would come back and",
+    "re-read a relative claim on 1 September."
+  ],
+
+  "France": {
+    "en": [
+      ["Standard particulars", "Both parties, the invoice number and date, a description of the supply, and the net amount, VAT rate and VAT due for each rate."],
+      ["Four additions for 2026", "A SIREN for supplier and customer, a delivery address where it differs, whether the supply is goods, services or both, and a VAT-on-debits mention."],
+      ["When the four bite", "Invoices issued from 1 September 2026 for large and mid-sized firms, and from 1 September 2027 for micro and small ones."],
+      ["The legal list is not the file", "What is transmitted is both narrower and broader than the legal list: no line description, but commercial-code mentions on top, fixed by arrêté."]
+    ],
+    "es": [
+      ["Menciones estándar", "Ambas partes, el número y la fecha de la factura, una descripción de la operación, y la base, el tipo de IVA y la cuota por cada tipo."],
+      ["Cuatro añadidos para 2026", "Un SIREN para proveedor y cliente, la dirección de entrega si difiere, si la operación es de bienes, servicios o ambos, y la mención de IVA por débitos."],
+      ["Cuándo se aplican", "A las facturas emitidas desde el 1 de septiembre de 2026 para las grandes y medianas empresas, y desde el 1 de septiembre de 2027 para las micro y pequeñas."],
+      ["La lista legal no es el fichero", "Lo transmitido es más estrecho y más amplio que la lista legal: sin descripción de línea, pero con menciones del código de comercio, fijadas por arrêté."]
+    ],
+    "de": [
+      ["Standardangaben", "Beide Parteien, Rechnungsnummer und -datum, eine Beschreibung der Leistung sowie Nettobetrag, Steuersatz und Steuerbetrag je Satz."],
+      ["Vier Ergänzungen ab 2026", "Eine SIREN für Lieferant und Kunde, eine abweichende Lieferadresse, ob Waren, Dienstleistungen oder beides geliefert wird, und ein Hinweis zur Debitorenbesteuerung."],
+      ["Ab wann sie gelten", "Für Rechnungen ab dem 1. September 2026 bei großen und mittleren Unternehmen, und ab dem 1. September 2027 bei Kleinst- und Kleinunternehmen."],
+      ["Die Rechtsliste ist nicht die Datei", "Übermittelt wird zugleich weniger und mehr als die Rechtsliste: keine Positionsbeschreibung, dafür Angaben aus dem Handelsgesetzbuch, per Arrêté festgelegt."]
+    ],
+    "fr": [
+      ["Mentions standard", "Les deux parties, le numéro et la date de la facture, une description de l'opération, et le montant hors taxe, le taux et la TVA due par taux."],
+      ["Quatre ajouts pour 2026", "Un SIREN pour le fournisseur et le client, l'adresse de livraison si elle diffère, la nature de l'opération, et la mention de l'option pour les débits."],
+      ["Quand elles s'appliquent", "Aux factures émises à compter du 1er septembre 2026 pour les grandes et moyennes entreprises, et du 1er septembre 2027 pour les micro et petites."],
+      ["La liste légale n'est pas le fichier", "Ce qui est transmis est à la fois plus étroit et plus large que la liste légale : pas de description de ligne, mais des mentions du code de commerce."]
+    ],
+    "note": {
+      "en": "Legifrance's consolidated article already shows the four new mentions, under a banner reading \"in force since 01/01/2025\". The commencement rule is not in the code — it is in article 3 of décret 2022-1299.",
+      "es": "El artículo consolidado de Legifrance ya muestra las cuatro nuevas menciones, bajo un aviso de «en vigor desde el 01/01/2025». La norma de entrada en vigor no está en el código, sino en el artículo 3 del décret 2022-1299.",
+      "de": "Der konsolidierte Artikel auf Legifrance zeigt die vier neuen Angaben bereits, unter dem Hinweis „in Kraft seit 01.01.2025“. Die Inkrafttretensregel steht nicht im Gesetzbuch, sondern in Artikel 3 des Décret 2022-1299.",
+      "fr": "L'article consolidé sur Legifrance affiche déjà les quatre nouvelles mentions, sous un bandeau « en vigueur depuis le 01/01/2025 ». La règle d'entrée en vigueur n'est pas dans le code : elle est à l'article 3 du décret 2022-1299."
+    }
+  },
+
+  "New Zealand": {
+    "en": [
+      ["No prescribed document", "Since 1 April 2023 no tax-invoice document is required. The duty is to hold set GST details, which several records may carry between them."],
+      ["What the tiers change", "At NZD 200 or less nothing need be given to the buyer. Above NZD 200 add the seller's GST number; above NZD 1,000 add buyer identification."],
+      ["Buyer's GST number", "Rarely needed. Above NZD 1,000 give the buyer's name and one identifier — an address, email or NZBN. Buyer-created records need both numbers."],
+      ["Peppol changes nothing", "The content rule is format-neutral. A Peppol invoice can carry it, and adds no GST field of its own."]
+    ],
+    "es": [
+      ["Ningún documento prescrito", "Desde el 1 de abril de 2023 no se exige un documento de factura fiscal. El deber es conservar ciertos datos de GST, que varios registros pueden repartirse."],
+      ["Qué cambian los tramos", "Hasta 200 NZD no hay que entregar nada al comprador. Por encima de 200 NZD se añade el número de GST del vendedor; por encima de 1.000 NZD, la identificación del comprador."],
+      ["Número de GST del comprador", "Rara vez necesario. Por encima de 1.000 NZD, el nombre del comprador y un identificador: dirección, correo o NZBN. Los registros creados por el comprador exigen ambos números."],
+      ["Peppol no cambia nada", "La regla de contenido es neutral respecto al formato. Una factura Peppol puede llevarla, y no añade ningún campo de GST propio."]
+    ],
+    "de": [
+      ["Kein vorgeschriebenes Dokument", "Seit dem 1. April 2023 ist kein Steuerrechnungsdokument vorgeschrieben. Zu halten sind bestimmte GST-Angaben, die sich auf mehrere Belege verteilen dürfen."],
+      ["Was die Stufen ändern", "Bis 200 NZD muss dem Käufer nichts ausgehändigt werden. Über 200 NZD kommt die GST-Nummer des Verkäufers hinzu, über 1.000 NZD die Identifikation des Käufers."],
+      ["GST-Nummer des Käufers", "Selten erforderlich. Über 1.000 NZD Name des Käufers plus eine Kennung: Adresse, E-Mail oder NZBN. Vom Käufer erstellte Belege brauchen beide Nummern."],
+      ["Peppol ändert nichts", "Die Inhaltsregel ist formatneutral. Eine Peppol-Rechnung kann sie tragen und fügt kein eigenes GST-Feld hinzu."]
+    ],
+    "fr": [
+      ["Aucun document prescrit", "Depuis le 1er avril 2023, aucun document de facture fiscale n'est exigé. L'obligation est de détenir certaines données de GST, que plusieurs pièces peuvent porter ensemble."],
+      ["Ce que changent les seuils", "Jusqu'à 200 NZD, rien n'a à être remis à l'acheteur. Au-delà de 200 NZD s'ajoute le numéro de GST du vendeur ; au-delà de 1 000 NZD, l'identification de l'acheteur."],
+      ["Numéro de GST de l'acheteur", "Rarement requis. Au-delà de 1 000 NZD, le nom de l'acheteur et un identifiant : adresse, courriel ou NZBN. Les pièces établies par l'acheteur exigent les deux numéros."],
+      ["Peppol ne change rien", "La règle de contenu est neutre quant au format. Une facture Peppol peut la porter et n'ajoute aucun champ de GST propre."]
+    ],
+    "note": {
+      "en": "Read from Inland Revenue's own guidance, not from the Act: legislation.govt.nz refused every request. The section numbers behind these rules are therefore uncited here.",
+      "es": "Tomado de la guía de Inland Revenue, no de la ley: legislation.govt.nz rechazó todas las peticiones. Por eso no se citan aquí los números de artículo.",
+      "de": "Aus der Anleitung von Inland Revenue entnommen, nicht aus dem Gesetz: legislation.govt.nz hat jede Anfrage abgewiesen. Die Paragraphennummern sind daher hier nicht zitiert.",
+      "fr": "Établi d'après les instructions d'Inland Revenue et non d'après la loi : legislation.govt.nz a refusé chaque requête. Les numéros d'article ne sont donc pas cités ici."
+    }
+  },
+
+  "Norway": {
+    "en": [
+      ["Seven required elements", "A number and date, both parties, what was supplied, when and where, the price and due date, and any VAT — the VAT stated in kroner."],
+      ["Seller's number plus MVA", "The seller gives its name and organisation number, suffixed MVA if VAT-registered. Norway has no separate VAT number."],
+      ["Buyer: name plus one ID", "A name, and either an address or an organisation number. On reverse-charge sales the buyer's organisation number is always required."],
+      ["Not the VAT Directive", "The list comes from Norwegian bookkeeping law, so the Directive's standard annotations do not apply as such. The format rules are EU-derived."]
+    ],
+    "es": [
+      ["Siete elementos exigidos", "Número y fecha, ambas partes, qué se entregó, cuándo y dónde, el precio y el vencimiento, y el IVA — expresado en coronas."],
+      ["Número del vendedor y MVA", "El vendedor indica su nombre y número de organización, con el sufijo MVA si está registrado a efectos de IVA. Noruega no tiene un número de IVA aparte."],
+      ["Comprador: nombre y un ID", "Un nombre, y una dirección o un número de organización. En ventas con inversión del sujeto pasivo el número de organización es siempre obligatorio."],
+      ["No es la Directiva del IVA", "La lista procede de la ley contable noruega, por lo que las menciones estándar de la Directiva no se aplican como tales. El formato sí deriva de la UE."]
+    ],
+    "de": [
+      ["Sieben Pflichtangaben", "Nummer und Datum, beide Parteien, was geliefert wurde, wann und wo, Preis und Fälligkeit sowie die Umsatzsteuer — in Kronen angegeben."],
+      ["Verkäufernummer plus MVA", "Der Verkäufer nennt Namen und Organisationsnummer, mit dem Zusatz MVA bei Umsatzsteuerregistrierung. Norwegen hat keine gesonderte Umsatzsteuernummer."],
+      ["Käufer: Name plus eine Kennung", "Ein Name sowie eine Adresse oder eine Organisationsnummer. Bei Umkehr der Steuerschuld ist die Organisationsnummer des Käufers stets erforderlich."],
+      ["Nicht die Mehrwertsteuerrichtlinie", "Die Liste stammt aus dem norwegischen Buchführungsrecht, die Standardvermerke der Richtlinie gelten also nicht als solche. Die Formatregeln sind EU-abgeleitet."]
+    ],
+    "fr": [
+      ["Sept éléments exigés", "Un numéro et une date, les deux parties, ce qui a été livré, quand et où, le prix et l'échéance, et la TVA — exprimée en couronnes."],
+      ["Numéro du vendeur plus MVA", "Le vendeur indique son nom et son numéro d'organisation, suivi de MVA s'il est assujetti. La Norvège n'a pas de numéro de TVA distinct."],
+      ["Acheteur : nom plus un ID", "Un nom, et soit une adresse soit un numéro d'organisation. En autoliquidation, le numéro d'organisation de l'acheteur est toujours exigé."],
+      ["Pas la directive TVA", "La liste vient du droit comptable norvégien : les mentions standard de la directive ne s'appliquent donc pas comme telles. Le format, lui, dérive de l'UE."]
+    ],
+    "note": {
+      "en": "The content rule is bokføringsforskriften § 5-1-1 and the parties rule § 5-1-2 — not § 5-1, which is only the sub-chapter heading. Read from a government-hosted copy and Skatteetaten guidance; lovdata.no blocks automated access.",
+      "es": "La regla de contenido es bokføringsforskriften § 5-1-1 y la de las partes § 5-1-2 — no § 5-1, que es solo el encabezado del subcapítulo. Leído de una copia alojada por el gobierno y de la guía de Skatteetaten; lovdata.no bloquea el acceso automatizado.",
+      "de": "Die Inhaltsregel ist bokføringsforskriften § 5-1-1, die Parteienregel § 5-1-2 — nicht § 5-1, das nur die Unterkapitelüberschrift ist. Gelesen aus einer staatlich gehosteten Kopie und der Skatteetaten-Anleitung; lovdata.no sperrt automatisierte Zugriffe.",
+      "fr": "La règle de contenu est bokføringsforskriften § 5-1-1 et celle des parties § 5-1-2 — pas § 5-1, qui n'est que l'intitulé du sous-chapitre. Lu depuis une copie hébergée par l'État et les instructions de Skatteetaten ; lovdata.no bloque l'accès automatisé."
+    }
+  },
+
+  "Slovakia": {
+    "en": [
+      ["Full VAT particulars", "Supplier and customer with VAT IDs, a sequential number, supply and issue dates, a description, the taxable amount and rate, and the tax in euros."],
+      ["Prescribed Slovak wording", "Some supplies need set phrases — reverse charge, self-billing, margin schemes. An exempt supply cites the provision that exempts it."],
+      ["Simplified invoice limits", "Under EUR 100 gross, or EUR 400 on an e-kasa or fuel-pump receipt, the customer's details and the net unit price may be left out."],
+      ["Electronic changes nothing", "An electronic invoice carries the same particulars. The 2027 mandate changes the format and the route, not what must be stated."]
+    ],
+    "es": [
+      ["Menciones completas de IVA", "Proveedor y cliente con NIF-IVA, número secuencial, fechas de entrega y emisión, una descripción, la base y el tipo, y la cuota en euros."],
+      ["Fórmulas eslovacas prescritas", "Algunas operaciones exigen frases fijas: inversión del sujeto pasivo, autofacturación, regímenes de margen. Una operación exenta cita la disposición que la exime."],
+      ["Límites de factura simplificada", "Por debajo de 100 EUR brutos, o 400 EUR en un ticket de e-kasa o surtidor, pueden omitirse los datos del cliente y el precio unitario neto."],
+      ["Lo electrónico no cambia nada", "Una factura electrónica lleva las mismas menciones. El mandato de 2027 cambia el formato y la vía, no lo que debe constar."]
+    ],
+    "de": [
+      ["Vollständige USt-Angaben", "Lieferant und Kunde mit USt-IdNr., fortlaufende Nummer, Liefer- und Ausstellungsdatum, eine Beschreibung, Bemessungsgrundlage und Satz sowie die Steuer in Euro."],
+      ["Vorgeschriebene slowakische Formeln", "Manche Umsätze verlangen feste Formulierungen: Umkehr der Steuerschuld, Gutschrift, Margenbesteuerung. Ein steuerfreier Umsatz nennt die befreiende Vorschrift."],
+      ["Grenzen der Kleinbetragsrechnung", "Unter 100 EUR brutto, oder 400 EUR auf einem e-kasa- oder Zapfsäulenbeleg, dürfen Kundendaten und Nettoeinzelpreis entfallen."],
+      ["Elektronisch ändert nichts", "Eine elektronische Rechnung trägt dieselben Angaben. Das Mandat 2027 ändert Format und Weg, nicht den erforderlichen Inhalt."]
+    ],
+    "fr": [
+      ["Mentions TVA complètes", "Fournisseur et client avec numéros de TVA, un numéro séquentiel, les dates de livraison et d'émission, une description, la base et le taux, et la taxe en euros."],
+      ["Formules slovaques prescrites", "Certaines opérations exigent des formules fixes : autoliquidation, autofacturation, régimes de la marge. Une opération exonérée cite la disposition qui l'exonère."],
+      ["Limites de la facture simplifiée", "En dessous de 100 EUR TTC, ou de 400 EUR sur un ticket e-kasa ou de pompe, les données du client et le prix unitaire hors taxe peuvent être omis."],
+      ["L'électronique ne change rien", "Une facture électronique porte les mêmes mentions. Le mandat de 2027 change le format et le circuit, pas ce qui doit y figurer."]
+    ],
+    "note": {
+      "en": "The EUR 400 receipt limit has applied since 1 January 2025, replacing an earlier EUR 1,000 cash and EUR 1,600 card split. Read from Financial Administration guidance; slov-lex could not serve the consolidated § 74.",
+      "es": "El límite de 400 EUR para tickets rige desde el 1 de enero de 2025, y sustituyó a un reparto anterior de 1.000 EUR en efectivo y 1.600 EUR con tarjeta. Tomado de la guía de la Administración Financiera; slov-lex no pudo servir el § 74 consolidado.",
+      "de": "Die Belegsgrenze von 400 EUR gilt seit dem 1. Januar 2025 und löste die frühere Aufteilung in 1.000 EUR bar und 1.600 EUR per Karte ab. Aus der Anleitung der Finanzverwaltung; slov-lex konnte den konsolidierten § 74 nicht ausliefern.",
+      "fr": "Le plafond de 400 EUR pour les tickets s'applique depuis le 1er janvier 2025 et a remplacé un partage antérieur de 1 000 EUR en espèces et 1 600 EUR par carte. Établi d'après les instructions de l'Administration financière ; slov-lex n'a pas pu servir le § 74 consolidé."
+    }
+  },
+
+  "_folds": {
+    "_comment": [
+      "New Zealand and Norway are at the framework's five-card ceiling, so the",
+      "new card displaces rather than adds. In both cases the two cards being",
+      "merged were already misfiled: they answer 'who and what does this cover',",
+      "which is section 03's question, not section 02's. Merging them is the",
+      "least-bad move available without breaching section 03's own ceiling of",
+      "four, which both countries are also already at.",
+      "",
+      "Notes are written here rather than concatenated by the tool. Two notes",
+      "glued end to end is not a note, and the substance worth keeping from",
+      "each is a judgement a person has to make."
+    ],
+    "New Zealand": {
+      "drop": "No real-time reporting",
+      "into": "Scope of the 2027 mandate",
+      "retitle": {
+        "en": "What the 2027 mandate covers",
+        "es": "Qué cubre el mandato de 2027",
+        "de": "Was das Mandat von 2027 abdeckt",
+        "fr": "Ce que couvre le mandat de 2027"
+      },
+      "note": {
+        "en": "If a New Zealand government contract has any cross-border element, check whether the specific invoice line falls inside this mandate. And unlike Ireland or France, no reporting layer is bolted on — this is an exchange format, not tax-administration reform.",
+        "es": "Si un contrato con el gobierno neozelandés tiene algún elemento transfronterizo, compruebe si esa línea de factura concreta queda dentro del mandato. Y a diferencia de Irlanda o Francia, no se le añade ninguna capa de reporte: es un formato de intercambio, no una reforma de la administración tributaria.",
+        "de": "Enthält ein neuseeländischer Regierungsvertrag ein grenzüberschreitendes Element, prüfen Sie, ob die konkrete Rechnungszeile unter dieses Mandat fällt. Und anders als in Irland oder Frankreich kommt keine Meldeebene hinzu — es geht um ein Austauschformat, nicht um eine Reform der Steuerverwaltung.",
+        "fr": "Si un contrat avec le gouvernement néo-zélandais comporte un élément transfrontalier, vérifiez si la ligne de facture concernée relève de ce mandat. Et contrairement à l'Irlande ou à la France, aucune couche de déclaration n'y est greffée : c'est un format d'échange, pas une réforme de l'administration fiscale."
+      }
+    },
+    "Norway": {
+      "drop": "Exemptions",
+      "into": "Foreign entities",
+      "retitle": {
+        "en": "Who is in, and who is out",
+        "es": "Quién entra y quién queda fuera",
+        "de": "Wer erfasst ist und wer nicht",
+        "fr": "Qui est concerné, et qui ne l'est pas"
+      },
+      "note": {
+        "en": "A foreign entity holding Norwegian bookkeeping obligations gets no lighter version of the duty. A separate B2C e-receipts framework is being assessed by Skattedirektoratet — worth watching, but not part of this reform.",
+        "es": "Una entidad extranjera con obligaciones contables noruegas no obtiene una versión más ligera del deber. Skattedirektoratet evalúa por separado un marco de recibos electrónicos B2C: algo a vigilar, pero que no forma parte de esta reforma.",
+        "de": "Ein ausländisches Unternehmen mit norwegischen Buchführungspflichten erhält keine abgeschwächte Fassung der Pflicht. Skattedirektoratet prüft gesondert einen Rahmen für B2C-E-Belege — beobachtenswert, aber nicht Teil dieser Reform.",
+        "fr": "Une entité étrangère soumise à des obligations comptables norvégiennes n'obtient aucune version allégée de l'obligation. Skattedirektoratet évalue séparément un cadre de reçus électroniques B2C : à surveiller, mais hors de cette réforme."
+      }
+    }
+  }
+}

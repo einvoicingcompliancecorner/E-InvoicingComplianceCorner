@@ -239,7 +239,11 @@ judged, and each held by a check in `tests/spec-row-layout.mjs`:
 
 - **No card floats below a gap.** Grid rows left 4,763px of empty space with
   content underneath it; the flow leaves 39px. Worst single hole was 432px, on
-  Poland, and 56 countries had at least one.
+  Poland, and 56 countries had at least one. The cost is paid at the bottom of
+  the shorter column, where it does not read as broken: measured across the
+  corpus, a median of 172px and a worst case of 558px. **A country with five
+  cards pays the most**, because the balancer splits them three and two — all
+  four countries in the 28 August batch sit in the worst ten.
 - **A row value gets the whole card, not a ribbon down one side.** At least 70%
   of the card's inner width, against 45% before.
 - **A value fits the reading band** — 6 rendered lines at 1440px in all four
