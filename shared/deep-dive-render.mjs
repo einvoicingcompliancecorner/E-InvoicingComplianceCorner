@@ -836,19 +836,52 @@ ${ldScript([
 
      300px, not 260px: the .wrap content box is 836px (max-width 980 is
      border-box and the 5vw padding comes out of it), so three columns fit
-     while the floor is <= 269px and two while it is <= 411px. No media
-     query, because this file has none -- the page is fluid throughout.
+     while the floor is <= 269px and two while it is <= 411px. The
+     shorthand columns:300px 2 reads as "columns at least 300px wide, never
+     more than two", so the page still drops to one column on a phone by
+     itself. No media query, because this file has none -- the page is
+     fluid throughout. (And no backticks in this comment: they end the
+     template literal this stylesheet lives inside, which is a trap already
+     recorded for shared/roi-render.mjs and which I have just walked into.)
 
-     align-items:start, because two-up makes the height gap between a
-     three-row card and a fifteen-line one far more visible than three-up
-     did: stretched, "Format & standard" became a 500px empty beige box
-     beside Poland's Identifiers card. renderRelatedCard already carries
-     the judgement that settles this -- "a card with a title and nothing
-     else is a worse artefact than no card: it reads as content that failed
-     to load" -- and a card stretched to a neighbour's height reads exactly
-     that way. Ragged bottoms are the cheaper cost. */
-  .spec-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:14px; align-items:start;}
-  .spec-card{background:var(--paper); color:#241d10; border:1px solid var(--paper-line); border-radius:var(--radius); padding:16px 18px 18px; min-width:0;}
+     A COLUMN FLOW, NOT GRID ROWS. Dan, 28 August 2026, on the deployed
+     two-up layout: "the poland file format section now includes gaps,
+     which could be filled with boxes moving up."
+
+     He is right, and the first version of this comment argued the other
+     way -- it called ragged bottoms "the cheaper cost" and left it there.
+     That was a judgement where a measurement was available. Two kinds of
+     empty space had been scored as one, and they are not the same thing: a
+     hole with content BELOW it reads as broken, and a section ending
+     unevenly does not. Separated, across all 76 countries, sections 02
+     and 03, measured in the browser:
+
+                    holes with content below   ragged bottom
+       grid rows            4,763px               23,198px
+       column flow             39px               25,211px
+
+     So the flow removes 4,724px of the space that reads as broken and pays
+     2,013px into the space that does not. align-items:start had removed
+     the empty BOXES; only the flow removes the empty SPACE.
+
+     Two other packings were measured and rejected. CSS masonry, in all
+     three of its spellings, is unsupported by the Chromium the suite runs
+     against (141), so it could not be tested even if it rendered. A
+     shortest-column fill computed in the renderer scores better than both
+     -- no holes, and a BETTER bottom edge than today -- and a height
+     estimated from the text alone picks the same column as perfect
+     knowledge in 97% of sections, at a cost of 86px across the corpus. It
+     was still rejected: it puts a calibrated pixel model of this
+     stylesheet inside the renderer, where a later font change degrades it
+     silently, in exchange for 0.6% of a page's whitespace. The measurement
+     is in the commit message if that trade ever looks different.
+
+     break-inside:avoid is what keeps a card whole across a column
+     boundary; measured, no card in the corpus splits. Section 05's
+     .related-grid is deliberately NOT changed: its cards stretch to a
+     shared height, which is why it has no holes to remove. */
+  .spec-grid{columns:300px 2; column-gap:14px;}
+  .spec-card{background:var(--paper); color:#241d10; border:1px solid var(--paper-line); border-radius:var(--radius); padding:16px 18px 18px; min-width:0; break-inside:avoid; margin:0 0 14px;}
   .spec-card h3{font-family:'IBM Plex Mono',monospace; font-size:11px; text-transform:uppercase; letter-spacing:0.09em; color:#6b5f3f; margin:0 0 10px; display:flex; align-items:center; gap:8px;}
   .spec-card h3::after{content:""; flex:1; height:1px; background:var(--paper-line);}
   .spec-row{padding:7px 0; border-top:1px dashed var(--paper-line); font-size:13px;}

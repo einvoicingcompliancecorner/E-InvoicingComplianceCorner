@@ -83,6 +83,12 @@ const MIN_VALUE_SHARE = 0.7;
 // a comment -- this repo's controlled experiment on that point is in
 // DEEP-DIVE-FRAMEWORK.md and the margin was +13% against +274%.
 const MAX_CARDS_PER_ROW = 2;
+// A gap with a card BELOW it in the same column. Under grid rows the worst
+// was 432px (Poland) and the corpus carried 4,763px of it; under the column
+// flow the whole corpus carries 39px, all of it sub-pixel rounding on a
+// handful of cards. 24px is comfortably above that and far below anything a
+// reader would call a gap -- there is no honest way to land in between.
+const MAX_HOLE_PX = 24;
 const BACKLOG_CEILING = { "row.lines.desktop": 1, "row.lines.mobile": 1 };
 
 // ---- the site, served from the replayed chain on an ephemeral port ----
@@ -120,6 +126,7 @@ if (browser === NOT_SET_UP) { server.close(); process.exit(NOT_SET_UP); }
 // One evaluate, run on every page: the rendered geometry of sections 02
 // and 03. Nothing here reads a value back from the code that set it.
 const PROBE = () => {
+  const GAP = 14;   // the column gap this stylesheet uses between cards
   const lines = (el) => { const r = document.createRange(); r.selectNodeContents(el); return r.getClientRects().length; };
   const rows = [];
   const grids = [];
@@ -138,7 +145,25 @@ const PROBE = () => {
       const top = Math.round(c.getBoundingClientRect().top);
       byTop.set(top, (byTop.get(top) || 0) + 1);
     }
-    grids.push({ sec: num, cards: cards.length, widest: Math.max(0, ...byTop.values()) });
+    // The empty space a reader actually complains about: a gap with a card
+    // BELOW it in the same column. A section whose last column ends short
+    // is not this, and scoring the two together is what let the first
+    // version of this layout ship with 4,763px of holes in it.
+    const byLeft = new Map();
+    for (const c of cards) {
+      const b = c.getBoundingClientRect();
+      const left = Math.round(b.left);
+      if (!byLeft.has(left)) byLeft.set(left, []);
+      byLeft.get(left).push(b);
+    }
+    let hole = 0;
+    for (const col of byLeft.values()) {
+      col.sort((p, q) => p.top - q.top);
+      for (let i = 1; i < col.length; i++) hole = Math.max(hole, col[i].top - col[i - 1].bottom - GAP);
+    }
+    grids.push({ sec: num, cards: cards.length, widest: Math.max(0, ...byTop.values()),
+      hole: Math.max(0, Math.round(hole)),
+      title: (cards[0].querySelector("h3") ? cards[0].querySelector("h3").textContent.trim() : "").slice(0, 30) });
     for (const row of grid.querySelectorAll(".spec-row")) {
       const v = row.querySelector(".v");
       const k = row.querySelector(".k");
@@ -169,6 +194,8 @@ const PASSES = [
 const over = { desktop: new Map(), mobile: new Map() };
 const thin = [];
 const wide = [];
+const holes = [];
+let holePx = 0;
 let pagesSeen = 0, rowsSeen = 0, gridsSeen = 0, twoUpSeen = 0;
 const failures = [];
 
@@ -190,6 +217,8 @@ for (const pass of PASSES) {
           wide.push(`${name_en} sec ${g.sec}: ${g.widest} cards on one row at ${pass.width}px`);
         }
         if (g.widest === 2) twoUpSeen += 1;
+        if (g.hole > MAX_HOLE_PX) holes.push(`${name_en} sec ${g.sec}: ${g.hole}px gap above a card at ${pass.width}px`);
+        holePx += g.hole;
       }
       for (const r of rows) {
         if (r.n > MAX_LINES[pass.key]) {
@@ -220,6 +249,15 @@ t.check(`the sweep measured real geometry (${pagesSeen} page loads, ${rowsSeen} 
 // ---- 1. two cards to a row, never three -------------------------------
 t.check(`no section-02/03 grid puts more than ${MAX_CARDS_PER_ROW} cards on a rendered row`,
   wide.length === 0, wide.slice(0, 6).join("; "));
+
+// ---- 1b. no card floats below a gap ----------------------------------
+//
+// Dan, 28 August, on the two-up layout after it deployed: "the poland file
+// format section now includes gaps, which could be filled with boxes moving
+// up." Sizing cards to their content removed the empty BOXES; only flowing
+// them down columns removes the empty SPACE.
+t.check(`no card sits more than ${MAX_HOLE_PX}px below the card above it in its column`,
+  holes.length === 0, holes.slice(0, 6).join("; "));
 
 // ...and it has not quietly collapsed to one card per row either, which
 // would satisfy the check above while wasting half the page. The corpus
@@ -277,6 +315,8 @@ for (const key of ["desktop", "mobile"]) {
 const listed = Object.values(backlog).reduce((a, v) => a + v.length, 0);
 console.log(`\n  note  ${rowsSeen} rendered rows across ${pagesSeen} page loads; `
   + `${listed} backlog entries in tests/data/spec-row-backlog.json`);
+console.log(`  note  ${Math.round(holePx)}px of gap-above-a-card across ${gridsSeen} grids `
+  + `(grid rows carried 4,763px in English alone)`);
 for (const key of ["desktop", "mobile"]) {
   for (const [name, list] of over[key]) console.log(`  note  ${key}: ${name} — ${list.length} row(s) over ${MAX_LINES[key]} lines, longest: ${list[0]}`);
 }
