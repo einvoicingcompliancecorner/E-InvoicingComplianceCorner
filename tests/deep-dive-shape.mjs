@@ -57,10 +57,10 @@ const backlog = JSON.parse(readFileSync(join(REPO, "tests/data/deep-dive-backlog
 // map is an error, so ADDING a rule is a deliberate edit here.
 const BACKLOG_CEILING = {
   "compliance_model.max": 35,
-  "count.file_format": 18,
+  "count.file_format": 19,
   "count.penalties_related": 7,
   "count.portals": 4,
-  "count.scope_transmission": 4,
+  "count.scope_transmission": 1,
   "count.stats": 1,
   "count.steps": 8,
   "file_format_intro.max": 40,
@@ -69,7 +69,7 @@ const BACKLOG_CEILING = {
   "penalties_intro.max": 38,
   "portal.label": 28,
   "scope_intro.max": 44,
-  "spine.notyet": 44,
+  "spine.notyet": 41,
   "steps_intro.max": 31,
   "timeline_intro.max": 45,
   "translation.overrun": 1,
@@ -124,10 +124,25 @@ const prose = await all(`
 const en = prose.filter((r) => r.lang === "en");
 t.check("there are country pages to measure", en.length >= 70, `${en.length} pages, ${prose.length} translations`);
 
+// COUNT WHAT THE READER SEES, WHICH IS NOT ONLY deep_dive_cards.
+//
+// Sections 02 and 03 also render LIFECYCLE cards -- Saudi Arabia's "QR code
+// (Phase 2)", Chile's validation statuses -- out of a different table, into
+// the same grid, looking like every other card. This check counted only
+// deep_dive_cards for its first month, so 40 rendered cards across 37
+// country/sections were invisible to a band whose entire purpose is to
+// govern how many cards a reader meets.
+//
+// Found on 28 August 2026 by looking at a screenshot of a page this batch
+// had just changed and counting the boxes: five in the database, six on the
+// page. That is rule 2, and it is the second time in two days that a check
+// here has turned out to measure a subset of what it claimed to.
 const struct = await all(`
   SELECT c.name_en AS name,
-    (SELECT count(*) FROM deep_dive_cards d WHERE d.country_id=c.id AND d.section='file_format') AS file_format,
-    (SELECT count(*) FROM deep_dive_cards d WHERE d.country_id=c.id AND d.section='scope_transmission') AS scope_transmission,
+    (SELECT count(*) FROM deep_dive_cards d WHERE d.country_id=c.id AND d.section='file_format')
+      + (SELECT count(*) FROM deep_dive_lifecycle_cards l WHERE l.country_id=c.id AND l.section='file_format') AS file_format,
+    (SELECT count(*) FROM deep_dive_cards d WHERE d.country_id=c.id AND d.section='scope_transmission')
+      + (SELECT count(*) FROM deep_dive_lifecycle_cards l WHERE l.country_id=c.id AND l.section='scope_transmission') AS scope_transmission,
     (SELECT count(*) FROM deep_dive_cards d WHERE d.country_id=c.id AND d.section='penalties_related') AS penalties_related,
     (SELECT count(*) FROM deep_dive_steps s WHERE s.country_id=c.id) AS steps,
     (SELECT count(*) FROM deep_dive_stats s WHERE s.country_id=c.id) AS stats,
