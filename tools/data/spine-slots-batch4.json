@@ -1,0 +1,303 @@
+{
+  "_comment": [
+    "Bahrain and Qatar — the last batch, and the one the framework's spine was",
+    "written for. Both have NO e-invoicing mandate, and each carried a single",
+    "body-only card saying so. The framework's answer to that is not an",
+    "exemption: 'a country with nothing to say under a heading says so in one",
+    "row... a reader comparing two markets needs the same four answers in the",
+    "same four places, and an absent answer is an answer.'",
+    "",
+    "So each gets all four spine cards. The useful part is that 'no mandate'",
+    "does not mean 'no duty': Bahrain has VAT at 10%, so tax-invoice content",
+    "and retention rules apply already, and Qatar has income tax, so a",
+    "bookkeeping duty applies even with no VAT and no tax invoice in its law.",
+    "That distinction is the most valuable thing on either page.",
+    "",
+    "Both existing cards are EDITED into the Format & standard spine card",
+    "rather than left alongside a new one, which would have said the same",
+    "thing twice."
+  ],
+
+  "edit": {
+    "Bahrain": {
+      "section": "file_format",
+      "match": "No format exists — because e-invoicing remains voluntary",
+      "slot": "Format & standard",
+      "body": null,
+      "rows": {
+        "en": [
+          ["No published schema", "No XML or UBL standard, no technical specification and no national platform. There is nothing to build against."],
+          ["Electronic is permitted", "Invoices may be issued and kept electronically, and since 16 November 2023 without prior NBR approval."],
+          ["The condition on the system", "An electronic system must stop entries being added, deleted or amended after the fact, and produce records on demand."]
+        ],
+        "es": [
+          ["Ningún esquema publicado", "Ni norma XML o UBL, ni especificación técnica, ni plataforma nacional. No hay nada contra lo que construir."],
+          ["Lo electrónico está permitido", "Las facturas pueden emitirse y conservarse electrónicamente, y desde el 16 de noviembre de 2023 sin autorización previa del NBR."],
+          ["La condición sobre el sistema", "El sistema electrónico debe impedir que se añadan, borren o modifiquen asientos a posteriori, y producir los registros a requerimiento."]
+        ],
+        "de": [
+          ["Kein veröffentlichtes Schema", "Kein XML- oder UBL-Standard, keine technische Spezifikation, keine nationale Plattform. Es gibt nichts, wogegen man bauen könnte."],
+          ["Elektronisch ist zulässig", "Rechnungen dürfen elektronisch ausgestellt und aufbewahrt werden, seit dem 16. November 2023 ohne vorherige NBR-Genehmigung."],
+          ["Die Bedingung an das System", "Ein elektronisches System muss nachträgliches Hinzufügen, Löschen oder Ändern von Einträgen verhindern und Aufzeichnungen auf Verlangen liefern."]
+        ],
+        "fr": [
+          ["Aucun schéma publié", "Ni norme XML ou UBL, ni spécification technique, ni plateforme nationale. Il n'y a rien contre quoi développer."],
+          ["L'électronique est permis", "Les factures peuvent être émises et conservées sous forme électronique, et depuis le 16 novembre 2023 sans accord préalable du NBR."],
+          ["La condition sur le système", "Un système électronique doit empêcher l'ajout, la suppression ou la modification d'écritures après coup, et produire les registres sur demande."]
+        ]
+      },
+      "note": {
+        "en": "Bahrain's e-invoicing programme is at procurement stage, not legislative. The January 2024 target that once circulated lapsed, and no enacted date exists.",
+        "es": "El programa de facturación electrónica de Baréin está en fase de licitación, no legislativa. El objetivo de enero de 2024 que circuló decayó y no existe ninguna fecha promulgada.",
+        "de": "Bahrains E-Invoicing-Programm steckt in der Beschaffungs-, nicht in der Gesetzgebungsphase. Das einst kursierende Ziel Januar 2024 ist verfallen; ein in Kraft gesetztes Datum gibt es nicht.",
+        "fr": "Le programme de facturation électronique de Bahreïn en est au stade des marchés publics, pas de la loi. L'échéance de janvier 2024 qui a circulé est caduque et aucune date n'est promulguée."
+      }
+    },
+    "Qatar": {
+      "section": "file_format",
+      "match": "No format has been published",
+      "slot": "Format & standard",
+      "body": null,
+      "rows": {
+        "en": [
+          ["No published schema", "The General Tax Authority has published no XML or UBL standard, no technical specification and no platform."],
+          ["The draft law", "A draft law and its executive regulations were approved by the Council of Ministers on 6 May 2026. Neither text has been published."],
+          ["Not yet enacted", "The Shura Council had not taken it up before rising on 6 July 2026. It is not passed, not assented to and not gazetted."]
+        ],
+        "es": [
+          ["Ningún esquema publicado", "La Autoridad General Tributaria no ha publicado norma XML o UBL alguna, ni especificación técnica, ni plataforma."],
+          ["El proyecto de ley", "El Consejo de Ministros aprobó un proyecto de ley y su reglamento ejecutivo el 6 de mayo de 2026. Ninguno de los textos se ha publicado."],
+          ["Aún no promulgada", "El Consejo de la Shura no lo abordó antes de levantar sesión el 6 de julio de 2026. No está aprobada, ni sancionada, ni publicada en el boletín."]
+        ],
+        "de": [
+          ["Kein veröffentlichtes Schema", "Die General Tax Authority hat weder einen XML- oder UBL-Standard noch eine technische Spezifikation oder Plattform veröffentlicht."],
+          ["Der Gesetzentwurf", "Der Ministerrat billigte am 6. Mai 2026 einen Gesetzentwurf samt Durchführungsverordnung. Keiner der Texte wurde veröffentlicht."],
+          ["Noch nicht in Kraft", "Der Schura-Rat hatte ihn vor der Vertagung am 6. Juli 2026 nicht aufgerufen. Nicht beschlossen, nicht sanktioniert, nicht verkündet."]
+        ],
+        "fr": [
+          ["Aucun schéma publié", "L'Autorité générale des impôts n'a publié ni norme XML ou UBL, ni spécification technique, ni plateforme."],
+          ["Le projet de loi", "Le Conseil des ministres a approuvé un projet de loi et son règlement d'exécution le 6 mai 2026. Aucun des textes n'a été publié."],
+          ["Pas encore promulguée", "Le Conseil de la Choura ne l'avait pas examiné avant de lever séance le 6 juillet 2026. Ni votée, ni sanctionnée, ni publiée au journal officiel."]
+        ]
+      },
+      "note": {
+        "en": "Two vendor pages publish detailed Qatari specifications — UBL 2.1, SHA-256 hashing, ECDSA keys, a GTA data dictionary. No Qatari authority has published any of it; it reads as Saudi Arabia's specification transposed.",
+        "es": "Dos páginas de proveedores publican especificaciones cataríes detalladas: UBL 2.1, hash SHA-256, claves ECDSA, un diccionario de datos de la GTA. Ninguna autoridad catarí ha publicado nada de eso; parece la especificación saudí trasladada.",
+        "de": "Zwei Anbieterseiten veröffentlichen detaillierte katarische Spezifikationen — UBL 2.1, SHA-256-Hashing, ECDSA-Schlüssel, ein GTA-Datenwörterbuch. Keine katarische Behörde hat davon etwas veröffentlicht; es liest sich wie die saudische Spezifikation, übertragen.",
+        "fr": "Deux pages d'éditeurs publient des spécifications qataries détaillées — UBL 2.1, hachage SHA-256, clés ECDSA, un dictionnaire de données de la GTA. Aucune autorité qatarie n'a rien publié de tel ; cela se lit comme la spécification saoudienne transposée."
+      }
+    }
+  },
+
+  "add": {
+    "Bahrain:identifiers": {
+      "country": "Bahrain",
+      "slot": "Identifiers & registration",
+      "en": [
+        ["VAT account number", "The NBR issues a 15-digit numeric VAT account number on registration, and it must appear on a tax invoice."],
+        ["Thresholds", "Registration is compulsory above BHD 37,500 of annual taxable supplies and optional from BHD 18,750."],
+        ["Non-residents", "A non-resident making taxable supplies in Bahrain registers from its first supply, with no threshold to clear."],
+        ["A representative is optional", "A non-resident may register directly or through a representative the NBR has approved. One is not compulsory."]
+      ],
+      "es": [
+        ["Número de cuenta de IVA", "El NBR emite al registrarse un número de cuenta de IVA de 15 dígitos numéricos, que debe figurar en la factura fiscal."],
+        ["Umbrales", "El registro es obligatorio por encima de 37.500 BHD de entregas gravadas anuales y voluntario desde 18.750 BHD."],
+        ["No residentes", "Un no residente que realice entregas gravadas en Baréin se registra desde su primera entrega, sin umbral que superar."],
+        ["El representante es opcional", "Un no residente puede registrarse directamente o mediante un representante aprobado por el NBR. No es obligatorio tenerlo."]
+      ],
+      "de": [
+        ["USt-Kontonummer", "Das NBR vergibt bei der Registrierung eine 15-stellige numerische USt-Kontonummer, die auf der Steuerrechnung stehen muss."],
+        ["Schwellenwerte", "Die Registrierung ist ab 37.500 BHD steuerbarer Jahresumsätze verpflichtend und ab 18.750 BHD freiwillig möglich."],
+        ["Gebietsfremde", "Ein Gebietsfremder mit steuerbaren Umsätzen in Bahrain registriert sich ab dem ersten Umsatz, ohne Schwellenwert."],
+        ["Vertreter ist optional", "Ein Gebietsfremder kann sich direkt oder über einen vom NBR zugelassenen Vertreter registrieren. Pflicht ist das nicht."]
+      ],
+      "fr": [
+        ["Numéro de compte TVA", "Le NBR attribue à l'immatriculation un numéro de compte TVA à 15 chiffres, qui doit figurer sur la facture fiscale."],
+        ["Seuils", "L'immatriculation est obligatoire au-delà de 37 500 BHD de livraisons taxables annuelles et facultative dès 18 750 BHD."],
+        ["Non-résidents", "Un non-résident réalisant des livraisons taxables à Bahreïn s'immatricule dès sa première livraison, sans seuil à franchir."],
+        ["Le représentant est facultatif", "Un non-résident peut s'immatriculer directement ou via un représentant agréé par le NBR. Ce n'est pas une obligation."]
+      ],
+      "note": {
+        "en": "The 15-digit format is not stated in any NBR document we could reach — nbr.gov.bh refused every automated request — so it rests on two secondary sources and one registrant's own published number.",
+        "es": "El formato de 15 dígitos no consta en ningún documento del NBR al que pudiéramos acceder — nbr.gov.bh rechazó toda petición automatizada — por lo que se apoya en dos fuentes secundarias y en el número publicado por un registrado.",
+        "de": "Das 15-stellige Format steht in keinem erreichbaren NBR-Dokument — nbr.gov.bh wies jede automatisierte Anfrage ab — es stützt sich daher auf zwei Sekundärquellen und die veröffentlichte Nummer eines Registrierten.",
+        "fr": "Le format à 15 chiffres ne figure dans aucun document du NBR que nous ayons pu atteindre — nbr.gov.bh a refusé toute requête automatisée — il repose donc sur deux sources secondaires et le numéro publié par un assujetti."
+      }
+    },
+
+    "Bahrain:content": {
+      "country": "Bahrain",
+      "slot": "Mandatory content",
+      "en": [
+        ["A tax invoice does exist", "Bahrain has VAT at 10%, so tax-invoice content rules bind whether or not the invoice is electronic."],
+        ["What it must show", "The words Tax Invoice, both parties, the dates, a sequential number, the supply and the tax — with values in Bahraini dinars."],
+        ["Arabic is not required", "Unlike Saudi Arabia, Bahrain requires no Arabic on an invoice. Records and books may be kept in Arabic or English."],
+        ["Simplified at BHD 500", "Available where the customer is unregistered or the consideration is BHD 500 or less; the customer's details may be omitted."]
+      ],
+      "es": [
+        ["La factura fiscal sí existe", "Baréin tiene IVA al 10%, de modo que las reglas de contenido de la factura fiscal obligan sea o no electrónica."],
+        ["Qué debe mostrar", "Las palabras Tax Invoice, ambas partes, las fechas, un número correlativo, la operación y el impuesto, con importes en dinares bareiníes."],
+        ["El árabe no es obligatorio", "A diferencia de Arabia Saudí, Baréin no exige árabe en la factura. Los libros y registros pueden llevarse en árabe o en inglés."],
+        ["Simplificada en 500 BHD", "Disponible si el cliente no está registrado o la contraprestación no supera 500 BHD; pueden omitirse los datos del cliente."]
+      ],
+      "de": [
+        ["Eine Steuerrechnung gibt es", "Bahrain erhebt 10% Umsatzsteuer, daher gelten Inhaltsregeln für die Steuerrechnung, ob elektronisch oder nicht."],
+        ["Was darauf stehen muss", "Die Worte Tax Invoice, beide Parteien, die Daten, eine fortlaufende Nummer, der Umsatz und die Steuer — Beträge in Bahrain-Dinar."],
+        ["Arabisch ist nicht Pflicht", "Anders als Saudi-Arabien verlangt Bahrain kein Arabisch auf der Rechnung. Bücher und Aufzeichnungen dürfen arabisch oder englisch sein."],
+        ["Vereinfacht ab 500 BHD", "Möglich, wenn der Kunde nicht registriert ist oder das Entgelt 500 BHD nicht übersteigt; Kundendaten dürfen entfallen."]
+      ],
+      "fr": [
+        ["La facture fiscale existe bien", "Bahreïn applique une TVA de 10%, si bien que les règles de contenu de la facture fiscale s'imposent, électronique ou non."],
+        ["Ce qu'elle doit porter", "Les mots Tax Invoice, les deux parties, les dates, un numéro séquentiel, l'opération et la taxe — montants en dinars bahreïnis."],
+        ["L'arabe n'est pas exigé", "Contrairement à l'Arabie saoudite, Bahreïn n'exige pas d'arabe sur la facture. Livres et registres peuvent être en arabe ou en anglais."],
+        ["Simplifiée à 500 BHD", "Possible si le client n'est pas immatriculé ou si la contrepartie n'excède pas 500 BHD ; les données du client peuvent être omises."]
+      ],
+      "note": {
+        "en": "The Executive Regulations themselves could not be read — nbr.gov.bh returned 403 on every path — so the figures rest on three firms independently quoting Articles 52 and 53. An NBR guide update of 29 July 2026 may have moved this.",
+        "es": "El Reglamento Ejecutivo no pudo leerse — nbr.gov.bh devolvió 403 en todas las rutas — por lo que las cifras se apoyan en tres firmas que citan por separado los artículos 52 y 53. Una actualización de la guía del NBR del 29 de julio de 2026 podría haberlo cambiado.",
+        "de": "Die Durchführungsverordnung selbst war nicht lesbar — nbr.gov.bh lieferte auf jedem Pfad 403 — die Zahlen stützen sich daher auf drei Kanzleien, die unabhängig die Artikel 52 und 53 zitieren. Ein NBR-Leitfaden-Update vom 29. Juli 2026 könnte dies verschoben haben.",
+        "fr": "Le règlement d'exécution lui-même n'a pas pu être lu — nbr.gov.bh a renvoyé 403 sur chaque chemin — les chiffres reposent donc sur trois cabinets citant séparément les articles 52 et 53. Une mise à jour du guide du NBR du 29 juillet 2026 a pu modifier cela."
+      }
+    },
+
+    "Bahrain:archiving": {
+      "country": "Bahrain",
+      "slot": "Archiving",
+      "en": [
+        ["Ten years", "VAT records and accounting books are kept ten years. The NBR doubled the original five in February 2024."],
+        ["Real estate runs longer", "Records relating to real estate are kept fifteen years from the end of the tax period they relate to."],
+        ["Capital assets", "Records must outlast the adjustment period — five years for movable capital assets and ten for immovable ones."],
+        ["Electronic is fine", "Records and invoices may be held electronically where they cannot be altered and can be produced on demand."]
+      ],
+      "es": [
+        ["Diez años", "Los registros de IVA y los libros contables se conservan diez años. El NBR duplicó los cinco originales en febrero de 2024."],
+        ["Los inmuebles, más", "Los registros relativos a bienes inmuebles se conservan quince años desde el fin del periodo fiscal al que se refieren."],
+        ["Bienes de capital", "Los registros deben sobrevivir al periodo de ajuste: cinco años para los bienes muebles y diez para los inmuebles."],
+        ["Lo electrónico vale", "Los registros y las facturas pueden conservarse electrónicamente si no pueden alterarse y pueden producirse a requerimiento."]
+      ],
+      "de": [
+        ["Zehn Jahre", "USt-Aufzeichnungen und Bücher werden zehn Jahre aufbewahrt. Das NBR verdoppelte die ursprünglichen fünf im Februar 2024."],
+        ["Immobilien länger", "Aufzeichnungen zu Immobilien werden fünfzehn Jahre ab dem Ende des betroffenen Steuerzeitraums aufbewahrt."],
+        ["Anlagegüter", "Die Aufzeichnungen müssen den Berichtigungszeitraum überdauern — fünf Jahre bei beweglichen, zehn bei unbeweglichen Anlagegütern."],
+        ["Elektronisch ist zulässig", "Aufzeichnungen und Rechnungen dürfen elektronisch gehalten werden, sofern sie unveränderbar sind und auf Verlangen vorgelegt werden können."]
+      ],
+      "fr": [
+        ["Dix ans", "Les registres de TVA et les livres comptables sont conservés dix ans. Le NBR a doublé les cinq ans d'origine en février 2024."],
+        ["L'immobilier plus longtemps", "Les registres relatifs aux biens immobiliers sont conservés quinze ans à compter de la fin de la période fiscale concernée."],
+        ["Biens d'équipement", "Les registres doivent survivre à la période de régularisation — cinq ans pour les biens mobiliers, dix pour les immeubles."],
+        ["L'électronique convient", "Registres et factures peuvent être conservés sous forme électronique s'ils sont inaltérables et peuvent être produits sur demande."]
+      ],
+      "note": {
+        "en": "No decision number for the 2024 extension surfaced, and no source addresses whether it also moved the fifteen-year real-estate period. Whether records must be held inside Bahrain is unresolved.",
+        "es": "No apareció número de resolución para la ampliación de 2024, y ninguna fuente aborda si también movió el plazo de quince años de los inmuebles. Si los registros deben guardarse en Baréin sigue sin resolverse.",
+        "de": "Für die Verlängerung von 2024 tauchte keine Beschlussnummer auf, und keine Quelle behandelt, ob sie auch die fünfzehnjährige Immobilienfrist verschob. Ob Unterlagen in Bahrain liegen müssen, ist ungeklärt.",
+        "fr": "Aucun numéro de décision n'est apparu pour la prolongation de 2024, et aucune source n'indique si elle a aussi déplacé le délai de quinze ans pour l'immobilier. La question d'une conservation à Bahreïn reste ouverte."
+      }
+    },
+
+    "Qatar:identifiers": {
+      "country": "Qatar",
+      "slot": "Identifiers & registration",
+      "en": [
+        ["Tax Identification Number", "Ten digits opening with 5, issued by the General Tax Authority. Qatar Financial Centre firms get a T-prefixed number instead."],
+        ["Who registers", "Anyone carrying on an activity or earning taxable income, within sixty days of approval to start."],
+        ["Everything runs on Dhareeba", "Registration, tax cards, returns and withholding all go through the GTA's Dhareeba portal. The old TAS system closed in 2020."],
+        ["Exemption is not excusal", "An exempt Qatari or GCC-owned company still registers and still files a return, on a simplified form if it is small."]
+      ],
+      "es": [
+        ["Número de identificación fiscal", "Diez dígitos que empiezan por 5, emitidos por la Autoridad General Tributaria. Las firmas del Qatar Financial Centre reciben en cambio un número con prefijo T."],
+        ["Quién se registra", "Quien ejerza una actividad u obtenga renta gravable, dentro de los sesenta días siguientes a la aprobación para iniciarla."],
+        ["Todo pasa por Dhareeba", "Registro, tarjetas fiscales, declaraciones y retenciones van por el portal Dhareeba de la GTA. El antiguo sistema TAS cerró en 2020."],
+        ["La exención no exime", "Una empresa exenta catarí o del CCG se registra igualmente y presenta declaración, en formulario simplificado si es pequeña."]
+      ],
+      "de": [
+        ["Steuernummer", "Zehn Ziffern, beginnend mit 5, vergeben von der General Tax Authority. Firmen im Qatar Financial Centre erhalten stattdessen eine Nummer mit T-Präfix."],
+        ["Wer sich registriert", "Wer eine Tätigkeit ausübt oder steuerpflichtige Einkünfte erzielt, binnen sechzig Tagen nach der Genehmigung zum Start."],
+        ["Alles läuft über Dhareeba", "Registrierung, Steuerkarten, Erklärungen und Quellensteuer laufen über das GTA-Portal Dhareeba. Das alte TAS-System schloss 2020."],
+        ["Befreiung entbindet nicht", "Ein befreites katarisches oder GCC-eigenes Unternehmen registriert sich dennoch und gibt eine Erklärung ab, vereinfacht wenn es klein ist."]
+      ],
+      "fr": [
+        ["Numéro d'identification fiscale", "Dix chiffres commençant par 5, délivrés par l'Autorité générale des impôts. Les sociétés du Qatar Financial Centre reçoivent un numéro préfixé T."],
+        ["Qui s'immatricule", "Toute personne exerçant une activité ou percevant un revenu imposable, dans les soixante jours suivant l'autorisation de démarrer."],
+        ["Tout passe par Dhareeba", "Immatriculation, cartes fiscales, déclarations et retenues passent par le portail Dhareeba de la GTA. L'ancien système TAS a fermé en 2020."],
+        ["L'exonération n'exempte pas", "Une société exonérée qatarie ou du CCG s'immatricule quand même et dépose une déclaration, sur formulaire simplifié si elle est petite."]
+      ],
+      "note": {
+        "en": "The ten-digit format is not published by the General Tax Authority; it rests on the OECD's jurisdiction sheet, which is compiled from information the jurisdiction supplies.",
+        "es": "La Autoridad General Tributaria no publica el formato de diez dígitos; procede de la ficha jurisdiccional de la OCDE, elaborada con datos que aporta la propia jurisdicción.",
+        "de": "Das zehnstellige Format wird von der General Tax Authority nicht veröffentlicht; es stammt aus dem OECD-Länderblatt, das aus Angaben der Jurisdiktion zusammengestellt wird.",
+        "fr": "Le format à dix chiffres n'est pas publié par l'Autorité générale des impôts ; il provient de la fiche de l'OCDE, établie à partir des informations fournies par la juridiction."
+      }
+    },
+
+    "Qatar:content": {
+      "country": "Qatar",
+      "slot": "Mandatory content",
+      "en": [
+        ["There is no tax invoice", "Qatar has no VAT, so no tax-invoice rules exist. Nothing in the income tax law prescribes what an invoice must show."],
+        ["The duty is bookkeeping", "What the law requires is books: a general journal, a general ledger and an inventory ledger, with supporting documents."],
+        ["Invoices are evidence", "An invoice matters as proof. A cost is deductible only if actually incurred and backed by documents such as contracts and invoices."],
+        ["Arabic for the filing", "Financial statements filed with the GTA must be in Arabic, as must correspondence. No riyal-only rule was found for invoices."]
+      ],
+      "es": [
+        ["No existe la factura fiscal", "Catar no tiene IVA, así que no hay reglas de factura fiscal. Nada en la ley del impuesto sobre la renta prescribe qué debe mostrar una factura."],
+        ["El deber es llevar libros", "Lo que la ley exige son libros: diario general, mayor general y libro de inventarios, con sus documentos justificativos."],
+        ["Las facturas son prueba", "La factura cuenta como prueba. Un gasto solo es deducible si se incurrió realmente y está respaldado por contratos y facturas."],
+        ["Árabe para la presentación", "Los estados financieros presentados a la GTA deben ir en árabe, igual que la correspondencia. No se halló regla de solo riales para facturas."]
+      ],
+      "de": [
+        ["Eine Steuerrechnung gibt es nicht", "Katar hat keine Mehrwertsteuer, also keine Regeln zur Steuerrechnung. Das Einkommensteuerrecht schreibt keinen Rechnungsinhalt vor."],
+        ["Die Pflicht ist Buchführung", "Verlangt sind Bücher: Grundbuch, Hauptbuch und Inventarbuch, mit den zugehörigen Belegen."],
+        ["Rechnungen sind Nachweis", "Die Rechnung zählt als Beleg. Eine Ausgabe ist nur abziehbar, wenn sie tatsächlich anfiel und durch Verträge und Rechnungen belegt ist."],
+        ["Arabisch für die Einreichung", "Bei der GTA eingereichte Abschlüsse müssen arabisch sein, ebenso der Schriftwechsel. Eine Riyal-Pflicht für Rechnungen war nicht auffindbar."]
+      ],
+      "fr": [
+        ["Il n'y a pas de facture fiscale", "Le Qatar n'a pas de TVA, donc aucune règle de facture fiscale. Rien dans la loi sur l'impôt sur le revenu ne prescrit le contenu d'une facture."],
+        ["L'obligation est comptable", "Ce que la loi exige, ce sont des livres : journal général, grand livre et livre d'inventaire, avec leurs pièces justificatives."],
+        ["Les factures font preuve", "La facture vaut preuve. Une charge n'est déductible que si elle a réellement été engagée et est appuyée par contrats et factures."],
+        ["L'arabe pour le dépôt", "Les états financiers déposés auprès de la GTA doivent être en arabe, de même que la correspondance. Aucune règle de riyal seul n'a été trouvée."]
+      ],
+      "note": {
+        "en": "This is the distinction that matters: Qatar imposes a bookkeeping and evidentiary duty, not an invoice-content duty. A search of the consolidated law and regulations found no operative provision prescribing what an invoice must contain.",
+        "es": "Esta es la distinción que importa: Catar impone un deber de contabilidad y de prueba, no un deber de contenido de la factura. Una búsqueda en la ley y el reglamento consolidados no halló disposición alguna que prescriba el contenido de una factura.",
+        "de": "Das ist der entscheidende Unterschied: Katar erlegt eine Buchführungs- und Nachweispflicht auf, keine Pflicht zum Rechnungsinhalt. Eine Suche im konsolidierten Gesetz und der Verordnung fand keine Vorschrift zum Rechnungsinhalt.",
+        "fr": "C'est la distinction qui compte : le Qatar impose une obligation comptable et probatoire, non une obligation de contenu de facture. Une recherche dans la loi et le règlement consolidés n'a trouvé aucune disposition prescrivant le contenu d'une facture."
+      }
+    },
+
+    "Qatar:archiving": {
+      "country": "Qatar",
+      "slot": "Archiving",
+      "en": [
+        ["Ten years", "Books, records and supporting documents are kept ten years after the year they relate to."],
+        ["At the place of business", "Records stay where the activity is carried on, so in practice inside Qatar. The GTA may release them early in set cases."],
+        ["Electronic is permitted", "Books may be kept on computer systems where the conditions on security, data integrity and GTA access are met."],
+        ["Traders keep them too", "Separately, the Trading Regulation Law gives ten years for the journal, ledger and inventory book, and five for business correspondence."]
+      ],
+      "es": [
+        ["Diez años", "Los libros, registros y documentos justificativos se conservan diez años después del ejercicio al que se refieren."],
+        ["En el lugar de actividad", "Los registros permanecen donde se ejerce la actividad, es decir en la práctica dentro de Catar. La GTA puede liberarlos antes en casos tasados."],
+        ["Lo electrónico está permitido", "Los libros pueden llevarse en sistemas informáticos si se cumplen las condiciones de seguridad, integridad de datos y acceso de la GTA."],
+        ["Los comerciantes también", "Aparte, la Ley de Regulación del Comercio fija diez años para diario, mayor e inventario, y cinco para la correspondencia mercantil."]
+      ],
+      "de": [
+        ["Zehn Jahre", "Bücher, Aufzeichnungen und Belege werden zehn Jahre nach dem Jahr aufbewahrt, auf das sie sich beziehen."],
+        ["Am Ort der Tätigkeit", "Die Unterlagen bleiben dort, wo die Tätigkeit ausgeübt wird, also praktisch in Katar. Die GTA kann sie in festgelegten Fällen früher freigeben."],
+        ["Elektronisch ist zulässig", "Bücher dürfen auf EDV-Systemen geführt werden, sofern die Bedingungen zu Sicherheit, Datenintegrität und GTA-Zugriff erfüllt sind."],
+        ["Kaufleute ebenso", "Daneben gibt das Handelsregelungsgesetz zehn Jahre für Grundbuch, Hauptbuch und Inventarbuch und fünf für den Geschäftsschriftwechsel."]
+      ],
+      "fr": [
+        ["Dix ans", "Les livres, registres et pièces justificatives sont conservés dix ans après l'exercice auquel ils se rapportent."],
+        ["Au lieu d'activité", "Les registres restent là où l'activité est exercée, donc en pratique au Qatar. La GTA peut les libérer plus tôt dans des cas définis."],
+        ["L'électronique est permis", "Les livres peuvent être tenus sur systèmes informatiques si les conditions de sécurité, d'intégrité des données et d'accès de la GTA sont remplies."],
+        ["Les commerçants aussi", "Par ailleurs, la loi sur la réglementation du commerce fixe dix ans pour le journal, le grand livre et l'inventaire, et cinq pour la correspondance."]
+      ],
+      "note": {
+        "en": "The retention rule sits at Executive Regulations Articles 35 to 36 and is cited as a range: two passes over the same authoritative text split the sub-clause differently while agreeing on the substance. Al Meezan refused every request.",
+        "es": "La regla de conservación está en los artículos 35 a 36 del Reglamento Ejecutivo y se cita como rango: dos lecturas del mismo texto autorizado dividieron el apartado de forma distinta coincidiendo en el fondo. Al Meezan rechazó toda petición.",
+        "de": "Die Aufbewahrungsregel steht in den Artikeln 35 bis 36 der Durchführungsverordnung und wird als Spanne zitiert: zwei Durchgänge durch denselben maßgeblichen Text teilten den Absatz unterschiedlich, stimmten aber inhaltlich überein. Al Meezan wies jede Anfrage ab.",
+        "fr": "La règle de conservation figure aux articles 35 à 36 du règlement d'exécution et est citée comme une fourchette : deux lectures du même texte faisant foi ont découpé l'alinéa différemment tout en s'accordant sur le fond. Al Meezan a refusé chaque requête."
+      }
+    }
+  }
+}
