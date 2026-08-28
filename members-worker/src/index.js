@@ -36,7 +36,7 @@ import {
   signInCookies,
   signOutCookies,
 } from "../../shared/session.mjs";
-import { themeBootScript } from "../../shared/palette.mjs";
+import { themeBootScript, PARTNER_THEMES } from "../../shared/palette.mjs";
 import { partnerForEmail } from "../../shared/partners.mjs";
 import { themeCookie } from "../../shared/session.mjs";
 import {
@@ -694,7 +694,8 @@ export default {
         });
         response.headers.set("X-Robots-Tag", robots);
       }
-      return await withUpgradedSession(request, env, withLangCookie(response, lang, shouldSetCookie, cookieDuplicated));
+      return await withPartnerTheme(request, env,
+        await withUpgradedSession(request, env, withLangCookie(response, lang, shouldSetCookie, cookieDuplicated)));
     } catch (err) {
       return new Response("Server error — " + err.message, { status: 500 });
     }
@@ -3227,6 +3228,66 @@ async function themeCookieFor(env, email, ttl) {
     console.log(`theme cookie: ${(err && err.message) || err}`);
     return themeCookie(null, ttl);
   }
+}
+
+/** Stamp the theme onto a members page, and refresh the cookie.
+ *
+ *  ---- WHY THIS EXISTS, AND WHAT WAS WRONG BEFORE IT --------------------
+ *
+ *  Phase two applied the theme purely from the eicc_theme cookie, which is
+ *  written when a session is MINTED. Every reader already signed in when it
+ *  deployed -- which is every reader -- had no such cookie and therefore no
+ *  theme, anywhere, until they next signed out and in. Dan reported it as
+ *  "deep dives, the map, the archive, feedback and preferences are not
+ *  reacting", and the shared cause is none of those pages: it is that the
+ *  cookie is never issued to a session that already exists.
+ *
+ *  The preferences page is the one that gives it away. It is rendered by
+ *  this Worker FOR A KNOWN READER -- it prints their address at the top --
+ *  and it still could not colour itself, because it was asking a cookie
+ *  instead of asking the session it had already verified. A page that knows
+ *  who is reading should never need a cookie to find out.
+ *
+ *  So: every HTML page this Worker serves to an authenticated reader gets
+ *  the attribute stamped directly on <html>, which is correct on the first
+ *  paint of the first visit with no cookie involved. The same response also
+ *  sets the cookie, which is what teaches the PUBLIC cached pages -- the
+ *  tracker, the deep dives, the map, the education pages -- who is reading.
+ *  Those genuinely cannot be personalised server side, so for them the
+ *  cookie is the only mechanism; it just needs to exist.
+ *
+ *  Rewriting the tag here rather than threading a parameter through eleven
+ *  pageShell() call sites is deliberate. pageShell() emits exactly one
+ *  `<html lang="xx">`, tests/palette.mjs asserts the stamp appears on a
+ *  real rendered page, and one place that always runs beats eleven that
+ *  each have to remember. */
+async function withPartnerTheme(request, env, response) {
+  const type = response.headers.get("content-type") || "";
+  if (!type.includes("text/html")) return response;
+  let email;
+  try { email = await sessionEmail(request, env.SESSION_SECRET); } catch { return response; }
+  if (!email) return response;
+
+  let slug = null;
+  try {
+    const sub = await getSubscriber(env, email);
+    if (!sub || sub.partnerBrandingEnabled !== false) {
+      const partner = await partnerForEmail(env.eicc_content, email);
+      if (partner && PARTNER_THEMES[partner.slug]) slug = partner.slug;
+    }
+  } catch (err) {
+    console.log(`partner theme: ${(err && err.message) || err}`);
+    return response;
+  }
+
+  const html = await response.text();
+  const headers = new Headers(response.headers);
+  headers.append("Set-Cookie", themeCookie(slug, SESSION_TTL_SECONDS));
+  // Only the FIRST <html ...>, and only when it has no attribute already.
+  const stamped = slug
+    ? html.replace(/<html(?![^>]*data-eicc-theme)([^>]*)>/i, `<html$1 data-eicc-theme="${slug}">`)
+    : html;
+  return new Response(stamped, { status: response.status, headers });
 }
 
 async function handleBrandingApi(request, env) {
