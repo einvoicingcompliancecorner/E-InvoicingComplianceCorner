@@ -1,0 +1,282 @@
+{
+ "Poland": {
+  "en": [
+   [
+    "The identifier",
+    "The NIP, and it is a condition of using KSeF at all rather than merely a field on the invoice. EU VAT numbers appear cross-border; organisational units carry an internal IDWew."
+   ],
+   [
+    "Authentication, not registration",
+    "There is no register to join. Access is by Trusted Profile, qualified signature, qualified seal, a token, or — from 1 February 2026 — a KSeF certificate issued through the Certificates and Permissions Module."
+   ],
+   [
+    "The step most summaries omit",
+    "A non-natural person whose qualified seal does not carry its NIP must file form ZAW-FA to designate its first authorised person. That is a large share of companies, and it is a genuine precondition."
+   ],
+   [
+    "No vendor accreditation",
+    "Nothing certifies software; the Ministry refers only to commercial applications integrated with the API. The KSeF certificate is issued to TAXPAYERS for authentication and offline invoicing — vendor pages that read it as a software certification are wrong."
+   ]
+  ],
+  "es": [
+   [
+    "El identificador",
+    "El NIP, y es condición para usar KSeF en absoluto, no un mero campo de la factura. Los números de IVA de la UE aparecen en operaciones transfronterizas; las unidades organizativas llevan un IDWew interno."
+   ],
+   [
+    "Autenticación, no registro",
+    "No hay registro al que adherirse. El acceso es por Perfil de Confianza, firma cualificada, sello cualificado, un token o —desde el 1 de febrero de 2026— un certificado KSeF emitido por el Módulo de Certificados y Permisos."
+   ],
+   [
+    "El paso que casi nadie menciona",
+    "Una persona jurídica cuyo sello cualificado no lleve su NIP debe presentar el formulario ZAW-FA para designar a su primera persona autorizada. Afecta a muchas empresas y es un requisito previo real."
+   ],
+   [
+    "Sin acreditación de proveedores",
+    "Nada certifica el software; el Ministerio solo menciona aplicaciones comerciales integradas con la API. El certificado KSeF se emite a los CONTRIBUYENTES para autenticarse y facturar sin conexión, no a los proveedores."
+   ]
+  ],
+  "de": [
+   [
+    "Die Kennung",
+    "Die NIP, und sie ist Voraussetzung für die Nutzung von KSeF überhaupt, nicht bloss ein Rechnungsfeld. Grenzüberschreitend erscheinen EU-USt-IdNrn.; Organisationseinheiten führen eine interne IDWew."
+   ],
+   [
+    "Authentifizierung, keine Registrierung",
+    "Ein Register zum Beitreten gibt es nicht. Der Zugang erfolgt über das Vertrauensprofil, eine qualifizierte Signatur, ein qualifiziertes Siegel, ein Token oder — ab dem 1. Februar 2026 — ein KSeF-Zertifikat aus dem Zertifikats- und Berechtigungsmodul."
+   ],
+   [
+    "Der Schritt, den die meisten Zusammenfassungen auslassen",
+    "Eine juristische Person, deren qualifiziertes Siegel ihre NIP nicht trägt, muss das Formular ZAW-FA einreichen, um ihre erste berechtigte Person zu benennen. Das betrifft viele Unternehmen und ist eine echte Voraussetzung."
+   ],
+   [
+    "Keine Anbieterakkreditierung",
+    "Nichts zertifiziert Software; das Ministerium nennt nur kommerzielle Anwendungen mit API-Anbindung. Das KSeF-Zertifikat wird an STEUERPFLICHTIGE für Authentifizierung und Offline-Fakturierung ausgegeben, nicht an Anbieter."
+   ]
+  ],
+  "fr": [
+   [
+    "L'identifiant",
+    "Le NIP, et c'est une condition pour utiliser KSeF, non un simple champ de la facture. Les numéros de TVA de l'UE apparaissent en transfrontalier ; les unités organisationnelles portent un IDWew interne."
+   ],
+   [
+    "Authentification, non inscription",
+    "Il n'existe pas de registre à rejoindre. L'accès se fait par Profil de confiance, signature qualifiée, cachet qualifié, jeton ou — depuis le 1er février 2026 — un certificat KSeF délivré par le module de certificats et d'habilitations."
+   ],
+   [
+    "L'étape que la plupart des résumés omettent",
+    "Une personne morale dont le cachet qualifié ne porte pas son NIP doit déposer le formulaire ZAW-FA pour désigner sa première personne habilitée. Cela vise beaucoup d'entreprises et constitue un préalable réel."
+   ],
+   [
+    "Aucun agrément d'éditeur",
+    "Rien ne certifie les logiciels ; le ministère ne mentionne que des applications commerciales raccordées à l'API. Le certificat KSeF est délivré aux CONTRIBUABLES pour l'authentification et la facturation hors ligne, non aux éditeurs."
+   ]
+  ]
+ },
+ "Romania": {
+  "en": [
+   [
+    "The identifier",
+    "The CIF or CUI. Where a customer has no tax identification code at all, the recipient identifier is thirteen zero digits — a rule worth knowing before a validation rejects the file."
+   ],
+   [
+    "SPV enrolment is a precondition",
+    "A business must be registered in the Spatiul Privat Virtual before it can transmit. It is independently compulsory for legal persons anyway, under the Fiscal Procedure Code since 1 March 2022."
+   ],
+   [
+    "Where that requirement is NOT",
+    "It is not in OUG 120/2021. We read the ordinance in full and it never mentions the SPV; the requirement sits in the implementing procedure, OMF 1365/2021. A great many summaries cite the ordinance."
+   ],
+   [
+    "No accreditation",
+    "OUG 120/2021 establishes no approval or vetting of private software or service providers, and ANAF publishes no register of them."
+   ]
+  ],
+  "es": [
+   [
+    "El identificador",
+    "El CIF o CUI. Cuando el cliente no tiene código de identificación fiscal alguno, el identificador del destinatario son trece ceros: conviene saberlo antes de que una validación rechace el fichero."
+   ],
+   [
+    "La inscripción en el SPV es requisito previo",
+    "La empresa debe estar registrada en el Spatiul Privat Virtual para poder transmitir. Además es obligatoria de por sí para las personas jurídicas, según el Código de Procedimiento Fiscal, desde el 1 de marzo de 2022."
+   ],
+   [
+    "Dónde NO está ese requisito",
+    "No está en la OUG 120/2021. Leímos la ordenanza completa y no menciona el SPV; el requisito está en el procedimiento de desarrollo, la OMF 1365/2021. Muchísimos resúmenes citan la ordenanza."
+   ],
+   [
+    "Sin acreditación",
+    "La OUG 120/2021 no establece aprobación ni verificación de programas o proveedores privados, y ANAF no publica registro alguno de ellos."
+   ]
+  ],
+  "de": [
+   [
+    "Die Kennung",
+    "Die CIF oder CUI. Hat ein Kunde überhaupt keine Steueridentifikationsnummer, ist die Empfängerkennung dreizehnmal die Ziffer null — gut zu wissen, bevor eine Validierung die Datei zurückweist."
+   ],
+   [
+    "Die SPV-Eintragung ist Voraussetzung",
+    "Ein Unternehmen muss im Spatiul Privat Virtual registriert sein, um übermitteln zu können. Für juristische Personen ist sie ohnehin seit dem 1. März 2022 nach der Steuerverfahrensordnung zwingend."
+   ],
+   [
+    "Wo diese Anforderung NICHT steht",
+    "Nicht in der OUG 120/2021. Wir haben die Verordnung vollständig gelesen; das SPV kommt darin nicht vor. Die Anforderung steht in der Durchführungsprozedur OMF 1365/2021. Sehr viele Zusammenfassungen zitieren die Verordnung."
+   ],
+   [
+    "Keine Akkreditierung",
+    "Die OUG 120/2021 sieht keine Zulassung oder Prüfung privater Software oder Dienstleister vor, und ANAF veröffentlicht kein Verzeichnis."
+   ]
+  ],
+  "fr": [
+   [
+    "L'identifiant",
+    "Le CIF ou CUI. Lorsqu'un client n'a aucun code d'identification fiscale, l'identifiant du destinataire est treize zéros — utile à savoir avant qu'une validation ne rejette le fichier."
+   ],
+   [
+    "L'inscription au SPV est un préalable",
+    "Une entreprise doit être enregistrée au Spatiul Privat Virtual pour pouvoir transmettre. Elle est de toute façon obligatoire pour les personnes morales depuis le 1er mars 2022, en vertu du Code de procédure fiscale."
+   ],
+   [
+    "Où cette exigence ne figure PAS",
+    "Pas dans l'OUG 120/2021. Nous avons lu l'ordonnance en entier et le SPV n'y apparaît jamais ; l'exigence se trouve dans la procédure d'application, l'OMF 1365/2021. Quantité de résumés citent l'ordonnance."
+   ],
+   [
+    "Aucun agrément",
+    "L'OUG 120/2021 n'institue ni approbation ni contrôle des logiciels ou prestataires privés, et l'ANAF ne publie aucun registre."
+   ]
+  ]
+ },
+ "Croatia": {
+  "en": [
+   [
+    "The identifier",
+    "The OIB, carried as Peppol scheme 9934. Note the value is the bare eleven-digit OIB, not HR followed by it, despite the scheme being labelled Croatia VAT number."
+   ],
+   [
+    "It is not \"Peppol-based\"",
+    "Croatia borrows Peppol's identifier scheme and an AS4 profile but exchanges over a NATIONAL network, with its own address metadata service run by the Tax Administration. That changes who you can route through."
+   ],
+   [
+    "The enrolment step",
+    "Authorise an information intermediary — or your own access point — through FiskAplikacija, reached via ePorezna, and record the authorisations there. There is no separate e-invoicing registration beyond it."
+   ],
+   [
+    "Intermediaries ARE accredited, and listed",
+    "An intermediary needs a compliance confirmation from the Tax Administration, which requires testing, documentation review and ISO/IEC 27001. The Tax Administration publishes the register of them."
+   ]
+  ],
+  "es": [
+   [
+    "El identificador",
+    "El OIB, transportado como esquema Peppol 9934. El valor es el OIB de once dígitos a secas, no HR seguido de él, pese a que el esquema se rotule como número de IVA croata."
+   ],
+   [
+    "No está «basado en Peppol»",
+    "Croacia toma prestado el esquema de identificadores de Peppol y un perfil AS4, pero intercambia por una red NACIONAL, con su propio servicio de metadatos de direcciones gestionado por la Administración Tributaria."
+   ],
+   [
+    "El paso de alta",
+    "Autorice a un intermediario de información —o su propio punto de acceso— mediante FiskAplikacija, a la que se accede por ePorezna, y registre allí las autorizaciones. No hay un alta de facturación electrónica aparte."
+   ],
+   [
+    "Los intermediarios SÍ se acreditan, y hay lista",
+    "Un intermediario necesita una confirmación de conformidad de la Administración Tributaria, con pruebas, revisión documental e ISO/IEC 27001. La Administración publica el registro."
+   ]
+  ],
+  "de": [
+   [
+    "Die Kennung",
+    "Die OIB, übermittelt als Peppol-Schema 9934. Der Wert ist die blosse elfstellige OIB, nicht HR mit nachgestellter Nummer, obwohl das Schema als kroatische USt-IdNr. bezeichnet ist."
+   ],
+   [
+    "Es ist nicht «Peppol-basiert»",
+    "Kroatien übernimmt Peppols Kennungsschema und ein AS4-Profil, tauscht aber über ein NATIONALES Netz aus, mit einem eigenen Adressmetadatendienst der Steuerverwaltung. Das ändert, über wen Sie routen können."
+   ],
+   [
+    "Der Anmeldeschritt",
+    "Bevollmächtigen Sie einen Informationsvermittler — oder Ihren eigenen Access Point — über FiskAplikacija, erreichbar via ePorezna, und hinterlegen Sie die Berechtigungen dort. Eine gesonderte E-Rechnungsregistrierung gibt es nicht."
+   ],
+   [
+    "Vermittler WERDEN akkreditiert, und sind gelistet",
+    "Ein Vermittler braucht eine Konformitätsbestätigung der Steuerverwaltung, mit Tests, Dokumentenprüfung und ISO/IEC 27001. Die Verwaltung veröffentlicht das Verzeichnis."
+   ]
+  ],
+  "fr": [
+   [
+    "L'identifiant",
+    "L'OIB, porté par le schéma Peppol 9934. La valeur est l'OIB à onze chiffres seul, non précédé de HR, bien que le schéma soit intitulé numéro de TVA croate."
+   ],
+   [
+    "Ce n'est pas « fondé sur Peppol »",
+    "La Croatie emprunte le schéma d'identifiants de Peppol et un profil AS4, mais échange sur un réseau NATIONAL, doté de son propre service de métadonnées d'adresses géré par l'administration fiscale."
+   ],
+   [
+    "L'étape d'inscription",
+    "Habilitez un intermédiaire d'information — ou votre propre point d'accès — via FiskAplikacija, accessible par ePorezna, et enregistrez-y les habilitations. Il n'existe pas d'inscription distincte à la facturation électronique."
+   ],
+   [
+    "Les intermédiaires SONT agréés, et listés",
+    "Un intermédiaire doit obtenir une confirmation de conformité de l'administration fiscale, avec tests, examen documentaire et ISO/IEC 27001. L'administration publie le registre."
+   ]
+  ]
+ },
+ "Malaysia": {
+  "en": [
+   [
+    "The identifier combination",
+    "A business entity needs its TIN AND its business registration number, both. A Malaysian individual may use a MyKad number alone. The SST registration number is included where applicable, otherwise the literal NA."
+   ],
+   [
+    "Registration",
+    "Log in through MyTax to reach the MyInvois Portal. API submitters additionally register their ERP in the portal to self-provision a client ID and secret, and need an organisation digital certificate from a Malaysian certification authority."
+   ],
+   [
+    "Who accredits what",
+    "The tax authority accredits nothing — a taxpayer submitting by portal or direct API needs no approved vendor. Accreditation exists only on the Peppol route. \"MDEC-accredited software required\" is wrong for most submitters."
+   ]
+  ],
+  "es": [
+   [
+    "La combinación de identificadores",
+    "Una entidad mercantil necesita su TIN Y su número de registro mercantil, ambos. Un particular malasio puede usar solo el número de MyKad. El número de registro del SST se incluye cuando proceda; si no, el literal NA."
+   ],
+   [
+    "Alta",
+    "Se accede por MyTax hasta el portal MyInvois. Quien envíe por API registra además su ERP en el portal para autoaprovisionarse un client ID y un secreto, y necesita un certificado digital de organización de una autoridad de certificación malasia."
+   ],
+   [
+    "Quién acredita qué",
+    "La administración tributaria no acredita nada: quien envía por portal o API directa no necesita proveedor aprobado. La acreditación existe solo en la vía Peppol. «Se exige software acreditado por MDEC» es falso para la mayoría."
+   ]
+  ],
+  "de": [
+   [
+    "Die Kennungskombination",
+    "Ein Unternehmen braucht seine TIN UND seine Handelsregisternummer, beides. Eine malaysische Privatperson kann allein die MyKad-Nummer verwenden. Die SST-Registrierungsnummer wird angegeben, wo einschlägig, sonst wörtlich NA."
+   ],
+   [
+    "Registrierung",
+    "Anmeldung über MyTax zum MyInvois-Portal. Wer per API übermittelt, registriert zusätzlich sein ERP im Portal, um Client-ID und Secret selbst zu erzeugen, und braucht ein Organisationszertifikat einer malaysischen Zertifizierungsstelle."
+   ],
+   [
+    "Wer was akkreditiert",
+    "Die Steuerbehörde akkreditiert nichts — wer über Portal oder direkte API übermittelt, braucht keinen zugelassenen Anbieter. Akkreditierung gibt es nur auf dem Peppol-Weg. «MDEC-akkreditierte Software erforderlich» ist für die meisten falsch."
+   ]
+  ],
+  "fr": [
+   [
+    "La combinaison d'identifiants",
+    "Une entité commerciale a besoin de son TIN ET de son numéro d'immatriculation, les deux. Un particulier malaisien peut n'utiliser que son numéro MyKad. Le numéro d'enregistrement SST figure le cas échéant, sinon la mention littérale NA."
+   ],
+   [
+    "Inscription",
+    "On se connecte via MyTax pour atteindre le portail MyInvois. Qui transmet par API y enregistre en outre son ERP afin de s'auto-provisionner un client ID et un secret, et doit détenir un certificat numérique d'organisation d'une autorité de certification malaisienne."
+   ],
+   [
+    "Qui agrée quoi",
+    "L'administration fiscale n'agrée rien : qui transmet par le portail ou l'API directe n'a besoin d'aucun éditeur approuvé. L'agrément n'existe que sur la voie Peppol. « Logiciel agréé MDEC requis » est faux pour la plupart."
+   ]
+  ]
+ }
+}
