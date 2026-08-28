@@ -50,7 +50,7 @@ export async function partnerForEmail(db, email) {
   try {
     const row = await db
       .prepare(
-        `SELECT p.slug, p.display_name, p.mark_dark, p.mark_light
+        `SELECT p.slug, p.display_name, p.mark_dark, p.mark_light, p.cta_url
            FROM partner_domains d
            JOIN partners p ON p.id = d.partner_id
           WHERE d.domain = ? AND p.active = 1
@@ -67,6 +67,13 @@ export async function partnerForEmail(db, email) {
       // one reads it; the site palette will, and it must not fall back to
       // the dark mark on a dark ground.
       markLight: row.mark_light || null,
+      // Where the partner's own call-to-action points. Added 28 August
+      // when Dan asked whether the carousel slide's link was stored
+      // against the partner rather than written into a page. It is now.
+      // The tracker still carries a copy, because it is a static asset
+      // and cannot query D1 -- tests/partner-branding.mjs asserts the two
+      // are identical, so neither can move without the other.
+      ctaUrl: row.cta_url || null,
     };
   } catch (err) {
     console.log(`partnerForEmail: lookup failed for ${domain}: ${(err && err.message) || err}`);
