@@ -34,9 +34,16 @@ const all = async (sql, ...args) => (await d1.prepare(sql).bind(...args).all()).
 // ---- 1. the table says what the migration claims ----------------------
 const partners = await all("SELECT * FROM partners");
 t.check("a partner is registered", partners.length >= 1, `${partners.length} rows`);
-t.check("Tradeshift is active, with a dark mark and no unapproved light one",
+// THIS CHECK CHANGED MEANING ON 28 AUGUST, deliberately. It used to
+// assert mark_light IS NULL, because the only reverse lockup in existence
+// was one I had inverted myself for the mock-up and nothing unapproved
+// belonged in the table. Dan then supplied Tradeshift's own brand
+// template, which carries the wordmark in blue, white and black. The
+// guarantee is retired rather than the data edited to satisfy it -- the
+// condition it protected against no longer exists.
+t.check("Tradeshift is active and both lockups are set",
   partners.some((p) => p.slug === "tradeshift" && p.active === 1
-    && p.mark_dark && p.mark_light === null));
+    && p.mark_dark && p.mark_light));
 
 // ---- 2. every mark path resolves to a file that exists -----------------
 //

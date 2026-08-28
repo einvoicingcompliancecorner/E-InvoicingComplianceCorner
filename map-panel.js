@@ -491,7 +491,7 @@
       const host = this.$("legendHost");
       if (!host) return;
       const swatchFor = {
-        inforce: "var(--live)", upcoming: "var(--upcoming)", b2gonly: "var(--b2gonly)",
+        inforce: "var(--live)", upcoming: "var(--upcoming)", b2gonly: "var(--soon)",
         nomandate: "var(--nomandate)", tracked: "var(--tracked)",
       };
       host.innerHTML = this.ui().legend.map((item) =>

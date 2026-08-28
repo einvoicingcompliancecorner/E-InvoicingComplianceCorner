@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<!-- theme:boot --><script>(function(){try{var m=document.cookie.match(/(?:^|; )eicc_theme=([^;]*)/);if(!m)return;var s=decodeURIComponent(m[1]);if(["tradeshift"].indexOf(s)<0)return;document.documentElement.setAttribute("data-eicc-theme",s);}catch(e){}})();</script>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Subscribe — The E-Invoicing Compliance Corner</title>
@@ -49,14 +51,86 @@
 -->
 
 <style>
+  /* palette:start */
   :root{
-    --ink:#0f1a2b; --ink-2:#152238; --line:#2b3c5a;
-    --paper:#efe9db; --paper-2:#e4dcc6; --paper-line:#c9bd9e;
-    --text-lo:#f2f0e8; --muted:#93a3c0;
-    --stamp:#b5432f; --live:#3f7d5c; --live-dim:#274a38;
-    --soon:#c98a3a; --soon-dim:#6e4c22;
+    --ink:#0f1a2b;
+    --ink-2:#152238;
+    --ink-3:#1c2c48;
+    --line:#2b3c5a;
+    --text-lo:#f2f0e8;
+    --muted:#93a3c0;
+    --paper:#efe9db;
+    --paper-2:#e4dcc6;
+    --paper-line:#c9bd9e;
+    --card-ink:#241d10;
+    --card-key:#6b5f3f;
+    --accent:#c98a3a;
+    --live:#3f7d5c;
+    --live-dim:#274a38;
+    --live-ink:#bfe6cf;
+    --soon:#c98a3a;
+    --soon-dim:#6e4c22;
+    --soon-ink:#ffe0b3;
+    --stamp:#b5432f;
+    --stamp-dim:#7c3628;
+    --stamp-ink:#eec4ba;
+    --upcoming:#6b7a95;
+    --upcoming-dim:#3a4864;
+    --upcoming-ink:#dbe2ee;
+    --neutral-dim:#3a4864;
+    --neutral-ink:#c3cddd;
+    --nomandate:#8a5a75;
+    --nomandate-dim:#4a2f3d;
+    --nomandate-ink:#f0d6e6;
+    --tracked:#4a5568;
+    --tracked-dim:#2c333d;
+    --tracked-ink:#c7ccd3;
+    --on-stamp:#f2f0e8;
+    --on-soon:#1a1207;
+    --flap-ink:#f2f0e8;
+    --flap-alert:#e88a76;
     --radius:10px;
   }
+  :root[data-eicc-theme="tradeshift"]{
+    --ink:#f9f9f9;
+    --ink-2:#ffffff;
+    --ink-3:#f0f0f0;
+    --line:#e3e3e3;
+    --text-lo:#1e1e1e;
+    --muted:#5c5c5c;
+    --paper:#ffffff;
+    --paper-2:#f9f9f9;
+    --paper-line:#e3e3e3;
+    --card-ink:#1e1e1e;
+    --card-key:#5c5c5c;
+    --accent:#0a37f0;
+    --live:#0d8162;
+    --live-dim:#e2faf2;
+    --live-ink:#0b5c45;
+    --soon:#a36416;
+    --soon-dim:#fdefdd;
+    --soon-ink:#7a4a10;
+    --stamp:#bf263c;
+    --stamp-dim:#fde8eb;
+    --stamp-ink:#8f1c2d;
+    --upcoming:#007c96;
+    --upcoming-dim:#e2f4f9;
+    --upcoming-ink:#0b5c6e;
+    --neutral-dim:#f0f0f0;
+    --neutral-ink:#5c5c5c;
+    --nomandate:#8a5a75;
+    --nomandate-dim:#f6ecf2;
+    --nomandate-ink:#6b4159;
+    --tracked:#4a5568;
+    --tracked-dim:#eef0f3;
+    --tracked-ink:#3a4351;
+    --on-stamp:#ffffff;
+    --on-soon:#ffffff;
+    --flap-ink:#1e1e1e;
+    --flap-alert:#8f1c2d;
+    --radius:10px;
+  }
+  /* palette:end */
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
   body{
@@ -131,7 +205,7 @@
   .modal-close:hover{color:var(--stamp);}
   .modal-badge{
     display:inline-block; font-family:'IBM Plex Mono',monospace; font-size:10.5px; text-transform:uppercase;
-    letter-spacing:0.06em; background:var(--soon-dim); color:#ffe0b3; padding:4px 10px; border-radius:999px; margin-bottom:14px;
+    letter-spacing:0.06em; background:var(--soon-dim); color:var(--soon-ink); padding:4px 10px; border-radius:999px; margin-bottom:14px;
   }
   .modal-date{font-family:'IBM Plex Mono',monospace; font-size:12px; color:#6b5f3f; text-transform:uppercase; letter-spacing:0.05em;}
   .modal-title{font-family:'Big Shoulders Display',sans-serif; font-weight:800; font-size:24px; text-transform:uppercase; margin:6px 0 18px; line-height:1.1;}
@@ -213,7 +287,7 @@
   }
   .confirm-plan-badge{
     display:inline-block; font-family:'IBM Plex Mono',monospace; font-size:10.5px; text-transform:uppercase;
-    letter-spacing:0.06em; background:var(--soon-dim); color:#ffe0b3; padding:4px 10px; border-radius:999px;
+    letter-spacing:0.06em; background:var(--soon-dim); color:var(--soon-ink); padding:4px 10px; border-radius:999px;
     margin-bottom:14px;
   }
 

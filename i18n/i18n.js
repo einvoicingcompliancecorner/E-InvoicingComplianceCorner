@@ -293,7 +293,7 @@ const EICC_I18N = {
       bar.id = "eiccLangBanner";
       bar.setAttribute(
         "style",
-        "background:#152238; padding:7px 18px; display:flex; align-items:center; " +
+        "background:var(--ink-2); padding:7px 18px; display:flex; align-items:center; " +
         "justify-content:flex-end; gap:14px; font-family:'IBM Plex Mono',monospace; " +
         "font-size:11.5px; position:relative; z-index:70;"
       );
@@ -307,11 +307,11 @@ const EICC_I18N = {
     }
     const links = SUPPORTED_LANGUAGES.map(({ code }) => {
       const active = code === this.currentLang;
-      const color = active ? "#c98a3a" : "#93a3c0";
+      const color = active ? "var(--soon)" : "var(--muted)";
       const weight = active ? "700" : "400";
       return `<a href="?lang=${code}" data-lang="${code}" style="color:${color}; font-weight:${weight}; text-decoration:none;">${code.toUpperCase()}</a>`;
     }).join("");
-    bar.innerHTML = `<span style="color:#93a3c0;">🌐</span>${links}`;
+    bar.innerHTML = `<span style="color:var(--muted);">🌐</span>${links}`;
   },
 
   async setLanguage(code) {

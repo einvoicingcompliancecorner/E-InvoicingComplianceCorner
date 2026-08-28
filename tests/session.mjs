@@ -170,7 +170,16 @@ t.check("and carries no Domain, or it would clear the cookie just set",
   !!clear && !/Domain=/.test(clear), clear);
 
 const out = signOutCookies();
-t.check("signing out clears all three shapes", out.length === 3, JSON.stringify(out));
+// FOUR SHAPES SINCE 28 AUGUST, not three. The count is asserted rather
+// than the contents because the failure this guards against is a cookie
+// that gets ADDED at sign-in and forgotten at sign-out -- which is
+// exactly what this check caught when eicc_theme was introduced, before
+// the theme cookie had been added here. Raising the number is only
+// correct once the new cookie is genuinely in the list, which the next
+// check verifies name by name.
+t.check("signing out clears all four shapes", out.length === 4, JSON.stringify(out));
+t.check("and the theme cookie is one of them",
+  out.some((c) => c.startsWith("eicc_theme=;")), JSON.stringify(out));
 t.check("every sign-out header actually expires something",
   out.every((c) => /Max-Age=0/.test(c)), JSON.stringify(out));
 t.check("sign-out clears the display cookie too, or the greeting outlives the session",
