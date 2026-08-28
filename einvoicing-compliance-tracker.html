@@ -3549,9 +3549,7 @@ async function openDeepDive(slug, opts){
   // PANEL_FONT_IMPORT (see its own comment near MEMBERS_ORIGIN) gives
   // this shadow root its own guaranteed route to the site's fonts,
   // rather than relying on inheriting them from the parent document.
-  const scopedCss = PANEL_FONT_IMPORT + (styleEl ? styleEl.textContent : '')
-    .replace(/:root\{/g, ':host{')
-    .replace(/(?<![.\w#-])body\{/g, ':host{');
+  const scopedCss = PANEL_FONT_IMPORT + scopeForShadow(styleEl ? styleEl.textContent : '');
 
   panel.innerHTML = '';
   const host = document.createElement('div');
@@ -3646,9 +3644,7 @@ async function openSourcesPage(opts){
   // PANEL_FONT_IMPORT (see its own comment near MEMBERS_ORIGIN) gives
   // this shadow root its own guaranteed route to the site's fonts,
   // rather than relying on inheriting them from the parent document.
-  const scopedCss = PANEL_FONT_IMPORT + (styleEl ? styleEl.textContent : '')
-    .replace(/:root\{/g, ':host{')
-    .replace(/(?<![.\w#-])body\{/g, ':host{');
+  const scopedCss = PANEL_FONT_IMPORT + scopeForShadow(styleEl ? styleEl.textContent : '');
 
   panel.innerHTML = '';
   const host = document.createElement('div');
@@ -3745,9 +3741,7 @@ async function openInsightsPage(opts){
   const langsRow = wrap ? wrap.querySelector('.langs') : null;
   if(langsRow) langsRow.remove(); // the tracker's language banner takes over in-frame
 
-  const scopedCss = PANEL_FONT_IMPORT + (styleEl ? styleEl.textContent : '')
-    .replace(/:root\{/g, ':host{')
-    .replace(/(?<![.\w#-])body\{/g, ':host{');
+  const scopedCss = PANEL_FONT_IMPORT + scopeForShadow(styleEl ? styleEl.textContent : '');
 
   panel.innerHTML = '';
   const host = document.createElement('div');
@@ -3946,9 +3940,7 @@ async function openMapPage(opts){
   // PANEL_FONT_IMPORT (see its own comment near MEMBERS_ORIGIN) gives
   // this shadow root its own guaranteed route to the site's fonts,
   // rather than relying on inheriting them from the parent document.
-  const scopedCss = PANEL_FONT_IMPORT + (styleEl ? styleEl.textContent : '')
-    .replace(/:root\{/g, ':host{')
-    .replace(/(?<![.\w#-])body\{/g, ':host{');
+  const scopedCss = PANEL_FONT_IMPORT + scopeForShadow(styleEl ? styleEl.textContent : '');
 
   panel.innerHTML = '';
   const host = document.createElement('div');
@@ -4360,6 +4352,36 @@ function closeMapPage(opts){
 // one-line fix if the same symptom shows up there too.
 const PANEL_FONT_IMPORT = "@import url('https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');\n";
 
+
+// ---- one place that scopes a fetched page's CSS into a shadow root ----
+//
+// THE PALETTE IS INHERITED, NOT RE-DECLARED, and that is the whole fix.
+// Custom properties cross the shadow boundary, so a panel already sees
+// whatever theme the outer document is carrying. Rewriting the page's own
+// :root{...} to :host{...} re-asserted the DEFAULT palette inside the
+// shadow, where it beat the inherited partner values -- which is exactly
+// the shape Dan reported on 28 August: "launching these pages in
+// standalone mode shows the new branding, however when launched in-frame
+// the old branding is shown". The partner block was never rewritten at
+// all, because /:root\{/ does not match `:root[data-eicc-theme="x"]{`,
+// so the shadow got the default and nothing else.
+//
+// Dropping both blocks lets the outer document's theme flow in, whichever
+// one it is. :host-context() would also have worked and is not used:
+// Firefox does not support it, and inheritance needs no support at all.
+//
+// NINE CALL SITES BECAME ONE. They had drifted into three variants --
+// two used .replace(':root{', ...) without the /g and would have scoped
+// only the first block. That duplication is why a one-line fix had to be
+// made nine times, and it is why it was worth making zero times instead.
+function scopeForShadow(css) {
+  return String(css || '')
+    .replace(/\/\* palette:start \*\/[\s\S]*?\/\* palette:end \*\//g, '')
+    .replace(/:root\[[^\]]*\]\s*\{(?:\s*--[\w-]+\s*:[^;{}]*;)+\s*\}/g, '')
+    .replace(/:root\{/g, ':host{')
+    .replace(/(?<![.\w#-])body\{/g, ':host{');
+}
+
 const MEMBERS_ORIGIN = 'https://members.e-invoicingcompliancecorner.com';
 let archiveOpen = false;
 let archiveShadowRoot = null;
@@ -4575,9 +4597,7 @@ async function openArchive(opts){
   // PANEL_FONT_IMPORT (see its own comment near MEMBERS_ORIGIN) gives
   // this shadow root its own guaranteed route to the site's fonts,
   // rather than relying on inheriting them from the parent document.
-  const scopedCss = PANEL_FONT_IMPORT + (styleEl ? styleEl.textContent : '')
-    .replace(':root{', ':host{')
-    .replace(/(?<![.\w#-])body\{/g, ':host{')
+  const scopedCss = PANEL_FONT_IMPORT + scopeForShadow(styleEl ? styleEl.textContent : '')
     + '\n.archive-wrap, .topbar-wide{margin:0 auto;}';
 
   // Fix root-relative /members/... links so they resolve against the
@@ -4876,9 +4896,7 @@ async function openEducationPage(pageKey, opts){
   // document -- fixes the Education panels' "light" cream boxes
   // rendering in a fallback sans-serif (Arial) instead of IBM Plex Sans
   // when opened in-page (6 Aug 2026).
-  const scopedCss = PANEL_FONT_IMPORT + (styleEl ? styleEl.textContent : '')
-    .replace(/:root\{/g, ':host{')
-    .replace(/(?<![.\w#-])body\{/g, ':host{');
+  const scopedCss = PANEL_FONT_IMPORT + scopeForShadow(styleEl ? styleEl.textContent : '');
 
   panel.innerHTML = '';
   const host = document.createElement('div');
@@ -5123,9 +5141,7 @@ function mountSubscribers(panel, html){
   const backLink = wrap.querySelector('.back-link');
   if(backLink) backLink.remove();
 
-  const scopedCss = PANEL_FONT_IMPORT + (styleEl ? styleEl.textContent : '')
-    .replace(':root{', ':host{')
-    .replace(/(?<![.\w#-])body\{/g, ':host{');
+  const scopedCss = PANEL_FONT_IMPORT + scopeForShadow(styleEl ? styleEl.textContent : '');
 
   // Same rewrite the archive panel does: root-relative links belong to the
   // members origin, not to this page's.
@@ -5271,9 +5287,7 @@ async function openFeedbackPage(opts){
   // PANEL_FONT_IMPORT (see its own comment near MEMBERS_ORIGIN) gives
   // this shadow root its own guaranteed route to the site's fonts,
   // rather than relying on inheriting them from the parent document.
-  const scopedCss = PANEL_FONT_IMPORT + (styleEl ? styleEl.textContent : '')
-    .replace(/:root\{/g, ':host{')
-    .replace(/(?<![.\w#-])body\{/g, ':host{');
+  const scopedCss = PANEL_FONT_IMPORT + scopeForShadow(styleEl ? styleEl.textContent : '');
 
   panel.innerHTML = '';
   const host = document.createElement('div');
@@ -5512,9 +5526,7 @@ async function openSubscribePage(opts){
   // PANEL_FONT_IMPORT (see its own comment near MEMBERS_ORIGIN) gives
   // this shadow root its own guaranteed route to the site's fonts,
   // rather than relying on inheriting them from the parent document.
-  const scopedCss = PANEL_FONT_IMPORT + (styleEl ? styleEl.textContent : '')
-    .replace(/:root\{/g, ':host{')
-    .replace(/(?<![.\w#-])body\{/g, ':host{');
+  const scopedCss = PANEL_FONT_IMPORT + scopeForShadow(styleEl ? styleEl.textContent : '');
 
   panel.innerHTML = '';
   const host = document.createElement('div');

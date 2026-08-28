@@ -203,7 +203,6 @@ for (const [tag, slug, expect] of [["no cookie", null, DARK["--ink"]],
   await ctx.close();
 }
 await browser.close();
-server.close();
 t.check("the boot script throws nothing in any of the three cases",
   jsErrors.length === 0, jsErrors.join("; "));
 for (const [tag, got, expect] of results) {
@@ -250,5 +249,64 @@ t.check("site-worker stamps its two gated pages",
   (site.match(/withPartnerTheme\(html,/g) || []).length >= 2);
 t.check("site-worker issues the cookie on both of them",
   (site.match(/themeCookieHeader\(/g) || []).length >= 3);
+
+// ---- 10. and it reaches a page opened IN-FRAME ------------------------
+//
+// THE SECOND DEFECT CHECK 8 COULD NOT SEE. Dan, 28 August: "launching
+// these pages in standalone mode shows the new branding, however when
+// launched in-frame the old branding is shown." Deep dives, the map, the
+// sources page and everything under the Education menu open in a shadow
+// root, and the mount rewrote the fetched page's :root{...} to :host{...}
+// -- which re-declared the DEFAULT palette inside the shadow, where it
+// beat the values inherited from the outer document. The partner block
+// was not rewritten at all, because /:root\{/ does not match
+// `:root[data-eicc-theme="x"]{`.
+//
+// Check 8 loads pages standalone and could never have seen it. This one
+// opens a panel the way the menu does and reads the computed value INSIDE
+// the shadow root, which is the only place the bug existed.
+const frameBrowser = await launch();
+const frameResults = [];
+for (const [tag, slug, expect] of [["no cookie", null, DARK["--ink"]],
+  ["tradeshift", "tradeshift", LIGHT["--ink"]]]) {
+  const ctx = await frameBrowser.newContext({ viewport: { width: 1200, height: 900 } });
+  if (slug) {
+    await ctx.addCookies([{ name: "eicc_theme", value: slug, domain: "127.0.0.1", path: "/" }]);
+  }
+  const page = await ctx.newPage();
+  await page.goto(`${ORIGIN}/einvoicing-compliance-tracker.html`, { waitUntil: "load" });
+  await page.waitForTimeout(900);
+  const opened = await page.evaluate(() => {
+    const link = [...document.querySelectorAll("a.dropdown-item")]
+      .find((a) => /education|mandate-types|provider/i.test(a.getAttribute("href") || ""));
+    if (!link) return false;
+    link.click();
+    return true;
+  });
+  await page.waitForTimeout(2200);
+  const ink = await page.evaluate(() => {
+    const host = [...document.querySelectorAll("*")].find((e) => e.shadowRoot);
+    if (!host) return "(no shadow root)";
+    return getComputedStyle(host).getPropertyValue("--ink").trim();
+  });
+  frameResults.push([tag, opened, ink, expect]);
+  await ctx.close();
+}
+await frameBrowser.close();
+server.close();
+for (const [tag, opened, got, expect] of frameResults) {
+  t.check(`a panel opened in-frame, "${tag}", inherits --ink ${expect}`,
+    opened && got === expect, opened ? `got ${got}` : "the menu item was not found");
+}
+
+// The mount must not re-declare the palette at all -- inheritance is the
+// mechanism, and a :host{--ink:...} block inside the shadow is the defect
+// wearing a different selector.
+const tracker = readFileSync(join(REPO, "einvoicing-compliance-tracker.html"), "utf8");
+t.check("every shadow mount goes through the one scoping helper",
+  (tracker.match(/scopeForShadow\(/g) || []).length >= 10,
+  `${(tracker.match(/scopeForShadow\(/g) || []).length} references`);
+t.check("no mount rewrites :root to :host by hand any more",
+  !/\.replace\(\/?:?root/.test(tracker.replace(/function scopeForShadow[\s\S]*?\n\}/, "")));
 
 process.exit(t.report() ? 0 : 1);
