@@ -305,6 +305,15 @@
     box-shadow:0 2px 10px rgba(0,0,0,0.35);
   }
   .site-carousel .car-thumb svg{width:100%; height:100%; display:block;}
+  /* The partner thumbnail. The square is the same 104px the other four
+     use, so the slide keeps its shape; the lockup is 6.23:1 and sits
+     centred inside it with padding, rather than being stretched to fill
+     a square it is not shaped like. */
+  .site-carousel .car-thumb.thumb-partner{
+    background:#fff; border:1px solid var(--paper-line); box-shadow:none;
+    display:flex; align-items:center; justify-content:center; padding:10px;
+  }
+  .site-carousel .car-thumb .thumb-lockup{width:100%; height:auto; display:block;}
   /* Capped flex-basis (not flex:1) so the text column doesn't stretch
      to fill the whole (now much wider) box -- that's what leaves real
      extra space for .car-slide's justify-content:center to center the
@@ -2905,6 +2914,13 @@ function wireFeatureCarousel(){
   // photos/downloads. All colors are literals from the site's own
   // dark-navy/steel-blue family (#050a13 / #182a4c / #33487a / #cfe6ff
   // for glow highlights, plus a small amber accent matching --soon).
+  // The one thumbnail that is a real image rather than a drawn SVG.
+  // On white, bordered, because the lockup is black artwork on
+  // transparency and the other four thumbnails are dark squares -- a
+  // black-on-navy logo would disappear into the slide.
+  const THUMB_TRADESHIFT =
+    `<img src="/images/partners/tradeshift-dark.png" alt="Tradeshift" class="thumb-lockup">`;
+
   const THUMB_MAP = `<svg viewBox="0 0 84 84">
     <defs>
       <radialGradient id="carBgGlowM" cx="50%" cy="38%" r="75%">
@@ -3072,6 +3088,22 @@ function wireFeatureCarousel(){
   // i18n/i18n.js) picks these up exactly like any other translatable
   // element on the page -- no separate re-render logic needed here.
   const SLIDES = [
+    // FIRST ON LOAD, and shown only to a signed-in reader whose partner
+    // theme is active -- see the filter below. Dan asked for it on 28
+    // August: their lockup in the thumbnail slot, "Ready to start?" as
+    // the eyebrow, and a link to their compliance page.
+    //
+    // `external:true` is the first of its kind here and is load-bearing:
+    // every other slide points inside the site and is deliberately left
+    // without target="_blank" so the in-page panel can intercept it.
+    // This one must NOT be intercepted -- a cross-origin page cannot be
+    // fetched and mounted in a shadow root, so the reader would get a
+    // blank panel -- so it opens in a new tab and the interception skips
+    // it (see wireDeepDiveInPagePanel's cross-origin guard).
+    {thumb:THUMB_TRADESHIFT, i18nKey:'tradeshift', partnerOnly:'tradeshift', external:true,
+     thumbClass:'thumb-partner',
+     eyebrow:'Ready to start?', title:'Learn more about compliance solutions', desc:'',
+     href:'https://tradeshift.com/products/globally-compliant-e-invoicing-solution/'},
     {thumb:THUMB_MAP, i18nKey:'map', eyebrow:'Explore', title:'View the Map', desc:'See every mandate status worldwide at a glance, color-coded by stage.', href:'/map'},
     {thumb:THUMB_NEWS, i18nKey:'news', eyebrow:'Catch up', title:'View the News', desc:'Browse the full newsletter archive — every past announcement, searchable.', href:'/members/archive'},
     {thumb:THUMB_SUBSCRIBE, i18nKey:'subscribe', signedOutOnly:true, eyebrow:'Stay ahead', title:'Subscribe', desc:'Get a monthly digest the moment a mandate or deadline changes. Calculate the ROI of your project, and plan implementation against mandates. Download country compliance guides.', href:'subscribe'},
@@ -3096,18 +3128,38 @@ function wireFeatureCarousel(){
   // and the rotation are both built from this array's length and a hidden
   // slide would leave a dot that rotates to nothing.
   const signedIn = (typeof EICC_WHO !== 'undefined') && !!EICC_WHO.read();
-  const slides = SLIDES.filter(s => !(s.signedOutOnly && signedIn));
+  // The partner slide rides on the SAME signal as the colour scheme: the
+  // authority-free eicc_theme cookie, which members-worker sets only for a
+  // signed-in reader on a partner domain whose branding preference is on.
+  // That coupling is deliberate -- the slide IS branding, so a reader who
+  // switches branding off should stop seeing it, and one switch governing
+  // both is easier to reason about than two that can disagree.
+  const themeSlug = (document.cookie.match(/(?:^|; )eicc_theme=([^;]*)/) || [])[1];
+  const partner = themeSlug ? decodeURIComponent(themeSlug) : null;
+  // FILTERED, NOT HIDDEN, for exactly the reason the Subscribe slide is:
+  // the dots and the rotation are both built from this array's length.
+  const slides = SLIDES.filter(s => !(s.signedOutOnly && signedIn))
+                       .filter(s => !s.partnerOnly || s.partnerOnly === partner);
 
   track.innerHTML = slides.map(s => {
     const tag = s.href ? 'a' : 'div';
     const hrefAttr = s.href ? ` href="${s.href}"` : '';
+    // rel is not optional on a target=_blank link: without noopener the
+    // opened page gets a handle on this one through window.opener.
+    const extAttr = s.external ? ' target="_blank" rel="noopener noreferrer"' : '';
     const cls = s.href ? 'car-slide' : 'car-slide coming-soon-slide';
-    return `<${tag} class="${cls}"${hrefAttr}>
-        <div class="car-thumb" aria-hidden="true">${s.thumb}</div>
+    const thumbCls = s.thumbClass ? ` ${s.thumbClass}` : '';
+    // A slide with no description renders no empty <p>: the element would
+    // still take its line-height and push the slide taller than the other
+    // four, and every slide in the strip is as tall as the tallest.
+    const descEl = s.desc
+      ? `<p class="car-desc" data-i18n="carousel.${s.i18nKey}Desc">${s.desc}</p>` : '';
+    return `<${tag} class="${cls}"${hrefAttr}${extAttr}>
+        <div class="car-thumb${thumbCls}" aria-hidden="true">${s.thumb}</div>
         <div class="car-body">
           <p class="car-eyebrow" data-i18n="carousel.${s.i18nKey}Eyebrow">${s.eyebrow}</p>
           <p class="car-title" data-i18n="carousel.${s.i18nKey}Title">${s.title}</p>
-          <p class="car-desc" data-i18n="carousel.${s.i18nKey}Desc">${s.desc}</p>
+          ${descEl}
         </div>
       </${tag}>`;
   }).join('');
@@ -5610,6 +5662,35 @@ function wireDeepDiveInPagePanel(){
     const link = e.target.closest('a');
     if(!link) return;
     const href = link.getAttribute('href');
+
+    // ---- LEAVE OTHER PEOPLE'S SITES ALONE ----------------------------
+    //
+    // Every branch below matches on a PATH, and routeKey() builds that
+    // path with `new URL(href, window.location.origin).pathname` -- which
+    // discards the host entirely. So without this guard a link to
+    // https://example.com/subscribe would be intercepted and opened as
+    // this site's own subscribe pop-out, and https://example.com/france
+    // would open the France deep dive. Nothing did that until 28 August,
+    // because every link on the page was internal; the Tradeshift
+    // carousel slide is the first external one.
+    //
+    // A cross-origin page also cannot be fetched and mounted in a shadow
+    // root, so an intercepted external link does not degrade to a
+    // navigation -- it produces a blank panel.
+    //
+    // NOT "SAME ORIGIN", THOUGH -- "same site". The archive link points at
+    // the members subdomain, which is a different origin and IS meant to
+    // be intercepted; a first version of this guard tested origin
+    // equality and broke it. tests/menu-in-page.mjs caught it in the same
+    // run, which is exactly what that suite is for. The members host is
+    // read off MEMBERS_ORIGIN rather than written out again here, so
+    // there is still only one place the domain is spelled.
+    try {
+      const dest = new URL(href, window.location.href);
+      const ours = new Set([window.location.hostname]);
+      try { ours.add(new URL(MEMBERS_ORIGIN).hostname); } catch(e){}
+      if(!ours.has(dest.hostname)) return;   // let the browser have it
+    } catch(err){ /* not a URL we can parse -- fall through as before */ }
 
     // The Resources > Tracking sources link -- same in-page treatment
     // as a country deep dive (the /sources route is server-rendered
