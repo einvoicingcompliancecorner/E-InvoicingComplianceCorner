@@ -207,8 +207,11 @@ the reading side, and it is why the floor is the half that matters.
 
 ## The section-02 spine
 
-*Defined here; enforced from bundle 3, once the corpus has been normalised onto
-it. Not yet checked.*
+*Defined here and **enforced** by `tests/deep-dive-shape.mjs` check 6, which
+parses the four titles out of the numbered list below rather than restating
+them — so changing the spine means editing this document. **29 of the 77 rows
+with a section 02 carry it**; the other 48 are listed under `spine.notyet` in
+`tests/data/deep-dive-backlog.json`, and that list may only shrink.*
 
 Section 02 must carry these four cards, in this order, and may carry up to one
 more:
@@ -217,6 +220,33 @@ more:
 2. **Identifiers & registration**
 3. **Mandatory content**
 4. **Archiving**
+
+### How the spine is arranged on the page
+
+The order above is the order the reader gets, and the layout is part of the
+spine rather than a decoration on top of it. Section 02 and section 03 flow
+their cards **down two columns** — never three, never grid rows — and each card
+renders its **key above its value**, both full width.
+
+So the four spine cards land as a newspaper reads: one and two down the left,
+three and four down the right, with a permitted fifth card taking whichever
+column the flow has left shorter. Poland is the worked example — Format &
+standard, Identifiers & registration, Mandatory content, Archiving, Clearance
+output, in that order, with no gap above any card.
+
+Three properties this arrangement is chosen for, each measured rather than
+judged, and each held by a check in `tests/spec-row-layout.mjs`:
+
+- **No card floats below a gap.** Grid rows left 4,763px of empty space with
+  content underneath it; the flow leaves 39px. Worst single hole was 432px, on
+  Poland, and 56 countries had at least one.
+- **A row value gets the whole card, not a ribbon down one side.** At least 70%
+  of the card's inner width, against 45% before.
+- **A value fits the reading band** — 6 rendered lines at 1440px in all four
+  languages, 7 at 390px.
+
+The full derivation, and the two better-scoring packings that were rejected, is
+in *The row shape* above and in `claude/spec-row-layout-part-2-column-flow.md`.
 
 A country with nothing to say under a heading says so in one row — "No format is
 prescribed", "No registration exists" — rather than dropping the card. A reader
