@@ -110,6 +110,71 @@ pages run 3–4. More official links is a real gain, and the complaint was pill
 *size*, not existence — so the ceiling is 3 with a 48-character label cap rather
 than a return to 2.
 
+### Row values, measured where the reader is
+
+| thing | max | corpus today |
+|---|---|---|
+| a section-02/03 row value, rendered at 1440px | 6 lines | p50 1, p90 2, max 7 |
+| the same, rendered at 390px | 7 lines | p50 2, p90 3, max 8 |
+
+**This is a length band expressed in the only unit that means anything here.**
+A character count would have to guess at the column the string lands in, and
+the guess was wrong for two months: the same 200-character value was three
+lines in one card and eleven in another. A rendered line count is what the
+reader sees, and it moves when either the prose or the layout moves.
+
+The band covers all four languages — German runs longest and is the reason the
+desktop figure is six rather than five. It is enforced by
+`tests/spec-row-layout.mjs`, which mounts the real worker over the replayed
+chain and counts line boxes with `Range.getClientRects()`. One country is
+backlogged in `tests/data/spec-row-backlog.json`: **Hong Kong**, whose
+section-03 rows run to 391 characters — a card body that was written as a row.
+
+A row value that will not fit the band is not a row. Give it the card's `body`,
+or give it a card of its own.
+
+### The row shape, and the three times this site has learned it
+
+Sections 02 and 03 render **two cards to a row**, and each row renders its
+**key above its value**, both full width. Not three cards, and not a key column
+beside a right-aligned value.
+
+Dan, 28 August 2026, on Poland and Malaysia: *"Is it better to have two boxes,
+rather than three in the row, and widening the box so text is not wrapped as
+much?"* Measured across ten countries at 1440px, counting rendered line boxes:
+
+| | total lines | worst value | values over 5 lines |
+|---|---|---|---|
+| three up, key beside value | 660 | 15 lines | 42 |
+| two up, key beside value | 416 | 8 lines | 21 |
+| three up, key above value | 367 | 7 lines | 16 |
+| **two up, key above value** | **256** | **4 lines** | **0** |
+
+Two columns is right, and is half of it. The other half is that a 269px card
+spent 122px on the key column and right-aligned the value into what was left,
+so 88% of section-02 values could not fit one line. On a phone the column count
+does nothing at all — the grid was already one column — and the ribbon was
+still 170px of a 351px card.
+
+**The site had already learned this twice and never brought it back here.** The
+deep dive's own `.related-row` carries the comment *"penalty rows carry
+sentences, not values, and a right-aligned 58% column breaks them into
+ribbons"*; the compliance guide's `.kv .rows` solved it a third way, with a
+fixed left key column. Sections 02 and 03 were the last key/value rows on the
+site still ribboning.
+
+A conditional shape — inline for short values, stacked for long ones — measured
+marginally shorter still and was **rejected on measurement**: 45% of the
+corpus's 468 cards mix short and long rows, so nearly half would render two
+different row shapes inside one card. That is the inconsistency this document
+exists to stop.
+
+One thing the measurement ruled out: this was **not** content drift. Section 02
+averages 1,165 visible characters across the older half of the corpus and 1,171
+across the newer half. The prose did not grow. Four countries were simply given
+researched Identifiers cards whose rows are sentences, and the layout could not
+hold a sentence.
+
 ### Why the section headings make counts matter more than they look
 
 Sections 02, 03 and 05 render their numbered heading and their intro paragraph

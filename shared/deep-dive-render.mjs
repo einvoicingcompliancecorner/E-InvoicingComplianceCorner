@@ -793,13 +793,68 @@ ${ldScript([
   .rbadge.upcoming{background:var(--upcoming-dim); color:#dbe2ee;}
   .rcard-title{font-weight:600; margin-bottom:4px;}
   .rcard-desc{color:#4a4030; font-size:13.5px; margin:0;}
-  .spec-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:14px;}
+  /* TWO CARDS TO A ROW, AND THE KEY ABOVE ITS VALUE.
+     Dan, 28 August 2026: "The File format & data specification is getting
+     very long. See poland and malaysia... Is it better to have two boxes,
+     rather than three in the row, and widening the box so text is not
+     wrapped as much?"
+
+     Measured rather than judged, across ten countries at 1440px, counting
+     rendered line boxes with Range.getClientRects() -- the real wrap after
+     the real font loaded, not a characters-per-line estimate:
+
+                                    lines  worst value  values > 5 lines
+       three up, key beside value     660     15 lines         42     <- shipped
+       two up, key beside value       416      8 lines         21
+       three up, key above value      367      7 lines         16
+       TWO UP, KEY ABOVE VALUE        256      4 lines          0     <- this
+
+     So two columns is right and is half the answer. The other half is that
+     a 269px card spent 122px of itself on the key column and right-aligned
+     the value into what was left, and 88% of section-02 row values are
+     longer than that ribbon holds on one line. Widening the card alone
+     still leaves Poland with an eight-line value.
+
+     THIS IS THE THIRD TIME THIS FILE'S SIBLINGS HAVE LEARNED IT. Look
+     twenty lines down at .related-row: "Stacked rather than the spec-card's
+     two columns: penalty rows carry sentences, not values, and a
+     right-aligned 58% column breaks them into ribbons." The compliance
+     guide's .kv .rows learned it a third way, with a fixed left key column.
+     Section 02 and 03 were the only key/value rows on the site still
+     ribboning, and half a fix is how the second half survives.
+
+     A conditional shape -- inline for short values, stacked for long ones
+     -- measured slightly shorter still and was rejected on measurement:
+     45% of the corpus's 468 cards mix short and long rows, so nearly half
+     of them would render two different row shapes inside one card. That is
+     the exact inconsistency the framework exists to stop.
+
+     On a phone this is the ONLY half that helps. At 390px the grid is
+     already one column, so the column count changes nothing; the key
+     column was still eating 170px of a 351px card, and Thailand's worst
+     value ran to nine lines. Stacking takes it to five.
+
+     300px, not 260px: the .wrap content box is 836px (max-width 980 is
+     border-box and the 5vw padding comes out of it), so three columns fit
+     while the floor is <= 269px and two while it is <= 411px. No media
+     query, because this file has none -- the page is fluid throughout.
+
+     align-items:start, because two-up makes the height gap between a
+     three-row card and a fifteen-line one far more visible than three-up
+     did: stretched, "Format & standard" became a 500px empty beige box
+     beside Poland's Identifiers card. renderRelatedCard already carries
+     the judgement that settles this -- "a card with a title and nothing
+     else is a worse artefact than no card: it reads as content that failed
+     to load" -- and a card stretched to a neighbour's height reads exactly
+     that way. Ragged bottoms are the cheaper cost. */
+  .spec-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:14px; align-items:start;}
   .spec-card{background:var(--paper); color:#241d10; border:1px solid var(--paper-line); border-radius:var(--radius); padding:16px 18px 18px; min-width:0;}
   .spec-card h3{font-family:'IBM Plex Mono',monospace; font-size:11px; text-transform:uppercase; letter-spacing:0.09em; color:#6b5f3f; margin:0 0 10px; display:flex; align-items:center; gap:8px;}
   .spec-card h3::after{content:""; flex:1; height:1px; background:var(--paper-line);}
-  .spec-row{display:flex; justify-content:space-between; gap:12px; padding:6px 0; border-top:1px dashed var(--paper-line); font-size:13px;}
-  .spec-row:first-of-type{border-top:none;}
-  .spec-row .k{color:#6b5f3f; flex:0 0 42%;} .spec-row .v{color:#241d10; text-align:right; font-weight:500; flex:1 1 auto; min-width:0; overflow-wrap:break-word; word-break:break-word;}
+  .spec-row{padding:7px 0; border-top:1px dashed var(--paper-line); font-size:13px;}
+  .spec-row:first-of-type{border-top:none; padding-top:2px;}
+  .spec-row .k{display:block; color:#6b5f3f; font-weight:600; margin-bottom:2px;}
+  .spec-row .v{display:block; color:#241d10; min-width:0; overflow-wrap:break-word; word-break:break-word;}
   .spec-card p.body-text{font-size:13px; line-height:1.6; color:#241d10; margin:4px 0 0;}
   .note{font-size:12.6px; color:#5a5138; margin:10px 0 0; padding-top:10px; border-top:1px dashed var(--paper-line); line-height:1.5;}
   .badge-tag{display:inline-block; font-family:'IBM Plex Mono',monospace; font-size:9.5px; text-transform:uppercase; letter-spacing:0.06em; padding:2px 7px; border-radius:4px; margin-left:6px; vertical-align:middle;}

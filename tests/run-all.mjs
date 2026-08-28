@@ -125,6 +125,14 @@ const SUITES = [
   // fixed once with runbook advice. Advice lost; this is the check.
   // Rules in DEEP-DIVE-FRAMEWORK.md, backlog in tests/data/.
   { name: "deep dive shape", cmd: "node", args: [join(HERE, "deep-dive-shape.mjs")], cwd: REPO },
+  // deep-dive-shape is about what is IN a card; this is about the shape
+  // the card renders in. Dan, 28 August 2026: section 02 "is getting very
+  // long... is it better to have two boxes, rather than three in the row".
+  // Two boxes, yes -- and the half not visible from outside was that the
+  // key column ate 122px of a 269px card and right-aligned the value into
+  // what was left. Under the old layout this suite fails for twenty-five
+  // countries, not the two he named.
+  { name: "spec row layout", cmd: "node", args: [join(HERE, "spec-row-layout.mjs")], cwd: REPO },
   // The five headline tiles on the deep-dive pages, added 25 August. It
   // MEASURES a rendered page rather than reading markup, because the
   // defect it exists for -- a status word clipped rather than wrapped --
