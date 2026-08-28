@@ -330,14 +330,27 @@ export function paletteCss(indent = "") {
  *
  *  Dan asked whether a partner could launch the site from their own
  *  website already wearing their colours, before the visitor is a
- *  subscriber -- `?skin=tradeshift`. So the slug now comes from, in
- *  order: the eicc_theme cookie, then ?skin=, then per-tab sessionStorage.
+ *  subscriber -- `?skin=tradeshift`. So the slug comes from the
+ *  eicc_theme cookie, and failing that from the URL.
  *
  *  The order is the interesting part. The cookie is a VERIFIED claim --
  *  members-worker only writes it after checking the address against
  *  partner_domains -- while ?skin= is only a referral. A signed-in
  *  Tradeshift subscriber who follows a link skinned for someone else
  *  keeps their own colours, because identity beats provenance.
+ *
+ *  ---- AND IT IS THE URL ONLY, AS OF THE SAME DAY ----------------------
+ *
+ *  The first version also held the slug in per-tab sessionStorage, so a
+ *  skinned visitor kept the branding as they moved through the site. Dan
+ *  saw it running and asked for the opposite: the skin applies to the URL
+ *  that carries the parameter and to nothing else.
+ *
+ *  So there is no storage of any kind now. Nothing is remembered, nothing
+ *  expires, and there is nothing to clear -- which also means the
+ *  privacy-policy question this feature raised has gone away rather than
+ *  been answered. A partner's landing page is co-branded; the moment the
+ *  reader navigates on their own, they are on the site's own site.
  *
  *  AND THE ATTRIBUTE IT SETS IS NOW THE ONE SOURCE for everything
  *  per-partner on the page, not just colour. The tracker's carousel used
@@ -356,24 +369,17 @@ export function themeBootScript() {
     + `var c=document.cookie.match(/(?:^|; )eicc_theme=([^;]*)/);`
     + `var s=c?decodeURIComponent(c[1]):"";`
     // 2. Otherwise the URL, for a visitor arriving from a partner's own
-    //    site. Stored per TAB so it survives clicking into a deep dive or
-    //    the map and is gone when the tab closes -- sessionStorage, not a
-    //    cookie, because the privacy policy says this site sets none for
-    //    people who have not signed in, and that should stay true.
-    + `var fromUrl=false;`
-    + `if(!s){try{var q=new URLSearchParams(location.search).get("skin");`
-    + `if(q){s=q;fromUrl=true;}else{s=sessionStorage.getItem("eicc_skin")||"";}}catch(e2){}}`
+    //    site -- and NOTHING IS WRITTEN ANYWHERE. Not a cookie, not
+    //    sessionStorage. The skin belongs to the URL that carries it; the
+    //    next request without the parameter is the default site again.
+    //    That is Dan's call, and it has the side benefit that the privacy
+    //    policy's claim about anonymous visitors stays true by
+    //    construction rather than by argument.
+    + `if(!s){try{s=new URLSearchParams(location.search).get("skin")||"";}catch(e2){}}`
     // 3. An unrecognised value is ignored rather than trusted. The slug
     //    reaches CSS as an attribute selector, so this is also what stops
     //    a crafted ?skin= from putting arbitrary text in the DOM.
-    //
-    //    VALIDATE BEFORE STORING, not after. The first version wrote
-    //    whatever the URL said into sessionStorage and rejected it on the
-    //    next read, so ?skin=nonsense left "nonsense" sitting in storage
-    //    for the rest of the tab's life -- harmless, and still junk this
-    //    site put there.
     + `if(${slugs}.indexOf(s)<0)return;`
-    + `if(fromUrl){try{sessionStorage.setItem("eicc_skin",s);}catch(e3){}}`
     + `document.documentElement.setAttribute("data-eicc-theme",s);`
     + `}catch(e){}})();</script>`;
 }

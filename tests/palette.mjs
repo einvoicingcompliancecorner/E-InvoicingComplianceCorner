@@ -174,11 +174,20 @@ const staleBoot = BOOT_FILES.filter((rel) => {
 t.check("every static page carries the current boot script",
   staleBoot.length === 0, staleBoot.join(", "));
 
-// ---- 7c. ?skin= resolves in the right order ---------------------------
-t.check("the boot script reads the skin parameter and stores it per tab",
-  /URLSearchParams/.test(boot) && /sessionStorage/.test(boot) && /eicc_skin/.test(boot));
-t.check("it is sessionStorage and not a cookie it writes",
-  !/document\.cookie\s*=/.test(boot), "the boot script must not set a cookie");
+// ---- 7c. ?skin= resolves in the right order, and is not remembered -----
+t.check("the boot script reads the skin parameter",
+  /URLSearchParams/.test(boot) && /"skin"/.test(boot));
+// THE SKIN IS THE URL'S, NOT THE VISITOR'S. The first version held it in
+// per-tab sessionStorage so it survived a click. Dan saw that running and
+// asked for the opposite, so the boot script now writes NOTHING: no
+// cookie, no sessionStorage, no localStorage. This is the check that
+// stops the storage layer coming back by accident -- and check 8 below
+// proves the consequence in a browser rather than in a regex.
+t.check("the boot script stores the skin nowhere at all",
+  !/document\.cookie\s*=/.test(boot)
+  && !/sessionStorage/.test(boot)
+  && !/localStorage/.test(boot),
+  "the boot script must not persist the skin");
 // Order matters: the cookie is a verified claim, ?skin= is only a
 // referral, and a subscriber following someone else's skinned link must
 // keep their own colours.
@@ -213,15 +222,27 @@ const ORIGIN = `http://127.0.0.1:${server.address().port}`;
 const browser = await launch();
 const results = [];
 const jsErrors = [];
-for (const [tag, slug, expect, qs] of [["no cookie", null, DARK["--ink"], ""],
-  ["tradeshift", "tradeshift", LIGHT["--ink"], ""],
-  ["forged slug", "not-a-partner", DARK["--ink"], ""],
-  // A visitor arriving from a partner's own website, not signed in.
-  ["?skin=tradeshift", null, LIGHT["--ink"], "?skin=tradeshift"],
-  ["?skin=nonsense", null, DARK["--ink"], "?skin=nonsense"],
+//
+// THE FOURTH COLUMN IS THE POINT OF THIS BLOCK. Each case says what the
+// landing page resolves to AND what the NEXT page resolves to, navigated
+// to with no parameter. Those two differ for exactly one source: the
+// cookie is a property of the reader and follows them, while ?skin= is a
+// property of the URL and does not. Asserting one number for both --
+// which is what this loop did until Dan asked for the change -- cannot
+// tell a skin that persists from one that does not.
+for (const [tag, slug, expect, qs, expectNext] of [
+  ["no cookie", null, DARK["--ink"], "", DARK["--ink"]],
+  ["tradeshift", "tradeshift", LIGHT["--ink"], "", LIGHT["--ink"]],
+  ["forged slug", "not-a-partner", DARK["--ink"], "", DARK["--ink"]],
+  // A visitor arriving from a partner's own website, not signed in. The
+  // landing page wears the partner's colours; the moment they navigate on
+  // their own, they are on the site's own site.
+  ["?skin=tradeshift", null, LIGHT["--ink"], "?skin=tradeshift", DARK["--ink"]],
+  ["?skin=nonsense", null, DARK["--ink"], "?skin=nonsense", DARK["--ink"]],
   // Identity beats provenance: a verified subscriber keeps their own
-  // colours through a link skinned for somebody else.
-  ["cookie over skin", "tradeshift", LIGHT["--ink"], "?skin=nonsense"]]) {
+  // colours through a link skinned for somebody else -- and keeps them
+  // afterwards too, because the cookie is still there.
+  ["cookie over skin", "tradeshift", LIGHT["--ink"], "?skin=nonsense", LIGHT["--ink"]]]) {
   const ctx = await browser.newContext({ viewport: { width: 900, height: 700 } });
   if (slug) {
     await ctx.addCookies([{ name: "eicc_theme", value: slug, domain: "127.0.0.1", path: "/" }]);
@@ -237,22 +258,22 @@ for (const [tag, slug, expect, qs] of [["no cookie", null, DARK["--ink"], ""],
   await page.waitForTimeout(500);
   const ink = await page.evaluate(() =>
     getComputedStyle(document.documentElement).getPropertyValue("--ink").trim());
-  // A skin has to survive the visitor clicking anything, or it is of no
-  // use to a partner. Second navigation, no parameter.
+  // Second navigation, same tab, no parameter. A cookie survives it; a
+  // skin must not.
   await page.goto(`${ORIGIN}/education-mandate-types.html`, { waitUntil: "load" });
   await page.waitForTimeout(400);
   const inkNext = await page.evaluate(() =>
     getComputedStyle(document.documentElement).getPropertyValue("--ink").trim());
-  results.push([tag, ink, expect, inkNext]);
+  results.push([tag, ink, expect, inkNext, expectNext]);
   await ctx.close();
 }
 await browser.close();
 t.check("the boot script throws nothing in any of the three cases",
   jsErrors.length === 0, jsErrors.join("; "));
-for (const [tag, got, expect, next] of results) {
+for (const [tag, got, expect, next, expectNext] of results) {
   t.check(`in a browser, "${tag}" resolves --ink to ${expect}`, got === expect, `got ${got}`);
-  t.check(`and "${tag}" still resolves to ${expect} on the next page`,
-    next === expect, `got ${next}`);
+  t.check(`and on the next page with no parameter, "${tag}" resolves to ${expectNext}`,
+    next === expectNext, `got ${next}`);
 }
 
 // ---- 9. a session that predates the theme still gets one --------------
