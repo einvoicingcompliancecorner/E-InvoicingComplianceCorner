@@ -873,6 +873,13 @@ ${ld ? ldScript(ld) : ""}
     --on-soon:#1a1207;
     --flap-ink:#f2f0e8;
     --flap-alert:#e88a76;
+    --sidebar:#152238;
+    --sidebar-ink:#f2f0e8;
+    --sidebar-muted:#93a3c0;
+    --sidebar-accent:#c98a3a;
+    --sidebar-line:#2b3c5a;
+    --nav:#b5432f;
+    --nav-ink:#f2f0e8;
     --radius:10px;
   }
   :root[data-eicc-theme="tradeshift"]{
@@ -912,6 +919,13 @@ ${ld ? ldScript(ld) : ""}
     --on-soon:#ffffff;
     --flap-ink:#1e1e1e;
     --flap-alert:#8f1c2d;
+    --sidebar:#242dc2;
+    --sidebar-ink:#ffffff;
+    --sidebar-muted:#c7ccf5;
+    --sidebar-accent:#ffd9a3;
+    --sidebar-line:#4a52d4;
+    --nav:#242dc2;
+    --nav-ink:#ffffff;
     --radius:10px;
   }
   /* palette:end */
@@ -1157,6 +1171,13 @@ ${ldScript([
     --on-soon:#1a1207;
     --flap-ink:#f2f0e8;
     --flap-alert:#e88a76;
+    --sidebar:#152238;
+    --sidebar-ink:#f2f0e8;
+    --sidebar-muted:#93a3c0;
+    --sidebar-accent:#c98a3a;
+    --sidebar-line:#2b3c5a;
+    --nav:#b5432f;
+    --nav-ink:#f2f0e8;
     --radius:10px;
   }
   :root[data-eicc-theme="tradeshift"]{
@@ -1196,6 +1217,13 @@ ${ldScript([
     --on-soon:#ffffff;
     --flap-ink:#1e1e1e;
     --flap-alert:#8f1c2d;
+    --sidebar:#242dc2;
+    --sidebar-ink:#ffffff;
+    --sidebar-muted:#c7ccf5;
+    --sidebar-accent:#ffd9a3;
+    --sidebar-line:#4a52d4;
+    --nav:#242dc2;
+    --nav-ink:#ffffff;
     --radius:10px;
   }
   /* palette:end */
@@ -1305,6 +1333,13 @@ const MAP_STYLE = `
     --on-soon:#1a1207;
     --flap-ink:#f2f0e8;
     --flap-alert:#e88a76;
+    --sidebar:#152238;
+    --sidebar-ink:#f2f0e8;
+    --sidebar-muted:#93a3c0;
+    --sidebar-accent:#c98a3a;
+    --sidebar-line:#2b3c5a;
+    --nav:#b5432f;
+    --nav-ink:#f2f0e8;
     --radius:10px;
   }
   :root[data-eicc-theme="tradeshift"]{
@@ -1344,6 +1379,13 @@ const MAP_STYLE = `
     --on-soon:#ffffff;
     --flap-ink:#1e1e1e;
     --flap-alert:#8f1c2d;
+    --sidebar:#242dc2;
+    --sidebar-ink:#ffffff;
+    --sidebar-muted:#c7ccf5;
+    --sidebar-accent:#ffd9a3;
+    --sidebar-line:#4a52d4;
+    --nav:#242dc2;
+    --nav-ink:#ffffff;
     --radius:10px;
   }
   /* palette:end */
@@ -2260,6 +2302,13 @@ async function renderChangesPage(request, env) {
     --on-soon:#1a1207;
     --flap-ink:#f2f0e8;
     --flap-alert:#e88a76;
+    --sidebar:#152238;
+    --sidebar-ink:#f2f0e8;
+    --sidebar-muted:#93a3c0;
+    --sidebar-accent:#c98a3a;
+    --sidebar-line:#2b3c5a;
+    --nav:#b5432f;
+    --nav-ink:#f2f0e8;
     --radius:10px;
   }
   :root[data-eicc-theme="tradeshift"]{
@@ -2299,6 +2348,13 @@ async function renderChangesPage(request, env) {
     --on-soon:#ffffff;
     --flap-ink:#1e1e1e;
     --flap-alert:#8f1c2d;
+    --sidebar:#242dc2;
+    --sidebar-ink:#ffffff;
+    --sidebar-muted:#c7ccf5;
+    --sidebar-accent:#ffd9a3;
+    --sidebar-line:#4a52d4;
+    --nav:#242dc2;
+    --nav-ink:#ffffff;
     --radius:10px;
   }
   /* palette:end */
@@ -2582,6 +2638,13 @@ async function renderSpecRegisterPage(request, env) {
     --on-soon:#1a1207;
     --flap-ink:#f2f0e8;
     --flap-alert:#e88a76;
+    --sidebar:#152238;
+    --sidebar-ink:#f2f0e8;
+    --sidebar-muted:#93a3c0;
+    --sidebar-accent:#c98a3a;
+    --sidebar-line:#2b3c5a;
+    --nav:#b5432f;
+    --nav-ink:#f2f0e8;
     --radius:10px;
   }
   :root[data-eicc-theme="tradeshift"]{
@@ -2621,6 +2684,13 @@ async function renderSpecRegisterPage(request, env) {
     --on-soon:#ffffff;
     --flap-ink:#1e1e1e;
     --flap-alert:#8f1c2d;
+    --sidebar:#242dc2;
+    --sidebar-ink:#ffffff;
+    --sidebar-muted:#c7ccf5;
+    --sidebar-accent:#ffd9a3;
+    --sidebar-line:#4a52d4;
+    --nav:#242dc2;
+    --nav-ink:#ffffff;
     --radius:10px;
   }
   /* palette:end */
@@ -2913,6 +2983,13 @@ async function renderMethodologyPage(request, env) {
     --on-soon:#1a1207;
     --flap-ink:#f2f0e8;
     --flap-alert:#e88a76;
+    --sidebar:#152238;
+    --sidebar-ink:#f2f0e8;
+    --sidebar-muted:#93a3c0;
+    --sidebar-accent:#c98a3a;
+    --sidebar-line:#2b3c5a;
+    --nav:#b5432f;
+    --nav-ink:#f2f0e8;
     --radius:10px;
   }
   :root[data-eicc-theme="tradeshift"]{
@@ -2952,6 +3029,13 @@ async function renderMethodologyPage(request, env) {
     --on-soon:#ffffff;
     --flap-ink:#1e1e1e;
     --flap-alert:#8f1c2d;
+    --sidebar:#242dc2;
+    --sidebar-ink:#ffffff;
+    --sidebar-muted:#c7ccf5;
+    --sidebar-accent:#ffd9a3;
+    --sidebar-line:#4a52d4;
+    --nav:#242dc2;
+    --nav-ink:#ffffff;
     --radius:10px;
   }
   /* palette:end */
@@ -3696,6 +3780,13 @@ ${langUrls("/map", lang).alternates}
     --on-soon:#1a1207;
     --flap-ink:#f2f0e8;
     --flap-alert:#e88a76;
+    --sidebar:#152238;
+    --sidebar-ink:#f2f0e8;
+    --sidebar-muted:#93a3c0;
+    --sidebar-accent:#c98a3a;
+    --sidebar-line:#2b3c5a;
+    --nav:#b5432f;
+    --nav-ink:#f2f0e8;
     --radius:10px;
   }
   :root[data-eicc-theme="tradeshift"]{
@@ -3735,6 +3826,13 @@ ${langUrls("/map", lang).alternates}
     --on-soon:#ffffff;
     --flap-ink:#1e1e1e;
     --flap-alert:#8f1c2d;
+    --sidebar:#242dc2;
+    --sidebar-ink:#ffffff;
+    --sidebar-muted:#c7ccf5;
+    --sidebar-accent:#ffd9a3;
+    --sidebar-line:#4a52d4;
+    --nav:#242dc2;
+    --nav-ink:#ffffff;
     --radius:10px;
   }
   /* palette:end */

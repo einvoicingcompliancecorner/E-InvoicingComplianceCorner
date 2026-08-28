@@ -293,7 +293,6 @@ for (const [tag, slug, expect] of [["no cookie", null, DARK["--ink"]],
   await ctx.close();
 }
 await frameBrowser.close();
-server.close();
 for (const [tag, opened, got, expect] of frameResults) {
   t.check(`a panel opened in-frame, "${tag}", inherits --ink ${expect}`,
     opened && got === expect, opened ? `got ${got}` : "the menu item was not found");
@@ -309,4 +308,60 @@ t.check("every shadow mount goes through the one scoping helper",
 t.check("no mount rewrites :root to :host by hand any more",
   !/\.replace\(\/?:?root/.test(tracker.replace(/function scopeForShadow[\s\S]*?\n\}/, "")));
 
+// ---- 11. the side menu and the menu buttons are actually themed -------
+//
+// Contrast pairs prove the VALUES are legible together. They cannot prove
+// the components read them: a rule still pointing at --ink-2 would pass
+// every pair in check 4 while the sidebar sat on the page ground. So this
+// renders the tracker under both themes and reads the computed colours
+// off the real elements.
+//
+// Dan asked for #242DC2 with white text on the side menu, then for the
+// three menu buttons to match. Both are asserted against the value he
+// gave rather than against the palette, so a future edit to the palette
+// that quietly moves either one fails here with the old and new values.
+const compBrowser = await launch();
+const seen = {};
+for (const [tag, slug] of [["default", null], ["tradeshift", "tradeshift"]]) {
+  const ctx = await compBrowser.newContext({ viewport: { width: 1200, height: 900 } });
+  if (slug) {
+    await ctx.addCookies([{ name: "eicc_theme", value: slug, domain: "127.0.0.1", path: "/" }]);
+  }
+  const page = await ctx.newPage();
+  await page.goto(`${ORIGIN}/einvoicing-compliance-tracker.html`, { waitUntil: "load" });
+  await page.waitForTimeout(700);
+  seen[tag] = await page.evaluate(() => {
+    const g = (sel, prop) => {
+      const el = document.querySelector(sel);
+      return el ? getComputedStyle(el)[prop] : "(missing)";
+    };
+    return {
+      sidebarBg: g(".sidebar", "backgroundColor"),
+      countryInk: g(".sidebar-country .c-name", "color"),
+      navBg: g(".menu-trigger", "backgroundColor"),
+      navInk: g(".menu-trigger", "color"),
+    };
+  });
+  await ctx.close();
+}
+await compBrowser.close();
+
+const rgb = (hex) => {
+  const h = hex.replace("#", "");
+  return `rgb(${parseInt(h.slice(0, 2), 16)}, ${parseInt(h.slice(2, 4), 16)}, ${parseInt(h.slice(4, 6), 16)})`;
+};
+t.check("default: the side menu keeps the page's raised surface",
+  seen.default.sidebarBg === rgb(DARK["--ink-2"]), seen.default.sidebarBg);
+t.check("default: the menu buttons keep the alert red",
+  seen.default.navBg === rgb(DARK["--stamp"]), seen.default.navBg);
+t.check('tradeshift: the side menu is #242DC2',
+  seen.tradeshift.sidebarBg === rgb("#242dc2"), seen.tradeshift.sidebarBg);
+t.check("tradeshift: side-menu country names are white",
+  seen.tradeshift.countryInk === rgb("#ffffff"), seen.tradeshift.countryInk);
+t.check("tradeshift: the menu buttons are the same #242DC2",
+  seen.tradeshift.navBg === rgb("#242dc2"), seen.tradeshift.navBg);
+t.check("tradeshift: menu-button text is white",
+  seen.tradeshift.navInk === rgb("#ffffff"), seen.tradeshift.navInk);
+
+server.close();
 process.exit(t.report() ? 0 : 1);

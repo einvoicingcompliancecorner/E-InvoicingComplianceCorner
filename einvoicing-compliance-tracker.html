@@ -104,6 +104,13 @@
     --on-soon:#1a1207;
     --flap-ink:#f2f0e8;
     --flap-alert:#e88a76;
+    --sidebar:#152238;
+    --sidebar-ink:#f2f0e8;
+    --sidebar-muted:#93a3c0;
+    --sidebar-accent:#c98a3a;
+    --sidebar-line:#2b3c5a;
+    --nav:#b5432f;
+    --nav-ink:#f2f0e8;
     --radius:10px;
   }
   :root[data-eicc-theme="tradeshift"]{
@@ -143,6 +150,13 @@
     --on-soon:#ffffff;
     --flap-ink:#1e1e1e;
     --flap-alert:#8f1c2d;
+    --sidebar:#242dc2;
+    --sidebar-ink:#ffffff;
+    --sidebar-muted:#c7ccf5;
+    --sidebar-accent:#ffd9a3;
+    --sidebar-line:#4a52d4;
+    --nav:#242dc2;
+    --nav-ink:#ffffff;
     --radius:10px;
   }
   /* palette:end */
@@ -589,37 +603,42 @@
 
   /* ===== Side menu ===== */
   body{padding-left:270px;}
+  /* The side menu reads its OWN five properties rather than the page's.
+     A partner theme can then colour it independently -- Tradeshift's is
+     #242DC2 with white type -- and the default theme sets them to exactly
+     what this component resolved to before, so nothing moves. */
   .sidebar{
     position:fixed; top:0; left:0; height:100vh; width:270px;
-    background:var(--ink-2); border-right:1px solid var(--line);
+    background:var(--sidebar); color:var(--sidebar-ink);
+    border-right:1px solid var(--sidebar-line);
     overflow-y:auto; z-index:40; padding:22px 0 30px;
   }
-  .sidebar-head{padding:0 20px 16px; border-bottom:1px solid var(--line); margin-bottom:6px;}
+  .sidebar-head{padding:0 20px 16px; border-bottom:1px solid var(--sidebar-line); margin-bottom:6px;}
   .sidebar-eyebrow{
     font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:0.16em; text-transform:uppercase;
-    color:var(--soon); margin:0 0 4px;
+    color:var(--sidebar-accent); margin:0 0 4px;
   }
   .sidebar-head h2{font-family:'Big Shoulders Display',sans-serif; font-weight:700; font-size:18px; margin:0; text-transform:uppercase;}
   .sidebar-continent{padding:14px 20px 4px;}
   .sidebar-continent h3{
     font-family:'IBM Plex Mono',monospace; font-size:11px; text-transform:uppercase; letter-spacing:0.1em;
-    color:var(--muted); margin:0 0 8px; display:flex; align-items:center; gap:8px;
+    color:var(--sidebar-muted); margin:0 0 8px; display:flex; align-items:center; gap:8px;
   }
-  .sidebar-continent h3::after{content:""; flex:1; height:1px; background:var(--line);}
+  .sidebar-continent h3::after{content:""; flex:1; height:1px; background:var(--sidebar-line);}
   .sidebar-country{margin-bottom:7px;}
   .sidebar-country .c-name{
-    font-size:13.5px; font-weight:600; display:flex; align-items:center; gap:7px; color:var(--text-lo); text-decoration:none;
+    font-size:13.5px; font-weight:600; display:flex; align-items:center; gap:7px; color:var(--sidebar-ink); text-decoration:none;
   }
   .sidebar-country .c-name .flag{font-size:15px;}
   /* Only countries with a deep-dive page render <a class="c-name">
      (see renderSidebar()) -- give those a hover affordance so it
      reads as clickable; the rare plain-text <div class="c-name">
      fallback (European Union, no deep dive yet) is left alone. */
-  .sidebar-country a.c-name:hover{color:var(--soon);}
+  .sidebar-country a.c-name:hover{color:var(--sidebar-accent);}
 
   .menu-toggle{
     display:none; position:fixed; top:16px; left:16px; z-index:60;
-    background:var(--soon); color:#1a1207; border:none; border-radius:8px;
+    background:var(--soon); color:var(--on-soon); border:none; border-radius:8px;
     font-family:'IBM Plex Mono',monospace; font-size:12px; font-weight:700;
     padding:9px 13px; cursor:pointer; letter-spacing:0.04em;
   }
@@ -637,11 +656,11 @@
   .actions-menu{position:relative;}
   .menu-trigger{
     display:inline-flex; align-items:center; gap:8px;
-    background:var(--stamp); color:var(--on-stamp); border:none; border-radius:8px;
+    background:var(--nav); color:var(--nav-ink); border:none; border-radius:8px;
     font-family:'IBM Plex Mono',monospace; font-size:12.5px; font-weight:600; letter-spacing:0.03em;
     padding:10px 16px; cursor:pointer; white-space:nowrap;
   }
-  .menu-trigger:hover{background:var(--stamp);}
+  .menu-trigger:hover{background:var(--nav);}
   .menu-trigger::after{content:"▾"; font-size:10px; margin-left:2px;}
   .dropdown-panel{
     display:none; position:absolute; top:calc(100% + 8px); right:0; z-index:70;
