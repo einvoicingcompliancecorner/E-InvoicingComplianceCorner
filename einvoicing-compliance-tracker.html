@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- theme:boot --><script>(function(){try{var m=document.cookie.match(/(?:^|; )eicc_theme=([^;]*)/);if(!m)return;var s=decodeURIComponent(m[1]);if(["tradeshift"].indexOf(s)<0)return;document.documentElement.setAttribute("data-eicc-theme",s);}catch(e){}})();</script>
+<!-- theme:boot --><script>(function(){try{var c=document.cookie.match(/(?:^|; )eicc_theme=([^;]*)/);var s=c?decodeURIComponent(c[1]):"";var fromUrl=false;if(!s){try{var q=new URLSearchParams(location.search).get("skin");if(q){s=q;fromUrl=true;}else{s=sessionStorage.getItem("eicc_skin")||"";}}catch(e2){}}if(["tradeshift"].indexOf(s)<0)return;if(fromUrl){try{sessionStorage.setItem("eicc_skin",s);}catch(e3){}}document.documentElement.setAttribute("data-eicc-theme",s);}catch(e){}})();</script>
 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -3128,14 +3128,21 @@ function wireFeatureCarousel(){
   // and the rotation are both built from this array's length and a hidden
   // slide would leave a dot that rotates to nothing.
   const signedIn = (typeof EICC_WHO !== 'undefined') && !!EICC_WHO.read();
-  // The partner slide rides on the SAME signal as the colour scheme: the
-  // authority-free eicc_theme cookie, which members-worker sets only for a
-  // signed-in reader on a partner domain whose branding preference is on.
-  // That coupling is deliberate -- the slide IS branding, so a reader who
-  // switches branding off should stop seeing it, and one switch governing
-  // both is easier to reason about than two that can disagree.
-  const themeSlug = (document.cookie.match(/(?:^|; )eicc_theme=([^;]*)/) || [])[1];
-  const partner = themeSlug ? decodeURIComponent(themeSlug) : null;
+  // The partner slide rides on the SAME signal as the colour scheme, and
+  // now reads it from the same place: the data-eicc-theme attribute the
+  // head script has already resolved.
+  //
+  // IT USED TO READ THE COOKIE ITSELF, which was fine while the cookie was
+  // the only source and wrong the moment a second appeared. ?skin= is that
+  // second source -- a visitor arriving from a partner's own site, before
+  // they are a subscriber -- and a slide reading the cookie while the
+  // colours read the URL would have given that visitor a partner-coloured
+  // page with the standard carousel. One reader, one answer.
+  //
+  // The coupling to branding as a whole is deliberate: the slide IS
+  // branding, so a subscriber who switches it off stops seeing the slide
+  // too, and one switch governing both beats two that can disagree.
+  const partner = document.documentElement.getAttribute('data-eicc-theme') || null;
   // FILTERED, NOT HIDDEN, for exactly the reason the Subscribe slide is:
   // the dots and the rotation are both built from this array's length.
   const slides = SLIDES.filter(s => !(s.signedOutOnly && signedIn))

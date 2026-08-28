@@ -25,7 +25,7 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { paletteCss, PALETTE_MARKERS } from "../shared/palette.mjs";
+import { paletteCss, PALETTE_MARKERS, themeBootScript } from "../shared/palette.mjs";
 
 const REPO = dirname(dirname(fileURLToPath(import.meta.url)));
 const CHECK = process.argv.includes("--check");
@@ -83,6 +83,27 @@ const BETWEEN = new RegExp(
 // selector is not a candidate. Read the diff anyway.
 const BARE = /[ \t]*:root\s*\{(?:\s*--[\w-]+\s*:[^;{}]*;)+\s*\}/g;
 
+// ---- and the boot script, which has the same problem twice over -------
+//
+// The renderers interpolate `${themeBootScript()}` and are therefore
+// always current. The fourteen STATIC pages cannot: the script was pasted
+// into their <head> once, and from that moment they carried a frozen copy
+// that no longer tracked the module.
+//
+// That bit on 28 August. `?skin=` was added to themeBootScript(), the
+// renderers picked it up, the static pages did not, and the tracker --
+// which is a static page -- silently ignored the parameter while every
+// module-level check passed. Exactly the shape this file was written to
+// prevent for the palette, on the other half of the same feature.
+//
+// So the boot script is generated into them too, between the same marker
+// it already carried, and tests/palette.mjs fails when a page's copy
+// drifts from the module.
+const BOOT_MARK = "<!-- theme:boot -->";
+const BOOT_RE = new RegExp(`${esc(BOOT_MARK)}<script>[\\s\\S]*?<\\/script>`, "g");
+
+export const BOOT_FILES = PALETTE_FILES.filter((f) => f.endsWith(".html"));
+
 if (!MAIN) { /* imported for PALETTE_FILES only */ }
 else {
 let changed = 0, stale = [];
@@ -106,6 +127,21 @@ for (const rel of PALETTE_FILES) {
     console.error(`sync-palette: no palette block found in ${rel}. `
       + "Either it stopped defining one, or the markers were damaged.");
     process.exit(1);
+  }
+
+  // The static pages also carry a pasted copy of the boot script.
+  if (BOOT_FILES.includes(rel)) {
+    const want = BOOT_MARK + themeBootScript();
+    let bootN = 0;
+    out = out.replace(BOOT_RE, () => { bootN += 1; return want; });
+    if (!bootN) {
+      console.error(`sync-palette: no ${BOOT_MARK} script found in ${rel}.`);
+      process.exit(1);
+    }
+    if (bootN > 1) {
+      console.error(`sync-palette: ${bootN} boot scripts in ${rel}; expected one.`);
+      process.exit(1);
+    }
   }
   if (out !== src) {
     changed += 1; stale.push(`${rel} (${n} block${n > 1 ? "s" : ""})`);

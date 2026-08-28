@@ -324,12 +324,56 @@ export function paletteCss(indent = "") {
  *  A SLUG WITH NO REGISTERED THEME IS IGNORED, deliberately: an unknown
  *  attribute value would match no rule and leave the reader on the
  *  default, but saying so here means the failure is a no-op rather than
- *  something that depends on CSS matching behaviour. */
+ *  something that depends on CSS matching behaviour.
+ *
+ *  ---- THREE SOURCES, IN ORDER, ADDED 28 AUGUST ------------------------
+ *
+ *  Dan asked whether a partner could launch the site from their own
+ *  website already wearing their colours, before the visitor is a
+ *  subscriber -- `?skin=tradeshift`. So the slug now comes from, in
+ *  order: the eicc_theme cookie, then ?skin=, then per-tab sessionStorage.
+ *
+ *  The order is the interesting part. The cookie is a VERIFIED claim --
+ *  members-worker only writes it after checking the address against
+ *  partner_domains -- while ?skin= is only a referral. A signed-in
+ *  Tradeshift subscriber who follows a link skinned for someone else
+ *  keeps their own colours, because identity beats provenance.
+ *
+ *  AND THE ATTRIBUTE IT SETS IS NOW THE ONE SOURCE for everything
+ *  per-partner on the page, not just colour. The tracker's carousel used
+ *  to read the cookie itself, which was a second reader of the same fact
+ *  and could disagree with this one the moment a third source appeared --
+ *  which is exactly what ?skin= is. It reads the attribute now. */
 export function themeBootScript() {
   const slugs = JSON.stringify(Object.keys(PARTNER_THEMES));
   return `<script>(function(){try{`
-    + `var m=document.cookie.match(/(?:^|; )eicc_theme=([^;]*)/);if(!m)return;`
-    + `var s=decodeURIComponent(m[1]);if(${slugs}.indexOf(s)<0)return;`
+    // 1. A VERIFIED READER ALWAYS WINS. The cookie is written only after
+    //    members-worker has checked the address against partner_domains,
+    //    so it means "this person works there". ?skin= means "this person
+    //    arrived from there", which is a weaker claim about a different
+    //    thing -- and if a Tradeshift subscriber follows a link skinned
+    //    for somebody else, they should keep their own colours.
+    + `var c=document.cookie.match(/(?:^|; )eicc_theme=([^;]*)/);`
+    + `var s=c?decodeURIComponent(c[1]):"";`
+    // 2. Otherwise the URL, for a visitor arriving from a partner's own
+    //    site. Stored per TAB so it survives clicking into a deep dive or
+    //    the map and is gone when the tab closes -- sessionStorage, not a
+    //    cookie, because the privacy policy says this site sets none for
+    //    people who have not signed in, and that should stay true.
+    + `var fromUrl=false;`
+    + `if(!s){try{var q=new URLSearchParams(location.search).get("skin");`
+    + `if(q){s=q;fromUrl=true;}else{s=sessionStorage.getItem("eicc_skin")||"";}}catch(e2){}}`
+    // 3. An unrecognised value is ignored rather than trusted. The slug
+    //    reaches CSS as an attribute selector, so this is also what stops
+    //    a crafted ?skin= from putting arbitrary text in the DOM.
+    //
+    //    VALIDATE BEFORE STORING, not after. The first version wrote
+    //    whatever the URL said into sessionStorage and rejected it on the
+    //    next read, so ?skin=nonsense left "nonsense" sitting in storage
+    //    for the rest of the tab's life -- harmless, and still junk this
+    //    site put there.
+    + `if(${slugs}.indexOf(s)<0)return;`
+    + `if(fromUrl){try{sessionStorage.setItem("eicc_skin",s);}catch(e3){}}`
     + `document.documentElement.setAttribute("data-eicc-theme",s);`
     + `}catch(e){}})();</script>`;
 }

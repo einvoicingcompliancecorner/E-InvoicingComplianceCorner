@@ -183,13 +183,19 @@ const ORIGIN = `http://127.0.0.1:${server.address().port}`;
 
 const carBrowser = await launch();
 const states = {};
-for (const [tag, slug] of [["none", null], ["tradeshift", "tradeshift"], ["unknown", "acme"]]) {
+for (const [tag, slug, qs] of [["none", null, ""], ["tradeshift", "tradeshift", ""],
+  ["unknown", "acme", ""],
+  // A visitor arriving from a partner's own website, not signed in. The
+  // slide has to follow the colours -- they read one resolved attribute
+  // rather than each reading the cookie, precisely so they cannot
+  // disagree when a second source of the slug exists.
+  ["skinned", null, "?skin=tradeshift"]]) {
   const ctx = await carBrowser.newContext({ viewport: { width: 1200, height: 900 } });
   if (slug) {
     await ctx.addCookies([{ name: "eicc_theme", value: slug, domain: "127.0.0.1", path: "/" }]);
   }
   const page = await ctx.newPage();
-  await page.goto(`${ORIGIN}/einvoicing-compliance-tracker.html`, { waitUntil: "load" });
+  await page.goto(`${ORIGIN}/einvoicing-compliance-tracker.html${qs}`, { waitUntil: "load" });
   await page.waitForTimeout(1300);
   states[tag] = await page.evaluate(() => {
     const slides = [...document.querySelectorAll(".car-slide")];
@@ -230,6 +236,10 @@ t.check("the outbound link opens in a new tab and cannot reach back",
   && /noopener/.test(states.tradeshift.rel) && /noreferrer/.test(states.tradeshift.rel),
   `${states.tradeshift.target} ${states.tradeshift.rel}`);
 t.check("the lockup actually loads", states.tradeshift.logo > 0, `naturalWidth ${states.tradeshift.logo}`);
+t.check("a skinned visitor gets the same slide a subscriber does",
+  states.skinned.slides === states.tradeshift.slides
+  && states.skinned.firstHref === states.tradeshift.firstHref,
+  JSON.stringify(states.skinned));
 
 // ---- the link is stored against the partner, and the page agrees ------
 //
