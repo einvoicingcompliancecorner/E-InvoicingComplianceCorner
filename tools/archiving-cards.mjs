@@ -5,17 +5,24 @@
 //   node tools/archiving-cards.mjs            # report
 //   node tools/archiving-cards.mjs --emit N   # write migrations/N_archiving_cards.sql
 //
-// These eleven were refused by tools/respine.mjs for exactly one reason:
-// no row routes to "Archiving". Ten of them do have a retention row --
-// filed inside their "Mandatory content" card, which is where it has been
-// hiding. So the operation is a promotion, not an authoring job:
+// SECOND BATCH, 27 August 2026: Croatia, Malaysia, New Zealand, Norway
+// and Singapore. Same operation as the first eleven and the same rule --
+// promote what the page already carries, write the period row from that
+// country's own verified headline fact, and never invent a retention
+// period. Where no retention row exists to promote, the card is two rows
+// rather than three; padding to reach a third is the failure the
+// framework's soft minimum exists to prevent.
 //
-//   - lift the existing retention row, in all four languages, out of
-//     Mandatory content and into a new Archiving card;
+// These five were refused by tools/respine.mjs for exactly one reason:
+// no row routes to "Archiving". The operation is a promotion, not an
+// authoring job:
+//
+//   - lift any existing retention row, in all four languages, out of the
+//     card it is hiding in and into a new Archiving card;
 //   - add ONE row per country stating the period and its legal basis,
 //     written from that country's verified headline fact;
 //   - add a signature row from signature_status, using one fixed phrasing
-//     per value so eleven countries cannot disagree about what
+//     per value so the countries cannot disagree about what
 //     "not required" means.
 //
 // THE PERIOD ROW IS PARAPHRASED, NOT COPIED. Every one of these countries
@@ -121,6 +128,31 @@ const PERIOD = {
   es: "Cinco años según la RR 7-2024, que desarrolla la Ley EOPT, contados desde el día siguiente al plazo de presentación de la declaración, no desde la factura.",
   de: "Fünf Jahre nach RR 7-2024 zur Umsetzung des EOPT-Gesetzes, gerechnet ab dem Tag nach der Abgabefrist der Erklärung — nicht ab der Rechnung.",
   fr: "Cinq ans selon le RR 7-2024 appliquant la loi EOPT, comptés depuis le lendemain de l'échéance de dépôt de la déclaration, non depuis la facture." },
+"Croatia": { key: { en: "Period and basis", es: "Plazo y fundamento", de: "Frist und Grundlage", fr: "Durée et fondement" },
+  en: "Six years under Fiscalisation Act art. 35, from the end of the year — and the e-invoice must be kept in its ORIGINAL form, so a PDF rendering of an XML invoice does not discharge it.",
+  es: "Seis años según el art. 35 de la Ley de Fiscalización, desde el fin del año, y la factura electrónica debe conservarse en su forma ORIGINAL: un PDF de una factura XML no cumple.",
+  de: "Sechs Jahre nach Art. 35 des Fiskalisierungsgesetzes, ab Jahresende — und die E-Rechnung ist in ihrer URSPRÜNGLICHEN Form aufzubewahren; ein PDF-Abbild einer XML-Rechnung genügt nicht.",
+  fr: "Six ans selon l'art. 35 de la loi de fiscalisation, depuis la fin de l'année — et la facture électronique doit être conservée dans sa forme D'ORIGINE : un PDF d'une facture XML ne suffit pas." },
+"Malaysia": { key: { en: "Period and basis", es: "Plazo y fundamento", de: "Frist und Grundlage", fr: "Durée et fondement" },
+  en: "Seven years under Income Tax Act 1967 s.82A, counted from the end of the year of assessment rather than from the invoice — which pushes the real horizon past seven years for most documents.",
+  es: "Siete años según el art. 82A de la Income Tax Act 1967, contados desde el fin del año de liquidación y no desde la factura, lo que lleva el horizonte real más allá de siete años.",
+  de: "Sieben Jahre nach Abschnitt 82A des Income Tax Act 1967, gerechnet ab Ende des Veranlagungsjahres und nicht ab der Rechnung — der tatsächliche Horizont liegt damit über sieben Jahren.",
+  fr: "Sept ans selon l'art. 82A de l'Income Tax Act 1967, comptés depuis la fin de l'année d'imposition et non depuis la facture, ce qui repousse l'horizon réel au-delà de sept ans." },
+"New Zealand": { key: { en: "Period and basis", es: "Plazo y fundamento", de: "Frist und Grundlage", fr: "Durée et fondement" },
+  en: "At least seven tax years, and the duty covers electronic records on the same footing as paper — there is no separate, lighter rule for a digital original.",
+  es: "Al menos siete ejercicios fiscales, y el deber alcanza a los registros electrónicos en igualdad con el papel: no hay una regla aparte y más suave para el original digital.",
+  de: "Mindestens sieben Steuerjahre, und die Pflicht erfasst elektronische Aufzeichnungen gleichrangig mit Papier — eine gesonderte, mildere Regel für das digitale Original gibt es nicht.",
+  fr: "Au moins sept années fiscales, et l'obligation vise les documents électroniques au même titre que le papier : il n'existe pas de règle distincte et plus souple pour l'original numérique." },
+"Norway": { key: { en: "Two different periods", es: "Dos plazos distintos", de: "Zwei verschiedene Fristen", fr: "Deux durées différentes" },
+  en: "Five years for primary documentation, but ten for certain specification documents. Storing everything for five is not compliance, and the longer period is the one that gets missed.",
+  es: "Cinco años para la documentación primaria, pero diez para ciertos documentos de especificación. Guardarlo todo cinco años no es cumplir, y el plazo largo es el que se pasa por alto.",
+  de: "Fünf Jahre für die Primärdokumentation, aber zehn für bestimmte Spezifikationsunterlagen. Alles fünf Jahre aufzubewahren ist keine Erfüllung; übersehen wird die längere Frist.",
+  fr: "Cinq ans pour la documentation primaire, mais dix pour certains documents de spécification. Tout garder cinq ans n'est pas se conformer, et c'est la durée longue que l'on oublie." },
+"Singapore": { key: { en: "Period and form", es: "Plazo y forma", de: "Frist und Form", fr: "Durée et forme" },
+  en: "Five years for GST records including e-invoices, and they must be kept in machine-readable form — a scan of a printout does not satisfy it.",
+  es: "Cinco años para los registros de GST, incluidas las facturas electrónicas, y deben conservarse en forma legible por máquina: un escaneo de una impresión no basta.",
+  de: "Fünf Jahre für GST-Unterlagen einschliesslich E-Rechnungen, und sie müssen maschinenlesbar aufbewahrt werden — ein Scan eines Ausdrucks genügt nicht.",
+  fr: "Cinq ans pour les documents de GST, factures électroniques comprises, et ils doivent être conservés sous forme lisible par machine : un scan d'une impression ne suffit pas." },
 "Taiwan": { key: { en: "Two different periods", es: "Dos plazos distintos", de: "Zwei verschiedene Fristen", fr: "Deux durées différentes" },
   en: "Invoices and vouchers five years, account books ten, under Commercial Accounting Act art. 38. Storing everything for five is not compliance.",
   es: "Facturas y comprobantes cinco años; libros contables diez, según el art. 38 de la Ley de Contabilidad Mercantil. Guardarlo todo cinco años no es cumplir.",
@@ -144,8 +176,15 @@ const cards = await all(`
    WHERE c.name_en IN (${IN}) AND d.section = 'file_format' ORDER BY c.name_en, d.sort_order`);
 
 const plan = [];
+const done = [];
 for (const name of names) {
   const mine = cards.filter((r) => r.n === name);
+  // Idempotence, added when the second batch was run against a corpus the
+  // first batch had already changed: a country that HAS an Archiving card
+  // is finished, and re-emitting would give it a second one. A generator
+  // whose output depends on how many times it has been run is a generator
+  // that will eventually be run twice.
+  if (mine.some((r) => r.lang === "en" && r.title === TITLE.en)) { done.push(name); continue; }
   const bySo = new Map();
   for (const r of mine) { if (!bySo.has(r.so)) bySo.set(r.so, {}); bySo.get(r.so)[r.lang] = r; }
   let moved = null, fromSo = null;
@@ -171,6 +210,7 @@ for (const name of names) {
   plan.push({ name, rows, moved: !!moved, fromSo, rewritten, sig, nextSo: bySo.size });
 }
 
+if (done.length) console.log(`  (${done.length} already have an Archiving card and are skipped: ${done.join(", ")})\n`);
 for (const p of plan) {
   console.log(`  ${p.name.padEnd(16)} ${p.rows.en.length} rows  `
     + `${p.moved ? `(promoted a retention row out of card ${p.fromSo})` : "(no existing row to promote)"}  sig=${p.sig}`);

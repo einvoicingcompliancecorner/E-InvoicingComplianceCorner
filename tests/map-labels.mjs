@@ -21,18 +21,64 @@
 // the placer only estimates at 6.5px per character. That estimate is
 // exactly the kind of thing that is quietly wrong for a flag emoji or a
 // long name, and a test that trusted it would pass over the defect.
+import { createServer } from "node:http";
+import { readFileSync, existsSync, statSync } from "node:fs";
+import { join, dirname, extname } from "node:path";
+import { fileURLToPath } from "node:url";
 import { launch, suite, NOT_SET_UP } from "./lib/browser.mjs";
+import { openReplayDb } from "./lib/replay-db.mjs";
 
+const REPO = dirname(dirname(fileURLToPath(import.meta.url)));
 const t = suite("map labels");
+
+// ---- the site, served from the replayed chain on an ephemeral port ----
+//
+// The map is rendered from D1, so a static file server cannot produce it.
+// This mounts the REAL site-worker over an offline replay, the same way
+// npm run preview does. Nothing here touches the network or Cloudflare.
+//
+// The first version of this file assumed a preview server was already
+// running on 8788, which was true on the machine it was written on and
+// nowhere else -- npm test failed the moment that server was stopped. A
+// suite that depends on the author's terminal state is not a suite.
+const TYPES = { ".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8",
+  ".mjs": "text/javascript; charset=utf-8", ".css": "text/css; charset=utf-8",
+  ".json": "application/json; charset=utf-8", ".svg": "image/svg+xml", ".png": "image/png",
+  ".woff2": "font/woff2", ".xml": "application/xml" };
+const { d1 } = await openReplayDb();
+const worker = (await import(join(REPO, "site-worker", "src", "index.js"))).default;
+const env = {
+  eicc_content: d1,
+  ASSETS: {
+    async fetch(req) {
+      const rel = decodeURIComponent(new URL(req.url).pathname).replace(/^\//, "") || "index.html";
+      const file = join(REPO, rel);
+      if (!existsSync(file) || !statSync(file).isFile()) return new Response("not found", { status: 404 });
+      return new Response(readFileSync(file), {
+        headers: { "content-type": TYPES[extname(file)] || "application/octet-stream" } });
+    },
+  },
+  SESSION_SECRET: "test-secret-not-a-real-one",
+  ROI_PUBLIC: "true",
+};
+const server = createServer(async (req, res) => {
+  const out = await worker.fetch(
+    new Request(`http://127.0.0.1${req.url}`, { method: req.method, headers: req.headers }),
+    env, { waitUntil() {} });
+  res.writeHead(out.status, Object.fromEntries(out.headers));
+  res.end(Buffer.from(await out.arrayBuffer()));
+});
+await new Promise((r) => server.listen(0, "127.0.0.1", r));
+const BASE = `http://127.0.0.1:${server.address().port}`;
+
 const browser = await launch();
-if (browser === NOT_SET_UP) process.exit(NOT_SET_UP);
+if (browser === NOT_SET_UP) { server.close(); process.exit(NOT_SET_UP); }
 
 const page = await browser.newPage();
 const errors = [];
 page.on("pageerror", (e) => errors.push(String(e)));
 
-await page.goto(`${process.env.EICC_BASE || "http://localhost:8788"}/map`,
-  { waitUntil: "networkidle" });
+await page.goto(`${BASE}/map`, { waitUntil: "networkidle" });
 await page.waitForSelector(".region-map-svg", { timeout: 20000 });
 
 const REGIONS = ["Europe", "Middle East / Africa", "Asia-Pacific", "Americas"];
@@ -118,4 +164,5 @@ t.check("the map rendered without page errors", errors.length === 0, errors.slic
 
 console.log(`\n  note  ${checkedLabels} small-country labels measured across ${checkedRegions} regions`);
 await browser.close();
+server.close();
 process.exit(t.report() ? 0 : 1);

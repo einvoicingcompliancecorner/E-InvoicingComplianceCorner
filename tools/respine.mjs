@@ -87,10 +87,26 @@ const SPINE = {
 //
 // Everything else is refused and belongs to a human.
 const RENAME = new Map([
+  // Slot 0. Every one of these is a country's own wording for "the format
+  // and the standard it follows" -- the corpus produced twenty-one ways to
+  // say it. Widened 27 August 2026 after the first pass, where the tool
+  // aborted on the FIRST unrecognised title and so never reached the rest
+  // of a country's cards; the report was showing one symptom per country
+  // rather than the shape of the work.
   ["Format", 0], ["Format & standard", 0], ["Syntax & standard", 0], ["Format & signature", 0],
+  ["Format & validation", 0], ["Format, keys & validation", 0], ["Format & validation statuses", 0],
+  ["Format & network", 0], ["Format & transmission", 0], ["Format & transmission model", 0],
+  ["Format & channels", 0], ["Format & clearance mechanics", 0], ["Format & platform", 0],
+  ["Current formats", 0], ["Accepted formats", 0], ["National formats", 0], ["Standard & format", 0],
+  ["Base specification", 0], ["Specification", 0], ["Schema", 0], ["Document structure", 0],
+  ["B2G format & platform", 0], ["B2G format & platform (SABIS)", 0], ["B2G format & network", 0],
+  ["B2G structured format", 0],
   ["Identifiers", 1], ["Identifiers & registration", 1], ["Business identifiers", 1], ["Registration", 1],
+  ["Mandatory identifiers", 1],
   ["Mandatory content", 2], ["Mandatory invoice fields", 2], ["Extra mandatory fields", 2],
-  ["Archiving", 3], ["Archiving & retention", 3],
+  ["Mandatory data fields", 2], ["Mandatory Data Elements", 2], ["Required fields", 2],
+  ["Key mandatory fields", 2],
+  ["Archiving", 3], ["Archiving & retention", 3], ["Archiving & timing", 3],
 ]);
 // Titles that are a visible concatenation of slots 2 and 3.
 const SPLIT = new Set(["Mandatory content & archiving", "Mandatory content & retention"]);
@@ -149,7 +165,6 @@ for (const [name, cards] of byCountry) {
     const pack = (i) => Object.fromEntries(LANGS.map((l) => [l, parsed[l][i]]));
     const title = langs.en.title;
 
-    if (KEEP.has(title)) { kept.push(langs); inputRows -= n; continue; }
     if (RENAME.has(title)) {                                   // A: relabel in place
       const slot = RENAME.get(title);
       if (slots[slot].length) { why.push(`two cards both map to "${SPINE_EN[slot]}"`); break; }
@@ -160,8 +175,14 @@ for (const [name, cards] of byCountry) {
       for (let i = 0; i < n; i++) slots[ARCHIVING_ROW.test(parsed.en[i][0]) ? 3 : 2].push(pack(i));
       continue;
     }
-    why.push(`"${title}" is not a spine title, a known synonym or a split — needs a person`);
-    break;
+    // Anything else is a BESPOKE card, and the framework permits one
+    // beyond the four-card spine. Kept whole, with its own title and its
+    // own rows: Chile's CAF, China's invoice quotas and Denmark's
+    // migration path are the most useful things on those pages and a
+    // spine that dissolves them into generic headings is not worth
+    // having. More than one, and the country needs a person to choose.
+    kept.push(langs);
+    inputRows -= n;
   }
 
   if (!why.length) {
