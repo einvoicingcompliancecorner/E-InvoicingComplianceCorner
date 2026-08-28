@@ -181,6 +181,28 @@ export async function sessionDiagnostic(request, secret) {
  *  language cookie — a user's choice reverting on every refresh — and the
  *  fix is written down in withLangCookie(). This is that fix, applied a
  *  second time, deliberately, before it can happen again. */
+export const THEME_COOKIE = "eicc_theme";
+
+/** The theme cookie's own Set-Cookie line, or the line that clears it.
+ *
+ *  A FOURTH COOKIE RATHER THAN A FIELD IN THE THIRD. The partner slug
+ *  could have ridden in eicc_who, which is already readable from the head
+ *  -- but that cookie's value is parsed elsewhere as a display name, and
+ *  widening its format to "name|slug" would have meant every existing
+ *  reader's greeting reading through a separator their cookie was written
+ *  without. This cannot break that.
+ *
+ *  Carries no authority, exactly as eicc_who carries none. The worst a
+ *  forged value achieves is showing the forger a different colour scheme
+ *  on their own screen; the mark on a PDF is decided server side against
+ *  the HttpOnly token and a preference this cookie cannot reach. */
+export function themeCookie(slug, ttlSeconds) {
+  const base = `Domain=${COOKIE_DOMAIN}; Path=/; SameSite=Lax; Secure`;
+  return slug
+    ? `${THEME_COOKIE}=${encodeURIComponent(slug)}; ${base}; Max-Age=${ttlSeconds}`
+    : `${THEME_COOKIE}=; ${base}; Max-Age=0`;
+}
+
 export function signInCookies(sessionToken, displayName, ttlSeconds) {
   const base = `Domain=${COOKIE_DOMAIN}; Path=/; Max-Age=${ttlSeconds}; SameSite=Lax; Secure`;
   return [
@@ -202,5 +224,10 @@ export function signOutCookies() {
     `${SESSION_COOKIE}=; ${base}; Secure; HttpOnly`,
     `${DISPLAY_COOKIE}=; ${base}; Secure`,
     `${SESSION_COOKIE}=; Path=/; Max-Age=0; SameSite=Lax`,
+    // FOUR SHAPES NOW. A reader who signs out and leaves this behind keeps
+    // a partner's colours on a signed-out browser -- which is not a
+    // security problem, since the cookie unlocks nothing, but it is a
+    // visible one and it would look like a bug on a shared machine.
+    `${THEME_COOKIE}=; ${base}; Secure`,
   ];
 }

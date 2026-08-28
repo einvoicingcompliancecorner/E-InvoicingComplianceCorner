@@ -36,7 +36,9 @@ import {
   signInCookies,
   signOutCookies,
 } from "../../shared/session.mjs";
+import { themeBootScript } from "../../shared/palette.mjs";
 import { partnerForEmail } from "../../shared/partners.mjs";
+import { themeCookie } from "../../shared/session.mjs";
 import {
   getRoiCountries as sharedGetRoiCountries,
   getRoiBenchmarks as sharedGetRoiBenchmarks,
@@ -494,6 +496,7 @@ async function withUpgradedSession(request, env, response) {
   for (const c of signInCookies(token, payload.email, remaining)) {
     headers.append("Set-Cookie", c);
   }
+  headers.append("Set-Cookie", await themeCookieFor(env, payload.email, remaining));
   return new Response(response.body, { status: response.status, headers });
 }
 
@@ -1229,7 +1232,7 @@ const CM_AMBER = "#c98a3a", CM_STAMP = "#b5432f", CM_LIVE = "#3f7d5c";
 function buildBoldMastheadHtml() {
   return `
     <p style="margin:0 0 6px; font-family:'Courier New',Courier,monospace; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:#c98a3a;">Compliance clearance board</p>
-    <h1 style="margin:0; font-family:'Big Shoulders Display',Impact,'Arial Narrow',sans-serif; font-weight:900; font-stretch:condensed; font-size:30px; line-height:0.98; text-transform:uppercase; color:#f2f0e8; letter-spacing:-0.2px;">The E-Invoicing<br>Compliance Corner</h1>
+    <h1 style="margin:0; font-family:'Big Shoulders Display',Impact,'Arial Narrow',sans-serif; font-weight:900; font-stretch:condensed; font-size:30px; line-height:0.98; text-transform:uppercase; color:var(--text-lo); letter-spacing:-0.2px;">The E-Invoicing<br>Compliance Corner</h1>
   `;
 }
 const CM_HEADER_HTML = buildBoldMastheadHtml();
@@ -2700,6 +2703,7 @@ async function handleVerify(request, env, lang) {
   // readable display cookie for the pages the Worker never renders. The
   // third header clears the legacy host-only cookie -- see
   // signInCookies() for why that matters and what it cost last time.
+  headers.append("Set-Cookie", await themeCookieFor(env, payload.email, SESSION_TTL_SECONDS));
   for (const c of signInCookies(sessionToken, payload.email, SESSION_TTL_SECONDS)) {
     headers.append("Set-Cookie", c);
   }
@@ -2979,6 +2983,7 @@ async function handleCodeVerify(request, env) {
   const sessionToken = await signToken(env.SESSION_SECRET, { email, purpose: "session" }, SESSION_TTL_SECONDS);
   const headers = new Headers({ "Content-Type": "application/json; charset=UTF-8" });
   for (const c of signInCookies(sessionToken, email, SESSION_TTL_SECONDS)) headers.append("Set-Cookie", c);
+  headers.append("Set-Cookie", await themeCookieFor(env, email, SESSION_TTL_SECONDS));
   // The binding cookie has done its job and is cleared rather than left
   // to expire -- it is only ever meaningful for one code.
   headers.append("Set-Cookie", clearBrowserIdCookie());
@@ -3204,6 +3209,26 @@ async function handleSavedCountriesApi(request, env) {
  *  who is signed out, works nowhere in particular, or has switched the
  *  preference off are the same answer as far as the document is
  *  concerned, and none of them is an error. */
+/** The theme cookie a given address should be carrying, if any.
+ *
+ *  Set at every point a session is minted, because that is the only
+ *  moment this Worker is certain who the reader is AND is already
+ *  writing Set-Cookie headers. A partner whose branding preference is off
+ *  gets the clearing form rather than nothing -- a reader who turns it
+ *  off and signs in again on another device must not inherit the theme
+ *  from the sign-in rather than from their preference. */
+async function themeCookieFor(env, email, ttl) {
+  try {
+    const sub = await getSubscriber(env, email);
+    if (sub && sub.partnerBrandingEnabled === false) return themeCookie(null, ttl);
+    const partner = await partnerForEmail(env.eicc_content, email);
+    return themeCookie(partner ? partner.slug : null, ttl);
+  } catch (err) {
+    console.log(`theme cookie: ${(err && err.message) || err}`);
+    return themeCookie(null, ttl);
+  }
+}
+
 async function handleBrandingApi(request, env) {
   const email = await requireSession(request, env);
   if (!email) return jsonResponse({ partner: null });
@@ -3326,13 +3351,13 @@ function renderTrackerStyleMilestones(milestones, countryName) {
   const card = (m) => `
     <div style="background:#1c2c48; border:1px solid #2b3c5a; border-radius:10px; padding:16px 20px; margin-bottom:12px;">
       <div style="font-family:'IBM Plex Mono',monospace; font-size:12px; color:#93a3c0; margin-bottom:6px;">${escapeHtml(m.date)}</div>
-      <div style="font-weight:600; margin-bottom:6px; color:#f2f0e8;">${escapeHtml(m.system)}</div>
+      <div style="font-weight:600; margin-bottom:6px; color:var(--text-lo);">${escapeHtml(m.system)}</div>
       <p style="color:#93a3c0; font-size:13.5px; margin:0 0 8px;">${escapeHtml(m.desc)}</p>
-      ${m.actions.length ? `<ul style="margin:8px 0 0; padding-left:18px; color:#c3ceE0; font-size:13px;">${m.actions.map((a) => `<li>${escapeHtml(a)}</li>`).join("")}</ul>` : ""}
+      ${m.actions.length ? `<ul style="margin:8px 0 0; padding-left:18px; color:var(--neutral-ink); font-size:13px;">${m.actions.map((a) => `<li>${escapeHtml(a)}</li>`).join("")}</ul>` : ""}
     </div>`;
 
   return `
-    <h3 style="color:#f2f0e8; font-family:'IBM Plex Mono',monospace; text-transform:uppercase; font-size:13px;">Recent &amp; Upcoming — ${escapeHtml(countryName)}</h3>
+    <h3 style="color:var(--text-lo); font-family:'IBM Plex Mono',monospace; text-transform:uppercase; font-size:13px;">Recent &amp; Upcoming — ${escapeHtml(countryName)}</h3>
     ${active.map(card).join("")}
     <details style="margin-top:16px;">
       <summary style="color:#93a3c0; font-family:'IBM Plex Mono',monospace; font-size:12px; cursor:pointer;">Established regulations (${established.length})</summary>
@@ -3408,7 +3433,7 @@ async function handleMilestonesPreview(request, env, lang) {
 
   const body = `
   <div style="max-width:900px; margin:40px auto; padding:0 20px; font-family:'IBM Plex Sans',sans-serif;">
-    <h1 style="color:#f2f0e8;">Dynamic milestones preview — ${escapeHtml(country)}</h1>
+    <h1 style="color:var(--text-lo);">Dynamic milestones preview — ${escapeHtml(country)}</h1>
     <p style="color:#93a3c0;">Proof-of-concept: both renderings below are built from the exact same ${milestones.length} D1 rows, fed into two different templates.</p>
 
     <h2 style="color:#c98a3a; margin-top:40px;">1. Tracker-style rendering</h2>
@@ -3423,8 +3448,8 @@ async function handleMilestonesPreview(request, env, lang) {
       .rcard-top{display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;}
       .rcard-date{font-family:'IBM Plex Mono',monospace; font-size:12px; font-weight:600; color:#4a3f22;}
       .rbadge{font-family:'IBM Plex Mono',monospace; font-size:10px; text-transform:uppercase; letter-spacing:0.06em; padding:3px 9px; border-radius:999px; font-weight:600;}
-      .rbadge.inforce{background:#274a38; color:#bfe6cf;}
-      .rbadge.upcoming{background:#3a4864; color:#dbe2ee;}
+      .rbadge.inforce{background:var(--live-dim); color:var(--live-ink);}
+      .rbadge.upcoming{background:var(--upcoming-dim); color:var(--upcoming-ink);}
       .rcard-title{font-weight:600; margin-bottom:4px;}
       .rcard-desc{color:#4a4030; font-size:13.5px; margin:0;}
     </style>
@@ -3487,7 +3512,15 @@ async function handlePreferencesPost(request, env, lang) {
   await putSubscriber(env, email, patch);
 
   const countryPicker = await loadCountryPicker(env, lang);
-  return htmlResponse(renderPreferencesPage(email, selected, true, notificationsEnabled, lang, countryPicker, partner, patch.partnerBrandingEnabled !== false));
+  const html = renderPreferencesPage(email, selected, true, notificationsEnabled, lang, countryPicker, partner, patch.partnerBrandingEnabled !== false);
+  // THE COOKIE MOVES WITH THE CHECKBOX, on the same response that
+  // confirms the save. Without this a reader who unticks the box keeps
+  // the theme until their session is next minted -- days, on a 30-day
+  // TTL -- and the preferences screen would be telling them something
+  // the site was visibly contradicting.
+  const res = htmlResponse(html);
+  res.headers.append("Set-Cookie", await themeCookieFor(env, email, SESSION_TTL_SECONDS));
+  return res;
 }
 
 // ================================================================
@@ -3936,14 +3969,86 @@ function htmlResponse(html) {
 // HTML TEMPLATES — same visual language as the rest of the site
 // ================================================================
 const BASE_STYLE = `
+  /* palette:start */
   :root{
-    --ink:#0f1a2b; --ink-2:#152238; --line:#2b3c5a;
-    --paper:#efe9db; --paper-2:#e4dcc6; --paper-line:#c9bd9e;
-    --text-lo:#f2f0e8; --muted:#93a3c0;
-    --stamp:#b5432f; --live:#3f7d5c; --live-dim:#274a38;
-    --soon:#c98a3a; --soon-dim:#6e4c22;
+    --ink:#0f1a2b;
+    --ink-2:#152238;
+    --ink-3:#1c2c48;
+    --line:#2b3c5a;
+    --text-lo:#f2f0e8;
+    --muted:#93a3c0;
+    --paper:#efe9db;
+    --paper-2:#e4dcc6;
+    --paper-line:#c9bd9e;
+    --card-ink:#241d10;
+    --card-key:#6b5f3f;
+    --accent:#c98a3a;
+    --live:#3f7d5c;
+    --live-dim:#274a38;
+    --live-ink:#bfe6cf;
+    --soon:#c98a3a;
+    --soon-dim:#6e4c22;
+    --soon-ink:#ffe0b3;
+    --stamp:#b5432f;
+    --stamp-dim:#7c3628;
+    --stamp-ink:#eec4ba;
+    --upcoming:#6b7a95;
+    --upcoming-dim:#3a4864;
+    --upcoming-ink:#dbe2ee;
+    --neutral-dim:#3a4864;
+    --neutral-ink:#c3cddd;
+    --nomandate:#8a5a75;
+    --nomandate-dim:#4a2f3d;
+    --nomandate-ink:#f0d6e6;
+    --tracked:#4a5568;
+    --tracked-dim:#2c333d;
+    --tracked-ink:#c7ccd3;
+    --on-stamp:#f2f0e8;
+    --on-soon:#1a1207;
+    --flap-ink:#f2f0e8;
+    --flap-alert:#e88a76;
     --radius:10px;
   }
+  :root[data-eicc-theme="tradeshift"]{
+    --ink:#f9f9f9;
+    --ink-2:#ffffff;
+    --ink-3:#f0f0f0;
+    --line:#e3e3e3;
+    --text-lo:#1e1e1e;
+    --muted:#5c5c5c;
+    --paper:#ffffff;
+    --paper-2:#f9f9f9;
+    --paper-line:#e3e3e3;
+    --card-ink:#1e1e1e;
+    --card-key:#5c5c5c;
+    --accent:#0a37f0;
+    --live:#0d8162;
+    --live-dim:#e2faf2;
+    --live-ink:#0b5c45;
+    --soon:#a36416;
+    --soon-dim:#fdefdd;
+    --soon-ink:#7a4a10;
+    --stamp:#bf263c;
+    --stamp-dim:#fde8eb;
+    --stamp-ink:#8f1c2d;
+    --upcoming:#007c96;
+    --upcoming-dim:#e2f4f9;
+    --upcoming-ink:#0b5c6e;
+    --neutral-dim:#f0f0f0;
+    --neutral-ink:#5c5c5c;
+    --nomandate:#8a5a75;
+    --nomandate-dim:#f6ecf2;
+    --nomandate-ink:#6b4159;
+    --tracked:#4a5568;
+    --tracked-dim:#eef0f3;
+    --tracked-ink:#3a4351;
+    --on-stamp:#ffffff;
+    --on-soon:#ffffff;
+    --flap-ink:#1e1e1e;
+    --flap-alert:#8f1c2d;
+    --radius:10px;
+  }
+  /* palette:end */
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
   body{
@@ -4027,7 +4132,7 @@ const BASE_STYLE = `
   .country-check input{width:auto; margin:0;}
   .prefs-actions{display:flex; gap:14px; margin:10px 0;}
   .prefs-actions a{font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--stamp); text-decoration:underline; cursor:pointer;}
-  .saved-banner{background:var(--live-dim); color:#bfe6cf; border-radius:6px; padding:10px 14px; font-size:12.8px; margin-bottom:16px;}
+  .saved-banner{background:var(--live-dim); color:var(--live-ink); border-radius:6px; padding:10px 14px; font-size:12.8px; margin-bottom:16px;}
   /* The partner-branding control. Set apart by a rule rather than a box:
      it is a preference like the one above it, not a promotion. Only a
      subscriber on a partner domain ever sees this block at all. */
@@ -4062,7 +4167,7 @@ const BASE_STYLE = `
 function pageShell(bodyHtml, lang, extraStyle) {
   return `<!DOCTYPE html>
 <html lang="${lang || "en"}">
-<head>
+<head><!-- theme:boot -->${themeBootScript()}
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Subscriber Archive — The E-Invoicing Compliance Corner</title>

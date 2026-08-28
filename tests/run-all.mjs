@@ -134,6 +134,7 @@ const SUITES = [
   // countries, not the two he named.
   { name: "spec row layout", cmd: "node", args: [join(HERE, "spec-row-layout.mjs")], cwd: REPO },
   { name: "partner branding", cmd: "node", args: [join(HERE, "partner-branding.mjs")], cwd: REPO },
+  { name: "palette", cmd: "node", args: [join(HERE, "palette.mjs")], cwd: REPO },
   // The five headline tiles on the deep-dive pages, added 25 August. It
   // MEASURES a rendered page rather than reading markup, because the
   // defect it exists for -- a status word clipped rather than wrapped --

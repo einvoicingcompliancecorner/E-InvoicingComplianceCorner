@@ -51,6 +51,7 @@ import {
 // binding: it can verify who a reader is from the token's signature and
 // cannot read or change anything about their account. See the header of
 // shared/session.mjs for why that split, and what it deliberately trades.
+import { themeBootScript } from "../../shared/palette.mjs";
 import { sessionEmail, sessionDiagnostic, readCookie, signOutCookies, SESSION_COOKIE } from "../../shared/session.mjs";
 import {
   getRoiCountries,
@@ -409,7 +410,7 @@ function sitemapXml(entries) {
 
 // The four variants of one path, plus x-default, in the shape the
 // sitemap wants. Built from langUrls so a page cannot be described one
-// way in its own <head> and another way here.
+// way in its own <head><!-- theme:boot -->${themeBootScript()} and another way here.
 function sitemapLangs(path) {
   const { forLang } = langUrls(path, "en");
   return SUPPORTED_LANGS.map((l) => ({ lang: l, href: forLang(l) }))
@@ -822,7 +823,7 @@ function insightsPageShell({ titleTag, metaDescription, bodyHtml, lang, backHref
   const urls = path ? langUrls(path, lang) : null;
   return `<!DOCTYPE html>
 <html lang="${escHtml(lang)}">
-<head>
+<head><!-- theme:boot -->${themeBootScript()}
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>${escHtml(titleTag)} — The E-Invoicing Compliance Corner</title>
@@ -834,24 +835,98 @@ ${ld ? ldScript(ld) : ""}
 <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   /* Same dark shell as /sources and the country deep-dive pages. */
+  /* palette:start */
   :root{
-    --ink:#0f1a2b; --ink-2:#152238; --line:#2b3c5a;
-    --paper:#efe9db; --paper-2:#e4dcc6; --paper-line:#c9bd9e;
-    --text-lo:#f2f0e8; --muted:#93a3c0;
-    --stamp:#b5432f; --stamp-dim:#7c3628; --radius:10px;
+    --ink:#0f1a2b;
+    --ink-2:#152238;
+    --ink-3:#1c2c48;
+    --line:#2b3c5a;
+    --text-lo:#f2f0e8;
+    --muted:#93a3c0;
+    --paper:#efe9db;
+    --paper-2:#e4dcc6;
+    --paper-line:#c9bd9e;
+    --card-ink:#241d10;
+    --card-key:#6b5f3f;
+    --accent:#c98a3a;
+    --live:#3f7d5c;
+    --live-dim:#274a38;
+    --live-ink:#bfe6cf;
+    --soon:#c98a3a;
+    --soon-dim:#6e4c22;
+    --soon-ink:#ffe0b3;
+    --stamp:#b5432f;
+    --stamp-dim:#7c3628;
+    --stamp-ink:#eec4ba;
+    --upcoming:#6b7a95;
+    --upcoming-dim:#3a4864;
+    --upcoming-ink:#dbe2ee;
+    --neutral-dim:#3a4864;
+    --neutral-ink:#c3cddd;
+    --nomandate:#8a5a75;
+    --nomandate-dim:#4a2f3d;
+    --nomandate-ink:#f0d6e6;
+    --tracked:#4a5568;
+    --tracked-dim:#2c333d;
+    --tracked-ink:#c7ccd3;
+    --on-stamp:#f2f0e8;
+    --on-soon:#1a1207;
+    --flap-ink:#f2f0e8;
+    --flap-alert:#e88a76;
+    --radius:10px;
   }
+  :root[data-eicc-theme="tradeshift"]{
+    --ink:#f9f9f9;
+    --ink-2:#ffffff;
+    --ink-3:#f0f0f0;
+    --line:#e3e3e3;
+    --text-lo:#1e1e1e;
+    --muted:#5c5c5c;
+    --paper:#ffffff;
+    --paper-2:#f9f9f9;
+    --paper-line:#e3e3e3;
+    --card-ink:#1e1e1e;
+    --card-key:#5c5c5c;
+    --accent:#0a37f0;
+    --live:#0d8162;
+    --live-dim:#e2faf2;
+    --live-ink:#0b5c45;
+    --soon:#a36416;
+    --soon-dim:#fdefdd;
+    --soon-ink:#7a4a10;
+    --stamp:#bf263c;
+    --stamp-dim:#fde8eb;
+    --stamp-ink:#8f1c2d;
+    --upcoming:#007c96;
+    --upcoming-dim:#e2f4f9;
+    --upcoming-ink:#0b5c6e;
+    --neutral-dim:#f0f0f0;
+    --neutral-ink:#5c5c5c;
+    --nomandate:#8a5a75;
+    --nomandate-dim:#f6ecf2;
+    --nomandate-ink:#6b4159;
+    --tracked:#4a5568;
+    --tracked-dim:#eef0f3;
+    --tracked-ink:#3a4351;
+    --on-stamp:#ffffff;
+    --on-soon:#ffffff;
+    --flap-ink:#1e1e1e;
+    --flap-alert:#8f1c2d;
+    --radius:10px;
+  }
+  /* palette:end */
   *{box-sizing:border-box;} html,body{margin:0;padding:0;}
   body{background:var(--ink); color:var(--text-lo); font-family:'IBM Plex Sans',sans-serif; line-height:1.55;}
   .display{font-family:'Big Shoulders Display',sans-serif; font-weight:800;}
   .wrap{max-width:820px; margin:0 auto; padding:0 5vw 60px;}
   .top-bar{display:flex; justify-content:space-between; align-items:center; padding-top:20px;}
   .back-link{font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:var(--muted); text-decoration:none;}
-  .back-link:hover{color:var(--paper);}
+  .back-link:hover{color:var(--flap-ink);}
   .eyebrow{font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.22em; text-transform:uppercase; color:var(--stamp); margin:30px 0 6px;}
   h1{font-size:42px; letter-spacing:0.04em; margin:0 0 12px; color:var(--text-lo);}
   .intro{font-size:15px; line-height:1.6; color:var(--muted); max-width:660px; margin:0 0 8px;}
   .langs{font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--muted); margin:14px 0 8px;}
-  .langs a{color:var(--muted); text-decoration:none;} .langs a:hover{color:var(--paper);}
+  .langs a{color:var(--muted); text-decoration:none;} .langs a:hover{color:var(--flap-ink);}
   .lang-current{color:var(--stamp); font-weight:600;}
   ${INSIGHTS_STYLE}
 </style>
@@ -1005,7 +1080,7 @@ async function renderSourcesPage(request, env) {
 
   const html = `<!DOCTYPE html>
 <html lang="${escHtml(lang)}">
-<head>
+<head><!-- theme:boot -->${themeBootScript()}
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>${escHtml(ui.title)} \u2014 The E-Invoicing Compliance Corner</title>
@@ -1044,24 +1119,98 @@ ${ldScript([
      injector strips it and adds its own close control), and the .langs
      row (stripped in-page too -- the tracker's own language banner
      takes over there). */
+  /* palette:start */
   :root{
-    --ink:#0f1a2b; --ink-2:#152238; --line:#2b3c5a;
-    --paper:#efe9db; --paper-2:#e4dcc6; --paper-line:#c9bd9e;
-    --text-lo:#f2f0e8; --muted:#93a3c0;
-    --stamp:#b5432f; --stamp-dim:#7c3628; --radius:10px;
+    --ink:#0f1a2b;
+    --ink-2:#152238;
+    --ink-3:#1c2c48;
+    --line:#2b3c5a;
+    --text-lo:#f2f0e8;
+    --muted:#93a3c0;
+    --paper:#efe9db;
+    --paper-2:#e4dcc6;
+    --paper-line:#c9bd9e;
+    --card-ink:#241d10;
+    --card-key:#6b5f3f;
+    --accent:#c98a3a;
+    --live:#3f7d5c;
+    --live-dim:#274a38;
+    --live-ink:#bfe6cf;
+    --soon:#c98a3a;
+    --soon-dim:#6e4c22;
+    --soon-ink:#ffe0b3;
+    --stamp:#b5432f;
+    --stamp-dim:#7c3628;
+    --stamp-ink:#eec4ba;
+    --upcoming:#6b7a95;
+    --upcoming-dim:#3a4864;
+    --upcoming-ink:#dbe2ee;
+    --neutral-dim:#3a4864;
+    --neutral-ink:#c3cddd;
+    --nomandate:#8a5a75;
+    --nomandate-dim:#4a2f3d;
+    --nomandate-ink:#f0d6e6;
+    --tracked:#4a5568;
+    --tracked-dim:#2c333d;
+    --tracked-ink:#c7ccd3;
+    --on-stamp:#f2f0e8;
+    --on-soon:#1a1207;
+    --flap-ink:#f2f0e8;
+    --flap-alert:#e88a76;
+    --radius:10px;
   }
+  :root[data-eicc-theme="tradeshift"]{
+    --ink:#f9f9f9;
+    --ink-2:#ffffff;
+    --ink-3:#f0f0f0;
+    --line:#e3e3e3;
+    --text-lo:#1e1e1e;
+    --muted:#5c5c5c;
+    --paper:#ffffff;
+    --paper-2:#f9f9f9;
+    --paper-line:#e3e3e3;
+    --card-ink:#1e1e1e;
+    --card-key:#5c5c5c;
+    --accent:#0a37f0;
+    --live:#0d8162;
+    --live-dim:#e2faf2;
+    --live-ink:#0b5c45;
+    --soon:#a36416;
+    --soon-dim:#fdefdd;
+    --soon-ink:#7a4a10;
+    --stamp:#bf263c;
+    --stamp-dim:#fde8eb;
+    --stamp-ink:#8f1c2d;
+    --upcoming:#007c96;
+    --upcoming-dim:#e2f4f9;
+    --upcoming-ink:#0b5c6e;
+    --neutral-dim:#f0f0f0;
+    --neutral-ink:#5c5c5c;
+    --nomandate:#8a5a75;
+    --nomandate-dim:#f6ecf2;
+    --nomandate-ink:#6b4159;
+    --tracked:#4a5568;
+    --tracked-dim:#eef0f3;
+    --tracked-ink:#3a4351;
+    --on-stamp:#ffffff;
+    --on-soon:#ffffff;
+    --flap-ink:#1e1e1e;
+    --flap-alert:#8f1c2d;
+    --radius:10px;
+  }
+  /* palette:end */
   *{box-sizing:border-box;} html,body{margin:0;padding:0;}
   body{background:var(--ink); color:var(--text-lo); font-family:'IBM Plex Sans',sans-serif; line-height:1.55;}
   .display{font-family:'Big Shoulders Display',sans-serif; font-weight:800;}
   .wrap{max-width:980px; margin:0 auto; padding:0 5vw 60px;}
   .top-bar{display:flex; justify-content:space-between; align-items:center; padding-top:20px;}
   .back-link{font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:var(--muted); text-decoration:none;}
-  .back-link:hover{color:var(--paper);}
+  .back-link:hover{color:var(--flap-ink);}
   .eyebrow{font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.22em; text-transform:uppercase; color:var(--stamp); margin:30px 0 6px;}
   h1{font-size:42px; letter-spacing:0.04em; margin:0 0 12px; color:var(--text-lo);}
   .intro{font-size:15px; line-height:1.6; color:var(--muted); max-width:660px; margin:0 0 8px;}
   .langs{font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--muted); margin:14px 0 8px;}
-  .langs a{color:var(--muted); text-decoration:none;} .langs a:hover{color:var(--paper);}
+  .langs a{color:var(--muted); text-decoration:none;} .langs a:hover{color:var(--flap-ink);}
   .lang-current{color:var(--stamp); font-weight:600;}
   h2.region{font-family:'IBM Plex Mono',monospace; font-size:13px; letter-spacing:0.24em; text-transform:uppercase; color:var(--muted); border-bottom:1px solid var(--line); padding-bottom:8px; margin:38px 0 4px;}
   .country{border-bottom:1px solid var(--line); padding:16px 0 14px;}
@@ -1069,7 +1218,7 @@ ${ldScript([
   .country .flag{font-size:19px;}
   .country ul{list-style:none; margin:0; padding:0 0 0 30px;}
   .country li{margin:0 0 9px;}
-  .country li a{color:var(--paper); font-weight:600; font-size:14.5px; text-decoration:none; border-bottom:1px solid var(--line);}
+  .country li a{color:var(--flap-ink); font-weight:600; font-size:14.5px; text-decoration:none; border-bottom:1px solid var(--line);}
   .country li a:hover{color:var(--stamp); border-color:var(--stamp);}
   .src-url{display:block; font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--muted); word-break:break-all; margin-top:2px;}
   @media(max-width:600px){ h1{font-size:30px;} .country ul{padding-left:0;} }
@@ -1118,16 +1267,91 @@ const MAP_PATHS = new Set(["/map", "/map.html"]);
 const MAP_DATA_JSON_RE = /^\/map-data\.json$/;
 
 const MAP_STYLE = `
+  /* palette:start */
   :root{
-    --live:#3f7d5c; --live-dim:#274a38; --soon:#c98a3a; --soon-dim:#6e4c22;
-    --upcoming:#6b7a95; --upcoming-dim:#3a4864; --tracked:#4a5568; --tracked-dim:#2c333d;
-    --b2gonly:#c98a3a; --b2gonly-dim:#6e4c22; --nomandate:#8a5a75; --nomandate-dim:#4a2f3d;
+    --ink:#0f1a2b;
+    --ink-2:#152238;
+    --ink-3:#1c2c48;
+    --line:#2b3c5a;
+    --text-lo:#f2f0e8;
+    --muted:#93a3c0;
+    --paper:#efe9db;
+    --paper-2:#e4dcc6;
+    --paper-line:#c9bd9e;
+    --card-ink:#241d10;
+    --card-key:#6b5f3f;
+    --accent:#c98a3a;
+    --live:#3f7d5c;
+    --live-dim:#274a38;
+    --live-ink:#bfe6cf;
+    --soon:#c98a3a;
+    --soon-dim:#6e4c22;
+    --soon-ink:#ffe0b3;
+    --stamp:#b5432f;
+    --stamp-dim:#7c3628;
+    --stamp-ink:#eec4ba;
+    --upcoming:#6b7a95;
+    --upcoming-dim:#3a4864;
+    --upcoming-ink:#dbe2ee;
+    --neutral-dim:#3a4864;
+    --neutral-ink:#c3cddd;
+    --nomandate:#8a5a75;
+    --nomandate-dim:#4a2f3d;
+    --nomandate-ink:#f0d6e6;
+    --tracked:#4a5568;
+    --tracked-dim:#2c333d;
+    --tracked-ink:#c7ccd3;
+    --on-stamp:#f2f0e8;
+    --on-soon:#1a1207;
+    --flap-ink:#f2f0e8;
+    --flap-alert:#e88a76;
+    --radius:10px;
   }
+  :root[data-eicc-theme="tradeshift"]{
+    --ink:#f9f9f9;
+    --ink-2:#ffffff;
+    --ink-3:#f0f0f0;
+    --line:#e3e3e3;
+    --text-lo:#1e1e1e;
+    --muted:#5c5c5c;
+    --paper:#ffffff;
+    --paper-2:#f9f9f9;
+    --paper-line:#e3e3e3;
+    --card-ink:#1e1e1e;
+    --card-key:#5c5c5c;
+    --accent:#0a37f0;
+    --live:#0d8162;
+    --live-dim:#e2faf2;
+    --live-ink:#0b5c45;
+    --soon:#a36416;
+    --soon-dim:#fdefdd;
+    --soon-ink:#7a4a10;
+    --stamp:#bf263c;
+    --stamp-dim:#fde8eb;
+    --stamp-ink:#8f1c2d;
+    --upcoming:#007c96;
+    --upcoming-dim:#e2f4f9;
+    --upcoming-ink:#0b5c6e;
+    --neutral-dim:#f0f0f0;
+    --neutral-ink:#5c5c5c;
+    --nomandate:#8a5a75;
+    --nomandate-dim:#f6ecf2;
+    --nomandate-ink:#6b4159;
+    --tracked:#4a5568;
+    --tracked-dim:#eef0f3;
+    --tracked-ink:#3a4351;
+    --on-stamp:#ffffff;
+    --on-soon:#ffffff;
+    --flap-ink:#1e1e1e;
+    --flap-alert:#8f1c2d;
+    --radius:10px;
+  }
+  /* palette:end */
   .display{font-family:'Big Shoulders Display',sans-serif; font-weight:800; letter-spacing:0.01em;}
   .mono{font-family:'IBM Plex Mono',monospace;}
   .map-back-row{padding-top:20px;}
   .back-link{font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:var(--muted); text-decoration:none;}
-  .back-link:hover{color:var(--paper);}
+  .back-link:hover{color:var(--flap-ink);}
   .map-topbar{padding:14px 0 20px; border-bottom:1px solid var(--line); display:flex; flex-wrap:wrap; gap:16px 32px; align-items:flex-start; justify-content:space-between;}
   .map-topbar-brand{flex:1 1 480px; min-width:0;}
   .brand-eyebrow{font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.18em; text-transform:uppercase; color:var(--soon); margin:0 0 6px;}
@@ -1155,7 +1379,7 @@ const MAP_STYLE = `
   .geo-country.clickable:hover{filter:brightness(1.28);}
   .geo-untracked{fill:var(--ink-3); stroke:var(--line); stroke-width:0.5;}
   .status-inforce{fill:var(--live);} .status-upcoming{fill:var(--upcoming);} .status-tracked{fill:var(--tracked);}
-  .status-b2gonly{fill:var(--b2gonly);} .status-nomandate{fill:var(--nomandate);}
+  .status-b2gonly{fill:var(--soon);} .status-nomandate{fill:var(--nomandate);}
   .small-country-marker{cursor:pointer;}
   .small-country-marker circle{stroke:var(--ink); stroke-width:1.2; transition:filter .12s ease;}
   .small-country-marker:hover circle{filter:brightness(1.3);}
@@ -1164,11 +1388,11 @@ const MAP_STYLE = `
   .map-tooltip{position:absolute; pointer-events:none; background:var(--paper); color:#241d10; border-radius:8px; padding:10px 12px; font-size:12.5px; max-width:220px; box-shadow:0 8px 20px rgba(0,0,0,.35); opacity:0; transition:opacity .1s ease; z-index:20;}
   .map-tooltip .tt-name{font-family:'Big Shoulders Display',sans-serif; font-weight:800; font-size:16px; margin:0 0 3px; text-transform:uppercase;}
   .map-tooltip .tt-status{font-family:'IBM Plex Mono',monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:0.06em; margin:0 0 6px; display:inline-block; padding:2px 7px; border-radius:999px;}
-  .map-tooltip .tt-status.st-inforce{background:var(--live-dim); color:#bfe6cf;}
-  .map-tooltip .tt-status.st-upcoming{background:var(--upcoming-dim); color:#dbe2ee;}
-  .map-tooltip .tt-status.st-tracked{background:var(--tracked-dim); color:#c7ccd3;}
-  .map-tooltip .tt-status.st-b2gonly{background:var(--b2gonly-dim); color:#ffe0b3;}
-  .map-tooltip .tt-status.st-nomandate{background:var(--nomandate-dim); color:#f0d6e6;}
+  .map-tooltip .tt-status.st-inforce{background:var(--live-dim); color:var(--live-ink);}
+  .map-tooltip .tt-status.st-upcoming{background:var(--upcoming-dim); color:var(--upcoming-ink);}
+  .map-tooltip .tt-status.st-tracked{background:var(--tracked-dim); color:var(--tracked-ink);}
+  .map-tooltip .tt-status.st-b2gonly{background:var(--soon-dim); color:var(--soon-ink);}
+  .map-tooltip .tt-status.st-nomandate{background:var(--nomandate-dim); color:var(--nomandate-ink);}
   .map-tooltip .tt-cta{font-size:11.5px; color:#6b5f3f; margin:2px 0 0;}
   .legend{display:flex; flex-wrap:wrap; gap:16px; margin-top:14px; font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--muted);}
   .legend-item{display:flex; align-items:center; gap:7px;}
@@ -1192,7 +1416,7 @@ const MAP_STYLE = `
   .country-row .name{flex:1; min-width:0;}
   .country-row .dot{width:8px; height:8px; border-radius:50%; flex:0 0 auto;}
   .dot.status-inforce{background:var(--live);} .dot.status-upcoming{background:var(--upcoming);} .dot.status-tracked{background:var(--tracked);}
-  .dot.status-b2gonly{background:var(--b2gonly);} .dot.status-nomandate{background:var(--nomandate);}
+  .dot.status-b2gonly{background:var(--soon);} .dot.status-nomandate{background:var(--nomandate);}
   .news-row{display:flex; flex-direction:column; gap:3px; padding:10px 8px; border-bottom:1px solid var(--line); text-decoration:none; color:var(--text-lo); transition:background .1s ease; cursor:pointer;}
   .news-row:last-child{border-bottom:none;}
   .news-row:hover{background:var(--ink-3);}
@@ -1225,7 +1449,7 @@ const MAP_STYLE = `
   .archive-btn{font-family:'IBM Plex Mono',monospace; font-size:12.5px; text-transform:uppercase; letter-spacing:0.08em; background:var(--stamp); color:#fff; padding:11px 20px; border-radius:999px; text-decoration:none; white-space:nowrap; font-weight:600;}
   .archive-btn:hover{background:var(--stamp-dim);}
   .subscribe-btn{font-family:'IBM Plex Mono',monospace; font-size:12.5px; text-transform:uppercase; letter-spacing:0.08em; background:var(--soon); color:#1a1207; padding:11px 20px; border-radius:999px; text-decoration:none; white-space:nowrap; font-weight:600;}
-  .subscribe-btn:hover{background:var(--soon-dim); color:var(--paper);}
+  .subscribe-btn:hover{background:var(--soon-dim); color:var(--flap-ink);}
   .lang-switch{display:flex; gap:6px; margin-top:10px; justify-content:flex-end; flex-wrap:wrap;}
   .lang-btn{font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:0.05em; text-transform:uppercase; background:var(--ink-3); border:1px solid var(--line); color:var(--muted); padding:4px 10px; border-radius:999px; cursor:pointer;}
   .lang-btn:hover{border-color:var(--soon); color:var(--text-lo);}
@@ -1713,7 +1937,7 @@ async function renderSubscriberGate(request, env, lang, framed, spec) {
   if(sin) sin.addEventListener('click', function(){ go('signin'); });
 })();`;
 
-  const html = `<!DOCTYPE html><html lang="${escHtml(lang)}"><head>
+  const html = `<!DOCTYPE html><html lang="${escHtml(lang)}"><head><!-- theme:boot -->${themeBootScript()}
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${escHtml(spec.docTitle)} — The E-Invoicing Compliance Corner</title>
 <meta name="robots" content="noindex,nofollow">
@@ -1981,7 +2205,7 @@ async function renderChangesPage(request, env) {
 
   const html = `<!DOCTYPE html>
 <html lang="${escHtml(lang)}">
-<head>
+<head><!-- theme:boot -->${themeBootScript()}
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>${escHtml(t("title", "What changed"))} — The E-Invoicing Compliance Corner</title>
@@ -1998,11 +2222,86 @@ async function renderChangesPage(request, env) {
   /* The same structural contract as /methodology and /sources: one style
      block with :root{ and body{, everything inside .wrap, .top-bar
      first, .langs stripped in-page. */
+  /* palette:start */
   :root{
-    --ink:#0f1a2b; --ink-2:#152238; --line:#2b3c5a;
-    --paper:#efe9db; --text-lo:#f2f0e8; --muted:#93a3c0;
-    --stamp:#b5432f; --live:#3f7d5c; --soon:#c98a3a;
+    --ink:#0f1a2b;
+    --ink-2:#152238;
+    --ink-3:#1c2c48;
+    --line:#2b3c5a;
+    --text-lo:#f2f0e8;
+    --muted:#93a3c0;
+    --paper:#efe9db;
+    --paper-2:#e4dcc6;
+    --paper-line:#c9bd9e;
+    --card-ink:#241d10;
+    --card-key:#6b5f3f;
+    --accent:#c98a3a;
+    --live:#3f7d5c;
+    --live-dim:#274a38;
+    --live-ink:#bfe6cf;
+    --soon:#c98a3a;
+    --soon-dim:#6e4c22;
+    --soon-ink:#ffe0b3;
+    --stamp:#b5432f;
+    --stamp-dim:#7c3628;
+    --stamp-ink:#eec4ba;
+    --upcoming:#6b7a95;
+    --upcoming-dim:#3a4864;
+    --upcoming-ink:#dbe2ee;
+    --neutral-dim:#3a4864;
+    --neutral-ink:#c3cddd;
+    --nomandate:#8a5a75;
+    --nomandate-dim:#4a2f3d;
+    --nomandate-ink:#f0d6e6;
+    --tracked:#4a5568;
+    --tracked-dim:#2c333d;
+    --tracked-ink:#c7ccd3;
+    --on-stamp:#f2f0e8;
+    --on-soon:#1a1207;
+    --flap-ink:#f2f0e8;
+    --flap-alert:#e88a76;
+    --radius:10px;
   }
+  :root[data-eicc-theme="tradeshift"]{
+    --ink:#f9f9f9;
+    --ink-2:#ffffff;
+    --ink-3:#f0f0f0;
+    --line:#e3e3e3;
+    --text-lo:#1e1e1e;
+    --muted:#5c5c5c;
+    --paper:#ffffff;
+    --paper-2:#f9f9f9;
+    --paper-line:#e3e3e3;
+    --card-ink:#1e1e1e;
+    --card-key:#5c5c5c;
+    --accent:#0a37f0;
+    --live:#0d8162;
+    --live-dim:#e2faf2;
+    --live-ink:#0b5c45;
+    --soon:#a36416;
+    --soon-dim:#fdefdd;
+    --soon-ink:#7a4a10;
+    --stamp:#bf263c;
+    --stamp-dim:#fde8eb;
+    --stamp-ink:#8f1c2d;
+    --upcoming:#007c96;
+    --upcoming-dim:#e2f4f9;
+    --upcoming-ink:#0b5c6e;
+    --neutral-dim:#f0f0f0;
+    --neutral-ink:#5c5c5c;
+    --nomandate:#8a5a75;
+    --nomandate-dim:#f6ecf2;
+    --nomandate-ink:#6b4159;
+    --tracked:#4a5568;
+    --tracked-dim:#eef0f3;
+    --tracked-ink:#3a4351;
+    --on-stamp:#ffffff;
+    --on-soon:#ffffff;
+    --flap-ink:#1e1e1e;
+    --flap-alert:#8f1c2d;
+    --radius:10px;
+  }
+  /* palette:end */
   *{box-sizing:border-box;} html,body{margin:0;padding:0;}
   body{background:var(--ink); color:var(--text-lo); font-family:'IBM Plex Sans',sans-serif; line-height:1.6;}
   .display{font-family:'Big Shoulders Display',sans-serif; font-weight:800;}
@@ -2011,13 +2310,13 @@ async function renderChangesPage(request, env) {
   body[data-framed] .eyebrow{margin-top:4px;}
   .top-bar{display:flex; justify-content:space-between; align-items:center; padding-top:20px;}
   .back-link{font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:var(--muted); text-decoration:none;}
-  .back-link:hover{color:var(--paper);}
+  .back-link:hover{color:var(--flap-ink);}
   .eyebrow{font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.22em; text-transform:uppercase; color:var(--stamp); margin:30px 0 6px;}
   h1{font-size:42px; letter-spacing:0.04em; margin:0 0 12px;}
-  p{font-size:15.5px; color:#dfe4ee; margin:0 0 13px;}
+  p{font-size:15.5px; color:var(--upcoming-ink); margin:0 0 13px;}
   .intro{font-size:16.5px; color:var(--muted); margin:0 0 8px;}
   .langs{font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--muted); margin:14px 0 8px;}
-  .langs a{color:var(--muted); text-decoration:none;} .langs a:hover{color:var(--paper);}
+  .langs a{color:var(--muted); text-decoration:none;} .langs a:hover{color:var(--flap-ink);}
   .lang-current{color:var(--stamp); font-weight:600;}
   .fig{font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:var(--muted);
        border-left:2px solid var(--line); padding-left:12px; margin:16px 0 0;}
@@ -2028,7 +2327,7 @@ async function renderChangesPage(request, env) {
   .chh{display:flex; flex-wrap:wrap; align-items:baseline; gap:10px; margin-bottom:6px;}
   .chh .dt{font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--muted);}
   .chh .cty{font-family:'Big Shoulders Display',sans-serif; font-weight:700; font-size:21px;
-            letter-spacing:.03em; text-transform:uppercase; color:var(--paper);}
+            letter-spacing:.03em; text-transform:uppercase; color:var(--flap-ink);}
   .chh .fld{font-size:14px; color:var(--muted);}
   .knd{font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:.12em;
        text-transform:uppercase; padding:2px 7px; border:1px solid var(--line); border-radius:2px;}
@@ -2045,17 +2344,17 @@ async function renderChangesPage(request, env) {
          font-size:13px; color:var(--muted); margin-right:5px;}
   .mv .was{color:var(--muted); text-decoration:line-through; text-decoration-color:var(--line);}
   .mv .was em{text-decoration:none;}
-  .mv .now{color:var(--paper);}
+  .mv .now{color:var(--flap-ink);}
   .mv .arr{color:var(--line);}
-  .why{font-size:14.5px; color:#dfe4ee; margin:9px 0 0;}
+  .why{font-size:14.5px; color:var(--upcoming-ink); margin:9px 0 0;}
   .src{margin:6px 0 0;}
   .src a{font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--muted);
          text-decoration:none; border-bottom:1px solid var(--line);}
-  .src a:hover{color:var(--paper);}
+  .src a:hover{color:var(--flap-ink);}
   .opened{color:var(--muted); font-size:14.5px; margin:-2px 0 22px;}
   .none{color:var(--muted);}
   .cta{margin:30px 0 0; display:flex; gap:22px; flex-wrap:wrap;}
-  .cta a{color:var(--paper); font-weight:600; font-size:14.5px; text-decoration:none; border-bottom:1px solid var(--line);}
+  .cta a{color:var(--flap-ink); font-weight:600; font-size:14.5px; text-decoration:none; border-bottom:1px solid var(--line);}
   .cta a:hover{color:var(--stamp); border-color:var(--stamp);}
   @media(max-width:600px){ h1{font-size:30px;} .chh .cty{font-size:18px;} }
 </style>
@@ -2236,7 +2535,7 @@ async function renderSpecRegisterPage(request, env) {
 
   const html = `<!DOCTYPE html>
 <html lang="${escHtml(lang)}">
-<head>
+<head><!-- theme:boot -->${themeBootScript()}
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>${escHtml(t("eyebrow", "The specification register"))} — The E-Invoicing Compliance Corner</title>
@@ -2245,25 +2544,100 @@ async function renderSpecRegisterPage(request, env) {
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
+  /* palette:start */
   :root{
-    --ink:#0f1a2b; --ink-2:#152238; --line:#2b3c5a;
-    --text:#f2f0e8; --muted:#93a3c0;
-    --amber:#c98a3a; --stamp:#b5432f; --live:#3f7d5c; --dim:#6b7a95;
+    --ink:#0f1a2b;
+    --ink-2:#152238;
+    --ink-3:#1c2c48;
+    --line:#2b3c5a;
+    --text-lo:#f2f0e8;
+    --muted:#93a3c0;
+    --paper:#efe9db;
+    --paper-2:#e4dcc6;
+    --paper-line:#c9bd9e;
+    --card-ink:#241d10;
+    --card-key:#6b5f3f;
+    --accent:#c98a3a;
+    --live:#3f7d5c;
+    --live-dim:#274a38;
+    --live-ink:#bfe6cf;
+    --soon:#c98a3a;
+    --soon-dim:#6e4c22;
+    --soon-ink:#ffe0b3;
+    --stamp:#b5432f;
+    --stamp-dim:#7c3628;
+    --stamp-ink:#eec4ba;
+    --upcoming:#6b7a95;
+    --upcoming-dim:#3a4864;
+    --upcoming-ink:#dbe2ee;
+    --neutral-dim:#3a4864;
+    --neutral-ink:#c3cddd;
+    --nomandate:#8a5a75;
+    --nomandate-dim:#4a2f3d;
+    --nomandate-ink:#f0d6e6;
+    --tracked:#4a5568;
+    --tracked-dim:#2c333d;
+    --tracked-ink:#c7ccd3;
+    --on-stamp:#f2f0e8;
+    --on-soon:#1a1207;
+    --flap-ink:#f2f0e8;
+    --flap-alert:#e88a76;
+    --radius:10px;
   }
+  :root[data-eicc-theme="tradeshift"]{
+    --ink:#f9f9f9;
+    --ink-2:#ffffff;
+    --ink-3:#f0f0f0;
+    --line:#e3e3e3;
+    --text-lo:#1e1e1e;
+    --muted:#5c5c5c;
+    --paper:#ffffff;
+    --paper-2:#f9f9f9;
+    --paper-line:#e3e3e3;
+    --card-ink:#1e1e1e;
+    --card-key:#5c5c5c;
+    --accent:#0a37f0;
+    --live:#0d8162;
+    --live-dim:#e2faf2;
+    --live-ink:#0b5c45;
+    --soon:#a36416;
+    --soon-dim:#fdefdd;
+    --soon-ink:#7a4a10;
+    --stamp:#bf263c;
+    --stamp-dim:#fde8eb;
+    --stamp-ink:#8f1c2d;
+    --upcoming:#007c96;
+    --upcoming-dim:#e2f4f9;
+    --upcoming-ink:#0b5c6e;
+    --neutral-dim:#f0f0f0;
+    --neutral-ink:#5c5c5c;
+    --nomandate:#8a5a75;
+    --nomandate-dim:#f6ecf2;
+    --nomandate-ink:#6b4159;
+    --tracked:#4a5568;
+    --tracked-dim:#eef0f3;
+    --tracked-ink:#3a4351;
+    --on-stamp:#ffffff;
+    --on-soon:#ffffff;
+    --flap-ink:#1e1e1e;
+    --flap-alert:#8f1c2d;
+    --radius:10px;
+  }
+  /* palette:end */
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
-  body{background:var(--ink); color:var(--text);
+  body{background:var(--ink); color:var(--text-lo);
        font-family:'IBM Plex Sans',system-ui,sans-serif; line-height:1.55;}
   .display{font-family:'Big Shoulders Display',sans-serif; font-weight:800;}
-  a{color:var(--amber);}
+  a{color:var(--soon);}
   .wrap{max-width:1100px; margin:0 auto; padding:0 5vw 60px;}
   .top-bar{display:flex; justify-content:space-between; align-items:center;
            gap:14px; padding:18px 0; border-bottom:1px solid var(--line); flex-wrap:wrap;}
   .top-bar a{text-decoration:none; font-size:13px;}
   .langs{font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--muted);}
-  .lang-current{color:var(--amber); font-weight:600;}
+  .lang-current{color:var(--soon); font-weight:600;}
   .eyebrow{font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.16em;
-           text-transform:uppercase; color:var(--amber); margin:28px 0 6px;}
+           text-transform:uppercase; color:var(--soon); margin:28px 0 6px;}
   h1{font-size:clamp(26px,4.4vw,40px); margin:0 0 12px; text-transform:uppercase;
      line-height:.98; font-family:'Big Shoulders Display',sans-serif; font-weight:800;}
   .intro{font-size:15px; color:var(--muted); max-width:760px; margin:0 0 16px;}
@@ -2272,7 +2646,7 @@ async function renderSpecRegisterPage(request, env) {
      it for a promise of acceptance. */
   .caveat{border-left:3px solid var(--stamp); background:rgba(181,67,47,.09);
           padding:12px 16px; border-radius:0 6px 6px 0; font-size:13.5px;
-          color:var(--text); max-width:820px; margin:0 0 20px;}
+          color:var(--text-lo); max-width:820px; margin:0 0 20px;}
   .strip{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:1px;
          background:var(--line); border:1px solid var(--line); border-radius:8px;
          overflow:hidden; margin:0 0 8px;}
@@ -2285,9 +2659,9 @@ async function renderSpecRegisterPage(request, env) {
   .c{background:var(--ink-2); border:1px solid var(--line); border-radius:9px;
      padding:15px 17px; border-left-width:4px;}
   .c.st-published{border-left-color:var(--live);}
-  .c.st-partial{border-left-color:var(--amber);}
+  .c.st-partial{border-left-color:var(--soon);}
   .c.st-unpublished,.c.st-unreachable{border-left-color:var(--stamp);}
-  .c.st-not_yet{border-left-color:var(--dim);}
+  .c.st-not_yet{border-left-color:var(--upcoming);}
   .c header{display:flex; justify-content:space-between; align-items:baseline;
             gap:10px; margin-bottom:10px; flex-wrap:wrap;}
   .c h2{font-size:17px; margin:0; font-family:'Big Shoulders Display',sans-serif;
@@ -2298,11 +2672,11 @@ async function renderSpecRegisterPage(request, env) {
   .fields{display:grid; gap:3px; margin-bottom:11px;}
   .f{display:grid; grid-template-columns:9.5em 1fr; gap:8px; font-size:12.5px;}
   .f .k{color:var(--muted);}
-  .f .v{color:var(--text); overflow-wrap:anywhere;}
+  .f .v{color:var(--text-lo); overflow-wrap:anywhere;}
   .gap{background:rgba(201,138,58,.08); border-radius:6px; padding:10px 12px; margin-bottom:11px;}
   .gh{font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:.06em;
-      text-transform:uppercase; color:var(--amber); margin:0 0 5px;}
-  .gn{margin:0; font-size:13px; color:var(--text);}
+      text-transform:uppercase; color:var(--soon); margin:0 0 5px;}
+  .gn{margin:0; font-size:13px; color:var(--text-lo);}
   .ah{font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:.06em;
       text-transform:uppercase; color:var(--muted); margin:0 0 5px;}
   .art ul{margin:0 0 8px; padding-left:0; list-style:none;}
@@ -2478,7 +2852,7 @@ async function renderMethodologyPage(request, env) {
 
   const html = `<!DOCTYPE html>
 <html lang="${escHtml(lang)}">
-<head>
+<head><!-- theme:boot -->${themeBootScript()}
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>${escHtml(t("title", "Methodology"))} — The E-Invoicing Compliance Corner</title>
@@ -2499,11 +2873,86 @@ async function renderMethodologyPage(request, env) {
      :root{ and body{ (the tracker's in-page injector rewrites both to
      :host{), everything inside .wrap, .top-bar first, .langs stripped
      in-page. */
+  /* palette:start */
   :root{
-    --ink:#0f1a2b; --ink-2:#152238; --line:#2b3c5a;
-    --paper:#efe9db; --text-lo:#f2f0e8; --muted:#93a3c0;
-    --stamp:#b5432f; --live:#3f7d5c; --soon:#c98a3a; --upcoming:#6b7a95;
+    --ink:#0f1a2b;
+    --ink-2:#152238;
+    --ink-3:#1c2c48;
+    --line:#2b3c5a;
+    --text-lo:#f2f0e8;
+    --muted:#93a3c0;
+    --paper:#efe9db;
+    --paper-2:#e4dcc6;
+    --paper-line:#c9bd9e;
+    --card-ink:#241d10;
+    --card-key:#6b5f3f;
+    --accent:#c98a3a;
+    --live:#3f7d5c;
+    --live-dim:#274a38;
+    --live-ink:#bfe6cf;
+    --soon:#c98a3a;
+    --soon-dim:#6e4c22;
+    --soon-ink:#ffe0b3;
+    --stamp:#b5432f;
+    --stamp-dim:#7c3628;
+    --stamp-ink:#eec4ba;
+    --upcoming:#6b7a95;
+    --upcoming-dim:#3a4864;
+    --upcoming-ink:#dbe2ee;
+    --neutral-dim:#3a4864;
+    --neutral-ink:#c3cddd;
+    --nomandate:#8a5a75;
+    --nomandate-dim:#4a2f3d;
+    --nomandate-ink:#f0d6e6;
+    --tracked:#4a5568;
+    --tracked-dim:#2c333d;
+    --tracked-ink:#c7ccd3;
+    --on-stamp:#f2f0e8;
+    --on-soon:#1a1207;
+    --flap-ink:#f2f0e8;
+    --flap-alert:#e88a76;
+    --radius:10px;
   }
+  :root[data-eicc-theme="tradeshift"]{
+    --ink:#f9f9f9;
+    --ink-2:#ffffff;
+    --ink-3:#f0f0f0;
+    --line:#e3e3e3;
+    --text-lo:#1e1e1e;
+    --muted:#5c5c5c;
+    --paper:#ffffff;
+    --paper-2:#f9f9f9;
+    --paper-line:#e3e3e3;
+    --card-ink:#1e1e1e;
+    --card-key:#5c5c5c;
+    --accent:#0a37f0;
+    --live:#0d8162;
+    --live-dim:#e2faf2;
+    --live-ink:#0b5c45;
+    --soon:#a36416;
+    --soon-dim:#fdefdd;
+    --soon-ink:#7a4a10;
+    --stamp:#bf263c;
+    --stamp-dim:#fde8eb;
+    --stamp-ink:#8f1c2d;
+    --upcoming:#007c96;
+    --upcoming-dim:#e2f4f9;
+    --upcoming-ink:#0b5c6e;
+    --neutral-dim:#f0f0f0;
+    --neutral-ink:#5c5c5c;
+    --nomandate:#8a5a75;
+    --nomandate-dim:#f6ecf2;
+    --nomandate-ink:#6b4159;
+    --tracked:#4a5568;
+    --tracked-dim:#eef0f3;
+    --tracked-ink:#3a4351;
+    --on-stamp:#ffffff;
+    --on-soon:#ffffff;
+    --flap-ink:#1e1e1e;
+    --flap-alert:#8f1c2d;
+    --radius:10px;
+  }
+  /* palette:end */
   *{box-sizing:border-box;} html,body{margin:0;padding:0;}
   body{background:var(--ink); color:var(--text-lo); font-family:'IBM Plex Sans',sans-serif; line-height:1.6;}
   .display{font-family:'Big Shoulders Display',sans-serif; font-weight:800;}
@@ -2512,23 +2961,23 @@ async function renderMethodologyPage(request, env) {
   body[data-framed] .eyebrow{margin-top:4px;}
   .top-bar{display:flex; justify-content:space-between; align-items:center; padding-top:20px;}
   .back-link{font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:var(--muted); text-decoration:none;}
-  .back-link:hover{color:var(--paper);}
+  .back-link:hover{color:var(--flap-ink);}
   .eyebrow{font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.22em; text-transform:uppercase; color:var(--stamp); margin:30px 0 6px;}
   h1{font-size:42px; letter-spacing:0.04em; margin:0 0 12px;}
   h2{font-family:'Big Shoulders Display',sans-serif; font-weight:700; font-size:23px; letter-spacing:.03em;
      text-transform:uppercase; margin:38px 0 10px; padding-bottom:7px; border-bottom:1px solid var(--line);}
-  p{font-size:15.5px; color:#dfe4ee; margin:0 0 13px;}
+  p{font-size:15.5px; color:var(--upcoming-ink); margin:0 0 13px;}
   .intro{font-size:16.5px; color:var(--muted); margin:0 0 8px;}
   .langs{font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--muted); margin:14px 0 8px;}
-  .langs a{color:var(--muted); text-decoration:none;} .langs a:hover{color:var(--paper);}
+  .langs a{color:var(--muted); text-decoration:none;} .langs a:hover{color:var(--flap-ink);}
   .lang-current{color:var(--stamp); font-weight:600;}
   .fig{font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:var(--muted);
        border-left:2px solid var(--line); padding-left:12px; margin:16px 0 0;}
   .sts{margin:14px 0 0;}
   .st{display:grid; grid-template-columns:11.5em 1fr; gap:12px; padding:9px 0; border-bottom:1px solid var(--line);}
   .st .w{font-family:'IBM Plex Mono',monospace; font-size:11.5px; letter-spacing:.12em;
-         color:var(--paper); padding-top:2px;}
-  .st span:last-child{font-size:14.5px; color:#dfe4ee;}
+         color:var(--flap-ink); padding-top:2px;}
+  .st span:last-child{font-size:14.5px; color:var(--upcoming-ink);}
   /* The tier rows carry a third column. The count is monospace and hard
      right so four figures of different widths line up as a column
      rather than trailing off each definition. */
@@ -2536,7 +2985,7 @@ async function renderMethodologyPage(request, env) {
   .st.tr .n{font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:var(--muted);
             text-align:right; white-space:nowrap; padding-top:3px;}
   .cta{margin:18px 0 0; display:flex; gap:22px; flex-wrap:wrap;}
-  .cta a{color:var(--paper); font-weight:600; font-size:14.5px; text-decoration:none; border-bottom:1px solid var(--line);}
+  .cta a{color:var(--flap-ink); font-weight:600; font-size:14.5px; text-decoration:none; border-bottom:1px solid var(--line);}
   .cta a:hover{color:var(--stamp); border-color:var(--stamp);}
   /* .st.tr beats a bare .st on specificity, so the narrow rule has to
      name it too or the three-column grid survives on a phone. */
@@ -2588,7 +3037,7 @@ async function renderComplianceGuidesPicker(request, env) {
     regionName: (r) => (typeof regionNames[r] === "string" && regionNames[r]) || r,
   });
 
-  const html = `<!DOCTYPE html><html lang="${escHtml(lang)}"><head>
+  const html = `<!DOCTYPE html><html lang="${escHtml(lang)}"><head><!-- theme:boot -->${themeBootScript()}
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${escHtml(t("pick.title", "Compliance guides"))} — The E-Invoicing Compliance Corner</title>
 <meta name="robots" content="noindex,nofollow">
@@ -2697,7 +3146,7 @@ async function renderComplianceGuideDocument(request, env) {
     // The picker's script prevents this; a typed URL does not. Say what
     // happened and offer the way back, rather than printing an empty
     // document that reads as a fault.
-    const html = `<!DOCTYPE html><html lang="${escHtml(lang)}"><head>
+    const html = `<!DOCTYPE html><html lang="${escHtml(lang)}"><head><!-- theme:boot -->${themeBootScript()}
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${escHtml(t("pick.title", "Compliance guides"))} — The E-Invoicing Compliance Corner</title>
 <meta name="robots" content="noindex,nofollow"><style>${ROI_STYLE}${PICKER_STYLE}</style></head>
@@ -2732,7 +3181,7 @@ async function renderComplianceGuideDocument(request, env) {
   <button type="button" id="gpPrint">${escHtml(t("doc.print", "Print / save as PDF"))}</button>
 </div>`;
 
-  const html = `<!DOCTYPE html><html lang="${escHtml(lang)}"><head>
+  const html = `<!DOCTYPE html><html lang="${escHtml(lang)}"><head><!-- theme:boot -->${themeBootScript()}
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${escHtml(t("doc.title", "Compliance guide"))} — The E-Invoicing Compliance Corner</title>
 <meta name="robots" content="noindex,nofollow">
@@ -2740,9 +3189,9 @@ async function renderComplianceGuideDocument(request, env) {
 <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>${GUIDE_STYLE}
 .gp-tools{position:sticky;top:0;z-index:9;display:flex;align-items:center;gap:14px;
-  background:#111a29;color:#e9edf4;padding:10px 16px;font-family:'IBM Plex Sans',sans-serif;font-size:13px}
+  background:var(--ink-2);color:var(--text-lo);padding:10px 16px;font-family:'IBM Plex Sans',sans-serif;font-size:13px}
 .gp-tools .sp{flex:1 1 auto}
-.gp-tools a{color:#c8d2e4;text-decoration:none}
+.gp-tools a{color:var(--upcoming-ink);text-decoration:none}
 .gp-tools a:hover{color:#fff;text-decoration:underline}
 .gp-tools button{background:#c98a3a;color:#1a1206;border:0;border-radius:6px;padding:8px 16px;
   font-weight:700;cursor:pointer;font-size:13px}
@@ -3032,7 +3481,7 @@ async function renderRoiCalculatorPage(request, env) {
   // roiLang.lang, not lang: the document must declare the language it is
   // actually written in. Declaring de on an English page is what tells a
   // screen reader to read English prose with German phonemes.
-  const html = `<!DOCTYPE html><html lang="${roiLang.lang}"><head>
+  const html = `<!DOCTYPE html><html lang="${roiLang.lang}"><head><!-- theme:boot -->${themeBootScript()}
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>E-Invoicing ROI &amp; Wave Planner — The E-Invoicing Compliance Corner</title>
 <meta name="description" content="Build an e-invoicing business case from your own invoice volumes and country footprint. Delivery waves back-planned from real published mandate deadlines, with an evidence grade against every benchmark used.">
@@ -3160,7 +3609,7 @@ async function renderMapPage(request, env) {
 
   const html = `<!DOCTYPE html>
 <html lang="${escHtml(lang)}">
-<head>
+<head><!-- theme:boot -->${themeBootScript()}
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>${escHtml(ui.eyebrow)} — The E-Invoicing Compliance Corner</title>
@@ -3175,12 +3624,86 @@ ${langUrls("/map", lang).alternates}
      (shared/deep-dive-render.mjs's structural contract): :root{ and
      body{ rules -- the tracker's in-page injector rewrites both to
      :host{ when this page is fetched into the shadow-scoped panel. */
+  /* palette:start */
   :root{
-    --ink:#0f1a2b; --ink-2:#152238; --ink-3:#1c2c48; --line:#2b3c5a;
-    --paper:#efe9db; --paper-2:#e4dcc6; --paper-line:#c9bd9e;
-    --text-lo:#f2f0e8; --muted:#93a3c0;
-    --stamp:#b5432f; --stamp-dim:#7c3628; --radius:10px;
+    --ink:#0f1a2b;
+    --ink-2:#152238;
+    --ink-3:#1c2c48;
+    --line:#2b3c5a;
+    --text-lo:#f2f0e8;
+    --muted:#93a3c0;
+    --paper:#efe9db;
+    --paper-2:#e4dcc6;
+    --paper-line:#c9bd9e;
+    --card-ink:#241d10;
+    --card-key:#6b5f3f;
+    --accent:#c98a3a;
+    --live:#3f7d5c;
+    --live-dim:#274a38;
+    --live-ink:#bfe6cf;
+    --soon:#c98a3a;
+    --soon-dim:#6e4c22;
+    --soon-ink:#ffe0b3;
+    --stamp:#b5432f;
+    --stamp-dim:#7c3628;
+    --stamp-ink:#eec4ba;
+    --upcoming:#6b7a95;
+    --upcoming-dim:#3a4864;
+    --upcoming-ink:#dbe2ee;
+    --neutral-dim:#3a4864;
+    --neutral-ink:#c3cddd;
+    --nomandate:#8a5a75;
+    --nomandate-dim:#4a2f3d;
+    --nomandate-ink:#f0d6e6;
+    --tracked:#4a5568;
+    --tracked-dim:#2c333d;
+    --tracked-ink:#c7ccd3;
+    --on-stamp:#f2f0e8;
+    --on-soon:#1a1207;
+    --flap-ink:#f2f0e8;
+    --flap-alert:#e88a76;
+    --radius:10px;
   }
+  :root[data-eicc-theme="tradeshift"]{
+    --ink:#f9f9f9;
+    --ink-2:#ffffff;
+    --ink-3:#f0f0f0;
+    --line:#e3e3e3;
+    --text-lo:#1e1e1e;
+    --muted:#5c5c5c;
+    --paper:#ffffff;
+    --paper-2:#f9f9f9;
+    --paper-line:#e3e3e3;
+    --card-ink:#1e1e1e;
+    --card-key:#5c5c5c;
+    --accent:#0a37f0;
+    --live:#0d8162;
+    --live-dim:#e2faf2;
+    --live-ink:#0b5c45;
+    --soon:#a36416;
+    --soon-dim:#fdefdd;
+    --soon-ink:#7a4a10;
+    --stamp:#bf263c;
+    --stamp-dim:#fde8eb;
+    --stamp-ink:#8f1c2d;
+    --upcoming:#007c96;
+    --upcoming-dim:#e2f4f9;
+    --upcoming-ink:#0b5c6e;
+    --neutral-dim:#f0f0f0;
+    --neutral-ink:#5c5c5c;
+    --nomandate:#8a5a75;
+    --nomandate-dim:#f6ecf2;
+    --nomandate-ink:#6b4159;
+    --tracked:#4a5568;
+    --tracked-dim:#eef0f3;
+    --tracked-ink:#3a4351;
+    --on-stamp:#ffffff;
+    --on-soon:#ffffff;
+    --flap-ink:#1e1e1e;
+    --flap-alert:#8f1c2d;
+    --radius:10px;
+  }
+  /* palette:end */
   *{box-sizing:border-box;} html,body{margin:0;padding:0;}
   body{background:var(--ink); color:var(--text-lo); font-family:'IBM Plex Sans',sans-serif; line-height:1.5;}
   a{color:inherit;}

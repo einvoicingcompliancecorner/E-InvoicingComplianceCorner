@@ -399,16 +399,86 @@ export async function getRoiStrings(db, lang = "en") {
 }
 
 export const ROI_STYLE = `
+/* palette:start */
 :root{
-  --ink:#0f1a2b; --ink-2:#152238; --ink-3:#1c2c48; --line:#2b3c5a;
-  --paper:#efe9db; --paper-2:#e4dcc6; --paper-line:#c9bd9e;
-  --text-lo:#f2f0e8; --muted:#93a3c0;
-  --stamp:#b5432f; --stamp-dim:#7c3628;
-  --live:#3f7d5c; --live-dim:#274a38;
-  --soon:#c98a3a; --soon-dim:#6e4c22;
-  --upcoming:#6b7a95; --upcoming-dim:#3a4864;
+  --ink:#0f1a2b;
+  --ink-2:#152238;
+  --ink-3:#1c2c48;
+  --line:#2b3c5a;
+  --text-lo:#f2f0e8;
+  --muted:#93a3c0;
+  --paper:#efe9db;
+  --paper-2:#e4dcc6;
+  --paper-line:#c9bd9e;
+  --card-ink:#241d10;
+  --card-key:#6b5f3f;
+  --accent:#c98a3a;
+  --live:#3f7d5c;
+  --live-dim:#274a38;
+  --live-ink:#bfe6cf;
+  --soon:#c98a3a;
+  --soon-dim:#6e4c22;
+  --soon-ink:#ffe0b3;
+  --stamp:#b5432f;
+  --stamp-dim:#7c3628;
+  --stamp-ink:#eec4ba;
+  --upcoming:#6b7a95;
+  --upcoming-dim:#3a4864;
+  --upcoming-ink:#dbe2ee;
+  --neutral-dim:#3a4864;
+  --neutral-ink:#c3cddd;
+  --nomandate:#8a5a75;
+  --nomandate-dim:#4a2f3d;
+  --nomandate-ink:#f0d6e6;
+  --tracked:#4a5568;
+  --tracked-dim:#2c333d;
+  --tracked-ink:#c7ccd3;
+  --on-stamp:#f2f0e8;
+  --on-soon:#1a1207;
+  --flap-ink:#f2f0e8;
+  --flap-alert:#e88a76;
   --radius:10px;
 }
+:root[data-eicc-theme="tradeshift"]{
+  --ink:#f9f9f9;
+  --ink-2:#ffffff;
+  --ink-3:#f0f0f0;
+  --line:#e3e3e3;
+  --text-lo:#1e1e1e;
+  --muted:#5c5c5c;
+  --paper:#ffffff;
+  --paper-2:#f9f9f9;
+  --paper-line:#e3e3e3;
+  --card-ink:#1e1e1e;
+  --card-key:#5c5c5c;
+  --accent:#0a37f0;
+  --live:#0d8162;
+  --live-dim:#e2faf2;
+  --live-ink:#0b5c45;
+  --soon:#a36416;
+  --soon-dim:#fdefdd;
+  --soon-ink:#7a4a10;
+  --stamp:#bf263c;
+  --stamp-dim:#fde8eb;
+  --stamp-ink:#8f1c2d;
+  --upcoming:#007c96;
+  --upcoming-dim:#e2f4f9;
+  --upcoming-ink:#0b5c6e;
+  --neutral-dim:#f0f0f0;
+  --neutral-ink:#5c5c5c;
+  --nomandate:#8a5a75;
+  --nomandate-dim:#f6ecf2;
+  --nomandate-ink:#6b4159;
+  --tracked:#4a5568;
+  --tracked-dim:#eef0f3;
+  --tracked-ink:#3a4351;
+  --on-stamp:#ffffff;
+  --on-soon:#ffffff;
+  --flap-ink:#1e1e1e;
+  --flap-alert:#8f1c2d;
+  --radius:10px;
+}
+/* palette:end */
 *{box-sizing:border-box}
 body{margin:0;background:var(--ink);color:var(--text-lo);font-family:'IBM Plex Sans',system-ui,sans-serif;line-height:1.55}
 .wrap{max-width:1080px;margin:0 auto;padding:28px 20px 80px}
@@ -469,7 +539,7 @@ a:hover,a:focus{color:var(--text-lo)}
    That is the hierarchy the table never had: the money is what you are
    meant to read first, and it was competing with its own labels. */
 table{color:var(--text-lo)}
-#savingsTable td{color:#c6cfdd}
+#savingsTable td{color:var(--neutral-ink)}
 #savingsTable td.num,#savingsTable tr.tot td{color:var(--text-lo)}
 .wrap{color:var(--text-lo)}
 footer{color:var(--muted)}
@@ -567,7 +637,7 @@ input[type=search]::placeholder{color:var(--muted);opacity:1}
    conditional statements about the reader's scenario, and that panel is
    collapsed by default. */
 .guardbox{margin:14px 0 0;padding:10px 13px}
-.guardbox > summary{cursor:pointer;font-weight:700;color:#e8b9ae;list-style:none;display:flex;align-items:center;gap:7px}
+.guardbox > summary{cursor:pointer;font-weight:700;color:var(--stamp-ink);list-style:none;display:flex;align-items:center;gap:7px}
 .guardbox > summary::-webkit-details-marker{display:none}
 /* Literal character, not a \\25B8 escape: this stylesheet lives inside a
    template literal, where a backslash-two is an OCTAL escape and a syntax
@@ -625,12 +695,12 @@ a.primary{display:inline-block;font:inherit;font-weight:700;cursor:pointer;borde
   border:1px solid var(--soon);background:var(--soon);color:#231a09;padding:10px 16px;text-decoration:none}
 a.primary:hover,a.primary:focus{filter:brightness(1.08);color:#231a09}
 .pill{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.6px;text-transform:uppercase;padding:2px 7px;border-radius:99px;border:1px solid currentColor}
-.p-inforce{color:#7fd0a8}.p-upcoming{color:#e2b978}.p-b2gonly{color:#9fb2d4}.p-nomandate{color:#b9a9a4}
+.p-inforce{color:var(--live-ink)}.p-upcoming{color:var(--soon-ink)}.p-b2gonly{color:#9fb2d4}.p-nomandate{color:#b9a9a4}
 /* THREE COMPLEXITY COLOURS, NOT FOUR. CXNAME maps 2->cx3, 1->cx2, 0->cx0
    -- the numbering is the old FOUR-point scale's, kept when migration
    ~510 collapsed it to three because renaming the classes would have
    touched every row for no gain. .cx1 has matched nothing since. */
-.cx3{color:#e08b7a}.cx2{color:#e2b978}.cx0{color:#8d9bb5}
+.cx3{color:#e08b7a}.cx2{color:var(--soon-ink)}.cx0{color:#8d9bb5}
 .countries{max-height:260px;overflow:auto;border:1px solid var(--line);border-radius:8px;padding:0 10px 10px;background:var(--ink)}
 .creg{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:var(--soon);margin:10px 0 5px}
 .cbox{display:flex;align-items:flex-start;gap:7px;padding:2px 0;font-size:13.5px}
@@ -725,7 +795,7 @@ a.primary:hover,a.primary:focus{filter:brightness(1.08);color:#231a09}
    .statwhat is gone with it: it styled the word "implementation" beside
    "One-off investment", and migration 584 replaced that label with "Year
    one cost" whose breakdown is a statrun line. */
-.stat .l .statrun{display:block;margin-top:5px;color:#e2b978;text-transform:none;letter-spacing:.2px;font-size:10.5px;line-height:1.5}
+.stat .l .statrun{display:block;margin-top:5px;color:var(--soon-ink);text-transform:none;letter-spacing:.2px;font-size:10.5px;line-height:1.5}
 /* The bridge under the net figure. Muted rather than amber: statrun is a
    COST breakdown and this is an explanation of an arithmetic, and giving
    them one colour would say they are the same kind of line. */
@@ -873,8 +943,8 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
    and half at the start of the next -- read as two damaged controls, on
    the first row a phone user sees. A badge is a single token. */
 .tag{font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.5px;text-transform:uppercase;padding:1px 6px;border-radius:3px;border:1px solid currentColor;margin-left:6px;white-space:nowrap;display:inline-block}
-.tA{color:#7fd0a8}.tB{color:#e2b978}.tC{color:#e0907f}.tD{color:#9fb2d4}
-.tang{color:#7fd0a8;border-color:#3f7d5c}.intang{color:#9fb2d4;border-color:#3a4864}
+.tA{color:var(--live-ink)}.tB{color:var(--soon-ink)}.tC{color:#e0907f}.tD{color:#9fb2d4}
+.tang{color:var(--live-ink);border-color:#3f7d5c}.intang{color:#9fb2d4;border-color:#3a4864}
 /* The evidence scorecard. A stacked bar whose segments are flex-weighted
    by the counts, so the picture IS the proportion rather than a drawing
    of it -- there is no width to keep in step with a number. A zero-count
@@ -915,7 +985,7 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
    never combines them with AP automation, so the question "does this
    arrive with the mandate or do I have to go and get it?" is the one the
    reader is actually asking of every line. */
-.bank{color:#7fd0a8;border-color:#3f7d5c}.unbank{color:#8d9bb5;border-color:#3a4864}
+.bank{color:var(--live-ink);border-color:#3f7d5c}.unbank{color:#8d9bb5;border-color:#3a4864}
 /* Group and total rows in the merged table. The group row is a label,
    not data: no borders, no hover, and it must not read as a benefit with
    a missing value. */
@@ -949,7 +1019,7 @@ tr.tot td{border-top:2px solid var(--line);border-bottom:none}
 .svkey b{font-variant-numeric:tabular-nums}
 .svkey em{font-style:normal;font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--muted);text-align:right}
 .svtot{margin:10px 0 0;padding-top:9px;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}
-.svtot strong{color:#7fd0a8;font-size:15px}
+.svtot strong{color:var(--live-ink);font-size:15px}
 .svtot span{display:block;font-size:12px}
 /* The pointer from a one-line caveat to the full reasoning in section 7.
    Dan, 15 Aug 2026: "The UI is difficult to read and follow because there
@@ -3642,8 +3712,8 @@ function buildGantt(sel0, erp, pace){
       \${lanes > 1 ? \`<span>${tj("chart.key.lane","L1&ndash;Ln &middot; which parallel workstream a country runs in")}</span>\` : ''}
       <span style="display:inline-flex;align-items:center;gap:5px"><span style="display:inline-block;width:0;height:0;border:6px solid transparent;border-left-color:#efe9db;transform:rotate(45deg)"></span>${tj("chart.golive","Go-live")}</span>
       <span style="display:inline-flex;align-items:center;gap:5px;color:#e0907f">${tj("chart.key.late","▲ already late")}</span>
-      <span style="display:inline-flex;align-items:center;gap:5px;color:#e2b978">${tj("chart.key.soon","● start &lt;90d")}</span>
-      <span style="display:inline-flex;align-items:center;gap:5px;color:#7fd0a8">${tj("chart.key.ok","✓ runway")}</span>
+      <span style="display:inline-flex;align-items:center;gap:5px;color:var(--soon-ink)">${tj("chart.key.soon","● start &lt;90d")}</span>
+      <span style="display:inline-flex;align-items:center;gap:5px;color:var(--live-ink)">${tj("chart.key.ok","✓ runway")}</span>
       <span>\${ev('durations','${tj("ev.durationsLong","Durations: practitioner estimates")}')}</span>
     </div>\`;
   return rows;
@@ -4391,7 +4461,7 @@ function build(){
   // plan. What changes is that the headline gets to be the headline.
   document.getElementById('summary').innerHTML = \`
     <div class="grid g5">
-      <div class="stat"><div class="n" style="color:#7fd0a8">\${fmt(l1Banked + l2)}</div><div class="l">${tj("res.banked2","Gross annual saving")}\${l1Unbanked > 0 ? ' ' + fill('${tj("res.unbanked","(+{0} available on a wider scope)")}', fmt(l1Unbanked)) : ''}</div></div>
+      <div class="stat"><div class="n" style="color:var(--live-ink)">\${fmt(l1Banked + l2)}</div><div class="l">${tj("res.banked2","Gross annual saving")}\${l1Unbanked > 0 ? ' ' + fill('${tj("res.unbanked","(+{0} available on a wider scope)")}', fmt(l1Unbanked)) : ''}</div></div>
       <div class="stat"><div class="n" style="color:#e0907f">\${fmt(yearOne)}</div><div class="l">${tj("res.yearOne","Year one cost")}<span class="statrun">\${fill('${tj("res.yearOne2","Implementation ({0}) + software fees ({1}){2} + internal running cost ({3}){4}")}', fmt(oneOff), fmt(cPlat), '${hlp('cPlat',t("tip.covers","What this covers"))}', fmt(cRun), '${hlp('cRun',t("tip.covers","What this covers"))}')}</span></div></div>
       <div class="stat"><div class="n" style="color:\${netAnnual>=0?'#7fd0a8':'#e0907f'}">\${fmt(netAnnual)}</div><div class="l">${tj("res.netAnnual2","Net annual saving, year two onward")}<span class="statbridge">\${fill('${tj("res.bridge","Gross annual saving minus each year software fees ({0}) minus internal running cost ({1}). Year one nets {2} after implementation.")}', fmt(cPlat), fmt(cRun), fmt(yearOneNet))}</span></div></div>
       <div class="stat"><div class="n" style="color:\${paybackMonths&&paybackMonths<=24?'#7fd0a8':'#e2b978'}">\${payback(paybackMonths)}</div><div class="l">${tj("res.payback2","Payback on implementation")}</div></div>
@@ -4444,7 +4514,7 @@ function build(){
     const st=STATUS[c[3]], cx=CXNAME[c[4]];
     const ints = erp;   // every country you build for, once per ERP system
     const why = c[11]
-      ? \`<strong style="color:#e2b978">${tj("waves.euWide.h","EU-wide obligation.")}</strong> \${fill('${tj("waves.euWide","Council Directive (EU) 2025/516 binds every EU member state from 1 July 2030 regardless of whether it legislates its own domestic mandate. {0}")}', CXNOTE[c[4]])}\`
+      ? \`<strong style="color:var(--soon-ink)">${tj("waves.euWide.h","EU-wide obligation.")}</strong> \${fill('${tj("waves.euWide","Council Directive (EU) 2025/516 binds every EU member state from 1 July 2030 regardless of whether it legislates its own domestic mandate. {0}")}', CXNOTE[c[4]])}\`
       : CXNOTE[c[4]];
     // data-col on every cell: below 700px the table stacks into cards and
     // the header row is hidden, so each value has to carry its own
@@ -4552,7 +4622,7 @@ function build(){
 
     <tr class="tierB" data-row="rework"><td>${t("row.rework","Avoided rework on data-entry errors")} <span class="tag tang">${t("tag.tangible","tangible")}</span> <span class="tag \${banked?'bank':'unbank'}">\${banked?'${tj("tag.saved","saved")}':'${tj("tag.notSaved","not saved")}'}</span></td><td><span class="bcalc"><span class="blab">${tj("basis.lab.calc","Calculation:")}</span>\${fill('${tj("basis.rework.calc","{0} {1} at {2}% &times; {3} min &times; {4}/h &times; {5}% eliminated")}', num0(Math.round(errNow)), plur(Math.round(errNow), PLURALS.erroredInvoice), Math.round(errRate*100), errMins, fmt1(entryPerHr), Math.round(errElim*100))}</span><span class="bjust"><span class="blab">${tj("basis.lab.just","Justification:")}</span>\${fill('${tj("basis.rework.just","Error rate {0}; resolution time {1}; data-entry rate {2}; the share eliminated is ours {3}, held under Ardent&rsquo;s exception gap {4}.")}', ev('hmrcErr','${tj("ev.hmrcRate","HMRC consultation")}'), overridden('errMins') ? ev('yours','${tj("ev.yourMins","your resolution time")}') : ev('rework','${tj("ev.atoMins2","ATO exception times")}'), ev('blsEntry','${tj("ev.blsEntry","loaded data-entry rate")}'), ev('errElim','${tj("ev.whyNotAll","why not all of them")}'), ev('ardentExc','${tj("ev.excRate2","18.4% market exception rate")}'))}</span></td><td class="num" data-col="${t("col.gross","Annual value")}">\${fmt(errSave)}</td><td class="num" data-col="${t("col.banks","Saved on this scope")}">\${bankedErr > 0 ? fmt(bankedErr) : '&mdash;'}</td></tr>
 
-    <tr class="tot" data-row="total"><td colspan="2"><strong>${t("row.savingsTotal","Annual benefit")}</strong>\${l1Unbanked > 0 ? \` <span class="hint" style="display:inline">&mdash; ${t("row.directTotal.gap","the difference needs a change programme you are not running")}</span>\` : ''}</td><td class="num" data-col="${t("col.gross","Annual value")}"><strong>\${fmt(l1 + l2)}</strong></td><td class="num" data-col="${t("col.banks","Saved on this scope")}"><strong style="color:#7fd0a8">\${fmt(l1Banked + l2)}</strong></td></tr>
+    <tr class="tot" data-row="total"><td colspan="2"><strong>${t("row.savingsTotal","Annual benefit")}</strong>\${l1Unbanked > 0 ? \` <span class="hint" style="display:inline">&mdash; ${t("row.directTotal.gap","the difference needs a change programme you are not running")}</span>\` : ''}</td><td class="num" data-col="${t("col.gross","Annual value")}"><strong>\${fmt(l1 + l2)}</strong></td><td class="num" data-col="${t("col.banks","Saved on this scope")}"><strong style="color:var(--live-ink)">\${fmt(l1Banked + l2)}</strong></td></tr>
 
     <tr class="grp"><td colspan="4">${t("grp.named","Named, not priced &mdash; real, and this model will not invent a number for them")}</td></tr>
 
