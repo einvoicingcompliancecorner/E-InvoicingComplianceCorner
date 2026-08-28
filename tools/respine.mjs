@@ -111,13 +111,21 @@ const RENAME = new Map([
 // Titles that are a visible concatenation of slots 2 and 3.
 const SPLIT = new Set(["Mandatory content & archiving", "Mandatory content & retention"]);
 const ARCHIVING_ROW = /archiv|retention|retain|storage|store|keep|conserv|aufbewahr|\byears?\b/i;
-// Cards worth keeping whole as the permitted fifth card. Matched on the
-// English title, exactly, so a retitle elsewhere cannot silently widen it.
-const KEEP = new Set([
-  "The 44-digit access key", "CAF — Código de Autorización de Folios",
-  "TED — Timbre Electrónico Digital", "Invoice quotas", "Digital signature",
-  "The migration path", "Self-billing",
-]);
+// There WAS a KEEP list here: an allow-list of bespoke titles, with a
+// comment above saying it decided which cards survived whole. It was
+// declared and never read. EVERY unrecognised card is kept, on the list or
+// not, so the list governed nothing and the comment describing it was
+// false. Found on 28 August 2026 while using the tool.
+//
+// Deleted rather than wired up, because the code's actual rule is the
+// better one: at most ONE unrecognised card per country, whatever it is,
+// and more than one means a person chooses. An allow-list would have meant
+// every future country's bespoke card needed adding to a file in this tool
+// before the tool would touch that country at all.
+//
+// Second piece of dead code in this repo whose comment described a
+// criterion the code does not apply; MARKER_LONLAT_OVERRIDES in
+// map-panel.js is the other, and is still open.
 
 const { d1 } = await openReplayDb();
 const all = async (s) => (await d1.prepare(s).bind().all()).results || [];
@@ -144,8 +152,19 @@ const ready = [], refused = [];
 for (const [name, cards] of byCountry) {
   const why = [];
   const slots = [[], [], [], []];      // slots[i] = [{lang: [k,v]}...]
+  // A card is more than its rows. THE FIRST VERSION OF THIS TOOL FORGOT
+  // THAT, and the header above said "no prose is rewritten" while every
+  // note and body was silently dropped on the floor. Measured on 28 August
+  // 2026: 31% of respined cards carried a note against 79% of untouched
+  // ones, and re-running the tool over France, New Zealand, Norway and
+  // Slovakia deleted 18 of 18. Four migrations had already shipped it.
+  //
+  // The rows were asserted end to end and the note was not, under a
+  // comment reading "a silent drop is the only way this tool can do real
+  // damage". It was right about the mechanism and wrong about the field.
+  const meta = [null, null, null, null];   // meta[i] = {note:{lang}, body:{lang}}
   const kept = [];
-  let inputRows = 0;
+  let inputRows = 0, inputNotes = 0;
 
   for (const [, langs] of [...cards].sort((a, b) => a[0] - b[0])) {
     if (LANGS.some((l) => !langs[l])) { why.push("a card is missing a language"); break; }
@@ -163,15 +182,27 @@ for (const [name, cards] of byCountry) {
     inputRows += n;
 
     const pack = (i) => Object.fromEntries(LANGS.map((l) => [l, parsed[l][i]]));
+    const field = (f) => Object.fromEntries(LANGS.map((l) => [l, langs[l][f] || null]));
     const title = langs.en.title;
+    if (langs.en.note) inputNotes += 1;
 
     if (RENAME.has(title)) {                                   // A: relabel in place
       const slot = RENAME.get(title);
       if (slots[slot].length) { why.push(`two cards both map to "${SPINE_EN[slot]}"`); break; }
       for (let i = 0; i < n; i++) slots[slot].push(pack(i));
+      // One source card, one destination slot, so its note and body come
+      // with it unambiguously. That is the whole reason the tool refuses
+      // when two cards map to one slot.
+      meta[slot] = { note: field("note"), body: field("body") };
       continue;
     }
     if (SPLIT.has(title)) {                                    // B: split the pair
+      // One card feeds TWO slots, so which half its note describes is a
+      // judgement, not a routing rule. Refuse rather than guess: putting it
+      // on both duplicates it and putting it on one invents an attribution.
+      if (langs.en.note || langs.en.body) {
+        why.push(`"${title}" splits into two cards and has a note or body — a person must place it`); break;
+      }
       for (let i = 0; i < n; i++) slots[ARCHIVING_ROW.test(parsed.en[i][0]) ? 3 : 2].push(pack(i));
       continue;
     }
@@ -190,7 +221,7 @@ for (const [name, cards] of byCountry) {
     if (empty.length) why.push(`no rows route to: ${empty.join(", ")}`);
     if (kept.length > 1) why.push(`${kept.length} cards on the keep list; only one extra is allowed`);
   }
-  (why.length ? refused : ready).push({ name, slots, kept, inputRows, why });
+  (why.length ? refused : ready).push({ name, slots, meta, kept, inputRows, inputNotes, why });
 }
 
 const outRows = (r) => r.slots.reduce((a, s) => a + s.length, 0);
@@ -219,8 +250,13 @@ w("-- Re-run the tool rather than editing this file.");
 w("--");
 w("-- No prose is rewritten. Every row below is the row that was already");
 w("-- there, in all four languages, moved to the spine card its own key");
-w("-- routes it to. The tool refuses any country where a spine slot would");
-w("-- end up empty, so nothing here is a card invented to fill a hole.");
+w("-- routes it to, and every note and body travels with its card. The tool");
+w("-- refuses any country where a spine slot would end up empty, so nothing");
+w("-- here is a card invented to fill a hole.");
+w("--");
+w("-- Notes travel as of 28 August 2026. Before that this same sentence was");
+w("-- here and was false: the rebuild carried rows and dropped every note,");
+w("-- across migrations 700, 701, 713 and 715.");
 w("");
 for (const r of ready) {
   w(`-- ---- ${r.name}: ${r.inputRows} rows -> ${r.slots.map((s) => s.length).join("/")}`
@@ -229,18 +265,22 @@ for (const r of ready) {
     + ` JOIN countries c ON c.id = d.country_id WHERE c.name_en = ${lit(r.name)} AND d.section = 'file_format');`);
   w(`DELETE FROM deep_dive_cards WHERE section = 'file_format'`
     + ` AND country_id = (SELECT id FROM countries WHERE name_en = ${lit(r.name)});`);
-  const emitCard = (i, titleFor, rowsFor) => {
+  const nul = (s) => (s === null || s === undefined || s === "" ? "NULL" : lit(s));
+  const emitCard = (i, titleFor, rowsFor, noteFor, bodyFor) => {
     w(`INSERT INTO deep_dive_cards (country_id, section, sort_order) SELECT id, 'file_format', ${i}`
       + ` FROM countries WHERE name_en = ${lit(r.name)};`);
     for (const l of LANGS) {
-      w("INSERT INTO deep_dive_card_translations (card_id, lang, title, rows_json)");
-      w(`SELECT d.id, '${l}', ${lit(titleFor(l))}, ${lit(JSON.stringify(rowsFor(l)))}`
+      w("INSERT INTO deep_dive_card_translations (card_id, lang, title, rows_json, note, body)");
+      w(`SELECT d.id, '${l}', ${lit(titleFor(l))}, ${lit(JSON.stringify(rowsFor(l)))},`
+        + ` ${nul(noteFor(l))}, ${nul(bodyFor(l))}`
         + ` FROM deep_dive_cards d WHERE d.country_id = (SELECT id FROM countries WHERE name_en = ${lit(r.name)})`
         + ` AND d.section = 'file_format' AND d.sort_order = ${i};`);
     }
   };
-  r.slots.forEach((slot, i) => emitCard(i, (l) => SPINE[l][i], (l) => slot.map((p) => p[l])));
-  r.kept.forEach((k, j) => emitCard(4 + j, (l) => k[l].title, (l) => JSON.parse(k[l].rows_json)));
+  r.slots.forEach((slot, i) => emitCard(i, (l) => SPINE[l][i], (l) => slot.map((p) => p[l]),
+    (l) => (r.meta[i] ? r.meta[i].note[l] : null), (l) => (r.meta[i] ? r.meta[i].body[l] : null)));
+  r.kept.forEach((k, j) => emitCard(4 + j, (l) => k[l].title, (l) => JSON.parse(k[l].rows_json),
+    (l) => k[l].note, (l) => k[l].body));
   w("");
 }
 w("-- ---- what this migration claims it did ----");
@@ -257,6 +297,16 @@ for (const r of ready) {
     + ` JOIN deep_dive_cards d ON d.id = t.card_id`
     + ` WHERE d.country_id = (SELECT id FROM countries WHERE name_en = ${lit(r.name)})`
     + ` AND d.section = 'file_format' AND t.lang = 'en' = ${r.inputRows + r.kept.reduce((a, k) => a + JSON.parse(k.en.rows_json).length, 0)}`);
+}
+w("-- Nor one NOTE. The row assertion above shipped in four migrations while");
+w("-- every note was being deleted underneath it, because the comment saying");
+w("-- a silent drop was the only real damage named the wrong field.");
+for (const r of ready) {
+  w(`-- ASSERT: SELECT count(*) FROM deep_dive_card_translations t`
+    + ` JOIN deep_dive_cards d ON d.id = t.card_id`
+    + ` WHERE d.country_id = (SELECT id FROM countries WHERE name_en = ${lit(r.name)})`
+    + ` AND d.section = 'file_format' AND t.lang = 'en' AND t.note IS NOT NULL AND t.note <> ''`
+    + ` = ${r.inputNotes}`);   // counted over every source card, kept ones included
 }
 const file = join(REPO, "members-worker", "migrations", `${num}_respine.sql`);
 writeFileSync(file, out.join("\n") + "\n");
