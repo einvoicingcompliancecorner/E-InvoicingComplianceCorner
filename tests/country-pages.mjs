@@ -58,8 +58,11 @@ const get = (path) => worker.fetch(
 
 const all = async (sql) => (await d1.prepare(sql).bind().all()).results || [];
 
-// The European Union row has a NULL slug and no deep dive; every other
-// country that carries a slug is claiming to have a page.
+// The European Union is a PAGE but not a COUNTRY. The sweeps below are
+// about countries, so they still exclude it; section 6 at the foot of
+// this file checks it on its own terms. It was excluded here by having a
+// NULL slug until 28 August 2026, which is exactly the accident that
+// left its deep dive unreachable for three weeks.
 const tracked = await all(
   "SELECT slug, name_en, code FROM countries WHERE slug IS NOT NULL AND code != 'EU' ORDER BY slug");
 
@@ -143,6 +146,52 @@ t.check(`the newest countries render in es/de/fr (${recent.length} countries)`,
   }
   t.check("and every country link on it resolves",
     broken.length === 0, broken.slice(0, 10).join("; "));
+}
+
+// ---- 6. the European Union: published, and deliberately not listed ---
+//
+// Dan, 28 August 2026: "The European Union, side menu does not link.
+// Although I think we built a deep-dive for it." He had, and it had been
+// unreachable since migration 007 -- eleven cards and a full set of
+// DE/ES/FR translations behind a NULL slug, so no URL, no sitemap entry,
+// no anchor, 404 to anyone who guessed it.
+//
+// Asked what he wanted, he chose "publish, don't link". That is a pair
+// of guarantees pulling in opposite directions, which is why it gets a
+// check rather than a comment: "publish it" and "list it" sound like the
+// same instruction, and the next person to touch buildDeepDives() will
+// have to decide which one they meant.
+{
+  const res = await get("/european-union");
+  t.check("the EU deep dive is served", res.status === 200, `status ${res.status}`);
+  const body = res.status === 200 ? await res.text() : "";
+  t.check("and it is the real page, not an empty shell",
+    /ViDA/i.test(body) && body.length > 20000, `${body.length} bytes`);
+
+  // Four languages, because the content has always had them.
+  for (const lang of ["es", "de", "fr"]) {
+    const r = await get(`/european-union?lang=${lang}`);
+    t.check(`and it serves ${lang}`, r.status === 200, `status ${r.status}`);
+  }
+
+  // NOT LISTED: the tracker's injected link map is what the side menu
+  // and the board's deep-dive button both read, and the EU must not be
+  // in it. Read out of the served page rather than out of the query, so
+  // this fails on what a reader gets.
+  const tracker = await (await get("/einvoicing-compliance-tracker.html")).text();
+  const mapBlock = (tracker.match(/const DEEP_DIVES = \{[\s\S]*?\};/) || [""])[0];
+  t.check("the link map was injected from D1, so this is checking something",
+    mapBlock.length > 500, `${mapBlock.length} bytes`);
+  t.check("the EU is NOT in the tracker's link map",
+    !/European Union/.test(mapBlock),
+    "it is listed in the side menu and on the board — that is 'publish AND link'");
+
+  // BUT REACHABLE BY SOMETHING. A page in the sitemap with no anchor
+  // anywhere is the state the 24 August audit found 42 country pages in.
+  // The crawlable A-Z index is where it is allowed to appear.
+  t.check("the EU has exactly one anchor, in the crawlable country index",
+    (tracker.match(/href="\/european-union"/g) || []).length === 1,
+    `${(tracker.match(/href="\/european-union"/g) || []).length} anchors`);
 }
 
 console.log(`\n  note  ${tracked.length} country pages served, `

@@ -161,7 +161,16 @@ for (const name of Object.keys(OPEN)) {
   t.check("the topology file still parses and names its shapes",
     shapes.size > 150, `${shapes.size} named shapes`);
 
-  const rows = await all("SELECT name_en FROM countries WHERE slug IS NOT NULL ORDER BY name_en");
+  // THE SAME POPULATION getMapCountries() DRAWS, not a near-enough one.
+  // This said `slug IS NOT NULL` and matched the map only because the
+  // one row that differs had no slug. The day the EU got one — so its
+  // deep dive could be published — this check went red naming it, which
+  // is what a check is for; but had the map's own query been widened at
+  // the same time by the same reasoning, both would have moved together
+  // and nothing would have failed. Reading in_picker here is what keeps
+  // the two in step for a reason rather than by coincidence.
+  const rows = await all(
+    "SELECT name_en FROM countries WHERE slug IS NOT NULL AND in_picker = 1 ORDER BY name_en");
   const missing = rows.map((r) => r.name_en)
     .filter((n) => !shapes.has(TOPO_NAME_OVERRIDES[n] || n));
   t.check(`every tracked country matches a shape in the topology (${rows.length} checked)`,

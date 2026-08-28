@@ -1,0 +1,59 @@
+-- Publish the European Union deep dive, without listing it.
+--
+-- Dan, 28 August 2026: "The European Union, side menu does not link.
+-- Although I think we built a deep-dive for it."
+--
+-- He was right, and the gap was older and stranger than a missing link.
+-- The page has existed since migration 007: eleven cards, five stats,
+-- six registration steps, two portals, and a full set of DE/ES/FR
+-- translations for every one of them. Against the 77-row corpus that is
+-- above average on all four dimensions every country has. It has never
+-- been reachable. countries.slug was NULL for the EU alone, which meant
+-- no URL, no sitemap entry, no anchor, and /european-union answering 404
+-- to anyone who guessed it. Finished content, invisible.
+--
+-- WHY IT WAS NULL is not a mistake anyone made twice: the EU is not a
+-- country, and the site is careful about that. The jurisdiction count
+-- excludes it by an explicit rule, the ROI planner's picker excludes it
+-- via in_picker, and the side menu renders it as plain text with a
+-- comment saying so. Not giving it a slug looked like part of that. What
+-- it actually did was strand the page.
+--
+-- SO THE TWO IDEAS ARE SEPARATED HERE. `slug` now means "this page can
+-- be served"; `in_picker` goes on meaning "this is one of the countries
+-- we list to a reader". The EU gets the first and keeps neither the
+-- second nor anything downstream of it -- site-worker's buildDeepDives()
+-- filters on in_picker, so the side menu and the board's deep-dive
+-- button are unchanged, and renderSitemap() filters only on slug, so the
+-- page is indexed. That is Dan's choice, put to him as three options:
+-- "publish, don't link".
+--
+-- WHAT THIS MIGRATION CANNOT DO ALONE. The router does not read this
+-- column. shared/deep-dive-render.mjs holds COUNTRY_DEEP_DIVE_SLUGS, a
+-- hand-maintained table consulted before any D1 round-trip to decide
+-- whether a path is a country page at all, and the EU has been added
+-- there in the same commit. Applying this migration without deploying
+-- both Workers leaves /european-union still answering 404 -- the slug
+-- would be in the sitemap and the page would not exist. Deploy together.
+
+UPDATE countries SET slug = 'european-union' WHERE code = 'EU' AND slug IS NULL;
+
+-- ---- what this migration claims it did ----
+-- The EU has the slug the router now expects.
+-- ASSERT: SELECT slug FROM countries WHERE code = 'EU' = 'european-union'
+--
+-- And it did not become a listed country while doing so. This is the
+-- half a future edit is most likely to undo by accident, because
+-- "publish it" and "list it" sound like the same instruction.
+-- ASSERT: SELECT in_picker FROM countries WHERE code = 'EU' = 0
+--
+-- STANDING: every slug is unique. A second row landing on
+-- 'european-union' -- or on any other slug -- would make the router's
+-- answer depend on row order. Stated as a comparison against zero rather
+-- than a count of countries, so it is still true when the 78th arrives.
+-- ASSERT ALWAYS: SELECT COUNT(*) FROM (SELECT slug FROM countries WHERE slug IS NOT NULL GROUP BY slug HAVING COUNT(*) > 1) = 0
+--
+-- STANDING: nothing is in a reader-facing list without a page behind it.
+-- in_picker = 1 with a NULL slug would put a country in the picker whose
+-- deep dive 404s, which is the failure this migration is the mirror of.
+-- ASSERT ALWAYS: SELECT COUNT(*) FROM countries WHERE in_picker = 1 AND slug IS NULL = 0

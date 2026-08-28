@@ -247,7 +247,53 @@ async function buildTrackerData(db) {
   });
 }
 
+/**
+ * The country -> deep-dive-URL map the tracker links FROM.
+ *
+ * TWO CONDITIONS, MEANING TWO DIFFERENT THINGS. `slug IS NOT NULL` is
+ * "this page can be served". `in_picker = 1` is "this is one of the
+ * countries we list to a reader" -- the flag migration 198 added for the
+ * ROI planner's country picker, and the only row of 77 without it is the
+ * European Union.
+ *
+ * Both are needed here because this map feeds the SIDE MENU and the
+ * board's deep-dive button, and the EU is published without being
+ * listed: Dan's decision on 28 August, when he found the page missing
+ * from the menu. Filtering on slug alone would have linked it from both
+ * the moment the slug existed.
+ *
+ * The sitemap deliberately does NOT apply in_picker -- see
+ * renderSitemap(), which lists every URL the router can serve. That
+ * asymmetry is the feature: reachable and indexed, not listed.
+ */
 async function buildDeepDives(db) {
+  const { results } = await db.prepare(`
+    SELECT name_en, slug FROM countries
+     WHERE slug IS NOT NULL AND in_picker = 1 ORDER BY name_en
+  `).all();
+  return Object.fromEntries(results.map((r) => [r.name_en, "/" + r.slug]));
+}
+
+/**
+ * Every page the router can serve, listed or not.
+ *
+ * WHY THIS IS A SECOND QUERY AND NOT THE ONE ABOVE. buildDeepDives()
+ * answers "what does the tracker LINK to" -- the side menu, the board's
+ * deep-dive button -- and the EU is deliberately not in it. This answers
+ * "what pages EXIST", which is the crawlable A-Z index at the foot of
+ * the page and matches renderSitemap()'s condition exactly.
+ *
+ * The distinction is not pedantry. The 24 August audit found 42 country
+ * pages that were in neither the sitemap nor any anchor on the site --
+ * to anything that reads HTML rather than rendering it, they were not on
+ * the internet -- and this index is the fix for that. Publishing the EU
+ * deep dive into the sitemap while giving it no anchor anywhere would
+ * have recreated exactly that state for exactly one page, three days
+ * after fixing it for forty-two. So it is in the index, once, in the
+ * alphabetical list a crawler reads; it is not in the menu a reader
+ * uses. That is the whole difference between "published" and "listed".
+ */
+async function buildServablePages(db) {
   const { results } = await db.prepare(`
     SELECT name_en, slug FROM countries WHERE slug IS NOT NULL ORDER BY name_en
   `).all();
@@ -422,11 +468,24 @@ async function renderSitemap(request, env) {
   // Countries the ROUTER can actually serve -- slug IS NOT NULL is the
   // same condition renderCountryDeepDive resolves against, so the
   // sitemap cannot claim a URL that 404s or omit one that works.
+  //
+  // `AND c.code != 'EU'` USED TO BE HERE and has gone. It was redundant
+  // when it was written -- the EU had no slug, so the first condition
+  // already excluded it -- and it was a landmine: the day anyone gave
+  // the EU a slug, the sitemap would have silently stopped matching the
+  // router while the comment above went on claiming they agreed. That
+  // day was 28 August 2026, when Dan asked for the EU deep dive to be
+  // published. The stated invariant is the one worth keeping; the extra
+  // clause was a second rule nobody would have thought to look at.
+  //
+  // Note this deliberately does NOT filter in_picker the way
+  // buildDeepDives() does. A page can be worth indexing without being
+  // worth listing in the side menu, and the EU is the case.
   const countries = (await env.eicc_content.prepare(`
     SELECT c.slug, ddp.last_updated
       FROM countries c
       LEFT JOIN deep_dive_pages ddp ON ddp.country_id = c.id
-     WHERE c.slug IS NOT NULL AND c.code != 'EU'
+     WHERE c.slug IS NOT NULL
      ORDER BY c.slug`).all()).results || [];
 
   // Published insight articles. The old file listed two by hand; the
@@ -549,9 +608,10 @@ async function renderTracker(request, env) {
     }
   }
   try {
-    const [data, deepDives] = await Promise.all([
+    const [data, deepDives, servable] = await Promise.all([
       buildTrackerData(env.eicc_content),
       buildDeepDives(env.eicc_content),
+      buildServablePages(env.eicc_content),
     ]);
     // Sanity guards: if D1 comes back implausibly empty (e.g. migrations
     // 201–204 not yet applied, so on_tracker matches nothing), serve the
@@ -602,7 +662,9 @@ async function renderTracker(request, env) {
     let indexed = false;
     out = out.replace(/<ul id="countryIndexList">[\s\S]*?<\/ul>/, () => {
       indexed = true;
-      return `<ul id="countryIndexList">${buildCountryIndexHtml(data, deepDives)}</ul>`;
+      // `servable`, not `deepDives`: the index is what a crawler can
+      // reach, which is every page the router serves.
+      return `<ul id="countryIndexList">${buildCountryIndexHtml(data, servable)}</ul>`;
     });
     if (!indexed) console.log("Tracker: country index marker not found — serving the page without it.");
     return new Response(out, {

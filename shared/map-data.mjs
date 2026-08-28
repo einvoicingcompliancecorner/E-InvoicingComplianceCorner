@@ -20,11 +20,23 @@
 //      dictionary needed, unlike the mock-up's COUNTRY_TRANSLATIONS),
 //      slug, region, flag, and the computed status above.
 //
-// Only countries with a slug are included (matches every other D1-
-// rendered surface's "slug IS NOT NULL" convention — see the standing
-// warning on the countries table in schema.sql) — this is what
-// excludes the European Union row, which isn't a real country on a
-// choropleth map anyway.
+// Countries with a slug AND in_picker = 1. That second condition used to
+// be unnecessary and is now load-bearing.
+//
+// This comment previously read: only countries with a slug are included,
+// "which is what excludes the European Union row, which isn't a real
+// country on a choropleth map anyway". The conclusion was right and the
+// mechanism was an accident. `slug IS NULL` was standing in for "not a
+// real country", and on 28 August 2026 the EU was given a slug so its
+// deep dive could be published — at which point this query would have
+// asked a choropleth to draw the European Union, which has no shape in
+// Natural Earth. No feature, no label, no marker: it would not have
+// appeared, and nothing would have said why.
+//
+// tests/map-tiles-agree.mjs caught it in the same run as the change and
+// named the country. in_picker = 0 is what "not a real country" has
+// always actually meant here; the query says so now instead of relying
+// on a NULL somewhere else.
 // ================================================================
 
 import { deriveFlagFromCode } from "./deep-dive-render.mjs";
@@ -226,7 +238,7 @@ export async function getMapCountries(db, lang) {
     SELECT c.id, c.name_en, c.code, c.region, c.slug, ct.display_name
     FROM countries c
     LEFT JOIN country_translations ct ON ct.country_id = c.id AND ct.lang = ?
-    WHERE c.slug IS NOT NULL
+    WHERE c.slug IS NOT NULL AND c.in_picker = 1
     ORDER BY c.name_en
   `).bind(lang).all();
 
