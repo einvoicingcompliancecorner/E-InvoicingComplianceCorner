@@ -105,6 +105,19 @@ The test reads that constant out of the source, so the two cannot drift apart.
 | `deep_dive_portals` | 1 | 3 | 1–2 |
 | longest portal label | — | 48 chars | 5–47 |
 
+**Both card counts include lifecycle cards**, which render into the same grid
+out of a different table. Until 28 August the check counted only
+`deep_dive_cards`, so 40 rendered cards across 37 country/sections were
+invisible to a band whose purpose is to govern how many cards a reader meets.
+It was wrong in both directions: correcting it put Croatia and Saudi Arabia
+over the section ceilings, and took Dominican Republic, Kazakhstan, Kenya and
+Nigeria *off* the backlog, their lifecycle cards having always carried them
+over the floor.
+
+Those bands were derived from a count that excluded lifecycle cards, so they
+are now measuring something slightly different from what set them. Worth a
+review before the next batch rather than assuming they still sit right.
+
 Portals are the one band deliberately looser than July. July ran 1–2; the recent
 pages run 3–4. More official links is a real gain, and the complaint was pill
 *size*, not existence — so the ceiling is 3 with a 48-character label cap rather

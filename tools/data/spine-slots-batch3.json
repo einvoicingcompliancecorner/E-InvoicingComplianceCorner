@@ -1,0 +1,257 @@
+{
+  "_comment": [
+    "Batch 3 of the section-02 spine work: Denmark, Peru and Saudi Arabia,",
+    "the three countries missing exactly two slots between them.",
+    "",
+    "Three operations, in this order: MOVE a card between sections, FOLD one",
+    "card into another, ADD a researched card. Every country lands at exactly",
+    "five section-02 cards, which is the framework ceiling.",
+    "",
+    "Row values are written to the framework's rendered-line band. Figures are",
+    "identical across the four languages; the digit runs are what the language",
+    "checks compare."
+  ],
+
+  "add": {
+    "Denmark": {
+      "slot": "Mandatory content",
+      "en": [
+        ["Nine required items", "Issue date, a sequential number, the seller's VAT number, both parties' name and address, what was supplied and when, the base, the rate and the VAT."],
+        ["Wording for special cases", "Reverse charge, exemption and self-billing each need a marker on the face of the invoice, together with the buyer's VAT number."],
+        ["Simplified below DKK 3,000", "A short form may drop the buyer's details, the delivery date and the rate line, with the VAT shown as 20% of the gross."],
+        ["Services to consumers", "A full invoice is required from DKK 5,000 including VAT, whatever the simplified rules would otherwise allow."]
+      ],
+      "es": [
+        ["Nueve datos obligatorios", "Fecha de emisión, número correlativo, NIF-IVA del vendedor, nombre y dirección de ambas partes, qué se entregó y cuándo, la base, el tipo y el IVA."],
+        ["Fórmulas para casos especiales", "La inversión del sujeto pasivo, la exención y la autofacturación exigen una marca en la propia factura, junto con el NIF-IVA del comprador."],
+        ["Simplificada por debajo de 3.000 DKK", "La forma abreviada puede omitir los datos del comprador, la fecha de entrega y la línea del tipo, con el IVA como el 20% del importe bruto."],
+        ["Servicios a consumidores", "Desde 5.000 DKK con IVA incluido se exige factura completa, aunque las reglas simplificadas permitieran otra cosa."]
+      ],
+      "de": [
+        ["Neun Pflichtangaben", "Ausstellungsdatum, fortlaufende Nummer, USt-Nummer des Verkäufers, Name und Anschrift beider Parteien, was wann geliefert wurde, Bemessungsgrundlage, Satz und Steuer."],
+        ["Formeln für Sonderfälle", "Umkehr der Steuerschuld, Steuerbefreiung und Gutschrift brauchen jeweils einen Vermerk auf der Rechnung, zusammen mit der USt-Nummer des Käufers."],
+        ["Vereinfacht unter 3.000 DKK", "Die Kurzform darf Kundendaten, Lieferdatum und Steuersatzzeile weglassen; die Steuer wird mit 20% des Bruttobetrags angegeben."],
+        ["Leistungen an Verbraucher", "Ab 5.000 DKK brutto ist eine vollständige Rechnung erforderlich, unabhängig davon, was die vereinfachten Regeln sonst erlauben würden."]
+      ],
+      "fr": [
+        ["Neuf mentions obligatoires", "Date d'émission, numéro séquentiel, numéro de TVA du vendeur, nom et adresse des deux parties, ce qui a été livré et quand, la base, le taux et la TVA."],
+        ["Formules pour cas particuliers", "L'autoliquidation, l'exonération et l'autofacturation exigent chacune une mention sur la facture, accompagnée du numéro de TVA de l'acheteur."],
+        ["Simplifiée sous 3 000 DKK", "La forme courte peut omettre les données de l'acheteur, la date de livraison et la ligne de taux, la TVA étant indiquée à 20% du montant brut."],
+        ["Services aux consommateurs", "À partir de 5 000 DKK TTC, une facture complète est exigée, quoi que permettent par ailleurs les règles simplifiées."]
+      ],
+      "note": {
+        "en": "The Bookkeeping Act's digital duty binds the system, not the transaction: it governs capability, formats and storage, and changes nothing an invoice must contain. Read from retsinformation's PDF renditions — its HTML views render only via JavaScript.",
+        "es": "El deber digital de la Ley de Contabilidad vincula al sistema, no a la operación: regula capacidad, formatos y conservación, y no altera nada de lo que una factura debe contener. Leído de las versiones PDF de retsinformation; sus vistas HTML solo se generan con JavaScript.",
+        "de": "Die Digitalpflicht des Buchführungsgesetzes bindet das System, nicht den Umsatz: Sie regelt Fähigkeit, Formate und Aufbewahrung und ändert nichts am erforderlichen Rechnungsinhalt. Gelesen aus den PDF-Fassungen von retsinformation; die HTML-Ansichten laufen nur über JavaScript.",
+        "fr": "L'obligation numérique de la loi comptable lie le système, pas l'opération : elle porte sur la capacité, les formats et la conservation, et ne change rien à ce que doit contenir une facture. Lu depuis les versions PDF de retsinformation ; ses vues HTML ne s'affichent qu'en JavaScript."
+      }
+    },
+
+    "Peru:identifiers": {
+      "country": "Peru",
+      "slot": "Identifiers & registration",
+      "en": [
+        ["RUC, eleven digits", "Both parties' RUC appears on a factura. The buyer's is waived only for a non-resident customer on an export."],
+        ["Boleta buyer ID at S/ 700", "A boleta needs no RUC, but above S/ 700.00 it must carry the buyer's name and identity document number."],
+        ["SUNAT issues no certificate", "Signing uses the taxpayer's own digital certificate. SUNAT runs no certification authority; it sponsors a free one issued by a state entity."],
+        ["No licence to obtain", "There is no authorisation to win. In SOL a taxpayer declares itself an issuer by loading a certificate or by naming a PSE or an OSE."]
+      ],
+      "es": [
+        ["RUC, once dígitos", "El RUC de ambas partes figura en una factura. El del comprador solo se exceptúa para un cliente no domiciliado en una exportación."],
+        ["ID del comprador desde S/ 700", "La boleta no exige RUC, pero por encima de S/ 700.00 debe llevar el nombre y el número de documento de identidad del comprador."],
+        ["La SUNAT no emite certificados", "La firma usa el certificado digital del propio contribuyente. La SUNAT no opera una autoridad de certificación; auspicia uno gratuito emitido por una entidad estatal."],
+        ["No hay licencia que obtener", "No hay autorización que ganar. En SOL el contribuyente se declara emisor cargando un certificado o designando un PSE o un OSE."]
+      ],
+      "de": [
+        ["RUC, elf Ziffern", "Die RUC beider Parteien steht auf einer Factura. Die des Käufers entfällt nur bei einem gebietsfremden Kunden im Export."],
+        ["Käufer-ID ab S/ 700", "Eine Boleta braucht keine RUC, muss aber über S/ 700.00 Namen und Ausweisnummer des Käufers tragen."],
+        ["SUNAT stellt kein Zertifikat aus", "Signiert wird mit dem eigenen digitalen Zertifikat des Steuerpflichtigen. SUNAT betreibt keine Zertifizierungsstelle, fördert aber ein kostenloses von einer staatlichen Stelle."],
+        ["Keine Lizenz zu erlangen", "Es gibt keine Genehmigung zu gewinnen. In SOL erklärt sich der Steuerpflichtige zum Aussteller, indem er ein Zertifikat hochlädt oder einen PSE oder OSE benennt."]
+      ],
+      "fr": [
+        ["RUC, onze chiffres", "Le RUC des deux parties figure sur une factura. Celui de l'acheteur n'est écarté que pour un client non résident à l'export."],
+        ["ID de l'acheteur dès S/ 700", "Une boleta n'exige pas de RUC, mais au-delà de S/ 700.00 elle doit porter le nom et le numéro de pièce d'identité de l'acheteur."],
+        ["La SUNAT n'émet aucun certificat", "La signature utilise le certificat numérique du contribuable. La SUNAT n'exploite pas d'autorité de certification ; elle parraine un certificat gratuit délivré par un organisme public."],
+        ["Aucune licence à obtenir", "Il n'y a pas d'autorisation à décrocher. Dans SOL, le contribuable se déclare émetteur en chargeant un certificat ou en désignant un PSE ou un OSE."]
+      ],
+      "note": {
+        "en": "Vendor pages commonly say an INDECOPI-accredited certificate is required. INDECOPI accredits the certification entities behind Peru's signature framework, but we found nothing in SUNAT's own rules making that accreditation a condition of issuing.",
+        "es": "Las páginas de proveedores suelen afirmar que se exige un certificado acreditado por INDECOPI. INDECOPI acredita a las entidades de certificación del marco peruano de firma, pero no hallamos nada en las normas de la SUNAT que haga de esa acreditación una condición para emitir.",
+        "de": "Anbieterseiten behaupten häufig, ein von INDECOPI akkreditiertes Zertifikat sei erforderlich. INDECOPI akkreditiert die Zertifizierungsstellen des peruanischen Signaturrahmens, doch in den Vorschriften der SUNAT fanden wir nichts, das diese Akkreditierung zur Ausstellungsvoraussetzung macht.",
+        "fr": "Les pages d'éditeurs affirment couramment qu'un certificat accrédité par l'INDECOPI est exigé. L'INDECOPI accrédite les entités de certification du cadre péruvien de signature, mais nous n'avons rien trouvé dans les règles de la SUNAT qui en fasse une condition pour émettre."
+      }
+    },
+
+    "Peru:content": {
+      "country": "Peru",
+      "slot": "Mandatory content",
+      "en": [
+        ["Core particulars", "Series and correlative number, the dates, both parties, a line-by-line description with quantity and unit, the IGV shown apart, and the totals."],
+        ["The total in words", "The total appears in figures and in words, and the currency is a coded value rather than free text."],
+        ["Payment terms since 2021", "Every factura states cash or credit, and a credit sale adds the amount outstanding and its due dates."],
+        ["The print is not the invoice", "Only the XML validated by SUNAT or an OSE has tax force. A printed copy must carry a QR encoding key fields and the XML digest."]
+      ],
+      "es": [
+        ["Datos principales", "Serie y número correlativo, las fechas, ambas partes, el detalle línea a línea con cantidad y unidad, el IGV discriminado y los totales."],
+        ["El total en letras", "El total figura en cifras y en letras, y la moneda es un valor codificado, no texto libre."],
+        ["Condiciones de pago desde 2021", "Toda factura indica contado o crédito, y una venta al crédito añade el saldo pendiente y sus fechas de vencimiento."],
+        ["El impreso no es la factura", "Solo el XML validado por la SUNAT o un OSE tiene efecto tributario. La representación impresa debe llevar un QR con los campos clave y el resumen del XML."]
+      ],
+      "de": [
+        ["Kernangaben", "Serie und laufende Nummer, die Daten, beide Parteien, eine zeilenweise Beschreibung mit Menge und Einheit, die gesondert ausgewiesene IGV und die Summen."],
+        ["Der Betrag in Worten", "Der Gesamtbetrag erscheint in Ziffern und in Worten, und die Währung ist ein codierter Wert, kein Freitext."],
+        ["Zahlungsbedingungen seit 2021", "Jede Factura nennt Bar- oder Kreditverkauf; beim Kreditverkauf kommen der offene Betrag und seine Fälligkeiten hinzu."],
+        ["Der Ausdruck ist nicht die Rechnung", "Nur das von SUNAT oder einem OSE validierte XML hat steuerliche Wirkung. Ein Ausdruck muss einen QR mit Schlüsselfeldern und dem XML-Digest tragen."]
+      ],
+      "fr": [
+        ["Mentions principales", "Série et numéro séquentiel, les dates, les deux parties, un détail ligne par ligne avec quantité et unité, l'IGV isolée et les totaux."],
+        ["Le total en toutes lettres", "Le total figure en chiffres et en toutes lettres, et la devise est une valeur codée et non du texte libre."],
+        ["Conditions de paiement depuis 2021", "Toute factura indique comptant ou crédit, et une vente à crédit ajoute le solde dû et ses échéances."],
+        ["L'imprimé n'est pas la facture", "Seul le XML validé par la SUNAT ou un OSE a force fiscale. Un imprimé doit porter un QR encodant les champs clés et l'empreinte du XML."]
+      ],
+      "note": {
+        "en": "SUNAT's own PDF of RS 097-2012 is a scanned image with no machine-readable text, so these rows rest on the Reglamento de Comprobantes de Pago and SUNAT's UBL guides rather than on the electronic-issuance resolution itself.",
+        "es": "El PDF de la propia SUNAT de la RS 097-2012 es una imagen escaneada sin texto legible por máquina, por lo que estas filas se apoyan en el Reglamento de Comprobantes de Pago y en las guías UBL de la SUNAT, no en la resolución de emisión electrónica.",
+        "de": "Das SUNAT-eigene PDF der RS 097-2012 ist ein Scan ohne maschinenlesbaren Text, daher stützen sich diese Zeilen auf das Reglamento de Comprobantes de Pago und die UBL-Leitfäden der SUNAT statt auf die Resolution zur elektronischen Ausstellung.",
+        "fr": "Le PDF de la SUNAT pour la RS 097-2012 est une image numérisée sans texte lisible par machine ; ces lignes s'appuient donc sur le Reglamento de Comprobantes de Pago et les guides UBL de la SUNAT, non sur la résolution d'émission électronique."
+      }
+    },
+
+    "Saudi Arabia:content": {
+      "country": "Saudi Arabia",
+      "slot": "Mandatory content",
+      "en": [
+        ["Standard vs simplified", "A standard invoice carries the buyer's name, address and, where applicable, VAT number. A simplified one needs the seller, the goods and the tax."],
+        ["Arabic is required", "Invoices are issued in Arabic, and another language may be added as a translation. The XML tag names stay English; the data does not."],
+        ["QR on every type from 2023", "Simplified invoices have needed one since 4 December 2021, all types since 1 January 2023 — and on standard invoices ZATCA adds it at clearance."],
+        ["Line-level tax code", "Every line carries a VAT tax code, the VAT total is stated in riyals, and the supply date appears whenever it differs from the issue date."]
+      ],
+      "es": [
+        ["Estándar frente a simplificada", "La factura estándar lleva nombre, dirección y, cuando proceda, NIF-IVA del comprador. La simplificada solo exige el vendedor, los bienes y el impuesto."],
+        ["El árabe es obligatorio", "Las facturas se emiten en árabe y puede añadirse otro idioma como traducción. Los nombres de las etiquetas XML siguen en inglés; los datos no."],
+        ["QR en todos los tipos desde 2023", "Las simplificadas lo exigen desde el 4 de diciembre de 2021 y todos los tipos desde el 1 de enero de 2023; en las estándar lo añade ZATCA al despachar."],
+        ["Código de impuesto por línea", "Cada línea lleva un código de IVA, el total del impuesto se expresa en riales y la fecha de entrega figura siempre que difiera de la de emisión."]
+      ],
+      "de": [
+        ["Standard oder vereinfacht", "Die Standardrechnung nennt Name, Anschrift und ggf. USt-Nummer des Käufers. Die vereinfachte braucht nur Verkäufer, Ware und Steuer."],
+        ["Arabisch ist Pflicht", "Rechnungen werden auf Arabisch ausgestellt; eine weitere Sprache darf als Übersetzung hinzukommen. Die XML-Tagnamen bleiben englisch, die Daten nicht."],
+        ["QR auf allen Typen ab 2023", "Vereinfachte Rechnungen seit dem 4. Dezember 2021, alle Typen seit dem 1. Januar 2023 — bei Standardrechnungen fügt ZATCA ihn beim Clearing hinzu."],
+        ["Steuercode je Position", "Jede Position trägt einen Steuercode, die Steuersumme wird in Riyal angegeben, und das Lieferdatum erscheint, sobald es vom Ausstellungsdatum abweicht."]
+      ],
+      "fr": [
+        ["Standard ou simplifiée", "La facture standard porte le nom, l'adresse et, le cas échéant, le numéro de TVA de l'acheteur. La simplifiée n'exige que le vendeur, les biens et la taxe."],
+        ["L'arabe est obligatoire", "Les factures sont émises en arabe, une autre langue pouvant s'ajouter en traduction. Les noms de balises XML restent anglais ; les données non."],
+        ["QR sur tous les types dès 2023", "Les factures simplifiées depuis le 4 décembre 2021, tous les types depuis le 1er janvier 2023 — sur les standard, ZATCA l'ajoute au dédouanement."],
+        ["Code de taxe par ligne", "Chaque ligne porte un code de TVA, le total de taxe s'exprime en riyals, et la date de livraison figure dès qu'elle diffère de la date d'émission."]
+      ],
+      "note": {
+        "en": "Two things are widely stated wrongly: that the QR code is only for simplified invoices, and that the seller must generate it for standard ones. Neither has been true since 1 January 2023.",
+        "es": "Dos afirmaciones circulan erróneamente: que el código QR es solo para facturas simplificadas y que el vendedor debe generarlo en las estándar. Ninguna es cierta desde el 1 de enero de 2023.",
+        "de": "Zwei Aussagen kursieren falsch: dass der QR-Code nur für vereinfachte Rechnungen gilt und dass der Verkäufer ihn bei Standardrechnungen erzeugen muss. Seit dem 1. Januar 2023 trifft beides nicht zu.",
+        "fr": "Deux affirmations circulent à tort : que le code QR ne concerne que les factures simplifiées, et que le vendeur doit le générer sur les standard. Aucune n'est vraie depuis le 1er janvier 2023."
+      }
+    },
+
+    "Saudi Arabia:archiving": {
+      "country": "Saudi Arabia",
+      "slot": "Archiving",
+      "en": [
+        ["Six years", "Invoices, books and records are kept for at least six years from the end of the tax period they relate to."],
+        ["Capital assets run longer", "Eleven years for movable capital assets and fifteen for immovable property — the adjustment period plus five years."],
+        ["Kept in the Kingdom", "Records are held in Saudi Arabia. A server abroad qualifies only if it can be reached from an access point inside the Kingdom."],
+        ["Archive the XML", "Keep the XML, or the PDF/A-3 carrying it, so the hash and the cryptographic stamp survive and ZATCA can reach the archive."]
+      ],
+      "es": [
+        ["Seis años", "Las facturas, los libros y los registros se conservan al menos seis años desde el fin del periodo fiscal al que se refieren."],
+        ["Los bienes de capital, más", "Once años para los bienes de capital muebles y quince para los inmuebles: el periodo de ajuste más cinco años."],
+        ["Conservados en el Reino", "Los registros se guardan en Arabia Saudí. Un servidor en el extranjero solo vale si es accesible desde un punto de acceso dentro del Reino."],
+        ["Archive el XML", "Conserve el XML, o el PDF/A-3 que lo contiene, para que sobrevivan el hash y el sello criptográfico y ZATCA pueda acceder al archivo."]
+      ],
+      "de": [
+        ["Sechs Jahre", "Rechnungen, Bücher und Aufzeichnungen werden mindestens sechs Jahre ab dem Ende des betroffenen Steuerzeitraums aufbewahrt."],
+        ["Anlagegüter länger", "Elf Jahre für bewegliche Anlagegüter und fünfzehn für Immobilien — der Berichtigungszeitraum plus fünf Jahre."],
+        ["Aufbewahrung im Königreich", "Die Unterlagen liegen in Saudi-Arabien. Ein Server im Ausland genügt nur, wenn er von einem Zugangspunkt im Königreich erreichbar ist."],
+        ["Das XML archivieren", "Bewahren Sie das XML oder das PDF/A-3 damit auf, damit Hash und kryptografischer Stempel erhalten bleiben und ZATCA das Archiv erreichen kann."]
+      ],
+      "fr": [
+        ["Six ans", "Les factures, livres et registres sont conservés au moins six ans à compter de la fin de la période fiscale concernée."],
+        ["Les biens d'équipement, plus longtemps", "Onze ans pour les biens d'équipement mobiliers et quinze pour les immeubles — la période de régularisation plus cinq ans."],
+        ["Conservés dans le Royaume", "Les registres sont détenus en Arabie saoudite. Un serveur à l'étranger ne convient que s'il est joignable depuis un point d'accès dans le Royaume."],
+        ["Archiver le XML", "Conservez le XML, ou le PDF/A-3 qui le porte, afin que l'empreinte et le sceau cryptographique subsistent et que ZATCA puisse atteindre l'archive."]
+      ],
+      "note": {
+        "en": "Articles 53 and 66 could not be read on ZATCA's own site — its regulations PDF truncates before them — so they rest on a reproduction of the official English text, with the retention figures corroborated by ZATCA's Capital Assets Guideline.",
+        "es": "Los artículos 53 y 66 no pudieron leerse en el sitio de ZATCA — su PDF de reglamentos se trunca antes de llegar a ellos — por lo que se apoyan en una reproducción del texto oficial en inglés, con las cifras de conservación corroboradas por la Guía de Bienes de Capital de ZATCA.",
+        "de": "Die Artikel 53 und 66 waren auf der ZATCA-Website nicht lesbar — ihr Verordnungs-PDF bricht davor ab — daher stützen sie sich auf eine Wiedergabe des amtlichen englischen Textes, wobei die Aufbewahrungsfristen durch ZATCAs Leitfaden zu Anlagegütern bestätigt sind.",
+        "fr": "Les articles 53 et 66 n'ont pas pu être lus sur le site de ZATCA — son PDF de règlements s'interrompt avant eux — ils reposent donc sur une reproduction du texte officiel anglais, les durées de conservation étant corroborées par le guide des biens d'équipement de ZATCA."
+      }
+    }
+  },
+
+  "move": {
+    "_comment": [
+      "Denmark alone. Its NemHandel card answers 'who are you and where are you",
+      "registered', which is section 02's Identifiers question sitting in",
+      "section 03; and 'Danish-specific requirements' is about the chart of",
+      "accounts, SAF-T and the audit trail, which is scope, not file format.",
+      "Swapping them keeps both sections inside their ceilings: section 02 ends",
+      "at five, section 03 stays at four."
+    ],
+    "Denmark": [
+      { "title": "NemHandel", "from": "scope_transmission", "to": "file_format", "slot": "Identifiers & registration" },
+      { "title": "Danish-specific requirements", "from": "file_format", "to": "scope_transmission" }
+    ]
+  },
+
+  "edit": {
+    "_comment": [
+      "Saudi Arabia's section-05 card said retention was 'roughly 6 years' on",
+      "'common vendor guidance' and told the reader to go and confirm it. The",
+      "new section-02 Archiving card confirms it, from Art. 66(1), with the",
+      "capital-asset periods and the in-Kingdom condition. Leaving both would",
+      "state the same fact twice on one page, once verified and once hedged --",
+      "the defect already open against Romania and China.",
+      "",
+      "So the section-05 card is retargeted at what section 02 does NOT cover:",
+      "who answers for the records. Both facts are from the same research pass",
+      "(Art. 66(3) inspection right, Art. 66(4) third party for a non-resident)."
+    ],
+    "Saudi Arabia:archiving-05": {
+      "country": "Saudi Arabia",
+      "section": "penalties_related",
+      "match": "📦 Archiving",
+      "title": {
+        "en": "📦 Who answers for the records",
+        "es": "📦 Quién responde por los registros",
+        "de": "📦 Wer für die Unterlagen einsteht",
+        "fr": "📦 Qui répond des registres"
+      },
+      "body": {
+        "en": "ZATCA may inspect the record-keeping system itself, not only the invoices it holds. And a non-resident taxpayer without a tax representative must appoint a third party established in the Kingdom to keep its records.",
+        "es": "ZATCA puede inspeccionar el propio sistema de registro, no solo las facturas que contiene. Y un contribuyente no residente sin representante fiscal debe designar a un tercero establecido en el Reino para conservar sus registros.",
+        "de": "ZATCA darf das Aufzeichnungssystem selbst prüfen, nicht nur die darin gehaltenen Rechnungen. Und ein gebietsfremder Steuerpflichtiger ohne Steuervertreter muss einen im Königreich ansässigen Dritten mit der Aufbewahrung beauftragen.",
+        "fr": "ZATCA peut inspecter le système d'archivage lui-même, et pas seulement les factures qu'il contient. Et un assujetti non-résident sans représentant fiscal doit désigner un tiers établi dans le Royaume pour conserver ses registres."
+      }
+    }
+  },
+
+  "fold": {
+    "_comment": [
+      "Peru is at four section-02 cards and gains two, so one pair must merge.",
+      "'Document naming' is a single row about what the documents are called,",
+      "and 'CPE document family' is the list of what they are. They were always",
+      "one card. The merged note is written here rather than concatenated."
+    ],
+    "Peru": {
+      "drop": "Document naming",
+      "into": "CPE document family",
+      "retitle": null,
+      "note": {
+        "en": "Choosing the right CPE type matters — the wrong one can cost a deduction or a tax credit, not just cause paperwork. So does the label: these are formal document names fixed in regulation, not descriptions you may paraphrase.",
+        "es": "Elegir el tipo correcto de CPE importa: el equivocado puede costar una deducción o un crédito fiscal, no solo papeleo. La etiqueta también: son nombres de documento formales fijados en la normativa, no descripciones parafraseables.",
+        "de": "Der richtige CPE-Typ zählt: der falsche kann einen Abzug oder eine Steuergutschrift kosten, nicht bloß Papierkram. Ebenso die Bezeichnung — es sind förmliche, in der Verordnung festgelegte Dokumentnamen, keine frei formulierbaren Beschreibungen.",
+        "fr": "Le bon type de CPE compte : le mauvais peut coûter une déduction ou un crédit de TVA, pas seulement de la paperasse. Le libellé aussi — ce sont des noms de documents formels fixés par la réglementation, non des descriptions à paraphraser."
+      }
+    }
+  }
+}
