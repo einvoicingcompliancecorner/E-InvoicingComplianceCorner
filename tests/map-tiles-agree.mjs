@@ -35,7 +35,12 @@
 // in the schema and a new milestone inherits that default silently.
 import { suite } from "./lib/browser.mjs";
 import { openReplayDb } from "./lib/replay-db.mjs";
-import { computeCountryMapStatus } from "../shared/map-data.mjs";
+import { readFileSync } from "node:fs";
+import { join, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
+import { computeCountryMapStatus, TOPO_NAME_OVERRIDES } from "../shared/map-data.mjs";
+
+const REPO = dirname(dirname(fileURLToPath(import.meta.url)));
 
 const t = suite("map and tiles agree");
 const { d1 } = await openReplayDb();
@@ -129,6 +134,42 @@ for (const name of Object.keys(OPEN)) {
     openStillOpen.has(name),
     `${name} no longer disagrees — resolve it in OPEN above, or the next `
     + "real disagreement for this country will be silently excused");
+}
+
+// ---- every country resolves to a shape on the map ----------------------
+//
+// map-panel.js finds a country's geometry by matching its topoName against
+// the topology's own property name. A country whose name does not match --
+// a new addition spelled differently from Natural Earth, with no
+// TOPO_NAME_OVERRIDES entry -- gets no feature, no label and no marker. It
+// simply is not on the map.
+//
+// Nothing checked this. What stood in for it was MARKER_LONLAT_OVERRIDES,
+// a hand-picked lon/lat fallback consulted only when a feature was absent,
+// which held three countries that all HAVE features and so never ran once.
+// A fallback that has never fired is not a safety net, and the repair it
+// offered was the wrong one anyway: an override entry gives a country its
+// real shape, a hand-picked point gives it a dot. Deleted 28 August 2026,
+// and this is what replaces it.
+//
+// This reads the topology file the browser reads, so a country cannot pass
+// here and vanish on the page.
+{
+  const topo = JSON.parse(readFileSync(join(REPO, "vendor/countries-50m.json"), "utf8"));
+  const shapes = new Set(topo.objects.countries.geometries
+    .map((g) => g.properties && g.properties.name).filter(Boolean));
+  t.check("the topology file still parses and names its shapes",
+    shapes.size > 150, `${shapes.size} named shapes`);
+
+  const rows = await all("SELECT name_en FROM countries WHERE slug IS NOT NULL ORDER BY name_en");
+  const missing = rows.map((r) => r.name_en)
+    .filter((n) => !shapes.has(TOPO_NAME_OVERRIDES[n] || n));
+  t.check(`every tracked country matches a shape in the topology (${rows.length} checked)`,
+    missing.length === 0,
+    missing.length
+      ? `no feature for: ${missing.join(", ")} — add a TOPO_NAME_OVERRIDES `
+        + "entry in shared/map-data.mjs naming the topology's own spelling"
+      : "");
 }
 
 // ---- what the map is actually showing ----------------------------------

@@ -698,9 +698,15 @@
       const placed = [];
       for (const { c, feature } of [...smallEntries].sort((a, b) => a.c.nameEn.localeCompare(b.c.nameEn))) {
         let centroid;
+        // No markerLonLat fallback: it existed for three countries that
+        // all have real geometry, so it never once ran. A country that
+        // reaches here without a feature has a topoName matching nothing
+        // in the topology, and the repair is a TOPO_NAME_OVERRIDES entry
+        // -- real geometry beats a hand-picked point. tests/map-tiles-
+        // agree.mjs fails before it can ship, so this warning is a
+        // backstop and not the notification.
         if (feature) centroid = path.centroid(feature);
-        else if (c.markerLonLat) centroid = projection(c.markerLonLat);
-        else { console.warn("The Map: no map position for", c.nameEn, "-- add a markerLonLat override."); continue; }
+        else { console.warn("The Map: no topology feature for", c.nameEn, "-- add a TOPO_NAME_OVERRIDES entry."); continue; }
 
         const dx = centroid[0] - centerX, dy = centroid[1] - centerY;
         const mag = Math.max(1, Math.hypot(dx, dy));
