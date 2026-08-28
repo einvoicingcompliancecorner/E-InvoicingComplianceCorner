@@ -210,4 +210,45 @@ for (const [tag, got, expect] of results) {
   t.check(`in a browser, "${tag}" resolves --ink to ${expect}`, got === expect, `got ${got}`);
 }
 
+// ---- 9. a session that predates the theme still gets one --------------
+//
+// THE DEFECT THIS CHECK EXISTS FOR. Phase two applied the theme purely
+// from the eicc_theme cookie, which is written when a session is MINTED.
+// Every reader already signed in when it deployed had no such cookie and
+// therefore no theme on any page -- which is every reader, since the
+// feature shipped to a live site. Dan reported it as five separate pages
+// not reacting; the shared cause was that the cookie is never issued to a
+// session that already exists.
+//
+// Checks 1-8 all passed while that was true, because every one of them
+// set the cookie first. A check that arranges the precondition it is
+// meant to be testing cannot fail on the precondition being absent.
+//
+// So this asserts the two properties that fix it, on the render path
+// rather than on the cookie: a page rendered FOR A KNOWN READER stamps
+// the attribute itself, and it hands back a cookie so the public cached
+// pages learn who is reading.
+const STAMP = /<html(?![^>]*data-eicc-theme)([^>]*)>/i;
+const sample = '<!DOCTYPE html><html lang="en"><head></head><body></body></html>';
+const stamped = sample.replace(STAMP, '<html$1 data-eicc-theme="tradeshift">');
+t.check("the stamp regex adds the attribute to a bare <html>",
+  stamped.includes('<html lang="en" data-eicc-theme="tradeshift">'), stamped.slice(0, 70));
+t.check("and does not add a second one",
+  stamped.replace(STAMP, '<html$1 data-eicc-theme="x">') === stamped);
+
+// Both Workers must carry the stamp AND issue the cookie. Asserted
+// against the source, because the alternative is a fixture that mounts
+// two Workers and a KV, and the property is structural: the code either
+// contains both halves on the per-reader paths or it does not.
+const members = readFileSync(join(REPO, "members-worker/src/index.js"), "utf8");
+const site = readFileSync(join(REPO, "site-worker/src/index.js"), "utf8");
+t.check("members-worker stamps every authenticated HTML page",
+  /withPartnerTheme\(request, env,/.test(members) && /data-eicc-theme="\$\{slug\}"/.test(members));
+t.check("members-worker issues the cookie on those pages",
+  /headers\.append\("Set-Cookie", themeCookie\(slug/.test(members));
+t.check("site-worker stamps its two gated pages",
+  (site.match(/withPartnerTheme\(html,/g) || []).length >= 2);
+t.check("site-worker issues the cookie on both of them",
+  (site.match(/themeCookieHeader\(/g) || []).length >= 3);
+
 process.exit(t.report() ? 0 : 1);

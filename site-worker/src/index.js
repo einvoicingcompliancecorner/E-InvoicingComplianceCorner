@@ -51,8 +51,8 @@ import {
 // binding: it can verify who a reader is from the token's signature and
 // cannot read or change anything about their account. See the header of
 // shared/session.mjs for why that split, and what it deliberately trades.
-import { themeBootScript } from "../../shared/palette.mjs";
-import { sessionEmail, sessionDiagnostic, readCookie, signOutCookies, SESSION_COOKIE } from "../../shared/session.mjs";
+import { themeBootScript, PARTNER_THEMES } from "../../shared/palette.mjs";
+import { sessionEmail, sessionDiagnostic, readCookie, signOutCookies, SESSION_COOKIE, themeCookie } from "../../shared/session.mjs";
 import {
   getRoiCountries,
   getRoiBenchmarks,
@@ -2718,7 +2718,9 @@ async function renderSpecRegisterPage(request, env) {
     "Cache-Control": "private, max-age=60",
     "Vary": "Cookie",
   });
-  return new Response(html, { headers });
+  const pickerPartner = await partnerBrandingFor(request, env);
+  headers.append("Set-Cookie", themeCookieHeader(pickerPartner));
+  return new Response(withPartnerTheme(html, pickerPartner), { headers });
 }
 
 async function renderMethodologyPage(request, env) {
@@ -3080,6 +3082,34 @@ async function renderComplianceGuidesPicker(request, env) {
  *  on. No binding, a deploy skew, a slow answer, a 500: the reader gets
  *  their document without a mark, which is the document this site served
  *  yesterday. A logo is never worth failing a page for. */
+/** Stamp the theme on a gated page, and issue the cookie.
+ *
+ *  THE GATED ROUTES KNOW WHO IS READING and answer `private, no-store`, so
+ *  they can colour themselves on the first paint without a cookie -- and
+ *  they must, because phase two made every page depend on a cookie that is
+ *  only written when a session is minted. Every reader signed in before
+ *  that deploy had none.
+ *
+ *  These pages are also the best place to ISSUE it. The public site is one
+ *  cached document and cannot set a per-reader cookie without becoming a
+ *  caching defect all over again, so the tracker, the deep dives, the map
+ *  and the education pages can only learn who is reading from a cookie
+ *  somebody else set. A signed-in reader opening the guides picker, the
+ *  planner or anything on the members subdomain now leaves with one. */
+function withPartnerTheme(html, partner) {
+  if (!partner || !PARTNER_THEMES[partner.slug]) return html;
+  return html.replace(/<html(?![^>]*data-eicc-theme)([^>]*)>/i,
+    `<html$1 data-eicc-theme="${partner.slug}">`);
+}
+
+/** The Set-Cookie line a gated response should carry, given what the
+ *  branding endpoint just answered. Null partner clears it, which is what
+ *  makes turning the preference off take effect on the next page rather
+ *  than at the end of a thirty-day session. */
+function themeCookieHeader(partner) {
+  return themeCookie(partner ? partner.slug : null, 60 * 60 * 24 * 30);
+}
+
 async function partnerBrandingFor(request, env) {
   if (!env.MEMBERS) return null;
   try {
@@ -3582,7 +3612,11 @@ async function renderRoiCalculatorPage(request, env) {
     // different fixes and should not share a symptom.
     "x-eicc-session": await sessionDiagnostic(request, env.SESSION_SECRET),
   };
-  const res = new Response(html, { headers });
+  const res = new Response(withPartnerTheme(html, roiPartner), { headers });
+  // The planner is one of the three places a signed-in reader can be
+  // handed the cookie the public pages need. Only when signed in: an
+  // anonymous response here is cacheable and must carry no Set-Cookie.
+  if (signedInAs) res.headers.append("Set-Cookie", themeCookieHeader(roiPartner));
   if (staleSession) {
     for (const c of signOutCookies()) res.headers.append("Set-Cookie", c);
   }
