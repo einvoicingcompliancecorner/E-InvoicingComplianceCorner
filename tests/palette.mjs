@@ -32,7 +32,7 @@ import { createServer } from "node:http";
 import { existsSync, statSync } from "node:fs";
 import { extname, normalize } from "node:path";
 import { DARK, LIGHT, PARTNER_THEMES, CONTRAST_PAIRS, contrast } from "../shared/palette.mjs";
-import { PALETTE_FILES } from "../tools/sync-palette.mjs";
+import { PALETTE_FILES, BOOT_FILES } from "../tools/sync-palette.mjs";
 
 const REPO = dirname(dirname(fileURLToPath(import.meta.url)));
 const t = suite("palette");
@@ -153,6 +153,38 @@ t.check("the boot script only honours a registered slug",
   Object.keys(PARTNER_THEMES).every((s) => boot.includes(s))
   && boot.includes("indexOf"));
 
+// ---- 7b. the pages carry the CURRENT boot script -----------------------
+//
+// THE DEFECT THIS EXISTS FOR. Check 7 reads themeBootScript() and asserts
+// things about its output, which is the module. The fourteen static pages
+// carry a PASTED COPY -- the renderers interpolate it, a static file
+// cannot -- and from the moment it was pasted they stopped tracking the
+// module. Adding ?skin= to the module on 28 August therefore did nothing
+// at all on the tracker, which is a static page, while check 7 and every
+// other check here passed.
+//
+// Same shape as the palette drift one level down: a value that exists in
+// two places with only one of them generated. The boot script is
+// generated now, and this fails when a page's copy is stale.
+const bootWanted = "<!-- theme:boot -->" + boot;
+const staleBoot = BOOT_FILES.filter((rel) => {
+  const src = readFileSync(join(REPO, rel), "utf8");
+  return !src.includes(bootWanted);
+});
+t.check("every static page carries the current boot script",
+  staleBoot.length === 0, staleBoot.join(", "));
+
+// ---- 7c. ?skin= resolves in the right order ---------------------------
+t.check("the boot script reads the skin parameter and stores it per tab",
+  /URLSearchParams/.test(boot) && /sessionStorage/.test(boot) && /eicc_skin/.test(boot));
+t.check("it is sessionStorage and not a cookie it writes",
+  !/document\.cookie\s*=/.test(boot), "the boot script must not set a cookie");
+// Order matters: the cookie is a verified claim, ?skin= is only a
+// referral, and a subscriber following someone else's skinned link must
+// keep their own colours.
+t.check("the cookie is consulted before the URL",
+  boot.indexOf("eicc_theme") < boot.indexOf("skin"));
+
 // ---- 8. and it works in a browser, both ways --------------------------
 //
 // SERVES ITSELF ON AN EPHEMERAL PORT. A fixed port is a trap this repo has
@@ -181,9 +213,15 @@ const ORIGIN = `http://127.0.0.1:${server.address().port}`;
 const browser = await launch();
 const results = [];
 const jsErrors = [];
-for (const [tag, slug, expect] of [["no cookie", null, DARK["--ink"]],
-  ["tradeshift", "tradeshift", LIGHT["--ink"]],
-  ["forged slug", "not-a-partner", DARK["--ink"]]]) {
+for (const [tag, slug, expect, qs] of [["no cookie", null, DARK["--ink"], ""],
+  ["tradeshift", "tradeshift", LIGHT["--ink"], ""],
+  ["forged slug", "not-a-partner", DARK["--ink"], ""],
+  // A visitor arriving from a partner's own website, not signed in.
+  ["?skin=tradeshift", null, LIGHT["--ink"], "?skin=tradeshift"],
+  ["?skin=nonsense", null, DARK["--ink"], "?skin=nonsense"],
+  // Identity beats provenance: a verified subscriber keeps their own
+  // colours through a link skinned for somebody else.
+  ["cookie over skin", "tradeshift", LIGHT["--ink"], "?skin=nonsense"]]) {
   const ctx = await browser.newContext({ viewport: { width: 900, height: 700 } });
   if (slug) {
     await ctx.addCookies([{ name: "eicc_theme", value: slug, domain: "127.0.0.1", path: "/" }]);
@@ -195,18 +233,26 @@ for (const [tag, slug, expect] of [["no cookie", null, DARK["--ink"]],
   // theme. A thrown boot script IS a fact about the theme, and that is
   // what pageerror reports.
   page.on("pageerror", (e) => jsErrors.push(`${tag}: ${e.message}`));
-  await page.goto(`${ORIGIN}/einvoicing-compliance-tracker.html`, { waitUntil: "load" });
+  await page.goto(`${ORIGIN}/einvoicing-compliance-tracker.html${qs || ""}`, { waitUntil: "load" });
   await page.waitForTimeout(500);
   const ink = await page.evaluate(() =>
     getComputedStyle(document.documentElement).getPropertyValue("--ink").trim());
-  results.push([tag, ink, expect]);
+  // A skin has to survive the visitor clicking anything, or it is of no
+  // use to a partner. Second navigation, no parameter.
+  await page.goto(`${ORIGIN}/education-mandate-types.html`, { waitUntil: "load" });
+  await page.waitForTimeout(400);
+  const inkNext = await page.evaluate(() =>
+    getComputedStyle(document.documentElement).getPropertyValue("--ink").trim());
+  results.push([tag, ink, expect, inkNext]);
   await ctx.close();
 }
 await browser.close();
 t.check("the boot script throws nothing in any of the three cases",
   jsErrors.length === 0, jsErrors.join("; "));
-for (const [tag, got, expect] of results) {
+for (const [tag, got, expect, next] of results) {
   t.check(`in a browser, "${tag}" resolves --ink to ${expect}`, got === expect, `got ${got}`);
+  t.check(`and "${tag}" still resolves to ${expect} on the next page`,
+    next === expect, `got ${next}`);
 }
 
 // ---- 9. a session that predates the theme still gets one --------------
