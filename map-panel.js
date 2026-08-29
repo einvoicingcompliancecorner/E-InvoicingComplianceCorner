@@ -563,17 +563,53 @@
       set("sidebarHeading", (el) => (el.textContent = this.isEmbedded() ? u.recentNews : u.allJurisdictions));
       set("footerText", (el) => (el.textContent = u.footerText));
       const suffix = this.lang !== "en" ? "?lang=" + this.lang : "";
+      // ---- EVERY LINK OUT OF THE MAP CARRIES THE SKIN --------------------
+      //
+      // Dan, 29 August 2026: "when I have ?skin=tradeshift, when I click on
+      // the map, and then Return to the tracker, I then lose partner
+      // branding. However, the behaviour in all other pages is different,
+      // and retains partner branding."
+      //
+      // The difference is that the other panels never navigate. They are
+      // opened in place, the top URL is rewritten with pushState, and the
+      // custom properties on the document survive because nothing reloads.
+      // This link is a REAL navigation to a bare "/", so the browser
+      // fetches a page with no skin on its URL and the theme is gone --
+      // by design, because the skin belongs to the URL that carries it.
+      // Which means a link that means "back where you came from" has to
+      // carry it.
+      //
+      // THE EMBEDDED CASE USED TO SET NO HREF AT ALL, leaving the "/" the
+      // server rendered. That is the case Dan hit, and it is why the map
+      // behaves differently from every other panel.
+      //
+      // Same-site only, and for the same reason withThemeParam() in the
+      // tracker is: the archive is ours on another subdomain, but a
+      // sponsored link could point anywhere, and appending a partner slug
+      // to a third party's URL tells that host who the reader is.
+      const themeSlug = document.documentElement.getAttribute("data-eicc-theme") || "";
+      const MEMBERS = "https://members.e-invoicingcompliancecorner.com";
+      const themed = (url) => {
+        if (!themeSlug) return url;
+        let parsed;
+        try { parsed = new URL(url, location.href); } catch (e) { return url; }
+        if (parsed.origin !== location.origin && parsed.origin !== MEMBERS) return url;
+        if (parsed.searchParams.get("skin") === themeSlug) return url;
+        parsed.searchParams.set("skin", themeSlug);
+        return parsed.origin === location.origin
+          ? parsed.pathname + parsed.search + parsed.hash : parsed.href;
+      };
       set("backToTrackerLink", (el) => {
         el.textContent = u.backToTracker;
-        if (!this.isEmbedded()) el.href = (this.opts.backUrl || "/") + suffix;
+        el.href = themed((this.opts.backUrl || "/") + suffix);
       });
       set("archiveBtnLink", (el) => {
         el.textContent = u.archiveBtn;
-        el.href = (this.opts.archiveUrl || "https://members.e-invoicingcompliancecorner.com/members/archive") + suffix;
+        el.href = themed((this.opts.archiveUrl || MEMBERS + "/members/archive") + suffix);
       });
       set("subscribeBtnLink", (el) => {
         el.textContent = u.subscribeBtn;
-        el.href = (this.opts.subscribeUrl || "/subscribe.html") + suffix;
+        el.href = themed((this.opts.subscribeUrl || "/subscribe.html") + suffix);
       });
       this.buildLegend();
       this.$$(".lang-btn").forEach((b) => b.classList.toggle("active", b.dataset.lang === this.lang));

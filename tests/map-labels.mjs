@@ -160,6 +160,58 @@ t.check("there are labels to measure", checkedLabels >= 4, `${checkedLabels} lab
     pair.found && !pair.clash, pair.found ? (pair.clash ? "they overlap" : "") : "one of them was not rendered as a marker");
 }
 
+// ---- the way out of the map carries the skin ---------------------------
+//
+// Dan, 29 August 2026: "when I have ?skin=tradeshift, when I click on the
+// map, and then Return to the tracker, I then lose partner branding.
+// However, the behaviour in all other pages is different, and retains
+// partner branding."
+//
+// The other panels never navigate -- they open in place, pushState
+// rewrites the top URL, and the document's custom properties survive
+// because nothing reloads. This link is a real navigation to a bare "/",
+// so the browser fetches a page with no skin on it and the theme is
+// correctly, uselessly gone.
+//
+// BOTH PATHS, because they set the href in different places and only one
+// of them was broken in the way Dan saw. Standalone, map-panel.js wrote
+// backUrl + a lang suffix. Embedded in the tracker it wrote NOTHING and
+// left the "/" the worker had rendered -- which is the case he hit.
+{
+  const linkHref = async (url, opener) => {
+    const p = await browser.newPage();
+    await p.goto(url, { waitUntil: "networkidle" });
+    if (opener) {
+      await p.evaluate(() => window.openMapPage && window.openMapPage());
+      await p.waitForTimeout(1500);
+    }
+    await p.waitForSelector("#backToTrackerLink", { timeout: 20000 });
+    // PLAYWRIGHT'S SELECTOR, NOT document.getElementById. The first
+    // version used the latter and threw on null while waitForSelector had
+    // just succeeded on the same string -- because the panel lives in an
+    // open shadow root, which Playwright pierces and getElementById does
+    // not. A check that cannot see the element it is about is the same
+    // defect as one that cannot fail.
+    const href = (await p.getAttribute("#backToTrackerLink", "href")) || "";
+    await p.close();
+    return href;
+  };
+
+  const standalone = await linkHref(`${BASE}/map?skin=tradeshift`, false);
+  t.check("standalone: the map's return link carries the skin",
+    /skin=tradeshift/.test(standalone), `href is ${standalone}`);
+
+  const embedded = await linkHref(`${BASE}/?skin=tradeshift`, true);
+  t.check("embedded: and so does it when the map is opened from the tracker",
+    /skin=tradeshift/.test(embedded), `href is ${embedded}`);
+
+  // THE COUNTERPART. A reader with no skin must not be given one, or
+  // this check would be satisfied by a link that always appends.
+  const plain = await linkHref(`${BASE}/map`, false);
+  t.check("and an unskinned reader's return link stays clean",
+    !/skin=/.test(plain), `href is ${plain}`);
+}
+
 t.check("the map rendered without page errors", errors.length === 0, errors.slice(0, 3).join("; "));
 
 console.log(`\n  note  ${checkedLabels} small-country labels measured across ${checkedRegions} regions`);

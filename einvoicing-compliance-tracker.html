@@ -3682,7 +3682,19 @@ async function openDeepDive(slug, opts){
     html = await res.text();
   } catch(err){
     console.warn('Falling back to a full navigation for', slug, err);
-    window.location.href = `/${slug}`;
+    // EVERY REAL NAVIGATION OUT OF THIS PAGE CARRIES THE SKIN, and all
+    // thirteen of them are wrapped, not just the one that was reported.
+    //
+    // Dan hit this on the map's "Return to the tracker" link and asked
+    // why the map differed from every other panel. It differs because
+    // the panels never navigate: they are opened in place, pushState
+    // rewrites the top URL, and the custom properties survive because
+    // nothing reloads. These thirteen lines DO reload, so each one lands
+    // on a URL with no skin on it and the partner theme is gone.
+    //
+    // withThemeParam() is same-SITE, so the members subdomain is
+    // included and a third-party URL is left alone.
+    window.location.href = withThemeParam(`/${slug}`);
     return;
   }
   // Guard against a slower, now-superseded fetch landing after a newer
@@ -3777,7 +3789,7 @@ async function openSourcesPage(opts){
     html = await res.text();
   } catch(err){
     console.warn('Falling back to a full navigation for /sources', err);
-    window.location.href = '/sources';
+    window.location.href = withThemeParam('/sources');
     return;
   }
   if(!sourcesPageOpen) return; // closed while loading
@@ -3877,7 +3889,7 @@ async function openInsightsPage(opts){
     html = await res.text();
   } catch(err){
     console.warn('Falling back to a full navigation for /insights', err);
-    window.location.href = '/insights';
+    window.location.href = withThemeParam('/insights');
     return;
   }
   if(!insightsPageOpen) return; // closed while loading
@@ -4080,7 +4092,7 @@ async function openMapPage(opts){
     html = await res.text();
   } catch(err){
     console.warn('Falling back to a full navigation for /map', err);
-    window.location.href = '/map';
+    window.location.href = withThemeParam('/map');
     return;
   }
   if(!mapPageOpen) return; // closed while loading
@@ -4691,7 +4703,7 @@ async function openArchive(opts){
     html = await res.text();
   } catch(err){
     console.warn('Falling back to a full navigation for the archive', err);
-    window.location.href = `${MEMBERS_ORIGIN}/members/archive`;
+    window.location.href = withThemeParam(`${MEMBERS_ORIGIN}/members/archive`);
     return;
   }
   if(!archiveOpen) return; // closed again before the fetch resolved
@@ -4705,7 +4717,7 @@ async function openArchive(opts){
     // transparently) -- fall back to a real navigation rather than
     // showing something broken.
     console.warn('Archive response did not contain .archive-wrap, falling back to full navigation');
-    window.location.href = `${MEMBERS_ORIGIN}/members/archive`;
+    window.location.href = withThemeParam(`${MEMBERS_ORIGIN}/members/archive`);
     return;
   }
 
@@ -4992,7 +5004,7 @@ async function openEducationPage(pageKey, opts){
   // ROOT-ABSOLUTE. pageKey is now a bare route name ('education-mandate-types'),
   // so a relative navigation would resolve against whatever path the tracker
   // has pushed into the address bar -- '/france' while a deep dive is open.
-  if(!info){ window.location.href = '/' + pageKey; return; }
+  if(!info){ window.location.href = withThemeParam('/' + pageKey); return; }
   const boardView = document.getElementById('boardView');
   const panel = document.getElementById('educationView');
   const topbarBrand = document.querySelector('.topbar-brand');
@@ -5026,7 +5038,7 @@ async function openEducationPage(pageKey, opts){
     html = await res.text();
   } catch(err){
     console.warn('Falling back to a full navigation for', pageKey, err);
-    window.location.href = '/' + pageKey;
+    window.location.href = withThemeParam('/' + pageKey);
     return;
   }
   // Guard against a slower, now-superseded fetch landing after a newer
@@ -5269,13 +5281,13 @@ async function fetchSubscribersHtml(){
   try {
     const res = await fetch('/api/preferences', { headers: { 'Accept': 'text/html' } });
     if(res.redirected || !res.ok){
-      window.location.href = MEMBERS_ORIGIN + '/members/preferences';
+      window.location.href = withThemeParam(MEMBERS_ORIGIN + '/members/preferences');
       return null;
     }
     return await res.text();
   } catch(err){
     console.warn('Falling back to a full navigation for preferences', err);
-    window.location.href = MEMBERS_ORIGIN + '/members/preferences';
+    window.location.href = withThemeParam(MEMBERS_ORIGIN + '/members/preferences');
     return null;
   }
 }
@@ -5288,7 +5300,7 @@ function mountSubscribers(panel, html){
   if(!wrap){
     // Shape changed on the other side. Better a real page than an empty
     // panel that looks like the feature is broken.
-    window.location.href = MEMBERS_ORIGIN + '/members/preferences';
+    window.location.href = withThemeParam(MEMBERS_ORIGIN + '/members/preferences');
     return;
   }
   const backLink = wrap.querySelector('.back-link');
@@ -5426,7 +5438,7 @@ async function openFeedbackPage(opts){
     html = await res.text();
   } catch(err){
     console.warn('Falling back to a full navigation for feedback.html', err);
-    window.location.href = '/feedback';
+    window.location.href = withThemeParam('/feedback');
     return;
   }
   if(!feedbackPageOpen) return;
@@ -5665,7 +5677,7 @@ async function openSubscribePage(opts){
     html = await res.text();
   } catch(err){
     console.warn('Falling back to a full navigation for subscribe.html', err);
-    window.location.href = '/subscribe';
+    window.location.href = withThemeParam('/subscribe');
     return;
   }
   if(!subscribePageOpen) return;
