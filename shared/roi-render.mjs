@@ -1503,6 +1503,9 @@ export function renderRoiPage(options) {
   const PLURALS = {
     jur: plurSet("word.jur", "jurisdiction", "word.jurs", "jurisdictions"),
     wave: plurSet("word.wave", "wave", "word.waves", "waves"),
+    // Phase and segment lengths round to whole weeks and reach 1 often.
+    // The chart tooltips used to hardcode "weeks" beside them.
+    week: plurSet("word.week", "week", "word.weeks", "weeks"),
     regime: plurSet("word.regime", "simple regime", "word.regimes", "simple regimes"),
     erp: plurSet("word.erp", "ERP/billing system", "word.erps", "ERP/billing systems"),
     integration: plurSet("word.integration", "country-system integration",
@@ -1541,6 +1544,30 @@ export function renderRoiPage(options) {
       "{0} selected jurisdiction has no mandated go-live. It is costed and scheduled; any date shown for it is a planning choice, not an obligation.",
       "pdf.undatedNote",
       "{0} selected jurisdictions have no mandated go-live. They are costed and scheduled; any date shown for them is a planning choice, not an obligation."),
+    // THREE VERBS THAT HAVE TO AGREE WITH A COUNT. Each of these reads
+    // "{0} of ... publish/back-plan", where the subject is the COUNT and
+    // not the noun after "of" -- so one jurisdiction publishes, and one
+    // wave back-plans. Sentence pairs rather than word pairs for exactly
+    // the reason PLURALS.nearestCount is one: the agreement reaches past
+    // the noun.
+    // THE EXISTING KEY IS THE PLURAL HALF in all three, rather than a new
+    // pair beside it. Two standing invariants -- 564's count of
+    // basis.%.just keys and 573's list naming chart.late -- guard these
+    // by name, and a fresh pair would have left both pointing at rows
+    // nothing renders. Same move as pdf.undatedNote in 733, and the
+    // replay caught the first version where I had not made it.
+    penaltyPublish: plurSet("basis.penalty.just1",
+      "{0} of your jurisdictions publishes a quantified penalty schedule {1}. Size it per country; there is no credible aggregate.",
+      "basis.penalty.just",
+      "{0} of your jurisdictions publish a quantified penalty schedule {1}. Size it per country; there is no credible aggregate."),
+    penaltyPublishPdf: plurSet("pdf.ben.penaltyD1",
+      "{0} of your jurisdictions publishes a schedule. Size it per country.",
+      "pdf.ben.penaltyD",
+      "{0} of your jurisdictions publish a schedule. Size it per country."),
+    wavesLate: plurSet("chart.late1",
+      "{0} of {1} back-plans to a start date that has already passed.",
+      "chart.late",
+      "{0} of {1} back-plan to a start date that has already passed."),
     nearestCount: plurSetBase("res.nearest3",
       "{0} of the {1} in the plan has a dated deadline ahead.",
       "{0} of the {1} in the plan have a dated deadline ahead."),
@@ -3423,7 +3450,7 @@ function buildGantt(sel0, erp, pace){
   progPhases.forEach(p => {
     const e = addW(new Date(pt), p.weeks);
     const x1 = x(pt), x2 = x(e.getTime());
-    s += \`<rect x="\${x1+1}" y="\${y+4}" width="\${Math.max(2,x2-x1-2)}" height="\${RH-8}" rx="3" fill="\${p.c}"><title>\${fill('${tj("chart.progTip","{0} — {1} weeks ({2} to {3})")}', p.n, p.weeks, isoD(new Date(pt)), isoD(e))}\\n${tj("chart.progNote","Programme-level: run once, not per country.")}</title></rect>\`;
+    s += \`<rect x="\${x1+1}" y="\${y+4}" width="\${Math.max(2,x2-x1-2)}" height="\${RH-8}" rx="3" fill="\${p.c}"><title>\${fill('${tj("chart.progTip","{0} — {1} ({2} to {3})")}', p.n, p.weeks + ' ' + plur(p.weeks, PLURALS.week), isoD(new Date(pt)), isoD(e))}\\n${tj("chart.progNote","Programme-level: run once, not per country.")}</title></rect>\`;
     pt = e.getTime();
   });
   s += \`<text x="\${x(pt)+6}" y="\${y+16}" fill="#93a3c0" font-family="'IBM Plex Mono',monospace" font-size="9.5">\${progWeeks}w</text>\`;
@@ -3545,11 +3572,11 @@ function buildGantt(sel0, erp, pace){
     if(detail){
       r.segs.forEach(sg => {
         const x1 = x(sg.s.getTime()), x2 = x(sg.e.getTime());
-        s += \`<rect x="\${x1+1}" y="\${y+4}" width="\${Math.max(2,x2-x1-2)}" height="\${RH-8}" rx="3" fill="\${sg.c}"><title>\${fill('${tj("chart.segTip","{0} — {1}")}', r.c[0], sg.n)}\\n\${fill('${tj("chart.segWeeks","{0} weeks: {1} to {2}")}', sg.weeks, isoD(sg.s), isoD(sg.e))}</title></rect>\`;
+        s += \`<rect x="\${x1+1}" y="\${y+4}" width="\${Math.max(2,x2-x1-2)}" height="\${RH-8}" rx="3" fill="\${sg.c}"><title>\${fill('${tj("chart.segTip","{0} — {1}")}', r.c[0], sg.n)}\\n\${fill('${tj("chart.segWeeks","{0}: {1} to {2}")}', sg.weeks + ' ' + plur(sg.weeks, PLURALS.week), isoD(sg.s), isoD(sg.e))}</title></rect>\`;
       });
     } else {
       const tip = r.segs.map(sg => fill('${tj("chart.segWeeksShort","{0}: {1}w")}', sg.n, sg.weeks)).join(', ');
-      s += \`<rect x="\${blockA}" y="\${y+4}" width="\${Math.max(6, blockB-blockA)}" height="\${RH-8}" rx="3" fill="\${late ? '#b5432f' : '#7b6bd6'}"><title>\${fill('${tj("chart.blockTip","{0} — {1} weeks of work, {2} to {3}")}', r.c[0], r.segs.reduce((a,sg)=>a+sg.weeks,0), isoD(r.segs[0].s), isoD(r.segs[r.segs.length-1].e))}\\n\${tip}</title></rect>\`;
+      s += \`<rect x="\${blockA}" y="\${y+4}" width="\${Math.max(6, blockB-blockA)}" height="\${RH-8}" rx="3" fill="\${late ? '#b5432f' : '#7b6bd6'}"><title>\${fill('${tj("chart.blockTip","{0} — {1} of work, {2} to {3}")}', r.c[0], (bw => bw + ' ' + plur(bw, PLURALS.week))(r.segs.reduce((a,sg)=>a+sg.weeks,0)), isoD(r.segs[0].s), isoD(r.segs[r.segs.length-1].e))}\\n\${tip}</title></rect>\`;
     }
     // Go-live milestone. Only drawn on rows whose track actually ENDS at the
     // deadline — in a multi-country wave the earlier countries finish before
@@ -3685,7 +3712,7 @@ function buildGantt(sel0, erp, pace){
       phases.forEach(pz => {
         const st = new Date(t), en = addW(st, pz.weeks);
         const x1 = x(st.getTime()), x2 = x(en.getTime());
-        s += \`<rect x="\${x1+1}" y="\${y+4}" width="\${Math.max(2,x2-x1-2)}" height="\${RH-8}" rx="3" fill="\${pz.c}" opacity="0.5"><title>\${c[0]} — \${pz.n}\\n\${fill('${tj("chart.discRowTip","{0} weeks. Indicative placement only: there is no fixed deadline, so this can move — but it cannot start before contracting completes.")}', pz.weeks)}</title></rect>\`;
+        s += \`<rect x="\${x1+1}" y="\${y+4}" width="\${Math.max(2,x2-x1-2)}" height="\${RH-8}" rx="3" fill="\${pz.c}" opacity="0.5"><title>\${c[0]} — \${pz.n}\\n\${fill('${tj("chart.discRowTip","{0}. Indicative placement only: there is no fixed deadline, so this can move — but it cannot start before contracting completes.")}', pz.weeks + ' ' + plur(pz.weeks, PLURALS.week))}</title></rect>\`;
         t = en.getTime();
       });
       s += \`<text x="\${x(t)+6}" y="\${y+16}" fill="#6b7a95" font-family="'IBM Plex Mono',monospace" font-size="9.5">\${total}w</text>\`;
@@ -3715,7 +3742,7 @@ function buildGantt(sel0, erp, pace){
   // the first country start, in front of every wave, which is the same
   // statement made in a way the reader cannot skim past.
   document.getElementById('ganttHead').innerHTML = (late
-    ? \`<div class="note warn"><strong>\${fill('${tj("chart.late","{0} of {1} waves back-plan to a start date that has already passed.")}', late, waveMeta.length)}</strong> ${tj("chart.late3","Compressed delivery, an interim filing approach, or an accepted late position &mdash; but the latest responsible start is behind you.")} \${notesLink()}</div>\`
+    ? \`<div class="note warn"><strong>\${fill(plur(late, PLURALS.wavesLate), late, waveMeta.length + ' ' + plur(waveMeta.length, PLURALS.wave))}</strong> ${tj("chart.late3","Compressed delivery, an interim filing approach, or an accepted late position &mdash; but the latest responsible start is behind you.")} \${notesLink()}</div>\`
     : soon ? \`<div class="note">\${fill('${tj("guard.soon","<strong>{0} must start within 90 days</strong> to hit the published deadline on your current phase assumptions.")}', soon + ' ' + plur(soon, PLURALS.wave))}</div>\`
     : \`<div class="note"><strong>Runway is comfortable across all \${waveMeta.length} waves</strong> on your current assumptions.</div>\`);
 
@@ -4663,7 +4690,7 @@ function build(){
 
     <tr class="tierC" data-row="vat"><td>${t("row.vat","VAT leakage / gap recovery")} <span class="tag intang">${t("tag.intangible","intangible")}</span></td><td><span class="bjust"><span class="blab">${tj("basis.lab.just","Justification:")}</span>\${fill('${tj("basis.vat.just","Often quoted and <strong>not defensible</strong> {0} &mdash; excluded from this model entirely.")}', ev('vatgap','${tj("ev.whyNot","why not")}'))}</span></td>\${dash}</tr>
 
-    <tr class="tierD" data-row="penalty"><td>${t("row.penalty","Penalty &amp; remediation exposure avoided")} <span class="tag intang">${t("tag.intangible","intangible")}</span></td><td><span class="bjust"><span class="blab">${tj("basis.lab.just","Justification:")}</span>\${fill('${tj("basis.penalty.just","{0} of your jurisdictions publish a quantified penalty schedule {1}. Size it per country; there is no credible aggregate.")}', sel.filter(c=>c[6]>0).length, ev('site','${tj("ev.deepDives","on their deep dives")}'))}</span></td>\${dash}</tr>
+    <tr class="tierD" data-row="penalty"><td>${t("row.penalty","Penalty &amp; remediation exposure avoided")} <span class="tag intang">${t("tag.intangible","intangible")}</span></td><td><span class="bjust"><span class="blab">${tj("basis.lab.just","Justification:")}</span>\${(pc => fill(plur(pc, PLURALS.penaltyPublish), pc, ev('site','${tj("ev.deepDives","on their deep dives")}')))(sel.filter(c=>c[6]>0).length)}</span></td>\${dash}</tr>
 
     <tr class="tierD" data-row="fraud"><td>${t("row.fraud","Fraud detection, working-capital visibility")} <span class="tag intang">${t("tag.intangible","intangible")}</span></td><td><span class="bjust"><span class="blab">${tj("basis.lab.just","Justification:")}</span>\${fill('${tj("basis.fraud.just","Strategic benefits with no published benchmark {0}.")}', ev('yours','${tj("ev.yourCall","your call")}'))}</span></td>\${dash}</tr>
     </tbody></table>
@@ -5151,7 +5178,7 @@ function build(){
           '${tj("pdf.ben.paperD","AUD 30.87 vs 9.18 an invoice.")}',
           '${tj("pdf.ben.paperSrc","ATO / Deloitte &mdash; A")}')
       + benefitCard('penalty', '${tj("pdf.ben.penalty","Penalty &amp; remediation exposure avoided")}',
-          fill('${tj("pdf.ben.penaltyD","{0} of your jurisdictions publish a schedule. Size it per country.")}', penaltyCount), '')
+          fill(plur(penaltyCount, PLURALS.penaltyPublishPdf), penaltyCount), '')
       + benefitCard('fraud', '${tj("pdf.ben.fraud","Fraud detection, working-capital visibility")}',
           '${tj("pdf.ben.fraudD","No published benchmark.")}', '')
       + '</div>'
