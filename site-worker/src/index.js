@@ -178,7 +178,7 @@ async function fetchAssetFollowingRedirect(env, request) {
   return resp;
 }
 
-async function buildTrackerData(db) {
+async function buildTrackerData(db, lang = "en") {
   // Ordering matters in one subtle place: the board's region filter
   // chips render in first-appearance order over DATA. The static array
   // happens to first-appear regions in exactly Europe → Middle East /
@@ -190,16 +190,25 @@ async function buildTrackerData(db) {
   const { results } = await db.prepare(`
     SELECT m.id, c.name_en AS country, c.code, c.region, m.date,
            m.portals, m.confidence,
-           mt.system, mt.desc, mt.actions
+           -- COALESCE, NOT A PLAIN JOIN. A milestone with no row in the
+           -- requested language would otherwise come back with a null
+           -- system and description and render as an empty card. All 217
+           -- are translated in all three languages today; the rule that
+           -- one bad row may not take down the board (see below) applies
+           -- to a missing row just as much as to an unparseable one.
+           COALESCE(mt.system, me.system) AS system,
+           COALESCE(mt.desc, me.desc) AS desc,
+           COALESCE(mt.actions, me.actions) AS actions
     FROM milestones m
     JOIN countries c ON c.id = m.country_id
-    LEFT JOIN milestone_translations mt ON mt.milestone_id = m.id AND mt.lang = 'en'
+    LEFT JOIN milestone_translations mt ON mt.milestone_id = m.id AND mt.lang = ?1
+    LEFT JOIN milestone_translations me ON me.milestone_id = m.id AND me.lang = 'en'
     WHERE m.on_tracker = 1
     ORDER BY CASE c.region
       WHEN 'Europe' THEN 0 WHEN 'Middle East / Africa' THEN 1
       WHEN 'Asia-Pacific' THEN 2 WHEN 'Americas' THEN 3 ELSE 4 END,
       m.date, m.id
-  `).all();
+  `).bind(lang).all();
   // ONE BAD ROW MAY NOT TAKE DOWN SEVENTY COUNTRIES.
   //
   // These two columns hold serialised JSON, and until 24 August a single
@@ -288,6 +297,29 @@ async function buildDeepDives(db) {
   return Object.fromEntries(results.map((r) => [r.name_en, "/" + r.slug]));
 }
 
+/** English country name -> its display name in `lang`.
+ *
+ *  Null for English, so "/" passes nothing and buildCountryIndexHtml()
+ *  behaves exactly as it did. Carries `__lang` so the index can sort the
+ *  way that language reads — see the comment there.
+ *
+ *  Falls back per ROW rather than per query: a country added without
+ *  translations should appear in the index in English, not vanish from
+ *  it. That is the same instinct as the COALESCE in buildTrackerData().
+ */
+async function buildCountryNames(db, lang) {
+  if (!lang || lang === "en") return null;
+  const { results } = await db.prepare(`
+    SELECT c.name_en, ct.display_name
+      FROM countries c
+      JOIN country_translations ct ON ct.country_id = c.id AND ct.lang = ?
+     WHERE c.slug IS NOT NULL AND ct.display_name IS NOT NULL AND ct.display_name <> ''
+  `).bind(lang).all();
+  const map = { __lang: lang };
+  for (const r of results) map[r.name_en] = r.display_name;
+  return map;
+}
+
 /**
  * The crawlable country index -- seventy real anchors.
  *
@@ -308,13 +340,32 @@ async function buildDeepDives(db) {
  * rots. This renders for everyone, reads as an A-Z any human can scan,
  * and is the same query the board already runs.
  *
- * ENGLISH NAMES, deliberately. The tracker is one URL serving four
- * languages by cookie with no Vary header, so anything server-rendered
- * here may be cached and shown to a reader of another language. The
- * canonical is the English URL; the index matches it, and the client
- * translates the labels after load (see wireCountryIndex in the shell).
+ * ENGLISH NAMES ON THE BARE URL, deliberately, and translated ones when
+ * the URL asks. "/" is one document serving four languages by cookie
+ * with no Vary header, so anything server-rendered there may be cached
+ * and shown to a reader of another language — the labels have to stay
+ * English and be translated in the browser (translateCountryIndex in
+ * the shell). "/?lang=de" is a different URL and a different cache key,
+ * and it is the one a search engine is told is the German alternate, so
+ * there the names are rendered in German.
+ *
+ * WHY IT MATTERS THAT THIS LIST IN PARTICULAR IS TRANSLATED. It is the
+ * only place a crawler that does not run JavaScript sees any country
+ * name at all: the board is built from the DATA array at runtime, so
+ * before scripts run there are 77 anchors here and nothing else. A
+ * German page whose only country anchors read "Austria" and "Belgium"
+ * is the state both the Spanish and French reviews described as
+ * "country names mixed into the Spanish experience" — and the state
+ * that makes a German page compete for the wrong search terms.
+ *
+ * `names` maps the English name to its localised display name. The href
+ * and the data-country attribute never change: there is one URL per
+ * country and it is the English slug, which is what the canonical
+ * claims, and the client keys its own pass on data-country. Passing the
+ * translated label makes that client pass a no-op rather than a
+ * correction.
  */
-function buildCountryIndexHtml(data, deepDives) {
+function buildCountryIndexHtml(data, deepDives, names = null) {
   // THE NEXT milestone per country, which is not the earliest one.
   //
   // The first version of this took the minimum date and printed it
@@ -330,11 +381,18 @@ function buildCountryIndexHtml(data, deepDives) {
     const prev = next.get(e.country);
     if (!prev || e.date < prev) next.set(e.country, e.date);
   }
-  const names = Object.keys(deepDives).sort((a, b) => a.localeCompare(b, "en"));
-  return names.map((name) => {
+  const label = (en) => (names && names[en]) || en;
+  // SORTED BY WHAT THE READER SEES. An A-Z index sorted on the English
+  // name and labelled in German is not alphabetical in either language —
+  // Österreich would sit under A and Deutschland under G. localeCompare
+  // is given the language so ä sorts as a German reader expects.
+  const lang = names && names.__lang ? names.__lang : "en";
+  const ordered = Object.keys(deepDives)
+    .sort((a, b) => label(a).localeCompare(label(b), lang));
+  return ordered.map((name) => {
     const href = deepDives[name];
     const date = next.get(name);
-    return `<li><a href="${escHtml(href)}" data-country="${escHtml(name)}">${escHtml(name)}</a>`
+    return `<li><a href="${escHtml(href)}" data-country="${escHtml(name)}">${escHtml(label(name))}</a>`
       + (date ? ` <span class="ci-date">${escHtml(date)}</span>` : "")
       + `</li>`;
   }).join("");
@@ -679,9 +737,17 @@ async function renderTracker(request, env) {
     }
   }
   try {
-    const [data, deepDives] = await Promise.all([
-      buildTrackerData(env.eicc_content),
+    // THE LANGUAGE COMES FROM THE URL, NOT THE COOKIE, and everything
+    // below follows from that. "/" is still one English document for
+    // every reader, translated in the browser; "/?lang=de" is its own
+    // cache key and is rendered German at the edge. Reading the cookie
+    // here would make one URL answer differently for two people, which
+    // is the one thing this page may never do.
+    const boardLang = urlLang(request) || "en";
+    const [data, deepDives, countryNames] = await Promise.all([
+      buildTrackerData(env.eicc_content, boardLang),
       buildDeepDives(env.eicc_content),
+      buildCountryNames(env.eicc_content, boardLang),
     ]);
     // Sanity guards: if D1 comes back implausibly empty (e.g. migrations
     // 201–204 not yet applied, so on_tracker matches nothing), serve the
@@ -732,7 +798,7 @@ async function renderTracker(request, env) {
     let indexed = false;
     out = out.replace(/<ul id="countryIndexList">[\s\S]*?<\/ul>/, () => {
       indexed = true;
-      return `<ul id="countryIndexList">${buildCountryIndexHtml(data, deepDives)}</ul>`;
+      return `<ul id="countryIndexList">${buildCountryIndexHtml(data, deepDives, countryNames)}</ul>`;
     });
     if (!indexed) console.log("Tracker: country index marker not found — serving the page without it.");
     // Last, so it substitutes into the injected markup as well as the

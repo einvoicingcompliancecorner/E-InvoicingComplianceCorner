@@ -113,6 +113,12 @@ t.check("the split found both kinds of page",
   others.length >= 10 && sampled.length === 5,
   `${others.length} non-country, ${sampled.length} country sampled`);
 
+const indexAnchors = (html) => {
+  const block = (html.match(/<ul id="countryIndexList">([\s\S]*?)<\/ul>/) || [])[1] || "";
+  return [...block.matchAll(/<a href="([^"]+)"[^>]*>([^<]+)<\/a>/g)]
+    .map((m) => ({ href: m[1], text: m[2].trim() }));
+};
+
 const text = (html) => html
   .replace(/<(script|style)\b[^>]*>[\s\S]*?<\/\1>/gi, " ")
   .replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
@@ -146,6 +152,44 @@ t.check(`every declared alternate answers in its own language (${checked} checke
   problems.length === 0, problems.slice(0, 8).join(" | ")
     + (problems.length > 8 ? ` … and ${problems.length - 8} more` : ""));
 t.check("this check actually fetched the alternates", checked >= 60, `${checked} fetched`);
+
+// ---- the country index, which is the only crawlable country text -----
+//
+// Before scripts run, the tracker's 77 index anchors are the ONLY place
+// a country is named: the board is built from the DATA array at runtime.
+// So a German page whose anchors read "Austria" and "Belgium" is a German
+// page competing for English search terms, and it is what the Spanish and
+// French reviews both described as "country names mixed into the Spanish
+// experience".
+//
+// The hrefs must NOT move with the labels. There is one URL per country
+// and it is the English slug; translating those would invent 77 URLs per
+// language that nothing serves.
+{
+  const enIdx = indexAnchors(await (await get("/")).text());
+  t.check("the English index has anchors to compare against",
+    enIdx.length >= 70, `${enIdx.length} anchors`);
+  for (const lang of ["de", "es", "fr"]) {
+    const idx = indexAnchors(await (await get(`/?lang=${lang}`)).text());
+    t.check(`${lang}: the index has the same number of anchors as English`,
+      idx.length === enIdx.length, `${idx.length} vs ${enIdx.length}`);
+    const hrefsMatch = idx.map((a) => a.href).sort().join() === enIdx.map((a) => a.href).sort().join();
+    t.check(`${lang}: every index href is still the English slug`, hrefsMatch,
+      "a translated label moved its URL — there is one URL per country");
+    const translated = idx.filter((a, i) => a.text !== enIdx.find((e) => e.href === a.href)?.text);
+    t.check(`${lang}: the index labels are in ${lang} (${translated.length} of ${idx.length} differ)`,
+      translated.length >= 40,
+      "the anchors still read English — this is the only country text a crawler sees");
+    // AND SORTED THE WAY THAT LANGUAGE READS. An A-Z list labelled in
+    // German but ordered on the English name puts Österreich under A
+    // and Deutschland under G, which is not an index.
+    const labels = idx.map((a) => a.text);
+    const sorted = [...labels].sort((a, b) => a.localeCompare(b, lang));
+    t.check(`${lang}: and the index is in ${lang} alphabetical order`,
+      labels.join("|") === sorted.join("|"),
+      `first divergence: ${labels.find((l, i) => l !== sorted[i]) || "none"}`);
+  }
+}
 
 // ---- the assumption the server-side substitution rests on -------------
 //
