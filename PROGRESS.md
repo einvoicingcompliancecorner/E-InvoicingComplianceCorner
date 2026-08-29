@@ -18400,3 +18400,111 @@ agree. Verified by restoring the strict selector and watching it report
 "13 of 15".
 
 `npm test`: **34 suites**.
+
+### 29 August 2026 — four observations, and none of them was what it looked like
+
+Dan deployed the URL-only skin and came back with four things. They turned
+out to be one regression of mine, one three-week-old invisibility, one
+decision of his own, and a whole class of query relying on a NULL.
+
+#### "The menu -> methodology does not retain partner branding"
+
+Also What changed, and four more he had not reached. The in-page panels
+are shadow roots inside the tracker's own document, so custom properties
+reach them by inheritance and the theme is free. **Six routes are not**:
+methodology, what changed, the whitepaper pop-out, and the shared panel
+hosting the planner, the guides and the spec register. Those are iframes,
+and an iframe resolves its own theme from its own URL.
+
+That had worked **by accident**. While `?skin=` lived in sessionStorage
+the frames were same-origin in the same tab and shared it. Removing the
+storage that morning — at Dan's request, so the skin would belong to the
+URL — took the theme out of all six at once, and only for `?skin=`
+visitors: a signed-in subscriber's frames still read the cookie. Measured
+both ways against the preview server before touching anything: cookie
+`#f9f9f9`, skin `#0f1a2b`.
+
+`withThemeParam()` now puts the resolved slug on the frame's URL. It reads
+the **attribute**, not `location.search`, because every in-page panel
+pushStates a clean path and the parameter is usually gone from the address
+bar by the time a frame opens. Same-site only — a sponsored whitepaper's
+`doc_url` is data and can point anywhere, and appending the reader's
+partner to a third party's URL would tell that host who they work for.
+
+Three call sites are named in the checks, **and** a count of every `src`
+the page writes fails when a seventh appears. Three checks naming three
+call sites cannot notice a fourth, which is the shape that has now caught
+this repository four times.
+
+#### "The European Union, side menu does not link"
+
+It did not, and the reason was worse than a missing link. The deep dive
+has existed since migration 007 — eleven cards, five stats, six
+registration steps, two portals, complete DE/ES/FR translations of every
+one, above the 77-row corpus average on all four dimensions every country
+has. **`countries.slug` was NULL for the EU alone**, so there was no URL,
+no sitemap entry, no anchor, and `/european-union` answered 404 to anyone
+who guessed it. Finished content, invisible.
+
+Offered publish-and-link, publish-don't-link, or leave it, Dan chose the
+middle. Giving it a slug then turned the suite red, and the failure was
+the valuable part.
+
+**`slug IS NULL` had become the site's way of saying "the EU is not a
+country", in four places.** Three had patched around it locally with
+`AND code != 'EU'` — the shape of a rule nobody had written down. The
+fourth, `getMapCountries()`, had not: the moment the slug existed it would
+have asked a choropleth to draw the European Union, which has no shape in
+Natural Earth. No feature, no label, no marker, and nothing to say why.
+`tests/map-tiles-agree.mjs` failed in the same run and named the country.
+
+The two meanings are separate now and written into schema.sql's standing
+warning, which had offered them as interchangeable filters:
+
+  - `slug IS NOT NULL` — this page can be SERVED (router, sitemap)
+  - `in_picker = 1` — this is one we LIST or COUNT (menu, map, picker,
+    every headline number)
+
+And it is not invisible: sitemapped-with-no-anchor is exactly the state
+the 24 August audit found 42 country pages in, so the EU gets **one**
+anchor, in the crawlable A-Z index a crawler reads, and none in the menu a
+reader uses. That asymmetry is the decision, so it is checked rather than
+commented.
+
+#### "Does not translate the whitepaper"
+
+Not a defect — Dan's own decision of 12 August, recorded in migration 508:
+this report's value is precision about what a source does and does not
+say, and a mistranslated hedge would destroy that faster than an
+untranslated one. The fallback was behaving as specified. Asked whether
+the specification still held, he reversed it.
+
+**The markup was never translated.** `tools/whitepaper_i18n.py` lifts the
+innerHTML of every leaf block, hands back a flat map, and rebuilds by
+substitution, so the four editions have identical structure by
+construction. Two things it cost:
+
+  - Its first version listed the block tags it expected and **missed 210
+    distinct word types** — the back link, every section number, every
+    reference marker. The rule is structural now (the outermost element
+    whose content is only text and inline tags) and coverage is measured
+    rather than assumed.
+  - **BeautifulSoup's `append()` MOVES a node out of the source soup**,
+    mutating the list being iterated. Every other node was dropped and the
+    round trip came back at 31,486 characters against 58,811. A round trip
+    through the ENGLISH strings found it before a word was translated.
+
+And it caught a real error: the Spanish had **reclassified an
+Inter-American Development Bank discussion paper from `[study]` to
+`[official]`** — a source-grading change, in the document about source
+grading. Nobody finds that by reading. Source-type tags are a fixed table
+per language now, compared position by position.
+
+`tests/whitepaper-editions.mjs` holds both whitepapers to it, in all six
+pairs, and names three known-benign CTC blocks rather than exempting the
+file — because exempting the file is the same move as `AND code != 'EU'`.
+
+**What it cannot check is whether a hedge survived.** That still needs a
+reader, and the commit says so.
+
+`npm test`: **43 suites**.

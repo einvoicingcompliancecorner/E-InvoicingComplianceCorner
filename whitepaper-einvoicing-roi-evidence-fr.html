@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+
+<html lang="fr">
+<head>
+<!-- theme:boot --><script>(function(){try{var c=document.cookie.match(/(?:^|; )eicc_theme=([^;]*)/);var s=c?decodeURIComponent(c[1]):"";if(!s){try{s=new URLSearchParams(location.search).get("skin")||"";}catch(e2){}}if(["tradeshift"].indexOf(s)<0)return;document.documentElement.setAttribute("data-eicc-theme",s);}catch(e){}})();</script>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Ce que la facturation électronique fait réellement économiser — les preuves publiées côté acheteur et côté fournisseur</title>
+<link href="https://e-invoicingcompliancecorner.com/whitepaper-einvoicing-roi-evidence-fr" rel="canonical"/>
+<link href="https://e-invoicingcompliancecorner.com/whitepaper-einvoicing-roi-evidence" hreflang="en" rel="alternate"/>
+<link href="https://e-invoicingcompliancecorner.com/whitepaper-einvoicing-roi-evidence-es" hreflang="es" rel="alternate"/>
+<link href="https://e-invoicingcompliancecorner.com/whitepaper-einvoicing-roi-evidence-de" hreflang="de" rel="alternate"/>
+<link href="https://e-invoicingcompliancecorner.com/whitepaper-einvoicing-roi-evidence-fr" hreflang="fr" rel="alternate"/>
+<link href="https://e-invoicingcompliancecorner.com/whitepaper-einvoicing-roi-evidence" hreflang="x-default" rel="alternate"/>
+<meta content="Un audit source par source des preuves publiées sur les économies liées à la facturation électronique, côté acheteur (AP) et côté fournisseur (AR), dans les pays ayant déjà mis en œuvre des mandats — et ce dont Forrester, Gartner, IDC, Hackett, Ardent et les Big Four disposent réellement. Chaque chiffre repris en titre est remonté jusqu'à son origine et noté." name="description"/>
+<meta content="article" property="og:type"/>
+<meta content="https://e-invoicingcompliancecorner.com/whitepaper-einvoicing-roi-evidence-fr" property="og:url"/>
+<meta content="https://e-invoicingcompliancecorner.com/images/og-default.png" property="og:image"/>
+<meta content="2400" property="og:image:width"/>
+<meta content="1260" property="og:image:height"/>
+<meta content="The E-Invoicing Compliance Corner" property="og:image:alt"/>
+<meta content="Ce que la facturation électronique fait réellement économiser — les preuves publiées côté acheteur et côté fournisseur" property="og:title"/>
+<meta content="Chaque chiffre d'économies de facturation électronique repris en titre, remonté jusqu'à son origine et noté. La base de preuves côté acheteur est vide, dix cabinets d'analyse et de conseil n'ont rien qui isole la facturation électronique, et les chiffres qui comblent ce vide ne résistent pas à la vérification." property="og:description"/>
+<meta content="summary_large_image" name="twitter:card"/>
+<meta content="https://e-invoicingcompliancecorner.com/images/og-default.png" name="twitter:image"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&amp;family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<style>
+  /* palette:start */
+  :root{
+    --ink:#0f1a2b;
+    --ink-2:#152238;
+    --ink-3:#1c2c48;
+    --line:#2b3c5a;
+    --text-lo:#f2f0e8;
+    --muted:#93a3c0;
+    --paper:#efe9db;
+    --paper-2:#e4dcc6;
+    --paper-line:#c9bd9e;
+    --card-ink:#241d10;
+    --card-key:#6b5f3f;
+    --accent:#c98a3a;
+    --live:#3f7d5c;
+    --live-dim:#274a38;
+    --live-ink:#bfe6cf;
+    --soon:#c98a3a;
+    --soon-dim:#6e4c22;
+    --soon-ink:#ffe0b3;
+    --stamp:#b5432f;
+    --stamp-dim:#7c3628;
+    --stamp-ink:#eec4ba;
+    --upcoming:#6b7a95;
+    --upcoming-dim:#3a4864;
+    --upcoming-ink:#dbe2ee;
+    --neutral-dim:#3a4864;
+    --neutral-ink:#c3cddd;
+    --nomandate:#8a5a75;
+    --nomandate-dim:#4a2f3d;
+    --nomandate-ink:#f0d6e6;
+    --tracked:#4a5568;
+    --tracked-dim:#2c333d;
+    --tracked-ink:#c7ccd3;
+    --on-stamp:#f2f0e8;
+    --on-soon:#1a1207;
+    --flap-ink:#f2f0e8;
+    --flap-alert:#e88a76;
+    --sidebar:#152238;
+    --sidebar-ink:#f2f0e8;
+    --sidebar-muted:#93a3c0;
+    --sidebar-accent:#c98a3a;
+    --sidebar-line:#2b3c5a;
+    --nav:#b5432f;
+    --nav-ink:#f2f0e8;
+    --radius:10px;
+  }
+  :root[data-eicc-theme="tradeshift"]{
+    --ink:#f9f9f9;
+    --ink-2:#ffffff;
+    --ink-3:#f0f0f0;
+    --line:#e3e3e3;
+    --text-lo:#1e1e1e;
+    --muted:#5c5c5c;
+    --paper:#ffffff;
+    --paper-2:#f9f9f9;
+    --paper-line:#e3e3e3;
+    --card-ink:#1e1e1e;
+    --card-key:#5c5c5c;
+    --accent:#0a37f0;
+    --live:#0d8162;
+    --live-dim:#e2faf2;
+    --live-ink:#0b5c45;
+    --soon:#a36416;
+    --soon-dim:#fdefdd;
+    --soon-ink:#7a4a10;
+    --stamp:#bf263c;
+    --stamp-dim:#fde8eb;
+    --stamp-ink:#8f1c2d;
+    --upcoming:#007c96;
+    --upcoming-dim:#e2f4f9;
+    --upcoming-ink:#0b5c6e;
+    --neutral-dim:#f0f0f0;
+    --neutral-ink:#5c5c5c;
+    --nomandate:#8a5a75;
+    --nomandate-dim:#f6ecf2;
+    --nomandate-ink:#6b4159;
+    --tracked:#4a5568;
+    --tracked-dim:#eef0f3;
+    --tracked-ink:#3a4351;
+    --on-stamp:#ffffff;
+    --on-soon:#ffffff;
+    --flap-ink:#1e1e1e;
+    --flap-alert:#8f1c2d;
+    --sidebar:#242dc2;
+    --sidebar-ink:#ffffff;
+    --sidebar-muted:#c7ccf5;
+    --sidebar-accent:#ffd9a3;
+    --sidebar-line:#4a52d4;
+    --nav:#242dc2;
+    --nav-ink:#ffffff;
+    --radius:10px;
+  }
+  /* palette:end */
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{background:var(--ink); color:var(--text-lo); font-family:'IBM Plex Sans',sans-serif; line-height:1.55;}
+  .display{font-family:'Big Shoulders Display',sans-serif; font-weight:800;}
+  .mono{font-family:'IBM Plex Mono',monospace;}
+  a{color:inherit;}
+  .wrap{max-width:1040px; margin:0 auto; padding:0 5vw 60px;}
+  .back-link{display:inline-flex; align-items:center; gap:6px; margin:24px 0 0; font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:var(--muted); text-decoration:none;}
+  .back-link:hover{color:var(--soon);}
+  .page-head{
+    display:flex; flex-wrap:wrap; gap:18px; align-items:flex-start; justify-content:space-between;
+    padding:18px 0 26px; border-bottom:1px solid var(--line); margin-bottom:28px;
+  }
+  .eyebrow{font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.16em; text-transform:uppercase; color:var(--soon); margin:0 0 4px;}
+  .page-title{font-size:clamp(28px,4.5vw,42px); margin:0; text-transform:uppercase; line-height:0.95;}
+  .page-sub{font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--muted); margin-top:8px; max-width:680px; line-height:1.6;}
+  .meta{font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--muted); text-align:right;}
+
+  .stat-strip{display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:1px; background:var(--line); border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; margin-bottom:36px;}
+  .stat-strip .stat{background:var(--ink-2); padding:16px 18px;}
+  .stat-strip .stat .num{font-family:'Big Shoulders Display',sans-serif; font-weight:800; font-size:22px; line-height:1.15;}
+  .stat-strip .stat .lbl{font-size:10.8px; color:var(--muted); text-transform:uppercase; letter-spacing:0.07em; margin-top:5px;}
+
+  .section{margin-bottom:44px;}
+  .section-head{display:flex; align-items:baseline; gap:12px; margin-bottom:18px;}
+  .section-head h2{font-size:22px; margin:0; text-transform:uppercase;}
+  .section-head .num{font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--soon);}
+  .section-intro{color:var(--muted); font-size:13.8px; max-width:760px; margin:-8px 0 20px;}
+  .prose{max-width:820px; font-size:13.8px; color:var(--text-lo);}
+  .prose p{margin:0 0 14px;}
+  .prose .aside{color:var(--muted); font-size:12.8px; border-left:2px solid var(--soon-dim); padding-left:12px;}
+
+  .spec-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:14px;}
+  .spec-card{background:var(--paper); color:#241d10; border-radius:var(--radius); border:1px solid var(--paper-line); padding:16px 18px 18px;}
+  .spec-card h3{font-family:'IBM Plex Mono',monospace; font-size:11px; text-transform:uppercase; letter-spacing:0.09em; color:#6b5f3f; margin:0 0 10px; display:flex; align-items:center; gap:8px;}
+  .spec-card h3::after{content:""; flex:1; height:1px; background:var(--paper-line);}
+  .spec-card p.note{font-size:12.6px; color:#5a5138; margin:10px 0 0; padding-top:10px; border-top:1px dashed var(--paper-line);}
+  .spec-card p.body{font-size:13px; color:#4a4030; margin:0 0 10px; line-height:1.55;}
+
+  .compare-card{background:var(--paper); color:#241d10; border-radius:var(--radius); border:1px solid var(--paper-line); padding:8px 18px; margin-bottom:14px; overflow-x:auto;}
+  .compare-table{width:100%; border-collapse:collapse; font-size:12.6px;}
+  .compare-table th, .compare-table td{text-align:left; padding:8px 10px; border-bottom:1px dashed var(--paper-line); vertical-align:top;}
+  .compare-table th{font-family:'IBM Plex Mono',monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:0.06em; color:#6b5f3f;}
+  .compare-table td{color:#241d10;}
+  .compare-table td.c{white-space:nowrap; font-weight:600;}
+  .group-label{font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.1em; text-transform:uppercase; color:var(--soon); margin:24px 0 10px;}
+  .group-count{color:var(--muted);}
+
+  .pill{display:inline-block; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.05em; text-transform:uppercase; padding:2px 8px; border-radius:20px; white-space:nowrap;}
+  .pill.gA{background:var(--live-dim); color:var(--live-ink); border:1px solid var(--live);}
+  .pill.gB{background:var(--soon-dim); color:var(--soon-ink); border:1px solid var(--soon);}
+  .pill.gC{background:var(--stamp-dim); color:var(--stamp-ink); border:1px solid var(--stamp);}
+  .pill.gD{background:var(--upcoming-dim); color:var(--neutral-ink); border:1px solid var(--upcoming);}
+
+  sup.ref{font-size:10px; line-height:0;}
+  sup.ref a{color:var(--soon); text-decoration:none; font-family:'IBM Plex Mono',monospace;}
+  sup.ref a:hover{text-decoration:underline;}
+  .compare-table sup.ref a, .spec-card sup.ref a{color:var(--stamp);}
+
+  .refs{font-size:12.6px; color:var(--muted); max-width:900px;}
+  .refs ol{margin:0; padding-left:26px;}
+  .refs li{margin-bottom:8px; overflow-wrap:break-word;}
+  .refs a{color:var(--soon); text-decoration:none;}
+  .refs a:hover{text-decoration:underline;}
+  .refs .src-tag{font-family:'IBM Plex Mono',monospace; font-size:10px; text-transform:uppercase; letter-spacing:0.05em; color:var(--upcoming);}
+
+  .conclusion-card{background:var(--ink-2); border:1px solid var(--line); border-radius:var(--radius); padding:16px 18px; margin-bottom:12px;}
+  .conclusion-card h4{margin:0 0 6px; font-size:14.5px;}
+  .conclusion-card h4 .cnum{font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--soon); margin-right:8px;}
+  .conclusion-card p{margin:0 0 10px; font-size:13px; color:var(--muted);}
+  .conclusion-card p:last-child{margin-bottom:0;}
+
+  .void{background:var(--ink-2); border:1px dashed var(--stamp); border-radius:var(--radius); padding:18px 20px; margin-bottom:14px;}
+  .void h4{margin:0 0 8px; font-size:14.5px; color:var(--stamp-ink);}
+  .void ul{margin:0; padding-left:20px; font-size:13px; color:var(--muted);}
+  .void li{margin-bottom:5px;}
+
+  .trace{background:var(--ink-3); border-left:3px solid var(--stamp); border-radius:0 6px 6px 0; padding:12px 15px; margin:0 0 14px; font-size:13px; color:var(--muted);}
+  .trace strong{color:var(--text-lo);}
+  .chain{font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--soon); display:block; margin:8px 0 0; line-height:1.7;}
+
+  footer{margin:40px 0 0; padding:22px 0 10px; border-top:1px solid var(--line); color:var(--muted); font-size:12.3px;}
+  footer p{max-width:860px; margin:0 0 8px;}
+
+  @media (max-width:640px){ .page-head{flex-direction:column;} .meta{text-align:left;} }
+  html[data-framed="1"] .back-link{display:none;}
+  /* The language row, and why this page has one now. The document was
+     English-only by Dan's decision of 12 August 2026; he reversed it on
+     28 August, so this ships as four files exactly like the CTC
+     whitepaper -- same markup, same class names, same reciprocal
+     hreflang. Lifted rather than re-invented so the two whitepapers
+     cannot drift apart. */
+  .lang-row{font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--muted); margin:10px 0 0;}
+  .lang-row a{color:var(--muted); text-decoration:none;}
+  .lang-row a:hover{color:var(--soon);}
+  .lang-row .lang-current{color:var(--soon); font-weight:600;}
+</style>
+<script>if(window.self !== window.top) document.documentElement.setAttribute('data-framed','1');</script>
+</head>
+<body data-lang-mode="files">
+<div class="wrap">
+<a class="back-link" href="/">← Retour au suivi mondial</a>
+<div class="lang-row"><a href="whitepaper-einvoicing-roi-evidence">EN</a> · <a href="whitepaper-einvoicing-roi-evidence-es">ES</a> · <a href="whitepaper-einvoicing-roi-evidence-de">DE</a> · <span class="lang-current">FR</span></div>
+<div class="page-head">
+<div>
+<p class="eyebrow">Analyses &amp; livres blancs</p>
+<h1 class="page-title display">Ce que la facturation électronique fait réellement économiser</h1>
+<p class="page-sub">Un audit source par source des preuves publiées concernant les économies côté acheteur (AP) et côté fournisseur (AR), établi uniquement à partir de juridictions ayant déjà mis en œuvre des mandats. Chaque chiffre phare est retracé jusqu'à son origine et noté — et lorsqu'il ne survit pas à ce traçage, nous le disons.</p>
+</div>
+<div class="meta">Publication : 12 août 2026<br/>E-Invoicing Compliance Corner</div>
+</div>
+<div class="stat-strip">
+<div class="stat"><div class="num display">0</div><div class="lbl">Études mesurées du coût AP après mandat trouvées, dans quelque pays que ce soit</div></div>
+<div class="stat"><div class="num display">1.5%</div><div class="lbl">Du bénéfice modélisé de €371.9bn de ViDA attribué à la facturation électronique elle-même</div></div>
+<div class="stat"><div class="num display">2016</div><div class="lbl">Millésime des chiffres par facture que la plus grande partie du monde continue de citer</div></div>
+<div class="stat"><div class="num display">18.9%</div><div class="lbl">L'écart de TVA du Chili après avoir atteint ~100% de facturation électronique</div></div>
+<div class="stat"><div class="num display">3</div><div class="lbl">Versions incompatibles de l'affirmation danoise sur les économies, aucune sourcée</div></div>
+<div class="stat"><div class="num display">10 sur 10</div><div class="lbl">Cabinets d'analystes et de conseil sans aucune étude portant sur la seule facturation électronique</div></div>
+</div>
+<!-- ================= 01 THE QUESTION ================= -->
+<div class="section">
+<div class="section-head"><span class="num mono">01</span><h2 class="display">La question, et la réponse courte</h2></div>
+<div class="prose">
+<p><strong>La question.</strong> Des pays appliquent la facturation électronique obligatoire depuis longtemps — le Chili depuis 2003, le Brésil depuis 2008, la Corée depuis 2011, le Mexique de façon universelle depuis 2014, l'Italie depuis 2019. À eux tous, ils ont traité des centaines de milliards de factures. Alors : qu'a-t-on <em>publié</em>, avec des sources, sur ce que la facturation électronique a réellement fait économiser aux entreprises concernées ? Précisément, et séparément, pour les <strong>acheteurs</strong> qui traitent leurs comptes fournisseurs et pour les <strong>fournisseurs</strong> qui émettent leurs créances ?</p>
+<p><strong>La réponse courte est que presque rien ne l'a été.</strong> Après avoir retracé chaque chiffre que nous avons pu trouver en Amérique latine, en Europe, en Asie-Pacifique, au Moyen-Orient et en Afrique jusqu'à son document d'origine chaque fois que ce document a pu être obtenu, la situation est la suivante :</p>
+<p><strong>Côté acheteur, nous n'avons trouvé aucune étude mesurée, postérieure à la mise en œuvre, portant sur le coût de traitement des factures en AP, sur le délai entre réception et approbation, sur les taux d'exception, sur les taux de demandes de renseignements ou sur l'effort d'archivage imputables à un mandat de facturation électronique — dans aucune juridiction, à aucun niveau de rigueur.</strong> Pas même une étude faible. Pas même une étude portant sur un seul pays. La catégorie est vide. Tout chiffre AP en circulation est soit une projection réalisée avant la mise en œuvre, soit une enquête demandant aux entreprises d'estimer, soit un modèle d'éditeur, soit une extrapolation à partir de l'une des très rares études de cabinets de conseil.</p>
+<p><strong>Côté fournisseur, il existe un peu plus de matière, mais guère</strong>, et ce qui existe porte surtout sur l'infrastructure de paiement plutôt que sur le coût de la facturation : les volumes chiliens de financement de factures électroniques, la comparaison des délais de paiement d'une seule agence néo-zélandaise, et une petite étude de terrain péruvienne sur le coût d'émission. Rien sur le délai moyen de recouvrement. Rien sur les taux de litiges. Rien sur la fréquence des retards de paiement — alors même qu'il s'agit de l'une des affirmations côté fournisseur les plus courantes avancées en faveur des mandats, où que ce soit.</p>
+<p><strong>Les analystes ne l'ont pas non plus, et cela nous a surpris.</strong> Forrester, Gartner, IDC, Hackett, Ardent Partners, Spend Matters et les Big Four ont pour métier de quantifier précisément ce genre de choses ; nous les avons donc vérifiés tous les dix. Il existe une grande quantité de recherches dans ce domaine, dont certaines sont très bonnes — et pas une seule étude parmi ces dix cabinets n'isole l'échange de factures électroniques de l'automatisation des comptes fournisseurs dans laquelle il s'inscrit. La section 06 en donne le compte rendu cabinet par cabinet, y compris l'étude Forrester qui circule comme preuve relative à la facturation électronique et qui porte en réalité sur autre chose.</p>
+<p><strong>Ce qui <em>est</em> bien étayé, c'est le bénéfice pour l'administration fiscale</strong>, et il l'est selon un standard réellement élevé : évalué par les pairs, quasi expérimental, publié dans des revues sérieuses. Ces travaux sont réels, et la section 07 les couvre. Mais ils répondent à une question différente de celle que pose un directeur financier, et ils sont couramment présentés comme s'ils répondaient à la sienne.</p>
+<p class="aside">Une observation structurelle explique l'essentiel de cette asymétrie, et il vaut la peine de l'énoncer avant tout détail. Toute étude crédible de la facturation électronique mesure des résultats visibles <em>dans les données de l'administration fiscale</em> — ventes déclarées, achats déclarés, TVA acquittée. Ce n'est pas un hasard : c'est ce que détiennent les administrations fiscales, et ce sont elles qui ont financé l'essentiel de la recherche. Les coûts AP et AR au niveau des entreprises sont invisibles dans ces données. La lacune de la base de preuves est donc <strong>structurelle plutôt que temporaire</strong>, et elle ne se comblera pas d'elle-même. Il faudrait une enquête au niveau des entreprises avec un groupe témoin, et personne n'en a commandé.</p>
+</div>
+</div>
+<!-- ================= 02 METHOD ================= -->
+<div class="section">
+<div class="section-head"><span class="num mono">02</span><h2 class="display">Méthode, et l'échelle de notation</h2></div>
+<div class="prose">
+<p><strong>Ce qui compte ici comme preuve.</strong> Nous avons passé le mois d'août 2026 à dépouiller des bases de données universitaires, des administrations fiscales, des institutions supérieures de contrôle, des éditeurs multilatéraux, des ministères nationaux et des cabinets d'analystes, en anglais, en espagnol, en portugais, en norvégien, en danois, en italien et en coréen. Une seule règle a gouverné tout l'exercice : <em>une citation doit étayer spécifiquement l'affirmation à laquelle elle est rattachée</em>. Chaque fois qu'une source secondaire citait un chiffre, nous sommes allés chercher le document primaire et avons vérifié que le nombre s'y trouvait effectivement. Lorsque nous n'avons pas pu nous procurer le document primaire, nous le disons dans le texte plutôt que de nous appuyer discrètement sur la reformulation — et cela arrive plus souvent qu'il ne le faudrait.</p>
+<p><strong>La distinction qui gouverne tout ce qui suit.</strong> La plupart des chiffres de « ROI de la facturation électronique » en circulation ne mesurent pas la facturation électronique. Ils mesurent l'<strong>automatisation complète des comptes fournisseurs</strong> ou une refonte de bout en bout du cycle procure-to-pay, dont la facturation électronique n'est qu'une composante. Cela importe énormément à quiconque construit un dossier économique, car une intégration à un mandat fournit les données structurées ; elle ne change pas en elle-même la façon dont fonctionnent les comptes fournisseurs. Chaque chiffre ci-dessous est donc étiqueté <strong>facturation électronique seule</strong> ou <strong>groupé</strong>, et lorsqu'une source ne rend pas la distinction claire, cela même est consigné comme un constat.</p>
+</div>
+<div class="compare-card">
+<table class="compare-table">
+<tr><th>Niveau</th><th>Signification</th><th>Comment l'utiliser</th></tr>
+<tr><td class="c"><span class="pill gA">A</span></td><td>Mesuré, primaire, attribuable à une organisation nommée et à un document précis que l'on peut se procurer</td><td>Citable comme un fait, à condition d'en indiquer le périmètre</td></tr>
+<tr><td class="c"><span class="pill gB">B</span></td><td>Publié par un organisme crédible, mais le chiffre n'y est pas attribué, ou il est modélisé plutôt que mesuré</td><td>Utilisable avec la réserve de modélisation qui l'accompagne</td></tr>
+<tr><td class="c"><span class="pill gC">C</span></td><td>Cas unique, organisation unique, petit échantillon non aléatoire, ou perception plutôt que mesure</td><td>À titre d'illustration uniquement. Jamais comme référence</td></tr>
+<tr><td class="c"><span class="pill gD">D</span></td><td>Affirmation sans base traçable, ou modèle d'éditeur présenté comme un constat</td><td>Ne pas utiliser</td></tr>
+</table>
+</div>
+</div>
+<!-- ================= 03 BUYER SIDE ================= -->
+<div class="section">
+<div class="section-head"><span class="num mono">03</span><h2 class="display">Le côté acheteur (AP) : ce qui existe</h2></div>
+<p class="section-intro">C'est la section la plus courte du rapport, et sa longueur est le constat. Tout ce que nous avons pu trouver sur les résultats côté acheteur découlant d'un mandat mis en œuvre figure dans le tableau ci-dessous, du plus solide au moins solide. Parcourez-le et remarquez ce qui manque : pas une seule entrée n'est une mesure avant-après du coût de traitement en AP.</p>
+<div class="compare-card">
+<table class="compare-table">
+<tr><th>Constat</th><th>Pays</th><th>Périmètre</th><th>Niveau</th><th>Ce dont il s'agit réellement</th></tr>
+<tr>
+<td class="c">Le destinataire économise 3 minutes par facture</td><td>Norvège</td><td>Facturation électronique seule</td><td><span class="pill gB">B</span></td>
+<td>Vista Analyse pour la direction fiscale norvégienne (Norwegian Tax Directorate), 2025. <strong>Révisé à la baisse</strong> par rapport à la fourchette d'Oslo Economics de 2020, soit 3–5 minutes, explicitement parce que le traitement des PDF et du papier s'est lui-même automatisé depuis 2020. Issu d'entretiens et d'un modèle, non mesuré<sup class="ref"><a href="#ref-1">[1]</a>,<a href="#ref-2">[2]</a></sup></td>
+</tr>
+<tr>
+<td class="c">Coût de réception de €0.10–0.40 par facture électronique selon la taille de l'entreprise</td><td>UE-8</td><td>Factures électroniques non structurées</td><td><span class="pill gB">B</span></td>
+<td>Évaluation des règles de facturation par la DG TAXUD, 2019, enquête auprès de 2,007 entreprises dans huit États membres. Les travaux européens du genre les mieux échantillonnés — mais les chiffres par facture portent sur des factures électroniques <em>non structurées</em> (essentiellement des PDF), ce qui n'est pas ce qu'exige un mandat<sup class="ref"><a href="#ref-3">[3]</a></sup></td>
+</tr>
+<tr>
+<td class="c">€8.40 économisés par facture électronique reçue</td><td>UE-27, B2G</td><td><strong>Groupé</strong></td><td><span class="pill gB">B</span></td>
+<td>Commission européenne, 2024. La formulation propre à la Commission évoque des économies provenant de « <em>l'automatisation du processus de facturation</em> », valorisées à €46 par heure de travail — une valorisation du temps, non une économie de trésorerie observée. Voir la section 05 pour le traçage<sup class="ref"><a href="#ref-4">[4]</a></sup></td>
+</tr>
+<tr>
+<td class="c">60% d'une économie de A$21.69 par facture revient à l'AP</td><td>Australie</td><td><strong>Groupé</strong></td><td><span class="pill gD">D</span></td>
+<td>La répartition 60/40 est une <strong>hypothèse de travail de l'ATO</strong> appliquée à un chiffre partagé entre émetteur et destinataire, non une mesure. L'étude sous-jacente est un rapport de conseil de 2016 non public. Voir la section 05<sup class="ref"><a href="#ref-5">[5]</a></sup></td>
+</tr>
+<tr>
+<td class="c">La facturation représente 50.6% du coût de conformité à la TVA des entreprises</td><td>Corée du Sud</td><td>Référence antérieure au mandat</td><td><span class="pill gA">A</span></td>
+<td>Kim &amp; Park (2007), via l'étude de cas de la Banque mondiale sur la Corée. 67.6% pour les entrepreneurs individuels. Établit que la facturation <em>est</em> le poste dominant du coût de conformité — et que la charge est plus lourde pour les petites entreprises. Ne dit rien de ce que la facturation électronique a ensuite fait économiser<sup class="ref"><a href="#ref-6">[6]</a></sup></td>
+</tr>
+<tr>
+<td class="c">Factures payées en 4.2 jours contre 7.1 jours</td><td>Nouvelle-Zélande</td><td>Facturation électronique seule</td><td><span class="pill gC">C</span></td>
+<td>MBIE, une seule agence gouvernementale, réception Peppol dans un système financier inchangé. Périmètre exceptionnellement net ; période de mesure non indiquée. Une étude de cas, non une référence<sup class="ref"><a href="#ref-7">[7]</a></sup></td>
+</tr>
+</table>
+</div>
+<div class="void">
+<h4>Ce qui n'existe pas — côté acheteur</h4>
+<ul>
+<li>Aucune étude mesurée postérieure au mandat sur le <strong>coût de traitement des factures en AP</strong> dans aucun des pays suivants : Italie, Espagne, Portugal, Danemark, Norvège, Suède, Finlande, France, Pologne, Hongrie, Grèce, Turquie, Mexique, Brésil, Chili, Pérou, Colombie, Argentine, Corée, Inde, Singapour, Japon, Chine, Arabie saoudite, Égypte, Kenya ou Rwanda.</li>
+<li>Aucun chiffre publié nulle part sur le <strong>délai entre réception et approbation</strong> avant et après un mandat.</li>
+<li>Aucun chiffre publié nulle part sur les <strong>taux d'exception ou les taux de demandes de renseignements des fournisseurs</strong> avant et après un mandat.</li>
+<li>Aucun chiffre publié nulle part sur l'<strong>effort d'audit ou d'archivage</strong> imputable à la facturation électronique.</li>
+<li>Aucun chiffre publié nulle part sur l'<strong>effort de rapprochement du crédit de TVA déductible</strong>, alors même qu'il s'agit de l'un des bénéfices les plus mis en avant commercialement en Inde et dans le Golfe.</li>
+</ul>
+</div>
+<div class="prose">
+<p class="aside">Ce qui se rapproche le plus d'une déclaration faisant autorité côté acheteur est une déclaration négative, et elle émane de l'évaluation par la Commission européenne de sa propre directive, neuf ans après avoir imposé la facturation électronique B2G dans les 27 États membres : <em>« Pour l'objectif spécifique de réduction des coûts de fonctionnement des opérateurs économiques, l'intervention de l'UE n'a pas été particulièrement fructueuse… L'absence de données ne permet pas d'estimer si les coûts de fonctionnement ont augmenté ou diminué après la mise en œuvre de la directive. »</em><sup class="ref"><a href="#ref-8">[8]</a></sup> C'est la phrase la plus honnête que quiconque ait écrite au sujet du ROI de la facturation électronique, et elle est enfouie dans un document de travail des services.</p>
+</div>
+</div>
+<!-- ================= 04 SUPPLIER SIDE ================= -->
+<div class="section">
+<div class="section-head"><span class="num mono">04</span><h2 class="display">Le côté fournisseur (AR) : ce qui existe</h2></div>
+<p class="section-intro">Maigre, et orienté vers l'infrastructure de paiement et de financement plutôt que vers le coût d'émission d'une facture. Le matériau chilien est ce qu'il y a de plus solide dans ce rapport sur le plan commercial — et il n'étaye toujours pas l'affirmation causale que l'on en tire habituellement.</p>
+<div class="spec-grid">
+<div class="spec-card">
+<h3>Chili — financement de factures</h3>
+<p class="body">Le bénéfice côté fournisseur le mieux documenté qui soit. La plateforme chilienne comprend un registre public des cessions de créances, qui rend une facture électronique juridiquement cessible à un factor. Les chiffres de l'administration fiscale elle-même : <strong>4,310,911 documents cédés électroniquement en 2018</strong>, en hausse de près de 15% sur un an, finançant <strong>plus de US$32.8 milliards</strong> aux entreprises, avec <strong>plus de 20,000 entreprises accédant chaque mois à l'affacturage électronique</strong>.<sup class="ref"><a href="#ref-9">[9]</a></sup></p>
+<p class="note">Deux réserves qui comptent. <strong>Il n'existe aucun contrefactuel</strong> — personne n'a estimé quel volume de financement de factures le Chili aurait connu sans la facturation électronique, et le Chili a par ailleurs légiféré sur des délais de paiement de 30 jours et dispose d'un secteur mature de l'affacturage non bancaire. L'affirmation défendable est « ce montant de financement transite par la plateforme », non « la facturation électronique en est la cause ». Et la publication officielle la plus récente que nous ayons pu trouver date de <strong>janvier 2019 et porte sur 2018</strong> — quiconque cite aujourd'hui les chiffres chiliens de l'affacturage cite une donnée vieille de huit ans.</p>
+</div>
+<div class="spec-card">
+<h3>Colombie — le correctif</h3>
+<p class="body">La Colombie a construit le même mécanisme (RADIAN) et publie des données actuelles. Factures inscrites comme titres négociables au 31 décembre 2025 : <strong>1,766,898</strong>. À rapporter à un volume national de factures électroniques se chiffrant en milliards.<sup class="ref"><a href="#ref-10">[10]</a></sup></p>
+<p class="note">C'est la vérification la plus utile qui soit de l'affirmation selon laquelle « la facturation électronique débloque le financement des PME ». Six ans après l'entrée en vigueur du mandat colombien, la pénétration du registre de financement reste marginale. <strong>Rendre une facture électronique ne la rend pas finançable à grande échelle</strong> — cela exige un registre distinct, une machinerie juridique distincte et un effort d'adoption distinct.</p>
+</div>
+<div class="spec-card">
+<h3>Pérou — coût d'émission</h3>
+<p class="body">Les seuls travaux de terrain latino-américains sur le coût d'émission par facture que nous ayons localisés. Le coût par facture est passé de <strong>S/2.28 en traditionnel à S/0.83 en électronique externalisé</strong>, soit une réduction d'environ 64%, décomposée en émission, distribution et stockage.<sup class="ref"><a href="#ref-11">[11]</a></sup></p>
+<p class="note"><span class="pill gC">C</span>  111 entreprises d'une seule région (San Martín), en auto-déclaration, sans groupe témoin, sans contrefactuel. Réellement utile comme ordre de grandeur pour le seul côté <em>émission</em> — il couvre l'émission, la distribution et le stockage, et rien du côté réception. Ne pas extrapoler au Pérou, et encore moins ailleurs.</p>
+</div>
+<div class="spec-card">
+<h3>Norvège — temps de l'émetteur</h3>
+<p class="body">L'émetteur économise environ <strong>une minute par facture</strong>, principalement parce qu'il envoie moins de relances de paiement, plus environ <strong>NOK 8 de coût de distribution</strong> par facture papier évitée. Une facture papier coûtait NOK 25–30 ; une transaction de facture électronique EHF environ NOK 4.<sup class="ref"><a href="#ref-2">[2]</a>,<a href="#ref-1">[1]</a></sup></p>
+<p class="note">Notez l'asymétrie, constante dans toutes les études norvégiennes depuis 2008 : <strong>le destinataire gagne environ trois fois ce que gagne l'émetteur</strong>. Tout dossier économique qui répartit les économies à parts égales entre les deux côtés ne reflète pas la littérature.</p>
+</div>
+<div class="spec-card">
+<h3>Chili — ce que les entreprises elles-mêmes ont dit</h3>
+<p class="body">L'administration fiscale chilienne a interrogé les entreprises à deux reprises, en 2009 et en 2013, sur les bénéfices de la facturation électronique. Dans les deux cas, <strong>l'économie de coûts est arrivée en dernier</strong> parmi les bénéfices valorisés par les entreprises — derrière la rapidité des processus, et derrière le simple fait de ne plus avoir à se rendre dans un bureau des impôts pour faire tamponner ses factures.<sup class="ref"><a href="#ref-12">[12]</a></sup></p>
+<p class="note"><span class="pill gC">C</span>  Il s'agit de notes d'importance de 1–5, non d'économies mesurées ; elles ne peuvent donc pas être converties en argent. Mais le classement est en lui-même un constat, venu de la juridiction de facturation électronique la plus mature au monde : les entreprises ont vécu la facturation électronique avant tout comme une <em>suppression de frictions</em>, non comme une réduction de coûts.</p>
+</div>
+<div class="spec-card">
+<h3>Suède — le seuil de viabilité</h3>
+<p class="body">Le Swedish Companies Registration Office a constaté qu'un minimum de <strong>cinq factures électroniques par mois</strong> rend la facturation électronique financièrement viable pour une entreprise.<sup class="ref"><a href="#ref-8">[8]</a></sup></p>
+<p class="note">Rarement cité et exceptionnellement pratique. C'est la déclaration publiée la plus claire indiquant qu'en dessous d'un certain volume l'arithmétique ne fonctionne pas — c'est-à-dire précisément la population avec laquelle tout mandat rencontre des difficultés, et précisément la population à laquelle on parle d'économies par facture.</p>
+</div>
+</div>
+<div class="void">
+<h4>Ce qui n'existe pas — côté fournisseur</h4>
+<ul>
+<li>Aucune étude nulle part sur le <strong>délai moyen de recouvrement (DSO)</strong> imputable à un mandat de facturation électronique.</li>
+<li>Aucune étude nulle part sur la <strong>fréquence des retards de paiement</strong> avant et après un mandat — alors même qu'il s'agit de l'une des affirmations côté fournisseur les plus courantes avancées en faveur des mandats, et de la justification explicite retenue par plusieurs juridictions.</li>
+<li>Aucune étude nulle part sur les <strong>taux de litiges ou d'avoirs</strong>.</li>
+<li>Aucune étude <strong>causale</strong> reliant la facturation électronique à l'accès au financement de factures. Le Chili dispose de volumes sans contrefactuel ; la Colombie dispose d'un volume, également sans contrefactuel, qui est faible.</li>
+<li>Aucune étude reliant la facturation électronique de la GST indienne au financement des factures des MPME via TReDS, alors même que les deux existent à l'échelle nationale.</li>
+</ul>
+</div>
+</div>
+<!-- ================= 05 TRACING THE HEADLINE NUMBERS ================= -->
+<div class="section">
+<div class="section-head"><span class="num mono">05</span><h2 class="display">Les chiffres que tout le monde cite, retracés</h2></div>
+<p class="section-intro">Si les preuves mesurées sont à ce point minces, que sont donc tous ces chiffres par facture énoncés avec assurance ? Nous avons remonté les quatre les plus cités jusqu'à leur origine. Aucun ne sort intact du voyage, et deux se révèlent pires qu'ils n'en ont l'air.</p>
+<div class="trace"><strong>1 · A$30.87 en papier contre A$9.18 en facture électronique — et Deloitte corroborant Deloitte.</strong>
+      Ce sont les chiffres par facture les plus cités en Asie-Pacifique, publiés par l'Australian Taxation Office. Trois choses que la page de l'ATO indique elle-même, et qui n'accompagnent presque jamais les chiffres. Premièrement, il s'agit explicitement d'<em>« une estimation de coût partagée entre l'émetteur et le destinataire de la facture »</em> — ni un chiffre AP ni un chiffre AR. Deuxièmement, la répartition AP/AR 60/40 si souvent reprise est une hypothèse de travail de l'ATO : <em>« La façon dont ce coût est réparti… peut varier considérablement. Aux fins de la présente évaluation, 40% de ce coût est attribué au processus de comptes clients et 60% aux comptes fournisseurs. »</em> Troisièmement, la source est une étude de Deloitte Access Economics de <strong>2016</strong> que nous n'avons pas pu obtenir — l'Australian Treasury la cite en notes de bas de page sans titre, sans année et sans entrée bibliographique.<sup class="ref"><a href="#ref-5">[5]</a></sup>
+      Vient ensuite la corroboration. L'ATO défend le millésime 2016 en notant que les chiffres <em>« concordent étroitement avec les conclusions du rapport APEC de 2024… qui reflète à son tour des conclusions similaires de l'étude de la Commission européenne de 2024 »</em>. Le rapport de l'APEC a été <strong>préparé par Deloitte</strong>, et il attribue son bénéfice par facture — USD 14.84, réparti à 60% en AP et 40% en AR, la même répartition — à <strong>« Deloitte Access Economics (2024) »</strong>.<sup class="ref"><a href="#ref-13">[13]</a></sup>
+<span class="chain">Deloitte 2016 → cité par l'ATO → corroboré par l'APEC 2025 → rédigé par Deloitte → attribué à Deloitte Access Economics 2024</span></div>
+<div class="trace"><strong>2 · €5.28 à l'émission / €8.40 à la réception — une valorisation du temps de travail pour l'automatisation du processus.</strong>
+      Les chiffres de la Commission européenne, et la seconde « corroboration » de l'ATO. La phrase de la Commission elle-même est précise et rarement citée intégralement : <em>« Les bénéfices quantitatifs de l'<strong>automatisation du processus de facturation</strong> sont estimés à environ EUR 5.28 par facture électronique émise et EUR 8.4 par facture électronique reçue, <strong>en retenant un coût du travail de EUR 46 par heure</strong>. »</em> Il s'agit donc d'une valorisation du temps gagné à un salaire supposé, pour l'automatisation d'un processus — et non d'une économie de trésorerie observée découlant de la facturation électronique.<sup class="ref"><a href="#ref-4">[4]</a></sup>
+      L'étude préparatoire sous-jacente existe et est cataloguée (DOI 10.2873/27631), mais nous n'avons pas pu récupérer le fichier ; par conséquent, <strong>la dérivation de 5.28 et de 8.40 — l'échantillon, la méthode, et la question de savoir si le chiffre côté destinataire suppose un rapprochement et une comptabilisation automatisés — reste non vérifiée par nous.</strong> Cela importe, car ces deux nombres se sont propagés : l'estimation nationale finlandaise d'un bénéfice de €888 millions par an est construite en les remultipliant par les volumes de factures finlandais.<sup class="ref"><a href="#ref-14">[14]</a></sup> Quiconque traite la Finlande comme une corroboration indépendante du chiffre de l'UE compte deux fois une seule source non vérifiée.</div>
+<div class="trace"><strong>3 · €25–65 par cycle purchase-to-pay — renvoyé en note à un site d'actualités.</strong>
+      Le même rapport de la Commission propose un nombre bien plus élevé pour le cas groupé, et il est admirablement clair sur le fait qu'il s'agit <em>bien</em> du cas groupé : <em>« Des économies plus importantes sont obtenues lorsque l'on automatise l'ensemble du cycle order-to-pay, y compris les commandes, les documents de transport, les factures et les avis de paiement… ce qui donne des bénéfices estimés entre EUR 25 et EUR 65 par cycle purchase-to-pay. »</em> La note de bas de page 27, qui l'étaye, n'est pas une étude. C'est un lien vers l'article d'un site italien d'actualités technologiques au sujet d'un rapport d'observatoire du Politecnico di Milano de <strong>2013</strong>.<sup class="ref"><a href="#ref-4">[4]</a>,<a href="#ref-15">[15]</a></sup>
+      C'est l'illustration la plus nette dont on dispose de l'ensemble du problème : dans un seul et même rapport formel au Parlement européen et au Conseil, le <em>petit</em> nombre porte sur la facture et le <em>grand</em> nombre porte sur l'ensemble du cycle order-to-pay — et c'est le grand que l'on cite aux entreprises à qui l'on demande de financer une intégration à un mandat.</div>
+<div class="trace"><strong>4 · Les « DKK 100–150 millions par an » du Danemark — trois nombres incompatibles, aucun sourcé.</strong>
+      Le Danemark a mis en place l'un des premiers mandats B2G au monde, à partir de 2005, et un chiffre d'économies circule depuis lors. Il n'y résiste pas. Les plus anciennes occurrences que l'on puisse retrouver datent de 2006–2007, toutes non sourcées, et elles ne concordent ni entre elles ni avec la version en circulation : une étude de cas de la Commission européenne donne à la fois <em>« environ EUR 94 millions par an »</em> et <em>« environ EUR 120–150 millions par an »</em> dans le même document ; un article de CORDIS de 2006 dit <em>« 150 millions d'euros, et les entreprises 50 millions d'euros par an »</em> ; et le groupe de travail gouvernemental norvégien de 2008 cite le Danemark comme affichant DKK 1.5 milliard de gains annuels.<sup class="ref"><a href="#ref-16">[16]</a>,<a href="#ref-17">[17]</a>,<a href="#ref-18">[18]</a></sup>
+      Notez également la devise : les versions sourcées disent <strong>EUR</strong> 120–150 millions ; la version la plus souvent répétée dit <strong>DKK</strong> 100–150 millions, soit environ un ordre de grandeur de moins. Et l'explicatif du programme publié en 2005 par le ministère danois des Finances, <em>Elektronisk fakturering — Kort &amp; Godt</em>, ne contient <strong>aucun chiffre d'économies monétaires</strong>.<sup class="ref"><a href="#ref-18">[18]</a></sup></div>
+<div class="prose">
+<p class="aside"><strong>Une note sur le matériel des éditeurs, car il ne se trouve pas là où on l'attendrait.</strong> Les chiffres de Billentis — source de la plupart des affirmations européennes par facture — sont des modèles de coûts financés par des éditeurs plutôt que des études de mesure, ce qui est bien connu. Ce qui l'est moins, c'est à quel point ils ont voyagé jusque dans des documents officiels. La communication de la Commission de 2010 sur la facturation électronique attribuait son chiffre de pénétration du marché à Billentis et son affirmation phare de €240 milliards d'économies à un document de Capgemini. Une commission régionale des Nations unies diffuse un guide de la facturation électronique transfrontalière dont le nom de fichier se termine littéralement par <span class="mono">_billentis_0.pdf</span>. Ainsi, « retracé jusqu'à une source officielle » n'est pas la fin du traçage : il faut vérifier ce que citait la source officielle.<sup class="ref"><a href="#ref-19">[19]</a>,<a href="#ref-20">[20]</a></sup></p>
+</div>
+</div>
+<!-- ================= 06 ANALYSTS AND CONSULTANCIES ================= -->
+<div class="section">
+<div class="section-head"><span class="num mono">06</span><h2 class="display">Ce dont les analystes et les cabinets de conseil disposent réellement</h2></div>
+<p class="section-intro">C'est la première question que tout le monde pose, et à juste titre. Forrester, Gartner, IDC, Hackett, Ardent, Spend Matters et les Big Four ont pour métier de quantifier exactement ce genre de choses. L'un d'eux a sûrement fait le travail ? Nous sommes allés les vérifier tous les dix. Aucun ne l'a fait.</p>
+<div class="prose">
+<p>Soyons précis sur l'affirmation, car il est facile de la surestimer. Il existe <em>une grande quantité</em> de recherches d'analystes dans ce domaine, dont certaines sont très bonnes. Ce qui n'existe nulle part parmi ces dix cabinets, c'est une étude qui isole l'<strong>échange de factures électroniques</strong> de l'automatisation des comptes fournisseurs dans laquelle il s'inscrit. Chaque chiffre de bénéfice quantifié se rattache à un ensemble groupé. Ce n'est pas un accident tenant à la façon dont ces recherches ont été financées — c'est ce que ces cabinets sont réellement payés pour mesurer, à savoir des catégories de logiciels et des fonctions d'entreprise, non une composante d'une intégration.</p>
+</div>
+<div class="compare-card">
+<table class="compare-table">
+<tr><th>Cabinet</th><th>Les travaux pertinents</th><th>Ce qu'ils mesurent réellement</th><th>Des chiffres de ROI ?</th></tr>
+<tr>
+<td class="c">Ardent Partners</td>
+<td><em>The State of ePayables 2025</em>, Andrew Bartolini, 20e édition annuelle, financée par Bottomline. 204 responsables des comptes fournisseurs et de la finance interrogés de mars à mai 2025<sup class="ref"><a href="#ref-21">[21]</a></sup></td>
+<td>L'ensemble de la fonction comptes fournisseurs. Moyennes du secteur : $9.84 de coût tout compris par facture, 8.2 jours, 18.4% de taux d'exception, 35.4% de traitement direct</td>
+<td>Pour les comptes fournisseurs, oui. Pour la facturation électronique, <strong>aucun</strong> — les mandats sont abordés qualitativement, sans aucun chiffre associé</td>
+</tr>
+<tr>
+<td class="c">The Hackett Group</td>
+<td><em>Digital World Class® Matrix: 2025 Accounts Payable Provider Perspective</em>, 19 nov. 2025. 15 prestataires évalués selon 17 critères<sup class="ref"><a href="#ref-22">[22]</a></sup></td>
+<td>Les résultats des logiciels d'automatisation des comptes fournisseurs : 60% de taux moyen sans intervention, 59% d'amélioration du délai de traitement après mise en œuvre, productivité 3.5× supérieure au-delà de 30% sans intervention, 79% de satisfaction</td>
+<td>Des chiffres de résultats, oui. Rien qui isole la facturation électronique. Leurs quartiles de coût par facture ne sont pas publics du tout</td>
+</tr>
+<tr>
+<td class="c">Gartner</td>
+<td><em>Magic Quadrant for Accounts Payable Applications</em> — première édition en mars 2025, édition en vigueur du 18 juin 2026<sup class="ref"><a href="#ref-23">[23]</a></sup></td>
+<td>Le positionnement des éditeurs sur le marché des applications de comptes fournisseurs</td>
+<td><strong>Aucun.</strong> Les Magic Quadrants sont des travaux de positionnement, non des travaux de ROI. Aucune catégorie Gartner consacrée à la conformité en matière de facturation électronique ne semble exister</td>
+</tr>
+<tr>
+<td class="c">IDC</td>
+<td><em>The Business Value of SAP Business Network — for Buyer Organizations</em>, doc #US52679524, mars 2025, financé par SAP. Huit organisations interrogées<sup class="ref"><a href="#ref-24">[24]</a></sup></td>
+<td>Tout un réseau d'affaires — commandes, factures, prévisions, stocks, intégration des partenaires. Spécifique aux factures : 60% de cycles d'approbation plus rapides, traitement passant de 16.3 à 6.7 jours</td>
+<td>Oui, et de façon rigoureuse — 404% de ROI sur trois ans. Mais cela ne peut pas être attribué au seul échange de factures</td>
+</tr>
+<tr>
+<td class="c">Forrester</td>
+<td>Les études <em>Total Economic Impact™</em>, chacune commandée par l'éditeur évalué. Basware AP Automation (janv. 2024) : 158% de ROI<sup class="ref"><a href="#ref-25">[25]</a></sup></td>
+<td>L'automatisation des comptes fournisseurs, tous formats de factures confondus — papier, EDI, XML, PDF. Les bénéfices du réseau et de l'échange ne sont pas quantifiés séparément</td>
+<td>Oui, pour l'automatisation des comptes fournisseurs. Voir ci-dessous l'étude largement citée comme preuve relative à la facturation électronique, et qui n'en est pas une</td>
+</tr>
+<tr>
+<td class="c">Spend Matters</td>
+<td>SolutionMap. Racheté par The Hackett Group en mai 2025<sup class="ref"><a href="#ref-26">[26]</a></sup></td>
+<td>L'évaluation des capacités des éditeurs et de la satisfaction des clients</td>
+<td><strong>Aucun, d'aucune sorte.</strong> Spend Matters ne publie pas de travaux de ROI quantifiés</td>
+</tr>
+<tr>
+<td class="c">Deloitte</td>
+<td><em>Business benefits of e-invoicing</em> ; <em>Finding the Business Benefits in the E-Invoicing Transition</em> (HBR, oct. 2025)<sup class="ref"><a href="#ref-27">[27]</a></sup></td>
+<td>Rien de mesurable. Les bénéfices sont énoncés qualitativement et le périmètre est explicitement groupé avec l'ERP et les technologies de conformité</td>
+<td><strong>Zéro chiffre, zéro source.</strong> L'article de HBR est signalé comme contenu sponsorisé de bout en bout</td>
+</tr>
+<tr>
+<td class="c">PwC</td>
+<td><em>Invoice automation for finance operations</em><sup class="ref"><a href="#ref-28">[28]</a></sup></td>
+<td>L'ensemble du cycle de vie de la facture — réception, validation, rapprochement, approbation, lettrage des encaissements</td>
+<td>Des chiffres sont donnés (40–60% de temps de traitement manuel en moins, 2–5 jours de moins sur les cycles d'approbation) <strong>sans méthode, sans échantillon et sans source</strong>, assortis des modalisateurs anglais « may » et « could »</td>
+</tr>
+<tr>
+<td class="c">EY</td>
+<td><em>E-invoicing Developments Tracker</em> ; <em>Tax and Finance Operations Survey 2025</em> (1,600 répondants, enquête réalisée par Oxford Economics)<sup class="ref"><a href="#ref-29">[29]</a></sup></td>
+<td>Le suivi des mandats ; et, dans l'enquête, la fonction fiscale et financière dans son ensemble</td>
+<td><strong>Aucun.</strong> Les trackers ne comportent aucun chiffre. La facturation électronique apparaît une fois dans l'enquête, en passant, à l'intérieur d'une catégorie plus large</td>
+</tr>
+<tr>
+<td class="c">KPMG</td>
+<td><em>E-invoicing &amp; digital reporting services</em><sup class="ref"><a href="#ref-30">[30]</a></sup></td>
+<td>Une offre de services</td>
+<td><strong>Aucune donnée chiffrée, d'aucune sorte.</strong></td>
+</tr>
+</table>
+</div>
+<div class="prose">
+<p>Deux observations honnêtes avant les traçages. Premièrement, les bons travaux sont ici réellement bons : l'étude d'IDC sur SAP Business Network nomme ses analystes, publie un numéro de document, décrit ses huit entretiens et donne ses chiffres intégralement et gratuitement. C'est plus de transparence que n'en offrent la plupart des sources de la section 05. Son problème est le périmètre, non la rigueur. Deuxièmement, chacun de ces cabinets vend sur ce marché — les Big Four vendent la mise en œuvre, Deloitte vend désormais aussi le logiciel, et les études TEI de Forrester sont commandées par l'éditeur évalué. Rien de tout cela ne disqualifie ces travaux. Cela signifie en revanche que les questions de périmètre méritent d'être posées deux fois.</p>
+</div>
+<div class="trace"><strong>1 · L'étude Forrester citée comme preuve relative à la facturation électronique, et qui n'en est pas une.</strong>
+      Une page intitulée <em>“ONESOURCE Pagero E-Invoicing Provides Benefits Beyond Tax Compliance”</em> circule comme preuve que Forrester aurait mesuré un ROI de 120% pour la facturation électronique. Il s'agit d'un « spotlight » qui reconditionne une étude antérieure : <em>The Total Economic Impact™ of Thomson Reuters ONESOURCE Indirect Tax</em>, commandée par Thomson Reuters, <strong>juin 2022</strong>. Comparez les deux et le reconditionnement se voit — ROI de 120% identique, VAN de $2.1M identique, les deux lignes de gains d'efficacité de l'étude mère étant simplement fusionnées en une seule.<sup class="ref"><a href="#ref-31">[31]</a></sup>
+      L'analyse financière de l'étude mère porte sur <strong>les modules fiscaux Determination et Compliance, la facturation électronique Pagero constituant un module complémentaire qui en est exclu</strong>. Le 120% appartient donc à un déploiement de détermination fiscale dans une organisation composite réalisant $5bn de chiffre d'affaires. Si quelqu'un vous présente ce chiffre comme une preuve relative à la facturation électronique, il vous a présenté la mauvaise étude.</div>
+<div class="trace"><strong>2 · Les chiffres de facturation électronique les plus cités au monde, et personne ne peut produire l'étude.</strong>
+      La section 05 a couvert l'ensemble A$30.87 / A$27.67 / A$9.18 et le fait que nous n'avons pas pu obtenir le rapport de Deloitte Access Economics de 2016 qui les sous-tend. Regarder Deloitte en particulier clôt la question plutôt que de la laisser ouverte. L'Australian Treasury cite l'étude à deux reprises, en notes de bas de page, <strong>sans éditeur, sans URL, sans méthode et sans échantillon</strong>.<sup class="ref"><a href="#ref-32">[32]</a></sup> L'ATO utilise les chiffres et ne renvoie à rien.
+      Le détail décisif se trouve sur le site de Deloitte lui-même. Le blog actuel de Deloitte Australie consacré à la facturation électronique reprend précisément ces chiffres — « <em>un courriel classique coûtant environ $31… Pour un PDF joint à un courriel, c'est environ $28 par transaction. Une facture électronique coûte un peu plus de $9</em> » — et les attribue, dans une citation du Small Business Ombudsman australien, à <strong>« la communauté des services numériques en Australie »</strong>. Deloitte ne cite pas Deloitte.<sup class="ref"><a href="#ref-33">[33]</a></sup>
+<span class="chain">Un cabinet qui disposerait d'un rapport citable le citerait.</span></div>
+<div class="trace"><strong>3 · Deloitte Access Economics (2024) n'existe qu'à l'intérieur d'un rapport rédigé par Deloitte.</strong>
+      Le rapport de l'APEC évoqué à la section 05 attribue son bénéfice de productivité de USD 14.84 par facture à « Deloitte Access Economics (2024) ». Nous sommes allés chercher ces travaux de 2024 en tant que document distinct. Ils ne semblent pas exister. L'attribution figure sur des graphiques et des tableaux à l'intérieur du rapport de l'APEC — que Deloitte Touche Tohmatsu a produit — <strong>sans entrée correspondante dans la liste des références</strong>.<sup class="ref"><a href="#ref-34">[34]</a></sup>
+      Notez également la forme du nombre : USD 14.84, réparti à 60% aux comptes fournisseurs et à 40% aux comptes clients. C'est exactement la même structure 60/40 que le modèle australien non publié de 2016, ce qui suggère une version rebasée du même modèle plutôt que de nouveaux travaux de terrain. Et le rapport lui-même décrit ce chiffre comme un scénario hypothétique construit sur des taux d'adoption supposés plutôt que sur des données de terrain.</div>
+<div class="prose">
+<p class="aside"><strong>Si vous utilisez bel et bien les repères d'Ardent, utilisez-les correctement — il existe deux éditions 2025 et elles divergent.</strong> <em>The State of ePayables 2025</em>, financée par Bottomline et administrée de mars à mai 2025, donne $9.84 par facture, 8.2 jours et un taux d'exception de 18.4% sur 204 répondants. <em>Ardent Partners' Accounts Payable Metrics That Matter in 2025</em>, sponsorisée par Pagero, donne $9.40, 9.2 jours et un taux d'exception de <strong>14%</strong> sur 212 répondants.<sup class="ref"><a href="#ref-21">[21]</a>,<a href="#ref-35">[35]</a></sup> Même cabinet, même année en couverture. La réconciliation tient aux dates d'administration : l'édition Pagero indique 2025 mais a été administrée de mars à mai <strong>2024</strong> ; c'est donc la vague la plus ancienne. Citez l'édition et la période d'administration, et non simplement « Ardent Partners, 2025 », faute de quoi votre lecteur trouvera l'autre et conclura que vous vous êtes trompé. Note utile : l'édition Pagero est celle qui <em>définit</em> effectivement le coût tout compris — « réception, traitement et approbation, ainsi que salaires, avantages sociaux, technologie et frais généraux » — une définition que l'édition <em>State of ePayables</em> omet.</p>
+<p class="aside"><strong>Une chose que nous n'avons pas pu vérifier, ce qui mérite en soi d'être dit.</strong> Nous voulions citer la définition du marché donnée par Gartner elle-même pour le Magic Quadrant des applications de comptes fournisseurs, car la façon dont un marché est <em>défini</em> indique ce que les analystes estiment devoir y figurer. Nous n'avons pas pu l'obtenir. Le rapport est payant, accessible uniquement via des pages de retirage d'éditeurs qui publient le positionnement de l'éditeur plutôt que le cadre d'analyse de Gartner. Nous n'allons donc pas le caractériser. Cela signifie tout de même que la carte la plus influente de ce marché logiciel est une carte que ni nous ni la plupart des clients de ceux qui y figurent ne peuvent réellement lire.<sup class="ref"><a href="#ref-23">[23]</a></sup></p>
+</div>
+</div>
+<!-- ================= 06 WHAT IS WELL EVIDENCED ================= -->
+<div class="section">
+<div class="section-head"><span class="num mono">07</span><h2 class="display">Ce qui est bien étayé — et à qui profite le bénéfice</h2></div>
+<p class="section-intro">La qualité de la recherche est ici réellement élevée : évaluée par les pairs, quasi expérimentale, publiée dans des revues qui rejettent la majeure partie de ce qu'elles reçoivent. Elle porte aussi, sans exception, sur l'argent que l'État perçoit plutôt que sur celui qu'une entreprise économise. Ces deux faits méritent d'être énoncés ensemble.</p>
+<div class="compare-card">
+<table class="compare-table">
+<tr><th>Pays</th><th>Constat</th><th>Protocole</th><th>Niveau</th><th>Source</th></tr>
+<tr><td class="c">Pérou</td><td>Ventes taxables déclarées +6.6–7.4%, achats +4.5–5.6%, dettes de TVA +8.1% la première année</td><td>Doubles différences sur des vagues échelonnées de mandat, 78,000 entreprises, &gt;80% de la TVA intérieure</td><td><span class="pill gA">A</span></td><td>IMF WP/19/231 ; <em>Journal of Public Economics</em> 2022<sup class="ref"><a href="#ref-36">[36]</a></sup></td></tr>
+<tr><td class="c">Pérou</td><td>Effet d'entraînement : les petites entreprises non soumises au mandat dont le partenaire l'était ont déclaré +11% de ventes, +17% de TVA</td><td>Analyse de réseau sur la même réforme</td><td><span class="pill gA">A</span></td><td>IMF WP/2022/057<sup class="ref"><a href="#ref-37">[37]</a></sup></td></tr>
+<tr><td class="c">Pérou</td><td>Réplication indépendante sur des données plus récentes : paiements effectifs de TVA +5–8% la première année</td><td>~200,000 entreprises</td><td><span class="pill gA">A</span></td><td>Consejo Fiscal del Perú, nov. 2025<sup class="ref"><a href="#ref-38">[38]</a></sup></td></tr>
+<tr><td class="c">Italie</td><td>« La facturation électronique a réduit la perte de TVA italienne en 2019 d'environ €2.2 milliards à €2.6 milliards par rapport à 2018 »</td><td>Doubles différences utilisant les produits soumis à autoliquidation comme témoins ; lacune des données commerciales sur les importations intra-UE</td><td><span class="pill gA">A</span></td><td>Heinemann &amp; Stiller, <em>Int. Tax &amp; Public Finance</em> 32(1)<sup class="ref"><a href="#ref-39">[39]</a></sup></td></tr>
+<tr><td class="c">Rwanda</td><td>Facturation électronique seule : +US$10,913 de TVA nette par entreprise. Contrôle fiscal seul : +US$26,843. Les deux combinés : +US$33,372</td><td>Univers des déclarations fiscales rwandaises, 2012–2019</td><td><span class="pill gA">A</span></td><td><em>Journal of Development Economics</em> 172 (2025)<sup class="ref"><a href="#ref-40">[40]</a></sup></td></tr>
+<tr><td class="c">Argentine, Équateur, Uruguay, Mexique</td><td>Effets positifs sur la TVA dans les quatre pays : Argentine, ventes taxables de 0 à +10% ; Équateur, TVA +17.7% (2015) et +24.7–28.1% (2016) ; Uruguay, paiements de TVA +3.7% ; Mexique, impôt constaté +11 à +16%</td><td>Doubles différences, appariement par score de propension, régression sur discontinuité</td><td><span class="pill gA">A</span></td><td>IDB discussion papers 561–563 ; ITESM pour le SAT<sup class="ref"><a href="#ref-41">[41]</a></sup></td></tr>
+</table>
+</div>
+<div class="prose">
+<p><strong>Trois réserves que les auteurs eux-mêmes formulent, et qui n'accompagnent presque jamais ces chiffres.</strong></p>
+<p><strong>Les auteurs de l'étude péruvienne affirment que l'effet porte sur la déclaration, non sur la production.</strong> La valeur ajoutée mesurée a progressé d'environ 15% chez les entreprises adoptantes, tandis que l'emploi progressait d'environ 2%. Leur conclusion est que cette croissance « est susceptible de refléter une augmentation de la part de la production qui est <em>déclarée</em> ». Quiconque cite « +7% de ventes » comme un bénéfice commercial de la facturation électronique a inversé le sens de l'article. Le même article note que la facturation électronique permet aux entreprises de réduire leurs coûts administratifs et de mise en conformité — et <strong>ne fournit aucune estimation chiffrée d'une quelconque réduction de coûts du côté des entreprises</strong>. L'article le plus rigoureux de la littérature sur la facturation électronique ne quantifie pas les économies réalisées par le contribuable.<sup class="ref"><a href="#ref-36">[36]</a></sup></p>
+<p><strong>Les auteurs de l'étude rwandaise ont constaté que la facturation électronique seule constituait un instrument faible.</strong> La version working paper le dit clairement : <em>« si l'adoption de la facturation électronique en tant que telle a augmenté les paiements nets de TVA des entreprises, cet effet est quantitativement limité, car les entreprises semblent réajuster leurs charges de manière à maintenir les paiements de TVA à un niveau bas. »</em> Les entreprises compensent la transparence du côté des ventes en gonflant le côté des achats. Le véritable résultat de l'article est que la valeur de la facturation électronique tient à son rôle de <em>catalyseur d'un contrôle fiscal efficace</em> — les seuls contrôles ayant significativement amélioré la conformité sont ceux portant sur des entreprises utilisant déjà la facturation électronique. Bon à savoir : cette phrase a été supprimée du résumé publié par la revue, dont la tonalité est plus positive. Si vous la citez, citez le working paper.<sup class="ref"><a href="#ref-40">[40]</a></sup></p>
+<p><strong>L'étude italienne ne mesure que le transfrontalier.</strong> Les €2.2–2.6bn correspondent à une réduction de la <em>perte de TVA</em>, extrapolée à partir d'un effet sur l'écart des données commerciales relatives aux importations intra-UE, sur douze mois. Elle n'avance aucune affirmation quant à la conformité à la TVA sur le plan intérieur. La réduction de 7% de l'écart mise en avant est l'estimation de référence ; les spécifications pondérées de l'article lui-même donnent 4.8–5.6%.<sup class="ref"><a href="#ref-39">[39]</a></sup></p>
+<p class="aside"><strong>Et un chiffre sur lequel il vaut la peine de s'arrêter.</strong> L'analyse d'impact de la Commission européenne elle-même pour la TVA à l'ère numérique modélise des bénéfices totaux de <strong>€371.9 milliards</strong> sur la période 2023–2032. Sur ce total, <strong>€335.6 milliards relèvent de la collecte de la TVA et de la C-efficiency</strong>, et le poste intitulé <strong>« E-invoicing benefits » s'élève à €5.6 milliards — soit 1.5% du total</strong>. À mettre en regard des €79.1 milliards de charge administrative modélisée pesant sur les entreprises.<sup class="ref"><a href="#ref-42">[42]</a></sup> Lu simplement, l'argumentaire que l'Europe se donne elle-même en faveur de ViDA est un argumentaire de recettes fiscales, non un argumentaire d'efficacité pour les entreprises. C'est une base légitime pour une politique publique. C'est une proposition très différente de celle que l'on vend habituellement aux entreprises.</p>
+</div>
+</div>
+<!-- ================= 07 COUNTER-EVIDENCE ================= -->
+<div class="section">
+<div class="section-head"><span class="num mono">08</span><h2 class="display">Les éléments de preuve contraires</h2></div>
+<p class="section-intro">Des résultats qui vont à l'encontre du discours dominant, tous issus de sources primaires, dont aucun n'apparaît dans la documentation des fournisseurs. Un business case qui les anticipe est plus solide qu'un business case qui se les voit opposer par surprise.</p>
+<div class="spec-grid">
+<div class="spec-card">
+<h3>Chili — adoption universelle, écart persistant</h3>
+<p class="body">Le Chili a atteint 99% de factures électroniques en avril 2017 et un mandat universel en février 2018. L'étude de 2025 de sa propre administration fiscale chiffre le <strong>non-respect des obligations de TVA à 18.9% pour 2018–2020</strong>, soit 1.9% du PIB, avec un écart de 46.4% sur l'impôt sur les sociétés.<sup class="ref"><a href="#ref-43">[43]</a></sup></p>
+<p class="note">Une facturation électronique quasi universelle coexistant avec un écart de TVA d'environ 19% constitue le correctif le plus puissant à l'affirmation selon laquelle « la facturation électronique comble l'écart de TVA ». Notez également que <strong>le mandat chilien n'a jamais fait l'objet d'une évaluation économétrique de son impact sur les recettes</strong> — la synthèse IDB/CIAT l'exclut explicitement. Le pays le plus cité comme exemple de réussite est celui qui ne dispose d'aucune évaluation d'impact.</p>
+</div>
+<div class="spec-card">
+<h3>Équateur — la fraude à l'intérieur du système</h3>
+<p class="body"><strong>5% des entreprises utilisent chaque année des factures fantômes</strong> et, parmi ces entreprises, les transactions fantômes représentent <strong>14% des achats</strong> — avec une concentration parmi les entreprises de plus grande taille. Publié dans <em>AER: Insights</em>, à partir des données transaction par transaction que la facturation électronique génère elle-même.<sup class="ref"><a href="#ref-44">[44]</a></sup></p>
+<p class="note">Des données de facturation structurées, validées et en temps réel n'équivalent pas à des transactions authentiques. La facturation électronique rend la fraude <em>visible</em> ; elle ne la rend pas impossible.</p>
+</div>
+<div class="spec-card">
+<h3>Corée — l'argument du transfert de coûts</h3>
+<p class="body">La Corée applique le mandat B2B le plus ancien au monde. Son administration fiscale fait état d'une <strong>réduction annuelle de 900 milliards de KRW</strong> des coûts de préparation, de conservation et de dépôt des factures.<sup class="ref"><a href="#ref-45">[45]</a></sup> Mais le coût national de mise en conformité supporté par les contribuables, mesuré par le Korea Institute of Public Finance, a atteint <strong>15.44 milliers de milliards de KRW pour 2021, soit 0.73% du PIB</strong>, et un argument académique national présenté à la Korean Tax Association veut que ces coûts soient passés d'environ 7 milliers de milliards de KRW en 2007 à 15 milliers de milliards en 2022, tandis que le coût de la collecte pour l'État lui-même <em>diminuait</em>.<sup class="ref"><a href="#ref-46">[46]</a></sup></p>
+<p class="note">La thèse avancée est que la numérisation a <strong>transféré des coûts de l'administration vers les contribuables</strong>, en les concentrant sur les petites entreprises. Le crédit d'impôt par facture que la Corée continue d'accorder aux entreprises individuelles constitue en soi la preuve que quelqu'un a chiffré cette charge et estimé qu'elle devait être compensée.</p>
+</div>
+<div class="spec-card">
+<h3>Norvège — une base de référence qui se rétrécit</h3>
+<p class="body">La mise en garde méthodologique la plus importante que nous ayons trouvée, tous documents confondus. Le rapport de 2020 d'Oslo Economics pour le gouvernement norvégien indique que <strong>les études antérieures ont surestimé les gains en postulant un traitement entièrement manuel des factures</strong>, alors que les factures non électroniques sont déjà largement traitées de façon numérique par numérisation — et que la poursuite de l'automatisation comptable <em>réduira</em> avec le temps le gain marginal par facture apporté par la facturation électronique.<sup class="ref"><a href="#ref-2">[2]</a></sup></p>
+<p class="note">Vista Analyse en a tiré les conséquences en 2025, en révisant à la baisse le gain de temps du destinataire, de 3–5 minutes à 3, en invoquant explicitement les améliorations du traitement des PDF et du papier depuis 2020.<sup class="ref"><a href="#ref-1">[1]</a></sup> Cela fragilise toute la catégorie des comparaisons du type « le papier coûte €11, la facture électronique coûte €1 » : la base de référence à laquelle elles se mesurent n'existe plus.</p>
+</div>
+<div class="spec-card">
+<h3>Pologne — une institution supérieure de contrôle</h3>
+<p class="body">La NIK polonaise a indiqué en juillet 2025, à l'issue d'un contrôle portant sur la période de janvier 2022 à juin 2024, que les problèmes du KSeF étaient apparents dès 2023 et que le ministre des Finances <em>« n'a pas pris de mesures efficaces »</em> ; un audit externe a mis en évidence une absence de supervision efficace. Dans le même temps, le recouvrement moyen par contrôle a été divisé par trois et les contrôles de TVA ont reculé de 30.8% en 2023.<sup class="ref"><a href="#ref-47">[47]</a></sup></p>
+<p class="note">Les institutions supérieures de contrôle sont d'une franchise inhabituelle et ne sont pour ainsi dire jamais citées dans la communication commerciale sur la facturation électronique. Nous avons cherché des équivalents au Danemark, en Suède et en Italie et n'en avons trouvé aucun — non pas parce que les programmes étaient irréprochables, mais parce que personne ne les a contrôlés.</p>
+</div>
+<div class="spec-card">
+<h3>Les coûts de mise en œuvre dépassent les attentes</h3>
+<p class="body">L'enquête propre au rapport APEC de 2025 — à distinguer de ses bénéfices modélisés — a établi que <strong>79% des répondants déclaraient que les coûts de mise en œuvre avaient dépassé les attentes</strong>, les coûts des grandes entreprises dépassant USD 20,000.<sup class="ref"><a href="#ref-13">[13]</a></sup></p>
+<p class="note">Une ironie utile : dans ce rapport, les constats relatifs aux coûts sont mieux sourcés que ceux relatifs aux bénéfices, parce qu'ils proviennent de son enquête propre plutôt que d'une modélisation. Ce sont aussi ceux que personne ne cite.</p>
+</div>
+</div>
+</div>
+<!-- ================= 08 CONCLUSIONS ================= -->
+<div class="section">
+<div class="section-head"><span class="num mono">09</span><h2 class="display">Conclusions</h2></div>
+<p class="section-intro">Ce que les preuves — par opposition à la communication commerciale — étayent réellement, et ce qu'une entreprise devrait en faire.</p>
+<div class="conclusion-card">
+<h4><span class="cnum">C1</span>Il n'existe aucune preuve publiée et mesurée du retour sur investissement de la facturation électronique du côté acheteur (AP). Nulle part.</h4>
+<p>Deux décennies de mandats, des centaines de milliards de factures, et pas une seule étude avant-après du coût de traitement AP, du délai de cycle ou des taux d'exception qui soit imputable à un mandat de facturation électronique. Tout chiffre AP en circulation est une projection, une estimation recueillie auprès de répondants, ou un modèle de fournisseur. Ce n'est pas une accusation visant un chiffre en particulier — c'est un constat portant sur une catégorie qui se révèle vide.</p>
+<p>Et avant que quiconque suppose que les cabinets d'études ont discrètement fait ce travail et l'ont placé derrière un péage : nous les avons vérifiés tous les dix, et ils ne l'ont pas fait. Ce qu'ils ont mesuré, avec soin et en détail, c'est la fonction comptabilité fournisseurs et les logiciels qui l'automatisent. C'est une autre chose, et aucun d'eux ne prétend le contraire — c'est la reprise du propos qui brouille les deux.</p>
+</div>
+<div class="conclusion-card">
+<h4><span class="cnum">C2</span>Les chiffres les plus cités mesurent l'automatisation des processus, et leurs propres éditeurs le disent.</h4>
+<p>Les €5.28/€8.40 de la Commission portent explicitement sur « l'automatisation du processus de facturation » à un taux supposé de €46/heure. L'écart de A$30.87 à A$9.18 de l'ATO est explicitement un chiffre partagé entre l'émetteur et le destinataire, avec une répartition supposée de 60/40. Le chiffre de €25–65 porte explicitement sur l'ensemble du cycle de la commande au paiement. Dans chaque cas, la nuance figure dans le document source et disparaît de la citation. Si vous ne devez retenir qu'une chose de ce rapport : <strong>lisez la phrase dans laquelle le chiffre s'inscrit, et non le chiffre.</strong></p>
+</div>
+<div class="conclusion-card">
+<h4><span class="cnum">C3</span>Le destinataire gagne environ trois fois plus que l'émetteur — la seule répartition constante dans la littérature.</h4>
+<p>La Norvège l'a mesuré à plusieurs reprises depuis 2008 et aboutit toujours au même point : environ une minute pour l'émetteur, environ trois pour le destinataire. L'ATO retient de son côté, de façon indépendante, une hypothèse de 60/40. Toutes les sources sérieuses vont dans le même sens. Un business case qui répartit les bénéfices à parts égales entre l'AP et l'AR, ou qui met en avant les économies du côté fournisseur (AR), ne reflète rien de ce qui a été publié.</p>
+</div>
+<div class="conclusion-card">
+<h4><span class="cnum">C4</span>La base de référence se déplace, ce qui érode le bénéfice avec le temps.</h4>
+<p>Les affirmations les plus fortes en matière d'économies par facture comparent la facturation électronique structurée à un traitement papier entièrement manuel. Cette comparaison est de plus en plus fictive : le traitement des PDF et du papier numérisé est lui-même désormais largement automatisé, ce qui explique pourquoi la Norvège a révisé ses propres chiffres <em>à la baisse</em> entre 2020 et 2025. Plus vous mettez en œuvre tardivement, plus votre gain marginal est faible — et plus votre business case doit reposer sur la conformité plutôt que sur l'efficacité.</p>
+</div>
+<div class="conclusion-card">
+<h4><span class="cnum">C5</span>L'argumentaire de conformité est solide, bien étayé, et il appartient à l'État.</h4>
+<p>Le Pérou, l'Italie, le Rwanda, l'Argentine, l'Équateur, l'Uruguay et le Mexique disposent tous de preuves causales crédibles d'une amélioration du respect des obligations fiscales. Ces travaux sont de bonne qualité et le présent rapport ne les minimise pas. Mais ils mesurent les ventes déclarées, les achats déclarés et la TVA acquittée — les recettes de l'État, non le coût pour le contribuable. L'analyse d'impact européenne de ViDA situe elle-même 90% du bénéfice modélisé dans la collecte de la TVA et 1.5% dans la facturation électronique proprement dite. Présenter des travaux sur la conformité comme un retour sur investissement pour les entreprises est l'erreur de catégorie la plus répandue dans ce domaine — et la deuxième plus répandue, juste derrière, consiste à présenter des travaux sur l'automatisation de l'AP comme des travaux sur la facturation électronique.</p>
+</div>
+<div class="conclusion-card">
+<h4><span class="cnum">C6</span>Les bénéfices en matière de financement exigent des dispositifs distincts et, pour l'essentiel, ne se sont pas matérialisés.</h4>
+<p>Le factoring électronique chilien est réel et de grande ampleur, mais il ne dispose d'aucun contrefactuel et ses données officielles les plus récentes datent de 2018. La Colombie a construit le même mécanisme, publie des chiffres à jour, et affiche une pénétration de quelques millions de factures face à des volumes nationaux qui se comptent en milliards. Rendre une facture électronique ne la rend pas finançable. Si le financement des PME figure dans votre business case, il lui faut ses propres preuves.</p>
+</div>
+<div class="conclusion-card">
+<h4><span class="cnum">C7</span>Que faire à la place : mesurez votre propre base de référence avant de commencer.</h4>
+<p>Compte tenu de l'état des preuves publiées, les seuls chiffres par facture défendables dans votre business case sont <strong>les vôtres</strong>. Avant la mise en œuvre, relevez : le coût par facture traitée du côté acheteur (AP), le délai entre réception et approbation, le taux d'exception et ses causes, le coût d'émission du côté fournisseur (AR), et le temps consacré aux déclarations fiscales et à la préparation des contrôles. Mesurez ensuite les mêmes éléments après coup.</p>
+<p>Ce n'est pas un conseil de désespoir — c'est ce qu'implique réellement le manque de preuves, et cela présente un avantage pratique. Un directeur financier fera davantage confiance à un chiffre plus modeste que vous avez mesuré qu'à un chiffre plus élevé que vous avez importé, et un mandat est une occasion rare d'instrumenter un processus que la plupart des organisations n'ont jamais mesuré au départ.</p>
+</div>
+<div class="conclusion-card">
+<h4><span class="cnum">C8</span>Et soyez clair sur ce qu'est un mandat.</h4>
+<p>La formulation honnête, pour la plupart des programmes dictés par la conformité, est que vous achetez le droit de continuer à opérer sur un marché, non un retour sur investissement. Les économies directes sont réelles, mais elles sont rendues possibles par l'intégration et ne sont <em>encaissées</em> que si vous repensez également le processus — ce qui constitue un programme distinct, avec un coût distinct, visant une autre partie de l'organisation. C'est en confondant les deux que les business cases de facturation électronique finissent par promettre un retour que l'intégration n'allait jamais produire.</p>
+</div>
+</div>
+<!-- ================= 09 REFERENCES ================= -->
+<div class="section">
+<div class="section-head"><span class="num mono">10</span><h2 class="display">Références</h2></div>
+<p class="section-intro">Étiquettes de type de source : <span class="src-tag mono">[officiel]</span> source primaire gouvernementale / européenne / multilatérale · <span class="src-tag mono">[étude]</span> travaux évalués par les pairs ou working papers · <span class="src-tag mono">[presse]</span> articles de presse · <span class="src-tag mono">[fournisseur]</span> documentation d'un fournisseur ou d'un analyste sponsorisé. Lorsque nous n'avons pas pu retrouver un document primaire, cela est indiqué dans l'entrée.</p>
+<div class="refs">
+<ol>
+<li id="ref-1"><span class="src-tag">[officiel]</span> Vista Analyse, <a href="https://www.regjeringen.no/contentassets/46f37b195426473bbf1fdf64d7d47344/horingsnotat-vedlegg-samfunnsokonomisk-analyse.pdf" rel="noopener" target="_blank">Report 2025/21 for Skattedirektoratet (PDF)</a>, 2025. Émetteur 1 min / destinataire 3 min, révisé à la baisse par rapport à 2020 en invoquant l'amélioration du traitement des PDF et du papier ; facture papier ~NOK 25–30, EHF ~NOK 4. Fait notable, ce rapport chiffre l'option limitée à la facturation électronique séparément de l'option groupée avec la comptabilité numérique — la seule source trouvée à le faire.</li>
+<li id="ref-2"><span class="src-tag">[officiel]</span> Oslo Economics, <a href="https://www.regjeringen.no/globalassets/departementene/nfd/dokumenter/rapporter/oe-rapport-2020-37-elektronisk-faktura.pdf" rel="noopener" target="_blank">Elektronisk faktura, Report 2020-37 (PDF)</a>, 29 mai 2020, pour le Norwegian Ministry of Local Government and Modernisation et le Ministry of Trade, Industry and Fisheries. Émetteur ~1 minute, destinataire 3–5 minutes par facture ; économie de distribution ~NOK 8 ; et la mise en garde selon laquelle les études antérieures ont surestimé les gains en postulant un traitement entièrement manuel.</li>
+<li id="ref-3"><span class="src-tag">[officiel]</span> Economisti Associati, CASE &amp; Mazars pour la DG TAXUD, <a href="https://taxation-customs.ec.europa.eu/system/files/2019-07/report_evaluation_invoicing_rules_vol1_en.pdf" rel="noopener" target="_blank">Study on the evaluation of invoicing rules of Directive 2006/112/EC (PDF)</a>, janv. 2019. Enquête auprès des entreprises portant sur 2,007 questionnaires complétés dans les pays FR, DE, IT, NL, PL, RO, ES, SE ; économie de charge administrative de €920m sur 2015–2017, dont €540m en 2017. Les coûts par facture se rapportent aux factures électroniques <em>non structurées</em>.</li>
+<li id="ref-4"><span class="src-tag">[officiel]</span> European Commission, <a href="https://eur-lex.europa.eu/legal-content/EN/TXT/HTML/?uri=CELEX:52024DC0072" rel="noopener" target="_blank">COM(2024) 72 final — Report on the effects of Directive 2014/55/EU</a>, 19 févr. 2024. €5.28 / €8.4 par facture à €46/heure (note de bas de page 26, citant Ciciriello &amp; Gray, <a href="https://op.europa.eu/en/publication-detail/-/publication/24a59a10-c193-11ee-b164-01aa75ed71a1/language-en" rel="noopener" target="_blank">Preparatory study on the effects of Directive 2014/55/EU</a>, Publications Office, 1er févr. 2024, DOI 10.2873/27631 — catalogué et référencé, mais <em>nous n'avons pas pu récupérer le fichier, de sorte que la dérivation n'est pas vérifiée par nos soins</em>) ; €25–65 par cycle de l'achat au paiement (note de bas de page 27, qui renvoie à un article de presse, et non à une étude).</li>
+<li id="ref-5"><span class="src-tag">[officiel]</span> Australian Taxation Office, <a href="https://www.ato.gov.au/businesses-and-organisations/einvoicing/peppol-einvoicing-value-assessment/value-assessment-report/cost-calculations" rel="noopener" target="_blank">Peppol eInvoicing Value Assessment — Cost calculations</a>. Source des chiffres A$30.87 / A$27.67 / A$9.18 ; de la formulation “shared cost estimate between the invoice sender and receiver” ; et de la répartition 60/40 entre AP et AR. Étude sous-jacente : Deloitte Access Economics (2016), citée par l'<a href="https://treasury.gov.au/sites/default/files/2021-12/c2021-185457.pdf" rel="noopener" target="_blank">Australian Treasury</a> uniquement en notes de bas de page, sans titre ni entrée bibliographique. <em>Nous n'avons pas pu obtenir le rapport de 2016 ; il ne semble pas être accessible au public.</em></li>
+<li id="ref-6"><span class="src-tag">[étude]</span> Hyung Chul Lee, <a href="https://documents1.worldbank.org/curated/en/712881467994710005/pdf/WPS7592.pdf" rel="noopener" target="_blank">Can Electronic Tax Invoicing Improve Tax Compliance? A Case Study of the Republic of Korea (PDF)</a>, World Bank Policy Research WP 7592, mars 2016 — adoption passant de 15% (2008) à 99.8% la première année d'obligation et à 99.9% en 2013 ; cite Kim &amp; Park (2007) pour la part de la facturation dans le coût de mise en conformité à la TVA : 50.6% pour les sociétés et 67.6% pour les entreprises individuelles.</li>
+<li id="ref-7"><span class="src-tag">[officiel]</span> MBIE / eInvoicing New Zealand, <a href="https://www.einvoicing.govt.nz/case-studies/mbie-proves-value-of-einvoicing-by-paying-their-suppliers-faster/" rel="noopener" target="_blank">MBIE proves value of eInvoicing by paying their suppliers faster</a> — 4.2 jours en moyenne pour les factures électroniques contre 7.1 jours pour le papier/PDF, une seule administration, réception Peppol dans un système financier existant.</li>
+<li id="ref-8"><span class="src-tag">[officiel]</span> European Commission, <a href="https://eur-lex.europa.eu/LexUriServ/LexUriServ.do?uri=SWD:2024:0039:FIN:EN:PDF" rel="noopener" target="_blank">SWD(2024) 39 final — Evaluation of Directive 2014/55/EU (PDF)</a>. Source du constat “lack of data does not allow to estimate whether operating costs have increased or decreased”, et du seuil de viabilité de cinq factures par mois établi par Bolagsverket.</li>
+<li id="ref-9"><span class="src-tag">[officiel]</span> Servicio de Impuestos Internos (Chili), <a href="https://www.sii.cl/noticias/2019/300119noti01er.htm" rel="noopener" target="_blank">communiqué de presse, 30 janv. 2019</a> — 4,310,911 documents cédés par voie électronique en 2018 (+~15%), plus de US$32.8bn financés (+14.7%), plus de 20,000 entreprises recourant chaque mois au factoring électronique. Séries historiques dans <a href="https://www.consejoconsultivoemt.cl/wp-content/uploads/2017/03/Factura-Electronica-y-Factoring-SII.pdf" rel="noopener" target="_blank">SII, Factura Electrónica y Factoring (PDF, 2017)</a>.</li>
+<li id="ref-10"><span class="src-tag">[officiel]</span> DIAN (Colombie), <a href="https://micrositios.dian.gov.co/sistema-de-facturacion-electronica/consolidado-cifras-sfe/" rel="noopener" target="_blank">Consolidado Cifras SFE</a> — enregistrements RADIAN au 31 déc. 2025 : 1,766,898 factures enregistrées, 1,715,053 endossées.</li>
+<li id="ref-11"><span class="src-tag">[étude]</span> García-Castro, Saavedra-Vela, Salazar-Vega &amp; Chong-Rengifo, <a href="https://revistas.unsm.edu.pe/index.php/race/article/download/285/521/1971" rel="noopener" target="_blank">Costo beneficio del uso de la factura electrónica en los principales contribuyentes de la Región San Martín (PDF)</a>, <em>Revista Amazónica de Ciencias Económicas</em>, 2022 — coût d'émission passant de S/2.28 en traditionnel à S/0.83 en électronique externalisé ; 111 entreprises, une seule région, données déclarées par les entreprises elles-mêmes, côté émission uniquement.</li>
+<li id="ref-12"><span class="src-tag">[officiel]</span> Servicio de Impuestos Internos (Chili), enquêtes auprès des entreprises : <a href="https://www.sii.cl/aprenda_sobre_impuestos/estudios/informe_factura_electronica.pdf" rel="noopener" target="_blank">étude de 2009 menée avec la Cámara de Comercio de Santiago (PDF)</a> et <a href="https://www.sii.cl/aprenda_sobre_impuestos/estudios/estudio_factura_elect.pdf" rel="noopener" target="_blank">étude FRONTDESK de 2013 (PDF)</a> — notations d'importance dans lesquelles l'économie de coûts arrive au dernier rang des bénéfices dans tous les segments. Index : <a href="https://www.sii.cl/sobre_el_sii/estudios_de_factura_electronica.html" rel="noopener" target="_blank">études du SII sur la facturation électronique</a>.</li>
+<li id="ref-13"><span class="src-tag">[étude]</span> APEC, <a href="https://www.apec.org/docs/default-source/publications/2025/2/225_cti_interoperability-of-electronic-invoicing-systems-in-the-apec-region.pdf" rel="noopener" target="_blank">Interoperability of Electronic Invoicing Systems in the APEC Region (PDF)</a>, févr. 2025 — <strong>préparé par Deloitte Touche Tohmatsu</strong> ; gain de productivité par facture de USD 14.84 (60% AP / 40% AR) attribué à “Deloitte Access Economics (2024)” ; résultat d'enquête selon lequel 79% des répondants ont constaté que les coûts de mise en œuvre dépassaient les attentes.</li>
+<li id="ref-14"><span class="src-tag">[officiel]</span> Patentti- ja rekisterihallitus (Finlande), <a href="https://www.prh.fi/material/sites/prh/attachments/tietoaprhsta/digitalous/aim7if62f/Liite_7_Verkkolaskut.pdf" rel="noopener" target="_blank">Yrityksen digitalous, Annex 7: Verkkolaskut (PDF)</a>, 2024 — gain annuel national de €888m, obtenu en appliquant aux volumes finlandais les chiffres par facture de la Commission, €5.28 / €8.40.</li>
+<li id="ref-15"><span class="src-tag">[presse]</span> CorCom, <a href="https://www.corrierecomunicazioni.it/digital-economy/polimi-da-fattura-elettronica-risparmi-per-3-miliardi/" rel="noopener" target="_blank">Polimi: da fattura elettronica risparmi per 3 miliardi</a> — l'article cité dans la note de bas de page 27 de COM(2024) 72, qui rapporte des chiffres de l'Osservatorio du Politecnico di Milano datant de <strong>2013</strong>, dont la fourchette de €25–65 par cycle de commande.</li>
+<li id="ref-16"><span class="src-tag">[officiel]</span> European Commission / IDABC, <a href="https://interoperable-europe.ec.europa.eu/collection/eprocurement/document/electronic-invoicing-public-sector-denmark-eid" rel="noopener" target="_blank">Electronic invoicing in the public sector, Denmark</a>, publié le 25 janv. 2007 — contient à la fois “approximately EUR 94 million a year” et “about EUR 120–150 million a year”, sans source ni pour l'un ni pour l'autre.</li>
+<li id="ref-17"><span class="src-tag">[officiel]</span> CORDIS, <a href="https://cordis.europa.eu/article/id/25563-readiness-for-egovernment-will-bring-big-savings-to-eu-says-commission" rel="noopener" target="_blank">Readiness for eGovernment will bring big savings to EU, says Commission</a>, 25 avr. 2006 — “Denmark, which recently reported saving taxpayers a whopping 150 million euro and businesses 50 million euro a year”. Sans source.</li>
+<li id="ref-18"><span class="src-tag">[officiel]</span> Økonomistyrelsen (ministère danois des Finances), <a href="https://www.budregn.im.dk/media/14278/elektronisk-fakturering.pdf" rel="noopener" target="_blank">Elektronisk fakturering — Kort &amp; Godt (PDF)</a>, 2005 — la note explicative du ministère commanditaire lui-même, qui donne le volume annuel d'environ 18 millions de factures papier et <strong>aucun chiffre d'économies monétaires</strong>. Un troisième chiffre, incompatible (DKK 1.5bn), apparaît dans le <a href="https://www.regjeringen.no/globalassets/upload/fad/vedlegg/ikt-politikk/agfarapportweb.pdf" rel="noopener" target="_blank">rapport du groupe de travail gouvernemental norvégien de 2008 (PDF)</a>.</li>
+<li id="ref-19"><span class="src-tag">[officiel]</span> European Commission, <a href="https://eur-lex.europa.eu/legal-content/EN/TXT/HTML/?uri=CELEX:52010DC0712" rel="noopener" target="_blank">COM(2010) 712 — Reaping the benefits of electronic invoicing for Europe</a> — l'affirmation des €240bn sur six ans, renvoyée en note de bas de page à Capgemini ; le chiffre de 5% de pénétration B2B, renvoyé en note à Billentis.</li>
+<li id="ref-20"><span class="src-tag">[fournisseur]</span> UNESCAP, <a href="https://www.unescap.org/sites/default/d8files/event-documents/A%20Guide%20on%20Adoption%20of%20Cross-border%20Electronic%20Invoicing_billentis_0.pdf" rel="noopener" target="_blank">A Guide on Adoption of Cross-border Electronic Invoicing (PDF)</a> — diffusé par une commission régionale des Nations unies ; le nom du fichier et les coordonnées de contact l'identifient comme un document Billentis. Ses statistiques mises en avant ne comportent aucune source.</li>
+<li id="ref-21"><span class="src-tag">[étude]</span> Ardent Partners, <a href="https://d15fjz85703yz4.cloudfront.net/1517/5157/1685/Ardent_Partners_-_State_of_ePayables_2025_-_Bottomline_-_FINAL.pdf" rel="noopener" target="_blank">The State of ePayables 2025: AP's Unfinished Journey (PDF)</a>, Andrew Bartolini, juin 2025, 20e édition annuelle, financée par Bottomline Technologies. 204 répondants, enquête menée de mars à mai 2025. Moyennes du secteur : coût tout compris par facture de $9.84, 8.2 jours, taux d'exception de 18.4%, 35.4% en traitement de bout en bout. <em>Le rapport ne contient aucune note méthodologique définissant ce que recouvre “all-inclusive”.</em> L'exemplaire d'Ardent lui-même est protégé par un formulaire ; il s'agit ici de l'exemplaire en accès libre hébergé sur le CDN du sponsor.</li>
+<li id="ref-22"><span class="src-tag">[étude]</span> The Hackett Group, <a href="https://www.thehackettgroup.com/hackett-identifies-ap-solutions-delivering-gains-through-ai/" rel="noopener" target="_blank">Digital World Class® Matrix: 2025 Accounts Payable Provider Perspective</a>, 19 nov. 2025 — 15 prestataires évalués sur 17 critères, à partir de présentations des fournisseurs, de notations SolutionMap et de retours clients. Les chiffres cités ici proviennent du communiqué de presse en accès libre ; le rapport de synthèse est protégé par un formulaire et le rapport complet doit être acheté. Les référentiels de Hackett sur le coût par facture par quartile ne sont, quant à eux, pas accessibles au public du tout.</li>
+<li id="ref-23"><span class="src-tag">[secteur]</span> Gartner, <em>Magic Quadrant for Accounts Payable Applications</em> — édition inaugurale en mars 2025 ; édition en cours du 18 juin 2026, analystes Miles Onafowora et David Condon, d'après la <a href="https://www.basware.com/en/resources/2026-gartner-magic-quadrant-for-accounts-payable-applications" rel="noopener" target="_blank">page de réimpression de Basware</a>. <em>Accès payant. Nous n'avons pu obtenir auprès d'aucune source accessible la définition de marché ni le cadre de capacités propres à Gartner, et ne les avons donc pas caractérisés ici.</em></li>
+<li id="ref-24"><span class="src-tag">[étude]</span> IDC, <a href="https://cognitus.com/wp-content/uploads/2025/10/The-Business-Value-of-SAP-Business-Network-%E2%80%94-for-Buyer-Organizations_-An-IDC-White-Paper.pdf" rel="noopener" target="_blank">The Business Value of SAP Business Network — for Buyer Organizations (PDF)</a>, doc #US52679524, Simon Ellis, Ladislav Kinda et Mickey North Rizza, mars 2025, sponsorisé par SAP. Huit organisations interrogées, médiane de 44,000 salariés. ROI de 404% sur trois ans ; cycles d'approbation des factures en baisse de 60% ; traitement des factures passant de 16.3 à 6.7 jours. Le périmètre est un réseau d'affaires entier, et non le seul échange de factures.</li>
+<li id="ref-25"><span class="src-tag">[étude]</span> Forrester, <a href="https://tei.forrester.com/go/basware/apautomation" rel="noopener" target="_blank">The Total Economic Impact™ Of Basware AP Automation</a>, commandé par Basware, janvier 2024 — ROI de 158%, VAN de $1.12M pour une organisation composite réalisant $4bn de chiffre d'affaires et traitant 450,000 factures par an. Consultable intégralement sans formulaire. Le périmètre est l'automatisation de l'AP couvrant le papier, l'EDI, le XML et le PDF ; les bénéfices du réseau de facturation électronique ne sont pas quantifiés séparément.</li>
+<li id="ref-26"><span class="src-tag">[secteur]</span> The Hackett Group, <a href="https://www.thehackettgroup.com/the-hackett-group-acquires-market-intelligence-firm-spend-matters/" rel="noopener" target="_blank">The Hackett Group acquires market intelligence firm Spend Matters</a>, mai 2025. SolutionMap se poursuit sous l'égide de Hackett ; il s'agit d'une évaluation des capacités et de la satisfaction concernant les fournisseurs, et elle ne comporte aucune recherche sur le ROI.</li>
+<li id="ref-27"><span class="src-tag">[fournisseur]</span> Deloitte, <a href="https://www.deloitte.com/global/en/services/tax/perspectives/business-benefits-of-e-invoicing.html" rel="noopener" target="_blank">Business benefits of e-invoicing</a>, et <a href="https://hbr.org/sponsored/2025/10/finding-the-business-benefits-in-the-e-invoicing-transition" rel="noopener" target="_blank">Finding the Business Benefits in the E-Invoicing Transition</a>, Harvard Business Review, octobre 2025 — le second portant d'un bout à l'autre la mention “Sponsor content from Deloitte”. Ni l'un ni l'autre ne contient de chiffre de bénéfice quantifié.</li>
+<li id="ref-28"><span class="src-tag">[fournisseur]</span> PwC, <a href="https://www.pwc.com/us/en/tech-effect/innovation/invoice-automation-finance-operations.html" rel="noopener" target="_blank">Invoice automation for finance operations</a> — réduction de 40–60% du temps de traitement manuel, 2–5 jours de moins sur les cycles d'approbation, avancés sans méthodologie, échantillon ni source, et assortis des modalisateurs “may” et “could”. Le périmètre est l'ensemble du cycle de vie de la facture.</li>
+<li id="ref-29"><span class="src-tag">[fournisseur]</span> EY, <a href="https://www.ey.com/en_us/e-invoicing-tax-jurisdictions" rel="noopener" target="_blank">Implementing e-invoicing across different tax jurisdictions</a> et l'E-invoicing Developments Tracker (suivi des mandats, aucun chiffre quantifié) ; <a href="https://www.ey.com/en_gl/insights/tax/tfo-survey" rel="noopener" target="_blank">Tax and Finance Operations Survey 2025</a> — 1,600 directeurs fiscaux et directeurs financiers dans 30 juridictions, enquête réalisée par Oxford Economics de juillet à septembre 2025. Sur le plan méthodologique, l'instrument des Big Four le plus solide que nous ayons trouvé, et son unité d'analyse est la fonction fiscale et financière, non la facturation électronique.</li>
+<li id="ref-30"><span class="src-tag">[fournisseur]</span> KPMG, <a href="https://assets.kpmg.com/content/dam/kpmg/xx/pdf/2021/09/e-invoicing-and-digital-reporting-services.pdf" rel="noopener" target="_blank">E-invoicing &amp; digital reporting services (PDF)</a>, 2021 — ne contient aucune donnée chiffrée d'aucune sorte.</li>
+<li id="ref-31"><span class="src-tag">[étude]</span> Forrester, <a href="https://tei.forrester.com/go/thomsonreuters/onesource_idt/index.html?lang=en-us" rel="noopener" target="_blank">The Total Economic Impact™ Of Thomson Reuters ONESOURCE Indirect Tax</a>, commandé par Thomson Reuters, juin 2022 — ROI de 120%, VAN de $2.1M, organisation composite de $5bn de chiffre d'affaires / 28,000 salariés / 70 pays, sept personnes interrogées. Périmètre : les modules Determination et Compliance, <strong>la facturation électronique Pagero étant un module complémentaire exclu</strong>. Le document dérivé se trouve à l'adresse <a href="https://tei.forrester.com/go/ThomsonReuters/OneSourcePagero" rel="noopener" target="_blank">tei.forrester.com/go/ThomsonReuters/OneSourcePagero</a> ; il rapporte les mêmes 120% et $2.1M, les deux postes d'efficacité de l'étude mère y étant fusionnés.</li>
+<li id="ref-32"><span class="src-tag">[officiel]</span> Australian Treasury, <a href="https://treasury.gov.au/sites/default/files/2021-12/c2021-185457.pdf" rel="noopener" target="_blank">Supporting business adoption of electronic invoicing (PDF)</a>, décembre 2021 — cite “Deloitte Access Economics, 2016, 'The Economic Impact of E-Invoicing'” dans les notes de bas de page 2 et 3, sans éditeur, URL, méthode ni échantillon. L'analyse coûts-bénéfices associée, à l'adresse <a href="https://treasury.gov.au/sites/default/files/2021-03/c2020-122716-cba.pdf" rel="noopener" target="_blank">c2020-122716-cba.pdf</a>, est une image numérisée dépourvue de couche de texte ; il s'agit vraisemblablement de la dernière description subsistante de la méthode, et il faudrait une reconnaissance optique de caractères pour la lire.</li>
+<li id="ref-33"><span class="src-tag">[fournisseur]</span> Deloitte Australia, <a href="https://www.deloitte.com/au/en/services/tax/blogs/e-invoicing-transforming-way-invoices-processed-paid.html" rel="noopener" target="_blank">eInvoicing: transforming the way invoices are processed and paid</a> — reprend les chiffres par facture de ~$31 / ~$28 / “a little over $9” dans une citation attribuée à “the digital services community in Australia”, et ne cite pas Deloitte Access Economics 2016.</li>
+<li id="ref-34"><span class="src-tag">[étude]</span> APEC, <a href="https://www.apec.org/docs/default-source/publications/2025/2/225_cti_interoperability-of-electronic-invoicing-systems-in-the-apec-region.pdf" rel="noopener" target="_blank">Interoperability of Electronic Invoicing Systems in the APEC Region (PDF)</a>, février 2025, produit par Deloitte Touche Tohmatsu pour le Secrétariat de l'APEC avec le soutien du DFAT. Attribue les USD 14.84 par facture (60% AP / 40% AR) à “Deloitte Access Economics (2024)” dans les graphiques et les tableaux, <strong>sans entrée correspondante dans la liste des références</strong>. Méthode : revue de la littérature et consultations ciblées ; le rapport décrit les chiffres de bénéfices comme une modélisation de scénarios reposant sur des taux d'adoption supposés, et non comme des données de terrain.</li>
+<li id="ref-35"><span class="src-tag">[étude]</span> Ardent Partners, <a href="https://www.datocms-assets.com/80283/1744404602-ardent-partners-ap-metrics-that-matter-in-2025-pagero-final.pdf" rel="noopener" target="_blank">Accounts Payable Metrics That Matter in 2025 (PDF)</a>, Andrew Bartolini, février 2025, sponsorisé par Pagero. 212 répondants, <strong>enquête menée de mars à mai 2024</strong>. $9.40, 9.2 jours, taux d'exception de 14%, 32.6% sans intervention manuelle. Définit le coût tout compris comme “staff and operating costs that cover receipt, processing, and approval, as well as salaries, benefits, technology, overhead, etc.”</li>
+<li id="ref-36"><span class="src-tag">[étude]</span> Bellon, Chang, Dabla-Norris, Khalid, Lima, Rojas &amp; Villena, <a href="https://www.imf.org/-/media/files/publications/wp/2019/wpiea2019231-print-pdf.pdf" rel="noopener" target="_blank">Digitalization to Improve Tax Compliance: Evidence from VAT e-Invoicing in Peru (PDF)</a>, IMF WP/19/231, nov. 2019 ; évalué par les pairs sous la référence <a href="https://www.sciencedirect.com/science/article/pii/S0047272722000639" rel="noopener" target="_blank">Journal of Public Economics 210 (2022)</a>. 78,000 entreprises, &gt;80% des recettes de TVA intérieure. Contient la conclusion des auteurs eux-mêmes selon laquelle l'effet “is likely to capture an increase in the share of output that is reported”, et aucune estimation chiffrée d'une réduction des coûts des entreprises.</li>
+<li id="ref-37"><span class="src-tag">[étude]</span> Bellon, Dabla-Norris, Khalid, Paliza, Chang &amp; Villena, <a href="https://www.imf.org/en/publications/wp/issues/2022/03/18/digitalization-and-tax-compliance-spillovers-evidence-from-a-vat-e-invoicing-reform-in-peru-515162" rel="noopener" target="_blank">Digitalization and Tax Compliance Spillovers: Evidence from a VAT e-Invoicing Reform in Peru</a>, IMF WP/2022/057 — +11% de ventes et +17% de TVA parmi les entreprises partenaires non soumises au mandat ; constate également que les entreprises sont devenues moins susceptibles de continuer à commercer avec des partenaires soumis au mandat.</li>
+<li id="ref-38"><span class="src-tag">[officiel]</span> Ganiko &amp; Santisteban, <a href="https://cf.gob.pe/wp-content/uploads/2025/11/facturacion-electronica-en-el-Peru-GG-JSE-nov-VF-3.11.25.pdf" rel="noopener" target="_blank">Facturación electrónica en el Perú (PDF)</a>, Consejo Fiscal del Perú, Documento de Investigación 001-2025, nov. 2025 — réplication indépendante portant sur environ 200,000 entreprises ; paiements effectifs de TVA +5–8% la première année.</li>
+<li id="ref-39"><span class="src-tag">[étude]</span> Heinemann, M. &amp; Stiller, W., <a href="https://link.springer.com/article/10.1007/s10797-023-09820-x" rel="noopener" target="_blank">Digitalization and cross-border tax fraud: evidence from e-invoicing in Italy</a>, <em>International Tax and Public Finance</em> 32(1), 195–237 (en ligne le 28 févr. 2024 ; version imprimée en févr. 2025). Verbatim : “we estimate that e-invoicing decreased the Italian VAT loss in 2019 by about €2.2 billion to €2.6 billion compared to 2018”. Réduction de l'écart des données commerciales d'environ 7% en estimation de référence ; spécifications pondérées 4.8–5.6%. Groupe de contrôle : les produits soumis à l'autoliquidation. Importations intra-UE uniquement.</li>
+<li id="ref-40"><span class="src-tag">[étude]</span> Kotsogiannis, Salvadori, Karangwa &amp; Murasi, <a href="https://ddd.uab.cat/pub/artpub/2025/e62c667ac3bf/joudeveco_a2025v172iENG.pdf" rel="noopener" target="_blank">E-invoicing, tax audits and VAT compliance (PDF en accès libre)</a>, <em>Journal of Development Economics</em> 172 (2025), DOI 10.1016/j.jdeveco.2024.103403 — facturation électronique seule US$10,913 ; contrôle fiscal seul US$26,843 ; les deux combinés US$33,372 ; déclarations fiscales rwandaises 2012–2019. La réserve “quantitatively limited… firms seem to re-adjust their expenses” figure dans la version working paper, <a href="https://ideas.repec.org/p/bge/wpaper/1454.html" rel="noopener" target="_blank">Barcelona School of Economics WP 1454</a>, et a été <strong>supprimée du résumé publié</strong>.</li>
+<li id="ref-41"><span class="src-tag">[étude]</span> Discussion papers de l'Inter-American Development Bank : Artana &amp; Templado, <a href="https://publications.iadb.org/publications/spanish/document/An%C3%A1lisis-del-impacto-de-la-factura-electr%C3%B3nica-en-Argentina.pdf" rel="noopener" target="_blank">Argentine (IDB-DP-562, PDF)</a> ; Ramírez-Álvarez, Oliva &amp; Andino, <a href="https://webimages.iadb.org/publications/spanish/document/Facturaci%C3%B3n-electr%C3%B3nica-en-Ecuador-Evaluaci%C3%B3n-de-impacto-en-el-cumplimiento-tributario.pdf" rel="noopener" target="_blank">Équateur (IDB-DP-563, PDF)</a> ; Bérgolo, Ceni &amp; Sauval, <a href="https://publications.iadb.org/publications/spanish/document/Factura-electr%C3%B3nica-y-cumplimiento-tributario-Evidencia-a-partir-de-un-enfoque-cuasi-experimental.pdf" rel="noopener" target="_blank">Uruguay (IDB-DP-561, PDF)</a>. Mexique : Fuentes et al. (ITESM) pour le SAT, 2016/17 — <em>nous n'avons pas pu récupérer le PDF primaire ; chiffres confirmés à partir du <a href="https://www.gob.mx/sat/prensa/com2017_054" rel="noopener" target="_blank">communiqué de presse COM 054/2017</a> du SAT lui-même et du chapitre de synthèse IDB/CIAT</em>. À noter : le +3.7% uruguayen porte uniquement sur les paiements de TVA sur six mois et n'est pas statistiquement significatif pour les petites entreprises — il est fréquemment reformulé dans un sens plus large que ce que l'article permet d'étayer.</li>
+<li id="ref-42"><span class="src-tag">[officiel]</span> European Commission, <a href="https://eur-lex.europa.eu/legal-content/EN/TXT/HTML/?uri=CELEX%3A52022SC0393" rel="noopener" target="_blank">SWD(2022) 393 final — VAT in the Digital Age impact assessment</a>, 8 déc. 2022. Option privilégiée 2023–2032 : bénéfices totaux €371.9bn, coûts totaux €121.2bn, solde net €250.7bn ; postes “VAT collection / C-efficiency” €335.6bn, “E-invoicing benefits” €5.6bn, “Administrative burden for businesses” €79.1bn. Tous les chiffres sont modélisés.</li>
+<li id="ref-43"><span class="src-tag">[officiel]</span> Servicio de Impuestos Internos (Chili), <a href="https://www.sii.cl/noticias/2025/170425noti01aav.htm" rel="noopener" target="_blank">Estudio de brechas de cumplimiento tributario en IVA y en el Impuesto a la Renta</a>, version révisée du 17 avr. 2025 — non-respect des obligations de TVA de 18.9% pour 2018–2020 (1.9% du PIB) ; écart de 46.4% sur l'impôt de Première Catégorie.</li>
+<li id="ref-44"><span class="src-tag">[étude]</span> Carrillo, Donaldson, Pomeranz &amp; Singhal, <a href="https://www.aeaweb.org/articles?id=10.1257%2Faeri.20220321" rel="noopener" target="_blank">Ghosting the Tax Authority: Fake Firms and Tax Fraud in Ecuador</a>, <em>AER: Insights</em> 5(4): 427–44, déc. 2023 — 5% des entreprises utilisent chaque année des factures fantômes ; 14% des achats de ces entreprises.</li>
+<li id="ref-45"><span class="src-tag">[officiel]</span> Korea National Tax Service, <a href="https://www.britacom.org/images/tlzt_02_04Slides%20of%20Korea.pdf" rel="noopener" target="_blank">E-Tax Invoice System Introduction (BRITACOM slides, PDF)</a>. Diapositive 5, “Background” : <em>coût de conservation des factures papier</em>, estimé à 6.7 milliers de milliards de KRW/an, attribué au Korea Institute of Public Finance — <strong>une charge de référence, fréquemment citée à tort comme une économie</strong>. Diapositive 11, “Results” : réduction de 900 milliards de KRW/an des coûts de préparation, de conservation et de dépôt des factures. Aucune année ni méthode n'est indiquée pour ce second chiffre.</li>
+<li id="ref-46"><span class="src-tag">[presse]</span> Débat coréen sur le coût de mise en conformité : <a href="https://www.taxwatch.co.kr/article/tax/2024/05/08/0004" rel="noopener" target="_blank">TaxWatch sur la mesure réalisée en 2023 par le Korea Institute of Public Finance</a> (15.44 milliers de milliards de KRW pour 2021, 0.73% du PIB) ; <a href="https://www.tfmedia.co.kr/news/article.html?no=171158" rel="noopener" target="_blank">조세금융신문 sur l'argument de la Korean Tax Association</a> selon lequel les coûts de mise en conformité sont passés de ~7tn KRW (2007) à ~15tn (2022) tandis que le coût de la collecte pour l'État diminuait. <em>Nous avons pris connaissance des deux par des reprises secondaires ; le rapport du KIPF lui-même n'a pas été obtenu.</em></li>
+<li id="ref-47"><span class="src-tag">[officiel]</span> Najwyższa Izba Kontroli (Cour des comptes polonaise), <a href="https://www.nik.gov.pl/najnowsze-informacje-o-wynikach-kontroli/kas-e-faktury-vat-akcyza-2024.html" rel="noopener" target="_blank">Bez e-faktur VAT wciąż nieszczelny</a>, 15 juil. 2025, portant sur la période de janv. 2022 à juin 2024 — défaillances de la supervision du KSeF ; recouvrement moyen par contrôle divisé par trois (PLN 2.4m en 2019 contre PLN 823,000 en 2023) ; contrôles de TVA en baisse de 30.8% en 2023.</li>
+</ol>
+</div>
+</div>
+<footer>
+<p><strong>À propos de ce rapport.</strong> Préparé pour l'E-Invoicing Compliance Corner, août 2026. La recherche a couvert des bases de données académiques, des administrations fiscales, des institutions supérieures de contrôle, des éditeurs multilatéraux et des ministères nationaux en Amérique latine, en Europe, en Asie-Pacifique, au Moyen-Orient et en Afrique, en sept langues, ainsi que les publications de dix cabinets d'analystes et de conseil. Chaque chiffre a été remonté jusqu'à son document d'origine chaque fois que ce document a pu être retrouvé ; lorsqu'il ne l'a pas été, l'entrée le dit explicitement plutôt que de s'appuyer sur une reformulation secondaire. Les absences signalées ici sont des absences de preuves publiées que nous ayons pu trouver — si vous avez connaissance d'une étude qui nous aurait échappé, en particulier une étude mesurée du côté acheteur (AP), nous serions sincèrement heureux d'en prendre connaissance.</p>
+<p>Rien de ce qui figure ici ne constitue un conseil juridique, fiscal ou financier. © E-Invoicing Compliance Corner. Chiffres © leurs sources respectives, citées ci-dessus.</p>
+</footer>
+</div>
+</body>
+</html>

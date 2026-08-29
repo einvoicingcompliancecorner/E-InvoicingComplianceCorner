@@ -419,6 +419,9 @@ const SITEMAP_STATIC = [
   { loc: "/whitepaper-ctc-rollouts-compared-fr", priority: "0.6", changefreq: "monthly" },
   { loc: "/whitepaper-ctc-rollouts-compared-es", priority: "0.6", changefreq: "monthly" },
   { loc: "/whitepaper-einvoicing-roi-evidence", priority: "0.7", changefreq: "monthly" },
+  { loc: "/whitepaper-einvoicing-roi-evidence-de", priority: "0.6", changefreq: "monthly" },
+  { loc: "/whitepaper-einvoicing-roi-evidence-fr", priority: "0.6", changefreq: "monthly" },
+  { loc: "/whitepaper-einvoicing-roi-evidence-es", priority: "0.6", changefreq: "monthly" },
   { loc: "/subscribe", priority: "0.6", changefreq: "monthly" },
   { loc: "/feedback", priority: "0.4", changefreq: "yearly" },
   { loc: "/privacy-policy", priority: "0.3", changefreq: "yearly" },
@@ -495,10 +498,17 @@ async function renderSitemap(request, env) {
     SELECT slug, COALESCE(published_at, created_at) AS d
       FROM articles WHERE published = 1 ORDER BY slug`).all()).results || [];
 
-  // The CTC whitepaper's four files are their own URLs and carry their
-  // own hreflang; everything else on this site is one URL serving four
+  // BOTH whitepapers are four files each, carrying their own reciprocal
+  // hreflang; everything else on this site is one URL serving four
   // languages by ?lang=, so everything else gets a cluster.
-  const filePerLanguage = /whitepaper-ctc-rollouts-compared/;
+  //
+  // The ROI whitepaper joined them on 29 August 2026, when Dan reversed
+  // its English-only publication. Matched on the shared "whitepaper-"
+  // prefix rather than by adding a second alternation, so the next one
+  // is right by default: a file-per-language document falling through to
+  // the ?lang= branch would be advertised at four addresses that all
+  // serve the English file, which is the defect this branch exists for.
+  const filePerLanguage = /^\/whitepaper-/;
   const entries = [
     ...SITEMAP_STATIC.map((e) => (filePerLanguage.test(e.loc) ? e : { ...e, langs: sitemapLangs(e.loc) })),
     ...articles.map((a) => ({ loc: `/insights/${a.slug}`, lastmod: a.d, priority: "0.7", changefreq: "monthly", langs: sitemapLangs(`/insights/${a.slug}`) })),
