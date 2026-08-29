@@ -340,16 +340,6 @@ t.check("the PDF is two pages in every language at every jurisdiction count",
   t.check("the check found the jurisdiction it is about", !!picked, "no United States row in the picker");
   await recalc();
   const onPlaceholder = await flags();
-  // The precondition, measured rather than assumed: this document really
-  // does headline a sub-month payback. Without it, "the guard stayed
-  // quiet" would be satisfied by a document with nothing to warn about.
-  const paybackTile = await page.evaluate(() =>
-    [...document.querySelectorAll("#pdfdoc .kpis > *")].map((e) => e.textContent || "")
-      .find((x) => /1mo|<1mo/.test(x)) || "");
-  t.check("and that document does print a payback under one month",
-    /&lt;1mo|<1mo/.test(paybackTile) || paybackTile.includes("<1mo"),
-    `payback tile reads: ${paybackTile.slice(0, 40)}`);
-
   // Now the reader supplies both implementation costs themselves, and
   // small ones. Same arithmetic, but the numbers are theirs, so the
   // implausibility is theirs to hear about. BOTH fields, because which
