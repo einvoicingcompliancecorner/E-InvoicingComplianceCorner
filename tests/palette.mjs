@@ -519,6 +519,32 @@ const iframeBrowser = await launch();
     plain === "/methodology?frame=1&lang=en", plain);
   await ctx.close();
 }
+{
+  // ---- and every REAL navigation carries it too ------------------------
+  //
+  // The rendered proof for the map's return link is in
+  // tests/map-labels.mjs, where the page is actually served. This is the
+  // cheaper companion: the tracker performs thirteen full navigations
+  // with window.location.href, and each one lands on a URL that decides
+  // the theme. Wrapping twelve of thirteen is the failure this catches,
+  // and it is the shape the defect had -- the map's link differed from
+  // the rest because nobody had swept them as a group.
+  //
+  // SOURCE-LEVEL, AND THAT IS WEAKER THAN THE REST OF THIS FILE. It
+  // proves the call is written, not that the URL the reader lands on
+  // carries the parameter. The rendered check next door proves that for
+  // one of the thirteen; the other twelve are asserted, not measured.
+  const src = readFileSync(join(REPO, "einvoicing-compliance-tracker.html"), "utf8")
+    .replace(/<!--[\s\S]*?-->/g, " ");
+  const navs = [...src.matchAll(/window\.location\.href\s*=\s*([^;]+);/g)]
+    .map((m) => m[1].trim());
+  const bare = navs.filter((v) => !v.startsWith("withThemeParam("));
+  t.check(`every navigation out of the tracker is themed (${navs.length} sites)`,
+    navs.length >= 13 && bare.length === 0,
+    bare.length ? `unthemed: ${bare.slice(0, 4).join(" | ")}`
+      : `only ${navs.length} found — the sweep may have missed a form`);
+}
+
 await iframeBrowser.close();
 
 server.close();
