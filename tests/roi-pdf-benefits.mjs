@@ -73,7 +73,15 @@ function pdfPageCount(path) {
 }
 
 const LANGS = ["en", "de", "fr", "es"];
-const COUNTS = [1, 11, 30, 70];
+// "last" IS NOT A COUNT, IT IS A SELECTION. Ticking the first box picks
+// an EU member state, which injects the EU-wide obligation beside it, so
+// the document prints two and the singular half of check 7 is never
+// exercised. The last box in an A-Z list is not an EU member in any of
+// the four languages today, which makes it the cheapest way to produce
+// the document Dan actually printed. If the country list ever changes so
+// that it is, check 7's "contains a singular document" line fails and
+// says so, rather than passing on a matrix that proves nothing.
+const COUNTS = [1, 11, 30, 70, "last"];
 
 const files = {};
 for (const lang of LANGS) files[lang] = (await buildRoiPage({ lang })).file;
@@ -98,7 +106,8 @@ async function render(lang, n) {
   const picked = await page.evaluate((c) => {
     const boxes = [...document.querySelectorAll("#countryList input[type=checkbox]")];
     boxes.forEach((b) => { b.checked = false; });
-    boxes.slice(0, c).forEach((b) => { b.checked = true; b.dispatchEvent(new Event("change", { bubbles: true })); });
+    const pick = c === "last" ? boxes.slice(-1) : boxes.slice(0, c);
+    pick.forEach((b) => { b.checked = true; b.dispatchEvent(new Event("change", { bubbles: true })); });
     return boxes.filter((b) => b.checked).length;
   }, n);
   await page.click("#run");
@@ -129,6 +138,19 @@ async function render(lang, n) {
       notesOnPage1: pgs[0].querySelectorAll(".note").length,
       notesOnPage2: pgs[1].querySelectorAll(".note").length,
       page1Text: pgs[0].textContent || "",
+      // ---- the promise on page one, and the section that keeps it ----
+      // Read as STRUCTURE, not as copy: `.flags` is the note that ends
+      // "Reasoning overleaf", `.reasons` is what page two puts under the
+      // heading. Matching the translated sentence would make this a
+      // check that only works in English.
+      flagsOnPage1: !!pgs[0].querySelector(".note.flags"),
+      reasonCards: pgs[1].querySelectorAll(".reasons > .note").length,
+      // The two strings that carried a count against a fixed plural.
+      jurcount: (pgs[0].querySelector(".mast .jurcount") || {}).textContent || "",
+      undated: (pgs[1].querySelector(".note.undated") || {}).textContent || "",
+      // The five headline boxes, as text. See check 8.
+      kpis: [...pgs[0].querySelectorAll(".kpis > *")]
+        .map((el) => (el.textContent || "").trim()).filter(Boolean),
     };
   });
 
@@ -149,7 +171,10 @@ for (const lang of LANGS) {
   for (const n of COUNTS) {
     const r = await render(lang, n);
     rendered++;
-    seen.push(r);
+    // WHICH render this was, carried with it. Checks 6 and 7 report per
+    // language and per count, and a failure that cannot name the
+    // document it came from costs an hour to reproduce.
+    seen.push({ ...r, lang, n });
     if (r.errors.length) spills.push(`${lang} n=${n}: page error — ${r.errors[0]}`);
     if (r.dom.missing) { spills.push(`${lang} n=${n}: fewer than two .pg blocks built`); continue; }
     if (r.pages !== 2) spills.push(`${lang} n=${n}: ${r.pages}-page PDF`);
@@ -313,6 +338,156 @@ await browser.close();
   }
   t.check("every figure on a benefit card also appears in the section 4 row it restates",
     drift.length === 0, drift.join(" | "));
+}
+
+// ---- 6. a promise made on page one is kept on page two ------------------
+//
+// Dan printed the planner on 29 August 2026 with one jurisdiction
+// selected. Page one said "Flagged by the model: Payback under one
+// month. Reasoning overleaf." Page two carried the heading and NOTHING
+// under it.
+//
+// The cause is the reason this check reads structure rather than text.
+// The section was built by lifting cards out of the live panel with
+// `#evidence .grid.g2:first-of-type > .card`. Migration 581 inserted the
+// evidence scorecard above those cards and deleted them, and a selector
+// that matches nothing returns an empty list, which maps to an empty
+// string, which concatenates into a perfectly valid page. Nothing threw.
+// Nothing looked wrong in any DOM assertion anyone had written, because
+// every one of them asked about page one.
+//
+// So the invariant is the RELATIONSHIP, not the presence of either half:
+// the note and the section appear together or not at all. A future
+// change that drops one of them fails here whichever one it drops.
+{
+  const broken = [];
+  for (const r of seen) {
+    if (r.dom.missing) continue;
+    const { flagsOnPage1, reasonCards } = r.dom;
+    if (flagsOnPage1 && reasonCards === 0)
+      broken.push(`${r.lang} n=${r.n}: page one promises reasoning, page two has none`);
+    if (!flagsOnPage1 && reasonCards > 0)
+      broken.push(`${r.lang} n=${r.n}: page two reasons about flags page one never raised`);
+  }
+  t.check("the reasoning section and the promise that points at it agree",
+    broken.length === 0, broken.join(" | "));
+
+  // AND THE PAIRING HAS TO BE EXERCISED. If no render in the matrix ever
+  // raises a flag, the check above is satisfied by 16 documents that all
+  // say nothing — true, passing, and worthless. One jurisdiction trips
+  // the payback guard, which is exactly the document Dan printed.
+  const withFlags = seen.filter((r) => !r.dom.missing && r.dom.flagsOnPage1);
+  t.check(`at least one rendered document actually raises a flag (${withFlags.length} of ${seen.length})`,
+    withFlags.length > 0,
+    "no flag fired anywhere in the matrix, so the pairing above proved nothing");
+}
+
+// ---- 7. a count and its noun agree, at every count ----------------------
+//
+// The same print showed "1 JURISDICTIONS" in the masthead and "1
+// selected jurisdictions have no mandated go-live" on page two, four
+// inches below "You selected 1 jurisdiction" -- which was right, because
+// it went through plur() and PLURALS. The other two assembled a count
+// and a noun by hand.
+//
+// IT READS THE NUMBER THE DOCUMENT ITSELF PRINTED rather than the number
+// of boxes ticked, and the first version of this check got that wrong.
+// The masthead counts TRACKS, not selections: pick one EU member state
+// and the EU-wide obligation is injected beside it, so a one-country
+// selection legitimately prints "2". Asserting the singular because the
+// test ticked one box failed on three correct documents.
+//
+// WHAT THIS DOES NOT COVER, stated because it matters: French "pays" is
+// the same word singular and plural, so French cannot fail the masthead
+// half. The go-live caveat still can, because French moves the verb
+// ("n'a" against "n'ont"), which is why the tokens are per language.
+{
+  const PLURAL_TELL = {
+    en: { mast: "jurisdictions", note: "jurisdictions have" },
+    de: { mast: "L\u00e4nder", note: "L\u00e4nder haben" },
+    es: { mast: "pa\u00edses", note: "pa\u00edses seleccionados no tienen" },
+    fr: { mast: null, note: "ont aucune" },
+  };
+  const lead = (s) => { const m = /(\d+)/.exec(s || ""); return m ? Number(m[1]) : null; };
+  const wrong = [];
+  let mastSeen = 0, noteSeen = 0;
+  for (const r of seen) {
+    if (r.dom.missing) continue;
+    const tell = PLURAL_TELL[r.lang];
+    if (!tell) continue;
+
+    if (tell.mast) {
+      const n = lead(r.dom.jurcount);
+      if (n === null) { wrong.push(`${r.lang} n=${r.n}: no count in the masthead at all`); }
+      else {
+        mastSeen++;
+        const plural = r.dom.jurcount.includes(tell.mast);
+        if (n === 1 && plural) wrong.push(`${r.lang} n=${r.n}: masthead reads "${r.dom.jurcount.trim()}"`);
+        if (n > 1 && !plural) wrong.push(`${r.lang} n=${r.n}: masthead is singular for ${n}`);
+      }
+    }
+
+    if (r.dom.undated) {
+      const n = lead(r.dom.undated);
+      if (n !== null) {
+        noteSeen++;
+        const plural = r.dom.undated.includes(tell.note);
+        if (n === 1 && plural) wrong.push(`${r.lang} n=${r.n}: the go-live caveat is plural for one`);
+        if (n > 1 && !plural) wrong.push(`${r.lang} n=${r.n}: the go-live caveat is singular for ${n}`);
+      }
+    }
+  }
+  t.check("every printed count agrees with the noun beside it", wrong.length === 0,
+    wrong.slice(0, 6).join(" | ") + (wrong.length > 6 ? ` ... and ${wrong.length - 6} more` : ""));
+
+  // BOTH SIDES OF THE RULE HAVE TO BE EXERCISED, or this passes on a
+  // matrix that never printed a one. n=1 against a non-EU country is the
+  // document Dan printed; n=70 is the plural counterpart.
+  const ones = seen.filter((r) => !r.dom.missing && lead(r.dom.jurcount) === 1);
+  t.check(`the matrix contains a singular document to be wrong about (${ones.length})`,
+    ones.length > 0, "no render printed a count of one, so the singular half proved nothing");
+  t.check(`and this check read real strings (${mastSeen} mastheads, ${noteSeen} caveats)`,
+    mastSeen >= 9 && noteSeen >= 4, `${mastSeen} / ${noteSeen}`);
+}
+
+// ---- 8. the five headline numbers are actually in the document ---------
+//
+// This exists because of a WRONG finding, and the wrongness is the
+// lesson. From 19 August the open list carried "the five KPI numbers may
+// be missing from the printed ROI PDF -- page.pdf() output contains
+// neither text nor glyphs", flagged as possibly the most serious item on
+// it. Dan printed the planner himself on 29 August with one jurisdiction
+// selected and all five were there, as selectable text.
+//
+// The original conclusion came from trying to read the printed bytes
+// with no text extractor to hand. Nothing in this suite had ever
+// asserted the tiles at all -- it counts pages in the PDF and reads
+// everything else from the DOM -- so an absence of evidence was filed as
+// a defect and sat at the top of the list for ten days.
+//
+// The cost of a check that reports something true is the same as one
+// that cannot fail: both send someone to look at working code. So the
+// tiles are now measured, and the item cannot re-open on a hunch.
+{
+  const thin = [];
+  for (const r of seen) {
+    if (r.dom.missing) continue;
+    if (r.dom.kpis.length !== 5) { thin.push(`${r.lang} n=${r.n}: ${r.dom.kpis.length} tiles`); continue; }
+    // A tile is a value AND a label. An empty one still counts as an
+    // element, which is how this would fail silently if it only counted.
+    const empty = r.dom.kpis.filter((k) => k.replace(/\s+/g, "").length < 6);
+    if (empty.length) thin.push(`${r.lang} n=${r.n}: ${empty.length} tile(s) all but empty`);
+  }
+  t.check("all five headline tiles carry text in every rendered document",
+    thin.length === 0, thin.slice(0, 6).join(" | "));
+
+  // AND AT LEAST ONE CARRIES A NUMBER, because five labels over five
+  // blanks would satisfy the line above.
+  const numeric = seen.filter((r) => !r.dom.missing
+    && r.dom.kpis.filter((k) => /\d/.test(k)).length >= 4);
+  t.check(`the tiles hold figures, not just labels (${numeric.length} of ${seen.length})`,
+    numeric.length === seen.filter((r) => !r.dom.missing).length,
+    "a document printed headline tiles with no numbers in them");
 }
 
 process.exit(t.report() ? 0 : 1);
