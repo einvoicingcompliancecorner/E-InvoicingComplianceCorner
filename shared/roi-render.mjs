@@ -1555,9 +1555,13 @@ export function renderRoiPage(options) {
     // CLDR category in Polish and Russian and using it as a synonym for
     // "the English plural" would collide with it the day someone adds a
     // Polish row. Migration 573 renames the row.
+    // "BELOW" WAS TRUE ON SCREEN AND FALSE IN PRINT. These bodies reach
+    // page one of the PDF now, where the figures they call unsafe are
+    // the tiles ABOVE the note. Same family as the payback guard: copy
+    // written for one surface, shipped to two.
     guardZeroInt: plurSetBase("guard.zeroInt",
-      "<strong>{0} selected jurisdiction has a mandate, but the model has costed zero integrations.</strong> That is not a cheap programme, it is a broken calculation &mdash; treat every figure below as unsafe until it is explained.",
-      "<strong>{0} selected jurisdictions have a mandate, but the model has costed zero integrations.</strong> That is not a cheap programme, it is a broken calculation &mdash; treat every figure below as unsafe until it is explained."),
+      "<strong>{0} selected jurisdiction has a mandate, but the model has costed zero integrations.</strong> That is not a cheap programme, it is a broken calculation &mdash; treat every figure on this page as unsafe until it is explained.",
+      "<strong>{0} selected jurisdictions have a mandate, but the model has costed zero integrations.</strong> That is not a cheap programme, it is a broken calculation &mdash; treat every figure on this page as unsafe until it is explained."),
     guardLate: plurSetBase("guard.late",
       "<strong>{0} pinned start date finishes after the deadline.</strong> {1}. That may be deliberate &mdash; an accepted late position is a decision a board can take &mdash; but the plan below no longer meets that date.",
       "<strong>{0} pinned start dates finish after the deadline.</strong> {1}. That may be deliberate &mdash; an accepted late position is a decision a board can take &mdash; but the plan below no longer meets those dates."),
@@ -4796,8 +4800,29 @@ function build(){
   // implausible output the model can make, a free programme returning
   // money immediately, was the one case the implausibility guard skipped.
   // Reachable in two clicks: clear the country list and press Calculate.
-  if(paybackMonths !== null && paybackMonths >= 0 && paybackMonths < 1){
-    warn.push('${tj("guard.payback","<strong>Payback under one month.</strong> No e-invoicing programme pays back that fast. Check the volumes and the per-invoice costs &mdash; one of them is out by an order of magnitude, and the rest of this page inherits it.")}');
+  // AND IT MUST NOT FIRE ON OUR OWN PLACEHOLDER. Dan printed a
+  // single-jurisdiction case on 29 August and this guard called it an
+  // input error by an order of magnitude. Nothing was out by ten. The
+  // one-off was cImplS at its shipped 10,000 -- our number, not his --
+  // against a net annual saving of 163,169, which pays back in three
+  // weeks as a matter of arithmetic. The guard blamed the two fields it
+  // names, and both were fine.
+  //
+  // A payback computed from a figure the reader has not supplied is not
+  // a claim about their programme yet, so there is nothing to warn
+  // about: the placeholder warning already covers it, and says so in the
+  // right words. Only the contributing field matters -- a complex
+  // integration cost still holding our number is irrelevant to a plan
+  // with no complex regimes in it.
+  //
+  // The zero case still fires. oneOff of zero is a free programme
+  // returning money immediately, which is implausible on its own terms
+  // rather than because a placeholder is showing.
+  const implIsOurs = (intSimple > 0 && placeholders.includes('cImplS'))
+                  || (intComplex > 0 && placeholders.includes('cImplC'));
+  if(paybackMonths !== null && paybackMonths >= 0 && paybackMonths < 1
+     && !(oneOff > 0 && implIsOurs)){
+    warn.push('${tj("guard.payback","<strong>Payback under one month.</strong> This is payback on the one-off implementation cost, with the recurring platform and running costs already taken out of the annual saving &mdash; so a small implementation against a large saving does pay back in weeks. It is not payback on total year-one cost, which is the longer figure most finance functions expect, and which the year-one tile above gives you.")}');
   }
 
   // 3. THE ONE THAT NEEDED MIGRATION 520. A selected country whose
