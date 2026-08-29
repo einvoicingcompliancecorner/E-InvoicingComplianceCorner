@@ -290,6 +290,91 @@ t.check("the PDF is two pages in every language at every jurisdiction count",
     lost.map((r) => `${r.picked} ticked, plan counts ${r.dom.planTotal}`).slice(0, 3).join(" | "));
 }
 
+// ---- 9. a guard does not fire on our own placeholder --------------------
+//
+// Dan, 29 August: "The reasoning section seems to openly contradict the
+// business case output." It did. With one jurisdiction selected the
+// document headlined a sub-month payback and then printed "No
+// e-invoicing programme pays back that fast ... one of them is out by an
+// order of magnitude".
+//
+// Nothing was out by ten. Payback divides the ONE-OFF by the annual
+// saving net of recurring cost, and the one-off was cImplS sitting at
+// its shipped 10,000 -- our placeholder, not his number. A payback
+// computed from a figure the reader has never supplied is not yet a
+// claim about their programme, so the guard now holds its tongue until
+// the contributing cost is theirs.
+//
+// BOTH DIRECTIONS, because "never fires" would pass by deleting the
+// guard. English only, and that is deliberate: this is about a
+// CONDITION, not about copy, and the condition is language-independent.
+// The wording is held by migration 734's standing invariant instead.
+{
+  const FIRED = "Payback under one month";
+  const page = await browser.newPage({ viewport: { width: 1280, height: 1400 } });
+  await page.goto(`file://${files.en}`, { waitUntil: "load" });
+  await page.waitForTimeout(400);
+  const flags = () => page.evaluate(() => {
+    const el = document.querySelector("#pdfdoc .pg .note.flags");
+    return el ? el.textContent || "" : "";
+  });
+  const recalc = async () => { await page.click("#run"); await page.waitForTimeout(1100); };
+
+  // THE DOCUMENT DAN PRINTED, by name. Picking "the last checkbox" is
+  // not good enough here and the first version of this check proved it:
+  // that country is a clearance regime, so the one-off is cImplC at
+  // 20,000, payback is 1.3 months, and the guard would not have fired
+  // whatever the placeholder logic did. The check passed while
+  // exercising nothing. The United States has no mandate and costs one
+  // SIMPLE integration at 10,000, which against a net saving of 163,169
+  // is the 0.74-month payback he actually printed.
+  const picked = await page.evaluate(() => {
+    const boxes = [...document.querySelectorAll("#countryList input[type=checkbox]")];
+    boxes.forEach((b) => { b.checked = false; });
+    const row = boxes.find((b) => ((b.closest("label") || b.parentElement || {}).textContent || "")
+      .includes("United States"));
+    if (!row) return null;
+    row.checked = true; row.dispatchEvent(new Event("change", { bubbles: true }));
+    return (row.closest("label") || row.parentElement).textContent.trim().slice(0, 40);
+  });
+  t.check("the check found the jurisdiction it is about", !!picked, "no United States row in the picker");
+  await recalc();
+  const onPlaceholder = await flags();
+  // The precondition, measured rather than assumed: this document really
+  // does headline a sub-month payback. Without it, "the guard stayed
+  // quiet" would be satisfied by a document with nothing to warn about.
+  const paybackTile = await page.evaluate(() =>
+    [...document.querySelectorAll("#pdfdoc .kpis > *")].map((e) => e.textContent || "")
+      .find((x) => /1mo|<1mo/.test(x)) || "");
+  t.check("and that document does print a payback under one month",
+    /&lt;1mo|<1mo/.test(paybackTile) || paybackTile.includes("<1mo"),
+    `payback tile reads: ${paybackTile.slice(0, 40)}`);
+
+  // Now the reader supplies both implementation costs themselves, and
+  // small ones. Same arithmetic, but the numbers are theirs, so the
+  // implausibility is theirs to hear about. BOTH fields, because which
+  // one drives the one-off depends on the regime.
+  await page.evaluate(() => {
+    for (const id of ["cImplS", "cImplC"]) {
+      const el = document.getElementById(id);
+      el.value = "1";
+      el.dispatchEvent(new Event("input", { bubbles: true }));
+      el.dispatchEvent(new Event("change", { bubbles: true }));
+    }
+  });
+  await recalc();
+  const onOwnNumber = await flags();
+  await page.close();
+
+  t.check("the payback guard stays quiet while the implementation cost is ours",
+    !onPlaceholder.includes(FIRED),
+    `it fired on a placeholder: ${onPlaceholder.slice(0, 120)}`);
+  t.check("and speaks up once the reader supplies that cost themselves",
+    onOwnNumber.includes(FIRED),
+    "the guard never fires at all now, which is not a fix — "
+      + `flags read: ${onOwnNumber.slice(0, 120) || "(none)"}`);
+}
+
 await browser.close();
 
 // ---- 5. one fact, two surfaces -----------------------------------------
