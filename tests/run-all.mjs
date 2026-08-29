@@ -151,6 +151,7 @@ const SUITES = [
   { name: "archive article links", cmd: "node", args: [join(HERE, "archive-article-links.mjs")], cwd: REPO },
   { name: "feature announcement", cmd: "node", args: [join(HERE, "feature-announcement.mjs")], cwd: REPO },
   { name: "structured data", cmd: "node", args: [join(HERE, "structured-data.mjs")], cwd: REPO },
+  { name: "whitepaper editions", cmd: "node", args: [join(HERE, "whitepaper-editions.mjs")], cwd: REPO },
   { name: "ROI regression", cmd: "node", args: [join(HERE, "roi-regression.mjs")], cwd: REPO },
   { name: "ROI i18n", cmd: "node", args: [join(HERE, "roi-i18n.mjs")], cwd: REPO },
   { name: "ROI hardcoded strings", cmd: "node", args: [join(HERE, "roi-hardcoded.mjs")], cwd: REPO },
