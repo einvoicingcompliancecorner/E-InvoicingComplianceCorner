@@ -1528,6 +1528,19 @@ export function renderRoiPage(options) {
     // Same denominator as the card below it now, so the two can be read
     // against each other instead of silently disagreeing. It is the
     // fourth instance this week of a count labelled with the wrong noun.
+    // The PDF's go-live caveat. A sentence rather than a noun because
+    // the verb and both pronouns move with the count -- see the note at
+    // its call site in the page-2 builder.
+    // The EXISTING key is the plural half, rather than a new pair beside
+    // it, so migration 546's standing invariant on pdf.undatedNote keeps
+    // pointing at a live string instead of at an orphan that KEPT would
+    // then have to excuse forever. It gains a leading {0}: the count used
+    // to be concatenated in front of it, which is why the value reads as
+    // a sentence fragment in all four languages.
+    pdfUndated: plurSet("pdf.undatedNote1",
+      "{0} selected jurisdiction has no mandated go-live. It is costed and scheduled; any date shown for it is a planning choice, not an obligation.",
+      "pdf.undatedNote",
+      "{0} selected jurisdictions have no mandated go-live. They are costed and scheduled; any date shown for them is a planning choice, not an obligation."),
     nearestCount: plurSetBase("res.nearest3",
       "{0} of the {1} in the plan has a dated deadline ahead.",
       "{0} of the {1} in the plan have a dated deadline ahead."),
@@ -5037,8 +5050,13 @@ function build(){
         + t.map(r => r.html).join('');
     };
 
+    // THE AGREEMENT HERE REACHES PAST THE NOUN, so this is a sentence
+    // pair rather than a word pair: "1 selected jurisdictions HAVE no
+    // mandated go-live ... any date shown for THEM" needs has/it/it, not
+    // just jurisdiction. Same shape as PLURALS.nearestCount, and the
+    // same reason that one is a whole sentence.
     const undatedNote = UNDATED.length
-      ? '<div class="note">' + UNDATED.length + ' ${tj("pdf.undatedNote","selected jurisdictions have no mandated go-live. They are costed and scheduled; any date shown for them is a planning choice, not an obligation.")}</div>'
+      ? '<div class="note undated">' + fill(plur(UNDATED.length, PLURALS.pdfUndated), UNDATED.length) + '</div>'
       : '';
 
     // ---- what the model will not price, named anyway -------------------
@@ -5148,7 +5166,15 @@ function build(){
       '<section class="pg">'
       + '<div class="mast"><h1>${tj("pdf.title","E-Invoicing ROI<br>&amp; Wave Plan")}</h1>'
       + '<div class="right"><div class="who">${tj("pdf.masthead","The E-Invoicing Compliance Corner")}<br>'
-      + planned + ' ${tj("pdf.jur","jurisdictions")} &middot; ' + num0(volAP) + ' AP / '
+      // ONE JURISDICTION IS NOT "1 JURISDICTIONS". This masthead printed
+      // the count against a fixed plural noun while the scope paragraph
+      // on page 2, four inches away, correctly said "You selected 1
+      // jurisdiction" -- the same document disagreeing with itself about
+      // its own grammar. PLURALS.jur is the machinery that already
+      // exists for this and already carries de/es/fr, and it goes
+      // through Intl.PluralRules, so French gets the singular at zero
+      // too, which a hand-rolled n===1 would not.
+      + '<span class="jurcount">' + planned + ' ' + plur(planned, PLURALS.jur) + '</span> &middot; ' + num0(volAP) + ' AP / '
       + num0(volAR) + ' AR<br>' + (banked ? '${tj("pdf.scopeBoth","Compliance + AP automation")}' : '${tj("pdf.scopeOnly","Compliance only")}')
       + ' &middot; ' + when + '</div>'
       // PAGE ONE ONLY. Page 2's masthead below is deliberately left alone:
@@ -5330,7 +5356,15 @@ function build(){
       // whole finding; the body after it is the explanation, which belongs
       // with the other reasoning on page 2. Printing them whole cost 33mm
       // and pushed page one onto a third page.
-      + (warn.length ? '<div class="note"><strong>${tj("pdf.flags","Flagged by the model:")}</strong> '
+      // THE flags CLASS IS A HOOK FOR THE CHECK, not a style. (No
+      // backticks in this comment: it lives inside the client-script
+      // template literal, where one would end the literal and take the
+      // page down. The trap is in the project pointer and I walked into
+      // it anyway, one edit after reading it.) The promise this
+      // note makes and the section that keeps it are in two different
+      // page builders 300 lines apart, so the test needs to find both
+      // without matching on translated copy.
+      + (warn.length ? '<div class="note flags"><strong>${tj("pdf.flags","Flagged by the model:")}</strong> '
           + warn.map(w => { const i = w.indexOf('<strong>'), j = w.indexOf('</strong>');
                             const head = (i >= 0 && j > i) ? w.slice(i + 8, j) : w;
                             return head.replace(/<[^>]+>/g, ''); }).join(' ')
@@ -5348,16 +5382,57 @@ function build(){
       // which of it carries no deadline.
       + scopeNote
       + undatedNote
-      + '<h2>${tj("pdf.h.reasoning","The reasoning")}</h2>'
-      // Lifted from the panel that just rendered, rather than restated with
-      // its own copy of the strings. Two copies of the same paragraph is
-      // how the page ended up contradicting itself over Ardent, and an
-      // empty inline fallback would fail the fallback-parity check for a
-      // string that is not actually missing.
-      + '<div class="cards">'
-      + [...document.querySelectorAll('#evidence .grid.g2:first-of-type > .card')]
-          .map(c => '<div>' + c.innerHTML + '</div>').join('')
-      + '</div>'
+      // THIS SECTION IS THE FLAG BODIES, AND IT USED TO BE EMPTY.
+      //
+      // Dan printed the PDF on 29 August with one jurisdiction selected.
+      // Page 1 said "Flagged by the model: Payback under one month.
+      // Reasoning overleaf." Page 2 carried the heading below with
+      // NOTHING under it -- so the document promised an explanation
+      // twice and delivered it neither time.
+      //
+      // The mechanism was a selector reading another component's DOM by
+      // position. This block used to lift
+      // '#evidence .grid.g2:first-of-type > .card', which at migration
+      // 531 was the four reasoning cards. Migration 581 put the evidence
+      // scorecard at the top of that panel and deleted those cards
+      // outright, on Dan's instruction of 18 August to replace that block
+      // with the scorecard. (His wording is NOT quoted here, and neither
+      // is the panel heading: this comment ships to the browser inside
+      // the client script, and roi-i18n.mjs searches the whole render for
+      // English that survives stubbing. The comment 700 lines above says
+      // exactly this, having been caught by it once. I read that comment
+      // and then quoted the heading anyway, which is a third instance of
+      // the same trap and the reason this parenthesis is longer than it
+      // needs to be.) On screen that instruction was carried out. The
+      // print path was not
+      // told, and it could not fail loudly: querySelectorAll returns an
+      // empty list, .map().join('') returns an empty string, and an
+      // empty string concatenates into a valid page. A heading with no
+      // content is what a silent selector miss looks like.
+      //
+      // It now prints what page 1 actually points at: the flags, WHOLE.
+      // Page 1 prints only each flag's bolded headline because printing
+      // them in full cost 33mm and pushed the document onto a third
+      // page; the body after that headline is the explanation, and until
+      // today it was computed and then discarded -- warn was never
+      // read again after the page-1 line. So the pointer had no referent
+      // at all, not merely a stale one.
+      //
+      // Guarded on warn.length, because page 1 emits "Reasoning
+      // overleaf." under the same condition. The two must appear and
+      // disappear together, which is the whole defect stated as a rule.
+      + (warn.length
+          ? '<h2>${tj("pdf.h.reasoning","The reasoning")}</h2>'
+            // NOTES, NOT CARDS. The first version used the two-column
+            // card grid this section used to hold, and Spanish at 70
+            // jurisdictions came out three pages -- the one thing the
+            // document is not allowed to do. Flag bodies are prose, and
+            // the note style is the compact prose block this page
+            // already uses twice above.
+            + '<div class="reasons">'
+            + warn.map(w => '<div class="note">' + w + '</div>').join('')
+            + '</div>'
+          : '')
       + '<h2>${tj("pdf.h.figures","The figures this rests on")}</h2>'
       + '<table><thead><tr><th>${tj("pdf.th.fig","Figure")}</th><th class="num">${tj("pdf.th.val","Value")}</th><th>${tj("pdf.th.src","Source")}</th><th>${tj("pdf.th.grade","Grade")}</th></tr></thead><tbody>'
       // 557 and 558 added the two biggest levers on the AP and rework rows
