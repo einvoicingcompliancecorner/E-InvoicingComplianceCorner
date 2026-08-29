@@ -639,10 +639,12 @@
     font-size:13.5px; font-weight:600; display:flex; align-items:center; gap:7px; color:var(--sidebar-ink); text-decoration:none;
   }
   .sidebar-country .c-name .flag{font-size:15px;}
-  /* Only countries with a deep-dive page render <a class="c-name">
-     (see renderSidebar()) -- give those a hover affordance so it
-     reads as clickable; the rare plain-text <div class="c-name">
-     fallback (European Union, no deep dive yet) is left alone. */
+  /* Only rows with a deep-dive page render <a class="c-name"> (see
+     renderSidebar()) -- give those a hover affordance so it reads as
+     clickable; the plain-text <div class="c-name"> fallback is left
+     alone. That fallback covers no row today: the European Union, which
+     this comment used to name, has had a page since migration 007 and
+     has linked from here since 29 August. */
   .sidebar-country a.c-name:hover{color:var(--sidebar-accent);}
 
   .menu-toggle{
@@ -2882,9 +2884,14 @@ function renderSidebar(){
       const flag = grouped[region][country];
       const countryLabel = i18n ? i18n.translateCountry(country) : country;
       const nameInner = `<span class="flag">${flag}</span>${countryLabel}`;
-      // Countries without a deep-dive page yet (e.g. European Union,
-      // which is covered by its member states' own pages) stay plain
-      // text rather than linking somewhere that doesn't exist.
+      // A row with no page behind it stays plain text rather than
+      // linking somewhere that 404s. This used to name the European
+      // Union as the example and was wrong twice over: the EU DID have
+      // a deep dive -- eleven cards, four languages, written in
+      // migration 007 -- and what kept it out of this map was a NULL
+      // slug nobody had noticed. Dan found it on 29 August. Every row
+      // in DEEP_DIVES now has a page; the fallback is for the gap
+      // between adding a country and writing its deep dive.
       html += `<div class="sidebar-country">
         ${DEEP_DIVES[country] ? `<a class="c-name" href="${DEEP_DIVES[country]}">${nameInner}</a>` : `<div class="c-name">${nameInner}</div>`}
       </div>`;

@@ -28,10 +28,10 @@
 //
 // It guards a class rather than an instance. Any future country that
 // arrives with a slug and no page fails here on the day it is added.
-import { readFileSync } from "node:fs";
+import { readFileSync, writeFileSync, rmSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { suite } from "./lib/browser.mjs";
+import { suite, launch } from "./lib/browser.mjs";
 import { openReplayDb } from "./lib/replay-db.mjs";
 
 const REPO = dirname(dirname(fileURLToPath(import.meta.url)));
@@ -60,7 +60,7 @@ const all = async (sql) => (await d1.prepare(sql).bind().all()).results || [];
 
 // The European Union is a PAGE but not a COUNTRY. The sweeps below are
 // about countries, so they still exclude it; section 6 at the foot of
-// this file checks it on its own terms. It was excluded here by having a
+// this file (section 5) checks it on its own terms. It was excluded here by having a
 // NULL slug until 28 August 2026, which is exactly the accident that
 // left its deep dive unreachable for three weeks.
 const tracked = await all(
@@ -148,7 +148,8 @@ t.check(`the newest countries render in es/de/fr (${recent.length} countries)`,
     broken.length === 0, broken.slice(0, 10).join("; "));
 }
 
-// ---- 6. the European Union: published, and deliberately not listed ---
+// ---- 5. the European Union: linked like any other page, counted like
+//         nothing at all --------------------------------------------------
 //
 // Dan, 28 August 2026: "The European Union, side menu does not link.
 // Although I think we built a deep-dive for it." He had, and it had been
@@ -156,11 +157,30 @@ t.check(`the newest countries render in es/de/fr (${recent.length} countries)`,
 // DE/ES/FR translations behind a NULL slug, so no URL, no sitemap entry,
 // no anchor, 404 to anyone who guessed it.
 //
-// Asked what he wanted, he chose "publish, don't link". That is a pair
-// of guarantees pulling in opposite directions, which is why it gets a
-// check rather than a comment: "publish it" and "list it" sound like the
-// same instruction, and the next person to touch buildDeepDives() will
-// have to decide which one they meant.
+// THE FIRST VERSION OF THIS BLOCK ASSERTED THE OPPOSITE OF WHAT HE
+// WANTED, and passed. I offered him three options and wrote the middle
+// one as "publish, don't link -- the sidebar keeps it as plain text".
+// He picked it. Then he deployed it:
+//
+//   "the European Union sidebar menu item that lives among other
+//    deep-dives does not link to a deep dive on the European Union...
+//    the deep-dive alone was considered to provide EU wide information
+//    from EU sources, without it having to be replicated across all
+//    member states. ... the European Union menu item in the side bar,
+//    still does nothing."
+//
+// What he had said he did not want was a SUBSCRIPTION -- "a check-box or
+// ability to subscribe". I heard "not in the reader-facing lists",
+// collapsed the subscription checklist and the side menu into one idea,
+// bound both to in_picker, and then wrote the option text in my
+// vocabulary rather than his, so his answer was to a question he could
+// not see. A check written from a misheard requirement is worse than no
+// check: it passed, and it made the mistake look deliberate.
+//
+// So this block now pins the distinction that actually exists, in both
+// directions -- because "it has a page" and "it is one of the countries"
+// really are different, and the next person will have to decide which
+// they mean.
 {
   const res = await get("/european-union");
   t.check("the EU deep dive is served", res.status === 200, `status ${res.status}`);
@@ -174,24 +194,73 @@ t.check(`the newest countries render in es/de/fr (${recent.length} countries)`,
     t.check(`and it serves ${lang}`, r.status === 200, `status ${r.status}`);
   }
 
-  // NOT LISTED: the tracker's injected link map is what the side menu
-  // and the board's deep-dive button both read, and the EU must not be
-  // in it. Read out of the served page rather than out of the query, so
-  // this fails on what a reader gets.
+  // LINKED. The tracker's injected map is what the side menu and the
+  // board's deep-dive button both read. Checked against the served page
+  // rather than the query, so it fails on what a reader gets -- which is
+  // the level at which Dan found it twice.
   const tracker = await (await get("/einvoicing-compliance-tracker.html")).text();
   const mapBlock = (tracker.match(/const DEEP_DIVES = \{[\s\S]*?\};/) || [""])[0];
   t.check("the link map was injected from D1, so this is checking something",
     mapBlock.length > 500, `${mapBlock.length} bytes`);
-  t.check("the EU is NOT in the tracker's link map",
-    !/European Union/.test(mapBlock),
-    "it is listed in the side menu and on the board — that is 'publish AND link'");
+  t.check("the EU IS in the tracker's link map, so the side menu links it",
+    /"European Union":\s*"\/european-union"/.test(mapBlock),
+    "the sidebar row renders as plain text — 'still does nothing'");
+  t.check("and it has a crawlable anchor too",
+    (tracker.match(/href="\/european-union"/g) || []).length >= 1,
+    "no anchor: sitemapped but invisible to anything that does not run JS");
 
-  // BUT REACHABLE BY SOMETHING. A page in the sitemap with no anchor
-  // anywhere is the state the 24 August audit found 42 country pages in.
-  // The crawlable A-Z index is where it is allowed to appear.
-  t.check("the EU has exactly one anchor, in the crawlable country index",
-    (tracker.match(/href="\/european-union"/g) || []).length === 1,
-    `${(tracker.match(/href="\/european-union"/g) || []).length} anchors`);
+  // AND NOT SUBSCRIBABLE, which is the thing he actually asked to
+  // withhold. Two independent lists, neither of which is the side menu:
+  // the monthly digest's checklist is built from countries.js, and every
+  // headline count and the ROI picker read in_picker.
+  const countriesJs = await (await get("/countries.js")).text();
+  t.check("the subscription checklist has no European Union checkbox",
+    !/European Union/.test(countriesJs),
+    "a reader could subscribe to the EU as if it were a jurisdiction");
+  const picker = await all(
+    "SELECT in_picker FROM countries WHERE code = 'EU'");
+  t.check("and the EU is not one of the counted jurisdictions",
+    picker.length === 1 && picker[0].in_picker === 0,
+    `in_picker = ${picker[0] && picker[0].in_picker}`);
+
+  // ---- and now the thing Dan actually looked at --------------------
+  //
+  // Every check above this line passed on the version he called
+  // "still does nothing", or would have if I had written it the other
+  // way round. They read the injected map, which is the instruction;
+  // renderSidebar() decides whether a row becomes an <a> or a <div>,
+  // and that is the rendered result. Rule 2 of the project, and this
+  // is the second time on this one feature that the difference has
+  // been where the defect lived.
+  //
+  // Rendered from the WORKER'S output, in the repo root so the page's
+  // relative assets resolve, and read back off the element.
+  const tmp = join(REPO, "_eu-sidebar-check.html");
+  writeFileSync(tmp, tracker);
+  const browser = await launch();
+  let row = null;
+  try {
+    const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+    await page.goto(`file://${tmp}`, { waitUntil: "load" });
+    await page.waitForTimeout(2000);
+    row = await page.evaluate(() => {
+      const el = [...document.querySelectorAll("#sidebarNav .c-name")]
+        .find((e) => /European Union|Europäische Union|Unión Europea|Union européenne/
+          .test(e.textContent));
+      if (!el) return { found: false };
+      return { found: true, tag: el.tagName, href: el.getAttribute("href") || null };
+    });
+    await page.close();
+  } finally {
+    await browser.close();
+    rmSync(tmp, { force: true });
+  }
+  t.check("the EU row exists in the rendered side menu", row && row.found,
+    "the sweep found no such row, so the two checks below are vacuous");
+  t.check("and it is an anchor, not two words of plain text",
+    row && row.tag === "A", `rendered as <${(row && row.tag || "?").toLowerCase()}>`);
+  t.check("and the anchor points at the deep dive",
+    row && row.href === "/european-union", `href = ${row && row.href}`);
 }
 
 console.log(`\n  note  ${tracked.length} country pages served, `

@@ -72,12 +72,22 @@ export const COUNTRY_DEEP_DIVE_SLUGS = {
   // content behind it sat above the corpus average on every dimension
   // the whole corpus has.
   //
-  // He chose "publish, don't link", so the page is served and listed in
-  // the sitemap while the EU stays out of the READER-FACING country lists
-  // -- the side menu and the board's deep-dive button. That exclusion is
-  // buildDeepDives()' in_picker filter in site-worker, not a second name
-  // list here: in_picker already means "not one of the countries we
-  // list", and the EU is the only one of 77 rows carrying it.
+  // IT IS LINKED FROM THE SIDE MENU LIKE ANY OTHER ROW. The first
+  // attempt was not: I offered him "publish, don't link" and described
+  // it as the sidebar keeping the EU as plain text, he chose it, and
+  // when he saw it he said what he had actually meant --
+  //
+  //   "the European Union sidebar menu item that lives among other
+  //    deep-dives does not link to a deep dive on the European Union...
+  //    the deep-dive alone was considered to provide EU wide information
+  //    from EU sources, without it having to be replicated across all
+  //    member states. ... the European Union menu item in the side bar,
+  //    still does nothing."
+  //
+  // The EU is excluded from SUBSCRIPTION and from COUNTS -- no checkbox
+  // in the monthly digest, not in the ROI picker, not in "76
+  // jurisdictions", not on the choropleth, which has no shape for it.
+  // Those are in_picker's job. Being linked to is not.
   "European Union": "european-union",
 };
 
