@@ -62,6 +62,23 @@ export const COUNTRY_DEEP_DIVE_SLUGS = {
   "United Kingdom": "uk", "United States": "united-states", "Uruguay": "uruguay", "Vietnam": "vietnam",
   "Bahrain": "bahrain", "Qatar": "qatar",
   "Uzbekistan": "uzbekistan", "Azerbaijan": "azerbaijan",
+  // NOT A COUNTRY, AND DELIBERATELY IN A COUNTRY TABLE. Dan, 28 August
+  // 2026: "The European Union, side menu does not link. Although I think
+  // we built a deep-dive for it." He had. Eleven cards, five stats, six
+  // registration steps, two portals and a complete set of DE/ES/FR
+  // translations, reachable by nothing at all: this table is what decides
+  // whether an incoming path is a country page before any D1 round-trip,
+  // the EU was not in it, and /european-union answered 404 while the
+  // content behind it sat above the corpus average on every dimension
+  // the whole corpus has.
+  //
+  // He chose "publish, don't link", so the page is served and listed in
+  // the sitemap while the EU stays out of the READER-FACING country lists
+  // -- the side menu and the board's deep-dive button. That exclusion is
+  // buildDeepDives()' in_picker filter in site-worker, not a second name
+  // list here: in_picker already means "not one of the countries we
+  // list", and the EU is the only one of 77 rows carrying it.
+  "European Union": "european-union",
 };
 
 export const SLUG_TO_COUNTRY = Object.fromEntries(

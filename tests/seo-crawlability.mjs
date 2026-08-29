@@ -54,8 +54,17 @@ const env = {
 const get = (path) => worker.fetch(
   new Request(`https://e-invoicingcompliancecorner.com${path}`), env, { waitUntil() {} });
 
+// EVERY URL THE ROUTER CAN SERVE, which is what the sitemap claims and
+// what this file checks it against. `AND code != 'EU'` came out on
+// 28 August 2026: the EU was given a slug so its deep dive could be
+// published, /european-union serves a real page in four languages, and
+// excluding it here made the sitemap look like it was advertising a URL
+// the router did not know. It was the check that was out of date.
+//
+// Note this is deliberately NOT in_picker: a page can be worth indexing
+// without being listed in the side menu, and the EU is exactly that.
 const tracked = await all(
-  "SELECT slug, name_en FROM countries WHERE slug IS NOT NULL AND code != 'EU' ORDER BY slug");
+  "SELECT slug, name_en FROM countries WHERE slug IS NOT NULL ORDER BY slug");
 t.check("there are countries to be reachable", tracked.length >= 50, `${tracked.length} slugs`);
 
 // ---- 1. the tracker, read as text --------------------------------------

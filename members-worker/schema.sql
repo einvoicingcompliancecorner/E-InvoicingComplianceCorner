@@ -26,11 +26,31 @@ CREATE TABLE translations (
 -- *** STANDING WARNING — READ BEFORE COUNTING ROWS IN THIS TABLE ***
 -- This table also holds a row for the European Union itself (needed
 -- so EU-level content — e.g. the ViDA milestone — has somewhere to
--- attach), deliberately NOT a tracked jurisdiction: its slug is NULL
--- and in_picker is 0. Any query answering "how many countries/
--- jurisdictions do we track" MUST filter on slug IS NOT NULL (or
--- in_picker = 1) — never a bare COUNT(*) or an unfiltered DISTINCT
--- over this table or anything joined from it (e.g. milestones.country).
+-- attach), deliberately NOT a tracked jurisdiction: in_picker is 0.
+-- Any query answering "how many countries/jurisdictions do we track"
+-- MUST filter on in_picker = 1 — never a bare COUNT(*) or an unfiltered
+-- DISTINCT over this table or anything joined from it (e.g.
+-- milestones.country).
+--
+-- *** AND slug IS NOT NULL IS NO LONGER THE SAME FILTER ***
+-- Until 28 August 2026 this warning offered "slug IS NOT NULL (or
+-- in_picker = 1)" as interchangeable, because the EU had neither. It
+-- now has a slug: Dan asked for its deep dive, which had existed and
+-- been unreachable since migration 007, to be published without being
+-- listed (migration 730). So the two conditions mean different things
+-- and cannot be substituted for each other:
+--
+--   slug IS NOT NULL   this page can be SERVED — the router, the
+--                      sitemap, anything asking "is there a URL"
+--   in_picker = 1      this is one of the countries we LIST or COUNT —
+--                      the side menu, the ROI picker, the map, the
+--                      jurisdiction count, every headline number
+--
+-- Four call sites were relying on the first to mean the second when the
+-- slug landed. Three had already patched around it locally with
+-- `AND code != 'EU'`, which is the shape of a rule nobody had written
+-- down. getMapCountries() had not, and would have asked a choropleth to
+-- draw a shape that does not exist in the topology.
 -- This exact mistake has independently recurred three times across
 -- this project: a stale static translation string, a raw COUNT(*)
 -- reasoning error (both found during the Netherlands country add,
