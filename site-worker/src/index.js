@@ -52,6 +52,7 @@ import {
 // cannot read or change anything about their account. See the header of
 // shared/session.mjs for why that split, and what it deliberately trades.
 import { themeBootScript, PARTNER_THEMES } from "../../shared/palette.mjs";
+import { localiseHtml, localiseHead, stampLanguage, namespaceOf } from "../../shared/i18n-ssr.mjs";
 import { sessionEmail, sessionDiagnostic, readCookie, signOutCookies, SESSION_COOKIE, themeCookie } from "../../shared/session.mjs";
 import {
   getRoiCountries,
@@ -552,6 +553,78 @@ function verificationMeta(env) {
   return tags.join("\n");
 }
 
+// ================================================================
+// SERVING A PAGE IN THE LANGUAGE ITS URL CLAIMS
+// ================================================================
+//
+// The sitemap declares `?lang=de` as the German alternate of the tracker
+// and the five education pages. Until 29 August 2026 those URLs returned
+// `<html lang="en">`, English body text and a canonical pointing at the
+// English page, because every string on them is substituted in the
+// browser by i18n.js. A crawler that does not render — Bing's non-render
+// path, and every AI crawler, none of which execute JavaScript — was
+// therefore being told the German alternate was a duplicate of the
+// English one.
+//
+// This closes that. `?lang=xx` on a page that carries translatable
+// markup is answered with the strings already substituted, the right
+// `lang` attribute, and a canonical that points at itself.
+//
+// IT DOES NOT VARY THE CACHED DOCUMENT BY READER, which is the rule this
+// site is built on. The language is in the URL, so `?lang=de` is a
+// different cache key from `/`; what must never happen — and still does
+// not — is the same URL answering differently for two people. A reader
+// with only a cookie still gets the one shared English document and has
+// it translated in place, exactly as before.
+//
+// NO PATH LIST. A page qualifies by declaring `data-i18n` markup and its
+// own `data-namespace`; both are read out of the asset. Adding a sixth
+// page means adding the script tag it would need anyway.
+async function localiseAsset(env, html, lang, canonicalHref) {
+  if (!SUPPORTED_LANGS.includes(lang) || lang === "en") return html;
+  const ns = namespaceOf(html);
+  const file = `/i18n/${lang}${ns ? `-${ns}` : ""}.json`;
+  // The English file too, so localiseHead() can tell a translated title
+  // from one that is merely present. Failing to read it is not fatal.
+  const enFile = `/i18n/en${ns ? `-${ns}` : ""}.json`;
+  let strings, english = null;
+  try {
+    const [res, enRes] = await Promise.all([
+      env.ASSETS.fetch(new Request(`https://e-invoicingcompliancecorner.com${file}`)),
+      env.ASSETS.fetch(new Request(`https://e-invoicingcompliancecorner.com${enFile}`)),
+    ]);
+    if (!res.ok) throw new Error(`${res.status}`);
+    strings = await res.json();
+    if (enRes.ok) english = await enRes.json();
+  } catch (err) {
+    // AN UNTRANSLATED PAGE IS CORRECT; A BROKEN ONE IS NOT. If the
+    // language file cannot be read, serve exactly what would have been
+    // served before this function existed rather than a five-hundred.
+    console.log(`localiseAsset: ${file} unavailable (${(err && err.message) || err})`);
+    return html;
+  }
+  const { html: body, applied, missing } = localiseHtml(html, strings);
+  if (missing.length) {
+    console.log(`localiseAsset: ${file} is missing ${missing.length} key(s), `
+      + `first: ${missing.slice(0, 3).join(", ")}`);
+  }
+  if (!applied) return html;
+  return stampLanguage(localiseHead(body, strings, english), lang, canonicalHref);
+}
+
+/** The `?lang=` a URL asks for, or "" — the URL only, never the cookie.
+ *
+ *  Deliberately not resolveInsightsLang(): that one falls back to the
+ *  cookie, which is right for a page rendered FOR a reader and wrong
+ *  here. A cookie must not change a cached document, and there is no
+ *  hreflang claim to honour unless the parameter is actually present. */
+function urlLang(request) {
+  const v = new URL(request.url).searchParams.get("lang") || "";
+  return SUPPORTED_LANGS.includes(v) ? v : "";
+}
+
+const SITE_ORIGIN = "https://e-invoicingcompliancecorner.com";
+
 async function renderTracker(request, env) {
   // Always fetch the static asset first — it's both the shell we inject
   // into and the complete fallback if anything below throws. Fetch via
@@ -662,6 +735,10 @@ async function renderTracker(request, env) {
       return `<ul id="countryIndexList">${buildCountryIndexHtml(data, deepDives)}</ul>`;
     });
     if (!indexed) console.log("Tracker: country index marker not found — serving the page without it.");
+    // Last, so it substitutes into the injected markup as well as the
+    // shell — the country index and the sidebar are built above.
+    const lang = urlLang(request);
+    if (lang) out = await localiseAsset(env, out, lang, `${SITE_ORIGIN}/?lang=${lang}`);
     return new Response(out, {
       headers: {
         "Content-Type": "text/html; charset=UTF-8",
@@ -4166,6 +4243,25 @@ export default {
     // Static assets binding handles everything else (index.html, the
     // tracker, education pages, i18n/, css/js/images, and the final
     // not-found fallback for anything that matches nothing at all).
-    return env.ASSETS.fetch(request);
+    //
+    // WITH ONE TRANSFORM ON THE WAY OUT. A static page whose language is
+    // claimed in the sitemap as `?lang=de` has to answer in German, or
+    // the claim is false — see localiseAsset(). Only HTML, only when the
+    // parameter is present, and only when the page actually carries
+    // translatable markup, so css/js/json/images fall straight through
+    // as before.
+    const assetLang = urlLang(request);
+    const asset = await env.ASSETS.fetch(request);
+    if (!assetLang || !asset.ok) return asset;
+    if (!/text\/html/i.test(asset.headers.get("content-type") || "")) return asset;
+    const source = await asset.text();
+    if (!source.includes("data-i18n")) {
+      return new Response(source, { status: asset.status, headers: asset.headers });
+    }
+    const canonical = `${SITE_ORIGIN}${url.pathname.replace(/\.html$/, "")}?lang=${assetLang}`;
+    const localised = await localiseAsset(env, source, assetLang, canonical);
+    const headers = new Headers(asset.headers);
+    headers.set("Content-Type", "text/html; charset=UTF-8");
+    return new Response(localised, { status: asset.status, headers });
   },
 };

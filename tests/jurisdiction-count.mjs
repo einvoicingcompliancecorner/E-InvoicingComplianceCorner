@@ -161,7 +161,24 @@ async function run(db, fix) {
   const FIX = fix;
   const [{ n: COUNT }] = await db.query(
     "SELECT count(*) AS n FROM countries WHERE in_picker = 1");
-  const { keys: KEYS, sources } = countKeys();
+  const { keys: registryKeys, sources } = countKeys();
+  // KEYS THAT LIVE IN A FILE RATHER THAN IN D1, and so cannot come from a
+  // migration's standing invariant.
+  //
+  // `pages.home.description` is the tracker's meta description in each
+  // language file. It said "70 countries" in all four while the site
+  // tracked 76 — for two months, in the tag a search result quotes.
+  // Nothing caught it because the registry is built from D1 invariants
+  // and this string is not in D1. It became load-bearing on 29 August
+  // when the head started being localised server-side, and a wrong
+  // number that only a reader saw became a wrong number Google indexes.
+  //
+  // Listed here rather than given a migration, because inventing a D1
+  // invariant about a JSON file to satisfy the registry's shape would be
+  // the tail wagging the dog. The registry is still the source for
+  // everything that IS in D1.
+  const FILE_ONLY_KEYS = ["pages.home.description"];
+  const KEYS = [...registryKeys, ...FILE_ONLY_KEYS];
   console.log(`Authority: ${COUNT} jurisdictions (countries.in_picker = 1)`);
   console.log(`Registry:  ${KEYS.length} count-bearing keys, from ${sources.join(", ")}\n`);
 

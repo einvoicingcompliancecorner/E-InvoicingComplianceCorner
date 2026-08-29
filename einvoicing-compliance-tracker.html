@@ -965,7 +965,13 @@
      tests/auth-code.mjs checks the tracker and site-worker agree on it. -->
 <script src="auth-overlay.js?v=3"></script>
 </head>
-<body>
+<!-- data-page names this page's entry in the i18n files' `pages`
+     block, which is where the translated <title> and meta description
+     live. The tracker never declared one, so applyHead() had nothing to
+     key on and the German homepage carried the English description --
+     for readers as well as crawlers. i18n/de.json has had `pages.home`
+     all along. Added 29 August 2026. -->
+<body data-page="home">
 
 <button class="menu-toggle" id="menuToggle" data-i18n="filters.mobilePortalsToggle">☰ Countries</button>
 <div class="sidebar-overlay" id="sidebarOverlay"></div>
