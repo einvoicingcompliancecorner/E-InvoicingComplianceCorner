@@ -78,19 +78,31 @@ const BACKLOG_CEILING = {
 const words = (s) => String(s || "").trim().split(/\s+/).filter(Boolean).length;
 const chars = (s) => String(s || "").length;
 
-// ---- the bands, and where compliance_model's ceiling comes from -------
+// ---- the bands, and what happened to compliance_model's ceiling -------
 //
-// 64 is NOT a style choice. The compliance guide prints compliance_model
-// in its Model column through clip(model.split(/[.;]/)[0], 64), so a
-// longer value is truncated mid-phrase in a PDF a reader downloads.
-// Read the constant out of the source rather than restating it, so the
-// framework and the renderer cannot drift apart -- which is the exact
-// failure mode this whole file exists to catch.
-const guidesSrc = readFileSync(join(REPO, "shared/guides-render.mjs"), "utf8");
-const clipMatch = guidesSrc.match(/clip\(String\(r\.model[^)]*\)\.split\([^)]*\)\[0\],\s*(\d+)\)/);
-t.check("the guide's model-column clip is still readable from source",
-  clipMatch !== null, clipMatch ? `clip at ${clipMatch[1]}` : "pattern not found — update this test with the renderer");
-const GUIDE_CLIP = clipMatch ? Number(clipMatch[1]) : 64;
+// 64 USED TO BE READ OUT OF THE RENDERER and is now written down here,
+// which is a WEAKER arrangement and is recorded as such rather than
+// quietly adopted.
+//
+// The compliance guide printed compliance_model in its front-page Model
+// column through clip(model.split(/[.;]/)[0], 64), so a longer value was
+// truncated mid-phrase in a PDF a reader downloads. This file read that
+// constant out of the source so the framework and the renderer could not
+// drift apart. On 1 September 2026 the Model column became four channel
+// statuses (migration 736) and the truncation went with it, so there is
+// no longer a constant in the renderer to read.
+//
+// THE NUMBER IS KEPT AND THE JUSTIFICATION IS GONE. 64 is now a content
+// judgement with nothing enforcing it, and the honest thing is to say so:
+// compliance_model still renders on the website deep dive, in a
+// country-meta line whose own budget nobody has measured. Dan owns this
+// field's shape and the re-derivation is his call.
+//
+// WHAT IS NOT DONE HERE IS RAISING IT. 35 countries are over the ceiling
+// and tracked in BACKLOG_CEILING above; loosening a band while its reason
+// is unsettled would retire that backlog by decree rather than by work,
+// and this file exists to stop exactly that kind of substitution.
+const GUIDE_CLIP = 64;
 
 const PROSE = {
   compliance_model:  { unit: "chars", min: 20, max: GUIDE_CLIP },

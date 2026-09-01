@@ -18508,3 +18508,150 @@ file — because exempting the file is the same move as `AND code != 'EU'`.
 reader, and the commit says so.
 
 `npm test`: **43 suites**.
+
+---
+
+### 1 September 2026 — the front page stops answering a question it cannot answer
+
+Dan, on the compliance guide's first page: *"Audit the use of the term IN
+FORCE. For example; Netherlands shows IN FORCE in the Next Dated
+Obligation column. But there is no mandate for B2B, and it would seem B2G
+is voluntary."* And separately, of the Model column: *"includes text which
+is cut off, and of limited value ... It is just a summary box afterall."*
+
+Both were right. The second was a presentation defect. The first was the
+same bug this file recorded as fixed on 27 August, alive in a second form,
+and the audit is the part worth keeping.
+
+#### The data was right and the summary was wrong
+
+**NL's `b2g_status` is `active`, dated 2017-01-01, and correctly so.** Its
+own note says why: *"Central-government suppliers must issue; other public
+bodies need only receive."* A real obligation, and a narrow one. Dan's
+premise — that B2G looked voluntary — was the one part of his message that
+did not hold, and it did not need to: the table collapsed four channels
+into one word, so the qualification that makes the duty narrow sat a page
+away from the claim announcing it.
+
+Thirteen countries are `active` in B2G only. Six had no future date to
+show instead, so the pill was the whole cell: **Denmark, Finland, Iceland,
+Netherlands, Switzerland, United States.** The other seven were hidden by
+having a date to print, not by being right.
+
+#### The half nobody found, because a test required it
+
+`mandateStateOf` read b2g, b2b and b2c. **e-Reporting was not among them.**
+So Taiwan — voluntary on all three invoicing channels, ACTIVE on
+e-Reporting — printed NO MANDATE on the front page and ACTIVE on its own
+tile one page later. Bulgaria, the Czech Republic, the Philippines and
+Slovakia sit in the same state and were hidden the same way.
+
+Understating a duty is the direction this project's own comments warn
+about, in the function that did it: *"never 'no mandate', because a blank
+where a duty might sit is the one error that gets somebody fined."* The
+rule was written down. e-Reporting was simply not in the set it read.
+
+**`tests/guides-front-table.mjs` REQUIRED the Taiwan error.** Its second
+check — "every country with an active issuing obligation IS called in
+force" — was written on 27 August to stop a lazy repair that made the pill
+cautious everywhere. It was right about that risk, and it also made the
+real repair unshippable: it fails by construction the moment the front
+page stops collapsing. A check that pins a collapse in place is worse than
+no check, because it reads as coverage.
+
+#### Both were visible on the page, in the same row
+
+The strongest evidence came from rendering the old version rather than
+reasoning about it. The Netherlands printed **IN FORCE** beside a Model
+column reading *"Voluntary B2B (market-driven Peppol adoption)"*. Taiwan
+printed **NO MANDATE** beside *"mandatory since 2021"*. The table
+contradicted itself in two places, on the first page of a document readers
+print, and no check could see it — because every check asked the module
+what it would say instead of reading what it printed.
+
+The rendered comparison was generated from the PRISTINE module at HEAD,
+not from a flag in the changed one. A before-shot produced by the code
+being changed is a comparison with itself.
+
+#### What replaced it
+
+`mandateStateOf` is **deleted**, and the deletion is the fix. It answered
+"what one word describes this country's mandate" and there is no such
+word. The Model column now prints all four channels in the tiles' own
+vocabulary, from the same `HL_STATUS` table the tiles read, so there is no
+second derivation to keep in step. The date column prints the next date or
+`No dated step` and states no status at all.
+
+**No new string was introduced by any of it.** The status words are the
+`guides.hl.*` keys the tiles have used since the strip was built,
+translated four ways. `guides.pill.nodate` had been sitting in D1 since an
+earlier design **with no call site at all** — an orphan adopted rather
+than a key invented. Migration 736 only deletes: the three
+`guides.pill.*` words the date column can no longer print.
+
+Two choices inside it, both departures from what was asked:
+
+- **PLANNED, not "Scheduled".** Dan asked for Scheduled. The tiles have
+  said PLANNED since the strip was built; a front page saying one over a
+  tile saying the other would be a fresh disagreement of exactly the kind
+  being removed. Renaming both is a separate job.
+- **e-Reporting prints a status where its tile prints a cadence.** The
+  tile shows MONTHLY rather than ACTIVE deliberately — a cadence is what a
+  reader builds for. A one-line summary cell has no room for both, and a
+  column whose other three rows are statuses cannot answer a different
+  question on the fourth. ACTIVE and MONTHLY are the same fact at two
+  resolutions.
+
+#### The prose, offered two ways and dropped
+
+`compliance_model` appeared **only** in that column, so replacing it would
+have silently dropped 76 reviewed sentences out of the PDF. Offered as a
+decision rather than taken as a side effect: drop it, or move the full
+uncut sentence onto each country page. Both were built and rendered.
+
+Dan chose to drop it, and the rendering is why. On the two pages carrying
+the longest model fields the sentence largely restated the
+`mandate_summary` directly above it — Ghana's opened *"Live continuous
+transaction control. Every taxable person must issue invoices through a
+GRA-certified system..."* against a summary already reading *"has been
+mandatory for every taxable person since 1 January 2026"* — and it cost
+height on the pages already tightest, taking Ghana from 1.14 to 1.18 of a
+page. It still renders on the website deep dive; nothing left D1.
+
+`getGuideBundle` no longer selects the column, and `clip()` is deleted
+with the truncation it served.
+
+#### A ceiling that lost its justification, and was not quietly raised
+
+`tests/deep-dive-shape.mjs` read the number 64 **out of the renderer's
+`clip()` call**, so the content framework and the renderer could not drift
+apart. There is no longer a `clip()` to read.
+
+The number is kept and written down, with a comment saying plainly that it
+is now a content judgement with nothing enforcing it: the field still
+renders on the website deep dive, in a `country-meta` line whose budget
+nobody has measured. **The band was NOT raised.** 35 countries are over it
+and tracked in `BACKLOG_CEILING`; loosening a band while its reason is
+unsettled retires a backlog by decree rather than by work, which is the
+substitution that file exists to catch.
+
+#### One red left deliberately red
+
+`tests/roi-regression.mjs` fails **on HEAD, before any of this** —
+confirmed against a clean clone rather than assumed. One check asserts
+`order[0] === "France"` for "the most urgent jurisdiction is drawn first".
+Greece's 2026-10-01 deadline is now the nearest and the chart correctly
+draws Greece first: **an absolute assertion about a relative property**,
+which was always going to expire and would expire again for whoever fixed
+it by swapping in "Greece".
+
+A fix that queried the expected name from D1 was written and then
+reverted, because it disagreed with the chart in a way I could not account
+for — the chart skips France and Hungary, both dated today, so the
+ordering rule is not simply "earliest future milestone". Shipping a check
+that passes for a reason I cannot explain is worse than leaving a red one
+that is understood. Named here so the next person starts from the
+diagnosis rather than the symptom.
+
+`npm test`: **43 of 44 suites**; replay OK across 736 files, 1311
+assertions, 265 standing invariants.

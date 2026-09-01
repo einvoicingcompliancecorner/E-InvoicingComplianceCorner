@@ -1,0 +1,87 @@
+-- The guide's front page stops answering a question it cannot answer.
+--
+-- Dan, 1 September 2026, on the compliance guide's first page: "Audit the
+-- use of the term IN FORCE. For example; Netherlands shows IN FORCE in
+-- the Next Dated Obligation column. But there is no mandate for B2B, and
+-- it would seem B2G is voluntary."
+--
+-- THE DATA WAS RIGHT AND THE SUMMARY WAS WRONG, which is the part worth
+-- recording. NL's b2g_status is 'active', dated 2017-01-01, and its own
+-- note says why: "Central-government suppliers must issue; other public
+-- bodies need only receive." A real obligation, correctly sourced, and a
+-- narrow one. The front table collapsed four channels into one word, so
+-- the qualification that makes it narrow was a page away from the claim.
+--
+-- THIS IS THE THIRD TIME THAT COLLAPSE HAS SHIPPED. It was a milestone
+-- heuristic ("past milestones and none in the future" -> IN FORCE) until
+-- 27 August, when Liechtenstein exposed it. The repair swapped the inputs
+-- for the headline facts and KEPT THE COLLAPSE, so:
+--
+--   · thirteen countries are 'active' in B2G only and printed an
+--     unqualified IN FORCE. Six had no future date to show instead and
+--     so showed nothing else: Denmark, Finland, Iceland, Netherlands,
+--     Switzerland, United States.
+--   · e-Reporting was not among the three statuses the rule read, so
+--     TAIWAN printed "No mandate" against a live e-Reporting regime its
+--     own tile calls ACTIVE. Bulgaria, the Czech Republic, the
+--     Philippines and Slovakia are in the same state, hidden only by
+--     having a date to print. Understating a duty is the direction this
+--     project's own comments warn about.
+--
+-- Both were visible on the page before this change, in the same row: the
+-- Netherlands printed IN FORCE beside a Model column reading "Voluntary
+-- B2B (market-driven Peppol adoption)", and Taiwan printed NO MANDATE
+-- beside "mandatory since 2021". The table contradicted itself in two
+-- places and no check could see it, because every check asked the module
+-- what it would say rather than reading what it printed.
+--
+-- WHAT THE CODE NOW DOES, so this file is readable on its own: the Model
+-- column prints all four channels with the statuses the country page's
+-- tiles show, in the tiles' own words, and the date column prints the
+-- next date or 'No dated step'. No status is derived anywhere on the
+-- front page, so there is nothing left to disagree with.
+--
+-- NO NEW STRING IS ADDED BY ANY OF IT. The status words are the hl.*
+-- keys the tiles already read, translated in all four languages since the
+-- strip was built, and 'pill.nodate' has been sitting in D1 since an
+-- earlier design with no call site at all. This migration only retires
+-- what the change orphaned.
+
+-- ---- the three the date column no longer has any way to print ----
+DELETE FROM translations
+ WHERE namespace = 'tracker'
+   AND key IN ('guides.pill.inforce', 'guides.pill.unconfirmed', 'guides.pill.nomandate');
+
+-- ---- what this migration claims it did ----
+--
+-- The three are gone in every language. Deleted rather than left for an
+-- unused-key check to excuse, the same way 733 retired pdf.jur; the KEPT
+-- list those checks carry is deliberately empty and worth keeping empty.
+-- ASSERT: SELECT count(*) FROM translations WHERE namespace = 'tracker' AND key IN ('guides.pill.inforce','guides.pill.unconfirmed','guides.pill.nomandate') = 0
+--
+-- And the string that replaced them is present in all four languages. It
+-- already was -- this asserts that the orphan being adopted really is
+-- complete, because a key with three of four languages degrades to
+-- English on a printed German document without anything going red.
+-- ASSERT: SELECT count(*) FROM translations WHERE namespace = 'tracker' AND key = 'guides.pill.nodate' = 4
+--
+-- STANDING: the Model column's vocabulary must stay complete.
+--
+-- Every word the front-page Model cell can print, in every language the
+-- site serves. Phrased per language rather than as a total so that adding
+-- a fifth language does not force an edit to an applied migration, which
+-- is the trap 727 fell into.
+--
+-- These twelve keys are named because the column reads them directly. It
+-- is deliberately NOT a rule over every key matching 'guides.hl.%' -- that
+-- would pattern-match the archiving and signature vocabularies, which
+-- this column does not print and which are free to change without it.
+-- ASSERT ALWAYS: SELECT COUNT(*) FROM (SELECT lang FROM translations WHERE namespace = 'tracker' AND key IN ('guides.hl.active','guides.hl.planned','guides.hl.voluntary','guides.hl.none','guides.hl.unknown','guides.hl.er.none','guides.hl.er.planned','guides.hl.freq.on_request','guides.hl.seg.b2g','guides.hl.seg.b2b','guides.hl.seg.b2c','guides.hl.lbl.ereporting') GROUP BY lang HAVING COUNT(DISTINCT key) <> 12) = 0
+--
+-- STANDING: the retired words do not come back to that column.
+--
+-- A future change is free to reintroduce a 'guides.pill.*' key for some
+-- other purpose, and this does not stop it. What it stops is these three
+-- specific keys reappearing, which would mean the collapse had been
+-- rebuilt -- the failure that has now shipped three times.
+-- ASSERT ALWAYS: SELECT count(*) FROM translations WHERE namespace = 'tracker' AND key IN ('guides.pill.inforce','guides.pill.unconfirmed','guides.pill.nomandate') = 0

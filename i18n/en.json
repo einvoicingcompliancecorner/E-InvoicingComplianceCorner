@@ -454,10 +454,7 @@
     "pill": {
       "complex": "Complex",
       "eu": "EU",
-      "inforce": "In force",
-      "nodate": "No dated step",
-      "nomandate": "No mandate",
-      "unconfirmed": "Not confirmed"
+      "nodate": "No dated step"
     },
     "sec": {
       "facts": "Key facts",

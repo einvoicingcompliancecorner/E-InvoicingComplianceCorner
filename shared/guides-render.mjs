@@ -56,7 +56,7 @@ import { escapeHtml, translateCountryName, deriveFlagFromCode } from "./deep-div
 // deep-dive pages could show the same tiles without a circular import --
 // this file already imports from deep-dive-render, so deep-dive-render
 // could not import from this one. See shared/headline-facts.mjs.
-import { shortDate, headlineTiles } from "./headline-facts.mjs";
+import { shortDate, headlineTiles, channelStatuses } from "./headline-facts.mjs";
 
 /** Placeholders in a translated string: {0}, {1}... */
 function fill(str, ...args) {
@@ -115,7 +115,6 @@ export async function getGuideBundle(db, names, lang) {
   const pages = await all(db, `
     SELECT c.name_en, c.code, c.region, c.roi_complexity, c.eu_member,
            ddp.last_updated,
-           COALESCE(dpt.compliance_model, dpt_en.compliance_model) AS compliance_model,
            COALESCE(dpt.mandate_summary, dpt_en.mandate_summary)   AS mandate_summary,
            COALESCE(dpt.timeline_intro, dpt_en.timeline_intro)     AS timeline_intro,
            COALESCE(dpt.footer_disclaimer, dpt_en.footer_disclaimer) AS footer_disclaimer
@@ -334,21 +333,31 @@ export function windowMilestones(milestones, todayISO) {
   };
 }
 
-// The three words the front-page table can end on, in the tiles' own
-// vocabulary. Exported so a test can assert the country list behind each
-// one rather than inferring it from rendered HTML.
-export function mandateStateOf(c, w) {
-  const h = c.headline;
-  if (h) {
-    const issue = [h.b2g_status, h.b2b_status, h.b2c_status];
-    if (issue.includes("active")) return "inforce";
-    if (issue.includes("unknown")) return "unconfirmed";
-    return "none";
-  }
-  // No stored headline facts: fall back to the old shape rather than
-  // claiming knowledge this function does not have.
-  return w.future.length === 0 && c.milestones.length > 0 ? "inforce" : "none";
-}
+// mandateStateOf IS GONE, 1 September 2026, and the deletion is the fix.
+//
+// It answered "what one word describes this country's mandate", and there
+// is no such word. Two shapes of wrongness came out of it, in opposite
+// directions and from the same cause:
+//
+//   · thirteen countries are `active` in B2G ONLY, so a real duty on
+//     central-government suppliers printed as an unqualified IN FORCE.
+//     Visible on the six with no future date to show instead — Denmark,
+//     Finland, Iceland, Netherlands, Switzerland, United States — which
+//     is how Dan found it.
+//   · e-Reporting was not one of the three statuses it read, so Taiwan
+//     printed NO MANDATE against a live e-Reporting regime its own tile
+//     calls ACTIVE. Four more countries sit in that state today.
+//
+// The 27 August fix replaced this function's milestone heuristic with a
+// headline-fact heuristic and kept the collapse, which is why the second
+// failure survived the first repair. The column that needed the states
+// now prints all four of them (see channelStatuses in headline-facts),
+// and the date column answers only the question its own heading asks.
+//
+// Its three pill strings — pill.inforce, pill.unconfirmed, pill.nomandate
+// — have no remaining call site and are DELETED in the same migration
+// rather than left for an unused-key check to excuse, the same way 733
+// retired pdf.jur.
 
 // ---- the summary front page -------------------------------------------
 //
@@ -372,41 +381,14 @@ export function summariseForFront(bundle, order, todayISO) {
       region: c.region,
       complexity: c.roi_complexity,
       euMember: !!c.eu_member,
-      model: c.compliance_model,
       nextDate: next ? next.date : null,
       nextWhat: next ? next.system : null,
       milestoneCount: w.rows.length,
-      // WHAT THE FRONT PAGE SAYS WHEN THERE IS NO FUTURE DATE, which is a
-      // different question from whether dates exist, and was answered
-      // wrongly until 27 August 2026.
-      //
-      // It used to be `w.future.length === 0 && c.milestones.length > 0`
-      // -- "no future milestone, but some past ones" -- rendered as
-      // "In force". That silently assumed every past milestone is an
-      // obligation now binding a supplier, which held for every country
-      // on the site until Liechtenstein, whose two on-board milestones
-      // are a duty on the AUTHORITY to receive and a change of VAT filing
-      // channel. Neither obliges anyone to issue an e-invoice, and the
-      // table announced a mandate that does not exist. Dan found it in a
-      // generated PDF. Four other countries were already wrong the same
-      // way: Bahrain, Canada, Qatar and Taiwan.
-      //
-      // It is now derived from the SAME six headline facts the country
-      // page shows, which is the rule this function's own header states
-      // -- the front page and the page it summarises cannot disagree --
-      // and it was the milestone heuristic that broke it. The vocabulary
-      // is the tiles' own: a status describes the obligation to ISSUE.
-      //
-      //   active anywhere -> in force
-      //   otherwise unknown anywhere -> not confirmed, never "no mandate",
-      //     because a blank where a duty might sit is the one error that
-      //     gets somebody fined
-      //   otherwise -> no mandate
-      //
-      // The old heuristic survives only as the fallback for a country
-      // with no stored headline facts, which 662's standing invariant now
-      // makes impossible to create but which the harness can still build.
-      mandateState: mandateStateOf(c, w),
+      // THE ROW CARRIES THE FACTS, NOT A VERDICT ABOUT THEM. Handing the
+      // renderer the same headline row the tiles get is what makes the two
+      // impossible to disagree: there is no second derivation to keep in
+      // step. See the deletion note above mandateStateOf's grave.
+      headline: c.headline || null,
     };
   }).filter(Boolean);
 }
@@ -581,12 +563,57 @@ ${PARTNER_MARK_CSS}
 .lede{color:#444;margin:0 0 12px;max-width:150mm;font-size:9pt}
 table.summary thead{display:table-header-group}
 table.summary{width:100%;border-collapse:collapse;font-size:8.4pt;color:#111;table-layout:fixed}
-table.summary col.a{width:23%} table.summary col.b{width:15%} table.summary col.c{width:34%} table.summary col.d{width:28%}
+/* col.d WIDENED FROM 28% AND col.c NARROWED TO PAY FOR IT, 1 September
+   2026. The Model column carries four labelled statuses now instead of
+   one clipped sentence, and at 28% the longest label wrapped -- which
+   broke the alignment down the column and cost a line on every row. What
+   changes is a short system name on the rows that have one at all. */
+table.summary col.a{width:22%} table.summary col.b{width:17%} table.summary col.c{width:27%} table.summary col.d{width:34%}
 table.summary th{font-family:'IBM Plex Mono',monospace;font-size:7.2pt;letter-spacing:.8px;
   text-transform:uppercase;color:#555;text-align:left;border-bottom:1px solid #999;
   padding:4px 6px 4px 0;font-weight:500}
 table.summary td{padding:4px 6px 4px 0;border-bottom:1px solid #e2e2e2;vertical-align:top;color:#222}
 table.summary td.date{font-family:'IBM Plex Mono',monospace;white-space:nowrap;color:#111}
+/* NO DATED STEP is not a status and must not be dressed as one. It used
+   to be a bordered .pill carrying "In force" / "No mandate", which is
+   what let a layout decision look like a finding; the states moved to
+   the Model column on 1 September 2026 and this cell now answers only
+   the question its own heading asks. Muted, unboxed, same mono face as
+   the dates it stands in for, so a reader scanning the column reads it
+   as "nothing here" rather than as a verdict. */
+/* WRAPS, unlike the dates around it. td.date is nowrap so an ISO date
+   never breaks across lines, and inheriting that pushed "No dated step"
+   out of its own column and into What changes, where it read as one run
+   -on string. Two short lines inside the column beat one line outside
+   it, and the header above it already wraps the same way. */
+table.summary td.date .nodate{color:#767676;font-style:italic;white-space:normal;display:inline-block}
+/* FOUR CHANNELS, ONE PER LINE, label and word on a fixed grid so the
+   statuses line up down the column and can be compared between
+   countries without reading -- which is the whole job of a summary
+   table. Mono at 6.6pt matches the tile segments on the country page. */
+table.summary td.model{padding-top:3px}
+table.summary td.model .ch{display:flex;gap:6px;align-items:baseline;line-height:1.28}
+/* NOWRAP AND A FIXED BASIS, both load-bearing. "E-reporting" wrapped to
+   two lines at the first width tried, and a wrapped label does not just
+   look untidy: the value beside it loses its baseline, so the four
+   statuses stopped lining up down the column -- and lining up is the
+   entire reason this is a table and not four sentences. */
+table.summary td.model .cl{flex:0 0 5.4em;white-space:nowrap;
+  font-family:'IBM Plex Mono',monospace;font-size:6pt;letter-spacing:.3px;
+  text-transform:uppercase;color:#6a6a6a}
+table.summary td.model .cv{font-family:'IBM Plex Mono',monospace;font-size:6.4pt;
+  letter-spacing:.3px;text-transform:uppercase;color:#333;white-space:nowrap}
+/* THE STATE IS NEVER ONLY A COLOUR -- inherited from the tiles for the
+   same two reasons: this page is printed and photocopied, and roughly
+   one man in twelve cannot separate the green from the amber. The word
+   carries the meaning; the rule only reinforces it. NOT CONFIRMED keeps
+   the dashed rule that marks it out everywhere else on the document. */
+table.summary td.model .ch .cv{border-left:2px solid transparent;padding-left:5px}
+table.summary td.model .on  .cv{border-left-color:#1c7c4a}
+table.summary td.model .soon .cv{border-left-color:#b26a00}
+table.summary td.model .opt .cv{border-left-color:#2f5aa8}
+table.summary td.model .off .cv{border-left-color:#c9c9c9}
+table.summary td.model .unk .cv{border-left-style:dashed;border-left-color:#8a8a8a}
 .pill{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:6.6pt;
   letter-spacing:.5px;text-transform:uppercase;padding:1px 5px;border-radius:2px;
   border:1px solid #c9c9c9;color:#555;white-space:nowrap}
@@ -823,7 +850,50 @@ ol.steps span{color:#555}
 }
 `;
 
-// A CUT MID-WORD READS AS BROKEN SOFTWARE, not as an abbreviation.
+// THE MODEL CELL, four channels and their statuses.
+//
+// Dan, 1 September 2026: "it should just say something like B2G -
+// Voluntary, B2B - Scheduled, B2C - No Mandate, e-Reporting - No Mandate.
+// It is just a summary box afterall."
+//
+// WHAT IT REPLACED and why the replacement is smaller than it looks. The
+// column printed `compliance_model` -- a prose field written for a human
+// reading one country -- pushed through a first-sentence split and then a
+// 64-character clip. THIRTY-ONE of seventy-six rows ended in an ellipsis,
+// and the split did the real damage: Ghana's 325-character model became
+// "Live continuous transaction control", Liechtenstein's 316 became "Two
+// regimes at once", Botswana's 260 became "Legislated, not in force".
+// Those are teasers for prose the reader never gets, in the column they
+// use to decide which country pages matter.
+//
+// NO NEW VOCABULARY IS INTRODUCED. Every word comes from the same
+// HL_STATUS table the tiles read, so the words already exist in D1 in all
+// four languages and the front page cannot invent a state the page below
+// it does not recognise. The one deliberate divergence -- a status where
+// the e-Reporting tile prints a cadence -- is argued in channelStatuses.
+//
+// PLANNED, NOT "SCHEDULED", which is the one place this departs from what
+// Dan asked for and it is worth being explicit. The tiles have said
+// PLANNED since the strip was built and the word is translated four ways;
+// a front page saying SCHEDULED over a tile saying PLANNED for the same
+// fact would be a fresh disagreement of exactly the kind this change
+// exists to remove. Renaming both is a separate job if he wants the word.
+//
+// A COUNTRY WITH NO STORED FACTS prints NOT CONFIRMED four times rather
+// than an em dash. 662's standing invariant makes that unreachable in
+// production, but the honest answer to "we hold nothing here" is the word
+// that says so, never a blank -- a blank reads as "no requirement", which
+// is the claim that gets somebody fined.
+function modelCell(headline, t) {
+  const rows = channelStatuses(headline, t)
+    || [["hl.seg.b2g", "B2G"], ["hl.seg.b2b", "B2B"], ["hl.seg.b2c", "B2C"],
+        ["hl.lbl.ereporting", "E-reporting"]].map(([k, en]) => ({
+          label: t(k, en), word: t("hl.unknown", "NOT CONFIRMED"), tone: "unk" }));
+  return rows.map((r) => `<span class="ch ${r.tone}"><span class="cl">${
+    escapeHtml(r.label)}</span><span class="cv">${escapeHtml(r.word)}</span></span>`).join("");
+}
+
+// clip() IS GONE with the column it served, and the lesson stays.
 //
 // The cover's Model column was a bare .slice(0, 64). On roughly half the
 // rows it landed inside a word -- Argentina ended "one of the worl",
@@ -831,18 +901,13 @@ ol.steps span{color:#555}
 // and several closed no parenthesis they had opened. That is the first
 // page a reader sees and the one they use to decide which country pages
 // matter; a fact that stops mid-syllable undermines every fact after it.
+// Backing up to a space and marking the cut was the right repair for that
+// column. The column is now four statuses, which never need shortening,
+// and nothing else in this file ever called it.
 //
-// Backs up to the last space and marks the cut, so the reader can tell a
-// shortened sentence from one that simply ends. If there is no space to
-// back up to, the hard cut stands -- a single 64-character word is not a
-// case worth more code.
-function clip(text, max) {
-  const str = String(text || "");
-  if (str.length <= max) return str;
-  const cut = str.slice(0, max);
-  const space = cut.lastIndexOf(" ");
-  return (space > max * 0.6 ? cut.slice(0, space) : cut).replace(/[ ,;:(]+$/, "") + "\u2026";
-}
+// A CUT MID-WORD READS AS BROKEN SOFTWARE, not as an abbreviation. Kept
+// as a comment because the next person to truncate something on this
+// cover needs the sentence more than they need the function.
 
 /**
  * The whole pack: a summary page then one page per country.
@@ -889,12 +954,10 @@ export function renderGuideDocument({ bundle, order, lang, strings, today, siteO
     <tbody>
     ${rows.map((r) => `<tr>
       <td>${esc(translateCountryName(lang, r.name))} ${r.euMember ? `<span class="pill eu">${t("pill.eu", "EU")}</span>` : ""}${r.complexity === "complex" ? ` <span class="pill cx">${t("pill.complex", "Complex")}</span>` : ""}</td>
-      <td class="date">${r.nextDate ? esc(r.nextDate) : `<span class="pill">${
-        r.mandateState === "inforce" ? t("pill.inforce", "In force")
-        : r.mandateState === "unconfirmed" ? t("pill.unconfirmed", "Not confirmed")
-        : t("pill.nomandate", "No mandate")}</span>`}</td>
+      <td class="date">${r.nextDate ? esc(r.nextDate)
+        : `<span class="nodate">${esc(t("pill.nodate", "No dated step"))}</span>`}</td>
       <td>${esc(r.nextWhat || "—")}</td>
-      <td>${esc(clip(String(r.model || "—").split(/[.;]/)[0], 64))}</td>
+      <td class="model">${modelCell(r.headline, t)}</td>
     </tr>`).join("")}
     </tbody>
   </table>

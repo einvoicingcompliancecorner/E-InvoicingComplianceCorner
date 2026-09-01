@@ -272,6 +272,72 @@ export function headlineTiles(h, t, wrapperClass = "statstrip hl") {
 
 
 /**
+ * THE FOUR CHANNELS AS WORDS, for the guide's front-page summary table.
+ *
+ * WHY IT LIVES HERE rather than in guides-render. The front table used to
+ * decide its own vocabulary — one word derived from three of the statuses
+ * — and that is what broke it. Dan, 1 September 2026, on the Netherlands:
+ * "IN FORCE seem incorrect here." It was, and not because the data was
+ * wrong: NL's B2G is genuinely `active` and correctly sourced ("Central-
+ * government suppliers must issue; other public bodies need only
+ * receive"). The table collapsed four channels into one word, so a real
+ * but narrow B2G duty printed as an unqualified obligation, and the note
+ * that says which suppliers it binds was a page away.
+ *
+ * SO THIS IS THE SAME TABLE THE TILES READ, not a second one. HL_STATUS
+ * is right there above it. A summary that resolves its own words is a
+ * summary that can disagree with the thing it summarises, which is the
+ * rule guides-render's own header already states and the reason the
+ * previous fix (27 August) did not hold: it swapped a milestone heuristic
+ * for a headline-fact heuristic and kept the collapse.
+ *
+ * E-REPORTING IS INCLUDED, and its absence was the sharper half of the
+ * same bug. `mandateStateOf` read b2g/b2b/b2c only, so Taiwan — voluntary
+ * on all three, ACTIVE on e-Reporting — printed "No mandate" on the front
+ * page and ACTIVE on its own tile one page later. Bulgaria, Czech
+ * Republic, the Philippines and Slovakia are in the same state and are
+ * only hidden by having a future date to show instead. Understating a
+ * live obligation is the error this file's own comment warns about.
+ *
+ * IT PRINTS A STATUS WHERE THE TILE PRINTS A CADENCE. The e-Reporting
+ * card deliberately shows MONTHLY rather than ACTIVE, because a cadence
+ * is what a reader has to build for; HL_EREPORTING carries a null word
+ * for `active` and `on_request` to force that. One line in a summary cell
+ * has no room for both, and a column whose other three rows are statuses
+ * cannot suddenly answer a different question, so the status word is
+ * restored here. ACTIVE and MONTHLY are the same fact at two
+ * resolutions — not a disagreement — and the cadence is on the page below.
+ *
+ * Returns null when a country has no stored facts, which migration 662's
+ * standing invariant makes impossible in production but the harness can
+ * still build. The caller decides what an absent row prints; it must not
+ * be a blank, for the reason at the top of this file.
+ */
+export function channelStatuses(h, t) {
+  if (!h) return null;
+  const word = (status, map) => {
+    const [key, en, tone] = map[status] || map.unknown;
+    return { word: t(key, en), tone };
+  };
+  const erep = (() => {
+    const st = h.ereporting_status || "unknown";
+    // The two the tile answers with a cadence instead. Both reuse a key
+    // that already exists and is already translated in all four
+    // languages — no new string is introduced by this column.
+    if (st === "active") return { word: t("hl.active", "ACTIVE"), tone: "on" };
+    if (st === "on_request") return { word: t("hl.freq.on_request", "ON REQUEST"), tone: "opt" };
+    return word(st, HL_EREPORTING);
+  })();
+  return [
+    { label: t("hl.seg.b2g", "B2G"), ...word(h.b2g_status, HL_STATUS) },
+    { label: t("hl.seg.b2b", "B2B"), ...word(h.b2b_status, HL_STATUS) },
+    { label: t("hl.seg.b2c", "B2C"), ...word(h.b2c_status, HL_STATUS) },
+    { label: t("hl.lbl.ereporting", "E-reporting"), ...erep },
+  ];
+}
+
+
+/**
  * The same markup, dressed for a dark screen.
  *
  * THE PRINT STYLESHEET IS IN GUIDE_STYLE and stays there; this is its
