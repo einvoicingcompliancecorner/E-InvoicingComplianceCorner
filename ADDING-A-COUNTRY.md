@@ -10,17 +10,35 @@
 > connection to the thing it counts is how the "48 countries" bug lasted
 > two days.
 
-> **Amended 26 August 2026.** Everything between 11 and 25 August — the
-> ROI & Wave Planner, the compliance guides, the headline tiles, the
-> e-reporting card, the specification register — arrived *after the last
-> country did*. No country has been added since migration 510 on
-> 12 August, so none of those surfaces has ever seen one arrive, and the
-> scaffolder predates most of them. This amendment adds Phase 1 step 3
-> (headline facts), the translation inventory, "What the replay will
-> refuse", the count-adjustment list, and the Phase 5 checks for the four
-> new surfaces. It also corrects the region vocabulary, which had been
-> wrong since migration 451. See `claude/adding-a-country-audit.md` in
-> the project for the evidence behind each change.
+> **Amended 4 September 2026.** The 26 August amendment was written on the
+> premise that nothing built between 11 and 25 August — the ROI & Wave
+> Planner, the compliance guides, the headline tiles, the e-reporting
+> card, the specification register — had ever seen a country arrive,
+> because none had since migration 510. **That premise expired the next
+> day.** Six countries landed on 27 August — Botswana, Liechtenstein,
+> Ghana, Switzerland, Hong Kong and Thailand, migrations 653 to 703 — and
+> every one of those surfaces has now taken a new country without
+> incident. The scaffolder was fixed in the same pass.
+>
+> So the parts of this file that read as untested warnings mostly are not
+> any more, and the three that still are have been re-verified rather than
+> re-stated: **migration 608's coverage claim is still a plain `ASSERT:`**
+> (Phase 1 step 3), the deep-dive content tables still have nowhere to put
+> a citation (Sourcing standard), and `COUNTRY_NAME_TRANSLATIONS` is still
+> checked by nothing (Phase 2).
+>
+> This amendment also removes the current-state counts that had crept back
+> in — see the note above about the "48 countries" bug. Where a number
+> describes how things are today it is gone or made relative; where it
+> records what an audit found on a date, it stays.
+>
+> **Two documents this file points at are not in the repository**:
+> `claude/design-architecture-review.html`, called "the map" above and
+> holding the release checklist Phase 5 defers to, and
+> `claude/adding-a-country-audit.md`, the evidence behind the 26 August
+> amendment. Neither is in the tree and neither is in the attached
+> project. Treat every reference to them below as a pointer to something
+> you may not be able to open.
 >
 > Rewritten 2 August 2026, superseding the original static-era runbook
 > and its accumulated correction notes. Three architecture changes made
@@ -65,10 +83,10 @@ Decide up front:
   `planned`, and a source URL. These are not optional polish — they open
   every deep dive and the compliance guide, and the schema will refuse
   several combinations outright. See Phase 1 step 3.
-- **Does it belong in the specification register?** Optional — 20 of 70
-  countries carry a `country_spec` row today, and `unreachable` or
-  `not_yet` are first-class answers. But decide deliberately rather than
-  by not knowing the register exists. See Phase 1 step 5.
+- **Does it belong in the specification register?** Optional — well under
+  half the tracked countries carry a `country_spec` row, and `unreachable`
+  or `not_yet` are first-class answers. But decide deliberately rather
+  than by not knowing the register exists. See Phase 1 step 5.
 - **The exact English country name.** Pick once, spell identically in
   every file and migration. A mismatch silently breaks matching between
   the subscribe picker, preferences, and story tagging — and, if it
@@ -128,7 +146,8 @@ first place:
   citation gap below that has since been closed, and it is closed only
   for these six fields.
 - **The rest of the deep-dive content still has nowhere to put a
-  citation at all** (rechecked 26 August 2026 — still true).
+  citation at all** (rechecked 4 September 2026 against the replayed
+  schema — still true).
   `deep_dive_stats`, `deep_dive_cards`, `deep_dive_steps`, and
   `deep_dive_penalty_rows` have no `source_url` column in the schema —
   unlike `milestones` and `stories`, which both do. Until that schema
@@ -145,10 +164,18 @@ first place:
 > floor and ceiling on every section's card count, and
 > `tests/deep-dive-shape.mjs` enforces it — a new country is held to the
 > framework on the day it lands, whatever the existing backlog says about
-> the seventy-six before it. **Do not size a new page by looking at the
+> the countries before it. **Do not size a new page by looking at the
 > most recent country.** That is exactly what produced two rounds of drift,
 > the second of which reached a 380-character description where the house
 > style is 64.
+>
+> One band in that file no longer has a mechanism behind it. `PROSE
+> .compliance_model`'s 64-character ceiling was read out of the guide
+> renderer's `clip()` call, so the framework and the renderer could not
+> drift apart; on 1 September 2026 the guide's Model column became four
+> channel statuses and the truncation went with it. The number is kept and
+> the band still holds you to it, but it is now a content judgement with
+> nothing enforcing it — see the comment in `tests/deep-dive-shape.mjs`.
 
 ## Phase 1 — D1 migrations (the bulk of the work)
 
@@ -168,21 +195,21 @@ hand-written, **the runner validates the full in-memory replay before
 touching live D1** — the project's non-negotiable, now automated rather
 than remembered.
 
-> **The scaffolder was last touched 14 August and has never run against
-> the current schema** — no country has been added since migration 510 on
-> 12 August. Three things it does not do, until someone fixes it:
+> **All three of the scaffolder's known defects were fixed on 27 August**,
+> in the pass that added six countries through it. It now validates
+> `region` against the post-451 vocabulary, so `Middle East / Africa` is
+> accepted; it requires `roi_complexity` and rejects anything outside the
+> three values rather than letting the country land on the column's
+> `'none'` default; and it validates `eu_member` and warns when it is
+> true. The instruction that used to live here — read what it emits and
+> add the two columns by hand — is no longer needed.
 >
-> - it validates `region` against the pre-451 vocabulary, so the correct
->   `Middle East / Africa` is rejected (see "Before you start");
-> - it omits `roi_complexity`, so the country silently lands on the
->   column's `'none'` default — zero integrations in the ROI planner, and
->   permanently invisible to the weekly review, which only inspects
->   countries rated `simple`;
-> - it omits `eu_member`, which is harmless today only because all 27
->   member states already exist, so `0` is always the right answer.
->
-> Until it is fixed, read what it emits before applying it, and add the
-> two columns and their assertions by hand.
+> Read what it emits anyway. Not because of a known defect, but because
+> the spec you hand it is where a country's `roi_complexity` and
+> `mandate_scope` are decided, and both of those fail silently downstream
+> if they are wrong rather than missing. The scaffolder can refuse a value
+> that is not one of three; it cannot tell you that you picked the wrong
+> one of the three.
 
 **Every migration should say what it did.** Replay proves the SQL runs;
 it cannot prove the SQL changed anything, and an `UPDATE` matching zero
@@ -407,8 +434,10 @@ python3 test_assertions.py                   # proves the mechanism itself still
 
    These are the five tiles that open every deep dive and the compliance
    guide printout: B2G / B2B / B2C as one card, e-reporting, archiving,
-   digital signature. Every one of the 70 countries has a row. A country
-   without one does not error — `getCountryHeadlineFacts()` returns null
+   digital signature. Every tracked country has a row; the European Union
+   is the only row in `countries` that does not, and does not need one.
+   A country without one does not error — `getCountryHeadlineFacts()`
+   returns null
    and `deep-dive-render.mjs` renders an empty string, which loses a
    strip rather than a page. That is correct behaviour for a renderer and
    the reason the omission has to be caught here.
@@ -485,12 +514,14 @@ python3 test_assertions.py                   # proves the mechanism itself still
 
    The register answers "can the specification be captured at all", and
    `unreachable` and `not_yet` are first-class answers rather than gaps.
-   Twenty of seventy countries carry a row, so leaving a new one out is a
+   A minority of countries carry a row, so leaving a new one out is a
    normal state, not a defect — but it is a decision, and the register's
    query inner-joins `country_spec`, so an absent country is simply
    absent with nothing to notice it. `tests/spec-register.mjs` floors at
    fifteen rows and otherwise only checks that *registered* countries
-   render.
+   render. `SELECT count(*) FROM country_spec` is the current number if
+   you want it; it is not written here, because it would be wrong by the
+   time you read it.
 
    If you do register it, the invariants are strict: four languages of
    `country_spec_translations` and no fewer; `capture_status =
@@ -592,9 +623,13 @@ documented reason to exist:
   *This paragraph used to name six countries as missing (Austria,
   Cyprus, Egypt, Greece, Luxembourg, Netherlands) and told you to fix
   them alongside your own. They were fixed; the instruction outlived the
-  defect. As of 26 August 2026 the dictionary holds 213 entries — 71
-  countries × 3 languages — and `COUNTRY_DEEP_DIVE_SLUGS` holds 70,
-  matching the 70 slugged rows. Nothing is outstanding; just add yours.*
+  defect. Then it was replaced by a headcount of the two dictionaries,
+  which went stale in a fortnight — the same mistake one rung down. What
+  is durable is the relationship, not the number: `COUNTRY_DEEP_DIVE_SLUGS`
+  should hold one entry per row in `countries` with a non-NULL `slug`
+  (the European Union included, since migration 730 gave it one), and
+  `COUNTRY_NAME_TRANSLATIONS` should hold `es`, `de` and `fr` for each of
+  them. Nothing is outstanding; just add yours.*
 - **`i18n/{en,es,de,fr}.json` `countryNames`** — used by the tracker's
   client-side `translateCountry`. **This one is checked**, in a place
   nobody would look for it: `tests/spec-register.mjs` compares every
@@ -661,10 +696,12 @@ Two safety properties worth knowing, because they are what let you trust
   numbers sitting near the count must never move: the whitepapers'
   "60-jurisdiction comparison" in English and German, the education
   page's "72 hours", and the ROI whitepaper's "28,000 employees / 70
-  countries" — a Forrester citation that happens to carry the same
-  number the count has today, and therefore the one most at risk from a
-  careless sweep. The moment the count moves off 70 that particular
-  collision resolves itself, but the tripwire stays.
+  countries" — a Forrester citation that carried the same number the
+  jurisdiction count itself held until 27 August 2026. **That collision
+  has since resolved** and the tripwire stays, because it will happen
+  again: any frozen citation is one country add away from colliding with
+  the live count, and the run in which it collides is the one where a
+  sweep that matched on numbers would corrupt it.
 - **It verifies itself.** A `--fix` run re-reads everything afterwards
   and reports the second pass, rather than claiming success from what it
   intended to write.
@@ -779,9 +816,10 @@ mind autoincrement-PK tables where a re-run genuinely duplicates rows
       first: it is the cheapest check here and the only one that can
       tell you a migration ran without doing anything
 - [ ] `npm test` passes from the repo root — the replay and its
-      assertions, the jurisdiction count, and the browser suites. It is
-      thirty-odd suites now rather than the handful this line used to
-      name, and several of them are real checks on a country add: the ROI
+      assertions, the jurisdiction count, and the browser suites. It runs
+      forty-odd suites rather than the handful this line used to name —
+      `tests/run-all.mjs` prints the tally, which is the number to read —
+      and several of them are real checks on a country add: the ROI
       regression (a new country changes the planner's picker, integration
       count and wave plan), `headline-facts.mjs` (which renders pages at
       five widths in four languages), `guides-consistency.mjs`,
@@ -815,7 +853,17 @@ mind autoincrement-PK tables where a re-run genuinely duplicates rows
       `/compliance-guides/guide?c=…`) shows the country with the same six
       facts, in the same words, as the deep-dive strip. The two surfaces
       share one renderer precisely so a reader cannot find a discrepancy;
-      if they differ, something is wrong in the data, not the layout
+      if they differ, something is wrong in the data, not the layout.
+      **Since 1 September 2026 this is checked** — `guides-front-table.mjs`
+      renders the real document and compares every channel against D1, per
+      country, per language, so a mismatch fails the suite rather than
+      waiting for someone to read a PDF
+- [ ] **The guide's front-page Model column** prints the new country's
+      B2G / B2B / B2C **and e-reporting** statuses. e-reporting reaching
+      page one is new, and it is the one of the four most easily left at a
+      value nobody checked: it now states the country's position in the
+      cross-country summary table a reader opens first, not just in a tile
+      further down
 - [ ] **The e-reporting card** states the right thing. `unknown` is a
       legitimate answer and prints NOT CONFIRMED; `active` must name a
       system and a frequency
