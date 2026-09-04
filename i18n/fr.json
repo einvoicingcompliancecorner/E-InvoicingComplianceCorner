@@ -23,7 +23,7 @@
   },
   "backLink": "← Retour au tableau global",
   "brand": {
-    "description": "Un suivi actualisé en continu des obligations de facturation électronique et de télédéclaration dans 76 pays — règles ViDA à l'échelle de l'UE, systèmes nationaux de CTC, et tout ce qui se trouve entre les deux. Chaque entrée indique l'échéance, ce qu'il faut faire, et un lien direct vers le portail officiel du gouvernement, pour passer de \"est-ce que cela nous concerne ?\" à \"voici ce qu'il faut faire\" en une seule page.",
+    "description": "Un suivi actualisé en continu des obligations de facturation électronique et de télédéclaration dans 77 pays — règles ViDA à l'échelle de l'UE, systèmes nationaux de CTC, et tout ce qui se trouve entre les deux. Chaque entrée indique l'échéance, ce qu'il faut faire, et un lien direct vers le portail officiel du gouvernement, pour passer de \"est-ce que cela nous concerne ?\" à \"voici ce qu'il faut faire\" en une seule page.",
     "eyebrow": "Tableau de suivi de conformité",
     "title": "The E-Invoicing<br>Compliance Corner"
   },
@@ -162,6 +162,7 @@
     "Americas": "Amériques"
   },
   "countryNames": {
+    "Angola": "Angola",
     "Argentina": "Argentine",
     "Australia": "Australie",
     "Austria": "Autriche",
@@ -668,7 +669,7 @@
     },
     "home": {
       "title": "The E-Invoicing Compliance Corner",
-      "description": "Suivez les obligations de facturation électronique et les échéances de conformité dans 76 pays, mis à jour chaque mois."
+      "description": "Suivez les obligations de facturation électronique et les échéances de conformité dans 77 pays, mis à jour chaque mois."
     },
     "impact-of-mandate": {
       "title": "Impact d'un mandat de facturation électronique — technique, financier et organisationnel",

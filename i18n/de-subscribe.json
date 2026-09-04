@@ -6,13 +6,13 @@
   "backLink": "← Zurück zur Übersicht",
   "benefits": {
     "eyebrow": "Nie wieder überrascht werden",
-    "intro": "E-Invoicing-Schwellenwerte, Wellen-Nummern und Stichtage ändern sich ständig — oft mit wenig öffentlicher Vorankündigung. Einmal abonniert, landet jede Regierungsaktualisierung oder -ankündigung aus den 76 von uns erfassten Rechtsordnungen automatisch in Ihrem Posteingang, in klarer Sprache, bevor sie Ihr Team überrascht.",
+    "intro": "E-Invoicing-Schwellenwerte, Wellen-Nummern und Stichtage ändern sich ständig — oft mit wenig öffentlicher Vorankündigung. Einmal abonniert, landet jede Regierungsaktualisierung oder -ankündigung aus den 77 von uns erfassten Rechtsordnungen automatisch in Ihrem Posteingang, in klarer Sprache, bevor sie Ihr Team überrascht.",
     "item1": {
       "body": "Jede neue Vorgabe, jede verschobene Frist und jede Sanktionsänderung, die wir erfassen, in klarer Sprache geschrieben — kein Rechtstext, der aus einer Pressemitteilung der Steuerbehörde kopiert wurde.",
       "title": "Echte Regierungsankündigungen, zusammengefasst"
     },
     "item2": {
-      "body": "Teilen Sie uns mit, welche der 76 Rechtsordnungen für Ihr Unternehmen relevant sind, und Ihre monatliche Benachrichtigungs-E-Mail sagt Ihnen konkret, ob sie vorkamen — oder erhalten Sie den vollständigen globalen Digest, wenn Sie lieber alles sehen möchten.",
+      "body": "Teilen Sie uns mit, welche der 77 Rechtsordnungen für Ihr Unternehmen relevant sind, und Ihre monatliche Benachrichtigungs-E-Mail sagt Ihnen konkret, ob sie vorkamen — oder erhalten Sie den vollständigen globalen Digest, wenn Sie lieber alles sehen möchten.",
       "title": "Wählen Sie genau die Länder, die Sie interessieren"
     },
     "item3": {
@@ -32,7 +32,7 @@
   },
   "card": {
     "clearAll": "Alle abwählen",
-    "countriesHint": "Optional — lassen Sie alles unmarkiert, und wir senden Ihnen den vollständigen monatlichen Digest für alle 76 Rechtsordnungen.",
+    "countriesHint": "Optional — lassen Sie alles unmarkiert, und wir senden Ihnen den vollständigen monatlichen Digest für alle 77 Rechtsordnungen.",
     "countriesLabel": "Für welche Länder möchten Sie Benachrichtigungen erhalten?",
     "countriesMissing": "Die Länderauswahl ist vorübergehend nicht verfügbar — Sie erhalten trotzdem den vollständigen monatlichen Digest. (Fehlende Datei: countries.js)",
     "eyebrow": "Abonnieren",
@@ -60,7 +60,7 @@
     "eyebrow": "Noch ein Schritt",
     "fineprint": "Sie werden zu einem sicheren Lemon-Squeezy-Zahlungsfenster weitergeleitet, in dem Sie zwischen wiederkehrender und einmaliger Zahlung wählen und Ihren Kauf abschließen können.",
     "for": "für",
-    "fullDigest": "den vollständigen Digest (alle 76 Rechtsordnungen)",
+    "fullDigest": "den vollständigen Digest (alle 77 Rechtsordnungen)",
     "payButton": "Weiter zur Zahlung →",
     "subscribingAs": "Abonnieren als",
     "title": "Bestätigen Sie Ihre Angaben"

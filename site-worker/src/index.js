@@ -4114,7 +4114,14 @@ async function renderCountryDeepDive(request, env, slug) {
   // to look.
   const { lang } = resolveInsightsLang(request);
 
-  const countryRow = await db.prepare(`SELECT code, region FROM countries WHERE name_en = ?`).bind(countryName).first();
+  // eu_member joins the select on 4 September 2026, because the line
+  // under the country's name was printing "VAT area: EU" as a hardcoded
+  // string on all seventy-seven pages -- Brazil, Japan, Kenya and
+  // Thailand included. Found by reading Angola's page on the day it was
+  // built. The column has meant exactly one thing since migration 512,
+  // "does ViDA bind this country", which is the question that line was
+  // pretending to answer.
+  const countryRow = await db.prepare(`SELECT code, region, eu_member FROM countries WHERE name_en = ?`).bind(countryName).first();
   if (!countryRow) return new Response("Not found", { status: 404 });
 
   const content = await getDeepDiveContent(db, countryName, lang);
@@ -4158,7 +4165,7 @@ async function renderCountryDeepDive(request, env, slug) {
 
   const html = await renderFullDeepDivePage(
     countryName, flag, countryRow.code, countryRow.region, content, milestones, lang,
-    TRACKER_HREF, { related, headline, guideStrings }
+    TRACKER_HREF, { related, headline, guideStrings, euMember: !!countryRow.eu_member }
   );
 
   const headers = new Headers({

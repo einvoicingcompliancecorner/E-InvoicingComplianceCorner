@@ -64,7 +64,7 @@ const all = async (sql) => (await d1.prepare(sql).bind().all()).results || [];
 // NULL slug until 28 August 2026, which is exactly the accident that
 // left its deep dive unreachable for three weeks.
 const tracked = await all(
-  "SELECT slug, name_en, code FROM countries WHERE slug IS NOT NULL AND code != 'EU' ORDER BY slug");
+  "SELECT slug, name_en, code, eu_member FROM countries WHERE slug IS NOT NULL AND code != 'EU' ORDER BY slug");
 
 t.check("there are country pages to ask for", tracked.length >= 50,
   `${tracked.length} slugs`);
@@ -261,6 +261,44 @@ t.check(`the newest countries render in es/de/fr (${recent.length} countries)`,
     row && row.tag === "A", `rendered as <${(row && row.tag || "?").toLowerCase()}>`);
   t.check("and the anchor points at the deep dive",
     row && row.href === "/european-union", `href = ${row && row.href}`);
+}
+
+// ---- 6. the header line says EU only where the EU binds ---------------
+//
+// "VAT area: EU" was a HARDCODED LITERAL in the country header until
+// 4 September 2026, so every page on the site declared itself in the EU
+// VAT area -- Brazil, Japan, Kenya and Thailand among them, in English
+// on the German, Spanish and French editions too.
+//
+// NOTHING COULD HAVE CAUGHT IT, and that is the part worth designing
+// against. It was a constant, so it agreed with itself; it was in the
+// chrome rather than the content, so a content sweep skipped it; and it
+// was true of the country most likely to be spot-checked. It took
+// reading a new country's page on the day it was built.
+//
+// So this checks the claim against the column that carries its meaning,
+// on the SERVED page, in both directions. `eu_member` has meant one
+// thing since migration 512 -- does ViDA bind this country -- and Europe
+// is not a substitute for it: Norway, the United Kingdom, Iceland,
+// Serbia, Switzerland and Turkey all sit in that region and none is
+// bound.
+{
+  const wrongly = [], missing = [];
+  for (const c of tracked) {
+    const html = await (await get(`/${c.slug}`)).text();
+    const m = html.match(/<div class="country-region">([^<]*)<\/div>/);
+    const line = m ? m[1] : "";
+    const claims = /EU VAT area/.test(line);
+    if (claims && !c.eu_member) wrongly.push(`${c.name_en}: ${line.trim()}`);
+    if (!claims && c.eu_member) missing.push(`${c.name_en}: ${line.trim()}`);
+  }
+  t.check("no country outside the EU claims the EU VAT area",
+    wrongly.length === 0, wrongly.slice(0, 8).join("; "));
+  // The converse, and it matters as much: a fix that dropped the segment
+  // everywhere would satisfy the check above and lose a real fact about
+  // twenty-seven member states.
+  t.check("and every member state still states it",
+    missing.length === 0, missing.slice(0, 8).join("; "));
 }
 
 console.log(`\n  note  ${tracked.length} country pages served, `

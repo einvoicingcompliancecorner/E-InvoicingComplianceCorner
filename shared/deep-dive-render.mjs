@@ -43,6 +43,7 @@ export const SUPPORTED_LANGS = ["en", "es", "de", "fr"];
 // It's a hand-maintained table rather than a derived transform because
 // uae, uk, and united-states aren't simple lowercase-and-hyphenate.
 export const COUNTRY_DEEP_DIVE_SLUGS = {
+  "Angola": "angola",
   "Thailand": "thailand",
   "Hong Kong": "hong-kong",
   "Switzerland": "switzerland",
@@ -96,7 +97,7 @@ export const SLUG_TO_COUNTRY = Object.fromEntries(
 );
 
 const COUNTRY_NAME_TRANSLATIONS = {
-  es: { "Thailand": "Tailandia", "Hong Kong": "Hong Kong", "Switzerland": "Suiza", "Ghana": "Ghana", "Liechtenstein": "Liechtenstein",
+  es: { "Angola": "Angola", "Thailand": "Tailandia", "Hong Kong": "Hong Kong", "Switzerland": "Suiza", "Ghana": "Ghana", "Liechtenstein": "Liechtenstein",
      "Botswana": "Botsuana","Austria": "Austria", "Belgium": "Bélgica", "Bulgaria": "Bulgaria", "Croatia": "Croacia", "Cyprus": "Chipre", "Czech Republic": "República Checa", "Denmark": "Dinamarca", "Estonia": "Estonia",
     "Egypt": "Egipto", "Finland": "Finlandia", "France": "Francia",
     "Germany": "Alemania", "Greece": "Grecia", "Hungary": "Hungría", "Iceland": "Islandia", "Ireland": "Irlanda", "Israel": "Israel", "Italy": "Italia", "Jordan": "Jordania", "Luxembourg": "Luxemburgo",
@@ -113,7 +114,7 @@ const COUNTRY_NAME_TRANSLATIONS = {
     "Bahrain": "Baréin", "Qatar": "Catar",
     "Uzbekistan": "Uzbekistán", "Azerbaijan": "Azerbaiyán"
   },
-  de: { "Thailand": "Thailand", "Hong Kong": "Hongkong", "Switzerland": "Schweiz", "Ghana": "Ghana", "Liechtenstein": "Liechtenstein",
+  de: { "Angola": "Angola", "Thailand": "Thailand", "Hong Kong": "Hongkong", "Switzerland": "Schweiz", "Ghana": "Ghana", "Liechtenstein": "Liechtenstein",
      "Botswana": "Botsuana","Austria": "Österreich", "Belgium": "Belgien", "Bulgaria": "Bulgarien", "Croatia": "Kroatien", "Cyprus": "Zypern", "Czech Republic": "Tschechien", "Denmark": "Dänemark", "Estonia": "Estland",
     "Egypt": "Ägypten", "Finland": "Finnland", "France": "Frankreich",
     "Germany": "Deutschland", "Greece": "Griechenland", "Hungary": "Ungarn", "Iceland": "Island", "Ireland": "Irland", "Israel": "Israel", "Italy": "Italien", "Jordan": "Jordanien", "Luxembourg": "Luxemburg",
@@ -130,7 +131,7 @@ const COUNTRY_NAME_TRANSLATIONS = {
     "Bahrain": "Bahrain", "Qatar": "Katar",
     "Uzbekistan": "Usbekistan", "Azerbaijan": "Aserbaidschan"
   },
-  fr: { "Thailand": "Thaïlande", "Hong Kong": "Hong Kong", "Switzerland": "Suisse", "Ghana": "Ghana", "Liechtenstein": "Liechtenstein",
+  fr: { "Angola": "Angola", "Thailand": "Thaïlande", "Hong Kong": "Hong Kong", "Switzerland": "Suisse", "Ghana": "Ghana", "Liechtenstein": "Liechtenstein",
      "Botswana": "Botswana","Austria": "Autriche", "Belgium": "Belgique", "Bulgaria": "Bulgarie", "Croatia": "Croatie", "Cyprus": "Chypre", "Czech Republic": "République tchèque", "Denmark": "Danemark", "Estonia": "Estonie",
     "Egypt": "Égypte", "Finland": "Finlande", "France": "France",
     "Germany": "Allemagne", "Greece": "Grèce", "Hungary": "Hongrie", "Iceland": "Islande", "Ireland": "Irlande", "Israel": "Israël", "Italy": "Italie", "Jordan": "Jordanie", "Luxembourg": "Luxembourg",
@@ -184,6 +185,7 @@ const DEEP_DIVE_I18N = {
     secTimeline: "Compliance timeline", secFileFormat: "File format & data specification",
     secScope: "Scope & transmission", secSteps: "Getting compliant", secPenalties: "Penalties & enforcement",
     countryDeepDiveEyebrow: "Country deep dive", lastUpdatedLabel: "Last updated", complianceModelLabel: "Compliance model",
+    euVatArea: "EU VAT area",
     relatedHeading: "Related jurisdictions",
     relatedIntro: "Other countries in the same region, ordered by their next dated milestone. Each links to a full briefing.",
   },
@@ -194,6 +196,7 @@ const DEEP_DIVE_I18N = {
     secTimeline: "Cronología de cumplimiento", secFileFormat: "Formato de archivo y especificación de datos",
     secScope: "Alcance y transmisión", secSteps: "Cómo cumplir", secPenalties: "Sanciones y aplicación",
     countryDeepDiveEyebrow: "Análisis del país", lastUpdatedLabel: "Última actualización", complianceModelLabel: "Modelo de cumplimiento",
+    euVatArea: "Territorio IVA de la UE",
     relatedHeading: "Jurisdicciones relacionadas",
     relatedIntro: "Otros países de la misma región, ordenados por su próximo hito con fecha. Cada enlace lleva a un informe completo.",
   },
@@ -204,6 +207,7 @@ const DEEP_DIVE_I18N = {
     secTimeline: "Compliance-Zeitachse", secFileFormat: "Dateiformat & Datenspezifikation",
     secScope: "Anwendungsbereich & Übermittlung", secSteps: "So werden Sie compliant", secPenalties: "Sanktionen & Durchsetzung",
     countryDeepDiveEyebrow: "Länderanalyse", lastUpdatedLabel: "Zuletzt aktualisiert", complianceModelLabel: "Compliance-Modell",
+    euVatArea: "EU-Mehrwertsteuergebiet",
     relatedHeading: "Weitere Jurisdiktionen",
     relatedIntro: "Andere Länder derselben Region, sortiert nach ihrem nächsten datierten Meilenstein. Jeder Eintrag führt zu einem vollständigen Briefing.",
   },
@@ -214,6 +218,7 @@ const DEEP_DIVE_I18N = {
     secTimeline: "Chronologie de conformité", secFileFormat: "Format de fichier et spécification des données",
     secScope: "Champ d'application et transmission", secSteps: "Comment se conformer", secPenalties: "Sanctions et application",
     countryDeepDiveEyebrow: "Analyse par pays", lastUpdatedLabel: "Dernière mise à jour", complianceModelLabel: "Modèle de conformité",
+    euVatArea: "Territoire TVA de l'UE",
     relatedHeading: "Juridictions liées",
     relatedIntro: "Les autres pays de la même région, classés par prochaine échéance datée. Chaque entrée mène à un dossier complet.",
   },
@@ -656,7 +661,7 @@ export async function renderFullDeepDivePage(countryName, flag, code, region, co
   // EVERY MEMBER IS OPTIONAL AND ABSENCE RENDERS NOTHING. The two runtimes
   // deploy separately, so whichever ships second must not throw or print
   // `undefined` into a country page.
-  const { related, headline, guideStrings } = extras;
+  const { related, headline, guideStrings, euMember } = extras;
   const relatedJurisdictionsHtml = renderRelatedJurisdictions(related, lang, translateRegion(lang, region));
   // t(key, English) against the `guides` subtree, which is where these
   // words are defined and where the methodology page reads them from —
@@ -1065,7 +1070,16 @@ ${renderLangBanner(lang)}
       <div>
         <p class="country-eyebrow">${t(lang, "countryDeepDiveEyebrow")}</p>
         <h1 class="country-title display">${escapeHtml(translateCountryName(lang, countryName))}</h1>
-        <div class="country-region">${escapeHtml(region)} · ${escapeHtml(code)} · VAT area: EU</div>
+        <!-- "VAT area: EU" WAS HARDCODED HERE and printed on every country
+             page on the site, Brazil and Japan included, in English in all
+             four languages. Found on 4 September 2026 by reading Angola's
+             page the day it was built; nothing else could have caught it,
+             because the string was a literal and agreed with itself.
+             The segment now appears only where it is true, and is dropped
+             rather than negated: "not in the EU VAT area" is not a fact a
+             reader of the Japan page needs stated. -->
+        <div class="country-region">${escapeHtml(region)} · ${escapeHtml(code)}${
+          euMember ? ` · ${escapeHtml(t(lang, "euVatArea"))}` : ""}</div>
       </div>
     </div>
     <div class="country-meta-col">

@@ -18655,3 +18655,125 @@ diagnosis rather than the symptom.
 
 `npm test`: **43 of 44 suites**; replay OK across 736 files, 1311
 assertions, 265 standing invariants.
+
+---
+
+### 4 September 2026 — Angola, and a sentence every country page had been telling
+
+Dan asked for an evaluation and then for the build. Angola is the
+seventy-seventh jurisdiction, and it arrived with a real clearance regime
+that most English-language coverage still files under "moving towards".
+
+#### What Angola actually is
+
+Decreto Presidencial 71/25, in force 20 September 2025, with Executive
+Decree 683/25 behind it. **Article 17(2) is the whole regime in one
+sentence**: software validated by the AGT, transmitting in real time,
+unable to delete a document once issued. The AGT returns a code, the
+invoice carries it and a QR, and the format is JSON — no UBL, no
+EN 16931, no Peppol authority. `roi_complexity` is `complex` on the
+site's own dividing line: the tax authority is a party to the
+transaction.
+
+The obligation attaches to the **VAT regime, not the counterparty**, so
+B2G, B2B and B2C are all `active` from the same date. What the phases
+narrow is who is caught yet, and that belongs in the notes — the lesson
+the Netherlands taught on 1 September, three days old and already load-
+bearing.
+
+#### The second phase has two dates, and that is the finding
+
+Article 37 gives twelve months from the implementing Executive Decree,
+which took effect around 21 September 2025. EY Angola reads that as
+**21 September 2026**. Cegid, Expansão and Líder Magazine — a certified
+vendor and two Angolan business titles — all say **1 January 2027**.
+
+They reconcile, and the reconciliation is the useful part: **the first
+phase did exactly the same thing.** Its statutory date was 20 September
+2025 and it commenced 1 January 2026. Angolan practice has twice aligned
+commencement to the calendar year while the instrument said September.
+
+So the board carries 1 January 2027 with an EXPECTED badge — the date a
+reader should plan to, and not the date in the decree — and the statutory
+expiry sits off-board as `context`, where the deep-dive timeline still
+shows it. Neither date is asserted as settled, and the "What we could not
+confirm" card says no AGT instruction naming either could be found.
+
+#### A country switched a reporting channel off
+
+Angola ran real-time clearance and a periodic **invoicing SAF-T** side by
+side, reporting the same transactions twice, until an AGT comunicado of
+20 March 2026 exempted e-invoicing taxpayers from the invoicing file. The
+annual accounting file (10 April) and inventory file (15 February)
+remain. Authorities add reporting channels; retiring one is rare enough
+to be worth a story of its own, and it got one.
+
+It also decided the e-Reporting tile, where **two precedents on this site
+pull opposite ways**. Ghana calls its certified invoicing system the
+reporting channel and records `real_time`; Egypt records `no_mandate` on
+the reasoning that clearance is the invoice mandate, not a separate
+report. Angola has both, so it resolves cleanly: the real-time half is
+already counted in the three segment tiles, and recording it again would
+double-count one duty across four boxes. The tile reads `annual`, for the
+two files that survive.
+
+#### The scaffolder cannot classify an off-board row, and says so
+
+`new_country_scaffold.py` derives `obligation_status` from `on_tracker`
+alone — `live` on the board, `unreviewed` off it. That is right for a
+past-dated row and refused outright for a future-dated one, which is
+exactly what 520's standing invariant is for: "we have not looked at
+this yet" is not a statement anybody should be able to make about a date
+that has not happened. Both off-board rows here are `context`, edited by
+hand, and 738's header records why. **The three defects the runbook
+warned about were all fixed on 27 August; this is a fourth, and it is
+narrower and less serious than any of them.**
+
+#### source_hosts holds the host, not the domain
+
+The first draft graded `minfin.gov.ao` and the replay failed:
+`cited_sources` stores the host exactly as the URL spells it, so the apex
+matched nothing Angola actually cites. Both government hosts are
+subdomains. A small thing, caught in seconds by a check that exists, and
+recorded because the next country will have the same shape.
+
+#### The sentence every country page had been telling
+
+**"VAT area: EU" was a hardcoded literal in the country header**, printed
+on all seventy-seven deep dives. Brazil, Japan, Kenya and Thailand each
+declared themselves in the EU VAT area, in English, on the German,
+Spanish and French editions too.
+
+**Nothing could have caught it, and that is the part worth designing
+against.** It was a constant, so it agreed with itself. It was in the
+chrome rather than the content, so every content sweep skipped it. It was
+true of Germany, which is the country most likely to be spot-checked. And
+it had been there long enough that nobody read it any more. It took
+rendering a *new* country's page and reading the line under its name.
+
+Fixed against the column that carries the meaning — `eu_member`, which has
+meant "does ViDA bind this country" since migration 512 — and the segment
+is now **dropped rather than negated**, because "not in the EU VAT area"
+is not a fact a reader of the Japan page needs stated. The label is
+translated four ways; it never had been.
+
+`tests/country-pages.mjs` checks it on the served page in both
+directions: no non-member claims it, and every member state still states
+it. A fix that dropped the segment everywhere would satisfy the first
+check and lose a real fact about twenty-seven countries. **Verified by
+breaking it** — reintroducing the literal fails the suite and names
+Angola, Argentina, Australia and five more.
+
+#### Also
+
+`DEEP-DIVE-FRAMEWORK.md` still told authors that `compliance_model`'s
+64-character band is read out of the guide renderer's `clip()` call. That
+`clip()` went on 1 September. The paragraph now says the band is a
+content judgement with nothing enforcing it, and that it must not be
+loosened until someone re-derives it from where the field actually
+renders.
+
+`npm test`: **43 of 44 suites**, the ROI regression red already recorded
+on 1 September and unrelated. Replay OK across 745 files, 1363
+assertions, 268 standing invariants. `npm run count`: 77, everything
+agreeing, frozen numbers intact.

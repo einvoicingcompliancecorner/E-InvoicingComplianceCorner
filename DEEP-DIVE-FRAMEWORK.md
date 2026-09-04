@@ -87,11 +87,21 @@ English maximum and judged against the English text.
 | `penalties_intro` | 15 words | 35 words | 15–27 |
 | `footer_disclaimer` | 45 words | 70 words | 45–59 |
 
-**`compliance_model`'s 64 is not a style choice — it is the compliance guide's
-own clip.** `shared/guides-render.mjs` prints this field in the guide's Model
-column as `clip(model.split(/[.;]/)[0], 64)`. Anything longer is truncated
-mid-phrase in a PDF a reader downloads; 37 of 76 countries are truncated today.
-The test reads that constant out of the source, so the two cannot drift apart.
+**`compliance_model`'s 64 was not a style choice, and no longer has a
+mechanism behind it.** Until 1 September 2026 the compliance guide printed this
+field in its Model column as `clip(model.split(/[.;]/)[0], 64)`, truncating
+about half the corpus mid-phrase in a PDF readers download, and
+`tests/deep-dive-shape.mjs` read that constant out of the renderer so the two
+could not drift apart. The Model column is now four channel statuses and the
+truncation went with it, so there is no constant left to read.
+
+The band stays at 64 and still binds a new country. What has changed is that it
+is now a content judgement rather than a measured constraint: the field still
+renders on the website deep dive, in a `country-meta` line whose own budget
+nobody has measured. Re-deriving it from where the field actually appears is
+open work, and the band should not be loosened until someone does — 35
+countries sit over it in `BACKLOG_CEILING`, and raising it would retire that
+backlog by decree rather than by work.
 
 ### Structure
 
